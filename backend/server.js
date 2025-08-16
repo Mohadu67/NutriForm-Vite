@@ -100,70 +100,11 @@ app.get('/', (req, res) => {
 });
 
 app.get(['/reset-password.html', '/reset-password'], (req, res) => {
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  console.log('🧩 reset-password page served for', req.originalUrl);
-  res.end(`<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Réinitialiser le mot de passe</title>
-  <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:24px;max-width:520px;margin:auto;background:#f7f6f2;color:#111}
-    label{display:block;margin:.75rem 0 .25rem}
-    input{width:100%;padding:.6rem;border:1px solid #ccc;border-radius:8px}
-    button{margin-top:1rem;padding:.6rem 1rem;border:0;border-radius:8px;cursor:pointer;background:#FFB385}
-    .error{color:#b00020;margin-top:.5rem}
-    .ok{color:#0a7a3b;margin-top:.5rem}
-  </style>
-</head>
-<body>
-  <h1>Réinitialiser le mot de passe</h1>
-  <p id="status"></p>
-  <form id="form">
-    <label for="pwd">Nouveau mot de passe</label>
-    <input id="pwd" type="password" minlength="8" required />
-    <label for="pwd2">Confirmer le mot de passe</label>
-    <input id="pwd2" type="password" minlength="8" required />
-    <button type="submit">Valider</button>
-    <div id="msg" class="error" hidden></div>
-  </form>
-  <script>
-    const params = new URLSearchParams(location.search);
-    const token = params.get('token');
-    const form = document.getElementById('form');
-    const msg = document.getElementById('msg');
-    const status = document.getElementById('status');
-    if (!token) {
-      status.textContent = 'Lien invalide: token manquant.';
-      form.remove();
-    }
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      msg.hidden = true;
-      const p1 = document.getElementById('pwd').value.trim();
-      const p2 = document.getElementById('pwd2').value.trim();
-      if (p1.length < 8) { msg.textContent = '8 caractères minimum.'; msg.hidden = false; return; }
-      if (p1 !== p2) { msg.textContent = 'Les mots de passe ne correspondent pas.'; msg.hidden = false; return; }
-      try {
-        const res = await fetch('/reset-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, newPassword: p1 })
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.message || 'Erreur serveur');
-        status.className = 'ok';
-        status.textContent = 'Mot de passe réinitialisé. Vous pouvez fermer cette page et vous connecter.';
-        form.remove();
-      } catch (err) {
-        msg.textContent = err.message || 'Erreur serveur';
-        msg.hidden = false;
-      }
-    });
-  </script>
-</body>
-</html>`);
+  const token = req.query.token;
+  const frontBase = (process.env.APP_BASE_URL_FRONT || process.env.FRONTEND_BASE_URL || 'http://localhost:5173').replace(/\/$/, '');
+  const redirectUrl = `${frontBase}/reset-password${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+  console.log('🔀 Redirection reset-password ->', redirectUrl);
+  res.redirect(302, redirectUrl);
 });
 
 app.post('/login', async (req, res) => {
