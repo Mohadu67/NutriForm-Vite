@@ -5,6 +5,7 @@ import ImcPage from "./pages/Imc/ImcPage.jsx"
 import CaloriePage from "./pages/Calorie/CaloriePage.jsx";
 import ContactPage from "./pages/Contact/ContactPage.jsx";
 import VerifyEmail from "./components/Auth/VerifyEmail/VerifyEmail.jsx";
+import ForgotUser from "./components/Auth/ForgotUser/ForgotUser.jsx";
 import "tarteaucitronjs";
 
 export default function App() {
@@ -59,6 +60,7 @@ export default function App() {
       <Route path="/calorie" element={<CaloriePage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/ForgotUser" element={<ForgotUser />} />
     </Routes>
   );
 }
