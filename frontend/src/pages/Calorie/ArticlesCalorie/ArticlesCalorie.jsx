@@ -22,7 +22,7 @@ export default function ArticlesCalorie() {
     fetch("/data/db.json")
       .then((res) => res.json())
       .then((data) => {
-        // Section dédiée CALORIE uniquement
+
         const list = data.contenueArticlesCALORIE || data.contenueArticlesCalorie || [];
         setArticles(list);
       })

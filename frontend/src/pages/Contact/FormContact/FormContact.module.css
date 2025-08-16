@@ -65,7 +65,7 @@
 .input:focus,
 .textarea:focus {
   outline: none;
-  border-color: #B5EAD7; /* vert pastel */
+  border-color: #B5EAD7;
   box-shadow: 0 0 0 4px rgba(181, 234, 215, 0.3);
 }
 
@@ -107,7 +107,7 @@
 
 .submit {
   padding: 0.9rem 1.2rem;
-  background-color: #FFB385; /* orange pêche */
+  background-color: #FFB385;
   color: #000;
   font-weight: 800;
   border: none;

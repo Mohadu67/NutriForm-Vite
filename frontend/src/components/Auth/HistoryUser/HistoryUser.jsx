@@ -7,7 +7,6 @@ const API_URL = import.meta.env.VITE_API_URL || "";
 function LineChartSVG({ points = [], width = 320, height = 140, color = "currentColor", yLabel = "" }) {
   if (!Array.isArray(points) || points.length < 2) return null;
 
-  // Map to [{x: Date, y: number}]
   const data = points
     .filter(p => p && typeof p.value === 'number' && p.date)
     .map(p => ({ x: new Date(p.date), y: Number(p.value) }))
@@ -31,7 +30,6 @@ function LineChartSVG({ points = [], width = 320, height = 140, color = "current
   const xScale = (t) => pad.left + (innerW * (t - minX)) / Math.max(1, (maxX - minX));
   const yScale = (v) => pad.top + innerH - (innerH * (v - minY)) / (maxY - minY);
 
-  // Build path
   let d = "";
   data.forEach((pt, i) => {
     const X = xScale(pt.x.getTime());
@@ -46,19 +44,19 @@ function LineChartSVG({ points = [], width = 320, height = 140, color = "current
 
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-label={`Courbe ${yLabel}`}>
-      {/* axes light */}
+
       <line x1={pad.left} y1={pad.top} x2={pad.left} y2={H - pad.bottom} stroke="#ddd" />
       <line x1={pad.left} y1={H - pad.bottom} x2={W - pad.right} y2={H - pad.bottom} stroke="#ddd" />
-      {/* labels min/max */}
+
       <text x={4} y={yScale(minY)} fontSize="10" fill="#666">{yMinText}</text>
       <text x={4} y={yScale(maxY)} fontSize="10" fill="#666">{yMaxText}</text>
-      {/* path */}
+
       <path d={d} fill="none" stroke={color} strokeWidth="2" />
-      {/* dots */}
+
       {data.map((pt, i) => (
         <circle key={i} cx={xScale(pt.x.getTime())} cy={yScale(pt.y)} r="2.5" fill={color} />
       ))}
-      {/* first/last dates */}
+
       <text x={pad.left} y={H - 6} fontSize="10" fill="#666">{first.x.toLocaleDateString()}</text>
       <text x={W - pad.right - 64} y={H - 6} fontSize="10" fill="#666">{last.x.toLocaleDateString()}</text>
     </svg>

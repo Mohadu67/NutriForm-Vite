@@ -38,7 +38,6 @@ export default function FormImc({ onCalculate }) {
       return;
     }
 
-    // bornes simples pour éviter les valeurs aberrantes
     if (t < 50 || t > 300 || p < 1 || p > 500) {
       alert("Vérifiez les bornes : taille entre 50–300 cm et poids entre 1–500 kg.");
       return;
@@ -50,7 +49,6 @@ export default function FormImc({ onCalculate }) {
     const { imc, categorie } = calculerIMC(p, t);
     onCalculate?.(imc, categorie);
 
-    // 🔗 Enregistrer l'IMC dans l'historique si connecté
     try {
       const token = localStorage.getItem('token');
       if (token) {
@@ -64,7 +62,7 @@ export default function FormImc({ onCalculate }) {
             type: 'imc',
             value: imc,
             poids: p,
-            taille: t, // en cm, cohérent avec le formulaire
+            taille: t,
             categorie,
           }),
         }).catch(() => {});

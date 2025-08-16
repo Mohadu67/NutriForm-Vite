@@ -1,8 +1,4 @@
-/* =====================================================
-   ArticlesCalorie.module.css — version peaufinée
-   ===================================================== */
 
-/* ---- 0) Tokens ---- */
 :root {
   --ink: var(--couleur-text-noir);
   --card-bg: var(--couleur-principale);
@@ -16,7 +12,6 @@
   --shadow-l: 0 4px 20px rgba(0,0,0,0.20);
 }
 
-/* ---- 1) Titre ---- */
 .titleh2 {
   font-family: var(--font-titre);
   font-size: 2.2rem;
@@ -29,7 +24,6 @@
   text-align: center;
 }
 
-/* ---- 2) Grille ---- */
 .grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -46,7 +40,6 @@
   .grid { grid-template-columns: repeat(4, 1fr); gap: 24px; }
 }
 
-/* ---- 3) Carte ---- */
 .card {
   background: var(--card-bg);
   border-radius: var(--radius-s);
@@ -76,7 +69,6 @@
   color: var(--ink);
 }
 
-/* ---- 4) Modal (overlay + content) ---- */
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -111,7 +103,6 @@
   .modalContent { max-width: min(840px, 80vw); }
 }
 
-/* Scrollbar douce uniquement dans le contenu modal */
 .modalContent::-webkit-scrollbar { width: 10px; }
 .modalContent::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--ink) 22%, transparent);
@@ -162,7 +153,6 @@
   line-height: 1.55;
 }
 
-/* ---- 5) Motion respect ---- */
 @media (prefers-reduced-motion: reduce) {
   .card { transition: none; }
   .card:hover, .card:active { transform: none; filter: none; }

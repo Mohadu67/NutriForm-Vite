@@ -60,10 +60,10 @@
 
 .popupOverlay {
   position: fixed;
-  inset: 0; /* top:0, right:0, bottom:0, left:0 */
+  inset: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0,0,0,0.5); /* fond semi-transparent */
+  background-color: rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,8 +71,8 @@
 }
 
 .popupCard {
-  position: relative; /* needed for the close button */
-  background-color: #F7F6F2; /* blanc cassé */
+  position: relative;
+  background-color: #F7F6F2;
   border: 2px solid #2B2B2B;
   border-radius: 16px;
   padding: 2rem 2.25rem 1.75rem;
@@ -118,7 +118,7 @@
   display: inline-block;
   font-size: 1.1rem;
   font-weight: 700;
-  background-color: #FFB385; /* orange pêche */
+  background-color: #FFB385;
   color: #2B2B2B;
   padding: 0.35rem 1rem;
   border-radius: 999px;
@@ -137,7 +137,7 @@
   display: block;
   width: 100%;
   padding: 0.9rem 1rem;
-  background-color: #B5EAD7; /* vert pastel */
+  background-color: #B5EAD7;
   color: #0d0d0d;
   border: none;
   border-radius: 10px;

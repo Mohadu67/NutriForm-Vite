@@ -23,10 +23,10 @@ export default function VerifyEmail() {
       }
       setStatus("loading");
       try {
-        // Essai 1: endpoint namespacé API
+
         let res = await fetch(`${API_URL}/api/verify-email?token=${encodeURIComponent(token)}`);
         if (res.status === 404) {
-          // Essai 2: endpoint à la racine (selon certaines configs backend)
+
           res = await fetch(`${API_URL}/verify-email?token=${encodeURIComponent(token)}`);
         }
         if (!res.ok) {

@@ -8,7 +8,6 @@ const HistorySchema = new mongoose.Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     type: { type: String, enum: ['imc', 'calories'], required: true, index: true },
     value: { type: Number, required: true },
-    // Optionnels, utiles si tu veux reconstituer le calcul IMC
     poids: { type: Number },
     taille: { type: Number },
     categorie: { type: String },

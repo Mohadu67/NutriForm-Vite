@@ -13,8 +13,8 @@ const port = process.env.PORT || 3000;
 
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
-// Stockage temporaire tokens reset (id utilisateur + token + expiration)
-// Déclaré avant les routes pour éviter toute référence avant initialisation
+
+
 const resetTokens = new Map();
 
 function auth(req, res, next) {
@@ -30,7 +30,6 @@ function auth(req, res, next) {
   }
 }
 
-// Connexion MongoDB
 console.log("🔍 URI MongoDB :", process.env.MONGODB_URI);
 if (!process.env.MONGODB_URI) {
   console.error('❌ MONGODB_URI est manquant dans les variables d\'environnement. Le serveur va s\'arrêter proprement.');
@@ -42,20 +41,13 @@ mongoose.connect(process.env.MONGODB_URI)
 .then(() => console.log('🟢 Connecté à MongoDB'))
 .catch(err => console.error('Erreur MongoDB :', err));
 
-// Middleware
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
-// Routes API (inscription + vérification email)
 
-// Healthcheck pour vérification rapide
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
-// =========================
-// Historique IMC & Calories
-// =========================
 
-// Enregistrer une entrée d'historique (IMC ou Calories)
 app.post('/api/history', auth, async (req, res) => {
   try {
     const { type, value, poids, taille, categorie, date } = req.body || {};
@@ -90,7 +82,6 @@ app.post('/api/history', auth, async (req, res) => {
   }
 });
 
-// Récupérer l'historique pour l'utilisateur connecté (trié par date croissante)
 app.get('/api/history', auth, async (req, res) => {
   try {
     const list = await History.find({ userId: req.userId }).sort({ date: 1 }).lean();
@@ -104,12 +95,10 @@ app.get('/api/history', auth, async (req, res) => {
 
 app.use('/api', authRouter);
 
-// Test simple
 app.get('/', (req, res) => {
   res.send('Bienvenue sur le backend de NutriForm 🚀');
 });
 
-// Page de réinitialisation de mot de passe (HTML minimal servi par le backend)
 app.get(['/reset-password.html', '/reset-password'], (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   console.log('🧩 reset-password page served for', req.originalUrl);
@@ -177,7 +166,6 @@ app.get(['/reset-password.html', '/reset-password'], (req, res) => {
 </html>`);
 });
 
-// Login
 app.post('/login', async (req, res) => {
   const { email, motdepasse } = req.body;
   
@@ -217,7 +205,6 @@ app.get('/api/me', auth, async (req, res) => {
   }
 });
 
-// Dans la partie haut de ton fichier server.js
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
@@ -230,10 +217,10 @@ function buildBaseUrl(req) {
 }
 
 function buildFrontBaseUrl(req) {
-  // Priorité aux variables d'environnement dédiées au FRONT
+
   const fromEnv = process.env.APP_BASE_URL_FRONT || process.env.FRONTEND_BASE_URL;
   if (fromEnv) return fromEnv.replace(/\/$/, '');
-  // Fallback dev: on suppose Vite en 5173
+
   return 'http://localhost:5173';
 }
 
@@ -255,7 +242,6 @@ async function getTransport() {
   });
 }
 
-// Route mot de passe oublié
 app.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
 
@@ -295,7 +281,6 @@ app.post('/forgot-password', async (req, res) => {
   }
 });
 
-// Route reset password
 app.post('/reset-password', async (req, res) => {
   const { token, newPassword } = req.body;
 
@@ -313,7 +298,7 @@ app.post('/reset-password', async (req, res) => {
     const user = await User.findById(data.userId);
     if (!user) return res.status(400).json({ message: 'Utilisateur non trouvé.' });
 
-    user.motdepasse = newPassword; // sera hashé par le hook du modèle
+    user.motdepasse = newPassword;
     await user.save();
 
     resetTokens.delete(token);
@@ -326,10 +311,6 @@ app.post('/reset-password', async (req, res) => {
 });
 
 
-
-// =========================
-// Formulaire de contact
-// =========================
 app.post('/api/contact', async (req, res) => {
   const { nom, email, sujet, message } = req.body;
 
@@ -337,38 +318,51 @@ app.post('/api/contact', async (req, res) => {
     return res.status(400).json({ message: 'Tous les champs sont requis.' });
   }
 
+  const nomSafe = String(nom).trim();
+  const emailSafe = String(email).trim();
+  const sujetSafe = sujet ? String(sujet).trim() : '';
+  const messageSafe = String(message).trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(emailSafe)) {
+    return res.status(400).json({ message: 'Email invalide.' });
+  }
+
   try {
     const transporter = await getTransport();
 
-    const subjectText = sujet && sujet.trim()
-      ? `📩 Nouveau message de ${nom} - Sujet: ${sujet}`
-      : `📩 Nouveau message de ${nom}`;
+    const subjectText = sujetSafe
+      ? `📩 Nouveau message de ${nomSafe} - Sujet: ${sujetSafe}`
+      : `📩 Nouveau message de ${nomSafe}`;
+
+    const fromAddress = process.env.EMAIL_USER || process.env.CONTACT_EMAIL || 'no-reply@nutriform.app';
+    const toAddress = process.env.CONTACT_EMAIL || process.env.EMAIL_USER || fromAddress;
 
     const mailOptions = {
-      from: `"NutriForm Contact" <${process.env.EMAIL_USER}>`,
-      to: process.env.CONTACT_EMAIL || process.env.EMAIL_USER,
+      from: `"NutriForm Contact" <${fromAddress}>`,
+      to: toAddress,
+      replyTo: emailSafe,
       subject: subjectText,
       text:
-        `Nom: ${nom}\nEmail: ${email}` +
-        (sujet && sujet.trim() ? `\nSujet: ${sujet}` : '') +
-        `\nMessage:\n${message}`,
+        `Nom: ${nomSafe}\nEmail: ${emailSafe}` +
+        (sujetSafe ? `\nSujet: ${sujetSafe}` : '') +
+        `\nMessage:\n${messageSafe}`,
       html:
-        `<p><b>Nom:</b> ${nom}</p>` +
-        `<p><b>Email:</b> ${email}</p>` +
-        (sujet && sujet.trim() ? `<p><b>Sujet:</b> ${sujet}</p>` : '') +
-        `<p><b>Message:</b><br/>${message.replace(/\n/g, '<br/>')}</p>`
+        `<p><b>Nom:</b> ${nomSafe}</p>` +
+        `<p><b>Email:</b> ${emailSafe}</p>` +
+        (sujetSafe ? `<p><b>Sujet:</b> ${sujetSafe}</p>` : '') +
+        `<p><b>Message:</b><br/>${messageSafe.replace(/\n/g, '<br/>')}</p>`
     };
 
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    const previewUrl = (require('nodemailer').getTestMessageUrl && require('nodemailer').getTestMessageUrl(info)) || null;
 
-    res.status(200).json({ message: 'Message envoyé avec succès ✅' });
+    res.status(200).json({ message: 'Message envoyé avec succès ✅', previewUrl });
   } catch (error) {
     console.error('Erreur envoi formulaire contact:', error);
     res.status(500).json({ message: 'Erreur lors de l’envoi du message ❌' });
   }
 });
 
-// Lancement du serveur
 app.listen(port, () => {
   console.log(`Serveur en ligne sur http://localhost:${port}`);
 });

@@ -66,17 +66,14 @@ export default function FormCalorie({ onResult, onCalculate }) {
     };
     const facteur = facteurs[payload.activite] ?? 1.2;
 
-    // 3) Calories journalières
     const calories = Math.round(tmb * facteur);
 
-    // 4) Propager la valeur au parent
     if (typeof onResult === "function") {
       onResult(calories);
     }
     if (typeof onCalculate === "function") {
       onCalculate({ ...payload, calories });
     }
-    // 🔗 Enregistre l'historique calories si l'utilisateur est connecté
     try {
       const token = localStorage.getItem('token');
       if (token) {

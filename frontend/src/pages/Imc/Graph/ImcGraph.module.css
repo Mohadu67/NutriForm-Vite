@@ -112,7 +112,6 @@
   box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 1px 3px rgba(0,0,0,.08);
 }
 
-/* Neutral pill background for all categories */
 .badge { background: #eef2f7; }
 
 .badge:nth-child(1),
@@ -175,7 +174,7 @@
   height: 100%;
   z-index: 1;
   pointer-events: none;
-  /* Soft blue highlight fading to transparent on sides */
+
   background: linear-gradient(
     90deg,
     rgba(56, 189, 248, 0) 0%,
@@ -184,8 +183,5 @@
     rgba(56, 189, 248, 0.25) 60%,
     rgba(56, 189, 248, 0) 100%
   );
-  /* Place highlight above track background, below marker */
-  /* z-index: 1, marker uses z-index: 2 */
-  /* (trackGlow also uses z-index: 1, so order in DOM matters) */
   transition: left .75s cubic-bezier(.22,.61,.36,1);
 }

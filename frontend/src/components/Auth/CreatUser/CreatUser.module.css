@@ -1,13 +1,11 @@
 
 
-/* ====== CreatUser: styles spécifiques au formulaire d'inscription ====== */
 
 .form {
   display: grid;
   gap: 0.9rem;
 }
 
-/* Grille 2 colonnes responsive pour prénom/nom, taille/poids, etc. */
 .groupGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -45,10 +43,8 @@
   box-shadow: 0 0 0 4px rgba(181,234,215,.3);
 }
 
-/* Petites indications sous un champ */
 .hint { font-size: .85rem; color: #6b6b6b; }
 
-/* Cases à cocher (CGU / newsletter) */
 .checkRow {
   display: flex;
   align-items: flex-start;
@@ -93,7 +89,6 @@
 .submit:hover { transform: translateY(-1px); opacity: .95; }
 .submit:disabled { opacity: .6; cursor: not-allowed; }
 
-/* Petites puces d'aide/erreur sous les champs en grille */
 .fieldNote { font-size: .8rem; color: #777; }
 
 @media (max-width: 420px) {

@@ -30,7 +30,7 @@ export default function ImcGraph({ imc, visible = true, scrollOnShow = false }) 
   const wrapRef = useRef(null);
   useEffect(() => {
     if (visible && scrollOnShow && wrapRef.current) {
-      // petit delay pour laisser le DOM peindre
+
       const t = setTimeout(() => {
         wrapRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 50);
