@@ -67,3 +67,11 @@
   cursor: pointer; 
 }
 .submit:disabled { opacity: .6; cursor: not-allowed; }
+
+/* Ajustements pour l’animation/logo dans la popup */
+.loaderSvg {
+  width: 100px;
+  height: 150px;
+  margin: 1rem auto;
+  display: block;
+}

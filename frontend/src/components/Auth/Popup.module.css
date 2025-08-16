@@ -454,13 +454,13 @@
   .card, .popup-card { width: min(360px, calc(100vw - 2rem)); }
 }
 @media (min-width: 600px) {
-  .card, .popup-card { width: min(520px, calc(100vw - 3rem)); max-height: 85vh; }
+  .card, .popup-card { width: min(480px, calc(100vw - 3rem)); max-height: 85vh; }
 }
 @media (min-width: 900px) {
-  .card, .popup-card { width: min(760px, calc(100vw - 4rem)); }
+  .card, .popup-card { width: min(520px, calc(100vw - 4rem)); }
 }
 @media (min-width: 1200px) {
-  .card, .popup-card { width: min(920px, calc(100vw - 6rem)); max-height: 88vh; }
+  .card, .popup-card { width: min(560px, calc(100vw - 6rem)); max-height: 88vh; }
 }
 
 /* Responsive tuning */

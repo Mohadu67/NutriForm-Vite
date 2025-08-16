@@ -35,7 +35,7 @@ export default function Faq() {
 
   return (
     <section className={styles.faqSection} aria-labelledby="faq-title">
-      <h2>Foire Aux Questions (FAQ)</h2>
+      <h2>Foire Aux Questions</h2>
 
       {DATA.map((item, idx) => (
         <div key={idx} className={styles.faqItem}>
