@@ -1,0 +1,120 @@
+.form {
+  background-color: #F7F6F2; /* blanc cassé */
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  box-sizing: border-box;           /* include padding in width calc */
+  max-width: min(80%, 480px);       /* cap on small screens */
+  word-break: break-word;
+  margin: 0 auto;
+  font-family: "Montserrat", sans-serif;
+}
+
+.form * { min-width: 0; box-sizing: border-box; }
+
+
+.fieldset {
+  border: none;
+  display: grid;
+  gap: 1.25rem;
+}
+
+/* Titres des groupes (Sexe / Activité) */
+.groupTitle {
+  grid-column: 1 / -1;
+  font-family: "Merriweather", serif;
+  color: #222;
+}
+
+/* Grilles des choix */
+.sexeGroup {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.activiteGroup {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: center;
+}
+
+@media (max-width: 520px) {
+  .activiteGroup { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Cases à cocher masquées (accessibles via les libellés) */
+.hiddenCheckbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.hiddenCheckbox + .pill {
+  display: inline-block;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  border: 2px solid #B5EAD7; /* vert pastel */
+  font-weight: 600;
+  user-select: none;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+}
+.hiddenCheckbox:checked + .pill {
+  background-color: #B5EAD7;
+  color: #0d0d0d;
+}
+.hiddenCheckbox + .pill:focus-visible {
+  outline: 3px solid rgba(181, 234, 215, 0.9);
+  outline-offset: 2px;
+}
+
+/* Bouton principal */
+.submit {
+  padding: 0.95rem 1.2rem;
+  background-color: #FFB385; /* orange pêche */
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* Styles des champs dans la form (inputs / selects) */
+.form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.form input,
+.form select {
+  margin-top: 0.3rem;
+  padding: 0.9rem 1rem;
+  border: 2px solid #2B2B2B;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  background-color: #fff;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  width: 100%;
+}
+
+.form input:focus,
+.form select:focus {
+  outline: none;
+  border-color: #B5EAD7; /* vert pastel */
+  box-shadow: 0 0 4px rgba(181, 234, 215, 0.8);
+}
+
+@media (max-width: 480px) {
+  .form { padding: 1.25rem; max-width: calc(100vw - 2rem); }
+}
+@media (max-width: 360px) {
+  .form { padding: 1rem; max-width: calc(100vw - 1.5rem); }
+}

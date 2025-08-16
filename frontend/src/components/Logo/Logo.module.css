@@ -1,0 +1,20 @@
+/* src/components/Logo/Logo.module.css */
+
+
+.logo {
+  width: auto;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.desktop {
+  height: 150px;
+}
+
+.mobile {
+  height: 50px;
+}
+
+.logo:hover {
+  transform: scale(1.05);
+}

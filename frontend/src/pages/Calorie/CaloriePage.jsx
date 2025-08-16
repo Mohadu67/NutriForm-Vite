@@ -1,0 +1,69 @@
+// src/pages/Calorie/CaloriePage.jsx
+import React, { useState } from "react";
+import Header from "../../components/Header/Header.jsx";
+import Footer from "../../components/Footer/Footer.jsx";
+import FormCalorie from "./FormCalorie/FormCalorie.jsx";
+import ResultatsCalorie from "./ResultatsCalorie/ResultatsCalorie";
+import ResultatPopup from "./ResultatsCalorie/ResultatPopup";
+import ArticlesCalorie from "./ArticlesCalorie/ArticlesCalorie.jsx";
+
+export default function CaloriePage() {
+  const [selectedCard, setSelectedCard] = useState(null);
+  const [popupOrigin, setPopupOrigin] = useState({ x: 50, y: 50 });
+  const [calories, setCalories] = useState(null);
+
+  const computeMacros = (cals) => ({
+    glucides: Math.round((cals * 0.5) / 4),
+    proteines: Math.round((cals * 0.2) / 4),
+    lipides: Math.round((cals * 0.3) / 9),
+  });
+
+  return (
+    <>
+    <Header />
+    <FormCalorie onResult={(value) => setCalories(value)} />
+      {calories !== null && (
+        <ResultatsCalorie
+          perte={calories - 500}
+          stabiliser={calories}
+          prise={calories + 500}
+          onCardClick={(type, e) => {
+            if (e && typeof e.clientX === "number") {
+              const x = Math.round((e.clientX / window.innerWidth) * 100);
+              const y = Math.round((e.clientY / window.innerHeight) * 100);
+              setPopupOrigin({ x, y });
+            } else {
+              setPopupOrigin({ x: 50, y: 50 });
+            }
+            setSelectedCard(type);
+          }}
+        />
+      )}
+      {selectedCard && calories !== null && (
+        <ResultatPopup
+          titre={selectedCard}
+          calories={
+            selectedCard === "perte"
+              ? calories - 500
+              : selectedCard === "stabiliser"
+              ? calories
+              : calories + 500
+          }
+          macros={(() => {
+            const base =
+              selectedCard === "perte"
+                ? calories - 500
+                : selectedCard === "stabiliser"
+                ? calories
+                : calories + 500;
+            return computeMacros(base);
+          })()}
+          onClose={() => setSelectedCard(null)}
+          origin={popupOrigin}
+        />
+      )}
+        <ArticlesCalorie />
+        <Footer />
+    </>
+  );
+}

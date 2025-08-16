@@ -1,0 +1,136 @@
+
+
+.wrapper {
+  width: 100%;
+  max-width: min(80%, 960px);
+  box-sizing: border-box;
+  margin: 60px auto 100px;
+  background: var(--couleur-principale);
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  padding: 2rem 1.5rem;
+}
+
+.wrapper * {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.title {
+  font-family: var(--font-titre);
+  font-size: 2.4rem;
+  font-weight: 800;
+  text-align: center;
+  color: var(--couleur-text-noir);
+  margin: 0 0 1.5rem 0;
+}
+
+.form {
+  display: grid;
+  gap: 1rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 720px) {
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-family: var(--font-paragraphe);
+  color: var(--couleur-text-noir);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 2px solid #2B2B2B;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: #B5EAD7; /* vert pastel */
+  box-shadow: 0 0 0 4px rgba(181, 234, 215, 0.3);
+}
+
+.inputError {
+  border-color: #D64545 !important;
+  box-shadow: 0 0 0 3px rgba(214, 69, 69, 0.18);
+}
+
+.error {
+  color: #D64545;
+  font-size: 0.9rem;
+}
+
+.success {
+  color: #157347;
+  font-weight: 700;
+}
+
+.consent {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+}
+
+.consent input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #B5EAD7;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.submit {
+  padding: 0.9rem 1.2rem;
+  background-color: #FFB385; /* orange pêche */
+  color: #000;
+  font-weight: 800;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.12s ease, background-color 0.12s ease;
+}
+
+.submit:hover { background-color: #e9a274; transform: translateY(-1px); }
+.submit:active { transform: translateY(0); }
+.submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+
+@media (max-width: 480px) {
+  .wrapper {
+    padding: 1.25rem;
+    max-width: calc(100vw - 2rem);
+  }
+}
+
+@media (max-width: 360px) {
+  .wrapper {
+    padding: 1rem;
+    max-width: calc(100vw - 1.5rem);
+  }
+}

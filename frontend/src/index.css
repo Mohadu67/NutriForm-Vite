@@ -1,0 +1,37 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+ul {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+body {
+    font-family: var(--font-p);
+    background-color: var(--couleur-principale);
+    color: var(--couleur-text-noir);
+}   
+
+button {
+    cursor: pointer; 
+    background-color: transparent; 
+    border: none;
+}
+
+:root {
+    --couleur-principale: #F7F6F2;
+    --couleur-bouton-action: #F7B186;
+    --couleur-bouton-selection: #B5EAD7;
+    --couleur-text-noir: #333;
+    --font-titre: 'Merriweather', serif;
+    --font-p: 'Montserrat', sans-serif;
+
+}
