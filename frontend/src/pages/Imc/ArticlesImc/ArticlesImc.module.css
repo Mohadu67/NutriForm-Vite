@@ -1,0 +1,118 @@
+
+.titleh2 {
+  font-family: var(--font-titre);
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 20px 0;
+  color: var(--couleur-text-noir);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  width: 90%;
+  margin: 100px auto;
+}
+
+.card {
+  background: var(--couleur-principale);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+.title {
+  font-family: var(--font-titre);
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px;
+  color: var(--couleur-text-noir);
+}
+
+/* Tablet */
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modalContent {
+  background: var(--couleur-principale);
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--couleur-text-noir);
+}
+
+.modalImage {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.modalTitle {
+  font-family: var(--font-titre);
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: var(--couleur-text-noir);
+}
+
+.modalText {
+  font-family: var(--font-paragraphe);
+  font-size: 1rem;
+  color: var(--couleur-text-noir);
+  line-height: 1.5;
+}

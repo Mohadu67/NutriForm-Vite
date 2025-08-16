@@ -1,0 +1,278 @@
+/* =====================================================
+   HistoryUser.module.css — lisible, structuré, accessible
+   ===================================================== */
+
+/* ===========================
+   0) Tokens (couleurs & espaces)
+   =========================== */
+:root {
+  --nf-bg-card: #fff;
+  --nf-ink: #2B2B2B;
+  --nf-muted: #666;
+  --nf-border: rgba(0,0,0,.08);
+  --nf-shadow: 0 2px 8px rgba(0,0,0,.06);
+  --nf-radius: 12px;
+  --space-1: 6px;
+  --space-2: 8px;
+  --space-3: 10px;
+  --space-4: 12px;
+  --space-5: 16px;
+}
+
+/* ===========================
+   Dark mode friendly-ish defaults without breaking brand
+   =========================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --nf-bg-card: #111;
+    --nf-ink: #eaeaea;
+    --nf-muted: #aaa;
+    --nf-border: rgba(255,255,255,.12);
+    --nf-shadow: 0 2px 8px rgba(0,0,0,.35);
+  }
+}
+
+/* ===========================
+   1) Layouts principaux: grille d’historiques & recap
+   =========================== */
+.historyGrid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+  margin-top: var(--space-2);
+}
+@media (min-width: 900px) {
+  .historyGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+}
+
+.recapGrid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+  margin-top: var(--space-4);
+}
+@media (min-width: 900px) {
+  .recapGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+}
+
+/* ===========================
+   2) Cartes: section d’historique & recap
+   =========================== */
+.historySection,
+.recapCard {
+  background: var(--nf-bg-card);
+  border: 1px solid var(--nf-border);
+  border-radius: var(--nf-radius);
+  padding: var(--space-4);
+  box-shadow: var(--nf-shadow);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.sectionTitle,
+.recapTitle {
+  margin: 0 0 var(--space-2) 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--nf-ink);
+  border-bottom: 1px solid color-mix(in srgb, var(--nf-ink) 8%, transparent);
+  padding-bottom: 6px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.04);
+}
+
+/* Amélioration UX: le titre reste visible lors du scroll des listes longues */
+.sectionTitle {
+  position: sticky;
+  top: 0;
+  background: var(--nf-bg-card);
+  z-index: 1;
+  padding-block: 4px;
+}
+
+.recapLead {
+  margin: 0 0 var(--space-2) 0;
+}
+
+/* Spacing between sections */
+.historySection { margin-bottom: var(--space-5); }
+.recapCard { margin-bottom: var(--space-5); }
+
+/* ===========================
+   3) Listes d’historique et lignes
+   =========================== */
+.historyList {
+  max-height: 160px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: var(--space-2);
+  background: linear-gradient(var(--nf-bg-card), var(--nf-bg-card)) padding-box,
+              linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.02)) border-box;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  scroll-behavior: smooth;
+  padding: 6px;
+}
+
+/* Scrollbar plus discret */
+.historyList::-webkit-scrollbar {
+  width: 10px;
+}
+.historyList::-webkit-scrollbar-track {
+  background: transparent;
+}
+.historyList::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--nf-ink) 20%, transparent 80%);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px dashed var(--nf-border);
+}
+.row:last-child {
+  border-bottom: none;
+}
+
+/* Hover & focus pour lisibilité et accessibilité clavier */
+.row:hover {
+  background: color-mix(in srgb, var(--nf-ink) 3%, transparent);
+}
+.row:focus-within {
+  outline: 2px solid color-mix(in srgb, var(--nf-ink) 22%, transparent);
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--nf-ink) 6%, transparent);
+}
+
+.label {
+  font-weight: 700;
+}
+.date {
+  color: var(--nf-muted);
+  justify-self: end;
+}
+
+/* ===========================
+   4) Chips, placeholders, notes
+   =========================== */
+.chipsWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  background: var(--nf-bg-card);
+  border: 1.5px solid color-mix(in srgb, var(--nf-peach) 60%, #000 4%);
+  box-shadow: var(--nf-shadow);
+}
+
+.muted {
+  color: #999;
+}
+
+.chartPlaceholder {
+  width: 100%;
+  height: 140px; /* aligné sur LineChartSVG */
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(0,0,0,.03) 0,
+    rgba(0,0,0,.03) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  border-radius: 8px;
+}
+
+/* Ensure real charts (svg/canvas) inside sections scale with the container */
+.historySection svg,
+.historySection canvas {
+  width: 100% !important;
+  max-width: 100%;
+  height: auto;
+}
+
+.chartNote {
+  margin: var(--space-1) 0 0 0;
+  font-size: 12px;
+  color: #777;
+}
+
+/* Zone scrollable pour pastilles */
+.chipsScroll {
+  max-height: 120px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: var(--space-1);
+  padding-right: 2px; /* marge pour la scrollbar */
+}
+
+/* ===========================
+   5) Compat mobile & conteneurs popup/card
+   =========================== */
+.card,
+.popup-card,
+.popup-body {
+  touch-action: pan-y;
+}
+
+:global(html, body) {
+  overflow-x: hidden;
+}
+
+.card *,
+.popup-card * {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.popup-card img,
+.popup-card svg,
+.popup-card canvas,
+.card img,
+.card svg,
+.card canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media (min-width: 760px) {
+  .card {
+    width: min(760px, calc(100vw - 2rem));
+  }
+  .popup-card {
+    width: min(760px, calc(100vw - 2rem));
+  }
+}
+
+/* Responsive gutters */
+@media (min-width: 600px) {
+  .historyList { max-height: 220px; }
+}
+
+/* ===========================
+   6) Motion preferences
+   =========================== */
+@media (prefers-reduced-motion: reduce) {
+  .historyList {
+    scroll-behavior: auto;
+  }
+}

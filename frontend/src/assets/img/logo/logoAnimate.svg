@@ -1,0 +1,126 @@
+<svg id="Calque_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 230" style="overflow: visible;">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%" >
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#f7b186" flood-opacity="0.7"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#f7b186" flood-opacity="0.4"/>
+    </filter>
+    <style>
+      .st0 { fill: #f7f6f2; stroke: #1d1d1b; stroke-miterlimit: 10; }
+      .st1 { fill: #b8ddd1; stroke: #1d1d1b; stroke-miterlimit: 10; filter: url(#glow);}
+      .st2 { fill: #f7b186; stroke: #1d1d1b; stroke-miterlimit: 10; filter: url(#glow);}
+      
+      /* Galets initial hidden + drop + rebond + glow pulsation */
+      #galet1, #galet2, #galet3 {
+        opacity: 0;
+        transform-origin: center bottom;
+        animation-fill-mode: forwards;
+        animation-timing-function: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      }
+      #galet1 {
+        animation: 
+          dropBounceGlow 0.9s 0s forwards,
+          floatBounce 2.8s 0.9s ease-in-out infinite alternate,
+          pulseGlow 2.5s 0.8s infinite alternate;
+      }
+      #galet2 {
+        animation: 
+          dropBounceGlow 0.9s 0.4s forwards,
+          floatBounce 2.8s 1.3s ease-in-out infinite alternate,
+          pulseGlow 2.5s 1.2s infinite alternate;
+      }
+      #galet3 {
+        animation: 
+          dropBounceGlow 0.9s 0.8s forwards,
+          floatBounce 2.8s 1.7s ease-in-out infinite alternate,
+          pulseGlow 2.5s 1.6s infinite alternate;
+      }
+
+      @keyframes dropBounceGlow {
+        0% {
+          opacity: 0;
+          transform: translateY(50px) scale(0.8);
+          filter: drop-shadow(0 0 0 transparent);
+        }
+        60% {
+          opacity: 1;
+          transform: translateY(-10px) scale(1.1);
+          filter: drop-shadow(0 0 12px #f7b186);
+        }
+        80% {
+          transform: translateY(5px) scale(0.95);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+          filter: drop-shadow(0 0 6px #f7b186);
+        }
+      }
+
+      @keyframes pulseGlow {
+        0% {
+          filter: drop-shadow(0 0 8px #f7b186);
+          stroke-width: 1;
+        }
+        100% {
+          filter: drop-shadow(0 0 24px #f7b186);
+          stroke-width: 2.5;
+        }
+      }
+
+      @keyframes floatBounce {
+        0%   { transform: translateY(0) scale(1); }
+        50%  { transform: translateY(-12px) scale(1.05); }
+        100% { transform: translateY(0) scale(1); }
+      }
+
+      /* Rotation 3D subtile du SVG global */
+      svg {
+        transform-origin: 50% 50%;
+        animation: rotate3d 4s ease-in-out infinite alternate;
+      }
+      @keyframes rotate3d {
+        0% {
+          transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
+        }
+        50% {
+          transform: rotateX(6deg) rotateY(4deg) rotateZ(6deg) scale(1.05);
+        }
+        100% {
+          transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
+        }
+      }
+
+      /* Étincelles animées */
+      .spark {
+        fill: #f7b186;
+        opacity: 0;
+        transform-origin: center;
+        animation: sparkAnim 2.5s infinite;
+      }
+      .spark:nth-child(1) { animation-delay: 0.2s; }
+      .spark:nth-child(2) { animation-delay: 0.6s; }
+      .spark:nth-child(3) { animation-delay: 1.0s; }
+      .spark:nth-child(4) { animation-delay: 1.4s; }
+      .spark:nth-child(5) { animation-delay: 1.8s; }
+
+      @keyframes sparkAnim {
+        0%, 100% { opacity: 0; transform: scale(0.6) translate(0, 0); }
+        50% { opacity: 1; transform: scale(1.4) translate(8px, -8px); }
+      }
+
+    </style>
+  </defs>
+
+  <!-- Galets -->
+  <path id="galet1" class="st1" d="M66.2,128.2c14.2-10.4,82-12.7,93.9,4.6,50.8,73.6-152.4,49.5-93.9-4.6Z"/>
+  <path id="galet2" class="st2" d="M151.7,89.4c-16-18-55-22.1-75.2-8.4-18.9,12.6-6.2,37.2,13.4,35.3,15-1.5,27.2,2.6,49.7-.5,14.1-2,23.2-14.4,12.2-26.2Z"/>
+  <path id="galet3" class="st0" d="M132.1,53.9c8.6,15.9-5.1,17.4-24.1,15-24.3-3-30.9-15-23.4-23.6,10.5-12,25.9-19.9,47.4,8.5Z"/>
+
+  <!-- Étincelles -->
+  <circle class="spark" cx="60" cy="110" r="2"/>
+  <circle class="spark" cx="180" cy="100" r="2.5"/>
+  <circle class="spark" cx="120" cy="80" r="1.8"/>
+  <circle class="spark" cx="90" cy="140" r="1.5"/>
+  <circle class="spark" cx="150" cy="130" r="2"/>
+
+</svg>

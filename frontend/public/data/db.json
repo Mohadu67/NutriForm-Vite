@@ -1,0 +1,136 @@
+{
+  "contenuIMC": {
+    "maigreur": [
+      {
+        "intro": "L'IMC (Indice de Masse Corporelle) est une mesure utilisée pour évaluer la corpulence d'une personne en fonction de son poids et de sa taille.",
+        "more": "ton IMC indique que tu es en situation de <strong>Maigreur</strong>, ce qui correspond à un IMC <strong>inférieur à 18,5</strong>."
+      },
+      {
+        "intro": "L'IMC est basé uniquement sur la taille et le poids, et il ne tient pas compte de la composition corporelle tel que la proportion de muscle, de graisse, d'eau etc...",
+        "more": "Par exemple, une personne très musclée peut avoir un IMC élevé et être classée dans la catégorie surpoids sans avoir un excès de graisse. C'est pour ça qu'il est important de considérer d'autres facteurs, comme ton pourcentage de masse grasse ou ta forme physique globale, plutôt que de se fier uniquement à l'IMC."
+      },
+      {
+        "intro": "Prendre du poids de manière équilibrée t'aidera à renforcer ton système immunitaire, à améliorer ton énergie et à prévenir les carences nutritionnelles.",
+        "more": "N'oublie pas que la santé passe aussi par une activité physique adaptée, comme la musculation légère, pour développer ta masse musculaire tout en prenant du poids."
+      },
+      {
+        "intro": "Pour prendre du poids de manière saine, concentre toi sur des aliments riches en nutriments mais caloriques, comme les avocats, les noix, les graines, les produits laitiers entiers et les protéines maigres",
+        "more": "Essaye de fractionner tes repas en plusieurs petites portions tout au long de la journée pour faciliter l'absorption des calories. Utilise notre <a href='calorie.html'>Outil de calcul de Calories</a> pour déterminer tes besoins journaliers et ajuster ton alimentation en conséquence."
+      }
+    ],
+    "normal": [
+      {
+        "intro": "L'IMC (Indice de Masse Corporelle) est une mesure utilisée pour évaluer la corpulence d'une personne en fonction de son poids et de sa taille.",
+        "more": "ton IMC indique que tu es en situation <strong>Normal</strong>, qui correspond a un IMC entre <strong>18,5 et 24,9</strong>."
+      },
+      {
+        "intro": "L'IMC est basé uniquement sur la taille et le poids, et il ne tient pas compte de la composition corporelle tel que la proportion de muscle, de graisse, d'eau etc...",
+        "more": "Par exemple, une personne très musclée peut avoir un IMC élevé et être classée dans la catégorie surpoids sans avoir un excès de graisse. C'est pour ça qu'il est important de considérer d'autres facteurs, comme ton pourcentage de masse grasse ou ta forme physique globale, plutôt que de se fier uniquement à l'IMC."
+      },
+      {
+        "intro": "Maintenir un poids santé est essentiel pour prévenir les maladies chroniques et améliorer ta qualité de vie.",
+        "more": "Reste actif en intégrant des activités physiques que tu aime, comme la marche, le yoga ou le vélo, et surveille régulièrement ton poids pour rester sur la bonne voie."
+      },
+      {
+        "intro": "Pour maintenir ton poids santé, continue à adopter une alimentation variée et équilibrée, en privilégiant les fruits, les légumes, les protéines maigres et les céréales complètes. ",
+        "more": " Utilise notre <a href='calorie.html'>Calculateur de Calories</a> pour suivre tes apports journaliers et t'assurer que tu reste dans la fourchette recommandée pour ton profil."
+      }
+    ],
+    "surpoids": [
+      {
+        "intro": "L'IMC (Indice de Masse Corporelle) est une mesure utilisée pour évaluer la corpulence d'une personne en fonction de son poids et de sa taille.",
+        "more": "ton IMC indique que tu es en situation de <strong>Surpoids</strong>, correspondant à un IMC entre <strong>25 et 29,9</strong>."
+      },
+      {
+        "intro": "L'IMC est basé uniquement sur la taille et le poids, et il ne tient pas compte de la composition corporelle tel que la proportion de muscle, de graisse, d'eau etc...",
+        "more": "Par exemple, une personne très musclée peut avoir un IMC élevé et être classée dans la catégorie surpoids sans avoir un excès de graisse. C'est pour ça qu'il est important de considérer d'autres facteurs, comme ton pourcentage de masse grasse ou ta forme physique globale, plutôt que de se fier uniquement à l'IMC."
+      },
+      {
+        "intro": "Perdre du poids progressivement t'aidera à réduire les risques de maladies cardiovasculaires, de diabète et d'autres problèmes de santé.",
+        "more": "Augmente ton activité physique en intégrant des exercices cardiovasculaires comme la course, la natation ou le vélo, et adopte une alimentation équilibrée pour perdre du poids progressivement."
+      },
+      {
+        "intro": "Pour perdre du poids de manière saine, commence par réduire ton apport calorique tout en maintenant une alimentation riche en nutriments.",
+        "more": " Utilise notre <a href='calorie.html'>Calculateur de Calories</a> pour ajuster ton apport calorique et atteindre tes objectifs de perte de poids."
+      }
+    ],
+    "obésité": [
+      {
+        "intro": "L'IMC (Indice de Masse Corporelle) est une mesure utilisée pour évaluer la corpulence d'une personne en fonction de son poids et de sa taille.",
+        "more": "ton IMC indique que tu es en situation d'<strong>Obésité</strong>, avec un IMC supérieur à <strong>30</strong>."
+      },
+      {
+        "intro": "L'IMC est basé uniquement sur la taille et le poids, et il ne tient pas compte de la composition corporelle tel que la proportion de muscle, de graisse, d'eau etc...",
+        "more": "Par exemple, une personne très musclée peut avoir un IMC élevé et être classée dans la catégorie surpoids sans avoir un excès de graisse. C'est pour ça qu'il est important de considérer d'autres facteurs, comme ton pourcentage de masse grasse ou ta forme physique globale, plutôt que de se fier uniquement à l'IMC."
+      },
+      {
+        "intro": "Travailler sur ton poids peut considérablement améliorer ta qualité de vie, réduire les risques de maladies chroniques et renforcer ta confiance en toi.",
+        "more": "Il est important de consulter un professionnel de santé pour un accompagnement adapté et personnalisé, qui peut inclure un plan nutritionnel, une activité physique adaptée et un suivi médical."
+      },
+      {
+        "intro": "Pour gérer ton poids de manière saine, il est essentiel de consulter un professionnel de santé pour élaborer un plan personnalisé.",
+        "more": "Utilise notre <a href='calorie.html'>Calculateur de Calories</a> pour suivre tes apports et ajuster ton alimentation en fonction des conseils de ton professionnel de santé."
+      }
+    ]
+  },
+  "contenueArticlesIMC": [
+    {
+      "titre": "L'IMC, un point de départ pour mieux te connaître",
+      "description": "L'IMC est un indicateur global, utile pour donner une première estimation de votre corpulence, mais il ne reflète pas toute la complexité de ton corps. Pour mieux comprendre ton état de santé, il est intéressant d'utiliser d'autres outils complémentaires.",
+      "excedent": "Par exemple, une analyse de la composition corporelle peut mesurer précisément la proportion de masse musculaire, de graisse et d'eau dans ton corps...",
+      "image": "time-for-a-change-897441_1280.jpg",
+      "alt": "photo d'une grenouille avec une valise qui marche avec un titre à côté time for change"
+    },
+    {
+      "titre": "Pourquoi un suivi à long terme est essentiel",
+      "description": "Adopter de nouvelles habitudes pour améliorer ta santé est une excellente première étape, mais le véritable impact se mesure dans le temps...",
+      "excedent": "Par exemple, surveiller régulièrement votre poids, ton IMC ou tes mensurations peut aider à identifier rapidement des changements...",
+      "image": "mesure.jpg",
+      "alt": "photo d'une femme qui tient un mètre ruban pour montrer des unités de mesures"
+    },
+    {
+      "titre": "La motivation passe par de petits changements",
+      "description": "Changer ses habitudes peut sembler intimidant, mais il n'est pas nécessaire de tout transformer d'un coup pour obtenir des résultats durables...",
+      "excedent": "Ces petites victoires sont accessibles et renforcent ta motivation. Progressivement, elles deviennent des habitudes naturelles, faciles à maintenir sur le long terme...",
+      "image": "Monter.jpg",
+      "alt": "Image d'une personne qui monte un escalier"
+    },
+    {
+      "titre": "Adopter une vision positive de votre parcours santé",
+      "description": "Lorsque tu tengage à améliorer ta santé, il est important de garder une vision positive et réaliste de ton parcours...",
+      "excedent": "L'idée est de célébrer les petites réussites quotidiennes, de te concentrer sur ce que tu peux améliorer et de ne jamais te décourager face aux obstacles...",
+      "image": "Positif.jpg",
+      "alt": "Image d'une personne s'étirant les bras afin d'exprimer une attitude positive"
+    }
+  ],
+  "contenueArticlesCalorie": [
+    {
+      "titre": "Comment tes besoins caloriques sont-ils calculés ?",
+      "description": "Tes besoin calorique quotidien repose sur deux éléments principaux : le métabolisme de base (MB) et les calories brûlées par vos activités physiques.",
+      "excedent": "Le MB correspond à l'énergie minimale dont ton corps a besoin pour fonctionner au repos (respiration, circulation sanguine, digestion, etc.). Les activités, quant à elles, incluent tout ce que tu fais au cours de la journée...",
+      "image": "formule.jpg",
+      "alt": "photo d'une grenouille avec une valise qui marche avec un titre à côté time for change"
+    },
+    {
+      "titre": "Pourquoi les besoins caloriques varient-ils ?",
+      "description": "Les besoins caloriques diffèrent d'une personne à l'autre en fonction de plusieurs critères. Par exemple, une personne plus grande ou plus lourde aura un métabolisme de base plus élevé qu'une personne plus petite.",
+      "excedent": "L'âge joue aussi un rôle : à mesure qu'on vieillit, le métabolisme ralentit légèrement. Enfin, l'activité physique a un impact majeur : une personne active brûle beaucoup plus d'énergie qu'une personne sédentaire...",
+      "image": "diversity-5582454_1280.jpg",
+      "alt": "photo d'une femme qui tient un mètre ruban pour montrer des unités de mesures"
+    },
+    {
+      "titre": "Ajuster son alimentation en fonction de ses objectifs",
+      "description": "Pour atteindre tes objectifs (perte de poids, prise de masse ou maintien), il est important de faire de petits ajustements sur ta consommation calorique.",
+      "excedent": "Par exemple, une réduction modérée de 500 kcal par jour entraîne une perte de poids progressive et saine, sans affecter ton énergie. À l'inverse, si tu cherche à prendre du poids, mise sur des aliments riches en calories...",
+      "image": "selon-objectif.jpg",
+      "alt": "Image d'une personne qui monte un escalier"
+    },
+    {
+      "titre": "La qualité des calories compte autant que leur quantité ?",
+      "description": "Toutes les calories ne se valent pas : consommer 2000 kcal à base d'aliments ultra-transformés n'a pas le même effet sur votre santé que 2000 kcal provenant d'aliments complets et équilibrés.",
+      "excedent": "Une alimentation riche en légumes, fruits, protéines maigres et graisses saines améliore ton niveau d'énergie, renforce ton système immunitaire et prévient les maladies chroniques...",
+      "image": "food-3226311_1280.png",
+      "alt": "Image d'une personne s'étirant les bras afin d'exprimer une attitude positive"
+    }
+  ]
+}

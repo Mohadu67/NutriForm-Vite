@@ -1,0 +1,168 @@
+.card {
+  border: 2px solid #2B2B2B;
+  border-radius: 12px;
+  padding: 1.5rem;
+  background-color: #F7F6F2;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+}
+
+.cardTitle {
+  font-family: "Merriweather", serif;
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 0.8rem;
+}
+
+.cardIcon {
+  width: 40px;
+  height: auto;
+  margin-bottom: 0.8rem;
+}
+
+.cardSubtitle {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.calorieBadge {
+  background-color: #FFB385;
+  color: #000;
+  font-weight: bold;
+  padding: 0.3rem 1.2rem;
+  border-radius: 20px;
+  font-size: 1.2rem;
+  margin-bottom: 0.8rem;
+}
+
+.cardDescription {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.resultatsContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.2rem;
+  margin-top: 2rem;
+}
+
+.popupOverlay {
+  position: fixed;
+  inset: 0; /* top:0, right:0, bottom:0, left:0 */
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.5); /* fond semi-transparent */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.popupCard {
+  position: relative; /* needed for the close button */
+  background-color: #F7F6F2; /* blanc cassé */
+  border: 2px solid #2B2B2B;
+  border-radius: 16px;
+  padding: 2rem 2.25rem 1.75rem;
+  width: min(560px, 92vw);
+  max-height: 82vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  transform-origin: var(--originX, 50%) var(--originY, 50%);
+  animation: popupIn 240ms cubic-bezier(.2,.8,.2,1);
+}
+
+.popupClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.12);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+.popupClose:hover { transform: scale(1.06); background: rgba(0,0,0,0.1); }
+.popupClose:active { transform: scale(0.98); }
+.popupClose:focus-visible { outline: 3px solid rgba(181,234,215,0.9); outline-offset: 2px; }
+
+.popupTitle {
+  font-family: "Merriweather", serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0 0 1rem 0;
+  text-align: center;
+  color: #2B2B2B;
+}
+
+.popupCalories {
+  display: inline-block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background-color: #FFB385; /* orange pêche */
+  color: #2B2B2B;
+  padding: 0.35rem 1rem;
+  border-radius: 999px;
+  text-align: center;
+  margin: 0 auto 1rem auto;
+}
+
+.popupMacros {
+  font-size: 1rem;
+  margin-bottom: 1.25rem;
+  color: #333;
+}
+.popupMacros p { margin: 0.35rem 0; }
+
+.popupButton {
+  display: block;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  background-color: #B5EAD7; /* vert pastel */
+  color: #0d0d0d;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+.popupButton:hover { background-color: #9edac4; transform: translateY(-1px); }
+.popupButton:active { transform: translateY(0); }
+.popupButton:focus-visible { outline: 3px solid rgba(181,234,215,0.9); outline-offset: 2px; }
+
+@keyframes overlayFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes popupIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

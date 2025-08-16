@@ -1,0 +1,69 @@
+/* ====== LoginUser: styles spécifiques au formulaire ====== */
+
+.form { 
+  display: grid; 
+  gap: 0.9rem; 
+}
+
+.label { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 0.35rem; 
+  font-weight: 700;
+}
+
+.input {
+  padding: 0.9rem 1rem;
+  border: 2px solid #2B2B2B;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 1rem;
+  transition: border-color .2s, box-shadow .2s;
+}
+.input:focus {
+  outline: none;
+  border-color: #B5EAD7;
+  box-shadow: 0 0 0 4px rgba(181,234,215,.3);
+  background: #F7F6F2;
+}
+
+.links { 
+  display: flex; 
+  justify-content: space-between; 
+  gap: .5rem; 
+  flex-wrap: wrap; 
+}
+
+.linkBtn { 
+  all: unset; 
+  cursor: pointer; 
+  font-weight: 800; 
+  color: #2B2B2B; 
+  padding: .2rem .3rem; 
+  border-bottom: 2px solid transparent; 
+}
+.linkBtn:hover { border-bottom-color: #B5EAD7; }
+
+.remember { 
+  display: flex; 
+  align-items: center; 
+  gap: .6rem; 
+  font-size: .95rem;
+}
+
+.error { 
+  color: #D64545; 
+  font-weight: 700; 
+  margin-top: .25rem; 
+}
+
+.submit { 
+  padding: .9rem 1.2rem; 
+  background: #FFB385; 
+  color: #0d0d0d; 
+  font-weight: 800; 
+  border: none; 
+  border-radius: 12px; 
+  cursor: pointer; 
+}
+.submit:disabled { opacity: .6; cursor: not-allowed; }

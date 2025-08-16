@@ -1,0 +1,15 @@
+.social {
+  display: flex;
+  gap: 12px;
+}
+
+.social a {
+  font-size: 24px;
+  color: #000; 
+  transition: color 0.3s ease;
+}
+
+.social a:hover {
+  transform: scale(1.2);
+  transition: transform 0.4s ease;
+}
