@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       minlength: 8,
-      select: false // on n'expose pas le hash par défaut
+      select: false
     },
     imc: [imcSchema],
     calories: [caloriesSchema],
@@ -50,10 +50,8 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Index explicite (utile même avec unique:true, et garantit la casse normalisée)
 userSchema.index({ email: 1 }, { unique: true });
 
-// Hash du mot de passe si modifié
 userSchema.pre('save', async function (next) {
   if (!this.isModified('motdepasse')) return next();
   try {
@@ -65,12 +63,10 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-// Méthode d'instance pour vérifier un mot de passe
 userSchema.methods.verifierMotdepasse = function (plain) {
   return bcrypt.compare(plain, this.motdepasse);
 };
 
-// Génère et assigne un token de vérification email (retourne le token)
 userSchema.methods.creerTokenVerificationEmail = function (ttlMinutes = 60) {
   const token = crypto.randomBytes(32).toString('hex');
   this.verificationToken = token;
@@ -78,7 +74,6 @@ userSchema.methods.creerTokenVerificationEmail = function (ttlMinutes = 60) {
   return token;
 };
 
-// Nettoyage JSON: ne jamais renvoyer le hash
 function hideSensitive(_, ret) {
   delete ret.motdepasse;
   delete ret.verificationToken;

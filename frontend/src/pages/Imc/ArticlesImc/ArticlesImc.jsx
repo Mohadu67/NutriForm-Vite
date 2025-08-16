@@ -23,7 +23,6 @@ export default function ArticlesImc() {
             .catch((err) => console.error("Erreur de chargement des articles :", err));
     }, []);
 
-  // Images are served from public/images; JSON only provides the filename
   const resolveImage = (img) => (img ? `./images/${img}` : "");
 
       return (

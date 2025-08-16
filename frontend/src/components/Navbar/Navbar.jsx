@@ -15,11 +15,10 @@ export default function Navbar() {
 
   const path = (location.pathname || "/").toLowerCase();
 
-  // Sync login state with localStorage changes (e.g., from other tabs/components)
   React.useEffect(() => {
     const onStorage = () => setIsLoggedIn(!!localStorage.getItem('token'));
     window.addEventListener('storage', onStorage);
-    // also check on mount
+
     onStorage();
     return () => window.removeEventListener('storage', onStorage);
   }, []);

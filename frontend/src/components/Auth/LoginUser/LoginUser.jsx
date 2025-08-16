@@ -4,7 +4,7 @@ import lstyle from "./LoginUser.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const MIN_SPINNER_MS = 6000; // durée minimale d'affichage du loader (en ms)
+const MIN_SPINNER_MS = 6000; 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 
@@ -12,7 +12,7 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
-  const [status, setStatus] = useState("idle"); // idle | sending | error
+  const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
   const loading = status === "sending";

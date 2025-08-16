@@ -41,7 +41,7 @@ export default function FormContact({ onSend }) {
       }
 
       const elapsed = Date.now() - start;
-      const minDelay = 6000; // 6 secondes mini d'animation
+      const minDelay = 6000;
       if (elapsed < minDelay) {
         await new Promise((r) => setTimeout(r, minDelay - elapsed));
       }
@@ -50,7 +50,6 @@ export default function FormContact({ onSend }) {
       setForm({ nom: "", email: "", sujet: "", message: "", consent: false });
       setErrors({});
 
-      // Laisse le texte "Message envoyé" visible un court instant
       setTimeout(() => setStatus("idle"), 2200);
     } catch (err) {
       setStatus("error");

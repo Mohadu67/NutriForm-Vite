@@ -15,12 +15,10 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
     if (open) setCurrentView(view);
   }, [view, open]);
 
-  // Verrouille le scroll de la page derrière la popup tant qu'elle est ouverte
   useEffect(() => {
     const prevBodyOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    // iOS/Safari : limiter l'effet de "rubber band" sur le html
     const prevHtmlOverscroll = document.documentElement.style.overscrollBehavior;
     document.documentElement.style.overscrollBehavior = 'none';
 

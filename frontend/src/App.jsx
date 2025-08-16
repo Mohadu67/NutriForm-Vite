@@ -9,7 +9,7 @@ import "tarteaucitronjs";
 
 export default function App() {
   useEffect(() => {
-    if (window.__tac_inited) return; // évite double init (StrictMode)
+    if (window.__tac_inited) return;
 
     const doInit = () => {
       if (!window.tarteaucitron) return;
@@ -28,7 +28,7 @@ export default function App() {
           removeCredit: true,
           useExternalCss:true,
         });
-        // Forcer la langue en français
+
         window.tarteaucitron.lang = "fr";
         window.__tac_inited = true;
       } catch (e) {
@@ -41,7 +41,6 @@ export default function App() {
       return;
     }
 
-    // fallback: charge le script global depuis le CDN
     const s = document.createElement('script');
     s.src = 'https://tarteaucitron.io/load.js';
     s.async = true;
@@ -50,7 +49,6 @@ export default function App() {
     document.head.appendChild(s);
 
     return () => {
-      // pas de cleanup spécifique; on évite de réinitialiser
     };
   }, []);
 

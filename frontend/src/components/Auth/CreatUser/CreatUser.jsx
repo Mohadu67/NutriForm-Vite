@@ -37,7 +37,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        // Remonte le message précis du backend s'il existe, sinon un générique
+
         const msg = data?.message || (res.status === 500 ? "Erreur serveur" : `Erreur HTTP ${res.status}`);
         throw new Error(msg);
       }

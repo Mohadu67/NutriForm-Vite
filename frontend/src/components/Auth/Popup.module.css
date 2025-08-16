@@ -1,4 +1,3 @@
-/* Local design tokens for the module */
 :root {
   --nf-bg: #F7F6F2;
   --nf-green: #B5EAD7;
@@ -11,9 +10,6 @@
 .navBtn:hover { transform: translateY(-1px); background: #e9a274; }
 .navBtn:active { transform: translateY(0); }
 
-/* =========================
-   Overlay de la popup (fond assombri)
-   ========================= */
 .overlay { 
   position: fixed;
   inset: 0;
@@ -21,25 +17,20 @@
   z-index: 9999;
   animation: overlayIn 200ms ease-out;
 
-  /* Empêche l'arrière-plan de scroller et permet au contenu popup de défiler */
   overflow-y: auto;
   overflow-x: hidden;
 
-  /* Centre proprement la carte sans forcer la taille d'écran */
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 1rem;
 }
 
-/* =========================
-   Carte/boîte de la popup
-   ========================= */
 .card {
   position: relative;
-  width: min(320px, calc(100vw - 2rem));  /* mobile */
-  max-height: 80vh;         /* limite la hauteur en mobile/desktop */
-  overflow-y: auto;         /* rend la popup scrollable si contenu long */
+  width: min(320px, calc(100vw - 2rem));
+  max-height: 80vh;
+  overflow-y: auto;
   overflow-x: hidden;
   background: #F7F6F2; 
   border: 2px solid #2B2B2B;
@@ -52,7 +43,6 @@
   flex-direction: column;
 }
 
-/* Bouton de fermeture (croix) */
 .close {
   position: absolute;
   top: 10px;
@@ -67,7 +57,6 @@
   cursor: pointer;
 }
 
-/* Titre de la popup */
 .title {
   font-family: var(--font-titre);
   font-size: 1.6rem;
@@ -77,10 +66,6 @@
   color: #2B2B2B;
 }
 
-/* =========================
-   Formulaire d'authentification
-   (labels, inputs, liens, bouton submit, erreurs)
-   ========================= */
 .form {
   display: grid;
   gap: 0.9rem;
@@ -108,7 +93,6 @@
   box-shadow: 0 0 0 4px rgba(181,234,215,.3);
 }
 
-/* Liens secondaires (mot de passe oublié, créer un compte) */
 .links {
   display: flex;
   justify-content: space-between;
@@ -126,7 +110,6 @@
 }
 .linkBtn:hover { border-bottom-color: #B5EAD7; }
 
-/* Bouton principal (submit) */
 .submit {
   padding: 0.9rem 1.2rem;
   background: #B5EAD7; 
@@ -138,16 +121,13 @@
 }
 .submit:disabled { opacity: .6; cursor: not-allowed; }
 
-/* Messages d'erreur */
 .error {
   color: #D64545;
   font-weight: 700;
   margin-top: 0.25rem;
 }
 
-/* =========================
-   Bouton de déconnexion (dans l'historique)
-   ========================= */
+
 .logoutBtn {
   margin-left: 10px;
   padding: 0.45rem 0.9rem;
@@ -157,7 +137,6 @@
   cursor: pointer;
 }
 
-/* Animations */
 @keyframes overlayIn {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -167,11 +146,6 @@
   to   { opacity: 1; transform: scale(1); }
 }
 
-
-/* =========================
-   Classes fallback (doublons non-modulaires)
-   ========================= */
-/* Fallback if CSS Modules composes is not supported globally, duplicate minimal styles */
 .popup-overlay {
   position: fixed;
   inset: 0;
@@ -179,12 +153,10 @@
   z-index: 9999;
   animation: overlayIn 200ms ease-out;
 
-  /* bloque le scroll de la page et capte le défilement */
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
 
-  /* centre la carte proprement sur mobile/desktop */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -192,11 +164,11 @@
 }
 .popup-card {
   position: relative;
-  width: auto;  /* modified from min(375px, calc(100vw - 2rem)) */
-  max-height: 80vh;              /* limite la hauteur */
-  overflow-y: auto;              /* scroll interne de la popup */
+  width: auto;
+  max-height: 80vh;
+  overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch; /* momentum iOS */
+  -webkit-overflow-scrolling: touch;
 
   background: #F7F6F2;
   border: 2px solid #2B2B2B;
@@ -221,22 +193,19 @@
 .popup-submit:disabled { opacity: .6; cursor: not-allowed; }
 .popup-error { color: #D64545; font-weight: 700; margin-top: 0.25rem; }
 
-/* Additional classes used by components */
 .popup-body {
   display: block;
-  flex: 1;                /* occupe l'espace disponible dans la carte */
-  min-height: 0;          /* nécessaire pour que overflow fonctionne dans un parent flex */
-  overflow-y: auto;         /* scroll vertical uniquement */
-  overflow-x: hidden;       /* bloque horizontal */
-  -webkit-overflow-scrolling: touch; /* scroll fluide iOS */
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 .popup-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
 
-/* Summary grid for HistoryUser */
 .popup-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
 .popup-summary-item { background: #fff; border: 1px solid rgba(0,0,0,.08); border-radius: 10px; padding: 0.75rem; text-align: center; }
 
-/* List styles for HistoryUser */
 .popup-list { max-height: 40vh; overflow-y: auto; overflow-x: hidden; background: #fff; border: 1px solid rgba(0,0,0,.06); border-radius: 10px; }
 .popup-ul { list-style: none; margin: 0; padding: 0; }
 .popup-li { display: grid; grid-template-columns: auto 1fr auto; gap: 0.6rem; align-items: center; padding: 0.6rem 0.8rem; border-bottom: 1px solid rgba(0,0,0,.06); }
@@ -247,9 +216,6 @@
 .popup-li .val { font-weight: 700; }
 .popup-li .date { font-size: 0.9rem; color: #555; }
 
-/* =========================
-   Zone d'actions en bas de la popup
-   ========================= */
 .popup-actions {
   margin: 10px auto;
   padding-top: 5px;
@@ -261,10 +227,6 @@
 .popup-success { color: #157347; font-weight: 700; }
 .popup-remember { display: flex; align-items: center; gap: .6rem; }
 
-/* =========================
-   Panneaux ForgotUser / Auth génériques
-   ========================= */
-/* Styles for ForgotUser component */
 .forgot-panel,
 .auth-panel {
   display: flex;
@@ -328,10 +290,6 @@
   font-weight: 600;
 }
 
-/* =========================
-   Styles visuels avancés (overlay, card, titres, etc.)
-   ========================= */
-/* Overlay: soft blur + subtle vignette */
 .popup-overlay {
   background: radial-gradient(1200px 600px at 50% -10%, rgba(0,0,0,.55), rgba(0,0,0,.45))
               , rgba(10,10,10,.35);
@@ -342,27 +300,23 @@
 
 @keyframes overlayDingue { from { opacity: 0 } to { opacity: 1 } }
 
-/* Card: glassy surface with gradient border and glow accents */
 .popup-card {
-  /* Glass base */
   background:
     linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.86)) padding-box,
     linear-gradient(135deg, rgba(181,234,215,.8), rgba(255,179,133,.8)) border-box;
-  border: 1.5px solid transparent;             /* gradient border via background-clip */
+  border: 1.5px solid transparent;
   background-clip: padding-box, border-box;
   border-radius: 18px;
   box-shadow: var(--nf-shadow);
 
-  /* Soft inner light */
   position: relative;
   isolation: isolate;
 }
 
-/* peach + green corner glow */
 .popup-card::before {
   content: "";
   position: absolute;
-  inset: -2px; /* tiny overflow for glow */
+  inset: -2px;
   pointer-events: none;
   background:
     radial-gradient(500px 180px at 20% -20%, rgba(255,179,133,.28), transparent 60%),
@@ -371,7 +325,6 @@
   z-index: -1;
 }
 
-/* Entry animation with tiny overshoot, respects reduced motion */
 @keyframes cardDingueIn {
   0%   { opacity: 0; transform: translateY(12px) scale(.96); }
   60%  { opacity: 1; transform: translateY(0)    scale(1.02); }
@@ -382,7 +335,6 @@
   .popup-card { animation: cardDingueIn 320ms cubic-bezier(.2,.8,.2,1); }
 }
 
-/* Title: subtle gradient ink */
 .popup-title {
   background: linear-gradient(180deg, #2B2B2B, #2b2b2bbb);
   -webkit-background-clip: text;
@@ -390,7 +342,6 @@
   color: transparent;
 }
 
-/* Inputs: calmer surfaces, elevated focus ring */
 .popup-input {
   background: linear-gradient(#fff, #fff) padding-box,
               linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.06)) border-box;
@@ -398,15 +349,13 @@
   border-radius: 12px;
 }
 .popup-input:focus {
-  border-color: transparent; /* we paint with shadow */
+  border-color: transparent;
   box-shadow: 0 0 0 3px rgba(181,234,215,.45), 0 0 0 1px rgba(0,0,0,.08) inset;
 }
 
-/* Links: quieter emphasis */
 .popup-link { opacity: .9; }
 .popup-link:hover { opacity: 1; border-bottom-color: var(--nf-green); }
 
-/* Primary button: gentle depth with micro-interaction */
 .popup-submit {
   background: linear-gradient(180deg, var(--nf-green), color-mix(in srgb, var(--nf-green) 85%, #ffffff 15%));
   box-shadow: 0 6px 14px rgba(181,234,215,.45);
@@ -416,10 +365,8 @@
 .popup-submit:hover { transform: translateY(-1px); box-shadow: 0 10px 18px rgba(181,234,215,.48); }
 .popup-submit:active { transform: translateY(0); filter: saturate(105%); }
 
-/* Link-styled buttons */
 .popup-links { gap: .6rem; }
 
-/* Close button: soft hover */
 .popup-close {
   background: rgba(255,255,255,.65);
   backdrop-filter: blur(4px);
@@ -428,28 +375,23 @@
 }
 .popup-close:hover { background: rgba(255,255,255,.9); transform: rotate(0.5deg) scale(1.03); }
 
-/* Summary tiles */
 .popup-summary-item {
   background: linear-gradient(#fff, #fff) padding-box,
               linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.02)) border-box;
   border: 1px solid transparent;
 }
 
-/* Tags in history */
 .tag-imc { box-shadow: 0 2px 6px rgba(181,234,215,.5); }
 .tag-calories { box-shadow: 0 2px 6px rgba(255,179,133,.5); }
 
-/* Secondary action inside ForgotUser buttons block */
 .auth-actions button[type="button"]:first-child {
   background: color-mix(in srgb, var(--nf-peach) 72%, #ffffff 28%);
 }
 
-/* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .popup-card, .popup-overlay, .popup-close, .popup-submit { animation: none !important; transition: none !important; }
 }
 
-/* Responsive widths: smaller on mobile, wider on desktop */
 @media (min-width: 420px) {
   .card, .popup-card { width: min(360px, calc(100vw - 2rem)); }
 }

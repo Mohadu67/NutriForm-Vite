@@ -1,10 +1,4 @@
-/* =====================================================
-   HistoryUser.module.css — lisible, structuré, accessible
-   ===================================================== */
 
-/* ===========================
-   0) Tokens (couleurs & espaces)
-   =========================== */
 :root {
   --nf-bg-card: #fff;
   --nf-ink: #2B2B2B;
@@ -17,16 +11,13 @@
   --space-3: 10px;
   --space-4: 12px;
   --space-5: 16px;
-  --nf-peach: #FFB385;           /* utilisé pour les bordures des chips */
-  --nf-danger: #d92d20;          /* rouge principal pour actions destructives */
-  --nf-danger-ink: #ffffff;      /* texte sur bouton rouge */
+  --nf-peach: #FFB385;
+  --nf-danger: #d92d20;
+  --nf-danger-ink: #ffffff;
   --nf-danger-ghost: rgba(217,45,32,.08);
   --nf-focus: 0 0 0 3px color-mix(in srgb, var(--nf-danger) 28%, transparent);
 }
 
-/* ===========================
-   Dark mode friendly-ish defaults without breaking brand
-   =========================== */
 @media (prefers-color-scheme: dark) {
   :root {
     --nf-bg-card: #111;
@@ -37,9 +28,6 @@
   }
 }
 
-/* ===========================
-   7) Boutons & zone d’actions (déconnexion)
-   =========================== */
 .popup-actions {
   display: flex;
   justify-content: flex-end;
@@ -48,7 +36,6 @@
   margin-top: var(--space-4);
 }
 
-/* Bouton "Se déconnecter" — accent rouge, accessible clavier */
 .popup-link {
   appearance: none;
   -webkit-appearance: none;
@@ -100,9 +87,6 @@
   }
 }
 
-/* ===========================
-   1) Layouts principaux: grille d’historiques & recap
-   =========================== */
 .historyGrid {
   display: grid;
   gap: var(--space-5);
@@ -129,9 +113,6 @@
   }
 }
 
-/* ===========================
-   2) Cartes: section d’historique & recap
-   =========================== */
 .historySection,
 .recapCard {
   background: var(--nf-bg-card);
@@ -154,7 +135,6 @@
   box-shadow: 0 1px 0 rgba(0,0,0,.04);
 }
 
-/* Amélioration UX: le titre reste visible lors du scroll des listes longues */
 .sectionTitle {
   position: sticky;
   top: 0;
@@ -167,13 +147,9 @@
   margin: 0 0 var(--space-2) 0;
 }
 
-/* Spacing between sections */
 .historySection { margin-bottom: var(--space-5); }
 .recapCard { margin-bottom: var(--space-5); }
 
-/* ===========================
-   3) Listes d’historique et lignes
-   =========================== */
 .historyList {
   max-height: 160px;
   overflow-y: auto;
@@ -187,7 +163,6 @@
   padding: 6px;
 }
 
-/* Scrollbar plus discret */
 .historyList::-webkit-scrollbar {
   width: 10px;
 }
@@ -212,8 +187,6 @@
 .row:last-child {
   border-bottom: none;
 }
-
-/* Hover & focus pour lisibilité et accessibilité clavier */
 .row:hover {
   background: color-mix(in srgb, var(--nf-ink) 3%, transparent);
 }
@@ -231,9 +204,6 @@
   justify-self: end;
 }
 
-/* ===========================
-   4) Chips, placeholders, notes
-   =========================== */
 .chipsWrap {
   display: flex;
   flex-wrap: wrap;
@@ -258,7 +228,7 @@
 
 .chartPlaceholder {
   width: 100%;
-  height: 140px; /* aligné sur LineChartSVG */
+  height: 140px;
   background: repeating-linear-gradient(
     180deg,
     rgba(0,0,0,.03) 0,
@@ -269,7 +239,6 @@
   border-radius: 8px;
 }
 
-/* Ensure real charts (svg/canvas) inside sections scale with the container */
 .historySection svg,
 .historySection canvas {
   width: 100% !important;
@@ -283,18 +252,14 @@
   color: #777;
 }
 
-/* Zone scrollable pour pastilles */
 .chipsScroll {
   max-height: 120px;
   overflow-y: auto;
   overflow-x: hidden;
   margin-top: var(--space-1);
-  padding-right: 2px; /* marge pour la scrollbar */
+  padding-right: 2px;
 }
 
-/* ===========================
-   5) Compat mobile & conteneurs popup/card
-   =========================== */
 .card,
 .popup-card,
 .popup-body {
@@ -331,14 +296,10 @@
   }
 }
 
-/* Responsive gutters */
 @media (min-width: 600px) {
   .historyList { max-height: 220px; }
 }
 
-/* ===========================
-   6) Motion preferences
-   =========================== */
 @media (prefers-reduced-motion: reduce) {
   .historyList {
     scroll-behavior: auto;

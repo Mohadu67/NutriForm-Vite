@@ -41,7 +41,6 @@ export default function ResultCards({ categorie }) {
   const leftBlocs = meaning.length ? meaning : blocs.filter((_, i) => i % 2 === 0);
   const rightBlocs = advice.length ? advice : blocs.filter((_, i) => i % 2 === 1);
 
-  // Interleave while keeping track of side for responsive ordering
   const ordered = [];
   const maxLen = Math.max(leftBlocs.length, rightBlocs.length);
   for (let i = 0; i < maxLen; i++) {
