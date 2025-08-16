@@ -5,7 +5,7 @@ import ImcPage from "./pages/Imc/ImcPage.jsx"
 import CaloriePage from "./pages/Calorie/CaloriePage.jsx";
 import ContactPage from "./pages/Contact/ContactPage.jsx";
 import VerifyEmail from "./components/Auth/VerifyEmail/VerifyEmail.jsx";
-import ResetPassword from "./pages/Auth/ResetPassword/ResetPassword.jsx";
+import ResetPassword from "./components/Auth/ResetPassword/ResetPassword.jsx";
 import "tarteaucitronjs";
 
 export default function App() {
