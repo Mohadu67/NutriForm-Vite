@@ -23,6 +23,11 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
     }
     setLoading(true);
     setError("");
+    if (!API_URL) {
+      setError("Configuration API manquante. Vérifie VITE_API_URL côté front.");
+      setLoading(false);
+      return;
+    }
     try {
       if (requestReset) {
         await requestReset(emailNorm);
@@ -51,14 +56,12 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
       <div className={styles["auth-panel"]}>
         <h2 className={styles["auth-title"]}>Mot de passe oublié</h2>
         <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', padding: '12px 0' }}>
-          <object
-            type="image/svg+xml"
-            data={logoAnimate}
+          <img
+            src={logoAnimate}
+            alt="Chargement"
             className={styles.loaderSvg}
-            aria-label="Chargement"
-          >
-            <div className={styles.loaderFallback}></div>
-          </object>
+            aria-hidden={false}
+          />
           <p className={styles.muted}>Envoi du lien en cours...</p>
         </div>
         <div className={styles.authActions}>
