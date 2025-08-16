@@ -269,7 +269,7 @@ app.post('/forgot-password', async (req, res) => {
     resetTokens.set(token, { userId: user._id, expires });
 
     const frontBase = buildFrontBaseUrl(req);
-    const resetLink = `${frontBase}/reset-password?token=${token}`;
+    const resetLink = `${frontBase}/reset-password?token=${encodeURIComponent(token)}`;
     console.log('🔁 Lien de réinitialisation généré (FRONT):', resetLink);
 
     const mailOptions = {

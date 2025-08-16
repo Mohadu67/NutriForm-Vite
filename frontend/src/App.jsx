@@ -5,7 +5,6 @@ import ImcPage from "./pages/Imc/ImcPage.jsx"
 import CaloriePage from "./pages/Calorie/CaloriePage.jsx";
 import ContactPage from "./pages/Contact/ContactPage.jsx";
 import VerifyEmail from "./components/Auth/VerifyEmail/VerifyEmail.jsx";
-import "./assets/css/tarteaucitron-custom.css";
 import "tarteaucitronjs";
 
 export default function App() {
@@ -27,7 +26,7 @@ export default function App() {
           highPrivacy: true,
           handleBrowserDNTRequest: false,
           removeCredit: true,
-          useExternalCss:false,
+          useExternalCss:true,
         });
         // Forcer la langue en français
         window.tarteaucitron.lang = "fr";

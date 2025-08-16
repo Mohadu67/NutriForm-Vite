@@ -8,7 +8,7 @@ const router = express.Router();
 
 
 function buildBaseUrl(req) {
-  const fromEnv = process.env.APP_BASE_URL; // ex: https://nutri.example.com
+  const fromEnv = process.env.APP_BASE_URL;
   if (fromEnv) return fromEnv.replace(/\/$/, '');
   const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
   const host = req.headers['x-forwarded-host'] || req.get('host');
@@ -16,10 +16,10 @@ function buildBaseUrl(req) {
 }
 
 function buildFrontBaseUrl(req) {
-  // Priorité aux variables d'environnement dédiées au FRONT (prod/dev)
+
   const fromEnv = process.env.APP_BASE_URL_FRONT || process.env.FRONTEND_BASE_URL;
   if (fromEnv) return fromEnv.replace(/\/$/, '');
-  // Fallback dev: Vite
+
   return 'http://localhost:5173';
 }
 
@@ -89,7 +89,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Format d\'email invalide.' });
     }
 
-    // Optionnel: pré-vérification pour renvoyer un 409 immédiat
+
     const exists = await User.findOne({ email: email.toLowerCase().trim() }).lean();
     if (exists) {
       return res.status(409).json({ message: 'Email déjà utilisé.' });
@@ -106,7 +106,7 @@ router.post('/register', async (req, res) => {
       mailMeta = await sendVerificationMail(req, user.email, token);
     } catch (mailErr) {
       console.error('❌ Erreur envoi email vérification:', mailErr);
-      // On ne bloque pas la création de compte si l'email échoue, mais on informe le client
+
       mailMeta = { error: mailErr.message };
     }
 
