@@ -12,7 +12,7 @@ export default function ContactPage() {
   return (
     <>
       <Header />
-      <main className={styles.wrapper}>
+      <main>
         <Faq />
         <FormContact />
       </main>
