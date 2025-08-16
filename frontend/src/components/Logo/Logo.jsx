@@ -1,7 +1,7 @@
 // src/components/Logo/Logo.jsx
 
 import { useState, useEffect } from "react";
-import DeskLogo from "../../assets/img/logo/logo-complet.svg";
+import DeskLogo from "../../assets/img/logo/Logo-complet.svg";
 import MobiLogo from "../../assets/img/logo/domaine-logo.svg";
 import styles from "./Logo.module.css";
 
