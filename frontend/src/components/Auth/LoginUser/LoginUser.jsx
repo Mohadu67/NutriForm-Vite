@@ -4,7 +4,7 @@ import lstyle from "./LoginUser.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const MIN_SPINNER_MS = 60000; // durée minimale d'affichage du loader (en ms)
+const MIN_SPINNER_MS = 6000; // durée minimale d'affichage du loader (en ms)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 
