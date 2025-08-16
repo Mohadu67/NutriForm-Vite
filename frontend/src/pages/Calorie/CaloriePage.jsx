@@ -1,13 +1,15 @@
 // src/pages/Calorie/CaloriePage.jsx
 import React, { useState } from "react";
+import usePageTitle from "../../hooks/usePageTitle.js";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import FormCalorie from "./FormCalorie/FormCalorie.jsx";
-import ResultatsCalorie from "./ResultatsCalorie/ResultatsCalorie";
-import ResultatPopup from "./ResultatsCalorie/ResultatPopup";
+import ResultatsCalorie from "./ResultatsCalorie/ResultatsCalorie.jsx";
+import ResultatPopup from "./ResultatsCalorie/ResultatPopup.jsx";
 import ArticlesCalorie from "./ArticlesCalorie/ArticlesCalorie.jsx";
 
 export default function CaloriePage() {
+  usePageTitle("Calcul des calories");
   const [selectedCard, setSelectedCard] = useState(null);
   const [popupOrigin, setPopupOrigin] = useState({ x: 50, y: 50 });
   const [calories, setCalories] = useState(null);
