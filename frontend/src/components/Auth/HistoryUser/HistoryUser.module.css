@@ -17,6 +17,11 @@
   --space-3: 10px;
   --space-4: 12px;
   --space-5: 16px;
+  --nf-peach: #FFB385;           /* utilisé pour les bordures des chips */
+  --nf-danger: #d92d20;          /* rouge principal pour actions destructives */
+  --nf-danger-ink: #ffffff;      /* texte sur bouton rouge */
+  --nf-danger-ghost: rgba(217,45,32,.08);
+  --nf-focus: 0 0 0 3px color-mix(in srgb, var(--nf-danger) 28%, transparent);
 }
 
 /* ===========================
@@ -29,6 +34,69 @@
     --nf-muted: #aaa;
     --nf-border: rgba(255,255,255,.12);
     --nf-shadow: 0 2px 8px rgba(0,0,0,.35);
+  }
+}
+
+/* ===========================
+   7) Boutons & zone d’actions (déconnexion)
+   =========================== */
+.popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+/* Bouton "Se déconnecter" — accent rouge, accessible clavier */
+.popup-link {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid color-mix(in srgb, var(--nf-danger) 65%, var(--nf-border));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--nf-danger) 10%, transparent), transparent) padding-box,
+              var(--nf-danger-ghost) border-box;
+  color: color-mix(in srgb, var(--nf-danger) 75%, var(--nf-ink));
+  font-weight: 800;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform .06s ease-out, box-shadow .12s ease, background-color .12s ease, color .12s ease, border-color .12s ease;
+  text-decoration: none;
+  user-select: none;
+  white-space: nowrap;
+  margin: auto;
+}
+
+.popup-link:hover {
+  background: color-mix(in srgb, var(--nf-danger) 10%, var(--nf-danger-ghost));
+  color: color-mix(in srgb, var(--nf-danger) 92%, var(--nf-danger-ink) 8%);
+  border-color: color-mix(in srgb, var(--nf-danger) 80%, var(--nf-border));
+}
+
+.popup-link:active {
+  transform: translateY(1px);
+  background: color-mix(in srgb, var(--nf-danger) 14%, var(--nf-danger-ghost));
+}
+
+.popup-link:focus-visible {
+  outline: none;
+  box-shadow: var(--nf-focus);
+}
+
+.popup-link:disabled,
+.popup-link[aria-disabled="true"] {
+  opacity: .6;
+  cursor: not-allowed;
+  filter: saturate(.75);
+}
+
+@media (prefers-color-scheme: dark) {
+  .popup-link {
+    color: color-mix(in srgb, var(--nf-danger) 80%, var(--nf-danger-ink) 20%);
+    background: color-mix(in srgb, var(--nf-danger) 12%, transparent);
+  }
+  .popup-link:hover {
+    background: color-mix(in srgb, var(--nf-danger) 18%, transparent);
   }
 }
 
