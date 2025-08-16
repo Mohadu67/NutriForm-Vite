@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import usePageTitle from "../../hooks/usePagetitle.js";
+import usePageTitle from "../../hooks/usePageTitle.js";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import styles from "./ContactPage.module.css";
