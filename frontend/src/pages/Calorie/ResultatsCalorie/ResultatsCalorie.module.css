@@ -55,7 +55,8 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.2rem;
-  margin-top: 2rem;
+  margin: 2rem auto;
+  max-width: 70%;
 }
 
 .popupOverlay {
@@ -137,9 +138,8 @@
   display: block;
   width: 100%;
   padding: 0.9rem 1rem;
-  background-color: #B5EAD7;
   color: #0d0d0d;
-  border: none;
+  border: 1px solid #FFB385;
   border-radius: 10px;
   font-size: 1rem;
   font-weight: 800;
@@ -147,7 +147,7 @@
   text-align: center;
   transition: transform 120ms ease, background-color 120ms ease;
 }
-.popupButton:hover { background-color: #9edac4; transform: translateY(-1px); }
+.popupButton:hover { background-color: #FFB385; transform: translateY(-1px); color: #F7F6F2; }
 .popupButton:active { transform: translateY(0); }
 .popupButton:focus-visible { outline: 3px solid rgba(181,234,215,0.9); outline-offset: 2px; }
 

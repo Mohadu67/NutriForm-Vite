@@ -100,8 +100,8 @@ export default function FormCalorie({ onResult, onCalculate }) {
             value={form.formule}
             onChange={(e) => update("formule", e.target.value)}
           >
-            <option value="standard">Standard (Mifflin-St Jeor)</option>
-            <option value="mifflin">Mifflin-St Jeor</option>
+            <option value="standard">Standard </option>
+            <option value="mifflin">Mifflin-St Jeor ( Pro )</option>
             <option value="katch">Katch-McArdle (nécessite % masse grasse)</option>
           </select>
         </label>
@@ -155,7 +155,8 @@ export default function FormCalorie({ onResult, onCalculate }) {
           <input
             type="number"
             inputMode="decimal"
-            min="0"
+            min="50"
+            max="500"
             step="0.1"
             value={form.poids}
             onChange={(e) => update("poids", e.target.value)}
@@ -169,7 +170,8 @@ export default function FormCalorie({ onResult, onCalculate }) {
           <input
             type="number"
             inputMode="numeric"
-            min="0"
+            min="100"
+            max="300"
             step="0.5"
             value={form.taille}
             onChange={(e) => update("taille", e.target.value)}
@@ -183,7 +185,7 @@ export default function FormCalorie({ onResult, onCalculate }) {
           <input
             type="number"
             inputMode="numeric"
-            min="0"
+            min="12"
             step="1"
             value={form.age}
             onChange={(e) => update("age", e.target.value)}
@@ -198,7 +200,7 @@ export default function FormCalorie({ onResult, onCalculate }) {
             <input
               type="number"
               inputMode="decimal"
-              min="0"
+              min="8"
               max="70"
               step="0.1"
               value={form.masseGrasse}

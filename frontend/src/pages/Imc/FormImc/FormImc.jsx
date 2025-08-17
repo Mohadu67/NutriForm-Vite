@@ -38,8 +38,8 @@ export default function FormImc({ onCalculate }) {
       return;
     }
 
-    if (t < 50 || t > 300 || p < 1 || p > 500) {
-      alert("Vérifiez les bornes : taille entre 50–300 cm et poids entre 1–500 kg.");
+    if (t < 50 || t > 300 || p < 50 || p > 500) {
+      alert("Taille entre 50–300 cm et poids entre 50–500 kg.");
       return;
     }
 
@@ -107,7 +107,7 @@ export default function FormImc({ onCalculate }) {
         type="number"
         inputMode="decimal"
         step="0.1"
-        min="1"
+        min="50"
         max="500"
         value={poids}
         onKeyDown={blockNonNumeric}

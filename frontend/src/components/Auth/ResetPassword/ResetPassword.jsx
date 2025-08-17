@@ -25,12 +25,17 @@ export default function ResetPassword() {
 
     try {
       setLoading(true);
+      const start = Date.now();
       const res = await fetch(`${API_URL}/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword: pwd }),
       });
       const data = await res.json().catch(() => ({}));
+      const elapsed = Date.now() - start;
+      if (elapsed < 60000) {
+        await new Promise(r => setTimeout(r, 6000 - elapsed));
+      }
       if (!res.ok) throw new Error(data?.message || "Erreur serveur");
       setMsg("Mot de passe modifié. Redirection…");
       setTimeout(() => navigate("/"), 1000);

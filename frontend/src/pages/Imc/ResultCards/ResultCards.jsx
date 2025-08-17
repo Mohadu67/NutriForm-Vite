@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import styles from "./ResultCards.module.css";
 
 export default function ResultCards({ categorie }) {
@@ -64,7 +65,12 @@ export default function ResultCards({ categorie }) {
           <p>{entry.item.intro}</p>
 
           <div className={`${styles.moreContent} ${openIndex === idx ? styles.moreContentOpen : ""}`}>
-            <p dangerouslySetInnerHTML={{ __html: entry.item.more }} />
+            <p>{entry.item.more}</p>
+            {entry.item.link && (
+              <Link to={entry.item.link} className={styles.ctaLink} aria-label={`Aller vers ${entry.item.link}`}>
+                Découvrir l’outil
+              </Link>
+            )}
           </div>
 
           <button className={styles.learnMore} onClick={() => toggle(idx)}>
