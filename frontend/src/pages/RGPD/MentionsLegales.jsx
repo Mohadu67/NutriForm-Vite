@@ -29,18 +29,18 @@ const MentionsLegales = () => {
         <section>
           <h2>Mentions légales</h2>
           <p>
-            <strong>Éditeur du site :</strong> Nutriform, 123 rue de la Santé, 75000 Paris, France.<br />
-            <strong>Directeur de la publication :</strong> Jean Dupont<br />
-            <strong>Contact :</strong> contact@nutriform.fr<br />
-            <strong>SIRET :</strong> 123 456 789 00010<br />
-          </p>
-          <p>
-            <strong>Hébergeur :</strong> OVH SAS, 2 rue Kellermann, 59100 Roubaix, France.<br />
-            <strong>Téléphone :</strong> 1007<br />
-            <strong>Site web :</strong>{" "}
-            <a href="https://www.ovh.com" target="_blank" rel="noopener noreferrer">
-              www.ovh.com
-            </a>
+            <strong>Éditeur du site :</strong> Hamiani Mohammed, Strasbourg<br />
+            <strong>Contact :</strong> contactnutriiform@gmail.com<br />
+            <strong>Hébergeur BackEnd :</strong> Render<br />
+            <a href="https://render.com/" target="_blank" rel="noopener noreferrer">
+              https://render.com
+            </a> <br />
+            <strong>Hébergeur FronEnd :</strong> Netilfy <br />
+            <a href="https://app.netlify.com/" target="_blank" rel="noopener noreferrer">
+              https://app.netlify.com
+            </a> <br />
+            <strong>Téléphone :</strong> 0783330694<br />
+            <strong>Github :</strong>{"https://github.com/Mohadu67/nutriform-vite"}<br />
           </p>
         </section>
 

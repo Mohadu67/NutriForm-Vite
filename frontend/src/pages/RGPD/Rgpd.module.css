@@ -46,18 +46,19 @@
 }
 
 .btn {
-  background: var(--couleur-bouton-action);
-  border: none;
+  border: 1px solid var(--couleur-bouton-action);
   border-radius: 8px;
   padding: 0.6rem 1.2rem;
   font-family: var(--font-p);
   font-size: 1rem;
   cursor: pointer;
   transition: 0.3s ease;
+  margin: 20px;
 }
 
 .btn:hover {
-  background: var(--couleur-bouton-selection);
+  background: var(--couleur-bouton-action);
+  color: var(--couleur-principale);
 }
 
 .list {
@@ -72,7 +73,23 @@
   gap: 12px;
   flex-wrap: wrap;
   margin: 0 0 1rem;
+  justify-content: space-evenly;
 }
+
+.rgpdNav a {
+  padding: 0.5rem 1rem;
+  color: var(--couleur-text-noir);
+  border: 1px solid var(--couleur-bouton-action);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  margin: 20px;
+}
+
+.rgpdNav a:hover {
+  background: var(--couleur-bouton-action);
+  color: var(--couleur-principale);}
+  
 
 .card a {
   color: var(--couleur-text-noir);
