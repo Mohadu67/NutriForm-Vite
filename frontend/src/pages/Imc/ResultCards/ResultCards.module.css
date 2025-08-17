@@ -16,6 +16,13 @@
   text-align: center;
 }
 
+.ctaLink {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 .heading {
   background-color: var(--couleur-bouton-selection);
   border-radius: 8px;

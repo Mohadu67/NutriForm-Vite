@@ -84,8 +84,4 @@
             background-color: var(--couleur-bouton-action);
         }
 
-        .burger li.org a:hover {
-            color: var(--couleur-principale);
-            border-color: var(--couleur-text-noir);
-        }
     }

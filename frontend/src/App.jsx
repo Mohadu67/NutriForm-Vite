@@ -61,6 +61,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/imc" element={<ImcPage />} />
       <Route path="/calorie" element={<CaloriePage />} />
+      <Route path="/calories" element={<CaloriePage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/reset-password" element={<ResetPassword />} />

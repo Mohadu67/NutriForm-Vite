@@ -14,6 +14,15 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
 
   const isEmail = (v) => /[^\s@]+@[^\s@]+\.[^\s@]+/.test(v);
 
+  const handleCloseAfterSent = () => {
+    onSent?.(emailNorm);
+    onClose?.();
+  };
+  const handleToLoginAfterSent = () => {
+    onSent?.(emailNorm);
+    toLogin?.();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
@@ -43,7 +52,7 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
         }
       }
       setSent(true);
-      onSent?.(emailNorm);
+      setError("Un email a été envoyé si l'adresse existe.");
     } catch (err) {
       setError(err?.message || "Impossible d'envoyer le lien. Réessaie dans un instant.");
     } finally {
@@ -75,10 +84,10 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
     return (
       <div className={styles["auth-panel"]}>
         <h2 className={styles["auth-title"]}>Mot de passe oublié</h2>
-        <p>Si un compte existe pour {emailNorm}, un lien de réinitialisation a été envoyé.</p>
+        <p>{error || `Si un compte existe pour ${emailNorm}, un lien de réinitialisation a été envoyé.`}</p>
         <div className={styles.authActions}>
-          <button type="button" onClick={toLogin} className={styles.linkBtn}>Retour à la connexion</button>
-          <button type="button" onClick={onClose} className={styles.linkBtn}>Fermer</button>
+          <button type="button" onClick={handleToLoginAfterSent} className={styles.linkBtn}>Retour à la connexion</button>
+          <button type="button" onClick={handleCloseAfterSent} className={styles.linkBtn}>Fermer</button>
         </div>
       </div>
     );

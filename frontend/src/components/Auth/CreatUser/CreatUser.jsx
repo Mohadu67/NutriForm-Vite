@@ -11,6 +11,15 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
+  const goLoginAfterSuccess = () => {
+    onCreated?.({ email });
+    toLogin?.();
+  };
+  const closeAfterSuccess = () => {
+    onCreated?.({ email });
+    onClose?.();
+  };
+
   const validate = () => {
     if (!email.trim()) { setErrorMsg("Email requis."); return false; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErrorMsg("Email invalide."); return false; }
@@ -43,8 +52,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
       }
 
       setStatus("success");
-      onCreated?.({ email });
-      toLogin?.();
+      // Ne pas rediriger immédiatement pour laisser l'utilisateur voir le message
     } catch (err) {
       console.error(err);
       setStatus("error");
@@ -63,9 +71,28 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
             <div className={cstyle.loaderFallback}></div>
           </object>
           <p className={cstyle.muted}>Création du compte en cours...</p>
+          <p className={cstyle.muted}>Merci de vérifier votre adresse email pour activer votre compte.</p>
         </div>
         <div className={cstyle.actions}>
           <button type="button" onClick={onClose}>Annuler</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "success") {
+    return (
+      <div className={cstyle.body}>
+        <div className={cstyle.headerRow}>
+          <h3 className={cstyle.title}>Création du compte</h3>
+        </div>
+        <div>
+          <p className={cstyle.success}>Compte créé ✔</p>
+          <p className={cstyle.muted}>Un email de confirmation a été envoyé. Merci de vérifier votre adresse pour activer votre compte.</p>
+          <div className={cstyle.actions} style={{ marginTop: 12 }}>
+            <button type="button" className={cstyle.linkBtn} onClick={goLoginAfterSuccess}>Se connecter</button>
+            <button type="button" onClick={closeAfterSuccess}>Fermer</button>
+          </div>
         </div>
       </div>
     );
@@ -122,14 +149,19 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
         </label>
 
         {errorMsg && <p className={cstyle.error} style={{ marginTop: 0 }}>{errorMsg}</p>}
-        {status === "success" && <p className={cstyle.success}>Compte créé ✔</p>}
 
         <button type="submit" className={cstyle.submit} disabled={status === "sending"}>
           {status === "sending" ? "Création…" : "Créer mon compte"}
         </button>
 
         <div className={cstyle.actions}>
-          <button type="button" className={cstyle.linkBtn} onClick={toLogin}>J'ai déjà un compte</button>
+          <button
+            type="button"
+            className={cstyle.linkBtn}
+            onClick={goLoginAfterSuccess}
+          >
+            J'ai déjà un compte
+          </button>
         </div>
       </form>
     </div>

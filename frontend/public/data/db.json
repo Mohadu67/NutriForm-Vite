@@ -15,7 +15,8 @@
       },
       {
         "intro": "Pour prendre du poids de manière saine, concentre toi sur des aliments riches en nutriments mais caloriques, comme les avocats, les noix, les graines, les produits laitiers entiers et les protéines maigres",
-        "more": "Essaye de fractionner tes repas en plusieurs petites portions tout au long de la journée pour faciliter l'absorption des calories. Utilise notre <a href='calorie.html'>Outil de calcul de Calories</a> pour déterminer tes besoins journaliers et ajuster ton alimentation en conséquence."
+        "more": "Essaye de fractionner tes repas en plusieurs petites portions tout au long de la journée pour faciliter l'absorption des calories. Utilise notre Outil de calcul de Calories pour déterminer tes besoins journaliers et ajuster ton alimentation en conséquence.",
+        "link": "/calorie"
       }
     ],
     "normal": [
@@ -33,7 +34,8 @@
       },
       {
         "intro": "Pour maintenir ton poids santé, continue à adopter une alimentation variée et équilibrée, en privilégiant les fruits, les légumes, les protéines maigres et les céréales complètes. ",
-        "more": " Utilise notre <a href='calorie.html'>Calculateur de Calories</a> pour suivre tes apports journaliers et t'assurer que tu reste dans la fourchette recommandée pour ton profil."
+        "more": "Utilise notre Calculateur de Calories pour suivre tes apports journaliers et t'assurer que tu restes dans la fourchette recommandée pour ton profil.",
+        "link": "/calorie"
       }
     ],
     "surpoids": [
@@ -51,7 +53,8 @@
       },
       {
         "intro": "Pour perdre du poids de manière saine, commence par réduire ton apport calorique tout en maintenant une alimentation riche en nutriments.",
-        "more": " Utilise notre <a href='calorie.html'>Calculateur de Calories</a> pour ajuster ton apport calorique et atteindre tes objectifs de perte de poids."
+        "more": "Utilise notre Calculateur de Calories pour ajuster ton apport calorique et atteindre tes objectifs de perte de poids.",
+        "link": "/calorie"
       }
     ],
     "obésité": [
@@ -69,7 +72,8 @@
       },
       {
         "intro": "Pour gérer ton poids de manière saine, il est essentiel de consulter un professionnel de santé pour élaborer un plan personnalisé.",
-        "more": "Utilise notre <a href='calorie.html'>Calculateur de Calories</a> pour suivre tes apports et ajuster ton alimentation en fonction des conseils de ton professionnel de santé."
+        "more": "Utilise notre Calculateur de Calories pour suivre tes apports et ajuster ton alimentation en fonction des conseils de ton professionnel de santé.",
+        "link": "/calorie"
       }
     ]
   },

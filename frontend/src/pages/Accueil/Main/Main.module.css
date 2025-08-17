@@ -82,13 +82,6 @@
   font-weight: 600;
   color: white;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
-  box-shadow: 0 5px 15px rgba(245, 183, 133, 0.4);
-}
-
-.button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(181, 234, 215, 0.5);
 }
 
 /* Responsive */
