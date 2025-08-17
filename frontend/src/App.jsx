@@ -12,49 +12,6 @@ import CookiesPolicy from "./pages/RGPD/CookiesPolicy.jsx";
 import PrivacyPolicy from "./pages/RGPD/PrivacyPolicy.jsx";
 
 export default function App() {
-  useEffect(() => {
-    if (window.__tac_inited) return;
-
-    const doInit = () => {
-      if (!window.tarteaucitron) return;
-      try {
-        window.tarteaucitron.init({
-          privacyUrl: "",
-          hashtag: "#tarteaucitron",
-          cookieName: "tarteaucitron",
-          orientation: "bottom",
-          showAlertSmall: false,
-          cookieslist: true,
-          adblocker: false,
-          AcceptAllCta: true,
-          highPrivacy: true,
-          handleBrowserDNTRequest: false,
-          removeCredit: true,
-          useExternalCss:true,
-        });
-
-        window.tarteaucitron.lang = "fr";
-        window.__tac_inited = true;
-      } catch (e) {
-        console.error("Tarteaucitron init error", e);
-      }
-    };
-
-    if (window.tarteaucitron) {
-      doInit();
-      return;
-    }
-
-    const s = document.createElement('script');
-    s.src = 'https://tarteaucitron.io/load.js';
-    s.async = true;
-    s.onload = doInit;
-    s.onerror = () => console.error('Impossible de charger tarteaucitron');
-    document.head.appendChild(s);
-
-    return () => {
-    };
-  }, []);
 
   return (
     <Routes>
