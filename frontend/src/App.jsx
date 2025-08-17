@@ -7,6 +7,9 @@ import ContactPage from "./pages/Contact/ContactPage.jsx";
 import VerifyEmail from "./components/Auth/VerifyEmail/VerifyEmail.jsx";
 import ResetPassword from "./components/Auth/ResetPassword/ResetPassword.jsx";
 import "tarteaucitronjs";
+import MentionsLegales from "./pages/RGPD/MentionsLegales.jsx";
+import CookiesPolicy from "./pages/RGPD/CookiesPolicy.jsx";
+import PrivacyPolicy from "./pages/RGPD/PrivacyPolicy.jsx";
 
 export default function App() {
   useEffect(() => {
@@ -61,6 +64,9 @@ export default function App() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/cookies" element={<CookiesPolicy />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/mentions-legales" element={<MentionsLegales />} />
     </Routes>
   );
 }

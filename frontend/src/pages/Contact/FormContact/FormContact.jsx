@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import styles from "./FormContact.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 
+const API_URL = import.meta.env.VITE_API_URL || "";
+
 export default function FormContact({ onSend }) {
   const [form, setForm] = useState({ nom: "", email: "", sujet: "", message: "", consent: false });
   const [errors, setErrors] = useState({});
@@ -27,17 +29,18 @@ export default function FormContact({ onSend }) {
     if (!validate()) return;
     try {
       setStatus("sending");
-      const start = Date.now();
 
       if (typeof onSend === "function") {
         await onSend({ ...form });
       } else {
-        const res = await fetch("/api/contact", {
+        const endpoint = API_URL ? `${API_URL}/api/contact` : "/api/contact";
+        const res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
         });
-        if (!res.ok) throw new Error("fail");
+        const data = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(data?.message || "fail");
       }
 
       const elapsed = Date.now() - start;

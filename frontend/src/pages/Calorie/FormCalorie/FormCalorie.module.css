@@ -7,7 +7,7 @@
   box-sizing: border-box;
   max-width: min(80%, 480px);
   word-break: break-word;
-  margin: 0 auto;
+  margin: 100px auto;
   font-family: "Montserrat", sans-serif;
 }
 

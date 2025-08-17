@@ -1,0 +1,123 @@
+.container {
+  background: var(--couleur-principale);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  background: #fff;
+  max-width: 900px;
+  width: 100%;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.title {
+  font-family: var(--font-titre);
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--couleur-text-noir);
+}
+
+.updated {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.section {
+  margin-bottom: 1.8rem;
+}
+
+.h2 {
+  font-family: var(--font-titre);
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+  color: var(--couleur-text-noir);
+}
+
+.p {
+  font-family: var(--font-p);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.btn {
+  background: var(--couleur-bouton-action);
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-family: var(--font-p);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn:hover {
+  background: var(--couleur-bouton-selection);
+}
+
+.list {
+  margin-left: 1.2rem;
+  font-family: var(--font-p);
+  line-height: 1.6;
+}
+
+/* --- RGPD shared extras --- */
+.rgpdNav {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 1rem;
+}
+
+.card a {
+  color: var(--couleur-text-noir);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.card a:hover {
+  color: var(--couleur-bouton-selection);
+  text-decoration-thickness: 2px;
+}
+
+.note {
+  font-size: 0.95rem;
+  color: #666;
+}
+
+/* lists inside sections */
+.section ul {
+  margin: 0.2rem 0 0.8rem 1.2rem;
+}
+.section li {
+  margin: 0.25rem 0;
+}
+
+/* focus styles for accessibility */
+:where(a, button, .btn):focus-visible {
+  outline: 2px solid var(--couleur-bouton-selection);
+  outline-offset: 2px;
+}
+
+@media (min-width: 900px) {
+  .title { font-size: 2.2rem; }
+  .h2 { font-size: 1.5rem; }
+  .card { padding: 2.2rem; }
+}
+
+.mentionsMain {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: var(--couleur-principale);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  line-height: 1.6;
+  color: var(--couleur-text-noir);
+  font-family: var(--font-p);
+}
