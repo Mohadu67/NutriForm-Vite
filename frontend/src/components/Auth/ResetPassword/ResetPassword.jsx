@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 // Tu as déjà ce module CSS dans components. On le réutilise.
 import styles from "../../../components/Auth/ResetPassword/ResetPassword.module.css";
+import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -59,8 +60,15 @@ export default function ResetPassword() {
             value={pwd2}
             onChange={(e) => setPwd2(e.target.value)}
           />
-          <button className={styles.button} type="submit" disabled={loading}>
-            {loading ? "Envoi..." : "Valider"}
+          <button className={styles.button} type="submit" disabled={loading} aria-busy={loading}>
+            {loading ? (
+              <>
+                <img src={logoAnimate} alt="" className={styles.btnSpinner} aria-hidden={true} />
+                <span>Envoi...</span>
+              </>
+            ) : (
+              "Valider"
+            )}
           </button>
           {msg ? <p className={styles.muted} role="status">{msg}</p> : null}
         </form>

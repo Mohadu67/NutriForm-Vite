@@ -21,7 +21,7 @@
   color: var(--ink);
   width: 100%;
   max-width: min(80%, 1100px);
-  text-align: center;
+  text-align: start;
 }
 
 .grid {
@@ -30,7 +30,7 @@
   gap: var(--gap-3);
   width: 100%;
   max-width: min(90%, 1200px);
-  margin: 24px auto 80px;
+  margin: 70px auto;
 }
 
 @media (min-width: 600px) {

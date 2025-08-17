@@ -57,3 +57,11 @@ footer .org:hover {
         flex-direction: row; 
     }
 }
+
+.legalLinks p {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0;
+    text-align: center;
+    
+}
