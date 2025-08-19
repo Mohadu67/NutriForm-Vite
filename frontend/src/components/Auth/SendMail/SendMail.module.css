@@ -1,0 +1,116 @@
+.container {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px;
+  background: #F7F6F2; /* blanc cassé */
+  border-radius: 16px;
+  border: 1px solid #eee;
+}
+
+.logo {
+  display: block;
+  width: 220px;
+  max-width: 60vw;
+  margin: 0 auto 12px auto;
+}
+
+.title {
+  margin: 8px 0 4px 0;
+  font-family: Merriweather, Georgia, serif;
+  font-size: 28px;
+  line-height: 1.2;
+  color: #111111;
+  text-align: center;
+}
+
+.subtitle {
+  margin: 0 0 16px 0;
+  font-family: Montserrat, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #555555;
+  text-align: center;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.form label {
+  font-family: Montserrat, Arial, sans-serif;
+  font-size: 14px;
+  color: #111111;
+}
+
+.input {
+  appearance: none;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  font-family: Montserrat, Arial, sans-serif;
+  font-size: 14px;
+  color: #111111;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.input::placeholder {
+  color: #999999;
+}
+
+.input:focus {
+  border-color: #B5EAD7; /* vert pastel */
+  box-shadow: 0 0 0 3px rgba(181, 234, 215, 0.45);
+  background: #ffffff;
+}
+
+.button {
+  appearance: none;
+  display: inline-block;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #FFB385; /* orange pêche */
+  color: #111111;
+  font-family: Montserrat, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 80ms ease, filter 160ms ease, box-shadow 160ms ease;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.06);
+}
+
+.button:hover {
+  filter: brightness(0.97);
+}
+
+.button:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 179, 133, 0.45);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+    border-radius: 12px;
+  }
+  .logo {
+    width: 180px;
+  }
+  .title {
+    font-size: 24px;
+  }
+  .subtitle {
+    font-size: 13px;
+  }
+}

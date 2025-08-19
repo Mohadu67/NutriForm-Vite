@@ -62,10 +62,10 @@ export default function ResultCards({ categorie }) {
 
       {ordered.map((entry, idx) => (
         <div key={idx} className={`${styles.bloc} ${entry.side === 'left' ? styles.left : styles.right}`}>
-          <p>{entry.item.intro}</p>
+          <p dangerouslySetInnerHTML={{ __html: entry.item.intro }} />
 
           <div className={`${styles.moreContent} ${openIndex === idx ? styles.moreContentOpen : ""}`}>
-            <p>{entry.item.more}</p>
+            <p dangerouslySetInnerHTML={{ __html: entry.item.more }} />
             {entry.item.link && (
               <Link to={entry.item.link} className={styles.ctaLink} aria-label={`Aller vers ${entry.item.link}`}>
                 Découvrir l’outil

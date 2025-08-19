@@ -101,7 +101,7 @@ app.get('/', (req, res) => {
 
 app.get(['/reset-password.html', '/reset-password'], (req, res) => {
   const token = req.query.token;
-  const frontBase = (process.env.APP_BASE_URL_FRONT || process.env.FRONTEND_BASE_URL || 'http://localhost:5173').replace(/\/$/, '');
+  const frontBase = (process.env.FRONTEND_BASE_URL || 'http://localhost:5173').replace(/\/$/, '');
   const redirectUrl = `${frontBase}/reset-password${token ? `?token=${encodeURIComponent(token)}` : ''}`;
   console.log('🔀 Redirection reset-password ->', redirectUrl);
   res.redirect(302, redirectUrl);
@@ -150,7 +150,7 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
 function buildBaseUrl(req) {
-  const fromEnv = process.env.APP_BASE_URL;
+  const fromEnv = process.env.FRONTEND_BASE_URL;
   if (fromEnv) return fromEnv.replace(/\/$/, '');
   const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
   const host = req.headers['x-forwarded-host'] || req.get('host');
@@ -159,7 +159,7 @@ function buildBaseUrl(req) {
 
 function buildFrontBaseUrl(req) {
 
-  const fromEnv = process.env.APP_BASE_URL_FRONT || process.env.FRONTEND_BASE_URL;
+  const fromEnv = process.env.FRONTEND_BASE_URL;
   if (fromEnv) return fromEnv.replace(/\/$/, '');
 
   return 'http://localhost:5173';
@@ -184,7 +184,11 @@ async function getTransport() {
 }
 
 app.post('/forgot-password', async (req, res) => {
-  const { email } = req.body;
+  const { email, subject, text, html } = req.body || {};
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email requis.' });
+  }
 
   try {
     const user = await User.findOne({ email });
@@ -199,19 +203,23 @@ app.post('/forgot-password', async (req, res) => {
     const resetLink = `${frontBase}/reset-password?token=${encodeURIComponent(token)}`;
     console.log('🔁 Lien de réinitialisation généré (FRONT):', resetLink);
 
+    const subjectText = subject || 'Réinitialisation du mot de passe';
+    const textBody = text || 'Cliquez ici pour réinitialiser votre mot de passe: ' + resetLink;
+    const htmlBody = html || '<p>Cliquez ici pour réinitialiser votre mot de passe: <a href="' + resetLink + '">' + resetLink + '</a></p>';
+
     const mailOptions = {
       from: `"NutriForm" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: 'Réinitialisation du mot de passe',
-      text: `Cliquez ici pour réinitialiser votre mot de passe: ${resetLink}`,
-      html: `<p>Cliquez ici pour réinitialiser votre mot de passe: <a href="${resetLink}">${resetLink}</a></p>`
+      subject: subjectText,
+      text: textBody,
+      html: htmlBody
     };
 
     try {
       const transporter = await getTransport();
       const info = await transporter.sendMail(mailOptions);
       const preview = nodemailer.getTestMessageUrl(info);
-      return res.json({ message: 'Email de réinitialisation envoyé.', previewUrl: preview || null });
+      return res.json({ message: 'Email de réinitialisation envoyé.', previewUrl: preview || null, resetLink });
     } catch (sendErr) {
       console.error(sendErr);
       return res.status(500).json({ message: 'Erreur envoi email.' });
