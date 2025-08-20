@@ -26,7 +26,7 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
       setStatus("sending");
       t0 = Date.now();
 
-      const res = await fetch(`${API_URL}/login`, {
+      const res = await fetch(`${API_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, motdepasse: password })

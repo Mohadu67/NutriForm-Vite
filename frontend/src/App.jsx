@@ -6,7 +6,6 @@ import CaloriePage from "./pages/Calorie/CaloriePage.jsx";
 import ContactPage from "./pages/Contact/ContactPage.jsx";
 import VerifyEmail from "./components/Auth/VerifyEmail/VerifyEmail.jsx";
 import ResetPassword from "./components/Auth/ResetPassword/ResetPassword.jsx";
-import "tarteaucitronjs";
 import MentionsLegales from "./pages/RGPD/MentionsLegales.jsx";
 import CookiesPolicy from "./pages/RGPD/CookiesPolicy.jsx";
 import PrivacyPolicy from "./pages/RGPD/PrivacyPolicy.jsx";

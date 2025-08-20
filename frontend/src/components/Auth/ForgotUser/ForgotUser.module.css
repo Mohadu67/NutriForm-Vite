@@ -62,7 +62,6 @@
   cursor: pointer;
 }
 .auth-button:disabled { opacity: .6; cursor: not-allowed; }
-.auth-button:focus-visible { outline: none; box-shadow: var(--nf-focus); }
 
 .linkBtn {
   background: transparent;

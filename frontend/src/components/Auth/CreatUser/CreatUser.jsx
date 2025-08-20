@@ -52,7 +52,6 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
       }
 
       setStatus("success");
-      // Ne pas rediriger immédiatement pour laisser l'utilisateur voir le message
     } catch (err) {
       console.error(err);
       setStatus("error");
