@@ -224,6 +224,8 @@
 
 .muted {
   color: #999;
+  font-size: large;
+  margin: 10px;
 }
 
 .chartPlaceholder {

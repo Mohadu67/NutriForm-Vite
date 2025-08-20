@@ -53,7 +53,7 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
         >
           ×
         </button>
-        {/* Vue dynamique */}
+
         {currentView === "login" && (
           <LoginUser
             onSuccess={(payload) => { onLoginSuccess?.(payload); setBoth("history"); }}

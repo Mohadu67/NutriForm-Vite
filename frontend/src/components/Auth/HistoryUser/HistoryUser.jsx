@@ -65,10 +65,17 @@ function LineChartSVG({ points = [], width = 320, height = 140, color = "current
 
 export default function HistoryUser({ onClose, onLogout }) {
   const [records, setRecords] = useState([]);
-  const [status, setStatus] = useState("idle"); // idle | loading | error
+  const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
+  const [displayName, setDisplayName] = useState("");
 
   useEffect(() => {
+    try {
+      const cached = JSON.parse(localStorage.getItem('user') || 'null');
+      const cachedName = cached?.prenom || cached?.pseudo || cached?.displayName || (cached?.email ? String(cached.email).split('@')[0] : '');
+      if (cachedName) setDisplayName(cachedName);
+    } catch (_) {}
+
     const token = localStorage.getItem('token');
     if (!token) {
       setError("Non connecté. Connecte-toi d'abord.");
@@ -76,6 +83,17 @@ export default function HistoryUser({ onClose, onLogout }) {
     }
     setStatus("loading");
     setError("");
+
+    fetch(`${API_URL}/api/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data })).catch(() => ({ ok: res.ok, data: {} })))
+      .then(({ ok, data }) => {
+        if (!ok) return; 
+        const name = data?.prenom || data?.pseudo || data?.displayName || (data?.email ? String(data.email).split('@')[0] : '');
+        if (name) setDisplayName(name);
+      })
+      .catch(() => {});
 
     fetch(`${API_URL}/api/history`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -95,7 +113,7 @@ export default function HistoryUser({ onClose, onLogout }) {
           }))
           .filter((r) => (r.type === 'imc' || r.type === 'calories') && Number.isFinite(r.value));
 
-        list.sort((a, b) => a.date - b.date); // asc for charts
+        list.sort((a, b) => a.date - b.date);
         setRecords(list);
         setStatus("idle");
       })
@@ -119,6 +137,9 @@ export default function HistoryUser({ onClose, onLogout }) {
     <div className={style["popup-body"]}>
       <div className={style["popup-header-row"]}>
         <h3 className={style["popup-title"]}>Historique</h3>
+        {displayName ? (
+          <p className={style.muted}>Bonjour {displayName} 👋</p>
+        ) : null}
       </div>
 
       {status === "loading" && <p>Chargement…</p>}
@@ -128,9 +149,7 @@ export default function HistoryUser({ onClose, onLogout }) {
         <p>Aucune donnée pour l'instant. Enregistre un IMC ou des calories pour voir la courbe.</p>
       )}
 
-      {/* Courbes */}
       <div className={style.historyGrid}>
-        {/* Courbe Poids (à partir des mesures IMC avec poids) */}
         <section className={style.historySection}>
           <h4 className={style.sectionTitle}>Courbe Poids</h4>
           {weightPoints.length >= 2 ? (
@@ -140,7 +159,6 @@ export default function HistoryUser({ onClose, onLogout }) {
           )}
         </section>
 
-        {/* Courbe Calories */}
         <section className={style.historySection}>
           <h4 className={style.sectionTitle}>Courbe Calories</h4>
           {calPoints.length >= 2 ? (
@@ -151,9 +169,8 @@ export default function HistoryUser({ onClose, onLogout }) {
         </section>
       </div>
 
-      {/* Résumés + listes sous les courbes (IMC/Poids à gauche, Calories à droite) */}
       <div className={style.recapGrid}>
-        {/* Bloc IMC/Poids */}
+
         <section className={style.recapCard}>
           <h4 className={style.recapTitle}>Mes données IMC / Poids</h4>
           {imcPoints.length > 0 ? (
@@ -191,7 +208,6 @@ export default function HistoryUser({ onClose, onLogout }) {
           </div>
         </section>
 
-        {/* Bloc Calories */}
         <section className={style.recapCard}>
           <h4 className={style.recapTitle}>Mes données Calories</h4>
           {calPoints.length > 0 ? (
@@ -224,11 +240,10 @@ export default function HistoryUser({ onClose, onLogout }) {
         </section>
       </div>
 
-      {/* Liste simple */}
       <div className={style.historyList}>
         {records
           .slice()
-          .sort((a, b) => b.date - a.date) // desc for list
+          .sort((a, b) => b.date - a.date)
           .map((r, i) => (
             <div key={i} className={style.row}>
               <span className={style.label} style={{ textTransform: 'capitalize' }}>{r.type}</span>

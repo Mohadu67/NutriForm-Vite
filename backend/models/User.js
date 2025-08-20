@@ -36,6 +36,16 @@ const userSchema = new mongoose.Schema(
       minlength: 8,
       select: false
     },
+    prenom: { type: String, trim: true, maxlength: 60 },
+    pseudo: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      minlength: 3,
+      maxlength: 30,
+      unique: true,
+      sparse: true
+    },
     imc: [imcSchema],
     calories: [caloriesSchema],
     role: {
@@ -49,6 +59,15 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Validation du pseudo (optionnel) : a-z 0-9 . _ -
+userSchema.path('pseudo').validate(function (v) {
+  if (!v) return true;
+  return /^[a-z0-9._-]+$/.test(v);
+}, 'Pseudo invalide. Autorisé: a-z 0-9 . _ - (3-30 caractères)');
+
+// Index unique & sparse pour permettre l'absence de pseudo
+userSchema.index({ pseudo: 1 }, { unique: true, sparse: true });
 
 userSchema.index({ email: 1 }, { unique: true });
 
