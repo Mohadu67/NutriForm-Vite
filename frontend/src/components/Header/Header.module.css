@@ -7,3 +7,11 @@
   align-items: center;
 }
 
+
+
+.welcome {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 28px;
+  color: #333;
+}

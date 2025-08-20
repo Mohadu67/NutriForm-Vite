@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
+import MobiLogo from "../../../assets/img/logo/domaine-logo.svg";
 import cstyle from "./CreatUser.module.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -8,6 +9,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [agree, setAgree] = useState(false);
+  const [pseudo, setPseudo] = useState("");
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -21,6 +23,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
   };
 
   const validate = () => {
+    if (!pseudo.trim()) { setErrorMsg("Pseudo requis."); return false; }
     if (!email.trim()) { setErrorMsg("Email requis."); return false; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErrorMsg("Email invalide."); return false; }
     if (!password) { setErrorMsg("Mot de passe requis."); return false; }
@@ -41,7 +44,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
       const res = await fetch(`${API_URL}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, motdepasse: password })
+        body: JSON.stringify({ email, motdepasse: password, pseudo })
       });
 
       const data = await res.json().catch(() => ({}));
@@ -69,6 +72,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
           <object type="image/svg+xml" data={logoAnimate} className={cstyle.loaderSvg} aria-label="Chargement">
             <div className={cstyle.loaderFallback}></div>
           </object>
+          <img src={MobiLogo} alt="Logo mobile" className={cstyle.mobileLogo} />
           <p className={cstyle.muted}>Création du compte en cours...</p>
           <p className={cstyle.muted}>Merci de vérifier votre adresse email pour activer votre compte.</p>
         </div>
@@ -84,10 +88,11 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
       <div className={cstyle.body}>
         <div className={cstyle.headerRow}>
           <h3 className={cstyle.title}>Création du compte</h3>
+          <img src={MobiLogo} alt="Logo mobile" className={cstyle.mobileLogo} />
         </div>
         <div>
-          <p className={cstyle.success}>Compte créé ✔</p>
-          <p className={cstyle.muted}>Un email de confirmation a été envoyé. Merci de vérifier votre adresse pour activer votre compte.</p>
+          <p className={cstyle.success}>Compte créé 🎉</p>
+          <p className={cstyle.muted}>T’as oublié de vérifier tes mails ? On dira rien… mais clique sur le lien quand même.</p>
           <div className={cstyle.actions} style={{ marginTop: 12 }}>
             <button type="button" className={cstyle.linkBtn} onClick={goLoginAfterSuccess}>Se connecter</button>
             <button type="button" onClick={closeAfterSuccess}>Fermer</button>
@@ -105,6 +110,17 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
       </div>
 
       <form className={cstyle.form} onSubmit={handleSubmit} noValidate>
+        <label className={cstyle.label}>
+          Pseudo
+          <input
+            type="text"
+            className={cstyle.input}
+            value={pseudo}
+            onChange={(e) => setPseudo(e.target.value)}
+            required
+          />
+        </label>
+
         <label className={cstyle.label}>
           Email
           <input

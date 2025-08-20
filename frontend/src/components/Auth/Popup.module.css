@@ -57,18 +57,9 @@
   cursor: pointer;
 }
 
-.title {
-  font-family: var(--font-titre);
-  font-size: 1.6rem;
-  font-weight: 800;
-  text-align: center;
-  margin: 0 0 1rem 0;
-  color: #2B2B2B;
-}
-
 .form {
   display: grid;
-  gap: 0.9rem;
+  gap: 25px;
 }
 
 .label {
@@ -409,4 +400,34 @@
 @media (max-width: 420px) {
   .popup-card { border-radius: 14px; padding: 1.1rem; }
   .popup-title { font-size: 1.4rem; }
+}
+
+/* --- Dark mode tuning (non-destructive) --- */
+@media (prefers-color-scheme: dark) {
+  .popup-card {
+    background:
+      linear-gradient(180deg, rgba(22,22,22,.94), rgba(20,20,20,.9)) padding-box,
+      linear-gradient(135deg, rgba(181,234,215,.18), rgba(255,179,133,.18)) border-box;
+    color: #e8e8e8;
+    border: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 16px 40px rgba(0,0,0,.45);
+  }
+  .popup-title {
+    background: linear-gradient(180deg, #ffffff, #e6e6e6);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .popup-close {
+    color: #f2f2f2;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.18);
+  }
+  .popup-summary-item,
+  .popup-list {
+    background: #161616;
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .popup-li { border-bottom: 1px solid rgba(255,255,255,.06); }
+  .popup-li .date { color: #bdbdbd; }
+  .popup-card a { color: var(--nf-green); }
+  .tag-imc, .tag-calories { border-color: rgba(255,255,255,.22); }
 }

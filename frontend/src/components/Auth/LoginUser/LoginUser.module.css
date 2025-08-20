@@ -1,6 +1,6 @@
 .form { 
   display: grid; 
-  gap: 0.9rem; 
+  gap: 25px; 
 }
 
 .label { 
@@ -36,7 +36,6 @@
   all: unset; 
   cursor: pointer; 
   font-weight: 800; 
-  color: #2B2B2B; 
   padding: .2rem .3rem; 
   border-bottom: 2px solid transparent; 
 }
@@ -71,4 +70,12 @@
   height: 150px;
   margin: 1rem auto;
   display: block;
+}
+
+h3 {
+  font-family: var(--font-titre);
+  font-size: 1.6rem;
+  font-weight: 800;
+  text-align: center;
+  margin: 0 0 1rem 0;
 }
