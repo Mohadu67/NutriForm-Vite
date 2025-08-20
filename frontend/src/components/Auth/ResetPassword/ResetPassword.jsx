@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-// Tu as déjà ce module CSS dans components. On le réutilise.
 import styles from "../../../components/Auth/ResetPassword/ResetPassword.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
+import DeskLogo from "../../../assets/img/logo/Logo-complet.svg";
+import MobiLogo from "../../../assets/img/logo/domaine-logo.svg";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -26,7 +27,7 @@ export default function ResetPassword() {
     try {
       setLoading(true);
       const start = Date.now();
-      const res = await fetch(`${API_URL}/reset-password`, {
+      const res = await fetch(`${API_URL}/api/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword: pwd }),
@@ -49,7 +50,8 @@ export default function ResetPassword() {
   return (
     <div className={styles.container}>
       <div className={styles.popup}>
-        <h1 className={styles.title}>Réinitialiser le mot de passe</h1>
+        <img src={MobiLogo} alt="NutriForm" className={styles.logo} />
+        <p className={styles.subtitle}>T’as oublié ton mot de passe ? Tranquille, on n’en parlera à personne.</p>
         <form onSubmit={onSubmit} className={styles.form}>
           <input
             className={styles.input}
@@ -69,7 +71,6 @@ export default function ResetPassword() {
             {loading ? (
               <>
                 <img src={logoAnimate} alt="" className={styles.btnSpinner} aria-hidden={true} />
-                <span>Envoi...</span>
               </>
             ) : (
               "Valider"
