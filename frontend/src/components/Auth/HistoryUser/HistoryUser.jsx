@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import style from "./HistoryUser.module.css";
 
-// Normalise l'URL pour éviter les doubles //
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
 function LineChartSVG({ points = [], width = 320, height = 140, color = "currentColor", yLabel = "" }) {
@@ -86,7 +85,6 @@ export default function HistoryUser({ onClose, onLogout }) {
     setStatus("loading");
     setError("");
 
-    // Récupère l'utilisateur (affichage du prénom/pseudo)
     fetch(`${API_URL}/api/me`, {
       headers: { Authorization: `Bearer ${token}` }
     })
