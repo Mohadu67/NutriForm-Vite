@@ -5,7 +5,7 @@ if (!base && process.env.NODE_ENV === 'production') {
 const brand = {
   name: 'NutriForm',
   url: base || 'http://localhost:5173',
-  logo: `${base || 'http://localhost:5173'}/logo.png`,
+  logo: `${base || 'http://localhost:5173'}logo/domaine-logo.svg`,
 };
 
 module.exports = function resetPasswordTemplate({ toName = 'utilisateur', resetUrl }) {
