@@ -3,7 +3,7 @@ import lstyle from "./LoginUser.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-const MIN_SPINNER_MS = 6000; 
+const MIN_SPINNER_MS = 4000; 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 
@@ -25,7 +25,7 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
       setStatus("sending");
       t0 = Date.now();
 
-      const url = `${API_URL}/api/login` || '/api/login';
+      const url = API_URL ? `${API_URL}/api/login` : '/api/login';
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -38,24 +38,39 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
         throw new Error(msg);
       }
 
-      setErrorMsg("");
       const { token, user, displayName } = data || {};
+      if (!token || !user || !user.id) {
+        throw new Error("Identifiants invalides.");
+      }
+
+      setErrorMsg("");
       const userId = user?.id;
 
-      if (token) {
-        try {
-          localStorage.setItem('token', token);
-          if (!remember) sessionStorage.setItem('token', token);
-        } catch (_) {}
-      }
       try {
-        localStorage.setItem('user', JSON.stringify({
+        if (remember) {
+          localStorage.setItem('token', token);
+          sessionStorage.removeItem('token');
+        } else {
+          sessionStorage.setItem('token', token);
+          localStorage.removeItem('token');
+        }
+      } catch (_) {}
+
+      try {
+        const userPayload = {
           id: userId,
           email: user?.email,
           prenom: user?.prenom,
           pseudo: user?.pseudo,
           displayName: displayName || user?.pseudo || user?.prenom || (user?.email ? String(user.email).split('@')[0] : '')
-        }));
+        };
+        if (remember) {
+          localStorage.setItem('user', JSON.stringify(userPayload));
+          sessionStorage.removeItem('user');
+        } else {
+          sessionStorage.setItem('user', JSON.stringify(userPayload));
+          localStorage.removeItem('user');
+        }
       } catch (_) {}
 
       const elapsed = Date.now() - t0;
@@ -73,6 +88,12 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
       if (wait) await sleep(wait);
       setStatus("error");
       setErrorMsg(err.message || "Erreur de connexion. Réessaie.");
+      try {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.removeItem('user');
+      } catch (_) {}
     }
   };
 

@@ -13,11 +13,9 @@ exports.requestPasswordReset = async (req, res) => {
   }
   try {
     const emailNorm = String(email).trim().toLowerCase();
-    console.log('[forgot] emailNorm =', emailNorm);
     const user = await User.findOne({ email: emailNorm });
 
     if (!user) {
-      console.log('[forgot] user not found for', emailNorm);
       return res.status(200).json({ message: 'If an account with that email exists, a reset link has been sent.' });
     }
 
@@ -28,7 +26,7 @@ exports.requestPasswordReset = async (req, res) => {
     user.resetPasswordExpires = expires;
     await user.save();
 
-    console.log('[forgot] user', String(user._id), 'set token', token, 'expires', new Date(expires).toISOString());
+    console.log('[forgot] set token', token, 'expires', new Date(expires).toISOString());
 
     const front = buildFrontBaseUrl();
     const resetUrl = `${front}/reset-password?token=${encodeURIComponent(token)}`;

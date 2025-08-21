@@ -1,16 +1,23 @@
+const base = (process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
+if (!base && process.env.NODE_ENV === 'production') {
+  throw new Error('FRONTEND_BASE_URL manquant en production pour les emails.');
+}
 const brand = {
   name: 'NutriForm',
-  url: (process.env.FRONTEND_BASE_URL || 'http://localhost:5173').replace(/\/$/, ''),
-  logo: `${(process.env.FRONTEND_BASE_URL || 'http://localhost:5173').replace(/\/$/, '')}/logo.png`,
+  url: base || 'http://localhost:5173',
+  logo: `${base || 'http://localhost:5173'}/logo.png`,
 };
 
 module.exports = function resetPasswordTemplate({ toName = 'utilisateur', resetUrl }) {
+  const safeResetUrl = /^https?:\/\//i.test(resetUrl)
+    ? resetUrl
+    : `${brand.url.replace(/\/$/, '')}${resetUrl.startsWith('/') ? '' : '/'}${resetUrl}`;
   const subject = `Réinitialise ton mot de passe • ${brand.name}`;
   const text = `Salut ${toName},
 
 Tu as demandé une réinitialisation du mot de passe.
 Clique sur ce lien pour continuer (valide quelques minutes) :
-${resetUrl}
+${safeResetUrl}
 
 Si tu n'es pas à l'origine de cette demande, ignore ce message.`;
   const html = `
@@ -22,10 +29,10 @@ Si tu n'es pas à l'origine de cette demande, ignore ce message.`;
       <h1 style="font-size:20px;margin:0 0 12px;">Mot de passe oublié ? 😅</h1>
       <p>Pas de panique <strong>${toName}</strong>, ça arrive à tout le monde. Clique pour en choisir un nouveau.</p>
       <p style="margin:20px 0;">
-        <a href="${resetUrl}" style="display:inline-block;background:#111;color:#fff;text-decoration:none;padding:12px 16px;border-radius:8px;">Réinitialiser mon mot de passe</a>
+        <a href="${safeResetUrl}" style="display:inline-block;background:#111;color:#fff;text-decoration:none;padding:12px 16px;border-radius:8px;">Réinitialiser mon mot de passe</a>
       </p>
       <p style="font-size:12px;color:#666">Si le bouton ne fonctionne pas, copie ce lien :</p>
-      <p style="font-size:12px;color:#666;word-break:break-all;">${resetUrl}</p>
+      <p style="font-size:12px;color:#666;word-break:break-all;">${safeResetUrl}</p>
       <hr style="border:none;border-top:1px solid #eee;margin:24px 0"/>
       <p style="font-size:12px;color:#666">Si tu n’es pas à l’origine de cette demande, ignore ce message.</p>
     </div>
