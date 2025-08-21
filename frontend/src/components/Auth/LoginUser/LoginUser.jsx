@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import style from "../Popup.module.css";
 import lstyle from "./LoginUser.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const MIN_SPINNER_MS = 6000; 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -26,7 +25,8 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
       setStatus("sending");
       t0 = Date.now();
 
-      const res = await fetch(`${API_URL}/api/login`, {
+      const url = `${API_URL}/api/login` || '/api/login';
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier, password })
@@ -43,7 +43,10 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
       const userId = user?.id;
 
       if (token) {
-        try { localStorage.setItem('token', token); } catch (_) {}
+        try {
+          localStorage.setItem('token', token);
+          if (!remember) sessionStorage.setItem('token', token);
+        } catch (_) {}
       }
       try {
         localStorage.setItem('user', JSON.stringify({

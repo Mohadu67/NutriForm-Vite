@@ -1,29 +1,43 @@
 // backend/services/mailer.service.js
 const nodemailer = require('nodemailer');
+const config = require('../config');
 
-function buildTransporter() {
-  const {
-    SMTP_HOST, SMTP_PORT, SMTP_SECURE,
-    SMTP_USER, SMTP_PASS
-  } = process.env;
+// Templates
+const makeVerifyEmail = require('../templates/verifyEmail');
+const makeResetPassword = require('../templates/resetPassword');
 
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
-    throw new Error('SMTP config manquante (SMTP_HOST/PORT/USER/PASS)');
-  }
-
-  return nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT || 587),
-    secure: String(SMTP_SECURE).toLowerCase() === 'true',
-    auth: { user: SMTP_USER, pass: SMTP_PASS }
+let transporter;
+function getTransporter() {
+  if (transporter) return transporter;
+  transporter = nodemailer.createTransport({
+    host: config.smtp.host,
+    port: config.smtp.port,
+    secure: config.smtp.secure,
+    auth: config.smtp.user && config.smtp.pass ? { user: config.smtp.user, pass: config.smtp.pass } : undefined,
   });
+  return transporter;
 }
 
-const transporter = buildTransporter();
-
-async function sendMail({ to, subject, html, text }) {
-  const from = process.env.CONTACT_EMAIL || process.env.SMTP_USER;
-  return transporter.sendMail({ from, to, subject, html, text });
+async function sendMail({ to, subject, html, text, replyTo }) {
+  const from = config.smtp.from || config.smtp.user;
+  if (!from) throw new Error('CONFIG: smtp.from manquant (CONTACT_EMAIL ou SMTP_USER).');
+  if (!to || !subject || (!html && !text)) throw new Error('sendMail: paramètres manquants');
+  const t = getTransporter();
+  const info = await t.sendMail({ from, to, subject, html, text, replyTo: replyTo || undefined });
+  if (process.env.NODE_ENV !== 'production') {
+    try { console.log('[mailer] Email envoyé:', info && info.messageId); } catch (_) {}
+  }
+  return info;
 }
 
-module.exports = { sendMail };
+async function sendVerifyEmail({ to, toName, verifyUrl, replyTo }) {
+  const { subject, text, html } = makeVerifyEmail({ toName, verifyUrl });
+  return sendMail({ to, subject, text, html, replyTo });
+}
+
+async function sendResetEmail({ to, toName, resetUrl, replyTo }) {
+  const { subject, text, html } = makeResetPassword({ toName, resetUrl });
+  return sendMail({ to, subject, text, html, replyTo });
+}
+
+module.exports = { sendMail, sendVerifyEmail, sendResetEmail };

@@ -36,6 +36,10 @@
   margin-top: var(--space-4);
 }
 
+/* click affordance kept, full definition below overrides specifics */
+.chip { cursor: pointer; }
+.chip:active { transform: scale(0.98); }
+
 .popup-link {
   appearance: none;
   -webkit-appearance: none;
@@ -210,22 +214,64 @@
   gap: var(--space-2);
 }
 
+/* Enhanced chip styles and helpers */
 .chip {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  gap: 8px;
+  padding: 10px 14px;
   border-radius: 999px;
   font-weight: 700;
   background: var(--nf-bg-card);
   border: 1.5px solid color-mix(in srgb, var(--nf-peach) 60%, #000 4%);
   box-shadow: var(--nf-shadow);
+  cursor: pointer;
+  transition: transform .08s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+.chip:hover {
+  background: color-mix(in srgb, var(--nf-peach) 10%, var(--nf-bg-card));
+}
+
+.chipValue { font-weight: 800; }
+
+.chipIcon {
+  font-size: 12px;
+  opacity: 0;
+  transform: translateY(-1px);
+  transition: opacity .15s ease, color .15s ease;
+}
+
+.chip:hover .chipIcon { opacity: .55; }
+
+/* Danger state while confirming delete */
+.chipDanger {
+  border-color: color-mix(in srgb, var(--nf-danger) 85%, var(--nf-border));
+  background: color-mix(in srgb, var(--nf-danger) 10%, var(--nf-bg-card));
+}
+
+.chipIconDanger {
+  opacity: 1;
+  color: var(--nf-danger);
+}
+
+.chipConfirm {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--nf-danger);
+  color: var(--nf-danger-ink);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.16);
 }
 
 .muted {
   color: #999;
-  font-size: large;
-  margin: 10px;
+  font-size: medium;
 }
 
 .chartPlaceholder {
@@ -306,4 +352,9 @@
   .historyList {
     scroll-behavior: auto;
   }
+}
+
+@media (prefers-color-scheme: dark) {
+  .chip:hover { background: color-mix(in srgb, var(--nf-peach) 12%, var(--nf-bg-card)); }
+  .chipDanger { background: color-mix(in srgb, var(--nf-danger) 14%, var(--nf-bg-card)); }
 }

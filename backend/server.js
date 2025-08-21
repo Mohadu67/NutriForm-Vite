@@ -1,4 +1,5 @@
 require('dotenv').config();
+const config = require('./config');
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -10,16 +11,14 @@ const contactRoutes = require('./routes/contact.route.js');
 const historyRoutes = require('./routes/history.route.js');
 
 const app = express();
-const port = process.env.PORT || 3000;
-
-console.log('🔍 URI MongoDB :', process.env.MONGODB_URI);
-if (!process.env.MONGODB_URI) {
-  console.error("❌ MONGODB_URI est manquant dans les variables d'environnement.");
+console.log('🔍 URI MongoDB :', config.mongoUri);
+if (!config.mongoUri) {
+  console.error("❌ MONGO_URI manquant dans la configuration.");
   process.exit(1);
 }
 
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(config.mongoUri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('🟢 Connecté à MongoDB'))
   .catch(err => console.error('Erreur MongoDB :', err));
 
@@ -41,6 +40,6 @@ app.get('/', (req, res) => {
   res.send('Bienvenue sur le backend de NutriForm 🚀');
 });
 
-app.listen(port, () => {
-  console.log(`🚀 Serveur en ligne sur http://localhost:${port}`);
+app.listen(config.port, () => {
+  console.log(`🚀 Serveur en ligne sur http://localhost:${config.port}`);
 });

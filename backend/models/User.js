@@ -55,7 +55,9 @@ const userSchema = new mongoose.Schema(
     },
     emailVerifie: { type: Boolean, default: false },
     verificationToken: { type: String, default: null, select: false },
-    verificationExpires: { type: Date, default: null, select: false }
+    verificationExpires: { type: Date, default: null, select: false },
+    resetPasswordToken: { type: String, default: null, index: true, select: false },
+    resetPasswordExpires: { type: Date, default: null, select: false }
   },
   { timestamps: true }
 );
@@ -66,10 +68,8 @@ userSchema.path('pseudo').validate(function (v) {
   return /^[a-z0-9._-]+$/.test(v);
 }, 'Pseudo invalide. Autorisé: a-z 0-9 . _ - (3-30 caractères)');
 
-// Index unique & sparse pour permettre l'absence de pseudo
-userSchema.index({ pseudo: 1 }, { unique: true, sparse: true });
-
-userSchema.index({ email: 1 }, { unique: true });
+// Index pour accélérer les recherches de resetToken (non-TTL)
+userSchema.index({ resetPasswordToken: 1, resetPasswordExpires: 1 });
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('motdepasse')) return next();
@@ -91,6 +91,18 @@ userSchema.methods.creerTokenVerificationEmail = function (ttlMinutes = 60) {
   this.verificationToken = token;
   this.verificationExpires = new Date(Date.now() + ttlMinutes * 60 * 1000);
   return token;
+};
+
+userSchema.methods.creerTokenResetPassword = function (ttlMinutes = 60) {
+  const token = crypto.randomBytes(32).toString('hex');
+  this.resetPasswordToken = token;
+  this.resetPasswordExpires = new Date(Date.now() + ttlMinutes * 60 * 1000);
+  return token;
+};
+
+userSchema.methods.invaliderTokenResetPassword = function () {
+  this.resetPasswordToken = null;
+  this.resetPasswordExpires = null;
 };
 
 function hideSensitive(_, ret) {

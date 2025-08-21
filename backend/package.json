@@ -1,11 +1,15 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
-  },
+  "main": "server.js",
+"scripts": {
+  "start": "node server.js",
+  "dev": "nodemon server.js",
+  "dev:local": "dotenv -e .env.local -- node server.js",
+  "dev:prod": "dotenv -e .env -- node server.js",
+  "lint": "eslint .",
+  "test": "jest"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -22,5 +26,9 @@
     "nodemailer": "^7.0.5",
     "uuid": "^11.1.0"
   },
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "dotenv-cli": "^10.0.0"
+  }
+  
 }
