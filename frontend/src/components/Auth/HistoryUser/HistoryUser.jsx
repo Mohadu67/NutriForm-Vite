@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import style from "./HistoryUser.module.css";
 
-
-const API_URL = import.meta.env.VITE_API_URL || "";
+// Normalise l'URL pour éviter les doubles //
+const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
 function LineChartSVG({ points = [], width = 320, height = 140, color = "currentColor", yLabel = "" }) {
   if (!Array.isArray(points) || points.length < 2) return null;
@@ -44,19 +44,14 @@ function LineChartSVG({ points = [], width = 320, height = 140, color = "current
 
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-label={`Courbe ${yLabel}`}>
-
       <line x1={pad.left} y1={pad.top} x2={pad.left} y2={H - pad.bottom} stroke="#ddd" />
       <line x1={pad.left} y1={H - pad.bottom} x2={W - pad.right} y2={H - pad.bottom} stroke="#ddd" />
-
       <text x={4} y={yScale(minY)} fontSize="10" fill="#666">{yMinText}</text>
       <text x={4} y={yScale(maxY)} fontSize="10" fill="#666">{yMaxText}</text>
-
       <path d={d} fill="none" stroke={color} strokeWidth="2" />
-
       {data.map((pt, i) => (
         <circle key={i} cx={xScale(pt.x.getTime())} cy={yScale(pt.y)} r="2.5" fill={color} />
       ))}
-
       <text x={pad.left} y={H - 6} fontSize="10" fill="#666">{first.x.toLocaleDateString()}</text>
       <text x={W - pad.right - 64} y={H - 6} fontSize="10" fill="#666">{last.x.toLocaleDateString()}</text>
     </svg>
@@ -69,6 +64,12 @@ export default function HistoryUser({ onClose, onLogout }) {
   const [error, setError] = useState("");
   const [displayName, setDisplayName] = useState("");
 
+  const getToken = () =>
+    localStorage.getItem('token') ||
+    sessionStorage.getItem('token') ||
+    localStorage.getItem('jwt') ||
+    localStorage.getItem('accessToken');
+
   useEffect(() => {
     try {
       const cached = JSON.parse(localStorage.getItem('user') || 'null');
@@ -76,20 +77,22 @@ export default function HistoryUser({ onClose, onLogout }) {
       if (cachedName) setDisplayName(cachedName);
     } catch (_) {}
 
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) {
       setError("Non connecté. Connecte-toi d'abord.");
       return;
     }
+
     setStatus("loading");
     setError("");
 
+    // Récupère l'utilisateur (affichage du prénom/pseudo)
     fetch(`${API_URL}/api/me`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then((res) => res.json().then((data) => ({ ok: res.ok, data })).catch(() => ({ ok: res.ok, data: {} })))
       .then(({ ok, data }) => {
-        if (!ok) return; 
+        if (!ok) return;
         const name = data?.prenom || data?.pseudo || data?.displayName || (data?.email ? String(data.email).split('@')[0] : '');
         if (name) setDisplayName(name);
       })
@@ -102,18 +105,35 @@ export default function HistoryUser({ onClose, onLogout }) {
       .then(({ ok, data }) => {
         if (!ok) throw new Error(data?.message || "Erreur HTTP");
 
-        const src = Array.isArray(data.history) ? data.history : [];
+        const src = Array.isArray(data) ? data : (Array.isArray(data?.history) ? data.history : []);
         const list = src
-          .map((r) => ({
-            type: r?.type,
-            value: Number(r?.value),
-            date: r?.date ? new Date(r.date) : new Date(),
-            poids: typeof r?.poids === 'number' ? r.poids : undefined,
-            categorie: typeof r?.categorie === 'string' ? r.categorie : undefined,
-          }))
-          .filter((r) => (r.type === 'imc' || r.type === 'calories') && Number.isFinite(r.value));
+          .map((r) => {
+            const m = r?.meta || {};
+            const date = r?.createdAt ? new Date(r.createdAt) : (m?.date ? new Date(m.date) : new Date());
+            if (r?.action === 'IMC_CALC') {
+              const value = Number(m?.imc);
+              return Number.isFinite(value)
+                ? {
+                    id: r?._id,
+                    type: 'imc',
+                    value,
+                    date,
+                    poids: typeof m?.poids === 'number' ? m.poids : undefined,
+                    categorie: typeof m?.categorie === 'string' ? m.categorie : undefined,
+                  }
+                : null;
+            }
+            if (r?.action === 'CALORIES_CALC') {
+              const value = Number(m?.calories ?? m?.kcal);
+              return Number.isFinite(value)
+                ? { id: r?._id, type: 'calories', value, date }
+                : null;
+            }
+            return null; 
+          })
+          .filter(Boolean)
+          .sort((a, b) => a.date - b.date);
 
-        list.sort((a, b) => a.date - b.date);
         setRecords(list);
         setStatus("idle");
       })
@@ -132,6 +152,26 @@ export default function HistoryUser({ onClose, onLogout }) {
       .map(r => ({ value: r.poids, date: r.date })),
     [imcPoints]
   );
+
+  const handleDelete = async (id) => {
+    const token = getToken();
+    if (!token || !id) return;
+    const ok = window.confirm('Supprimer cette mesure ?');
+    if (!ok) return;
+    try {
+      const res = await fetch(`${API_URL}/api/history/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setRecords((prev) => prev.filter((r) => r.id !== id));
+      } else if (import.meta.env.DEV) {
+        console.warn('DELETE /api/history failed', res.status, await res.text().catch(() => ''));
+      }
+    } catch (e) {
+      if (import.meta.env.DEV) console.warn('DELETE /api/history error', e);
+    }
+  };
 
   return (
     <div className={style["popup-body"]}>
@@ -170,7 +210,6 @@ export default function HistoryUser({ onClose, onLogout }) {
       </div>
 
       <div className={style.recapGrid}>
-
         <section className={style.recapCard}>
           <h4 className={style.recapTitle}>Mes données IMC / Poids</h4>
           {imcPoints.length > 0 ? (
@@ -200,10 +239,16 @@ export default function HistoryUser({ onClose, onLogout }) {
               .slice()
               .sort((a, b) => b.date - a.date)
               .map((r, i) => (
-                <span key={i} className={style.chip}>
+                <button
+                  type="button"
+                  key={r.id || i}
+                  className={style.chip}
+                  title="Supprimer cette mesure"
+                  onClick={() => handleDelete(r.id)}
+                >
                   {r.value}
                   {r.date && <> <span className={style.muted}>(le {new Date(r.date).toLocaleDateString()})</span></>}
-                </span>
+                </button>
               ))}
           </div>
         </section>
@@ -231,10 +276,16 @@ export default function HistoryUser({ onClose, onLogout }) {
               .slice()
               .sort((a, b) => b.date - a.date)
               .map((r, i) => (
-                <span key={i} className={style.chip}>
-                  {r.value} kcal
+                <button
+                  type="button"
+                  key={r.id || i}
+                  className={style.chip}
+                  title="Supprimer cette mesure"
+                  onClick={() => handleDelete(r.id)}
+                >
+                  <span className={style.chipValue}>{r.value}</span> kcal
                   {r.date && <> <span className={style.muted}>(le {new Date(r.date).toLocaleDateString()})</span></>}
-                </span>
+                </button>
               ))}
           </div>
         </section>
@@ -245,7 +296,7 @@ export default function HistoryUser({ onClose, onLogout }) {
           .slice()
           .sort((a, b) => b.date - a.date)
           .map((r, i) => (
-            <div key={i} className={style.row}>
+            <div key={r.id || i} className={style.row}>
               <span className={style.label} style={{ textTransform: 'capitalize' }}>{r.type}</span>
               <span className={style.value}>
                 {r.value}
@@ -267,7 +318,10 @@ export default function HistoryUser({ onClose, onLogout }) {
             type="button"
             className={style["popup-link"]}
             onClick={() => {
-              localStorage.removeItem('token');
+              try {
+                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
+              } catch {}
               if (onLogout) onLogout();
             }}
           >

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styles from "./FormImc.module.css";
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 function normalizeNumber(value) {
   if (typeof value === "string") {
@@ -50,22 +50,46 @@ export default function FormImc({ onCalculate }) {
     onCalculate?.(imc, categorie);
 
     try {
-      const token = localStorage.getItem('token');
+      const token =
+        localStorage.getItem('token') ||
+        sessionStorage.getItem('token') ||
+        localStorage.getItem('jwt') ||
+        localStorage.getItem('accessToken');
+      if (!token) {
+        console.warn('[IMC] Aucun token trouvé: la route /api/history refusera (401/400).');
+      }
       if (token) {
-        fetch(`${API_URL}/api/history`, {
+        const url = `${API_URL ? API_URL : ''}/api/history`;
+        fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({
-            type: 'imc',
-            value: imc,
-            poids: p,
-            taille: t,
-            categorie,
+            action: 'IMC_CALC',
+            meta: {
+              poids: p,
+              taille: t,
+              imc,
+              categorie,
+              date: new Date().toISOString(),
+            },
           }),
-        }).catch(() => {});
+        })
+          .then(async (res) => {
+            if (!res.ok) {
+              if (res.status === 401) setShowReminder(true);
+              // swallow silently in UI, but log in dev
+              if (import.meta.env.DEV) {
+                const txt = await res.text().catch(() => '');
+                console.warn('[IMC] /api/history non OK:', res.status, txt);
+              }
+            }
+          })
+          .catch((e) => {
+            if (import.meta.env.DEV) console.warn('[IMC] /api/history erreur:', e);
+          });
       }
     } catch (_) {}
 
@@ -78,7 +102,7 @@ export default function FormImc({ onCalculate }) {
   };
 
   const blockNonNumeric = (e) => {
-    if (["e", "E", "+", "-"].includes(e.key)) {
+    if (["e", "E", "+", "-", " "].includes(e.key)) {
       e.preventDefault();
     }
   };

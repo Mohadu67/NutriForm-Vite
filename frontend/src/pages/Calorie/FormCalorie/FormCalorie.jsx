@@ -1,6 +1,12 @@
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 import { useState } from "react";
 import styles from "./FormCalorie.module.css";
+
+const getToken = () =>
+  localStorage.getItem('token') ||
+  sessionStorage.getItem('token') ||
+  localStorage.getItem('jwt') ||
+  localStorage.getItem('accessToken');
 
 
 export default function FormCalorie({ onResult, onCalculate }) {
@@ -75,17 +81,33 @@ export default function FormCalorie({ onResult, onCalculate }) {
       onCalculate({ ...payload, calories });
     }
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        fetch(`${API_URL}/api/history`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ type: 'calories', value: calories }),
-        }).catch(() => {});
-      }
+      const token = getToken();
+      const url = `${API_URL ? API_URL : ''}/api/history`;
+      const body = {
+        action: 'CALORIES_CALC',
+        meta: {
+          ...payload,
+          calories,
+          date: new Date().toISOString(),
+        },
+      };
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body),
+      })
+        .then(async (res) => {
+          if (!res.ok && import.meta.env.DEV) {
+            const txt = await res.text().catch(() => '');
+            console.warn('[CALORIES] /api/history non OK:', res.status, txt);
+          }
+        })
+        .catch((e) => {
+          if (import.meta.env.DEV) console.warn('[CALORIES] /api/history erreur:', e);
+        });
     } catch (_) {}
   };
 

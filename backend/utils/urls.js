@@ -1,7 +1,7 @@
 // backend/utils/urls.js
 
 function buildBaseUrl(req) {
-  const fromEnv = process.env.FRONTEND_BASE_URL;
+  const fromEnv = process.env.BACKEND_BASE_URL;
   if (fromEnv) return fromEnv.replace(/\/$/, '');
 
   const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
