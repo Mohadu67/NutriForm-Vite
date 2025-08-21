@@ -11,16 +11,21 @@ const contactRoutes = require('./routes/contact.route.js');
 const historyRoutes = require('./routes/history.route.js');
 
 const app = express();
-console.log('🔍 URI MongoDB :', config.mongoUri);
 if (!config.mongoUri) {
   console.error("❌ MONGO_URI manquant dans la configuration.");
   process.exit(1);
 }
 
 mongoose
-  .connect(config.mongoUri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(config.mongoUri, {
+    dbName: 'nutriform',
+    authSource: 'admin',
+  })
   .then(() => console.log('🟢 Connecté à MongoDB'))
-  .catch(err => console.error('Erreur MongoDB :', err));
+  .catch(err => {
+    console.error('Erreur MongoDB :', err.message || err);
+    process.exit(1);
+  });
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
