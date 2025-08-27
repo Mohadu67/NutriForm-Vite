@@ -1,4 +1,10 @@
-require('dotenv').config();
+const fs = require('fs');
+if (fs.existsSync('.env.local')) {
+  require('dotenv').config({ path: '.env.local' });
+} else {
+  require('dotenv').config();
+}
+const cookieParser = require('cookie-parser');
 const config = require('./config');
 const express = require('express');
 const cors = require('cors');
@@ -27,20 +33,22 @@ mongoose
     process.exit(1);
   });
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({
+  origin: process.env.FRONTEND_BASE_URL || 'http://localhost:5173',
+  credentials: true,
+}));
 app.use(express.json());
+app.use(cookieParser());
 
-// Healthcheck
+
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
-// Routes principales
 app.use('/api', verifyRoutes);
 app.use('/api', authRoutes);
 app.use('/api', passwordResetRoutes);
 app.use('/api', contactRoutes);
 app.use('/api', historyRoutes);
 
-// Accueil
 app.get('/', (req, res) => {
   res.send('Bienvenue sur le backend de NutriForm 🚀');
 });

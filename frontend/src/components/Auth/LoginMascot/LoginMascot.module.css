@@ -1,0 +1,208 @@
+
+
+:root {
+  --ink: #1f1f1f;
+  --white: #fff;
+  --mint: #b5ead7;
+  --mint-deep: #99e0c8;
+  --peach: #ffb385;
+  --peach-deep: #f6a876;
+  --shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+}
+
+.mascot {
+  width: 220px;
+  margin: 0 auto 8px;
+}
+.svg {
+  width: 60%;
+  display: block;
+  margin: auto;
+}
+
+/* Conteneur principal + ombre */
+.root {
+  filter: drop-shadow(var(--shadow));
+}
+
+/* Corps (respiration) */
+.bodyGroup {
+  transform-origin: 130px 192px;
+  animation: breathe 4.2s ease-in-out infinite;
+}
+.bodyFill {
+  fill: var(--couleur-bouton-action);
+  stroke: var(--peach-deep);
+  stroke-width: 2;
+}
+
+/* Tête */
+.headGroup {
+  transform-origin: 130px 110px;
+  transition: transform 0.25s ease;
+}
+.headFill {
+  fill: var(--couleur-principale);
+  stroke: var(--mint-deep);
+  stroke-width: 2;
+}
+
+/* Joues */
+.cheekLeft,
+.cheekRight {
+  fill: var(--peach);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* Yeux */
+.eyesOpen {
+  opacity: 1;
+  transition: opacity 0.15s ease;
+  animation: blink 5s infinite;
+}
+.eyesClosed {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.eyeLeft,
+.eyeRight {
+  fill: var(--white);
+  stroke: var(--ink);
+  stroke-width: 2.2;
+}
+.pupilLeft,
+.pupilRight {
+  fill: var(--ink);
+  transition: transform 0.2s ease;
+  transform-origin: center;
+}
+.glintLeft,
+.glintRight {
+  fill: var(--white);
+  opacity: 0.95;
+}
+.lidLeft,
+.lidRight {
+  stroke: var(--ink);
+  stroke-width: 3.2;
+  fill: none;
+  stroke-linecap: round;
+}
+
+/* Sourcils */
+.browLeft,
+.browRight {
+  stroke: var(--ink);
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+  opacity: 0.9;
+  transition: transform 0.25s ease, opacity 0.2s;
+}
+
+/* Bouches */
+.mouthSmile,
+.mouthNeutral {
+  stroke: var(--ink);
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+  transition: opacity 0.15s ease;
+}
+.mouthSmile {
+  opacity: 0;
+}
+.mouthNeutral {
+  opacity: 0.9;
+}
+
+/* Mains & bras */
+
+.handLeft,
+.handRight {
+  fill: var(--couleur-bouton-selection);
+  stroke: var(--ink);
+  stroke-width: 2;
+  transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.2, 1.4);
+  transform-origin: center;
+}
+
+/* Etats de base */
+.idle .eyesOpen {
+  opacity: 1;
+}
+.idle .eyesClosed {
+  opacity: 0;
+}
+.idle .mouthNeutral {
+  opacity: 0.9;
+}
+.idle .mouthSmile {
+  opacity: 0;
+}
+
+/* username: regard + sourire + inclinaison + joues */
+.username .pupilLeft,
+.username .pupilRight {
+  transform: translate(5px, 1px);
+}
+.username .mouthSmile {
+  opacity: 1;
+}
+.username .mouthNeutral {
+  opacity: 0;
+}
+.username .headGroup {
+  transform: rotate(-4deg);
+}
+
+.username .cheekLeft,
+.username .cheekRight {
+  opacity: 0.55;
+}
+
+/* password: mains couvrent + yeux fermés + overshoot */
+.password .eyesOpen {
+  opacity: 0;
+}
+.password .eyesClosed {
+  opacity: 1;
+}
+.password .mouthSmile {
+  opacity: 0;
+}
+.password .mouthNeutral {
+  opacity: 0.95;
+}
+.password .handLeft {
+  transform: translate(36px, -78px) rotate(-12deg);
+}
+.password .handRight {
+  transform: translate(-36px, -78px) rotate(12deg);
+}
+.password .browLeft,
+.password .browRight {
+  opacity: 0.75;
+}
+
+/* Animations */
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+@keyframes blink {
+  0%,
+  94%,
+  100% {
+    opacity: 1;
+  }
+  96% {
+    opacity: 0;
+  }
+}

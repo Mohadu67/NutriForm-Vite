@@ -1,5 +1,7 @@
+import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
 import { useState } from "react";
 import styles from "./FormImc.module.css";
+import ConnectReminder from "../../../components/MessageAlerte/ConnectReminder/ConnectReminder.jsx";
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
@@ -80,7 +82,7 @@ export default function FormImc({ onCalculate }) {
           .then(async (res) => {
             if (!res.ok) {
               if (res.status === 401) setShowReminder(true);
-              // swallow silently in UI, but log in dev
+
               if (import.meta.env.DEV) {
                 const txt = await res.text().catch(() => '');
                 console.warn('[IMC] /api/history non OK:', res.status, txt);
@@ -109,6 +111,7 @@ export default function FormImc({ onCalculate }) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit} aria-describedby="form-help">
+      <h1 className={styles.h1} > L'indice de masse corporelle</h1>
       <label className={styles.label} htmlFor="taille">Taille (cm) :</label>
       <input
         className={styles.input}
@@ -139,16 +142,16 @@ export default function FormImc({ onCalculate }) {
         required
       />
 
-      <button className={styles.button} type="submit">Calculer</button>
+      {/* <button className={styles.button} type="submit">Calculer</button> */}
+      <BoutonAction type="submit">
+        Calculer
+      </BoutonAction>
 
-      {showReminder && (
-        <div className={styles.reminder} aria-live="polite">
-          Connecte-toi et accède à ton historique de calories !
-        </div>
-      )}
+      <ConnectReminder show={showReminder} />
+
 
       <p id="form-help" className={styles.helper}>
-        Astuce : tu peux saisir des décimales (ex: 72,5 ou 72.5)
+        Entrez votre taille en centimètres (cm) et votre poids en kilogrammes (kg), puis cliquez sur "Calculer" pour obtenir votre indice de masse corporelle (IMC) et sa catégorie associée.
       </p>
     </form>
   );

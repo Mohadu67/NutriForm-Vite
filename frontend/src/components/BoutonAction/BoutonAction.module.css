@@ -1,0 +1,18 @@
+.btn {
+  display: block;
+  padding: 10px 20px;
+  border: 2px solid var(--couleur-bouton-action);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  margin: 10px auto;
+  width: 80%;
+
+}
+
+.btn:hover {
+  background: rgba(255,179,133,0.12);
+  transform: translateY(-1px);
+}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
 import styles from "./ArticlesImc.module.css"
 
 export default function ArticlesImc() {
@@ -91,6 +92,9 @@ export default function ArticlesImc() {
                             <p className={styles.modalText}>{selectedArticle.excedent}</p>
                         )
                     )}
+                    <BoutonAction to="/not-found">
+                      Lire l&apos;article
+                    </BoutonAction>
                 </div>
                 </div>
             )}

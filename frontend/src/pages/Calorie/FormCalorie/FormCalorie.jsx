@@ -1,6 +1,9 @@
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 import { useState } from "react";
 import styles from "./FormCalorie.module.css";
+import ConnectReminder from "../../../components/MessageAlerte/ConnectReminder/ConnectReminder.jsx";
+import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
+
 
 const getToken = () =>
   localStorage.getItem('token') ||
@@ -11,6 +14,7 @@ const getToken = () =>
 
 export default function FormCalorie({ onResult, onCalculate }) {
     console.log(onCalculate)
+  const [showReminder, setShowReminder] = useState(false);
   const [form, setForm] = useState({
     sexe: "homme",
     poids: "",
@@ -82,6 +86,10 @@ export default function FormCalorie({ onResult, onCalculate }) {
     }
     try {
       const token = getToken();
+      if (!token) {
+        // Pas connecté: on affiche le rappel APRES la soumission
+        setShowReminder(true);
+      }
       const url = `${API_URL ? API_URL : ''}/api/history`;
       const body = {
         action: 'CALORIES_CALC',
@@ -103,6 +111,9 @@ export default function FormCalorie({ onResult, onCalculate }) {
           if (!res.ok && import.meta.env.DEV) {
             const txt = await res.text().catch(() => '');
             console.warn('[CALORIES] /api/history non OK:', res.status, txt);
+          }
+          if (res.status === 401) {
+            setShowReminder(true);
           }
         })
         .catch((e) => {
@@ -317,7 +328,16 @@ export default function FormCalorie({ onResult, onCalculate }) {
           </label>
         </div>
 
-        <button className={styles.submit} type="submit">Calculer</button>
+        <BoutonAction type="submit">
+          Calculer
+        </BoutonAction>
+
+        <ConnectReminder
+          show={showReminder}
+          message="Connecte-toi pour enregistrer tes calculs et retrouver ton historique."
+          cta="Se connecter"
+        />
+        
       </fieldset>
     </form>
   );

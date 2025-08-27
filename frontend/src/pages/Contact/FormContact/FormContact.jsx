@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styles from "./FormContact.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
+import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
@@ -133,7 +134,7 @@ export default function FormContact({ onSend }) {
         {errors.consent && <span className={styles.error}>{errors.consent}</span>}
 
         <div className={styles.actions}>
-          <button className={styles.submit} type="submit" disabled={status === "sending" || status === "success"}>
+          <BoutonAction type="submit" disabled={status === "sending" || status === "success"}>
             {status === "sending" ? (
               <span className={styles.loaderWrap}>
                 <img src={logoAnimate} alt="" aria-hidden="true" className={styles.loaderIcon} />
@@ -144,7 +145,7 @@ export default function FormContact({ onSend }) {
             ) : (
               "Envoyer"
             )}
-          </button>
+          </BoutonAction>
           {status === "error" && <span className={styles.error}>Une erreur est survenue. Réessaie.</span>}
         </div>
       </form>

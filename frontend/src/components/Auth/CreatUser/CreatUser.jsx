@@ -12,6 +12,8 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
   const [pseudo, setPseudo] = useState("");
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const goLoginAfterSuccess = () => {
     onCreated?.({ email });
@@ -134,24 +136,48 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
 
         <label className={cstyle.label}>
           Mot de passe
-          <input
-            type="password"
-            className={cstyle.input}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className={cstyle.passwordWrapper}>
+            <input
+              type={showPassword ? "text" : "password"}
+              className={cstyle.input}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className={cstyle.togglePassword}
+              aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+              title={showPassword ? "Masquer" : "Afficher"}
+            >
+              {showPassword ? "🙈" : "👁"}
+            </button>
+          </div>
         </label>
 
         <label className={cstyle.label}>
           Confirmer le mot de passe
-          <input
-            type="password"
-            className={cstyle.input}
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            required
-          />
+          <div className={cstyle.passwordWrapper}>
+            <input
+              type={showConfirm ? "text" : "password"}
+              className={cstyle.input}
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              required
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirm((v) => !v)}
+              className={cstyle.togglePassword}
+              aria-label={showConfirm ? "Masquer la confirmation" : "Afficher la confirmation"}
+              title={showConfirm ? "Masquer" : "Afficher"}
+            >
+              {showConfirm ? "🙈" : "👁"}
+            </button>
+          </div>
         </label>
 
         <label className={cstyle.checkRow}>

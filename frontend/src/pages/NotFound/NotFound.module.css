@@ -1,0 +1,109 @@
+.container {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  background: #F7F6F2;
+  padding: 24px;
+}
+
+.card {
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  max-width: 720px;
+  width: 100%;
+  padding: 28px;
+  text-align: center;
+}
+
+.illustration {
+  display: grid;
+  place-items: center;
+  margin-bottom: 16px;
+}
+
+.svg {
+  width: 220px;
+  height: auto;
+}
+
+.magnifier {
+  transform-origin: 150px 60px;
+  animation: float 3.2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%   { transform: translateY(0) rotate(0deg); }
+  50%  { transform: translateY(-4px) rotate(4deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+.digits text {
+  opacity: 0.14;
+}
+
+.title {
+  font-family: "Merriweather", serif;
+  color: #2B2B2B;
+  font-size: clamp(1.4rem, 1.2rem + 1.2vw, 2.2rem);
+  margin: 6px 0 8px;
+}
+
+.text {
+  font-family: "Montserrat", system-ui, sans-serif;
+  color: rgba(0,0,0,0.72);
+  font-size: clamp(0.95rem, 0.9rem + 0.3vw, 1.1rem);
+  line-height: 1.6;
+  margin: 0 auto 18px;
+  max-width: 48ch;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.primary,
+.secondary {
+  font-family: "Montserrat", system-ui, sans-serif;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+  outline: none;
+}
+
+.primary {
+  color: #0f3a2f;
+  border: 2px solid var(--couleur-bouton-action);
+  box-shadow: 0 6px 16px rgba(181,234,215,0.45);
+}
+
+.primary:hover {
+  transform: translateY(-1px);
+  background: rgba(255,179,133,0.12);
+}
+.primary:active {
+  transform: translateY(0);
+}
+.primary:focus-visible {
+  outline: 3px solid rgba(181,234,215,0.5);
+  outline-offset: 2px;
+}
+
+.secondary {
+  background: transparent;
+  color: #2B2B2B;
+  border: 2px solid #FFB385;
+}
+
+.secondary:hover {
+  background: rgba(255,179,133,0.12);
+  transform: translateY(-1px);
+}
+
