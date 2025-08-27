@@ -19,7 +19,6 @@ export default function ImcPage() {
     <>
       <Header />
       <main className={styles.wrapper}>
-          <h1 className={styles.title}>L'indice de Masse Corporelle</h1>
           <FormImc onCalculate={(v, c) => { setImc(v); setCategorie(c); setShowGraph(true); }} />
           <ImcGraph imc={imc} categorie={categorie} visible={showGraph} scrollOnShow />
           <ResultCards categorie={categorie} />

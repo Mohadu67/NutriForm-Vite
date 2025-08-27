@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import lstyle from "./LoginUser.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
+import LoginMascot from "../LoginMascot/LoginMascot";
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const MIN_SPINNER_MS = 4000; 
@@ -13,6 +14,8 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
   const [remember, setRemember] = useState(false);
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [mascotState, setMascotState] = useState("idle");
 
   const loading = status === "sending";
 
@@ -108,8 +111,9 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
 
   return (
     <div className={lstyle.body}>
-      <div className={lstyle.headerRow}>
         <h3 className={lstyle.title}>Connecte toi 🙈</h3>
+      <LoginMascot state={mascotState} />
+      <div className={lstyle.headerRow}>
       </div>
 
       <form
@@ -123,7 +127,9 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
             type="text"
             className={lstyle.input}
             value={identifier}
-            onChange={(e) => setIdentifier(e.target.value.trimStart())}
+            onChange={(e) => { setIdentifier(e.target.value.trimStart()); setMascotState("username"); }}
+            onFocus={() => setMascotState("username")}
+            onBlur={() => setMascotState("idle")}
             placeholder="ex: nom@domaine.com ou mon_pseudo"
             required
             autoComplete="username"
@@ -132,14 +138,27 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
 
         <label className={lstyle.label}>
           Mot de passe
-          <input
-            type="password"
-            className={lstyle.input}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
+          <div className={lstyle.passwordWrapper}>
+            <input
+              type={showPassword ? "text" : "password"}
+              className={lstyle.input}
+              value={password}
+              onChange={(e) => { setPassword(e.target.value); setMascotState("password"); }}
+              onFocus={() => setMascotState("password")}
+              onBlur={() => setMascotState("idle")}
+              required
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className={lstyle.togglePassword}
+              aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+              title={showPassword ? "Masquer" : "Afficher"}
+            >
+              {showPassword ? "🙈" : "👁"}
+            </button>
+          </div>
         </label>
 
         <label className={lstyle.remember}>

@@ -1,6 +1,7 @@
 
 
 import React, { useEffect, useState } from "react";
+import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
 import styles from "./ArticlesCalorie.module.css";
 
 export default function ArticlesCalorie() {
@@ -108,6 +109,9 @@ export default function ArticlesCalorie() {
                 <p className={styles.modalText}>{selectedArticle.excedent}</p>
               )
             )}
+            <BoutonAction to="/not-found">
+              Lire l&apos;article
+            </BoutonAction>
           </div>
         </div>
       )}

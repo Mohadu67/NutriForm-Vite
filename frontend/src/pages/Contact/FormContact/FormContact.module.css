@@ -106,17 +106,19 @@
 }
 
 .submit {
-  padding: 0.9rem 1.2rem;
-  background-color: #FFB385;
+  padding: 10px 40%;
   color: #000;
   font-weight: 800;
-  border: none;
+  border: 2px solid var(--couleur-bouton-action);
   border-radius: 12px;
   cursor: pointer;
   transition: transform 0.12s ease, background-color 0.12s ease;
 }
 
-.submit:hover { background-color: #e9a274; transform: translateY(-1px); }
+.submit:hover {  
+  background: rgba(255,179,133,0.12);
+  transform: translateY(-1px);
+}
 .submit:active { transform: translateY(0); }
 .submit:disabled { opacity: 0.6; cursor: not-allowed; }
 

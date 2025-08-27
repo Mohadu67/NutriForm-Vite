@@ -9,6 +9,7 @@ import ResetPassword from "./components/Auth/ResetPassword/ResetPassword.jsx";
 import MentionsLegales from "./pages/RGPD/MentionsLegales.jsx";
 import CookiesPolicy from "./pages/RGPD/CookiesPolicy.jsx";
 import PrivacyPolicy from "./pages/RGPD/PrivacyPolicy.jsx";
+import NotFound from "./pages/NotFound/NotFound.jsx";
 
 export default function App() {
 
@@ -24,6 +25,7 @@ export default function App() {
       <Route path="/cookies" element={<CookiesPolicy />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/mentions-legales" element={<MentionsLegales />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
