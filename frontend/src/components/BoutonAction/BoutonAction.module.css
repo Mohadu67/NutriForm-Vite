@@ -1,18 +1,87 @@
 .btn {
-  display: block;
-  padding: 10px 20px;
-  border: 2px solid var(--couleur-bouton-action);
-  border-radius: 8px;
+  padding: .95rem 1.25rem;
+  background: linear-gradient(135deg, #FFB385 0%, #F7B186 45%, #E07A47 100%);
+  color: #111;
+  font-weight: 800;
+  border: none;
+  border-radius: 14px;
   cursor: pointer;
-  font-weight: 700;
-  text-align: center;
-  text-decoration: none;
-  margin: 10px auto;
-  width: 80%;
-
+  box-shadow: 0 10px 18px rgba(224,122,71,.20), 0 2px 6px rgba(0,0,0,.06);
+  transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease, filter .15s ease;
 }
 
 .btn:hover {
-  background: rgba(255,179,133,0.12);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  opacity: .97;
+  box-shadow: 0 12px 22px rgba(224,122,71,.25), 0 4px 10px rgba(0,0,0,.08);
 }
+
+.btn:active {
+  transform: translateY(0);
+  filter: saturate(1.05);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(181,234,215,.55), 0 10px 18px rgba(224,122,71,.20);
+}
+
+.btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+
+.logout {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid color-mix(in srgb, var(--nf-danger) 65%, var(--nf-border));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--nf-danger) 10%, transparent), transparent) padding-box,
+              var(--nf-danger-ghost) border-box;
+  color: color-mix(in srgb, var(--nf-danger) 75%, var(--nf-ink));
+  font-weight: 800;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform .06s ease-out, box-shadow .12s ease, background-color .12s ease, color .12s ease, border-color .12s ease;
+  text-decoration: none;
+  user-select: none;
+  white-space: nowrap;
+  margin: auto;
+}
+
+.logout:hover {
+  background: color-mix(in srgb, var(--nf-danger) 10%, var(--nf-danger-ghost));
+  color: color-mix(in srgb, var(--nf-danger) 92%, var(--nf-danger-ink) 8%);
+  border-color: color-mix(in srgb, var(--nf-danger) 80%, var(--nf-border));
+}
+
+.logout:active {
+  transform: translateY(1px);
+  background: color-mix(in srgb, var(--nf-danger) 14%, var(--nf-danger-ghost));
+}
+
+.logout:focus-visible {
+  outline: none;
+  box-shadow: var(--nf-focus);
+}
+
+.logout:disabled,
+.logout[aria-disabled="true"] {
+  opacity: .6;
+  cursor: not-allowed;
+  filter: saturate(.75);
+}
+
+@media (prefers-color-scheme: dark) {
+  .logout {
+    color: color-mix(in srgb, var(--nf-danger) 80%, var(--nf-danger-ink) 20%);
+    background: color-mix(in srgb, var(--nf-danger) 12%, transparent);
+  }
+  .logout:hover {
+    background: color-mix(in srgb, var(--nf-danger) 18%, transparent);
+  }
+}
+

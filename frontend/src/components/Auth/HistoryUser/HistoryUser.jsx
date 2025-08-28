@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import style from "./HistoryUser.module.css";
+import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
@@ -312,9 +313,9 @@ export default function HistoryUser({ onClose, onLogout }) {
 
       <div className={style["popup-actions"]}>
         {onLogout && (
-          <button
+          <BoutonAction
             type="button"
-            className={style["popup-link"]}
+            variant="logout"
             onClick={() => {
               try {
                 localStorage.removeItem('token');
@@ -324,7 +325,7 @@ export default function HistoryUser({ onClose, onLogout }) {
             }}
           >
             Se déconnecter
-          </button>
+          </BoutonAction>
         )}
       </div>
     </div>

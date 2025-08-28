@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import styles from "../../../components/Auth/ResetPassword/ResetPassword.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import MobiLogo from "../../../assets/img/logo/domaine-logo.svg";
+import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
 
@@ -76,7 +77,12 @@ export default function ResetPassword() {
             onChange={(e) => setPwd2(e.target.value)}
             autoComplete="new-password"
           />
-          <button className={styles.button} type="submit" disabled={disabled} aria-busy={loading}>
+          <BoutonAction
+            type="submit"
+            variant="authPopup"
+            disabled={disabled}
+            aria-busy={loading}
+          >
             {loading ? (
               <>
                 <img src={logoAnimate} alt="" className={styles.btnSpinner} aria-hidden={true} />
@@ -84,7 +90,7 @@ export default function ResetPassword() {
             ) : (
               "Valider"
             )}
-          </button>
+          </BoutonAction>
           {msg ? <p className={styles.muted} role="status">{msg}</p> : null}
         </form>
       </div>

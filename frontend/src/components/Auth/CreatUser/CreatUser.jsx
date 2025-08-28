@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import MobiLogo from "../../../assets/img/logo/domaine-logo.svg";
 import cstyle from "./CreatUser.module.css";
+import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function CreatUser({ onCreated, toLogin, onClose }) {
@@ -63,6 +64,15 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
       setErrorMsg(err.message || "Une erreur est survenue. Réessaie.");
     }
   };
+
+  const isValid =
+    pseudo.trim() &&
+    email.trim() &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
+    password &&
+    confirm &&
+    password === confirm &&
+    agree;
 
   if (status === "sending") {
     return (
@@ -191,9 +201,13 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
 
         {errorMsg && <p className={cstyle.error} style={{ marginTop: 0 }}>{errorMsg}</p>}
 
-        <button type="submit" className={cstyle.submit} disabled={status === "sending"}>
+        <BoutonAction
+          type="submit"
+          variant="form"
+          disabled={!isValid || status === "sending"}
+        >
           {status === "sending" ? "Création…" : "Créer mon compte"}
-        </button>
+        </BoutonAction>
 
         <div className={cstyle.actions}>
           <button
