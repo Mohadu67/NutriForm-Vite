@@ -38,25 +38,23 @@ export default function Faq() {
       <h2>Foire Aux Questions</h2>
 
       {DATA.map((item, idx) => (
-        <div key={idx} className={styles.faqItem}>
+        <div
+          key={idx}
+          className={styles.faqItem}
+          role="button"
+          tabIndex={0}
+          aria-expanded={openIndex === idx}
+          aria-controls={`faq-panel-${idx}`}
+          onClick={() => toggle(idx)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              toggle(idx);
+            }
+          }}
+        >
           <h3>
-            <button
-              type="button"
-              aria-expanded={openIndex === idx}
-              aria-controls={`faq-panel-${idx}`}
-              onClick={() => toggle(idx)}
-              style={{
-                all: "unset",
-                cursor: "pointer",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                width: "100%",
-              }}
-            >
-              <span>{item.q}</span>
-              <span aria-hidden>{openIndex === idx ? "−" : "+"}</span>
-            </button>
+            <span>{item.q}</span>
           </h3>
           <div
             id={`faq-panel-${idx}`}

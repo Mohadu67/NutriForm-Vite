@@ -1,4 +1,6 @@
 import styles from "./ResultatsCalorie.module.css";
+import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
+
 
 export default function ResultatPopup({ titre, calories, macros, onClose }) {
   return (
@@ -18,9 +20,9 @@ export default function ResultatPopup({ titre, calories, macros, onClose }) {
           </div>
         )}
 
-        <button className={styles.popupButton}>
-          Voir des recettes adaptées
-        </button>
+          <BoutonAction to="/not-found">
+            Voir des recette adaptées
+          </BoutonAction>
       </div>
     </div>
   );

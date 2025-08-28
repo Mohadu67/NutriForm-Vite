@@ -1,6 +1,7 @@
 import styles from "./ForgotUser.module.css";
 import React, { useState } from "react";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
+import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 const API_URL = import.meta.env.VITE_API_URL || '';
 
 
@@ -110,9 +111,13 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
         {error && <div className={styles["auth-error"]} role="alert">{error}</div>}
         <div className={styles.authActions}>
           <button type="button" onClick={toLogin} className={styles.linkBtn}>Retour</button>
-          <button type="submit" disabled={loading || !isEmail(emailNorm)} className={styles["auth-button"]}>
+          <BoutonAction
+            type="submit"
+            variant="authPopup"
+            disabled={loading || !isEmail(emailNorm)}
+          >
             {loading ? "Envoi..." : "Envoyer le lien"}
-          </button>
+          </BoutonAction>
           <button type="button" onClick={onClose} className={styles.linkBtn}>Fermer</button>
         </div>
       </form>
