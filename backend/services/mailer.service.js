@@ -2,7 +2,6 @@
 const nodemailer = require('nodemailer');
 const config = require('../config');
 
-// Templates
 const makeVerifyEmail = require('../templates/verifyEmail');
 const makeResetPassword = require('../templates/resetPassword');
 

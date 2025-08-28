@@ -2,7 +2,6 @@
 
 const { sendMail } = require('../services/mailer.service');
 
-// Petite fonction d'échappement pour éviter les surprises dans le HTML
 function escapeHtml(str = '') {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -20,8 +19,7 @@ function isValidEmail(v = '') {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
-// POST /api/contact
-// Body attendu: { name?, nom?, email, subject?, sujet?, message }
+
 exports.handleContact = async (req, res) => {
   try {
     const { name, nom, email, subject, sujet, message } = req.body || {};
@@ -31,7 +29,6 @@ exports.handleContact = async (req, res) => {
     const subjectLine = (sujet || subject || 'Nouveau message de contact').toString().trim();
     const content = (message || '').toString().trim();
 
-    // validations de base
     if (!emailNorm || !isValidEmail(emailNorm)) {
       return res.status(400).json({ message: "Email invalide." });
     }
@@ -39,7 +36,6 @@ exports.handleContact = async (req, res) => {
       return res.status(400).json({ message: "Le message est requis." });
     }
 
-    // limites raisonnables
     if (senderName.length > 120) return res.status(400).json({ message: 'Nom trop long.' });
     if (subjectLine.length > 180) return res.status(400).json({ message: 'Sujet trop long.' });
     if (content.length > 5000) return res.status(400).json({ message: 'Message trop long (max 5000 caractères).' });

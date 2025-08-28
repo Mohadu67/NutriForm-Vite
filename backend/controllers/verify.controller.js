@@ -2,7 +2,6 @@
 
 const User = require('../models/User');
 
-// GET /api/verify-email?token=...
 async function verifyEmail(req, res) {
   try {
     const { token } = req.query || {};
@@ -14,8 +13,8 @@ async function verifyEmail(req, res) {
     if (!user) return res.status(400).json({ message: 'Token invalide ❌' });
 
     if (!user.verificationExpires || user.verificationExpires.getTime() < Date.now()) {
-      // Si le compte n'est pas encore vérifié et que le token est périmé, on nettoie
-      if (!user.emailVerifie) await User.deleteOne({ _id: user._id });
+
+        if (!user.emailVerifie) await User.deleteOne({ _id: user._id });
       return res.status(410).json({ message: 'Token expiré ❌' });
     }
 
@@ -31,7 +30,6 @@ async function verifyEmail(req, res) {
   }
 }
 
-// Lancement unique d'un nettoyeur périodique des comptes non vérifiés expirés
 let cleanerStarted = false;
 function startCleanerOnce() {
   if (cleanerStarted) return;
@@ -44,7 +42,7 @@ function startCleanerOnce() {
     } catch (e) {
       console.error('[verify.cleaner] erreur:', e);
     }
-  }, 60 * 60 * 1000); // toutes les heures
+  }, 60 * 60 * 1000);
 }
 
 module.exports = { verifyEmail, startCleanerOnce };
