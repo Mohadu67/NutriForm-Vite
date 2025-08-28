@@ -62,13 +62,11 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Validation du pseudo (optionnel) : a-z 0-9 . _ -
 userSchema.path('pseudo').validate(function (v) {
   if (!v) return true;
   return /^[a-z0-9._-]+$/.test(v);
 }, 'Pseudo invalide. Autorisé: a-z 0-9 . _ - (3-30 caractères)');
 
-// Index pour accélérer les recherches de resetToken (non-TTL)
 userSchema.index({ resetPasswordToken: 1, resetPasswordExpires: 1 });
 
 userSchema.pre('save', async function (next) {

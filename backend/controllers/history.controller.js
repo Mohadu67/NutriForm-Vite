@@ -1,6 +1,5 @@
 const History = require('../models/History');
 
-// POST /api/history  (protégé par auth)
 async function addHistory(req, res) {
   try {
     if (process.env.NODE_ENV !== 'production') {
@@ -9,7 +8,7 @@ async function addHistory(req, res) {
       console.log('[addHistory] body =', req.body);
     }
 
-    const userId = req.userId; // exclusivement via middleware auth
+    const userId = req.userId;
     if (!userId) return res.status(401).json({ message: 'Non autorisé (token manquant ou invalide).' });
 
     let { action, meta } = req.body || {};
@@ -25,7 +24,6 @@ async function addHistory(req, res) {
   }
 }
 
-// GET /api/history  (protégé par auth)
 async function getHistory(req, res) {
   try {
     const userId = req.userId;
