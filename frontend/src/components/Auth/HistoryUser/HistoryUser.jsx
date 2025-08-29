@@ -290,26 +290,16 @@ export default function HistoryUser({ onClose, onLogout }) {
         </section>
       </div>
 
-      <div className={style.historyList}>
-        {records
-          .slice()
-          .sort((a, b) => b.date - a.date)
-          .map((r, i) => (
-            <div key={r.id || i} className={style.row}>
-              <span className={style.label} style={{ textTransform: 'capitalize' }}>{r.type}</span>
-              <span className={style.value}>
-                {r.value}
-                {r.type === 'imc' && typeof r.poids === 'number' && (
-                  <span className={style.muted}>({r.poids} kg)</span>
-                )}
-                {r.type === 'imc' && r.categorie && (
-                  <span className={style.muted}>{r.categorie}</span>
-                )}
-              </span>
-              <span className={style.date}>{new Date(r.date).toLocaleString()}</span>
-            </div>
-          ))}
-      </div>
+      {/* Suivi des entraînements (bientôt disponible) */}
+      <section className={style.recapCard} style={{ marginTop: '1rem' }}>
+        <h4 className={style.recapTitle}>Suivi des entraînements</h4>
+        <p className={style.muted}>
+          Patience, coach en pantoufles. Ton historique de séances arrive ici très bientôt.
+        </p>
+        <p className={style.muted} style={{ fontStyle: 'italic' }}>
+          Bientôt disponible : « Ton classement contre tes potes… et contre toi-même. »
+        </p>
+      </section>
 
       <div className={style["popup-actions"]}>
         {onLogout && (

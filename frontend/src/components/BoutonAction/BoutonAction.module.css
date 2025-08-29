@@ -1,13 +1,17 @@
 .btn {
+  display: block;
   padding: .95rem 1.25rem;
   background: linear-gradient(135deg, #FFB385 0%, #F7B186 45%, #E07A47 100%);
   color: #111;
   font-weight: 800;
   border: none;
   border-radius: 14px;
+  margin: 10px auto;
   cursor: pointer;
+  width: 70%;
   box-shadow: 0 10px 18px rgba(224,122,71,.20), 0 2px 6px rgba(0,0,0,.06);
   transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease, filter .15s ease;
+  text-align: center;
 }
 
 .btn:hover {

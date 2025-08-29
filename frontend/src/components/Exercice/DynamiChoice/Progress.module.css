@@ -1,0 +1,91 @@
+:root {
+  --couleur-principale: #F7F6F2;
+  --couleur-bouton-action: #F7B186;
+  --couleur-bouton-selection: #B5EAD7;
+  --couleur-text-noir: #333;
+  --font-titre: 'Merriweather', serif;
+  --font-p: 'Montserrat', sans-serif;
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  width: 100%;
+  margin: 20px 0 30px 0;
+}
+
+.stepWrapper {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex: 1;
+}
+
+.step {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .25rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #9ca3af;
+  background: #1f2937;
+  color: #e5e7eb;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+.done {
+  background: var(--couleur-bouton-selection);
+  border-color: var(--couleur-bouton-selection);
+  color: #0f172a;
+}
+
+.label {
+  font-family: var(--font-titre);
+  font-weight: 700;
+  color: var(--couleur-text-noir);
+}
+
+.subLabel {
+  font-family: var(--font-p);
+  font-size: .9rem;
+  color: #94a3b8;
+}
+
+.connector {
+  height: 2px;
+  background: #cbd5e1;
+  flex: 1;
+  align-self: center;
+  border-radius: 2px;
+}
+
+.connectorDone {
+  background: #3b82f6;
+}
+
+@media (max-width: 560px) {
+  .steps { flex-direction: row; align-items: stretch; }
+  .stepWrapper { gap: .5rem; }
+  .connector { display: none; }
+}

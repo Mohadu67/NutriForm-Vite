@@ -1,29 +1,29 @@
 # NutriForm Project
 
 ## Description
-NutriForm is a comprehensive nutrition and fitness management application designed to help users achieve their health goals. It consists of a modern frontend interface and a robust backend API, working together to provide calorie calculation, meal planning, exercise tracking, and progress monitoring. NutriForm aims to promote a healthier lifestyle through personalized tools and analytics.
+NutriForm currently offers IMC and calorie calculators with a clean and user-friendly interface. It includes a dynamic exercise selection flow allowing users to choose exercise type, equipment, muscle group, and specific exercises. The app features exercise cards with popup details and a progress stepper to guide users through the process. The UI is styled using CSS modules with a mobile-first approach.
 
 ## Tech Stack
 
 ### Frontend
 - React
 - Vite
-- Tailwind CSS
+- CSS Modules
 - Axios
 
 ### Backend
-- Node.js
-- Express
-- MongoDB
-- Mongoose
-- JWT for authentication
+- Node.js (planned)
+- Express (planned)
+- MongoDB (planned)
+- Mongoose (planned)
+- JWT for authentication (planned)
 
 ## Features
-- Calorie calculation based on user input
-- Meal planning with nutritional breakdown
-- Exercise tracking system with progress monitoring
-- User authentication and secure data management
-- Responsive and intuitive UI for seamless user experience
+- IMC and calorie calculators with a clean UI
+- Dynamic exercise choice flow with steps (type, equipment, muscle, exercises)
+- Exercise cards with popup details
+- Progress stepper to guide the user
+- CSS modules for mobile-first design
 
 ## Installation
 
@@ -63,11 +63,14 @@ NutriForm is a comprehensive nutrition and fitness management application design
 ## Usage
 - Open the frontend app in your browser at `http://localhost:3000` (or the port specified by Vite).
 - Register or log in to your account.
-- Enter your personal details to calculate daily calorie needs.
-- Plan your meals and track your calorie intake.
-- Log your exercises and monitor your fitness progress.
+- Use the IMC and calorie calculators to assess your health metrics.
+- Follow the exercise selection steps to find suitable workouts.
+- View exercise details through popup cards.
+- Track your progress with the stepper interface.
 
 ## Future Plans
+- Backend integration for data persistence and user management.
+- Session logging for exercise tracking and progress monitoring.
 - Add personalized recipe suggestions based on calorie calculation.
 - Integrate an advanced exercise tracking system with detailed analytics.
 - Implement social features to share progress and recipes with friends.

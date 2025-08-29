@@ -1,6 +1,5 @@
 .form {
   background-color: #F7F6F2; 
-  padding: 2rem;
   border-radius: 16px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
   width: 90%;
@@ -61,6 +60,7 @@
   cursor: pointer;
   text-align: center;
   transition: all 0.2s ease-in-out;
+  width: 100%;
 }
 .hiddenCheckbox:checked + .pill {
   background-color: #B5EAD7;
@@ -68,21 +68,6 @@
 .hiddenCheckbox + .pill:focus-visible {
   outline: 3px solid rgba(181, 234, 215, 0.9);
   outline-offset: 2px;
-}
-
-.submit {
-    padding: 0.95rem 1.2rem;
-    font-weight: 700;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    border: 2px solid var(--couleur-bouton-action);
-    transition: ease-in-out 0.3s;
-}
-
-.submit:hover {
-  background: rgba(255,179,133,0.12);
-  transform: translateY(-1px);
 }
 
 .form label {
@@ -112,8 +97,8 @@
 }
 
 @media (max-width: 480px) {
-  .form { padding: 1.25rem; max-width: calc(100vw - 2rem); }
+  .form { max-width: calc(100vw - 2rem); }
 }
 @media (max-width: 360px) {
-  .form { padding: 1rem; max-width: calc(100vw - 1.5rem); }
+  .form { max-width: calc(100vw - 1.5rem); }
 }
