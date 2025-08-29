@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-// simple normalize function (remove accents, lowercase)
 function normalize(str) {
   return (str || "")
     .toString()

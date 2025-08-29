@@ -67,7 +67,6 @@
   line-height: 1.6;
 }
 
-/* --- RGPD shared extras --- */
 .rgpdNav {
   display: flex;
   gap: 12px;
@@ -107,7 +106,6 @@
   color: #666;
 }
 
-/* lists inside sections */
 .section ul {
   margin: 0.2rem 0 0.8rem 1.2rem;
 }
@@ -115,7 +113,6 @@
   margin: 0.25rem 0;
 }
 
-/* focus styles for accessibility */
 :where(a, button, .btn):focus-visible {
   outline: 2px solid var(--couleur-bouton-selection);
   outline-offset: 2px;

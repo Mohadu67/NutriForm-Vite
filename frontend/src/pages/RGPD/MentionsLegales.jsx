@@ -7,7 +7,6 @@ import style from "./Rgpd.module.css";
 import React from "react";
 import { Link } from "react-router-dom";
 
-// Structure prête à être stylisée avec Rgpd.module.css
 const MentionsLegales = () => {
   return (
     <>
