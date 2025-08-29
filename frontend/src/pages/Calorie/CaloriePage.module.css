@@ -1,0 +1,27 @@
+.main {
+  padding: 2rem 1rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section {
+  margin-bottom: 2rem;
+}
+
+.titre {
+  font-family: var(--font-titre);
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-family: var(--font-titre);
+  color: var(--couleur-text-noir);
+  text-align: center;
+}
+
+.section {
+  margin: 0 auto;
+  max-width: 900px;
+}

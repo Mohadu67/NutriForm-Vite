@@ -2,6 +2,7 @@ import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
 import { useState } from "react";
 import styles from "./FormImc.module.css";
 import ConnectReminder from "../../../components/MessageAlerte/ConnectReminder/ConnectReminder.jsx";
+import LabelField from "../../../components/LabelField/LabelField.jsx";
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
@@ -112,35 +113,39 @@ export default function FormImc({ onCalculate }) {
   return (
     <form className={styles.form} onSubmit={handleSubmit} aria-describedby="form-help">
       <h1 className={styles.h1} > L'indice de masse corporelle</h1>
-      <label className={styles.label} htmlFor="taille">Taille (cm) :</label>
-      <input
-        className={styles.input}
-        id="taille"
-        type="number"
-        inputMode="decimal"
-        step="0.1"
-        min="50"
-        max="300"
-        value={taille}
-        onKeyDown={blockNonNumeric}
-        onChange={(e) => setTaille(e.target.value)}
-        required
-      />
+      <LabelField label="Taille (cm)" htmlFor="taille" required>
+        <input
+          className={styles.input}
+          id="taille"
+          type="number"
+          inputMode="decimal"
+          step="0.1"
+          min="50"
+          max="300"
+          placeholder="ex: 180"
+          value={taille}
+          onKeyDown={blockNonNumeric}
+          onChange={(e) => setTaille(e.target.value)}
+          required
+        />
+      </LabelField>
 
-      <label className={styles.label} htmlFor="poids">Poids (kg) :</label>
-      <input
-        className={styles.input}
-        id="poids"
-        type="number"
-        inputMode="decimal"
-        step="0.1"
-        min="50"
-        max="500"
-        value={poids}
-        onKeyDown={blockNonNumeric}
-        onChange={(e) => setPoids(e.target.value)}
-        required
-      />
+      <LabelField label="Poids (kg)" htmlFor="poids" required>
+        <input
+          className={styles.input}
+          id="poids"
+          type="number"
+          inputMode="decimal"
+          step="0.1"
+          min="50"
+          max="500"
+          placeholder="ex: 75"
+          value={poids}
+          onKeyDown={blockNonNumeric}
+          onChange={(e) => setPoids(e.target.value)}
+          required
+        />
+      </LabelField>
 
       {/* <button className={styles.button} type="submit">Calculer</button> */}
       <BoutonAction type="submit">

@@ -1,8 +1,6 @@
 // src/pages/Calorie/CaloriePage.jsx
 import React, { useState } from "react";
 import usePageTitle from "../../hooks/usePageTitle.js";
-import Header from "../../components/Header/Header.jsx";
-import Footer from "../../components/Footer/Footer.jsx";
 import FormCalorie from "./FormCalorie/FormCalorie.jsx";
 import ResultatsCalorie from "./ResultatsCalorie/ResultatsCalorie.jsx";
 import ResultatPopup from "./ResultatsCalorie/ResultatPopup.jsx";
@@ -22,50 +20,50 @@ export default function CaloriePage() {
 
   return (
     <>
-    <Header />
-    <FormCalorie onResult={(value) => setCalories(value)} />
-      {calories !== null && (
-        <ResultatsCalorie
-          perte={calories - 500}
-          stabiliser={calories}
-          prise={calories + 500}
-          onCardClick={(type, e) => {
-            if (e && typeof e.clientX === "number") {
-              const x = Math.round((e.clientX / window.innerWidth) * 100);
-              const y = Math.round((e.clientY / window.innerHeight) * 100);
-              setPopupOrigin({ x, y });
-            } else {
-              setPopupOrigin({ x: 50, y: 50 });
-            }
-            setSelectedCard(type);
-          }}
-        />
-      )}
-      {selectedCard && calories !== null && (
-        <ResultatPopup
-          titre={selectedCard}
-          calories={
-            selectedCard === "perte"
-              ? calories - 500
-              : selectedCard === "stabiliser"
-              ? calories
-              : calories + 500
-          }
-          macros={(() => {
-            const base =
+    <main>
+      <FormCalorie onResult={(value) => setCalories(value)} />
+        {calories !== null && (
+          <ResultatsCalorie
+            perte={calories - 500}
+            stabiliser={calories}
+            prise={calories + 500}
+            onCardClick={(type, e) => {
+              if (e && typeof e.clientX === "number") {
+                const x = Math.round((e.clientX / window.innerWidth) * 100);
+                const y = Math.round((e.clientY / window.innerHeight) * 100);
+                setPopupOrigin({ x, y });
+              } else {
+                setPopupOrigin({ x: 50, y: 50 });
+              }
+              setSelectedCard(type);
+            }}
+          />
+        )}
+        {selectedCard && calories !== null && (
+          <ResultatPopup
+            titre={selectedCard}
+            calories={
               selectedCard === "perte"
                 ? calories - 500
                 : selectedCard === "stabiliser"
                 ? calories
-                : calories + 500;
-            return computeMacros(base);
-          })()}
-          onClose={() => setSelectedCard(null)}
-          origin={popupOrigin}
-        />
-      )}
-        <ArticlesCalorie />
-        <Footer />
+                : calories + 500
+            }
+            macros={(() => {
+              const base =
+                selectedCard === "perte"
+                  ? calories - 500
+                  : selectedCard === "stabiliser"
+                  ? calories
+                  : calories + 500;
+              return computeMacros(base);
+            })()}
+            onClose={() => setSelectedCard(null)}
+            origin={popupOrigin}
+          />
+        )}
+          <ArticlesCalorie />
+    </main>
     </>
   );
 }

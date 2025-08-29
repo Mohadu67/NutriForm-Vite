@@ -1,0 +1,75 @@
+
+
+
+:root {
+  --couleur-principale: #F7F6F2;
+  --couleur-bouton-action: #F7B186;
+  --couleur-bouton-selection: #B5EAD7;
+  --couleur-text-noir: #333;
+  --font-titre: 'Merriweather', serif;
+  --font-p: 'Montserrat', sans-serif;
+}
+
+.container {
+  padding: 1.5rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.header h2 {
+  margin: 0;
+  font-family: var(--font-titre);
+  font-weight: 700;
+  color: var(--couleur-text-noir);
+}
+
+.header p {
+  margin: 0;
+  font-family: var(--font-p);
+  font-size: 1.95rem;
+  color: #666;
+
+}
+
+.tabs {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.tab {
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: var(--couleur-principale);
+  font-weight: 600;
+  font-family: var(--font-p);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.tabActive {
+  border: 2px solid var(--couleur-bouton-action);
+  background: #fff;
+  font-size: larger;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 1rem;
+}

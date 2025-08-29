@@ -17,14 +17,12 @@ export default function ImcPage() {
 
   return (
     <>
-      <Header />
       <main className={styles.wrapper}>
           <FormImc onCalculate={(v, c) => { setImc(v); setCategorie(c); setShowGraph(true); }} />
           <ImcGraph imc={imc} categorie={categorie} visible={showGraph} scrollOnShow />
           <ResultCards categorie={categorie} />
           <ArticlesImc />
       </main>
-      <Footer />
     </>
   );
 }

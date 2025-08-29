@@ -24,8 +24,8 @@ export default function Navbar() {
   }, []);
 
   const core = [
-    { label: "IMC", path: "/imc", special: true },
-    { label: "Calorie", path: "/calorie", special: true },
+    { label: "Outils", path: "/outils", special: true },
+    { label: "S'entrainer", path: "/exo", special: true },
     { label: "Contact", path: "/contact" },
   ];
 

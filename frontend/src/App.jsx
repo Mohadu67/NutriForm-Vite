@@ -10,6 +10,8 @@ import MentionsLegales from "./pages/RGPD/MentionsLegales.jsx";
 import CookiesPolicy from "./pages/RGPD/CookiesPolicy.jsx";
 import PrivacyPolicy from "./pages/RGPD/PrivacyPolicy.jsx";
 import NotFound from "./pages/NotFound/NotFound.jsx";
+import ExoPage from "./pages/Exo/Exo.jsx";
+import PageOutils from "./pages/OutilsCalcul/PageOutils.jsx";
 
 export default function App() {
 
@@ -25,6 +27,8 @@ export default function App() {
       <Route path="/cookies" element={<CookiesPolicy />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/mentions-legales" element={<MentionsLegales />} />
+      <Route path="/exo" element={<ExoPage />} />
+      <Route path="/outils" element={<PageOutils />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

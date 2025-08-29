@@ -3,6 +3,8 @@ import { useState } from "react";
 import styles from "./FormCalorie.module.css";
 import ConnectReminder from "../../../components/MessageAlerte/ConnectReminder/ConnectReminder.jsx";
 import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
+import BoutonSelection from "../../../components/BoutonSelection/BoutonSelection.jsx";
+import LabelField from "../../../components/LabelField/LabelField.jsx";
 
 
 const getToken = () =>
@@ -87,7 +89,7 @@ export default function FormCalorie({ onResult, onCalculate }) {
     try {
       const token = getToken();
       if (!token) {
-        // Pas connecté: on affiche le rappel APRES la soumission
+
         setShowReminder(true);
       }
       const url = `${API_URL ? API_URL : ''}/api/history`;
@@ -127,9 +129,9 @@ export default function FormCalorie({ onResult, onCalculate }) {
       <fieldset className={styles.fieldset}>
         <legend>Vos informations</legend>
 
-                <label>
-          Formule
+        <LabelField label="Formule" htmlFor="formule">
           <select
+            id="formule"
             value={form.formule}
             onChange={(e) => update("formule", e.target.value)}
           >
@@ -137,55 +139,23 @@ export default function FormCalorie({ onResult, onCalculate }) {
             <option value="mifflin">Mifflin-St Jeor ( Pro )</option>
             <option value="katch">Katch-McArdle (nécessite % masse grasse)</option>
           </select>
-        </label>
+        </LabelField>
 
-        <div className={styles.sexeGroup}>
-          <span className={styles.groupTitle}>Sexe :</span>
+        <h4>Sexe</h4>
+        <BoutonSelection
+          className={styles.sexeGroup}
+          name="sexe"
+          value={form.sexe}
+          options={[
+            { value: "homme", label: "Homme" },
+            { value: "femme", label: "Femme" },
+          ]}
+          onChange={(val) => update("sexe", val)}
+        />
 
-          <label>
-            <input
-              type="radio"
-              name="sexe"
-              value="homme"
-              className={styles.hiddenCheckbox}
-              checked={form.sexe === "homme"}
-              onChange={() => update("sexe", "homme")}
-            />
-            <span
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && update('sexe', 'homme')}
-              onClick={() => update("sexe", "homme")}
-              className={styles.pill}
-            >
-              Homme
-            </span>
-          </label>
-
-          <label>
-            <input
-              type="radio"
-              name="sexe"
-              value="femme"
-              className={styles.hiddenCheckbox}
-              checked={form.sexe === "femme"}
-              onChange={() => update("sexe", "femme")}
-            />
-            <span
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && update('sexe', 'femme')}
-              onClick={() => update("sexe", "femme")}
-              className={styles.pill}
-            >
-              Femme
-            </span>
-          </label>
-        </div>
-
-        <label>
-          Poids (kg)
+        <LabelField label="Poids (kg)" htmlFor="poids" required>
           <input
+            id="poids"
             type="number"
             inputMode="decimal"
             min="50"
@@ -196,11 +166,11 @@ export default function FormCalorie({ onResult, onCalculate }) {
             placeholder="ex: 75"
             required
           />
-        </label>
+        </LabelField>
 
-        <label>
-          Taille (cm)
+        <LabelField label="Taille (cm)" htmlFor="taille" required>
           <input
+            id="taille"
             type="number"
             inputMode="numeric"
             min="100"
@@ -211,11 +181,11 @@ export default function FormCalorie({ onResult, onCalculate }) {
             placeholder="ex: 180"
             required
           />
-        </label>
+        </LabelField>
 
-        <label>
-          Âge (années)
+        <LabelField label="Âge (années)" htmlFor="age" required>
           <input
+            id="age"
             type="number"
             inputMode="numeric"
             min="12"
@@ -225,12 +195,12 @@ export default function FormCalorie({ onResult, onCalculate }) {
             placeholder="ex: 25"
             required
           />
-        </label>
+        </LabelField>
 
         {form.formule === "katch" && (
-          <label>
-            Masse grasse (%)
+          <LabelField label="Masse grasse (%)" htmlFor="masseGrasse" required helper="ex: 18">
             <input
+              id="masseGrasse"
               type="number"
               inputMode="decimal"
               min="8"
@@ -241,92 +211,21 @@ export default function FormCalorie({ onResult, onCalculate }) {
               placeholder="ex: 18"
               required
             />
-          </label>
+          </LabelField>
         )}
-
-        <div className={styles.activiteGroup}>
-          <span className={styles.groupTitle} style={{ textAlign: 'center' }}>Niveau d'activité :</span>
-
-          <label>
-            <input
-              type="radio"
-              name="activite"
-              value="faible"
-              className={styles.hiddenCheckbox}
-              checked={form.activite === "faible"}
-              onChange={() => update("activite", "faible")}
-            />
-            <span
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && update('activite', 'faible')}
-              onClick={() => update("activite", "faible")}
-              className={styles.pill}
-            >
-              Peu actif
-            </span>
-          </label>
-
-          <label>
-            <input
-              type="radio"
-              name="activite"
-              value="moyen"
-              className={styles.hiddenCheckbox}
-              checked={form.activite === "moyen"}
-              onChange={() => update("activite", "moyen")}
-            />
-            <span
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && update('activite', 'moyen')}
-              onClick={() => update("activite", "moyen")}
-              className={styles.pill}
-            >
-              Moyen
-            </span>
-          </label>
-
-          <label>
-            <input
-              type="radio"
-              name="activite"
-              value="actif"
-              className={styles.hiddenCheckbox}
-              checked={form.activite === "actif"}
-              onChange={() => update("activite", "actif")}
-            />
-            <span
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && update('activite', 'actif')}
-              onClick={() => update("activite", "actif")}
-              className={styles.pill}
-            >
-              Actif
-            </span>
-          </label>
-
-          <label>
-            <input
-              type="radio"
-              name="activite"
-              value="tresactif"
-              className={styles.hiddenCheckbox}
-              checked={form.activite === "tresactif"}
-              onChange={() => update("activite", "tresactif")}
-            />
-            <span
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && update('activite', 'tresactif')}
-              onClick={() => update("activite", "tresactif")}
-              className={styles.pill}
-            >
-              Très actif
-            </span>
-          </label>
-        </div>
+        <h4>Niveau d'activité</h4>
+        <BoutonSelection
+          className={styles.activiteGroup}
+          name="activite"
+          value={form.activite}
+          options={[
+            { value: "faible", label: "Peu actif" },
+            { value: "moyen", label: "Moyen" },
+            { value: "actif", label: "Actif" },
+            { value: "tresactif", label: "Très actif" },
+          ]}
+          onChange={(val) => update("activite", val)}
+        />
 
         <BoutonAction type="submit">
           Calculer
