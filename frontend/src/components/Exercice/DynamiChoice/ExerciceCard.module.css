@@ -1,5 +1,4 @@
 :root {
-  /* fallback au cas où les variables globales ne sont pas chargées */
   --couleur-principale: #F7F6F2;
   --couleur-bouton-action: #F7B186;
   --couleur-bouton-selection: #B5EAD7;
@@ -8,7 +7,6 @@
   --font-p: 'Montserrat', sans-serif;
 }
 
-/* Carte compacte (ligne) */
 .row {
   display: flex;
   align-items: center;
@@ -47,7 +45,6 @@
 
 .rowTitle { font-size: 0.98rem; flex: 1; font-family: var(--font-p); }
 
-/* Overlay + Popup */
 .overlay {
   position: fixed;
   inset: 0;
@@ -124,7 +121,6 @@
 }
 .secondary:hover { background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.06); }
 
-/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; } to { opacity: 1; }
 }

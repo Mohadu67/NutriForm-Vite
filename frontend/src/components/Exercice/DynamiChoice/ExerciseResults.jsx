@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import ExerciceCard from "./ExerciceCard";
 
-// Map high-level muscle cards to underlying tags used in db.json
 const MUSCLE_MAP = {
   bras: ["biceps", "triceps", "avant-bras"],
   dos: ["dos-lats", "dos-trap", "arriere-epaules"],
@@ -13,7 +12,6 @@ const MUSCLE_MAP = {
   core: ["abdos", "obliques", "lombaires", "core"],
 };
 
-// Map typeId from UI to db tags
 const TYPE_MAP = {
   muscu: ["muscu"],
   cardio: ["cardio"],
@@ -69,19 +67,16 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [] 
 
     function scoreExo(exo) {
       let s = 0;
-      // type: require at least one match if provided
       if (wantedType.size) {
         const tMatch = (exo.type || []).some((t) => wantedType.has(t));
-        if (!tMatch) return -1; // hard filter out
+        if (!tMatch) return -1;
         s += 2;
       }
-      // equipment: soft filter, score per match
       if (wantedEquip.size) {
         (exo.equipment || []).forEach((e) => {
           if (wantedEquip.has(e)) s += 2;
         });
       }
-      // muscles: soft filter, score per match
       if (wantedMuscles.size) {
         (exo.muscles || []).forEach((m) => {
           if (wantedMuscles.has(m)) s += 3;
