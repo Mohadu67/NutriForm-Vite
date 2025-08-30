@@ -177,7 +177,7 @@ export default function HistoryUser({ onClose, onLogout }) {
       <div className={style["popup-header-row"]}>
         <h3 className={style["popup-title"]}>Historique</h3>
         {displayName ? (
-          <p className={style.muted}>Bonjour {displayName} 👋</p>
+          <p className={style.muted}>Salut {displayName} 👋</p>
         ) : null}
       </div>
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import styles from "./FormExo.module.css";
 import DynamiChoice from "../DynamiChoice/DynamiChoice.jsx";
 import Progress from "../DynamiChoice/Progress.jsx";
+import Salutation from "./salutation.jsx";
 
 export default function FormExo({ user }) {
   const [sessionName, setSessionName] = useState("");
@@ -15,9 +16,7 @@ export default function FormExo({ user }) {
 
   return (
     <div className={styles.form}>
-      <h2 className={styles.title}>
-        Bienvenue{user ? ` ${user.name}` : ""}, prêt pour une séance ?
-      </h2>
+      <Salutation className={styles.title} />
 
       <div className={styles.sessionName}>
         <label>Nom de ta séance :</label>
