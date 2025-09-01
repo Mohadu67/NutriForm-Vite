@@ -4,6 +4,7 @@ import styles from "../../../components/Auth/ResetPassword/ResetPassword.module.
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import MobiLogo from "../../../assets/img/logo/domaine-logo.svg";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
+import LabelField from "../../LabelField/LabelField";
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
 
@@ -61,22 +62,28 @@ export default function ResetPassword() {
         <img src={MobiLogo} alt="NutriForm" className={styles.logo} />
         <p className={styles.subtitle}>T’as oublié ton mot de passe ? Tranquille, on n’en parlera à personne.</p>
         <form onSubmit={onSubmit} className={styles.form}>
-          <input
-            className={styles.input}
-            type="password"
-            placeholder="Nouveau mot de passe"
-            value={pwd}
-            onChange={(e) => setPwd(e.target.value)}
-            autoComplete="new-password"
-          />
-          <input
-            className={styles.input}
-            type="password"
-            placeholder="Confirmer le mot de passe"
-            value={pwd2}
-            onChange={(e) => setPwd2(e.target.value)}
-            autoComplete="new-password"
-          />
+          <LabelField label="Nouveau mot de passe" htmlFor="new-password">
+            <input
+              id="new-password"
+              className={styles.input}
+              type="password"
+              placeholder="Nouveau mot de passe"
+              value={pwd}
+              onChange={(e) => setPwd(e.target.value)}
+              autoComplete="new-password"
+            />
+          </LabelField>
+          <LabelField label="Confirmer le mot de passe" htmlFor="confirm-password">
+            <input
+              id="confirm-password"
+              className={styles.input}
+              type="password"
+              placeholder="Confirmer le mot de passe"
+              value={pwd2}
+              onChange={(e) => setPwd2(e.target.value)}
+              autoComplete="new-password"
+            />
+          </LabelField>
           <BoutonAction
             type="submit"
             variant="authPopup"

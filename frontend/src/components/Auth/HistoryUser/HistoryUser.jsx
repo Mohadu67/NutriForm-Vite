@@ -1,353 +1,93 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import style from "./HistoryUser.module.css";
-import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
-
-const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
-
-function LineChartSVG({ points = [], width = 320, height = 140, color = "currentColor", yLabel = "" }) {
-  if (!Array.isArray(points) || points.length < 2) return null;
-
-  const data = points
-    .filter(p => p && typeof p.value === 'number' && p.date)
-    .map(p => ({ x: new Date(p.date), y: Number(p.value) }))
-    .sort((a, b) => a.x - b.x);
-
-  if (data.length < 2) return null;
-
-  const pad = { left: 32, right: 8, top: 8, bottom: 24 };
-  const W = width; const H = height;
-  const innerW = W - pad.left - pad.right;
-  const innerH = H - pad.top - pad.bottom;
-
-  const minX = data[0].x.getTime();
-  const maxX = data[data.length - 1].x.getTime();
-  let minY = Math.min(...data.map(d => d.y));
-  let maxY = Math.max(...data.map(d => d.y));
-  if (minY === maxY) { minY -= 1; maxY += 1; }
-  const yPad = (maxY - minY) * 0.1;
-  minY -= yPad; maxY += yPad;
-
-  const xScale = (t) => pad.left + (innerW * (t - minX)) / Math.max(1, (maxX - minX));
-  const yScale = (v) => pad.top + innerH - (innerH * (v - minY)) / (maxY - minY);
-
-  let d = "";
-  data.forEach((pt, i) => {
-    const X = xScale(pt.x.getTime());
-    const Y = yScale(pt.y);
-    d += (i === 0 ? `M ${X} ${Y}` : ` L ${X} ${Y}`);
-  });
-
-  const first = data[0];
-  const last = data[data.length - 1];
-  const yMinText = minY.toFixed(1);
-  const yMaxText = maxY.toFixed(1);
-
-  return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-label={`Courbe ${yLabel}`}>
-      <line x1={pad.left} y1={pad.top} x2={pad.left} y2={H - pad.bottom} stroke="#ddd" />
-      <line x1={pad.left} y1={H - pad.bottom} x2={W - pad.right} y2={H - pad.bottom} stroke="#ddd" />
-      <text x={4} y={yScale(minY)} fontSize="10" fill="#666">{yMinText}</text>
-      <text x={4} y={yScale(maxY)} fontSize="10" fill="#666">{yMaxText}</text>
-      <path d={d} fill="none" stroke={color} strokeWidth="2" />
-      {data.map((pt, i) => (
-        <circle key={i} cx={xScale(pt.x.getTime())} cy={yScale(pt.y)} r="2.5" fill={color} />
-      ))}
-      <text x={pad.left} y={H - 6} fontSize="10" fill="#666">{first.x.toLocaleDateString()}</text>
-      <text x={W - pad.right - 64} y={H - 6} fontSize="10" fill="#666">{last.x.toLocaleDateString()}</text>
-    </svg>
-  );
-}
+import LogoutActions from "./LogoutActions.jsx";
+import HistoryHeader from "./HistoryHeader.jsx";
+import SessionsList from "./Sessions/SessionsList.jsx";
+import ImcRecapCard from "./Recap/ImcRecapCard.jsx";
+import WeightChart from "./HistoryCharts/WeightChart.jsx";
+import SessionChart from "./HistoryCharts/SessionChart.jsx";
+import useHistoryData from "./UseHistoryData.js";
 
 export default function HistoryUser({ onClose, onLogout }) {
-  const [records, setRecords] = useState([]);
-  const [status, setStatus] = useState("idle");
-  const [error, setError] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [sessions, setSessions] = useState([]);
-
-  const getToken = () =>
-    localStorage.getItem('token') ||
-    sessionStorage.getItem('token') ||
-    localStorage.getItem('jwt') ||
-    localStorage.getItem('accessToken');
-
-  useEffect(() => {
-    try {
-      const cached = JSON.parse(localStorage.getItem('user') || 'null');
-      const cachedName = cached?.prenom || cached?.pseudo || cached?.displayName || (cached?.email ? String(cached.email).split('@')[0] : '');
-      if (cachedName) setDisplayName(cachedName);
-    } catch (_) {}
-
-    const token = getToken();
-    if (!token) {
-      setError("Non connecté. Connecte-toi d'abord.");
-      return;
+  const parseDate = (raw) => {
+    if (!raw) return null;
+    if (raw instanceof Date) return isNaN(raw) ? null : raw;
+    if (typeof raw === 'number') {
+      const d = new Date(raw);
+      return isNaN(d) ? null : d;
     }
+    if (typeof raw === 'string') {
+      const m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      const iso = m ? `${m[3]}-${m[2]}-${m[1]}` : raw;
+      const d = new Date(iso);
+      return isNaN(d) ? null : d;
+    }
+    return null;
+  };
+  const { records, sessions, status, error, displayName, setRecords, handleDelete } = useHistoryData();
 
-    setStatus("loading");
-    setError("");
-
-    fetch(`${API_URL}/api/me`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then((res) => res.json().then((data) => ({ ok: res.ok, data })).catch(() => ({ ok: res.ok, data: {} })))
-      .then(({ ok, data }) => {
-        if (!ok) return;
-        const name = data?.prenom || data?.pseudo || data?.displayName || (data?.email ? String(data.email).split('@')[0] : '');
-        if (name) setDisplayName(name);
-      })
-      .catch(() => {});
-
-    fetch(`${API_URL}/api/history`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then((res) => res.json().then((data) => ({ ok: res.ok, data })).catch(() => ({ ok: res.ok, data: {} })))
-      .then(({ ok, data }) => {
-        if (!ok) throw new Error(data?.message || "Erreur HTTP");
-
-        const src = Array.isArray(data) ? data : (Array.isArray(data?.history) ? data.history : []);
-        const list = src
-          .map((r) => {
-            const m = r?.meta || {};
-            const date = r?.createdAt ? new Date(r.createdAt) : (m?.date ? new Date(m.date) : new Date());
-            if (r?.action === 'IMC_CALC') {
-              const value = Number(m?.imc);
-              return Number.isFinite(value)
-                ? {
-                    id: r?._id,
-                    type: 'imc',
-                    value,
-                    date,
-                    poids: typeof m?.poids === 'number' ? m.poids : undefined,
-                    categorie: typeof m?.categorie === 'string' ? m.categorie : undefined,
-                  }
-                : null;
-            }
-            if (r?.action === 'CALORIES_CALC') {
-              const value = Number(m?.calories ?? m?.kcal);
-              return Number.isFinite(value)
-                ? { id: r?._id, type: 'calories', value, date }
-                : null;
-            }
-            return null; 
-          })
-          .filter(Boolean)
-          .sort((a, b) => a.date - b.date);
-
-        setRecords(list);
-        setStatus("idle");
-      })
-      .catch((e) => {
-        console.error(e);
-        setError(e.message || "Erreur de chargement");
-        setStatus("error");
-      });
-
-    fetch(`${API_URL}/api/sessions`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then((res) => res.json().then((data) => ({ ok: res.ok, data })).catch(() => ({ ok: res.ok, data: {} })))
-      .then(({ ok, data }) => {
-        if (!ok) return;
-        const src = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []);
-        const list = src.map(s => ({
-          id: s?._id,
-          name: s?.name || 'Séance',
-          startedAt: s?.startedAt ? new Date(s.startedAt) : null,
-          endedAt: s?.endedAt ? new Date(s.endedAt) : null,
-          entriesCount: Array.isArray(s?.entries) ? s.entries.length : 0
-        })).sort((a, b) => (b.startedAt?.getTime?.() || 0) - (a.startedAt?.getTime?.() || 0));
-        setSessions(list);
-      })
-      .catch(() => {});
-  }, []);
+  const [userSessions, setUserSessions] = useState([]);
 
   const imcPoints = useMemo(() => records.filter(r => r.type === 'imc'), [records]);
-  const calPoints = useMemo(() => records.filter(r => r.type === 'calories'), [records]);
-  const weightPoints = useMemo(
-    () => imcPoints
-      .filter(r => typeof r.poids === 'number')
-      .map(r => ({ value: r.poids, date: r.date })),
-    [imcPoints]
-  );
+  const weightPoints = useMemo(() =>
+    imcPoints
+      .map(r => ({ value: Number(r.poids), date: parseDate(r.date) }))
+      .filter(p => Number.isFinite(p.value) && p.date)
+      .sort((a, b) => a.date - b.date)
+  , [imcPoints]);
 
-  const handleDelete = async (id) => {
-    const token = getToken();
-    if (!token || !id) return;
-    const ok = window.confirm('Supprimer cette mesure ?');
-    if (!ok) return;
-    try {
-      const res = await fetch(`${API_URL}/api/history/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        setRecords((prev) => prev.filter((r) => r.id !== id));
-      } else if (import.meta.env.DEV) {
-        console.warn('DELETE /api/history failed', res.status, await res.text().catch(() => ''));
+  const sessionPoints = useMemo(() => {
+    const toDayKey = (raw) => {
+      if (!raw) return null;
+      let d;
+      if (raw instanceof Date) d = raw;
+      else if (typeof raw === 'number') d = new Date(raw);
+      else if (typeof raw === 'string') {
+        const m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        const iso = m ? `${m[3]}-${m[2]}-${m[1]}` : raw;
+        d = new Date(iso);
       }
-    } catch (e) {
-      if (import.meta.env.DEV) console.warn('DELETE /api/history error', e);
+      if (!d || isNaN(d)) return null;
+      const y = d.getFullYear();
+      const mth = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${mth}-${day}`; // YYYY-MM-DD
+    };
+
+    const byDay = new Map();
+    for (const s of (userSessions || [])) {
+      const key = toDayKey(s?.date || s?.createdAt || s?.day || s?.performedAt);
+      if (!key) continue;
+      if (!byDay.has(key)) byDay.set(key, 1); // un seul point par jour
     }
-  };
+
+    const keys = Array.from(byDay.keys()).sort();
+    return keys.map((k, idx) => ({ date: k, value: idx + 1 }));
+  }, [userSessions]);
 
   return (
     <div className={style["popup-body"]}>
-      <div className={style["popup-header-row"]}>
-        <h3 className={style["popup-title"]}>Historique</h3>
-        {displayName ? (
-          <p className={style.muted}>Salut {displayName} 👋</p>
-        ) : null}
-      </div>
+      <HistoryHeader displayName={displayName} />
 
       {status === "loading" && <p>Chargement…</p>}
       {status === "error" && <p className={style["popup-error"]}>{error}</p>}
 
       {records.length === 0 && status === "idle" && (
-        <p>Aucune donnée pour l'instant. Enregistre un IMC ou des calories pour voir la courbe.</p>
+        <p>Aucune donnée pour l'instant. Enregistre un IMC, des calories ou une séance pour voir les courbes.</p>
       )}
 
       <div className={style.historyGrid}>
-        <section className={style.historySection}>
-          <h4 className={style.sectionTitle}>Courbe Poids</h4>
-          {weightPoints.length >= 2 ? (
-            <LineChartSVG points={weightPoints} color="#4A90E2" yLabel="Poids (kg)" />
-          ) : (
-            <p className={style.muted}>Ajoute au moins 2 mesures avec un poids pour voir la courbe.</p>
-          )}
-        </section>
-
-        <section className={style.historySection}>
-          <h4 className={style.sectionTitle}>Courbe Calories</h4>
-          {calPoints.length >= 2 ? (
-            <LineChartSVG points={calPoints.map(r => ({ value: r.value, date: r.date }))} color="#F5A623" yLabel="Calories" />
-          ) : (
-            <p className={style.muted}>Ajoute au moins 2 mesures pour voir la courbe des calories.</p>
-          )}
-        </section>
+        <WeightChart points={weightPoints} />
+        <SessionChart points={sessionPoints} />
       </div>
 
       <div className={style.recapGrid}>
-        <section className={style.recapCard}>
-          <h4 className={style.recapTitle}>Mes données IMC / Poids</h4>
-          {imcPoints.length > 0 ? (
-            (() => {
-              const last = imcPoints[imcPoints.length - 1];
-              return (
-                <p className={style.recapLead}>
-                  Dernier IMC : <strong>{last.value}</strong>
-                  {last.date && (
-                    <> (<span>{new Date(last.date).toLocaleDateString()}</span>)</>
-                  )}
-                  {typeof last.poids === 'number' && (
-                    <> • <span>{last.poids} kg</span></>
-                  )}
-                  {last.categorie && (
-                    <> • <span>{last.categorie}</span></>
-                  )}
-                </p>
-              );
-            })()
-          ) : (
-            <p className={style.muted}>Aucune mesure IMC enregistrée.</p>
-          )}
-
-          <div className={style.chipsWrap}>
-            {imcPoints
-              .slice()
-              .sort((a, b) => b.date - a.date)
-              .map((r, i) => (
-                <button
-                  type="button"
-                  key={r.id || i}
-                  className={style.chip}
-                  title="Supprimer cette mesure"
-                  onClick={() => handleDelete(r.id)}
-                >
-                  {r.value}
-                  {r.date && <> <span className={style.muted}>(le {new Date(r.date).toLocaleDateString()})</span></>}
-                </button>
-              ))}
-          </div>
-        </section>
-
-        <section className={style.recapCard}>
-          <h4 className={style.recapTitle}>Mes données Calories</h4>
-          {calPoints.length > 0 ? (
-            (() => {
-              const last = calPoints[calPoints.length - 1];
-              return (
-                <p className={style.recapLead}>
-                  Dernières Calories : <strong>{last.value}</strong> kcal
-                  {last.date && (
-                    <> (<span>{new Date(last.date).toLocaleDateString()}</span>)</>
-                  )}
-                </p>
-              );
-            })()
-          ) : (
-            <p className={style.muted}>Aucune mesure calories enregistrée.</p>
-          )}
-
-          <div className={style.chipsWrap}>
-            {calPoints
-              .slice()
-              .sort((a, b) => b.date - a.date)
-              .map((r, i) => (
-                <button
-                  type="button"
-                  key={r.id || i}
-                  className={style.chip}
-                  title="Supprimer cette mesure"
-                  onClick={() => handleDelete(r.id)}
-                >
-                  <span className={style.chipValue}>{r.value}</span> kcal
-                  {r.date && <> <span className={style.muted}>(le {new Date(r.date).toLocaleDateString()})</span></>}
-                </button>
-              ))}
-          </div>
-        </section>
+        <ImcRecapCard imcPoints={imcPoints} onDelete={handleDelete} />
       </div>
 
-      <section className={style.recapCard} style={{ marginTop: '1rem' }}>
-        <h4 className={style.recapTitle}>Suivi des entraînements</h4>
-        {sessions.length === 0 ? (
-          <p className={style.muted}>Aucune séance enregistrée pour l’instant. Lance une séance et appuie sur « Enregistrer » pour la retrouver ici.</p>
-        ) : (
-          <ul className={style.sessionList}>
-            {sessions.slice(0, 10).map((s) => (
-              <li key={s.id} className={style.sessionItem}>
-                <div className={style.sessionRow}>
-                  <strong className={style.sessionName}>{s.name}</strong>
-                  {s.startedAt && (
-                    <span className={style.muted}>
-                      {s.startedAt.toLocaleDateString()} • {s.entriesCount} exo(s)
-                    </span>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <SessionsList sessions={sessions} onData={setUserSessions} />
 
-      <div className={style["popup-actions"]}>
-        {onLogout && (
-          <BoutonAction
-            type="button"
-            variant="logout"
-            onClick={() => {
-              try {
-                localStorage.removeItem('token');
-                sessionStorage.removeItem('token');
-              } catch {}
-              if (onLogout) onLogout();
-            }}
-          >
-            Se déconnecter
-          </BoutonAction>
-        )}
-      </div>
+      {onLogout && <LogoutActions onLogout={onLogout} />}
     </div>
   );
 }

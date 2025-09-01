@@ -4,6 +4,7 @@ export default function LabelField({ label, htmlFor, required, helper, error, ch
   return (
     <div className={`${styles.field} ${className || ""}`}>
       <label htmlFor={htmlFor} className={styles.label}>
+        {label}
       </label>
       {children}
       {helper && !error ? <div className={styles.helper}>{helper}</div> : null}

@@ -6,10 +6,17 @@ export default function NavLinks({ links }) {
   return (
     <>
       {links.map((link, index) => (
-        <li key={index} className={link.special ? styles.org : ""}>
+        <li
+          key={index}
+          className={
+            link.auth ? styles.authLink : link.special ? styles.org : ""
+          }
+        >
           {typeof link.onClick === "function" ? (
             <a
-              className={link.special ? styles.orange : ""}
+              className={
+                link.auth ? styles.authLink : link.special ? styles.orange : ""
+              }
               onClick={e => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -20,7 +27,9 @@ export default function NavLinks({ links }) {
             </a>
           ) : (
             <a
-              className={link.special ? styles.orange : ""}
+              className={
+                link.auth ? styles.authLink : link.special ? styles.orange : ""
+              }
               href={link.path}
             >
               {link.label}

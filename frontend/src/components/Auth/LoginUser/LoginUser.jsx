@@ -1,103 +1,29 @@
 import React, { useState } from "react";
+import LabelField from "../../LabelField/LabelField";
 import lstyle from "./LoginUser.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import LoginMascot from "../LoginMascot/LoginMascot";
-
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-const MIN_SPINNER_MS = 4000; 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
+import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
+import useLogin from "./UseLogin.js";
 
 export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
-  const [status, setStatus] = useState("idle");
-  const [errorMsg, setErrorMsg] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [mascotState, setMascotState] = useState("idle");
 
+  const { status, errorMsg, handleSubmit } = useLogin(onSuccess);
+
   const loading = status === "sending";
 
-  const handleSubmit = async (e) => {
-    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+  const onSubmit = (e) => {
+    if (e && typeof e.preventDefault === "function") e.preventDefault();
     if (!identifier.trim() || !password.trim()) return;
-
-    let t0;
-    try {
-      setStatus("sending");
-      t0 = Date.now();
-
-      const url = API_URL ? `${API_URL}/api/login` : '/api/login';
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier, password })
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const msg = data?.message || (res.status === 403 ? "Email non vérifié. Vérifie ta boîte mail." : `Erreur HTTP ${res.status}`);
-        throw new Error(msg);
-      }
-
-      const { token, user, displayName } = data || {};
-      if (!token || !user || !user.id) {
-        throw new Error("Identifiants invalides.");
-      }
-
-      setErrorMsg("");
-      const userId = user?.id;
-
-      try {
-        if (remember) {
-          localStorage.setItem('token', token);
-          sessionStorage.removeItem('token');
-        } else {
-          sessionStorage.setItem('token', token);
-          localStorage.removeItem('token');
-        }
-      } catch (_) {}
-
-      try {
-        const userPayload = {
-          id: userId,
-          email: user?.email,
-          prenom: user?.prenom,
-          pseudo: user?.pseudo,
-          displayName: displayName || user?.pseudo || user?.prenom || (user?.email ? String(user.email).split('@')[0] : '')
-        };
-        if (remember) {
-          localStorage.setItem('user', JSON.stringify(userPayload));
-          sessionStorage.removeItem('user');
-        } else {
-          sessionStorage.setItem('user', JSON.stringify(userPayload));
-          localStorage.removeItem('user');
-        }
-      } catch (_) {}
-
-      const elapsed = Date.now() - t0;
-      const wait = Math.max(0, MIN_SPINNER_MS - elapsed);
-      if (wait) await sleep(wait);
-      setStatus("idle");
-      onSuccess?.({ token, user, displayName });
-      setIdentifier("");
-      setPassword("");
-      setRemember(false);
-    } catch (err) {
-      console.error(err);
-      const elapsed = typeof t0 === 'number' ? (Date.now() - t0) : 0;
-      const wait = Math.max(0, MIN_SPINNER_MS - elapsed);
-      if (wait) await sleep(wait);
-      setStatus("error");
-      setErrorMsg(err.message || "Erreur de connexion. Réessaie.");
-      try {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        localStorage.removeItem('user');
-        sessionStorage.removeItem('user');
-      } catch (_) {}
-    }
+    handleSubmit({ identifier, password, remember });
+    setIdentifier("");
+    setPassword("");
+    setRemember(false);
   };
 
   if (loading) {
@@ -112,18 +38,17 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
   return (
     <div className={lstyle.body}>
         <h3 className={lstyle.title}>Connecte toi 🙈</h3>
-      <LoginMascot state={mascotState} />
       <div className={lstyle.headerRow}>
       </div>
 
       <form
         className={lstyle.form}
-        onSubmit={(e) => { e.preventDefault(); handleSubmit(e); }}
+        onSubmit={onSubmit}
         noValidate
       >
-        <label className={lstyle.label}>
-          Email ou pseudo
+        <LabelField labelClassName={lstyle.label} label="Email ou pseudo" htmlFor="identifier">
           <input
+            id="identifier"
             type="text"
             className={lstyle.input}
             value={identifier}
@@ -134,12 +59,12 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
             required
             autoComplete="username"
           />
-        </label>
+        </LabelField>
 
-        <label className={lstyle.label}>
-          Mot de passe
+        <LabelField labelClassName={lstyle.label} label="Mot de passe" htmlFor="password">
           <div className={lstyle.passwordWrapper}>
             <input
+              id="password"
               type={showPassword ? "text" : "password"}
               className={lstyle.input}
               value={password}
@@ -159,7 +84,7 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
               {showPassword ? "🙈" : "👁"}
             </button>
           </div>
-        </label>
+        </LabelField>
 
         <label className={lstyle.remember}>
           <input
@@ -175,13 +100,13 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
           <button type="button" className={lstyle.linkBtn} onClick={toSignup}>Créer un compte</button>
         </div>
 
-        <button
+        <BoutonAction
           type="submit"
-          className={lstyle.submit}
           disabled={status === "sending" || !identifier.trim() || !password.trim()}
+          onClick={onSubmit}
         >
           {status === "sending" ? "Connexion…" : "Se connecter"}
-        </button>
+        </BoutonAction>
 
         {status === "error" && (
           <p className={lstyle.error}>{errorMsg || "Erreur de connexion. Réessaie."}</p>

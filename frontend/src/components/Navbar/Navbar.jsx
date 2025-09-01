@@ -30,8 +30,8 @@ export default function Navbar() {
   ];
 
   const connexion = isLoggedIn
-    ? { label: "Voir historique", onClick: () => { setPopupView('history'); setIsPopupOpen(true); } }
-    : { label: "Connexion", onClick: () => { setPopupView('login'); setIsPopupOpen(true); } };
+    ? { label: "Historique", auth: true, onClick: () => { setPopupView('history'); setIsPopupOpen(true); } }
+    : { label: "Connexion", auth: true, onClick: () => { setPopupView('login'); setIsPopupOpen(true); } };
 
   let dynamicLinks;
   if (path === "/") {

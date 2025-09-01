@@ -3,23 +3,12 @@
   gap: 25px; 
 }
 
-.label { 
-  display: flex; 
-  flex-direction: column; 
-  gap: 0.35rem; 
-  font-weight: 700;
-}
 
 .passwordWrapper {
   position: relative;
   display: block;
   width: 100%;
   margin: 0 auto;
-}
-
-.passwordWrapper .input {
-  padding-right: 2.5rem;
-  width: 100%;
 }
 
 .input {
@@ -29,13 +18,9 @@
   background: #fff;
   font-size: 1rem;
   transition: border-color .2s, box-shadow .2s;
+  width: 100%;
 }
-.input:focus {
-  outline: none;
-  border-color: #F7B186;
-  box-shadow: 0 0 0 4px rgba(181,234,215,.3);
-  background: #F7F6F2;
-}
+
 
 .linkBtn {
   all: unset;
