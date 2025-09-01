@@ -1,5 +1,3 @@
-
-
 import styles from "./BoutonSelection.module.css";
 
 export default function BoutonSelection({

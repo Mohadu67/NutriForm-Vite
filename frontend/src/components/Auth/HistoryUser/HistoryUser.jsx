@@ -63,6 +63,7 @@ export default function HistoryUser({ onClose, onLogout }) {
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [sessions, setSessions] = useState([]);
 
   const getToken = () =>
     localStorage.getItem('token') ||
@@ -141,6 +142,24 @@ export default function HistoryUser({ onClose, onLogout }) {
         setError(e.message || "Erreur de chargement");
         setStatus("error");
       });
+
+    fetch(`${API_URL}/api/sessions`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data })).catch(() => ({ ok: res.ok, data: {} })))
+      .then(({ ok, data }) => {
+        if (!ok) return;
+        const src = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []);
+        const list = src.map(s => ({
+          id: s?._id,
+          name: s?.name || 'Séance',
+          startedAt: s?.startedAt ? new Date(s.startedAt) : null,
+          endedAt: s?.endedAt ? new Date(s.endedAt) : null,
+          entriesCount: Array.isArray(s?.entries) ? s.entries.length : 0
+        })).sort((a, b) => (b.startedAt?.getTime?.() || 0) - (a.startedAt?.getTime?.() || 0));
+        setSessions(list);
+      })
+      .catch(() => {});
   }, []);
 
   const imcPoints = useMemo(() => records.filter(r => r.type === 'imc'), [records]);
@@ -290,15 +309,26 @@ export default function HistoryUser({ onClose, onLogout }) {
         </section>
       </div>
 
-      {/* Suivi des entraînements (bientôt disponible) */}
       <section className={style.recapCard} style={{ marginTop: '1rem' }}>
         <h4 className={style.recapTitle}>Suivi des entraînements</h4>
-        <p className={style.muted}>
-          Patience, coach en pantoufles. Ton historique de séances arrive ici très bientôt.
-        </p>
-        <p className={style.muted} style={{ fontStyle: 'italic' }}>
-          Bientôt disponible : « Ton classement contre tes potes… et contre toi-même. »
-        </p>
+        {sessions.length === 0 ? (
+          <p className={style.muted}>Aucune séance enregistrée pour l’instant. Lance une séance et appuie sur « Enregistrer » pour la retrouver ici.</p>
+        ) : (
+          <ul className={style.sessionList}>
+            {sessions.slice(0, 10).map((s) => (
+              <li key={s.id} className={style.sessionItem}>
+                <div className={style.sessionRow}>
+                  <strong className={style.sessionName}>{s.name}</strong>
+                  {s.startedAt && (
+                    <span className={style.muted}>
+                      {s.startedAt.toLocaleDateString()} • {s.entriesCount} exo(s)
+                    </span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <div className={style["popup-actions"]}>

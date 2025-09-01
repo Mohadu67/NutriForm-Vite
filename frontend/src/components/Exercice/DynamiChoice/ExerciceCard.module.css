@@ -133,3 +133,30 @@
 @media (prefers-reduced-motion: reduce) {
   .row, .overlay, .popup, .primary, .secondary { transition: none; animation: none; }
 }
+
+/* Drag handle & delete button for row card */
+/* Drag handle & delete button for row card */
+.handle { display:flex; align-items:center; margin-right:.5rem; cursor:grab; }
+.handle:active { cursor:grabbing; }
+
+/* Six-dot grip for drag handle */
+.grip {
+  display: grid;
+  grid-template-columns: repeat(2, 4px);
+  grid-gap: 4px;
+  margin-right: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+.grip div {
+  width: 4px;
+  height: 4px;
+  background-color: #888;
+  border-radius: 50%;
+}
+
+.deleteBtn { background: transparent; border: 1px solid #f3d0c0; color:#c2410c; border-radius:8px; padding:.25rem .5rem; margin-left:.5rem; }
+.deleteBtn:hover { background:#fff3ec; }
+
+/* Popup footer (replaces .popupDiv in markup) */
+.popupDiv { display:flex; justify-content:flex-end; gap:0.5rem; margin: auto; }
