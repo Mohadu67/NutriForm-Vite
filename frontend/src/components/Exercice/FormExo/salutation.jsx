@@ -52,9 +52,15 @@ export default function Salutation({ className = "" }) {
       .catch(() => {});
   }, []);
 
+  const phrases = [
+    displayName ? `Salut ${displayName} 👋, prêt pour une séance ?` : "Salut 👋, prêt pour une séance ?",
+    displayName ? `Allez ${displayName} 💪, montre à ces haltères qui est le patron !` : "Allez 💪, montre à ces haltères qui est le patron !",
+    displayName ? `${displayName}, aujourd'hui c'est toi le champion 🏆` : "Aujourd'hui c'est toi le champion 🏆",
+    displayName ? `On compte sur toi ${displayName} 🚀` : "On compte sur toi 🚀"
+  ];
+  const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+
   return (
-    <h2 className={className}>
-      Salut{displayName ? ` ${displayName} 👋` : ""}, prêt pour une séance ?
-    </h2>
+    <h2 className={className}>{randomPhrase}</h2>
   );
 }

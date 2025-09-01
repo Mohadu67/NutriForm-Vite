@@ -15,6 +15,7 @@ const verifyRoutes = require('./routes/verify.route.js');
 const passwordResetRoutes = require('./routes/passwordReset.route.js');
 const contactRoutes = require('./routes/contact.route.js');
 const historyRoutes = require('./routes/history.route.js');
+const workoutSessionRoutes = require('./routes/workoutSession.route.js');
 
 const app = express();
 if (!config.mongoUri) {
@@ -48,6 +49,7 @@ app.use('/api', authRoutes);
 app.use('/api', passwordResetRoutes);
 app.use('/api', contactRoutes);
 app.use('/api', historyRoutes);
+app.use('/api', workoutSessionRoutes);
 
 app.get('/', (req, res) => {
   res.send('Bienvenue sur le backend de NutriForm 🚀');

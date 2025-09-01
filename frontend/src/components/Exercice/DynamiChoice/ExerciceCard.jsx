@@ -1,9 +1,7 @@
-
-
 import React, { useState, useId } from "react";
 import styles from "./ExerciceCard.module.css";
 
-export default function ExerciceCard({ exo }) {
+export default function ExerciceCard({ exo, onAdd, isAdded = false, draggable = false, onDragStart, onDragOver, onDrop, onRemove }) {
   const [open, setOpen] = useState(false);
   const dialogId = useId();
 
@@ -14,27 +12,65 @@ export default function ExerciceCard({ exo }) {
 
   return (
     <>
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         className={styles.row}
         onClick={() => setOpen(true)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(true); } }}
         aria-haspopup="dialog"
         aria-controls={dialogId}
         aria-expanded={open}
       >
-        <div className={styles.thumb} aria-hidden>
-          {imgSrc ? (
-            <img src={imgSrc} alt="" />
-          ) : (
-            <div className={styles.initial}>{initial}</div>
-          )}
+        {/* Drag handle on the left */}
+        <div
+          className={styles.handle}
+          draggable={draggable}
+          onDragStart={(e) => { e.stopPropagation(); onDragStart && onDragStart(e, exo); }}
+          onDragOver={(e) => { if (!draggable) return; e.preventDefault(); e.stopPropagation(); onDragOver && onDragOver(e, exo); }}
+          onDrop={(e) => { if (!draggable) return; e.preventDefault(); e.stopPropagation(); onDrop && onDrop(e, exo); }}
+          title="Glisser pour réordonner"
+          aria-label="Glisser pour réordonner"
+        >
+          <div className={styles.grip} aria-hidden>
+            <div /><div />
+            <div /><div />
+            <div /><div />
+          </div>
+          <div className={styles.thumb} aria-hidden>
+            {imgSrc ? (
+              <img src={imgSrc} alt="" />
+            ) : (
+              <div className={styles.initial}>{initial}</div>
+            )}
+          </div>
         </div>
+
         <div className={styles.rowTitle}>{exo.name}</div>
-      </button>
+
+        {/* Delete button on the right */}
+        {onRemove && (
+          <button
+            type="button"
+            className={styles.deleteBtn}
+            onClick={(e) => { e.stopPropagation(); onRemove(exo); }}
+            aria-label="Supprimer cet exercice"
+            title="Supprimer"
+          >
+            ✕
+          </button>
+        )}
+      </div>
 
       {open && (
-        <div className={styles.overlay} role="dialog" aria-modal="true" id={dialogId}>
-          <div className={styles.popup}>
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal="true"
+          id={dialogId}
+          onClick={() => setOpen(false)}
+        >
+          <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
             <header className={styles.popupHeader}>
               <h3 className={styles.popupTitle}>{exo.name}</h3>
               <button type="button" className={styles.closeBtn} onClick={() => setOpen(false)} aria-label="Fermer">×</button>
@@ -71,16 +107,11 @@ export default function ExerciceCard({ exo }) {
               {exo.explanation !== undefined && (
                 <div className={styles.explain}>
                   <strong>Résumé</strong>
-                  <p>{exo.explanation || ""}</p>
+                  <p>{exo.explanation || "Ici explication sur l'exo"}</p>
                 </div>
               )}
             </div>
 
-            <div className={styles.popupDiv}>
-
-              <button type="button" className={styles.primary} onClick={() => setOpen(false)}>Ajouter à la séance</button>
-              <button type="button" className={styles.secondary} onClick={() => setOpen(false)}>Fermer</button>
-            </div>
           </div>
         </div>
       )}

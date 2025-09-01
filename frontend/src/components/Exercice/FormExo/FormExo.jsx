@@ -3,10 +3,13 @@ import styles from "./FormExo.module.css";
 import DynamiChoice from "../DynamiChoice/DynamiChoice.jsx";
 import Progress from "../DynamiChoice/Progress.jsx";
 import Salutation from "./salutation.jsx";
+import SuivieExo from "../ExerciceSuivie/SuivieExo.jsx";
 
 export default function FormExo({ user }) {
   const [sessionName, setSessionName] = useState("");
   const [currentStep, setCurrentStep] = useState(0);
+  const [mode, setMode] = useState("builder"); // "builder" | "session"
+  const [selectedExercises, setSelectedExercises] = useState([]);
   const steps = [
     { title: "Entrainement", sub: "Choisi ton entrainement" },
     { title: "Équipement", sub: "Sélectionne tes équipement" },
@@ -16,28 +19,44 @@ export default function FormExo({ user }) {
 
   return (
     <div className={styles.form}>
-      <Salutation className={styles.title} />
+      {mode === "builder" ? (
+        <Salutation className={styles.title} />
+      ) : (
+        <Salutation className={styles.title} />
+      )}
 
-      <div className={styles.sessionName}>
-        <label>Nom de ta séance :</label>
-        <input
-          type="text"
-          placeholder="Ex: Séance du lundi"
-          value={sessionName}
-          onChange={(e) => setSessionName(e.target.value)}
-        />
-      </div>
+      {mode === "builder" && (
+        <div className={styles.sessionName}>
+          <label>Nom de ta séance :</label>
+          <input
+            type="text"
+            placeholder="Ex: Séance du lundi"
+            value={sessionName}
+            onChange={(e) => setSessionName(e.target.value)}
+          />
+        </div>
+      )}
 
-      
-      <Progress steps={steps} currentStep={currentStep} onStepChange={setCurrentStep} />
+      {mode === "builder" ? (
+        <>
+          <Progress steps={steps} currentStep={currentStep} onStepChange={setCurrentStep} />
 
-      <DynamiChoice
-        requestedStep={currentStep}
-        onStepChange={setCurrentStep}
-        onComplete={(selection) => {
-          console.log("Choix séance:", selection);
-        }}
-      />
+          <DynamiChoice
+            requestedStep={currentStep}
+            onStepChange={setCurrentStep}
+            onComplete={(selection) => {
+              console.log("Choix séance:", selection);
+              const list = Array.isArray(selection)
+                ? selection
+                : (selection?.selectedExercises || selection?.exercises || []);
+              setSelectedExercises(list);
+              setMode("session");
+            }}
+          />
+        </>
+      ) : (
+        <SuivieExo sessionName={sessionName} exercises={selectedExercises} />
+      )}
 
       <div className={styles.history}>
         {user ? (
