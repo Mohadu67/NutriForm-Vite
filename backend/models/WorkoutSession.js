@@ -16,7 +16,7 @@ const CardioSetSchema = new Schema({
   setNumber: { type: Number },
   durationMin: { type: Number },
   durationSec: { type: Number },
-  intensity: { type: String }
+  intensity: { type: Number }
 }, { _id: false });
 
 const PoidsDuCorpsSetSchema = new Schema({

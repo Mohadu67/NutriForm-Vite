@@ -1,43 +1,65 @@
 import styles from "./ForgotUser.module.css";
-import React, { useState } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
-const API_URL = import.meta.env.VITE_API_URL || '';
-
+import LabelField from "../../LabelField/LabelField";
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const EMAIL_REGEX = /[^\s@]+@[^\s@]+\.[^\s@]+/;
 
 export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const mountedRef = useRef(true);
 
-  const emailNorm = email.trim().toLowerCase();
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
-  const isEmail = (v) => /[^\s@]+@[^\s@]+\.[^\s@]+/.test(v);
+  const emailNorm = useMemo(() => email.trim().toLowerCase(), [email]);
+  const isEmail = (v) => EMAIL_REGEX.test(v);
 
   const handleCloseAfterSent = () => {
     onSent?.(emailNorm);
+    setSent(false);
+    setInfo("");
+    setError("");
     onClose?.();
   };
   const handleToLoginAfterSent = () => {
     onSent?.(emailNorm);
+    setSent(false);
+    setInfo("");
+    setError("");
     toLogin?.();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
+
     if (!isEmail(emailNorm)) {
       setError("Email invalide");
       return;
     }
+
     setLoading(true);
     setError("");
+    setInfo("");
+
     if (!API_URL) {
       setError("Configuration API manquante. Vérifie VITE_API_URL côté front.");
       setLoading(false);
       return;
     }
+
+    const started = Date.now();
+    const minDelay = 1200;
+    const controller = new AbortController();
+
     try {
       if (requestReset) {
         await requestReset(emailNorm);
@@ -45,20 +67,27 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
         const res = await fetch(`${API_URL}/api/forgot-password`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: emailNorm })
+          body: JSON.stringify({ email: emailNorm }),
+          signal: controller.signal,
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           throw new Error(data?.message || "request_failed");
         }
       }
+      const remain = Math.max(0, minDelay - (Date.now() - started));
+      await new Promise((r) => setTimeout(r, remain));
+      if (!mountedRef.current) return;
       setSent(true);
-      setError("Un email a été envoyé si l'adresse existe.");
+      setInfo(`Si un compte existe pour ${emailNorm}, un lien de réinitialisation a été envoyé.`);
     } catch (err) {
+      if (!mountedRef.current) return;
       setError(err?.message || "Impossible d'envoyer le lien. Réessaie dans un instant.");
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
+
+    // Cleanup if needed (here we don't persist controller between calls)
   };
 
   if (loading) {
@@ -72,7 +101,7 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
             className={styles.loaderSvg}
             aria-hidden={false}
           />
-          <p className={styles.muted}>Envoi du lien en cours...</p>
+          <p className={styles.muted} aria-live="polite">Envoi du lien en cours…</p>
         </div>
         <div className={styles.authActions}>
           <button type="button" onClick={onClose} className={styles.linkBtn}>Annuler</button>
@@ -85,7 +114,7 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
     return (
       <div className={styles["auth-panel"]}>
         <h2 className={styles["auth-title"]}>Mot de passe oublié</h2>
-        <p>{error || `Si un compte existe pour ${emailNorm}, un lien de réinitialisation a été envoyé.`}</p>
+        <p aria-live="polite">{info || `Si un compte existe pour ${emailNorm}, un lien de réinitialisation a été envoyé.`}</p>
         <div className={styles.authActions}>
           <button type="button" onClick={handleToLoginAfterSent} className={styles.linkBtn}>Retour à la connexion</button>
           <button type="button" onClick={handleCloseAfterSent} className={styles.linkBtn}>Fermer</button>
@@ -98,19 +127,20 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
     <div className={styles["auth-panel"]}>
       <h2 className={styles["auth-title"]}>Mot de passe oublié</h2>
       <form onSubmit={handleSubmit} className={styles["auth-form"]}>
-        <label htmlFor="forgot-email" className={styles["auth-label"]}>Adresse email</label>
-        <input
-          id="forgot-email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          required
-          className={styles["auth-input"]}
-        />
-        {error && <div className={styles["auth-error"]} role="alert">{error}</div>}
+        <LabelField label="Adresse email" htmlFor="forgot-email">
+          <input
+            id="forgot-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+            className={styles["auth-input"]}
+          />
+        </LabelField>
+        {error && <div className={styles["auth-error"]} role="alert" aria-live="assertive">{error}</div>}
         <div className={styles.authActions}>
-          <button type="button" onClick={toLogin} className={styles.linkBtn}>Retour</button>
+          <button type="button" onClick={toLogin} className={styles.linkBtn} disabled={loading}>Retour</button>
           <BoutonAction
             type="submit"
             variant="authPopup"
@@ -118,7 +148,7 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
           >
             {loading ? "Envoi..." : "Envoyer le lien"}
           </BoutonAction>
-          <button type="button" onClick={onClose} className={styles.linkBtn}>Fermer</button>
+          <button type="button" onClick={onClose} className={styles.linkBtn} disabled={loading}>Fermer</button>
         </div>
       </form>
     </div>

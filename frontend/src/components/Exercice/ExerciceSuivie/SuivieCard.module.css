@@ -22,6 +22,7 @@
   display: grid;
   grid-template-columns: 56px 1fr;
   align-items: center;
+  color: var(--ink);
   gap: 12px;
   width: 100%;
   padding: 14px;
@@ -92,17 +93,17 @@ select:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3px va
 .rowSet { border-radius: 12px; }
 .rowSet:hover { background: #fafafa; }
 
-/* Inputs */
-input[type="number"], input[type="text"], textarea {
+/* Inputs (scoped to this component) */
+.popupBody :where(input[type="number"], input[type="text"], textarea) {
   -webkit-appearance: none; appearance: none; width: 100%;
   border: 1px solid var(--line); border-radius: 12px; background: #fffdfa; color: var(--ink);
   padding: 12px 12px; font-size: 16px; transition: border-color .15s, box-shadow .15s;
 }
-textarea { min-height: 110px; resize: vertical; }
-::placeholder { color: #a5adbb; }
-input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-input[type="number"] { -moz-appearance: textfield; }
-input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-weak); outline: 0; }
+.popupBody textarea { min-height: 110px; resize: vertical; }
+.popupBody ::placeholder { color: #a5adbb; }
+.popupBody input[type="number"]::-webkit-outer-spin-button, .popupBody input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.popupBody input[type="number"] { -moz-appearance: textfield; }
+.popupBody :is(input, textarea):focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-weak); outline: 0; }
 
 /* Action icons / buttons */
 .iconBtn { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 6px 10px; cursor: pointer; }
