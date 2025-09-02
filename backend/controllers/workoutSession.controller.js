@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 const WorkoutSession = require("../models/WorkoutSession");
+const { computeSessionFromEntries } = require("../services/calorie.service");
+let HistoryModel = null;
+try { HistoryModel = require("../models/History"); } catch (_) { HistoryModel = null; }
 
 // Helper: get userId from request (expects auth middleware to set req.user)
 function getUserId(req) {
@@ -16,6 +19,73 @@ function dayRangeUtc(yyyyMmDd) {
   return { start, end };
 }
 
+function normalizeEntry(e = {}) {
+  const out = { ...e };
+  // Normalise type -> enum attendu par le modèle: muscu | cardio | poids_du_corps
+  const raw = String(out.type || out.exerciseName || '').toLowerCase();
+  let t = out.type;
+  if (!t) t = raw;
+
+  const isCardioHint = /(cardio|run|course|rope|corde|velo|cycle|bike|marche|walk|hiit)/i.test(raw);
+  const isBodyweightHint = /(pompe|pushup|traction|pullup|gainage|plank|abdo|bodyweight)/i.test(raw);
+
+  if (["muscu","cardio","poids_du_corps"].includes(t)) {
+    out.type = t;
+  } else if (isCardioHint) {
+    // HIIT, run, rope, etc. → cardio
+    out.type = "cardio";
+  } else if (isBodyweightHint) {
+    out.type = "poids_du_corps";
+  } else {
+    // par défaut, classe en muscu
+    out.type = "muscu";
+  }
+
+  // Garantit exerciseName string
+  if (typeof out.exerciseName !== 'string' || !out.exerciseName.trim()) {
+    out.exerciseName = (e.exerciseName || e.name || e.label || 'Exercice').toString();
+  }
+
+  // Sets: accepte tableau ou rien pour cardio; impose tableau non vide pour muscu
+  if (out.type === 'muscu' || out.type === 'poids_du_corps') {
+    if (!Array.isArray(out.sets) || out.sets.length === 0) {
+      // si reps/sets fournis à plat, crée un set
+      const reps = Number(e.reps ?? e.rep);
+      const weightKg = Number(e.weightKg ?? e.weight);
+      if (Number.isFinite(reps) || Number.isFinite(weightKg)) {
+        out.sets = [{ reps: Number.isFinite(reps) ? reps : undefined, weightKg: Number.isFinite(weightKg) ? weightKg : undefined }];
+      } else {
+        out.sets = [{ reps: 10 }];
+      }
+    }
+  } else {
+    // cardio: sets optionnels
+    if (!Array.isArray(out.sets)) out.sets = [];
+  }
+
+  // durationMin peut être au niveau entrée ou set; on garde au niveau entrée si fourni
+  if (out.durationMin == null && Array.isArray(out.sets) && out.sets[0] && out.sets[0].durationMin != null) {
+    out.durationMin = out.sets[0].durationMin;
+  }
+
+  return out;
+}
+
+async function getLatestWeight(userId) {
+  // Cherche le dernier poids dans l'historique si dispo
+  if (!HistoryModel) return null;
+  try {
+    const doc = await HistoryModel.findOne({ userId: new mongoose.Types.ObjectId(userId), $or: [
+      { "meta.poids": { $exists: true } },
+      { "meta.weightKg": { $exists: true } },
+      { "meta.weight": { $exists: true } },
+    ] }).sort({ createdAt: -1 }).lean();
+    if (!doc) return null;
+    const m = doc.meta || {};
+    return Number(m.poids ?? m.weightKg ?? m.weight) || null;
+  } catch (_) { return null; }
+}
+
 // POST /api/sessions
 async function createSession(req, res) {
   try {
@@ -25,7 +95,7 @@ async function createSession(req, res) {
     const {
       name = "",
       startedAt = new Date().toISOString(),
-      endedAt = new Date().toISOString(),
+      endedAt = null,
       notes = "",
       entries = []
     } = req.body || {};
@@ -34,26 +104,36 @@ async function createSession(req, res) {
       return res.status(400).json({ error: "entries_required" });
     }
 
-    // Minimal shape validation
-    for (const e of entries) {
-      if (!e || typeof e.exerciseName !== "string" || !e.exerciseName.trim()) {
-        return res.status(400).json({ error: "invalid_entry_exerciseName" });
+    // Normalise puis valide
+    const normalized = entries.map(normalizeEntry);
+    for (const e of normalized) {
+      if (!e || typeof e.exerciseName !== 'string' || !e.exerciseName.trim()) {
+        return res.status(400).json({ error: 'invalid_entry_exerciseName' });
       }
-      if (!["muscu", "cardio", "poids_du_corps"].includes(e.type)) {
-        return res.status(400).json({ error: "invalid_entry_type" });
+      if (!['muscu','cardio','poids_du_corps'].includes(e.type)) {
+        return res.status(400).json({ error: 'invalid_entry_type' });
       }
-      if (!Array.isArray(e.sets) || e.sets.length === 0) {
-        return res.status(400).json({ error: "invalid_sets" });
+      if ((e.type === 'muscu' || e.type === 'poids_du_corps') && (!Array.isArray(e.sets) || e.sets.length === 0)) {
+        return res.status(400).json({ error: 'invalid_sets' });
       }
     }
+
+    const userWeight = await getLatestWeight(userId);
+    const derived = computeSessionFromEntries(normalized, userWeight);
+
+    // Si pas d'endedAt mais une durée estimée, on l'infère
+    let _startedAt = new Date(startedAt);
+    let _endedAt = endedAt ? new Date(endedAt) : (derived.durationMinutes ? new Date(new Date(_startedAt).getTime() + derived.durationMinutes * 60000) : new Date(startedAt));
 
     const doc = await WorkoutSession.create({
       userId: new mongoose.Types.ObjectId(userId),
       name,
-      startedAt: new Date(startedAt),
-      endedAt: new Date(endedAt),
+      startedAt: _startedAt,
+      endedAt: _endedAt,
+      durationMinutes: derived.durationMinutes ?? undefined,
+      caloriesBurned: derived.caloriesBurned ?? undefined,
       notes,
-      entries
+      entries: normalized
     });
 
     return res.status(201).json(doc);
@@ -137,6 +217,27 @@ async function updateSession(req, res) {
     // Normalize dates if sent
     if (payload.startedAt) payload.startedAt = new Date(payload.startedAt);
     if (payload.endedAt) payload.endedAt = new Date(payload.endedAt);
+
+    // Recalcule si les entrées sont fournies ou si demande explicite
+    let needRecalc = false;
+    if (Array.isArray(payload.entries)) {
+      payload.entries = payload.entries.map(normalizeEntry);
+      needRecalc = true;
+    }
+
+    if (needRecalc) {
+      const userWeight = await getLatestWeight(userId);
+      const derived = computeSessionFromEntries(payload.entries || [], userWeight);
+      if (derived.durationMinutes != null && payload.durationMinutes == null) payload.durationMinutes = derived.durationMinutes;
+      if (derived.caloriesBurned != null && payload.caloriesBurned == null) payload.caloriesBurned = derived.caloriesBurned;
+
+      // Si pas d'endedAt mais durée dispo et startedAt fourni, inférer endedAt
+      if (!payload.endedAt && (payload.startedAt || payload.durationMinutes != null)) {
+        const baseStart = payload.startedAt ? new Date(payload.startedAt) : new Date();
+        const durMin = Number(payload.durationMinutes ?? derived.durationMinutes);
+        if (Number.isFinite(durMin)) payload.endedAt = new Date(baseStart.getTime() + durMin * 60000);
+      }
+    }
 
     const doc = await WorkoutSession.findOneAndUpdate(
       { _id: id, userId: new mongoose.Types.ObjectId(userId) },

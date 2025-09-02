@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import style from "../HistoryUser.module.css";
 
 // Utilitaire local pour parser différentes formes de dates
@@ -19,7 +19,21 @@ function parseDate(raw) {
   return null;
 }
 
-export default function SessionsList({ sessions, onData }) {
+function uniqByIdKeepLatest(items) {
+  const map = new Map();
+  for (const it of items) {
+    const prev = map.get(it.id);
+    if (!prev || (it.date && prev.date && it.date > prev.date)) {
+      map.set(it.id, it);
+    }
+  }
+  return Array.from(map.values());
+}
+
+export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
+  const [localRows, setLocalRows] = useState([]);
+  const [deletingId, setDeletingId] = useState(null);
+
   const rows = useMemo(() => {
     const items = (sessions || []).map((s, i) => {
       const rawDate = s?.startedAt || s?.date || s?.createdAt || s?.performedAt || s?.day;
@@ -32,12 +46,18 @@ export default function SessionsList({ sessions, onData }) {
       };
     });
 
+    const deduped = uniqByIdKeepLatest(items);
+
     // garde uniquement celles qui ont une date valide puis trie du plus récent au plus ancien
-    return items
+    return deduped
       .filter(r => r.date)
       .sort((a, b) => b.date - a.date)
       .slice(0, 10);
   }, [sessions]);
+
+  useEffect(() => {
+    setLocalRows(rows);
+  }, [rows]);
 
   // Remonte éventuellement les données normalisées au parent si onData est fourni
   useEffect(() => {
@@ -46,7 +66,33 @@ export default function SessionsList({ sessions, onData }) {
     }
   }, [rows, onData]);
 
-  if (!rows || rows.length === 0) {
+  async function handleDelete(id) {
+    if (!id) return;
+    const ok = window.confirm("Supprimer cette séance ?");
+    if (!ok) return;
+    try {
+      setDeletingId(id);
+      const res = await fetch(`/api/sessions/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!res.ok && res.status !== 204) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.message || 'Suppression impossible');
+      }
+      // Optimistic UI: retire localement
+      setLocalRows(prev => prev.filter(r => r.id !== id));
+      if (typeof onDeleteSuccess === 'function') onDeleteSuccess(id);
+      if (typeof onData === 'function') onData(localRows.filter(r => r.id !== id));
+    } catch (e) {
+      console.error('[SessionsList] delete error', e);
+      alert(e.message || 'Erreur lors de la suppression');
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  if (!localRows || localRows.length === 0) {
     return <p className={style.muted}>Aucune séance enregistrée.</p>;
   }
 
@@ -54,15 +100,25 @@ export default function SessionsList({ sessions, onData }) {
     <div className={style.sessionsSection}>
       <h4>Mes dernières séances</h4>
       <ul className={style.sessionList}>
-        {rows.map((s) => (
+        {localRows.map((s) => (
           <li key={s.id} className={style.sessionItem}>
             <span className={style.sessionName}>{s.name}</span>
             <span className={style.sessionDate}>
-              {s.date ? s.date.toLocaleDateString("fr-FR") : "—"}
+              {s.date ? s.date.toLocaleDateString('fr-FR') : '—'}
             </span>
             <span className={style.sessionCount}>
-              {s.entriesCount ? `${s.entriesCount} exos` : "—"}
+              {s.entriesCount ? `${s.entriesCount} exos` : '—'}
             </span>
+            <button
+              type="button"
+              aria-label="Supprimer la séance"
+              className={style.sessionDeleteBtn || ''}
+              onClick={() => handleDelete(s.id)}
+              disabled={deletingId === s.id}
+              style={{ marginLeft: 'auto', fontSize: 12, color: '#b91c1c', background: 'transparent', border: 'none', cursor: 'pointer' }}
+            >
+              {deletingId === s.id ? '…' : 'Supprimer'}
+            </button>
           </li>
         ))}
       </ul>

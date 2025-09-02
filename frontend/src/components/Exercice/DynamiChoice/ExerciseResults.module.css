@@ -71,7 +71,7 @@
    --------------------------- */
 @media (min-width: 640px) {
   .container { gap: 16px; padding: 12px; margin: 10px auto; }
-  .actions { flex-direction: row; justify-content: flex-end; align-items: center; position: relative; z-index: 0; }
+  .actions { flex-direction: column-reverse; justify-content: flex-end; align-items: center; position: relative; z-index: 0; }
 }
 
 @media (min-width: 768px) {

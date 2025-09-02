@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import LabelField from "../../LabelField/LabelField";
 import lstyle from "./LoginUser.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
-import LoginMascot from "../LoginMascot/LoginMascot";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import useLogin from "./UseLogin.js";
 

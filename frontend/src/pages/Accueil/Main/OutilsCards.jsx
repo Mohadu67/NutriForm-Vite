@@ -27,29 +27,6 @@ export default function OutilsCards() {
           <span className={styles.button}>Calculer mes calories</span>
         </a>
       </div>
-
-    <h2 className={styles.titre}>Bientôt disponible : l&apos;entraînement et le suivi personnalisé</h2>
-
-    <div className={styles.bientot}> 
-      <div className={styles.carte} style={{ textAlign: "center" }}>
-        <p className={styles.texte}>
-          Prépare-toi à découvrir des centaines d&apos;exercices variés, classés par objectifs et muscles ciblés. 
-          Suis tes séances, mesure ta progression et profite d&apos;un accompagnement intelligent au quotidien. 
-          Cette nouvelle section arrive très bientôt !
-        </p>
-        <button type="button" className={styles.button} disabled>
-          Découvrir l&apos;entraînement
-        </button>
-      </div>
-      <div className={styles.carte} style={{ textAlign: "center" }}>
-        <p className={styles.texte}>
-          Bientôt disponible : découvre des recettes variées et équilibrées adaptées à tes objectifs, pour allier plaisir et nutrition sans prise de tête.
-        </p>
-        <button type="button" className={styles.button} disabled>
-          Découvrir les recettes
-        </button>
-      </div>
-    </div>
     </>
   );
 }

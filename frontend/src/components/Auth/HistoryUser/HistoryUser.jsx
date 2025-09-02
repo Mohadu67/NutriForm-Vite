@@ -2,11 +2,11 @@ import React, { useMemo, useState } from "react";
 import style from "./HistoryUser.module.css";
 import LogoutActions from "./LogoutActions.jsx";
 import HistoryHeader from "./HistoryHeader.jsx";
-import SessionsList from "./Sessions/SessionsList.jsx";
 import ImcRecapCard from "./Recap/ImcRecapCard.jsx";
 import WeightChart from "./HistoryCharts/WeightChart.jsx";
 import SessionChart from "./HistoryCharts/SessionChart.jsx";
 import useHistoryData from "./UseHistoryData.js";
+import SuivieSeance from "../../Exercice/ExerciceSuivie/SuivieSeance.jsx";
 
 export default function HistoryUser({ onClose, onLogout }) {
   const parseDate = (raw) => {
@@ -85,7 +85,9 @@ export default function HistoryUser({ onClose, onLogout }) {
         <ImcRecapCard imcPoints={imcPoints} onDelete={handleDelete} />
       </div>
 
-      <SessionsList sessions={sessions} onData={setUserSessions} />
+      <div style={{ marginTop: 12 }}>
+        <SuivieSeance />
+      </div>
 
       {onLogout && <LogoutActions onLogout={onLogout} />}
     </div>

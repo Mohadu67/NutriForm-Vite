@@ -62,6 +62,14 @@ exports.login = async (req, res) => {
 
     const displayName = user.pseudo || user.prenom || user.email.split('@')[0];
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
+
     return res.json({
       message: 'Connexion réussie.',
       token,

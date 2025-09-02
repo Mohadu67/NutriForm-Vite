@@ -150,6 +150,17 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     });
   }
 
+  function handleResetSuggestions() {
+    // Remet toutes les suggestions ET la sélection à l'état complet
+    setHasTouched(true);
+    setDismissed(new Set());
+    // Réintègre toutes les propositions dans la sélection courante
+    if (Array.isArray(results) && results.length > 0) {
+      setOrdered(results);
+      emit(results);
+    }
+  }
+
   if (loading) return <p>Chargement des exercices…</p>;
   if (error) return <p className={styles.error}>Erreur: {error}</p>;
   if (!results.length) return (
@@ -168,7 +179,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
       {onSearch && (
         <div className={styles.actions}>
           {dismissed.size > 0 && (
-            <button type="button" onClick={() => setDismissed(new Set())} className={styles.resetBtn}>
+            <button type="button" onClick={handleResetSuggestions} className={styles.resetBtn}>
               Réinitialiser les suggestions
             </button>
           )}
