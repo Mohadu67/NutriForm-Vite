@@ -5,6 +5,8 @@ import Progress from "../DynamiChoice/Progress.jsx";
 import Salutation from "./salutation.jsx";
 import SuivieExo from "../ExerciceSuivie/SuivieExo.jsx";
 import ChercherExo from "../ExerciceSuivie/ChercherExo.jsx";
+import SuivieSeance from "../ExerciceSuivie/SuivieSeance.jsx";
+import  connectReminder  from "../../MessageAlerte/ConnectReminder/ConnectReminder.jsx";
 
 export default function FormExo({ user }) {
   const [sessionName, setSessionName] = useState(() => {
@@ -26,6 +28,13 @@ export default function FormExo({ user }) {
   useEffect(() => { try { localStorage.setItem("formCurrentStep", String(currentStep)); } catch {} }, [currentStep]);
   useEffect(() => { try { localStorage.setItem("formMode", mode); } catch {} }, [mode]);
   useEffect(() => { try { localStorage.setItem("formSelectedExercises", JSON.stringify(selectedExercises)); } catch {} }, [selectedExercises]);
+  useEffect(() => {
+    try {
+      if (!user || !user.id) {
+        if (typeof connectReminder === 'function') connectReminder();
+      }
+    } catch {}
+  }, [user]);
   const steps = [
     { title: "Entrainement", sub: "Choisi ton entrainement" },
     { title: "Équipement", sub: "Sélectionne tes équipement" },
@@ -104,19 +113,15 @@ export default function FormExo({ user }) {
         />
       )}
 
-      <div className={styles.history}>
-        {user ? ( 
-          <ul>
-            <li>Dernier poids enregistré : {user.lastWeight ?? "—"} kg</li>
-            <li>Dernière séance : {user.lastSession ?? "—"}</li>
-            <li>Classement séance entre amis : {user.rank ?? "—"}</li>
-            <li>IMC : {user.imc ?? "—"}</li>
-            <li>Calories journalières : {user.calories ?? "—"}</li>
-          </ul>
-        ) : (
-          <p>Connecte-toi pour suivre tes séances et voir ton historique.</p>
-        )}
-      </div>
+      {user && (user.id || user._id) ? (
+        <SuivieSeance user={user} />
+      ) : (
+        <div className={styles.connectReminder}>
+          <p className={styles.connectReminderText}>
+            Connecte‑toi pour suivre ton évolution (poids, séances, calories) et garder l’historique de tes entraînements.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

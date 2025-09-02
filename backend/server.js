@@ -6,6 +6,7 @@ if (fs.existsSync('.env.local')) {
 }
 const cookieParser = require('cookie-parser');
 const config = require('./config');
+const { frontUrl } = config;
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -35,7 +36,7 @@ mongoose
   });
 
 app.use(cors({
-  origin: process.env.FRONTEND_BASE_URL || 'http://localhost:5173',
+  origin: frontUrl,
   credentials: true,
 }));
 app.use(express.json());
@@ -48,7 +49,7 @@ app.use('/api', verifyRoutes);
 app.use('/api', authRoutes);
 app.use('/api', passwordResetRoutes);
 app.use('/api', contactRoutes);
-app.use('/api', historyRoutes);
+app.use('/api/history', historyRoutes);
 app.use('/api', workoutSessionRoutes);
 
 app.get('/', (req, res) => {

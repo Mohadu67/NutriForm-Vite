@@ -1,8 +1,4 @@
-
-
 import { useState } from "react";
-
-const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
 export default function useLogin(onLoginSuccess) {
   const [status, setStatus] = useState("idle");
@@ -13,32 +9,30 @@ export default function useLogin(onLoginSuccess) {
     setErrorMsg("");
 
     try {
-      const res = await fetch(`${API_URL}/api/login`, {
+      const res = await fetch(`/api/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier, password }),
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        credentials: "include", // indispensable pour stocker le cookie JWT côté navigateur
+        body: JSON.stringify({ identifier, password, remember }),
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || "Échec de connexion");
+        throw new Error(data?.message || "Échec de connexion");
       }
 
-      const data = await res.json();
-      const { token, user } = data;
+      const { token, user } = data || {};
 
-      if (!token || !user) throw new Error("Réponse invalide du serveur");
-
-      if (remember) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
-      } else {
-        sessionStorage.setItem("token", token);
-        sessionStorage.setItem("user", JSON.stringify(user));
-      }
+      // Fallback: on garde aussi le token côté front si fourni
+      try {
+        const storage = remember ? localStorage : sessionStorage;
+        if (token) storage.setItem("token", token);
+        if (user) storage.setItem("user", JSON.stringify(user));
+      } catch (_) {}
 
       setStatus("success");
-      if (onLoginSuccess) onLoginSuccess(user);
+      if (onLoginSuccess && user) onLoginSuccess(user);
       return { token, user };
     } catch (e) {
       setStatus("error");
