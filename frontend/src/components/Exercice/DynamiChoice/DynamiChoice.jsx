@@ -4,7 +4,7 @@ import { useStepSubtitle, buildFunnyMessage } from "./subtitlePools";
 import ExerciseResults from "./ExerciseResults";
 import styles from "./DynamiChoice.module.css";
 
-export default function DynamiChoice({ onComplete = () => {}, onStepChange, requestedStep }) {
+export default function DynamiChoice({ onComplete = () => {}, onStepChange, requestedStep, onSearch }) {
   const [step, setStep] = useState(() => {
     try {
       const v = localStorage.getItem("dynamiStep");
@@ -146,13 +146,8 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
     if (step < 3) {
       setStep(step + 1);
     } else {
-      try {
-        localStorage.removeItem("dynamiStep");
-        localStorage.removeItem("dynamiType");
-        localStorage.removeItem("dynamiEquip");
-        localStorage.removeItem("dynamiMuscle");
-        localStorage.removeItem("dynamiSelected");
-      } catch {}
+      // Ne pas vider le localStorage ici : on veut pouvoir revenir en arrière
+      // et retrouver les mêmes choix et la même sélection.
       onComplete({ typeId, equipIds, muscleIds, exercises: selectedExercises });
     }
   }
@@ -186,6 +181,8 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
           equipIds={equipIds}
           muscleIds={muscleIds}
           onResultsChange={handleResultsChange}
+          onSearch={onSearch ? () => onSearch(selectedExercises) : undefined}
+          initialSelected={selectedExercises}
         />
       );
     }
