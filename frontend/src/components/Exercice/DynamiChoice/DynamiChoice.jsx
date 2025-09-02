@@ -1,24 +1,90 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import CardChoice, { TYPE_CARDS, EQUIP_CARDS, MUSCLE_CARDS } from "./CardChoice";
 import { useStepSubtitle, buildFunnyMessage } from "./subtitlePools";
 import ExerciseResults from "./ExerciseResults";
 import styles from "./DynamiChoice.module.css";
 
 export default function DynamiChoice({ onComplete = () => {}, onStepChange, requestedStep }) {
-  const [step, setStep] = useState(0);
-  const [typeId, setTypeId] = useState(null);
-  const [equipIds, setEquipIds] = useState([]);
-  const [muscleIds, setMuscleIds] = useState([]);
+  const [step, setStep] = useState(() => {
+    try {
+      const v = localStorage.getItem("dynamiStep");
+      return v !== null ? parseInt(v, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
+  const [typeId, setTypeId] = useState(() => {
+    try {
+      const v = localStorage.getItem("dynamiType");
+      return v ? JSON.parse(v) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [equipIds, setEquipIds] = useState(() => {
+    try {
+      const v = localStorage.getItem("dynamiEquip");
+      return v ? JSON.parse(v) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [muscleIds, setMuscleIds] = useState(() => {
+    try {
+      const v = localStorage.getItem("dynamiMuscle");
+      return v ? JSON.parse(v) : [];
+    } catch {
+      return [];
+    }
+  });
   const [funnyMessage, setFunnyMessage] = useState(null);
-  const [selectedExercises, setSelectedExercises] = useState([]);
+  const [selectedExercises, setSelectedExercises] = useState(() => {
+    try {
+      const v = localStorage.getItem("dynamiSelected");
+      return v ? JSON.parse(v) : [];
+    } catch {
+      return [];
+    }
+  });
+  const didInitFromSelections = useRef(false);
 
   useEffect(() => {
     if (typeof onStepChange === "function") onStepChange(step);
   }, [step, onStepChange]);
 
   useEffect(() => {
+    try { localStorage.setItem("dynamiStep", String(step)); } catch {}
+  }, [step]);
+
+  useEffect(() => {
+    try { localStorage.setItem("dynamiType", JSON.stringify(typeId)); } catch {}
+  }, [typeId]);
+
+  useEffect(() => {
+    try { localStorage.setItem("dynamiEquip", JSON.stringify(equipIds)); } catch {}
+  }, [equipIds]);
+
+  useEffect(() => {
+    try { localStorage.setItem("dynamiMuscle", JSON.stringify(muscleIds)); } catch {}
+  }, [muscleIds]);
+
+  useEffect(() => {
+    try { localStorage.setItem("dynamiSelected", JSON.stringify(selectedExercises)); } catch {}
+  }, [selectedExercises]);
+
+  useEffect(() => {
+    if (didInitFromSelections.current) return;
+    // Dériver l'étape à partir des choix existants si step est 0
+    const derived = typeId ? (Array.isArray(equipIds) && equipIds.length > 0
+      ? (Array.isArray(muscleIds) && muscleIds.length > 0 ? 3 : 2)
+      : 1) : 0;
+    if (derived > step) setStep(derived);
+    didInitFromSelections.current = true;
+  }, [typeId, equipIds, muscleIds, step]);
+
+  useEffect(() => {
     if (typeof requestedStep !== "number") return;
-    setStep((prev) => (requestedStep < prev ? requestedStep : prev));
+    setStep(prev => (requestedStep > prev ? requestedStep : prev));
   }, [requestedStep]);
 
   const headings = useMemo(() => [
@@ -62,6 +128,13 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
     setEquipIds((prev) => prev.filter((id) => allowedEquipIds.includes(id)));
   }, [allowedEquipIds]);
 
+  const handleResultsChange = useCallback((next) => {
+    // Déférer pour éviter "Cannot update a component while rendering a different component"
+    Promise.resolve().then(() => {
+      setSelectedExercises(Array.isArray(next) ? next : []);
+    });
+  }, []);
+
   const canNext = useMemo(() => {
     if (step === 0) return Boolean(typeId);
     if (step === 1) return Array.isArray(equipIds) && equipIds.length > 0;
@@ -73,6 +146,13 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
     if (step < 3) {
       setStep(step + 1);
     } else {
+      try {
+        localStorage.removeItem("dynamiStep");
+        localStorage.removeItem("dynamiType");
+        localStorage.removeItem("dynamiEquip");
+        localStorage.removeItem("dynamiMuscle");
+        localStorage.removeItem("dynamiSelected");
+      } catch {}
       onComplete({ typeId, equipIds, muscleIds, exercises: selectedExercises });
     }
   }
@@ -105,7 +185,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
           typeId={typeId}
           equipIds={equipIds}
           muscleIds={muscleIds}
-          onResultsChange={setSelectedExercises}
+          onResultsChange={handleResultsChange}
         />
       );
     }
