@@ -94,13 +94,12 @@
   .muted { color: var(--nf-muted); }
 
   .auth-input {
-    background: #121212;
     color: var(--nf-ink);
     border: 1px solid var(--nf-border);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
   }
   .auth-input::placeholder { color: #9aa3ab; }
-  .auth-input:focus-visible { box-shadow: var(--nf-focus); background: #151515; }
+  .auth-input:focus-visible { box-shadow: var(--nf-focus); }
 
   .linkBtn {
     background: #1b1b1b;

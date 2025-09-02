@@ -85,7 +85,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
 
   if (loading) return <p>Chargement des exercices…</p>;
   if (error) return <p style={{ color: "#ef4444" }}>Erreur: {error}</p>;
-  if (!results.length) return <p>Aucun exercice trouvé. Essaie d'élargir tes choix d'équipement ou de muscles.</p>;
+if (!results.length) return <p>Aucun exercice trouvé… pour l’instant ! On travaille en salle pour ajouter plus d’exos, en attendant essaie d’élargir tes choix d’équipement ou de muscles.</p>;
 
   return (
     <div style={{ display: "grid", gap: ".75rem" }}>
