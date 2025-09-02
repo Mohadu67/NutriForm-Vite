@@ -4,6 +4,7 @@ import DynamiChoice from "../DynamiChoice/DynamiChoice.jsx";
 import Progress from "../DynamiChoice/Progress.jsx";
 import Salutation from "./salutation.jsx";
 import SuivieExo from "../ExerciceSuivie/SuivieExo.jsx";
+import ChercherExo from "../ExerciceSuivie/ChercherExo.jsx";
 
 export default function FormExo({ user }) {
   const [sessionName, setSessionName] = useState(() => {
@@ -17,6 +18,9 @@ export default function FormExo({ user }) {
   });
   const [selectedExercises, setSelectedExercises] = useState(() => {
     try { return JSON.parse(localStorage.getItem("formSelectedExercises")) || []; } catch { return []; }
+  });
+  const [searchDraft, setSearchDraft] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("dynamiSelected")) || []; } catch { return []; }
   });
   useEffect(() => { try { localStorage.setItem("formSessionName", JSON.stringify(sessionName)); } catch {} }, [sessionName]);
   useEffect(() => { try { localStorage.setItem("formCurrentStep", String(currentStep)); } catch {} }, [currentStep]);
@@ -64,13 +68,39 @@ export default function FormExo({ user }) {
               setSelectedExercises(list);
               setMode("session");
             }}
+            onSearch={(current) => {
+              const safe = Array.isArray(current) ? current : [];
+              setSearchDraft(safe);
+              try {
+                localStorage.setItem("dynamiSelected", JSON.stringify(safe));
+                localStorage.setItem("dynamiHasTouched", "1"); // évite l'auto-préselection au retour
+              } catch {}
+              setMode("search");
+            }}
           />
         </>
-      ) : (
+      ) : mode === "session" ? (
         <SuivieExo
           sessionName={sessionName}
           exercises={selectedExercises}
           onBack={() => setMode("builder")}
+        />
+      ) : (
+        <ChercherExo
+          preselectedIds={searchDraft.map(e => e.id ?? e._id ?? e.slug ?? (e.name || e.title))}
+          onBack={() => setMode("builder")}
+          onCancel={() => setMode("builder")}
+          onConfirm={(picked) => {
+            const byId = (x) => x.id ?? x._id ?? x.slug ?? (x.name || x.title);
+            setSearchDraft(prev => {
+              const map = new Map(prev.map(x => [byId(x), x]));
+              picked.forEach(p => map.set(byId(p), p));
+              const merged = Array.from(map.values());
+              try { localStorage.setItem("dynamiSelected", JSON.stringify(merged)); } catch {}
+              return merged;
+            });
+            setMode("builder");
+          }}
         />
       )}
 

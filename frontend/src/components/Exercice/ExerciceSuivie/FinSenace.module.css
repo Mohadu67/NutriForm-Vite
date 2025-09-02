@@ -1,0 +1,38 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--accent, #ff914d);
+}
+
+.text {
+  font-size: 1.2rem;
+  color: var(--muted, #555);
+  max-width: 500px;
+  line-height: 1.6;
+}
+
+.finishBtn {
+  padding: 10px 20px;
+  margin-top: 1rem;
+  border-radius: 12px;
+  background: var(--accent, #ff914d);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.finishBtn:hover {
+  filter: brightness(0.9);
+  transform: translateY(-2px);
+}

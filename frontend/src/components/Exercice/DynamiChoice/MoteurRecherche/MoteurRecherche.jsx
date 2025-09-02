@@ -3,6 +3,13 @@ import { TYPE_MAP, MUSCLE_MAP, EQUIP_MAP } from "./DataMap";
 
 const LVL = { beginner: 1, easy: 1, intermediate: 2, medium: 2, advanced: 3, hard: 3 };
 
+const SCORE_WEIGHTS = {
+  type: 6,
+  muscle: 5,
+  equipment: 3,
+  level: 1,
+};
+
 function norm(v) {
   if (!v && v !== 0) return "";
   return String(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -33,6 +40,50 @@ function hasEvery(a, b) {
 function parseLvl(l) {
   if (typeof l === "number") return l;
   return LVL[norm(l)] || null;
+}
+
+function toArray(val) {
+  if (!val && val !== 0) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string") return val.split(/[,;|/]+/).map((s) => s.trim()).filter(Boolean);
+  return [val];
+}
+
+function matchTypes(exo, tSet) {
+  const exoTypes = toArray(exo.type);
+  const exoTypesN = normArr(exoTypes);
+  if (!tSet.size) return true;
+  const crits = Array.from(tSet);
+  return exoTypesN.some((t) => crits.some((crit) => t.includes(crit)));
+}
+
+function matchMuscles(exo, muscles, mSet, musclePolicy) {
+  const exoMus = uniq(normArr([ ...toArray(exo.muscles), ...toArray(exo.primaryMuscle), ...toArray(exo.muscle) ]));
+  const musMatches = mSet.size ? intersectCount(exoMus, muscles) : 0;
+  if (!mSet.size) return { ok: true, count: 0 };
+  if (musclePolicy === "all" && !muscles.every((m) => exoMus.some((em) => em.includes(m)))) {
+    return { ok: false, count: 0 };
+  }
+  if (musclePolicy === "anyRequired" && musMatches === 0) {
+    const hasSome = muscles.some((m) => exoMus.some((em) => em.includes(m)));
+    if (!hasSome) return { ok: false, count: 0 };
+  }
+  return { ok: true, count: musMatches };
+}
+
+function matchEquipments(exo, eSet, equipmentPolicy) {
+  const exoEq = normArr([ ...toArray(exo.equipments), ...toArray(exo.equipment) ]);
+  const eqMatches = eSet.size ? intersectCount(exoEq, Array.from(eSet)) : 0;
+  if (!eSet.size) return { ok: true, count: 0 };
+  const equipArr = Array.from(eSet);
+  if (equipmentPolicy === "all" && !equipArr.every((e) => exoEq.some((ee) => ee.includes(e)))) {
+    return { ok: false, count: 0 };
+  }
+  if (equipmentPolicy === "anyRequired" && eqMatches === 0) {
+    const hasSome = equipArr.some((e) => exoEq.some((ee) => ee.includes(e)));
+    if (!hasSome) return { ok: false, count: 0 };
+  }
+  return { ok: true, count: eqMatches };
 }
 
 function tokeniser(q) {
@@ -135,31 +186,22 @@ export function rechercherExercices(criteria = {}, exercises) {
   const scored = [];
 
   for (const exo of list) {
-    const exoTypes = Array.isArray(exo.type) ? exo.type : [exo.type];
-    const exoTypesN = normArr(exoTypes);
-    if (tSet.size && !exoTypesN.some((t) => tSet.has(t))) continue;
+    if (!matchTypes(exo, tSet)) continue;
 
-    const exoMus = uniq(normArr([...(exo.muscles || []), ...(exo.primaryMuscle ? [exo.primaryMuscle] : [])]));
-    const musMatches = mSet.size ? intersectCount(exoMus, muscles) : 0;
-    if (mSet.size) {
-      if (musclePolicy === "all" && !hasEvery(exoMus, muscles)) continue;
-      if (musclePolicy === "anyRequired" && musMatches === 0) continue;
-    }
+    const musResult = matchMuscles(exo, muscles, mSet, musclePolicy);
+    if (!musResult.ok) continue;
 
-    const exoEq = normArr(exo.equipments || exo.equipment || []);
-    const eqMatches = eSet.size ? intersectCount(exoEq, Array.from(eSet)) : 0;
-    if (eSet.size) {
-      const equipArr = Array.from(eSet);
-      if (equipmentPolicy === "all" && !hasEvery(exoEq, equipArr)) continue;
-      if (equipmentPolicy === "anyRequired" && eqMatches === 0) continue;
-    }
+    const eqResult = matchEquipments(exo, eSet, equipmentPolicy);
+    if (!eqResult.ok) continue;
 
-    const exBody = norm(exo.bodyPart);
-    if (bpSet.size && !bpSet.has(exBody)) continue;
+    const exBodyList = normArr(toArray(exo.bodyPart));
+    if (bpSet.size && !Array.from(bpSet).some((bp) => exBodyList.some((b) => b.includes(bp)))) continue;
 
-    const exTags = normArr(exo.tags || []);
-    if (excTags.size && exTags.some(t => excTags.has(t))) continue;
-    if (incTags.size && !exTags.some(t => incTags.has(t))) continue;
+    const exTags = normArr(toArray(exo.tags));
+    const excArr = Array.from(excTags);
+    const incArr = Array.from(incTags);
+    if (excTags.size && exTags.some((t) => excArr.some((crit) => t.includes(crit)))) continue;
+    if (incTags.size && !exTags.some((t) => incArr.some((crit) => t.includes(crit)))) continue;
 
     const exLvl = parseLvl(exo.level);
     if (minLevel != null && exLvl != null && exLvl < minLevel) continue;
@@ -169,11 +211,11 @@ export function rechercherExercices(criteria = {}, exercises) {
     if (!ts.ok && tokens.length) continue;
 
     let score = 0;
-    if (tSet.size) score += 6;
-    score += musMatches * 5;
-    score += eqMatches * 3;
+    if (tSet.size) score += SCORE_WEIGHTS.type;
+    score += musResult.count * SCORE_WEIGHTS.muscle;
+    score += eqResult.count * SCORE_WEIGHTS.equipment;
     score += ts.score;
-    if (exLvl != null) score += 1;
+    if (exLvl != null) score += SCORE_WEIGHTS.level;
 
     if (exo.popularity != null) {
       const p = Number(exo.popularity) || 0;
@@ -188,7 +230,7 @@ export function rechercherExercices(criteria = {}, exercises) {
       }
     }
 
-    scored.push({ ...exo, _score: score, _eq: eqMatches, _mus: musMatches });
+    scored.push({ ...exo, _score: score, _eq: eqResult.count, _mus: musResult.count });
   }
 
   let out = scored;
@@ -205,10 +247,22 @@ export function rechercherAvecMeta(criteria = {}, exercises) {
   const total = all.length;
   const facets = { muscles: {}, equipments: {}, bodyParts: {}, types: {} };
   for (const e of all) {
-    for (const m of e.muscles || []) facets.muscles[m] = (facets.muscles[m] || 0) + 1;
-    for (const eq of e.equipments || e.equipment || []) facets.equipments[eq] = (facets.equipments[eq] || 0) + 1;
-    if (e.bodyPart) facets.bodyParts[e.bodyPart] = (facets.bodyParts[e.bodyPart] || 0) + 1;
-    if (e.type) facets.types[e.type] = (facets.types[e.type] || 0) + 1;
+    for (const m of toArray(e.muscles)) {
+      const k = norm(m);
+      facets.muscles[k] = (facets.muscles[k] || 0) + 1;
+    }
+    for (const eq of [...toArray(e.equipments), ...toArray(e.equipment)]) {
+      const k = norm(eq);
+      facets.equipments[k] = (facets.equipments[k] || 0) + 1;
+    }
+    for (const bp of toArray(e.bodyPart)) {
+      const k = norm(bp);
+      facets.bodyParts[k] = (facets.bodyParts[k] || 0) + 1;
+    }
+    for (const tp of toArray(e.type)) {
+      const k = norm(tp);
+      facets.types[k] = (facets.types[k] || 0) + 1;
+    }
   }
   return { items: all.slice(0, criteria.limit || 24), total, facets };
 }

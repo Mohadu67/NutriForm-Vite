@@ -1,22 +1,25 @@
 import React from "react";
 import styles from "./SuivieExo.module.css";
 import SuivieCard from "./SuivieCard";
+import Button from "../../BoutonAction/BoutonAction";
+import FinSeance from "./Finseance";
 
-export default function SuivieExo({ sessionName, exercises, onBack }) {
+
+export default function SuivieExo({ sessionName, exercises, onBack, onSearch }) {
   const label = (sessionName && sessionName.trim()) ? sessionName.trim() : "ta séance";
 
   return (
     <section className={styles.wrapper}>
       <div className={styles.titleRow}>
         {onBack && (
-          <button
+          <Button
             type="button"
             className={styles.titleBackBtn}
             onClick={onBack}
             aria-label="Retour"
           >
             ←
-          </button>
+          </Button>
         )}
         <h2 className={styles.title}>
           C'est parti pour ta séance <span className={styles.highlight}>{label}</span>
@@ -29,6 +32,7 @@ export default function SuivieExo({ sessionName, exercises, onBack }) {
           ))}
         </>
       )}
+      <FinSeance />
     </section>
   );
 }
