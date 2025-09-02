@@ -36,7 +36,7 @@ export default function CardChoice({ value, onChange, initialValue = null, cards
   });
 
   useEffect(() => {
-    if (multiple) return; // controlled by parent in multiple mode
+    if (multiple) return;
     if (value !== undefined) setSelected(value);
   }, [value, multiple]);
 

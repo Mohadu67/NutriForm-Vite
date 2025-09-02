@@ -43,6 +43,9 @@
   text-align: left;
   transition: background 160ms ease, box-shadow 160ms ease, transform 120ms ease, border-color 160ms ease;
   box-shadow: var(--shadow-sm);
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
 }
 .row:hover { background: var(--couleur-principale); box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
 .row:active { transform: translateY(0); }
@@ -78,6 +81,16 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+.overlay.isOpen,
+.overlay[aria-hidden="false"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
   animation: overlay-fade 180ms ease;
 }
 

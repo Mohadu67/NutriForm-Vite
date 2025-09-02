@@ -28,7 +28,7 @@ export default function SuivieExo({ sessionName, exercises, onBack, onSearch }) 
       {exercises && exercises.length > 0 && (
         <>
           {exercises.map((exo, idx) => (
-            <SuivieCard key={idx} exo={exo} />
+            <SuivieCard key={exo?.id ?? exo?.name ?? idx} exo={exo} />
           ))}
         </>
       )}

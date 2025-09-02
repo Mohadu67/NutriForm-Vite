@@ -56,6 +56,7 @@
   color: inherit; /* pour les <a> */
   cursor: pointer;
   position: relative;
+  height: 350px;
 }
 
 .carte::after {
@@ -105,6 +106,13 @@
   border: 0;
 }
 
+.bientot {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 30px;
+}
+
 .button:hover { filter: brightness(1.03); box-shadow: 0 10px 22px rgba(245, 184, 146, 0.4); }
 .button:active { transform: translateY(0); }
 .button:disabled { opacity: .6; cursor: not-allowed; box-shadow: none; }
@@ -116,7 +124,7 @@
 
 @media (min-width: 768px) {
   .liste { flex-direction: row; justify-content: center; }
-  .carte { width: 45%; margin: auto; } 
+  .carte { margin: auto; } 
   .titre { font-size: 2.3rem; }
 }
 

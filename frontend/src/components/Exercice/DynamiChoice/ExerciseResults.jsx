@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import ExerciceCard from "./ExerciceCard";
 import { rechercherExercices } from "./MoteurRecherche/MoteurRecherche.jsx";
 import Button from "../../BoutonAction/BoutonAction";
+import styles from "./ExerciseResults.module.css";
 
 export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [], onChange, onResultsChange, onSearch }) {
   const [data, setData] = useState([]);
@@ -150,9 +151,9 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   }
 
   if (loading) return <p>Chargement des exercices…</p>;
-  if (error) return <p style={{ color: "#ef4444" }}>Erreur: {error}</p>;
+  if (error) return <p className={styles.error}>Erreur: {error}</p>;
   if (!results.length) return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div className={styles.noResults}>
       <p>Aucun exercice trouvé… pour l’instant ! On travaille en salle pour ajouter plus d’exos. Tu peux aussi élargir tes filtres.</p>
       {onSearch && (
         <Button type="button" onClick={onSearch} aria-label="Ajouter des exercices">
@@ -163,23 +164,23 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   );
 
   return (
-    <div style={{ display: "grid", gap: "1rem" }}>
+    <div className={styles.container}>
       {onSearch && (
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, alignItems: "center" }}>
+        <div className={styles.actions}>
           {dismissed.size > 0 && (
-            <button type="button" onClick={() => setDismissed(new Set())} style={{ border: "none", background: "transparent", color: "#6b7280", cursor: "pointer", textDecoration: "underline", fontSize: 12 }}>
+            <button type="button" onClick={() => setDismissed(new Set())} className={styles.resetBtn}>
               Réinitialiser les suggestions
             </button>
           )}
-          <Button type="button" onClick={onSearch} aria-label="Ajouter des exercices">
+          <Button className={styles.BtnAjout} type="button" onClick={onSearch} aria-label="Ajouter des exercices">
             + Ajouter d'autres exercices
           </Button>
         </div>
       )}
 
-      <div style={{ display: "grid", gap: ".5rem" }}>
+      <div className={styles.list}>
         {combined.length === 0 ? (
-          <p style={{ color: "var(--muted)" }}>Aucun exercice sélectionné pour l’instant.</p>
+          <p className={styles.empty}>Aucun exercice sélectionné pour l’instant.</p>
         ) : (
           combined.map((exo) => {
             const key = exo.id || exo.name;
