@@ -48,7 +48,6 @@ export default function ExerciceCard({ exo, onAdd, isAdded = false, draggable = 
 
         <div className={styles.rowTitle}>{exo.name}</div>
 
-        {/* Delete button on the right */}
         {onRemove && (
           <button
             type="button"
@@ -64,9 +63,10 @@ export default function ExerciceCard({ exo, onAdd, isAdded = false, draggable = 
 
       {open && (
         <div
-          className={styles.overlay}
+          className={`${styles.overlay} ${open ? styles.isOpen : ''}`}
           role="dialog"
           aria-modal="true"
+          aria-hidden={!open}
           id={dialogId}
           onClick={() => setOpen(false)}
         >

@@ -20,12 +20,11 @@
 /* ===================== CARD (liste) ===================== */
 .row {
   display: grid;
-  grid-template-columns: 56px 1fr;
+  grid-template-columns: 48px 1fr;
   align-items: center;
-  color: var(--ink);
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   border-radius: var(--radius);
   border: 1px solid var(--line);
   background:
@@ -34,7 +33,7 @@
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
-  margin: 15px 5px;
+  margin: 12px 4px;
   background-clip: padding-box;
 }
 .row:hover { 
@@ -44,20 +43,39 @@
 }
 .row:active { transform: translateY(0); box-shadow: var(--shadow-sm); }
 
-.thumb { width: 56px; height: 56px; border-radius: 14px; overflow: hidden; background: #fafafa; border: 1px solid var(--line); display: grid; place-items: center; }
+.thumb { width: 48px; height: 48px; border-radius: 12px; overflow: hidden; background: #fafafa; border: 1px solid var(--line); display: grid; place-items: center; }
 .thumb img { width: 100%; height: 100%; object-fit: cover; }
 .initial { font-weight: 800; color: var(--muted); }
 .title { 
   font-weight: 800; 
   letter-spacing: .2px; 
-  font-size: 16px; 
+  font-size: 15px; 
   line-height: 1.4; 
 }
 
 /* ===================== POPUP OVERLAY / PANEL ===================== */
 .overlay {
-  position: fixed; inset: 0; display: grid; place-items: end; padding: 0; 
-  background: rgba(0,0,0,0.28); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: end;
+  padding: 0;
+  background: rgba(0,0,0,0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .2s ease;
+  z-index: 1000;
+}
+
+.overlay.isOpen,
+.isOpen .overlay,
+.overlay[aria-hidden="false"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .popup {
@@ -142,6 +160,9 @@ select:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3px va
   .overlay { place-items: center; }
   .popupHeader { border-radius: 26px 26px 0 0; }
   .table > .rowHead, .table > .rowSet { min-width: 0; }
+  .row { grid-template-columns: 56px 1fr; padding: 14px; margin: 15px 5px; }
+  .thumb { width: 56px; height: 56px; border-radius: 14px; }
+  .title { font-size: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

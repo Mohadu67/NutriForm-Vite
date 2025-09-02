@@ -46,7 +46,7 @@
 }
 
 .burger.open li {
-  width: 150px;
+  width: 110px;
   height: 40px;
   border-radius: 10px;
 }
@@ -70,7 +70,7 @@
 }
 
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
 
         .burger li {
             display: flex;
@@ -81,6 +81,8 @@
             border-radius: 8px;
             text-align: center;
         }
+
+        .burger.open li { width: 150px; }
 
         .burger li.org a {
             display: flex;

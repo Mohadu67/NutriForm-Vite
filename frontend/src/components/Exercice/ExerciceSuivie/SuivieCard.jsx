@@ -331,7 +331,13 @@ export default function SuivieCard({ exo, value, onChange }) {
       </button>
 
       {open && (
-        <div className={styles.overlay} role="dialog" aria-modal="true" onClick={() => setOpen(false)}>
+        <div
+          className={`${styles.overlay} ${open ? styles.isOpen : ''}`}
+          role="dialog"
+          aria-modal="true"
+          aria-hidden={!open}
+          onClick={() => setOpen(false)}
+        >
           <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
             <header className={styles.popupHeader}>
               <h3 className={styles.popupTitle}>{exo?.name}</h3>

@@ -73,7 +73,7 @@ export default function FormExo({ user }) {
               setSearchDraft(safe);
               try {
                 localStorage.setItem("dynamiSelected", JSON.stringify(safe));
-                localStorage.setItem("dynamiHasTouched", "1"); // évite l'auto-préselection au retour
+                localStorage.setItem("dynamiHasTouched", "1");
               } catch {}
               setMode("search");
             }}

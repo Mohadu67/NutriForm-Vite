@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Button from "../../BoutonAction/BoutonAction";
+import styles from "./ChercherExo.module.css";
 
 /**
  * ChercherExo – recherche et sélection d'exercices depuis bd.json
@@ -107,40 +108,40 @@ export default function ChercherExo({
   }
 
   return (
-    <section style={{ display: "grid", gap: "12px" }}>
-      <header style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
+    <section className={styles.container}>
+      <header className={styles.header}>
         <h3 style={{ margin: 0 }}>Ajouter des exercices</h3>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className={styles.headerActions}>
           {onCancel && (
-            <Button type="button" onClick={onCancel}>Annuler</Button>
+            <Button className={styles.btnAnnule} type="button" onClick={onCancel}>Annuler</Button>
           )}
         </div>
       </header>
 
-      <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr", alignItems: "center" }}>
+      <div className={styles.filters}>
         <input
           type="search"
           placeholder="Rechercher par nom…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid var(--line)", outline: "none" }}
+          className={styles.search}
         />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 8 }}>
-          <select value={type} onChange={(e) => setType(e.target.value)} style={{ padding: 8, borderRadius: 10, border: "1px solid var(--line)" }}>
+        <div className={styles.selects}>
+          <select value={type} onChange={(e) => setType(e.target.value)} className={styles.select}>
             {options.type.map((v, i) => (
               <option key={i} value={v}>
                 {v === "" ? "Tous types" : v === "etirement" ? "étirement" : v}
               </option>
             ))}
           </select>
-          <select value={muscle} onChange={(e) => setMuscle(e.target.value)} style={{ padding: 8, borderRadius: 10, border: "1px solid var(--line)" }}>
+          <select value={muscle} onChange={(e) => setMuscle(e.target.value)} className={styles.select}>
             {options.muscle.map((v, i) => (
               <option key={i} value={v}>
                 {v === "" ? "Tous muscles" : v === "epaules" ? "épaules" : v}
               </option>
             ))}
           </select>
-          <select value={equip} onChange={(e) => setEquip(e.target.value)} style={{ padding: 8, borderRadius: 10, border: "1px solid var(--line)" }}>
+          <select value={equip} onChange={(e) => setEquip(e.target.value)} className={styles.select}>
             {options.equip.map((v, i) => (
               <option key={i} value={v}>
                 {v === "" ? "Tout équipement" : v.replace(/-/g, " ")}
@@ -150,11 +151,11 @@ export default function ChercherExo({
         </div>
       </div>
 
-      {loading && <p>Chargement… respire, on feuillette la bd.json.</p>}
-      {error && <p style={{ color: "crimson" }}>Erreur: {error}</p>}
+      {loading && <p className={styles.loading}>Chargement… respire, on feuillette la bd.json.</p>}
+      {error && <p className={styles.error}>Erreur: {error}</p>}
 
       {!loading && !error && (
-        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8, maxHeight: "50vh", overflow: "auto" }}>
+        <ul className={styles.list}>
           {filtered.map((ex) => {
             const id = ex.id ?? ex._id ?? ex.slug ?? canon(ex.name || ex.title);
             const isPre = preSet.has(id);
@@ -165,31 +166,31 @@ export default function ChercherExo({
               Array.isArray(ex.equipment) ? ex.equipment.join(", ") : ex.equip,
             ].filter(Boolean).join(" • ");
             return (
-              <li key={id} style={{ border: "1px solid var(--line)", borderRadius: 12, padding: 10, display: "flex", alignItems: "center", gap: 10 }}>
-                <label style={{ display: "grid", gridTemplateColumns: "24px 1fr", gap: 10, alignItems: "center", width: "100%", cursor: "pointer" }}>
+              <li key={id} className={styles.item}>
+                <label className={styles.itemLabel}>
                   <input type="checkbox" checked={checked} onChange={() => toggle(id)} disabled={isPre} />
                   <div>
-                    <div style={{ fontWeight: 800, display: "flex", alignItems: "center", gap: 8 }}>
+                    <div className={styles.itemTitleRow}>
                       <span>{ex.name || ex.title}</span>
                       {isPre && (
-                        <span style={{ fontSize: 11, padding: "2px 6px", borderRadius: 999, background: "#e8f5e9", color: "#2e7d32", fontWeight: 700 }}>
+                        <span className={styles.badge}>
                           déjà ajouté
                         </span>
                       )}
                     </div>
-                    {subtitle && <div style={{ fontSize: 12, color: "var(--muted)" }}>{subtitle}</div>}
+                    {subtitle && <div className={styles.subtitle}>{subtitle}</div>}
                   </div>
                 </label>
               </li>
             );
           })}
           {filtered.length === 0 && (
-            <li style={{ color: "var(--muted)" }}>Aucun résultat. Essaie un autre mot-clé ou retire des filtres.</li>
+            <li className={styles.empty}>Aucun résultat. Essaie un autre mot-clé ou retire des filtres.</li>
           )}
         </ul>
       )}
 
-      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 8 }}>
+      <div className={styles.footer}>
         <Button type="button" onClick={handleConfirm} disabled={selectedIds.size === 0}>
           Ajouter {selectedIds.size > 0 ? `(${selectedIds.size})` : ""}
         </Button>
