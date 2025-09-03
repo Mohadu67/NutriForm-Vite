@@ -98,7 +98,6 @@ export default function SuivieSeance({ user }) {
   return (
     <div>
       <div className={styles.statsGrid}>
-        {/* Bloc combiné: Poids & IMC & autres */}
         <div className={`${styles.statCard} ${styles.compactCard}`}>
           <div className={styles.rows}>
             <div className={styles.row}>
@@ -128,7 +127,6 @@ export default function SuivieSeance({ user }) {
           </div>
         </div>
 
-        {/* Bloc combiné: Calories jour & moyennes & semaine */}
         <div className={`${styles.statCard} ${styles.compactCard}`}>
           <div className={styles.rows}>
             <div className={styles.row}>
@@ -153,7 +151,6 @@ export default function SuivieSeance({ user }) {
           </div>
         </div>
 
-        {/* Bloc combiné: Dernière séance + durées + volume */}
         <div className={`${styles.statCard} ${styles.compactCard}`}>
           <div className={styles.rows}>
             <div className={styles.row}>
@@ -178,7 +175,6 @@ export default function SuivieSeance({ user }) {
           </div>
         </div>
 
-        {/* Les autres cartes (inchangées) */}
         {items
           .filter(([label]) => ![
             'IMC',

@@ -2,16 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "../../BoutonAction/BoutonAction";
 import styles from "./ChercherExo.module.css";
 
-/**
- * ChercherExo – recherche et sélection d'exercices depuis bd.json
- *
- * Props:
- * - sourceUrl?: string (par défaut "/bd.json")
- * - preselectedIds?: string[] | number[]
- * - onConfirm?: (selected: any[]) => void
- * - onBack?: () => void
- * - onCancel?: () => void
- */
 export default function ChercherExo({
   sourceUrl = "/data/db.json",
   preselectedIds = [],

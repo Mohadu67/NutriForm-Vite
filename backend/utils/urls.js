@@ -1,4 +1,3 @@
-// backend/utils/urls.js
 
 function buildBaseUrl(req) {
   const fromEnv = process.env.BACKEND_BASE_URL;

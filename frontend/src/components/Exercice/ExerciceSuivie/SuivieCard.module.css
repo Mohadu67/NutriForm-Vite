@@ -1,15 +1,14 @@
 .card {
-  /* Scoped design tokens (light) */
-  --bg: #F7F6F2;                    /* fond app */
-  --paper: #ffffff;                 /* panneaux */
-  --ink: #333;                      /* texte */
-  --muted: #7b8595;                 /* texte doux */
-  --line: rgba(0,0,0,0.08);         /* bordures */
+  --bg: #F7F6F2;
+  --paper: #ffffff;
+  --ink: #333;
+  --muted: #7b8595; 
+  --line: rgba(0,0,0,0.08);
   --soft: rgba(0,0,0,0.04);
   --accent: #F7B186;                
-  --accent-weak: #FBE1D1;           /* halo */
-  --radius: 18px;                   /* rayon principal */
-  --radius-sm: 12px;                /* petit rayon */
+  --accent-weak: #FBE1D1;
+  --radius: 18px;
+  --radius-sm: 12px;
   --shadow: 0 12px 32px rgba(0,0,0,0.08);
   --shadow-sm: 0 4px 14px rgba(0,0,0,0.06);
 
@@ -146,14 +145,6 @@ select:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3px va
 .saveBtn:active {
   transform: scale(.97);
 }
-
-/* ===================== TIMER ===================== */
-.timerWrap { display: grid; place-items: center; }
-.timer { display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 999px; background: linear-gradient(180deg,#fff,#fdfdfd); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
-.time { font-weight: 900; font-size: 18px; color: var(--accent); letter-spacing: .6px; }
-.timerBtns { display: inline-flex; gap: 8px; }
-.timerBtn { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
-.timerBtn:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ===================== MEDIA ===================== */
 @media (min-width: 600px) {

@@ -46,11 +46,9 @@ function toNumber(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-// Essaie d'estimer la durée d'un exercice en minutes
 function estimateExerciseDurationMin(exo = {}) {
   const fromField = toNumber(exo.durationMin ?? exo.duration);
   if (fromField != null) return fromField;
-  // Heuristique: ~5 sec par rep + 45 sec de repos par série
   const sets = toNumber(exo.sets) ?? (Array.isArray(exo.sets) ? exo.sets.length : 1);
   const reps = toNumber(exo.reps) ?? toNumber(exo.rep) ?? (Array.isArray(exo.sets) ? Number(exo.sets[0]?.reps) : 10);
   const tempoSec = toNumber(exo.tempoSec) ?? 5;
@@ -60,7 +58,6 @@ function estimateExerciseDurationMin(exo = {}) {
   return Math.max(1, Math.round(totalSec / 60));
 }
 
-// Calories d'un exercice
 function computeExerciseCalories(exo = {}, userWeightKg) {
   const w = toNumber(userWeightKg);
   if (!w || w <= 0) return 0;
@@ -70,7 +67,6 @@ function computeExerciseCalories(exo = {}, userWeightKg) {
   return Math.max(0, Math.round(kcal));
 }
 
-// Agrège une séance à partir d'une liste d'exercices
 function computeSessionFromEntries(entries = [], userWeightKg) {
   const clean = Array.isArray(entries) ? entries : [];
   let totalMin = 0;
