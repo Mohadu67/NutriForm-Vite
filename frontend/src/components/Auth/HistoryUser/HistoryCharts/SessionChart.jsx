@@ -12,7 +12,6 @@ export default function SessionChart({ points }) {
         return isNaN(d) ? null : d;
       }
       if (typeof raw === "string") {
-        // support dd/mm/yyyy and iso-like strings
         const m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
         const iso = m ? `${m[3]}-${m[2]}-${m[1]}` : raw;
         const d = new Date(iso);
