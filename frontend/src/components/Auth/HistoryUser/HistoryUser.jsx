@@ -26,7 +26,12 @@ export default function HistoryUser({ onClose, onLogout }) {
   };
   const { records, sessions, status, error, displayName, setRecords, handleDelete } = useHistoryData();
 
+  console.log("sessions length:", sessions?.length, "sample:", sessions?.[0]);
+
   const [userSessions, setUserSessions] = useState([]);
+  React.useEffect(() => {
+    setUserSessions(Array.isArray(sessions) ? sessions : []);
+  }, [sessions]);
 
   const imcPoints = useMemo(() => records.filter(r => r.type === 'imc'), [records]);
   const weightPoints = useMemo(() =>
@@ -56,13 +61,18 @@ export default function HistoryUser({ onClose, onLogout }) {
 
     const byDay = new Map();
     for (const s of (userSessions || [])) {
-      const key = toDayKey(s?.date || s?.createdAt || s?.day || s?.performedAt);
+      const key = toDayKey(
+        s?.date || s?.createdAt || s?.day || s?.performedAt || s?.startedAt || s?.endedAt
+      );
       if (!key) continue;
-      if (!byDay.has(key)) byDay.set(key, 1); // un seul point par jour
+      byDay.set(key, (byDay.get(key) || 0) + 1); // compter toutes les séances du jour
     }
 
     const keys = Array.from(byDay.keys()).sort();
-    return keys.map((k, idx) => ({ date: k, value: idx + 1 }));
+    let total = 0;
+    const arr = keys.map((k) => ({ date: new Date(k), value: (total += byDay.get(k)) }));
+    console.log("sessionPoints length:", arr.length, "sample:", arr[0]);
+    return arr;
   }, [userSessions]);
 
   return (
