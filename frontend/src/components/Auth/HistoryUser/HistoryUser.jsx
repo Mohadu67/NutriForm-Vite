@@ -26,7 +26,6 @@ export default function HistoryUser({ onClose, onLogout }) {
   };
   const { records, sessions, status, error, displayName, setRecords, handleDelete } = useHistoryData();
 
-  console.log("sessions length:", sessions?.length, "sample:", sessions?.[0]);
 
   const [userSessions, setUserSessions] = useState([]);
   React.useEffect(() => {
@@ -71,7 +70,6 @@ export default function HistoryUser({ onClose, onLogout }) {
     const keys = Array.from(byDay.keys()).sort();
     let total = 0;
     const arr = keys.map((k) => ({ date: new Date(k), value: (total += byDay.get(k)) }));
-    console.log("sessionPoints length:", arr.length, "sample:", arr[0]);
     return arr;
   }, [userSessions]);
 
