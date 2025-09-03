@@ -9,17 +9,30 @@ export default function useLogin(onLoginSuccess) {
     setErrorMsg("");
 
     try {
-      const res = await fetch(`/api/login`, {
+      // Utilise directement la variable VITE_API_URL définie dans l'environnement
+      const endpoint = `${import.meta.env.VITE_API_URL}/login`;
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        credentials: "include", // indispensable pour stocker le cookie JWT côté navigateur
+        credentials: "include",
         body: JSON.stringify({ identifier, password, remember }),
       });
 
-      const data = await res.json().catch(() => ({}));
+      let data = null;
+      let raw = "";
+      try {
+        raw = await res.text();
+        data = raw ? JSON.parse(raw) : null;
+      } catch (_) {
+        data = null;
+      }
 
       if (!res.ok) {
-        throw new Error(data?.message || "Échec de connexion");
+        throw new Error(
+          (data && (data.message || data.error || data.msg)) ||
+          (raw || "Échec de connexion")
+        );
       }
 
       const { token, user } = data || {};
