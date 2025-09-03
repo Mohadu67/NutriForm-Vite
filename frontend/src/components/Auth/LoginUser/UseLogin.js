@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export default function useLogin(onLoginSuccess, options = {}) {
-  const { minDurationMs = 3000 } = options;
+  const { minDurationMs = 2500 } = options;
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
