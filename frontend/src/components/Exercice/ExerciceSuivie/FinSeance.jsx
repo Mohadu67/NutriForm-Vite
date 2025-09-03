@@ -1,7 +1,7 @@
 
 
 import React, { useState } from "react";
-import styles from "./FinSenace.module.css";
+import styles from "./FinSeance.module.css";
 
 export default function FinSeance() {
   const [done, setDone] = useState(false);

@@ -2,7 +2,7 @@ import React from "react";
 import styles from "./SuivieExo.module.css";
 import SuivieCard from "./SuivieCard";
 import Button from "../../BoutonAction/BoutonAction";
-import FinSeance from "./Finseance";
+import FinSeance from "./FinSeance.jsx";
 
 
 export default function SuivieExo({ sessionName, exercises, onBack, onSearch }) {
