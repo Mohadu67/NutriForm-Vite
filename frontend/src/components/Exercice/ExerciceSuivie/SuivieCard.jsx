@@ -3,7 +3,6 @@ import styles from "./SuivieCard.module.css";
 import LabelField from "../../LabelField/LabelField.jsx";
 import { saveSession, buildSessionFromEntry } from "./sessionApi";
 
-/** Utils */
 const isCardioExo = (exo) => {
   const cat = String(exo?.category ?? exo?.type ?? "").toLowerCase();
   if (["cardio", "endurance"].includes(cat)) return true;
@@ -13,7 +12,6 @@ const isCardioExo = (exo) => {
   return false;
 };
 
-/** Small view components */
 const ModeBar = memo(function ModeBar({ mode, onChange }) {
   return (
     <div className={styles.modeBar}>
@@ -176,14 +174,13 @@ const NotesSection = memo(function NotesSection({ notes, onChange }) {
   );
 });
 
-/** Main component */
 export default function SuivieCard({ exo, value, onChange }) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
 
   const detected = isCardioExo(exo) ? "cardio" : "muscu";
-  const [modeOverride, setModeOverride] = useState(detected); // 'muscu' | 'cardio' | 'pdc'
+  const [modeOverride, setModeOverride] = useState(detected);
 
   const isCardio = modeOverride === "cardio";
   const isPdc = modeOverride === "pdc";
@@ -228,7 +225,6 @@ export default function SuivieCard({ exo, value, onChange }) {
   const sets = Array.isArray(data?.sets) ? data.sets : [];
   const cardioSets = Array.isArray(data?.cardioSets) ? data.cardioSets : [];
 
-  // Initialize arrays when switching modes
   useEffect(() => {
     if (isCardio) return;
     if (!Array.isArray(data.sets)) {
@@ -252,7 +248,6 @@ export default function SuivieCard({ exo, value, onChange }) {
     if (typeof onChange === "function") onChange(exo?.id || exo?.name, next);
   }
 
-  // handlers
   const updateSet = (idx, patch) => emit({ ...data, sets: sets.map((s, i) => (i === idx ? { ...s, ...patch } : s)) });
   const addSet = () => {
     if (isCardio) return addCardioSet();

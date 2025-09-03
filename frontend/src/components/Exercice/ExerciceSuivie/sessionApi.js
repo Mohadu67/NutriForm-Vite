@@ -1,4 +1,3 @@
-// Simple API client for workout sessions
 const DEFAULT_DEV_API = (typeof window !== 'undefined' && window.location && window.location.port === '5173')
   ? 'http://localhost:3000'
   : '';
@@ -38,7 +37,7 @@ async function request(path, options = {}) {
   });
 
   let data = null;
-  try { data = await res.json(); } catch { /* empty body */ }
+  try { data = await res.json(); } catch {}
   if (!res.ok) {
     const msg = (data && (data.error || data.message)) || 'request_failed';
     const err = new Error(msg);
@@ -49,7 +48,6 @@ async function request(path, options = {}) {
   return data;
 }
 
-// Create a full workout session
 export function saveSession(payload) {
   return request('/api/sessions', {
     method: 'POST',
@@ -57,7 +55,6 @@ export function saveSession(payload) {
   });
 }
 
-// List sessions (optionally filter by date YYYY-MM-DD)
 export function getSessions({ date, limit, cursor } = {}) {
   const params = new URLSearchParams();
   if (date) params.set('date', date);
@@ -82,13 +79,11 @@ export function deleteSession(id) {
   return request(`/api/sessions/${id}`, { method: 'DELETE' });
 }
 
-// Daily summary between dates (YYYY-MM-DD)
 export function getDailySummary(from, to) {
   const params = new URLSearchParams({ from, to });
   return request(`/api/summary/daily?${params.toString()}`);
 }
 
-// Helper to build a payload from a single entry
 export function buildSessionFromEntry(entry, { name, startedAt, endedAt, notes } = {}) {
   const nowIso = new Date().toISOString();
   return {

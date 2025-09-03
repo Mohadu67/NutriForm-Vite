@@ -9,7 +9,6 @@ function frontBase() {
   return base.replace(/\/$/, '');
 }
 
-// POST /api/login
 exports.login = async (req, res) => {
   try {
     const { identifier, email, pseudo, motdepasse, password } = req.body || {};
@@ -26,7 +25,6 @@ exports.login = async (req, res) => {
     let user = await User.findOne(primaryQuery).select('+motdepasse +emailVerifie');
     if (!user) user = await User.findOne(fallbackQuery).select('+motdepasse +emailVerifie');
 
-    // Fallback pseudo insensible à la casse (anciens comptes)
     if (!user && !rawId.includes('@')) {
       const esc = rawId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       user = await User.findOne({ pseudo: { $regex: `^${esc}$`, $options: 'i' } }).select('+motdepasse +emailVerifie');
@@ -82,7 +80,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// POST /api/register
 exports.register = async (req, res) => {
   try {
     const { email, motdepasse, password, prenom, pseudo } = req.body || {};

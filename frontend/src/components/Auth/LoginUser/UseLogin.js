@@ -9,8 +9,7 @@ export default function useLogin(onLoginSuccess) {
     setErrorMsg("");
 
     try {
-      // Utilise directement la variable VITE_API_URL définie dans l'environnement
-      const endpoint = `${import.meta.env.VITE_API_URL}/login`;
+      const endpoint = `${import.meta.env.VITE_API_URL}/api/login`;
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -37,12 +36,13 @@ export default function useLogin(onLoginSuccess) {
 
       const { token, user } = data || {};
 
-      // Fallback: on garde aussi le token côté front si fourni
       try {
         const storage = remember ? localStorage : sessionStorage;
         if (token) storage.setItem("token", token);
         if (user) storage.setItem("user", JSON.stringify(user));
       } catch (_) {}
+
+      await new Promise((resolve) => setTimeout(resolve, 4000));
 
       setStatus("success");
       if (onLoginSuccess && user) onLoginSuccess(user);

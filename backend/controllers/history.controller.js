@@ -101,15 +101,11 @@ async function getUserSummary(req, res) {
     for (const h of history) {
       const meta = h.meta || {};
 
-      // Variantes de champs pour mieux couvrir ta base
-      // Poids
       if (lastWeight == null) {
         if (typeof meta.poids === 'number') lastWeight = meta.poids;
         else if (typeof meta.weightKg === 'number') lastWeight = meta.weightKg;
       }
-      // IMC alternatif
       if (imc == null && typeof meta.bmi === 'number') imc = meta.bmi;
-      // Calories journalières
       if (calories == null) {
         if (typeof meta.calorie === 'number') calories = meta.calorie;
         else if (typeof meta.dailyCalories === 'number') calories = meta.dailyCalories;
@@ -168,14 +164,12 @@ async function getUserSummary(req, res) {
       }
     }
 
-    // Fallback: agréger depuis une éventuelle collection de séances
     try {
       if (typeof WorkoutSession?.find === 'function') {
         const sessions = await WorkoutSession.find({ userId }).sort({ startedAt: -1 }).limit(30).lean();
         if (Array.isArray(sessions) && sessions.length) {
           totalSessions = Math.max(totalSessions, sessions.length);
 
-          // Complète calories/durée depuis les entrées si manquant
           const weightForCalc = lastWeight ?? (history.find(h => (h.meta?.poids ?? h.meta?.weightKg ?? h.meta?.weight))?.meta?.poids || null);
           const enriched = sessions.map((s) => {
             const hasKcal = typeof s.caloriesBurned === 'number' || typeof s.kcal === 'number';
@@ -189,15 +183,12 @@ async function getUserSummary(req, res) {
             };
           });
 
-          // Dernière séance enrichie
           const s0 = enriched[0];
           let dur0 = s0?.durationMinutes ?? s0?.duration ?? (s0?.endedAt && s0?.startedAt ? Math.round((new Date(s0.endedAt) - new Date(s0.startedAt)) / 60000) : null);
           if (typeof dur0 === 'number' && dur0 < 0) dur0 = null; // clamp valeurs négatives
-          // On ne renvoie plus la durée dans le résumé (UI: carte supprimée)
           if (!lastSession) lastSession = s0?.name || s0?.label || 'Séance';
           if (lastCaloriesBurned == null && typeof s0?.caloriesBurned === 'number') lastCaloriesBurned = s0.caloriesBurned;
 
-          // Semaine courante
           const within7d = (d) => new Date(d) >= weekAgo;
           const weekSessions = enriched.filter((s) => s.startedAt ? within7d(s.startedAt) : (s.createdAt ? within7d(s.createdAt) : false));
           const sumKcal = weekSessions.reduce((acc, s) => acc + (Number(s.caloriesBurned || s.kcal || 0) || 0), 0);
@@ -210,10 +201,8 @@ async function getUserSummary(req, res) {
       }
     } catch (_) {}
 
-    // Calcul du streak sur la base des jours consécutifs avec séance
     if (workoutDaysSet.size > 0) {
       let cursor = new Date();
-      // normaliser à J
       cursor.setHours(0, 0, 0, 0);
       while (true) {
         const key = cursor.toISOString().slice(0, 10);
@@ -237,13 +226,12 @@ async function getUserSummary(req, res) {
     }
 
     return res.json({
-      // Priorité: stats dérivées de l'historique, sinon celles des sessions
+
       avgWorkoutDurationMin: null,
       avgCaloriesPerWorkout: derived.avgCaloriesPerWorkout ?? null,
       workoutsCount7d: workoutsCount7dSess || (derived.workoutsCount7d ?? 0),
       calories7d: calories7dSess || (derived.calories7d ?? 0),
 
-      // Tes champs existants (avec fallback sessions si utile)
       lastWeight,
       imc,
       calories,
@@ -256,7 +244,6 @@ async function getUserSummary(req, res) {
       favoriteMuscleGroup,
       nextGoal,
 
-      // On expose aussi quelques champs dérivés utiles pour ton UI
       initialWeight: derived.initialWeight,
       latestWeight: derived.latestWeight,
       weightChange: derived.weightChange,

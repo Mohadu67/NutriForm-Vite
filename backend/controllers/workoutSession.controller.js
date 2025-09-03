@@ -202,7 +202,6 @@ async function getSessionById(req, res) {
   }
 }
 
-// PATCH /api/sessions/:id
 async function updateSession(req, res) {
   try {
     const userId = getUserId(req);
@@ -214,11 +213,9 @@ async function updateSession(req, res) {
     }
 
     const payload = { ...req.body };
-    // Normalize dates if sent
     if (payload.startedAt) payload.startedAt = new Date(payload.startedAt);
     if (payload.endedAt) payload.endedAt = new Date(payload.endedAt);
 
-    // Recalcule si les entrées sont fournies ou si demande explicite
     let needRecalc = false;
     if (Array.isArray(payload.entries)) {
       payload.entries = payload.entries.map(normalizeEntry);
@@ -231,7 +228,6 @@ async function updateSession(req, res) {
       if (derived.durationMinutes != null && payload.durationMinutes == null) payload.durationMinutes = derived.durationMinutes;
       if (derived.caloriesBurned != null && payload.caloriesBurned == null) payload.caloriesBurned = derived.caloriesBurned;
 
-      // Si pas d'endedAt mais durée dispo et startedAt fourni, inférer endedAt
       if (!payload.endedAt && (payload.startedAt || payload.durationMinutes != null)) {
         const baseStart = payload.startedAt ? new Date(payload.startedAt) : new Date();
         const durMin = Number(payload.durationMinutes ?? derived.durationMinutes);
@@ -254,7 +250,6 @@ async function updateSession(req, res) {
   }
 }
 
-// DELETE /api/sessions/:id
 async function deleteSession(req, res) {
   try {
     const userId = getUserId(req);
@@ -281,8 +276,6 @@ async function deleteSession(req, res) {
   }
 }
 
-// GET /api/summary/daily?from=YYYY-MM-DD&to=YYYY-MM-DD
-// Returns per-day aggregates: count of entries, total muscu volume (weight*reps), cardio duration
 async function getDailySummary(req, res) {
   try {
     const userId = getUserId(req);

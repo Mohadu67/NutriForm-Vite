@@ -1,4 +1,3 @@
-// backend/services/mailer.service.js
 const nodemailer = require('nodemailer');
 const config = require('../config');
 

@@ -1,7 +1,3 @@
-// backend/services/stats.service.js
-// Dérive des statistiques à partir de l'historique et (optionnellement) des séances.
-// Mobile-first côté UI, ici on rend les champs robustes côté données.
-
 function safeNumber(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
@@ -18,7 +14,6 @@ function parseMinutes(val) {
   if (val == null) return null;
   if (typeof val === 'number' && Number.isFinite(val)) return Math.round(val);
   if (typeof val === 'string') {
-    // Accepte "45", "45.5", "45 min", "1h10", "00:45"
     const s = val.trim().toLowerCase();
     if (/^\d+(\.\d+)?$/.test(s)) return Math.round(Number(s));
     const m1 = s.match(/(\d+(?:\.\d+)?)\s*min/);
@@ -29,7 +24,7 @@ function parseMinutes(val) {
       const m = Number(m2[2] || 0);
       return h * 60 + m;
     }
-    const m3 = s.match(/^(\d{1,2}):(\d{2})$/); // mm:ss
+    const m3 = s.match(/^(\d{1,2}):(\d{2})$/);
     if (m3) {
       const mm = Number(m3[1]);
       const ss = Number(m3[2]);
@@ -39,7 +34,6 @@ function parseMinutes(val) {
   return null;
 }
 
-// history: tableau d'objets { action, meta, createdAt }
 function deriveFromHistory(history = [], sinceDate = null) {
   const res = {
     initialWeight: null,
@@ -50,7 +44,6 @@ function deriveFromHistory(history = [], sinceDate = null) {
     workoutsCount7d: 0,
     calories7d: 0,
     lastWorkoutAt: null,
-    // champs additionnels optionnels
     lastCaloriesBurnedDerived: null,
   };
 
@@ -59,7 +52,6 @@ function deriveFromHistory(history = [], sinceDate = null) {
 
   const weekStart = sinceDate ? new Date(sinceDate) : new Date(Date.now() - 7 * 864e5);
 
-  // Poids initial (plus ancien) & récent (plus récent)
   for (let i = history.length - 1; i >= 0; i--) {
     const m = history[i]?.meta || {};
     const w = safeNumber(m.poids ?? m.weight ?? m.weightKg);
@@ -85,26 +77,21 @@ function deriveFromHistory(history = [], sinceDate = null) {
 
     if (!isWorkout) continue;
 
-    // Durée: durationMinutes, duration, startedAt/endedAt, ou texte
     const durFromFields = safeNumber(meta.durationMinutes ?? meta.duration) ?? parseMinutes(meta.durationText);
     const dur = durFromFields ?? minutesBetween(meta.startedAt, meta.endedAt);
     if (dur != null) { sumDur += dur; cDur++; }
 
-    // Calories: caloriesBurned, kcal*, nombre en string
     const kcal = safeNumber(meta.caloriesBurned ?? meta.kcalBurned ?? meta.kcal ?? (typeof meta.calories === 'string' ? meta.calories.replace(/[^0-9.]/g, '') : null));
     if (kcal != null) {
       sumKcal += kcal; cKcal++;
-      // garde la dernière valeur rencontrée chronologiquement
       if (res.lastCaloriesBurnedDerived == null) res.lastCaloriesBurnedDerived = kcal;
     }
 
-    // Compteurs sur 7 jours
     if (created && created >= weekStart) {
       res.workoutsCount7d += 1;
       if (kcal != null) res.calories7d += kcal;
     }
 
-    // Timestamp de dernière séance
     const refDate = meta.endedAt || meta.startedAt || h?.createdAt;
     if (!res.lastWorkoutAt || (refDate && new Date(refDate) > new Date(res.lastWorkoutAt))) {
       res.lastWorkoutAt = refDate ? new Date(refDate).toISOString() : res.lastWorkoutAt;
@@ -117,7 +104,6 @@ function deriveFromHistory(history = [], sinceDate = null) {
   return res;
 }
 
-// sessions: tableau d'objets { startedAt, endedAt, durationMinutes, caloriesBurned, name, label }
 function deriveFromSessions(sessions = []) {
   const out = {
     totalSessions: sessions.length || 0,
