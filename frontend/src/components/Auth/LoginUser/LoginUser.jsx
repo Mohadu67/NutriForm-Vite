@@ -12,9 +12,9 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
   const [showPassword, setShowPassword] = useState(false);
   const [mascotState, setMascotState] = useState("idle");
 
-  const { status, errorMsg, handleSubmit } = useLogin(onSuccess);
+  const { status, errorMsg, handleSubmit } = useLogin(onSuccess, { minDurationMs: 1500 });
 
-  const loading = status === "sending";
+  const loading = status === "loading";
 
   const onSubmit = (e) => {
     if (e && typeof e.preventDefault === "function") e.preventDefault();
@@ -101,10 +101,10 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
 
         <BoutonAction
           type="submit"
-          disabled={status === "sending" || !identifier.trim() || !password.trim()}
+          disabled={status === "loading" || !identifier.trim() || !password.trim()}
           onClick={onSubmit}
         >
-          {status === "sending" ? "Connexion…" : "Se connecter"}
+          {status === "loading" ? "Connexion…" : "Se connecter"}
         </BoutonAction>
 
         {status === "error" && (
