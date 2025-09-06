@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
-import CardChoice, { TYPE_CARDS, EQUIP_CARDS, MUSCLE_CARDS } from "./CardChoice";
-import { useStepSubtitle, buildFunnyMessage } from "./subtitlePools";
-import ExerciseResults from "./ExerciseResults";
+import CardChoice, { TYPE_CARDS, EQUIP_CARDS, MUSCLE_CARDS } from "./CardChoice/CardChoice.jsx";
+import { useStepSubtitle, buildFunnyMessage } from "../subtitlePools";
+import ExerciseResults from "../ExerciceResults/ExerciseResults.jsx";
 import styles from "./DynamiChoice.module.css";
 
 export default function DynamiChoice({ onComplete = () => {}, onStepChange, requestedStep, onSearch }) {
@@ -74,7 +74,6 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   useEffect(() => {
     if (didInitFromSelections.current) return;
-    // Dériver l'étape à partir des choix existants si step est 0
     const derived = typeId ? (Array.isArray(equipIds) && equipIds.length > 0
       ? (Array.isArray(muscleIds) && muscleIds.length > 0 ? 3 : 2)
       : 1) : 0;
@@ -129,7 +128,6 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   }, [allowedEquipIds]);
 
   const handleResultsChange = useCallback((next) => {
-    // Déférer pour éviter "Cannot update a component while rendering a different component"
     Promise.resolve().then(() => {
       setSelectedExercises(Array.isArray(next) ? next : []);
     });
@@ -146,8 +144,6 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
     if (step < 3) {
       setStep(step + 1);
     } else {
-      // Ne pas vider le localStorage ici : on veut pouvoir revenir en arrière
-      // et retrouver les mêmes choix et la même sélection.
       onComplete({ typeId, equipIds, muscleIds, exercises: selectedExercises });
     }
   }

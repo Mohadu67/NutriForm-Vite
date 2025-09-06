@@ -1,11 +1,10 @@
 :root {
   --couleur-principale: #F7F6F2;
-  --couleur-bouton-action: #F7B186; /* peach */
-  --couleur-bouton-selection: #B5EAD7; /* pastel green */
+  --couleur-bouton-action: #F7B186;
+  --couleur-bouton-selection: #B5EAD7;
   --couleur-text-noir: #1b1b1b;
   --font-titre: 'Merriweather', serif;
   --font-p: 'Montserrat', sans-serif;
-  /* UI tokens */
   --paper: #ffffff;
   --fg: #1b1b1b;
   --muted: #666;
@@ -137,17 +136,13 @@
 @keyframes overlay-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes pop-enter { from { transform: translateY(6px) scale(0.985); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
 
-/* Accessibilité / motion */
 @media (prefers-reduced-motion: reduce) {
   .row, .overlay, .popup, .primary, .secondary { transition: none; animation: none; }
 }
 
-/* Drag handle & delete button for row card */
-/* Drag handle & delete button for row card */
 .handle { display:flex; align-items:center; margin-right:.5rem; cursor:grab; }
 .handle:active { cursor:grabbing; }
 
-/* Six-dot grip for drag handle */
 .grip {
   display: grid;
   grid-template-columns: repeat(2, 4px);
@@ -166,5 +161,4 @@
 .deleteBtn { background: transparent; border: 1px solid #f3d0c0; color:#c2410c; border-radius:8px; padding:.25rem .5rem; margin-left:.5rem; }
 .deleteBtn:hover { background:#fff3ec; }
 
-/* Popup footer (replaces .popupDiv in markup) */
 .popupDiv { display: flex; justify-content: flex-end; gap: 0.6rem; padding-top: .5rem; border-top: 1px solid var(--line); }

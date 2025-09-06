@@ -6,7 +6,7 @@ import ImcRecapCard from "./Recap/ImcRecapCard.jsx";
 import WeightChart from "./HistoryCharts/WeightChart.jsx";
 import SessionChart from "./HistoryCharts/SessionChart.jsx";
 import useHistoryData from "./UseHistoryData.js";
-import SuivieSeance from "../../Exercice/ExerciceSuivie/SuivieSeance.jsx";
+import SuivieSeance from "../../Exercice/TableauBord/SuivieSeance.jsx";
 
 export default function HistoryUser({ onClose, onLogout }) {
   const parseDate = (raw) => {
@@ -29,7 +29,27 @@ export default function HistoryUser({ onClose, onLogout }) {
 
   const [userSessions, setUserSessions] = useState([]);
   React.useEffect(() => {
-    setUserSessions(Array.isArray(sessions) ? sessions : []);
+    const list = Array.isArray(sessions) ? sessions : [];
+
+    const normalize = (s) => {
+
+      const raw = Array.isArray(s?.entries) ? s.entries
+        : Array.isArray(s?.items) ? s.items
+        : Array.isArray(s?.exercises) ? s.exercises
+        : [];
+
+      const entries = raw.map((e) => {
+        if (e && typeof e === 'object') {
+          const name = e.name || e.label || e.exerciseName || e.exoName || e.title || 'Exercice';
+          return { ...e, name };
+        }
+        return { name: String(e ?? 'Exercice') };
+      });
+
+      return { ...s, entries, items: entries, exercises: entries };
+    };
+
+    setUserSessions(list.map(normalize));
   }, [sessions]);
 
   const imcPoints = useMemo(() => records.filter(r => r.type === 'imc'), [records]);
@@ -41,37 +61,88 @@ export default function HistoryUser({ onClose, onLogout }) {
   , [imcPoints]);
 
   const sessionPoints = useMemo(() => {
-    const toDayKey = (raw) => {
-      if (!raw) return null;
-      let d;
-      if (raw instanceof Date) d = raw;
-      else if (typeof raw === 'number') d = new Date(raw);
-      else if (typeof raw === 'string') {
-        const m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-        const iso = m ? `${m[3]}-${m[2]}-${m[1]}` : raw;
-        d = new Date(iso);
-      }
-      if (!d || isNaN(d)) return null;
-      const y = d.getFullYear();
-      const mth = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${y}-${mth}-${day}`; // YYYY-MM-DD
-    };
+    const safeDate = (raw) => parseDate(
+      raw?.date || raw?.createdAt || raw?.day || raw?.performedAt || raw?.startedAt || raw?.endedAt || raw
+    );
 
-    const byDay = new Map();
+    const pts = [];
+
     for (const s of (userSessions || [])) {
-      const key = toDayKey(
-        s?.date || s?.createdAt || s?.day || s?.performedAt || s?.startedAt || s?.endedAt
-      );
-      if (!key) continue;
-      byDay.set(key, (byDay.get(key) || 0) + 1); // compter toutes les séances du jour
+      const date = safeDate(s);
+      if (!date) continue;
+
+      const sessionName = s?.title || s?.name || s?.sessionName || s?.seanceName || null;
+      const base = {
+        date,
+        value: 1,
+        sessionName,
+        type: s?.type || s?.category || s?.kind || s?.mode || s?.sport,
+        minutes: s?.durationMinutes ?? s?.minutes,
+        seconds: s?.durationSeconds ?? s?.seconds,
+        distance: s?.distance ?? s?.km ?? s?.meters,
+        pace: s?.pace ?? s?.allure,
+        weight: s?.weight ?? s?.poids ?? s?.kg ?? s?.load,
+        sets: s?.sets ?? s?.series ?? s?.séries,
+        reps: s?.reps ?? s?.repetitions ?? s?.répétitions,
+      };
+
+      const exs = Array.isArray(s?.entries) ? s.entries
+        : Array.isArray(s?.exercises) ? s.exercises
+        : Array.isArray(s?.items) ? s.items
+        : [];
+
+      if (exs.length > 0) {
+        for (const ex of exs) {
+          const exName = ex?.name || ex?.label || ex?.exerciseName || ex?.exoName || null;
+          pts.push({
+            ...base,
+            exerciseName: exName,
+            type: (ex?.type || base.type),
+            minutes: ex?.durationMinutes ?? ex?.minutes ?? base.minutes,
+            seconds: ex?.durationSeconds ?? ex?.seconds ?? base.seconds,
+            distance: ex?.distance ?? ex?.km ?? ex?.meters ?? base.distance,
+            pace: ex?.pace ?? ex?.allure ?? base.pace,
+            weight: ex?.weight ?? ex?.poids ?? ex?.kg ?? ex?.load ?? base.weight,
+            sets: ex?.sets ?? ex?.series ?? ex?.séries ?? base.sets,
+            reps: ex?.reps ?? ex?.repetitions ?? ex?.répétitions ?? base.reps,
+          });
+        }
+      } else {
+        const exerciseName = s?.exerciseName || s?.exoName || s?.lastExercise?.name || null;
+        pts.push({ ...base, exerciseName });
+      }
     }
 
-    const keys = Array.from(byDay.keys()).sort();
-    let total = 0;
-    const arr = keys.map((k) => ({ date: new Date(k), value: (total += byDay.get(k)) }));
-    return arr;
-  }, [userSessions]);
+    pts.sort((a, b) => a.date - b.date);
+    return pts;
+  }, [userSessions, parseDate]);
+
+  const lastCompletedSession = useMemo(() => {
+    const list = Array.isArray(userSessions) ? userSessions : [];
+    if (list.length === 0) return null;
+
+    const toDate = (s) => parseDate(
+      s?.endedAt || s?.date || s?.createdAt || s?.performedAt || s?.startedAt || s?.day
+    );
+    const isDone = (s) => {
+      const status = String(s?.status || "").toLowerCase();
+      return (
+        Boolean(s?.endedAt) ||
+        Boolean(s?.finishedAt) ||
+        s?.isFinished === true ||
+        s?.percent === 100 || s?.progress === 100 ||
+        ["done", "completed", "finished", "terminee", "terminée"].includes(status)
+      );
+    };
+
+    const candidates = list
+      .filter((s) => isDone(s))
+      .map((s) => ({ s, d: toDate(s) }))
+      .filter((x) => x.d)
+      .sort((a, b) => b.d - a.d);
+
+    return candidates.length ? candidates[0].s : null;
+  }, [userSessions, parseDate]);
 
   return (
     <div className={style["popup-body"]}>
@@ -93,9 +164,16 @@ export default function HistoryUser({ onClose, onLogout }) {
         <ImcRecapCard imcPoints={imcPoints} onDelete={handleDelete} />
       </div>
 
-      <div style={{ marginTop: 12 }}>
-        <SuivieSeance />
+      <div className={style.suivieSeanceBlock}>
+        <SuivieSeance 
+          sessions={userSessions}
+          lastSession={lastCompletedSession}
+          onDeleteSuccess={(id) => {
+            setUserSessions((prev) => prev.filter(s => s.id !== id));
+          }}
+        />
       </div>
+
 
       {onLogout && <LogoutActions onLogout={onLogout} />}
     </div>

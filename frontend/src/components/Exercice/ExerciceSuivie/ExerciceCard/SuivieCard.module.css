@@ -1,0 +1,169 @@
+.card {
+  --bg: #F7F6F2;
+  --paper: #fff;
+  --ink: #333;
+  --line: rgba(0,0,0,0.08);
+  --accent: #F7B186;
+  font-family: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--ink);
+}
+
+/* Card row preview */
+.row {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  margin: 12px 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+.thumb {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fafafa;
+  overflow: hidden;
+  display: grid; place-items: center;
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.initial { font-weight: 800; color: #7b8595; }
+.title { font-weight: 800; font-size: 15px; line-height: 1.4; }
+
+/* Overlay & popup */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: end;
+  background: rgba(0,0,0,0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .2s ease;
+  z-index: 1000;
+}
+.overlay.isOpen,
+.overlay[aria-hidden="false"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.popup {
+  width: 90%;
+  margin: auto;
+  max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8px);
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  background: var(--paper);
+  padding-bottom: 8px;
+  overscroll-behavior: contain;
+}
+
+.popupHeader {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+.popupTitle { margin: 0; font-family: 'Merriweather', serif; font-size: 20px; font-weight: 700; }
+.closeBtn { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+
+.popupBody { padding: 12px; display: grid; gap: 12px; }
+
+/* Shared input styles */
+.popupBody input,
+.popupBody textarea,
+.popupBody select {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  padding: 10px;
+  font-size: 16px;
+}
+.popupBody textarea { min-height: 100px; resize: vertical; }
+.popupBody ::placeholder { color: #a5adbb; }
+.popupBody input[type="number"]::-webkit-outer-spin-button,
+.popupBody input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.popupBody input[type="number"] { -moz-appearance: textfield; text-align: center; max-width: 80px; }
+
+/* Buttons & footer */
+.iconBtn { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+.actions { margin-top: 6px; }
+.actions > button,
+.saveBtn,
+.addBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--line);
+  background: #fff;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  z-index: 2000;
+}
+
+/* Responsive */
+@media (min-width: 600px) {
+  .overlay { place-items: center; }
+  .popup { max-height: 88vh; border-radius: 20px; }
+  .popupHeader { border-radius: 20px 20px 0 0; }
+  .row { grid-template-columns: 56px 1fr; padding: 14px; margin: 15px 5px; }
+  .thumb { width: 56px; height: 56px; border-radius: 14px; }
+  .title { font-size: 16px; }
+}
+
+@media (max-width: 380px) {
+  .popupHeader { padding: 10px 12px; }
+  .popupTitle { font-size: 18px; }
+  .closeBtn { padding: 3px 8px; }
+  .popupBody { gap: 10px; }
+  .footer { padding: 10px; }
+  .saveBtn { padding: 10px 12px; }
+  .popupBody input[type="number"] { max-width: 68px; }
+  .row { padding: 10px; margin: 10px 4px; }
+  .thumb { width: 46px; height: 46px; border-radius: 10px; }
+  .title { font-size: 14px; }
+}

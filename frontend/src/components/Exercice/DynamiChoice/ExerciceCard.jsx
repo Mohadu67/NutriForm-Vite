@@ -22,7 +22,6 @@ export default function ExerciceCard({ exo, onAdd, isAdded = false, draggable = 
         aria-controls={dialogId}
         aria-expanded={open}
       >
-        {/* Drag handle on the left */}
         <div
           className={styles.handle}
           draggable={draggable}

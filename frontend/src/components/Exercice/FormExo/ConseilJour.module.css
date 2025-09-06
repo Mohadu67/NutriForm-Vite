@@ -1,0 +1,57 @@
+
+
+
+.tipCard {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  margin: 16px 0;
+}
+
+.tipHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.tipIcon {
+  font-size: 1.5rem;
+  margin-right: 8px;
+}
+
+.tipTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.tipText {
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.4;
+  margin: 8px 0 12px;
+}
+
+.tipTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tipTag {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+  background: #4a90e2;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.tipTag:nth-child(2) {
+  background: #27ae60;
+}
+
+.tipTag:nth-child(3) {
+  background: #f39c12;
+}

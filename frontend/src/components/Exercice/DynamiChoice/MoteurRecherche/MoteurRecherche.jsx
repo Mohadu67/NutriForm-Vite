@@ -14,7 +14,6 @@ function norm(v) {
   if (!v && v !== 0) return "";
   return String(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
-
 function normArr(arr) {
   return (arr || []).map(norm);
 }

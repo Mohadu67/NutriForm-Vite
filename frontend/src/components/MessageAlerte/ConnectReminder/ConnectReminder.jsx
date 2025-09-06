@@ -15,8 +15,10 @@ function ConnectReminder({
   const isAuthed = useMemo(() => {
     if (typeof window === "undefined") return false;
     try {
-      const u = localStorage.getItem("user") || sessionStorage.getItem("user");
-      return Boolean(u);
+      const raw = localStorage.getItem("user") || sessionStorage.getItem("user");
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      return Boolean(parsed && (parsed.id || parsed._id));
     } catch (_) {
       return false;
     }

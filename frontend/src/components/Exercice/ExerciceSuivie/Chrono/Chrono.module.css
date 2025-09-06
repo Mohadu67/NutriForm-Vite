@@ -1,0 +1,148 @@
+:root {
+  --vert-pastel: #B5EAD7;
+  --orange-peche: #FFB385;
+  --blanc-casse: #F7F6F2;
+  --noir: #111111;
+  --accent-red: #E63946;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  padding: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-family: "Merriweather", serif;
+  color: var(--noir);
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.finishBtn {
+  background: var(--accent-red);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+  color: #4a4a4a;
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+.progressBar {
+  height: 6px;
+  border-radius: 4px;
+  background: #f1f1f1;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.progress {
+  height: 100%;
+  background: var(--orange-peche);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+@media (min-width: 600px) {
+  .card {
+    margin: 20px auto;
+    padding: 20px;
+  }
+}
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goBtn {
+  background: var(--orange-peche);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: grid;
+  place-items: center;
+  z-index: 2000;
+}
+
+.confirmBox {
+  width: 92%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.confirmBox h3 {
+  margin: 10px 0 8px;
+  font-size: 1.4rem;
+}
+
+.confirmBox p {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin: 0 0 16px;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.confirmActions > button {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirmActions > button:first-child {
+  background: #eef2f7;
+  color: #111;
+}
+
+@media (min-width: 600px) {
+  .confirmBox {
+    max-width: 500px;
+    padding: 24px;
+  }
+  .confirmBox h3 {
+    font-size: 1.6rem;
+  }
+  .confirmBox p {
+    font-size: 1rem;
+  }
+}

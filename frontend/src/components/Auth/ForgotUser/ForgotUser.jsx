@@ -87,7 +87,6 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
       if (mountedRef.current) setLoading(false);
     }
 
-    // Cleanup if needed (here we don't persist controller between calls)
   };
 
   if (loading) {
