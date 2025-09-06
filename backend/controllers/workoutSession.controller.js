@@ -4,15 +4,12 @@ const { computeSessionFromEntries } = require("../services/calorie.service");
 let HistoryModel = null;
 try { HistoryModel = require("../models/History"); } catch (_) { HistoryModel = null; }
 
-// Helper: get userId from request (expects auth middleware to set req.user)
 function getUserId(req) {
   if (req.user && req.user.id) return req.user.id;
   if (req.user && req.user._id) return req.user._id;
-  // fallback for testing
   return req.body.userId || req.query.userId || null;
 }
 
-// Helper: parse a YYYY-MM-DD into [start, end) UTC Date range
 function dayRangeUtc(yyyyMmDd) {
   const start = new Date(`${yyyyMmDd}T00:00:00.000Z`);
   const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
@@ -21,7 +18,6 @@ function dayRangeUtc(yyyyMmDd) {
 
 function normalizeEntry(e = {}) {
   const out = { ...e };
-  // Normalise type -> enum attendu par le modèle: muscu | cardio | poids_du_corps
   const raw = String(out.type || out.exerciseName || '').toLowerCase();
   let t = out.type;
   if (!t) t = raw;
@@ -32,24 +28,19 @@ function normalizeEntry(e = {}) {
   if (["muscu","cardio","poids_du_corps"].includes(t)) {
     out.type = t;
   } else if (isCardioHint) {
-    // HIIT, run, rope, etc. → cardio
     out.type = "cardio";
   } else if (isBodyweightHint) {
     out.type = "poids_du_corps";
   } else {
-    // par défaut, classe en muscu
     out.type = "muscu";
   }
 
-  // Garantit exerciseName string
   if (typeof out.exerciseName !== 'string' || !out.exerciseName.trim()) {
     out.exerciseName = (e.exerciseName || e.name || e.label || 'Exercice').toString();
   }
 
-  // Sets: accepte tableau ou rien pour cardio; impose tableau non vide pour muscu
   if (out.type === 'muscu' || out.type === 'poids_du_corps') {
     if (!Array.isArray(out.sets) || out.sets.length === 0) {
-      // si reps/sets fournis à plat, crée un set
       const reps = Number(e.reps ?? e.rep);
       const weightKg = Number(e.weightKg ?? e.weight);
       if (Number.isFinite(reps) || Number.isFinite(weightKg)) {
@@ -59,11 +50,9 @@ function normalizeEntry(e = {}) {
       }
     }
   } else {
-    // cardio: sets optionnels
     if (!Array.isArray(out.sets)) out.sets = [];
   }
 
-  // durationMin peut être au niveau entrée ou set; on garde au niveau entrée si fourni
   if (out.durationMin == null && Array.isArray(out.sets) && out.sets[0] && out.sets[0].durationMin != null) {
     out.durationMin = out.sets[0].durationMin;
   }
@@ -72,7 +61,6 @@ function normalizeEntry(e = {}) {
 }
 
 async function getLatestWeight(userId) {
-  // Cherche le dernier poids dans l'historique si dispo
   if (!HistoryModel) return null;
   try {
     const doc = await HistoryModel.findOne({ userId: new mongoose.Types.ObjectId(userId), $or: [
@@ -86,7 +74,6 @@ async function getLatestWeight(userId) {
   } catch (_) { return null; }
 }
 
-// POST /api/sessions
 async function createSession(req, res) {
   try {
     const userId = getUserId(req);
@@ -104,7 +91,6 @@ async function createSession(req, res) {
       return res.status(400).json({ error: "entries_required" });
     }
 
-    // Normalise puis valide
     const normalized = entries.map(normalizeEntry);
     for (const e of normalized) {
       if (!e || typeof e.exerciseName !== 'string' || !e.exerciseName.trim()) {
@@ -121,7 +107,6 @@ async function createSession(req, res) {
     const userWeight = await getLatestWeight(userId);
     const derived = computeSessionFromEntries(normalized, userWeight);
 
-    // Si pas d'endedAt mais une durée estimée, on l'infère
     let _startedAt = new Date(startedAt);
     let _endedAt = endedAt ? new Date(endedAt) : (derived.durationMinutes ? new Date(new Date(_startedAt).getTime() + derived.durationMinutes * 60000) : new Date(startedAt));
 
@@ -143,8 +128,6 @@ async function createSession(req, res) {
   }
 }
 
-// GET /api/sessions?date=YYYY-MM-DD
-// Optional: pagination with ?limit=&cursor=
 async function getSessions(req, res) {
   try {
     const userId = getUserId(req);
@@ -159,7 +142,6 @@ async function getSessions(req, res) {
     }
 
     if (cursor) {
-      // cursor is an _id; return documents older than this id
       q._id = { $lt: new mongoose.Types.ObjectId(cursor) };
     }
 
@@ -177,7 +159,6 @@ async function getSessions(req, res) {
   }
 }
 
-// GET /api/sessions/:id
 async function getSessionById(req, res) {
   try {
     const userId = getUserId(req);

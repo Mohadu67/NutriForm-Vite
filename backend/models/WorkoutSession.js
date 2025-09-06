@@ -1,5 +1,3 @@
-
-
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
@@ -39,10 +37,13 @@ const EntrySchema = new Schema({
 const WorkoutSessionSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   name: { type: String },
+  status: { type: String, enum: ["draft", "in_progress", "finished"], default: "finished" },
+  durationSec: { type: Number, default: 0 },
+  calories: { type: Number, default: 0 },
   startedAt: { type: Date },
   endedAt: { type: Date },
   notes: { type: String },
   entries: [EntrySchema]
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("WorkoutSession", WorkoutSessionSchema);

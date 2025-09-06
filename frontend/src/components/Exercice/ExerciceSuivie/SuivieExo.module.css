@@ -24,6 +24,15 @@
   letter-spacing: 0.5px;
 }
 
+.containerChrono {
+  display: flex;
+  flex-direction: column;
+  margin: 20px;
+  background: var(--couleur-bloc, #f7f6f2);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
 .highlight {
   color: var(--couleur-bouton-action, #ff8f66);
   font-weight: 700;
@@ -34,9 +43,8 @@
 }
 
 .titleBackBtn {
-  border: 2px solid var(--couleur-bouton-action);
   border-radius: 12px;
-  padding: 6px 14px;
+  padding: 6px 25px;
   font-size: .95rem;
   font-weight: 700;
   margin-bottom: 1rem;

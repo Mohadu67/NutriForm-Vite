@@ -1,0 +1,39 @@
+
+
+
+.container {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.container label {
+  display: block;
+  font-weight: 700;
+  color: #7b8595;
+  margin-bottom: 4px;
+}
+
+.container textarea {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  min-height: 100px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 10px;
+  background: #fff;
+  color: #333;
+  padding: 10px;
+  font-size: 16px;
+  resize: vertical;
+}
+
+.container textarea:focus {
+  border-color: #F7B186;
+  box-shadow: 0 0 0 3px rgba(247,177,134,0.25);
+  outline: 0;
+}
+
+.container textarea::placeholder {
+  color: #a5adbb;
+}

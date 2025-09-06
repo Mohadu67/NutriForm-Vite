@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import styles from "./FormExo.module.css";
 import DynamiChoice from "../DynamiChoice/DynamiChoice.jsx";
-import Progress from "../DynamiChoice/Progress.jsx";
+import Progress from "../BarreDetape/Etapes.jsx";
 import Salutation from "./salutation.jsx";
 import SuivieExo from "../ExerciceSuivie/SuivieExo.jsx";
-import ChercherExo from "../ExerciceSuivie/ChercherExo.jsx";
-import SuivieSeance from "../ExerciceSuivie/SuivieSeance.jsx";
-import  connectReminder  from "../../MessageAlerte/ConnectReminder/ConnectReminder.jsx";
+import ChercherExo from "../ExerciceSuivie/MoteurRechercheUser/ChercherExo.jsx";
+import SuivieSeance from "../TableauBord/SuivieSeance.jsx";
+import Stat from "../TableauBord/stats/Stat.jsx";
+import { endSessionMessage } from "../subtitlePools.jsx";
+import { saveSession } from "../TableauBord/sessionApi.js";
+import ConseilJour from "./ConseilJour.jsx";
 
 export default function FormExo({ user }) {
   const [sessionName, setSessionName] = useState(() => {
@@ -24,17 +27,79 @@ export default function FormExo({ user }) {
   const [searchDraft, setSearchDraft] = useState(() => {
     try { return JSON.parse(localStorage.getItem("dynamiSelected")) || []; } catch { return []; }
   });
+  const [showSummary, setShowSummary] = useState(false);
+  const [lastStats, setLastStats] = useState(null);
+  const [lastItems, setLastItems] = useState([]);
   useEffect(() => { try { localStorage.setItem("formSessionName", JSON.stringify(sessionName)); } catch {} }, [sessionName]);
   useEffect(() => { try { localStorage.setItem("formCurrentStep", String(currentStep)); } catch {} }, [currentStep]);
   useEffect(() => { try { localStorage.setItem("formMode", mode); } catch {} }, [mode]);
   useEffect(() => { try { localStorage.setItem("formSelectedExercises", JSON.stringify(selectedExercises)); } catch {} }, [selectedExercises]);
   useEffect(() => {
-    try {
-      if (!user || !user.id) {
-        if (typeof connectReminder === 'function') connectReminder();
-      }
-    } catch {}
   }, [user]);
+
+  function getBodyMassKg(u) {
+    if (!u) return undefined;
+    const candidates = [
+      u.weightKg, u.poidsKg, u.poids, u.weight,
+      u.profile?.weightKg, u.profile?.poids,
+      u.metrics?.weightKg, u.metrics?.poids,
+    ];
+    for (const v of candidates) {
+      const n = Number(v);
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+    return undefined;
+  }
+
+  if (showSummary) {
+    const lastSessionForStat = {
+      name: sessionName,
+      durationSec: lastStats?.durationSec || 0,
+      calories: lastStats?.calories || 0,
+      entries: Array.isArray(lastItems)
+        ? lastItems.map(it => {
+            const d = it?.data || {};
+            const cardioSets = Array.isArray(d.cardioSets) ? d.cardioSets : [];
+            const muscuSets = Array.isArray(d.sets) ? d.sets : [];
+            const type = cardioSets.length > 0
+              ? 'cardio'
+              : (muscuSets.length > 0
+                  ? (muscuSets.some(s => (s.weight ?? s.weightKg ?? '') !== '') ? 'muscu' : 'poids_du_corps')
+                  : (it?.mode === 'cardio' ? 'cardio' : (it?.mode === 'muscu' ? 'muscu' : 'poids_du_corps')));
+            return { type, sets: cardioSets.length ? cardioSets : muscuSets };
+          })
+        : [],
+    };
+    return (
+      <div className={styles.form}>
+
+        <Stat
+          lastSession={lastSessionForStat}
+          items={lastItems}
+          bodyMassKg={getBodyMassKg(user)}
+        />
+
+        <div className={styles.summaryActions}>
+          <button className={styles.BtnRestart} type="button" onClick={() => {
+            setShowSummary(false);
+            setMode("builder");
+            setCurrentStep(0);
+            setSelectedExercises([]);
+          }}>
+            🔄 Recommencer
+          </button>
+          <button className={styles.BtnReturn} type="button" onClick={() => setShowSummary(false)}>
+            ← Retour
+          </button>
+        </div>
+
+        {user && (user.id || user._id) ? (
+          <SuivieSeance user={user} lastSession={lastSessionForStat} />
+        ) : null}
+      </div>
+    );
+  }
+
   const steps = [
     { title: "Entrainement", sub: "Choisi ton entrainement" },
     { title: "Équipement", sub: "Sélectionne tes équipement" },
@@ -55,7 +120,7 @@ export default function FormExo({ user }) {
           <label>Nom de ta séance :</label>
           <input
             type="text"
-            placeholder="Ex: Séance du lundi"
+            placeholder="Ex: Séance Dos,Biceps"
             value={sessionName}
             onChange={(e) => setSessionName(e.target.value)}
           />
@@ -89,11 +154,48 @@ export default function FormExo({ user }) {
           />
         </>
       ) : mode === "session" ? (
-        <SuivieExo
-          sessionName={sessionName}
-          exercises={selectedExercises}
-          onBack={() => setMode("builder")}
-        />
+        <>
+          <SuivieExo
+            sessionName={sessionName}
+            exercises={selectedExercises}
+            onBack={() => setMode("builder")}
+            onFinish={async (payload) => {
+              const stats = {
+                durationSec: payload?.durationSec ?? 0,
+                savedCount: payload?.savedCount ?? 0,
+                calories: payload?.calories ?? 0,
+                doneExercises: payload?.doneExercises ?? 0,
+                totalExercises: payload?.totalExercises ?? (Array.isArray(selectedExercises) ? selectedExercises.length : 0),
+                exercisesCount: Array.isArray(selectedExercises) ? selectedExercises.length : 0,
+                sessionName,
+                when: new Date().toISOString(),
+              };
+              const items = Array.isArray(payload?.items) ? payload.items : [];
+
+              try {
+                if (user && (user.id || user._id)) {
+                  const body = {
+                    name: sessionName || `Séance – ${new Date().toLocaleDateString()}`,
+                    startedAt: stats?.when || new Date().toISOString(),
+                    endedAt: new Date().toISOString(),
+                    notes: "",
+                    items
+                  };
+                  const saved = await saveSession(body);
+                  if (saved && (saved.id || saved._id)) {
+                    stats.savedId = saved.id || saved._id;
+                  }
+                }
+              } catch (e) {
+                console.warn("Persist session failed:", e?.message || e);
+              }
+
+              setLastStats(stats);
+              setLastItems(items);
+              setShowSummary(true);
+            }}
+          />
+        </>
       ) : (
         <ChercherExo
           preselectedIds={searchDraft.map(e => e.id ?? e._id ?? e.slug ?? (e.name || e.title))}
@@ -116,11 +218,7 @@ export default function FormExo({ user }) {
       {user && (user.id || user._id) ? (
         <SuivieSeance user={user} />
       ) : (
-        <div className={styles.connectReminder}>
-          <p className={styles.connectReminderText}>
-            Connecte‑toi pour suivre ton évolution (poids, séances, calories) et garder l’historique de tes entraînements.
-          </p>
-        </div>
+        <ConseilJour />
       )}
     </div>
   );

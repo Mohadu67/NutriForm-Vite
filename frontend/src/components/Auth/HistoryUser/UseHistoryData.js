@@ -1,5 +1,3 @@
-
-
 import { useEffect, useState } from "react";
 
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
@@ -40,11 +38,10 @@ export default function useHistoryData() {
           data?.pseudo ||
           data?.displayName ||
           (data?.email ? data.email.split("@")[0] : "");
-        if (name) setDisplayName(name);
+        setDisplayName(name || "Utilisateur");
       })
       .catch(() => {});
 
-    // Récupère l’historique
     fetch(`${API_URL}/api/history`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -96,7 +93,6 @@ export default function useHistoryData() {
         setStatus("error");
       });
 
-    // Récupère les sessions
     fetch(`${API_URL}/api/sessions`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -107,13 +103,29 @@ export default function useHistoryData() {
           : Array.isArray(data?.items)
           ? data.items
           : [];
+        const normalizeEntries = (s) => {
+          const raw = Array.isArray(s?.entries) ? s.entries
+            : Array.isArray(s?.items) ? s.items
+            : Array.isArray(s?.exercises) ? s.exercises
+            : [];
+          const entries = raw.map((e) => {
+            if (e && typeof e === "object") {
+              const name = e.name || e.label || e.exerciseName || e.exoName || e.title || "Exercice";
+              return { name, ...e };
+            }
+            return { name: String(e ?? "Exercice") };
+          });
+          return { entries, items: entries, exercises: entries };
+        };
+
         const list = src
           .map((s) => ({
-            id: s?._id,
+            ...s,
+            id: s?._id || s?.id,
             name: s?.name || "Séance",
             startedAt: s?.startedAt ? new Date(s.startedAt) : null,
             endedAt: s?.endedAt ? new Date(s.endedAt) : null,
-            entriesCount: Array.isArray(s?.entries) ? s.entries.length : 0,
+            ...normalizeEntries(s),
           }))
           .sort(
             (a, b) =>
@@ -122,7 +134,9 @@ export default function useHistoryData() {
           );
         setSessions(list);
       })
-      .catch(() => {});
+      .catch((e) => {
+        setError(e?.message || "Erreur de chargement des sessions");
+      });
   }, []);
 
   const handleDelete = async (id) => {

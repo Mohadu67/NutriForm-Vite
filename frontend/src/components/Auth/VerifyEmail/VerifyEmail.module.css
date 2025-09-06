@@ -7,7 +7,6 @@
   --v-font-body: var(--font-p, 'Montserrat', sans-serif);
 }
 
-/* Wrapper plein écran, centré */
 .container {
   min-height: 100dvh;
   display: grid;
@@ -16,11 +15,9 @@
   padding: 2rem 1rem;
 }
 
-/* Compat: l’ancien .center se comporte comme notre wrapper central */
 .center,
 .centerWrap { width: min(720px, 92vw); margin: 0 auto; text-align: center; }
 
-/* Logos responsive */
 .logoMobile { display: inline-block; width: min(24vw, 120px); height: auto; filter: drop-shadow(0 3px 6px rgba(0,0,0,.12)); }
 .logoDesk { display: none; }
 
@@ -29,7 +26,6 @@
   .logoDesk { display: inline-block; width: 160px; height: auto; filter: drop-shadow(0 4px 10px rgba(0,0,0,.12)); }
 }
 
-/* Carte stylée */
 .card {
   position: relative;
   isolation: isolate;
@@ -46,16 +42,13 @@
 .successCard { background: linear-gradient(135deg, #EAF8F1 0%, #D6F0E4 55%, #BFE6D3 100%); border-color: rgba(181,234,215,.6); }
 .errorCard { background: linear-gradient(135deg, #FFF5F5 0%, #FFE8E8 55%, #FFDADA 100%); border-color: rgba(224,122,71,.35); }
 
-/* Titres / textes modernes */
 .title { font-family: var(--v-font-title); color: var(--v-text); font-size: clamp(1.15rem, 2.8vw, 1.65rem); margin: .35rem 0 .25rem; }
 .subtitle { display: none; }
 
-/* Compat : anciens noms → mappés sur les nouveaux styles */
 .titleSuccess { composes: title; color: #1a7f5a; }
 .titleError { composes: title; color: #c1463d; }
 .note { composes: subtitle; }
 
-/* Actions / boutons */
 .actions { margin-top: 1rem; display: flex; justify-content: center; gap: .75rem; flex-wrap: wrap; }
 .primaryBtn, .secondaryBtn {
   appearance: none; border: none; cursor: pointer; font-family: var(--v-font-body);
@@ -66,7 +59,6 @@
 .secondaryBtn { background: #fff; color: var(--v-text); border: 1px solid rgba(0,0,0,.1); }
 .secondaryBtn:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(0,0,0,.08); }
 
-/* Loader visuel (fallback si le SVG animé plante) */
 .loaderSvg { width: 72px; height: 72px; display: block; margin: 0 auto .5rem; }
 .loaderFallback { width: 40px; height: 40px; border-radius: 50%; background: repeating-conic-gradient(from 0deg, #e1e1e1 0 10deg, #f0f0f0 10deg 20deg); margin: 0 auto; }
 

@@ -1,6 +1,3 @@
-// NutriForm-Vite/backend/models/History.js
-
-
 const mongoose = require('mongoose');
 
 const HistorySchema = new mongoose.Schema(

@@ -1,19 +1,14 @@
-// backend/services/calorie.service.js
-// Estimation de calories brûlées à partir d'exercices/séances
-// Formule générique: kcal = MET * 3.5 * poids(kg) / 200 * durée(min)
+const DEFAULT_MET = 5.0;
 
-const DEFAULT_MET = 5.0; // renfo modéré
-
-// MET approximatifs pour quelques types d'exos
 const METS = {
-  cardio: 7.0,               // cardio générique
-  run: 9.8,                  // course ~10 km/h
-  walk: 3.5,                 // marche active
-  cycling: 8.0,              // vélo modéré
-  rope: 10.0,                // corde à sauter
+  cardio: 7.0,
+  run: 9.8,
+  walk: 3.5,
+  cycling: 8.0,
+  rope: 10.0,
   hiit: 10.0,
-  strength_light: 3.5,       // muscu légère
-  strength: 6.0,             // muscu soutenue
+  strength_light: 3.5,
+  strength: 6.0,
   squat: 6.0,
   deadlift: 6.0,
   bench: 5.0,

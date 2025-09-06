@@ -1,0 +1,29 @@
+
+
+.modeBar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.selectControl label {
+  display: block;
+  font-weight: 700;
+  color: #7b8595;
+  margin-bottom: 6px;
+}
+
+.selectControl select {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.selectControl select:focus {
+  outline: 0;
+  border-color: #F7B186;
+  box-shadow: 0 0 0 3px rgba(247,177,134,0.25);
+}

@@ -11,7 +11,6 @@ export default function LineChartSVG({
 
   if (!points || points.length === 0) return null;
 
-  // Normalize data
   const values = points.map((p) => p.value);
   const minVal = Math.min(...values);
   const maxVal = Math.max(...values);
@@ -27,7 +26,6 @@ export default function LineChartSVG({
       viewBox={`0 0 ${width} ${height}`}
       style={{ overflow: "visible" }}
     >
-      {/* Background gradient */}
       <defs>
         <linearGradient id="bgGradient" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.08" />
@@ -39,7 +37,6 @@ export default function LineChartSVG({
         </linearGradient>
       </defs>
 
-      {/* Gridlines */}
       <g stroke="rgba(0,0,0,0.08)" strokeWidth="0.5">
         {[0, 0.25, 0.5, 0.75, 1].map((p) => {
           const y = 10 + p * (height - 20);
@@ -47,11 +44,9 @@ export default function LineChartSVG({
         })}
       </g>
 
-      {/* Axes */}
       <line x1="10" x2={width - 10} y1={height - 10} y2={height - 10} stroke="var(--nf-border)" strokeWidth="1" />
       <line x1="10" x2="10" y1="10" y2={height - 10} stroke="var(--nf-border)" strokeWidth="1" />
 
-      {/* Smoothed path with area fill */}
       <path
         d={`M ${points
           .map((pt, i) => `${xScale(i).toFixed(1)} ${yScale(pt.value).toFixed(1)}`)
@@ -70,7 +65,6 @@ export default function LineChartSVG({
         stroke="none"
       />
 
-      {/* Points */}
       {points.map((pt, i) => {
         const cx = xScale(i);
         const cy = yScale(pt.value);
@@ -92,7 +86,6 @@ export default function LineChartSVG({
         );
       })}
 
-      {/* Tooltip */}
       {hovered && (() => {
         const tooltipWidth = 120;
         const tooltipHeight = 40;

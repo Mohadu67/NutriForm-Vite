@@ -1,0 +1,92 @@
+.table {
+  display: grid;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.rowHead,
+.rowSet {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 6px;
+}
+
+.rowHead {
+  font-weight: 700;
+  color: #7b8595;
+  font-size: 14px;
+}
+
+.rowSet {
+  border-radius: 8px;
+}
+
+.rowSet input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  padding: 8px;
+  font-size: 16px;
+}
+
+.rowSet input:focus {
+  border-color: #F7B186;
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.25);
+  outline: 0;
+}
+
+.iconBtn {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.actions {
+  margin-top: 6px;
+}
+
+.actions > button {
+  background: #F7B186;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 700;
+}
+
+/* Medium screens */
+@media (min-width: 480px) {
+  .rowHead,
+  .rowSet {
+    grid-template-columns: auto repeat(auto-fit, minmax(70px, 1fr)) 40px;
+    gap: 8px;
+  }
+
+  .rowHead {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 768px) {
+  .table {
+    gap: 10px;
+  }
+
+  .rowHead {
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .rowSet input {
+    padding: 10px;
+  }
+}

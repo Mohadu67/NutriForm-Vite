@@ -1,7 +1,6 @@
 import React, { useMemo, useEffect, useState } from "react";
 import style from "../HistoryUser.module.css";
 
-// Utilitaire local pour parser différentes formes de dates
 function parseDate(raw) {
   if (!raw) return null;
   if (raw instanceof Date) return isNaN(raw) ? null : raw;
@@ -10,7 +9,6 @@ function parseDate(raw) {
     return isNaN(d) ? null : d;
   }
   if (typeof raw === "string") {
-    // supporte dd/mm/yyyy et formats ISO
     const m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     const iso = m ? `${m[3]}-${m[2]}-${m[1]}` : raw;
     const d = new Date(iso);
@@ -48,7 +46,6 @@ export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
 
     const deduped = uniqByIdKeepLatest(items);
 
-    // garde uniquement celles qui ont une date valide puis trie du plus récent au plus ancien
     return deduped
       .filter(r => r.date)
       .sort((a, b) => b.date - a.date)
@@ -59,7 +56,6 @@ export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
     setLocalRows(rows);
   }, [rows]);
 
-  // Remonte éventuellement les données normalisées au parent si onData est fourni
   useEffect(() => {
     if (typeof onData === "function") {
       onData(rows);
@@ -80,7 +76,6 @@ export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.message || 'Suppression impossible');
       }
-      // Optimistic UI: retire localement
       setLocalRows(prev => prev.filter(r => r.id !== id));
       if (typeof onDeleteSuccess === 'function') onDeleteSuccess(id);
       if (typeof onData === 'function') onData(localRows.filter(r => r.id !== id));
