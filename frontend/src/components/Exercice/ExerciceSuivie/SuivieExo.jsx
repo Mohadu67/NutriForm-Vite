@@ -33,12 +33,11 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
       setItems(exercises);
       return;
     }
-    // If props are empty, try to hydrate from persisted selection
     setItems(prev => {
       if (Array.isArray(prev) && prev.length > 0 && touched) return prev; // don't override user edits
       const persisted = getPersistedSelection();
       if (Array.isArray(persisted) && persisted.length > 0) return persisted;
-      return prev; // keep as-is (possibly empty)
+      return prev;
     });
   }, [exercises, touched]);
 

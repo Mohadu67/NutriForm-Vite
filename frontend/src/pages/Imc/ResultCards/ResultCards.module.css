@@ -1,103 +1,124 @@
+:root {
+  color-scheme: light dark;
+  --paper: #ffffff;
+  --ink: #222325;
+  --muted: #6b7280;
+  --line: rgba(0,0,0,.10);
+  --line-strong: rgba(0,0,0,.14);
+  --accent: var(--couleur-bouton-action, #F7B186);
+  --accent-2: #f49b69;
+  --accent-soft: var(--couleur-bouton-selection, #B5EAD7);
+  --surface: var(--couleur-principale, #F7F6F2);
+  --shadow-sm: 0 6px 16px rgba(0,0,0,.08);
+  --shadow-md: 0 12px 30px rgba(0,0,0,.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12151b;
+    --ink: #e9ecf1;
+    --muted: #a6b0bf;
+    --line: rgba(255,255,255,.10);
+    --line-strong: rgba(255,255,255,.16);
+    --shadow-sm: 0 6px 16px rgba(0,0,0,.45);
+    --shadow-md: 0 12px 30px rgba(0,0,0,.60);
+  }
+}
+
 .wrapper {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 16px;
-  margin: 100px auto;
-  width: 90%;
-  max-width: 800px;
+  margin: 64px auto;
+  width: min(92%, 1000px);
 }
 
 .bloc {
-  border: 2px solid var(--couleur-bouton-selection);
-  border-radius: 8px;
-  padding: 10px;
-  background: var(--couleur-principale);
-  color: var(--couleur-text-noir);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  background: var(--paper);
+  color: var(--ink);
   text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
 }
+.bloc:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
 .ctaLink {
   display: inline-block;
-  margin-top: 0.75rem;
-  font-weight: 600;
-  text-decoration: underline;
+  margin-top: .75rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: color-mix(in oklab, var(--accent) 85%, #c46a33);
 }
+.ctaLink:hover { text-decoration: underline; }
 
 .heading {
-  background-color: var(--couleur-bouton-selection);
-  border-radius: 8px;
+  background: color-mix(in oklab, var(--accent-soft) 70%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent-soft) 85%, var(--line));
+  border-radius: 12px;
   font-size: 16px;
-  padding: 10px;
-  margin: 10px 0;
+  padding: 10px 12px;
+  margin: 8px 0 12px;
+  color: var(--ink);
 }
 
 .colTitle {
-  background-color: var(--couleur-bouton-selection);
+  background: color-mix(in oklab, var(--accent-soft) 80%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent-soft) 90%, var(--line));
   border-radius: 12px;
   font-family: var(--font-titre);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 16px;
-  padding: 8px 16px;
-  margin: 10px 0;
+  padding: 10px 14px;
+  margin: 6px 0 2px;
   text-align: center;
 }
 
 .moreContent {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.6s ease;
+  transition: max-height .45s ease, opacity .25s ease;
+  opacity: 0;
 }
 .moreContentOpen {
-  max-height: 500px;
+  max-height: 640px;
+  opacity: 1;
 }
 
 .learnMore {
-  background-color: var(--couleur-bouton-action);
-  border-radius: 5px;
-  border: 1px solid var(--couleur-text-noir);
-  padding: 6px 20px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  border-radius: 10px;
+  border: 0;
+  color: #fff;
+  padding: 10px 18px;
   margin-top: 12px;
   cursor: pointer;
+  font-weight: 800;
+  box-shadow: 0 8px 20px color-mix(in oklab, var(--accent-2) 45%, transparent);
+  transition: transform .12s ease, box-shadow .2s ease;
 }
-.learnMore:hover { color: var(--couleur-principale); }
+.learnMore:hover { transform: translateY(-1px); }
+.learnMore:active { transform: translateY(0); box-shadow: 0 4px 12px color-mix(in oklab, var(--accent-2) 35%, transparent); }
 
 .link {
   font-family: var(--font-titre);
-  color: var(--couleur-bouton-action);
+  color: color-mix(in oklab, var(--accent) 90%, #f5965f);
 }
 
+/* Reflow order helpers remain for mobile */
 @media (max-width: 767px) {
-  .colTitle {
-    width: 100%;
-  }
-
-  .colTitle:first-of-type {
-    order: 0;
-  }
-
-  .colTitle:nth-of-type(2) {
-    order: 2;
-  }
-
-  .left {
-    order: 1;
-  }
-
-  .right {
-    order: 3;
-  }
+  .colTitle { width: 100%; }
+  .colTitle:first-of-type { order: 0; }
+  .colTitle:nth-of-type(2) { order: 2; }
+  .left { order: 1; }
+  .right { order: 3; }
 }
 
+/* Desktop grid: two columns tidy */
 @media (min-width: 768px) {
-  .wrapper {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-  .colTitle {
-    width: calc(50% - 8px);
-  }
-  .bloc {
-    width: calc(50% - 8px);
-    min-height: 170px;
-  }
+  .wrapper { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .colTitle { width: 100%; }
+  .bloc { width: 100%; min-height: 170px; }
 }

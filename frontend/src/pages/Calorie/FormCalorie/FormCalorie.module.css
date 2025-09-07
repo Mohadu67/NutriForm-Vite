@@ -1,13 +1,27 @@
+:root {
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-form: #12151b;
+    --fg-form: #e9ecf1;
+    --line-form: rgba(255,255,255,0.14);
+    --accent-form: #F7B186;
+    --accent-form-light: #B5EAD7;
+  }
+}
+
 .form {
-  background-color: #F7F6F2; 
+  background-color: var(--bg-form, #F7F6F2);
+  color: var(--fg-form, #222);
   border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-  width: 90%;
-  box-sizing: border-box;
-  max-width: min(550px);
-  word-break: break-word;
-  margin: 100px auto;
-  font-family: "Montserrat", sans-serif;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  width: 92%;
+  max-width: 550px;
+  margin: 80px auto;
+  padding: 1.5rem;
+  font-family: "Montserrat", system-ui, sans-serif;
 }
 
 .form * { min-width: 0; box-sizing: border-box; }
@@ -22,7 +36,10 @@
 .groupTitle {
   grid-column: 1 / -1;
   font-family: "Merriweather", serif;
-  color: #222;
+  font-weight: 800;
+  font-size: 1.2rem;
+  margin-bottom: .4rem;
+  color: var(--fg-form, #222);
 }
 
 .sexeGroup {
@@ -52,18 +69,19 @@
 }
 .hiddenCheckbox + .pill {
   display: inline-block;
-  padding: 0.6rem 1rem;
+  padding: 0.7rem 1rem;
   border-radius: 10px;
-  border: 2px solid #B5EAD7;
+  border: 2px solid var(--accent-form-light, #B5EAD7);
   font-weight: 600;
-  user-select: none;
   cursor: pointer;
   text-align: center;
-  transition: all 0.2s ease-in-out;
+  transition: all .2s ease-in-out;
   width: 100%;
+  background: var(--paper, #fff);
 }
 .hiddenCheckbox:checked + .pill {
-  background-color: #B5EAD7;
+  background: var(--accent-form-light, #B5EAD7);
+  color: #222;
 }
 .hiddenCheckbox + .pill:focus-visible {
   outline: 3px solid rgba(181, 234, 215, 0.9);
@@ -79,26 +97,23 @@
 
 .form input,
 .form select {
-  margin-top: 0.3rem;
-  padding: 0.9rem 1rem;
-  border: 2px solid #2B2B2B;
+  margin-top: .3rem;
+  padding: .85rem 1rem;
+  border: 2px solid var(--line-form, #2B2B2B);
   border-radius: 12px;
-  font-size: 1.05rem;
-  background-color: #fff;
-  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  font-size: 1rem;
+  background: var(--paper, #fff);
+  color: var(--fg-form, #222);
+  transition: border-color .2s ease, box-shadow .2s ease;
   width: 100%;
 }
 
 .form input:focus,
 .form select:focus {
+  border-color: var(--accent-form, #FFB385);
+  box-shadow: 0 0 0 3px rgba(247,177,134,.35);
   outline: none;
-  border-color: #FFB385;
-  box-shadow: 0 0 4px rgba(181, 234, 215, 0.8);
 }
 
-@media (max-width: 480px) {
-  .form { max-width: calc(100vw - 2rem); }
-}
-@media (max-width: 360px) {
-  .form { max-width: calc(100vw - 1.5rem); }
-}
+@media (max-width: 480px) { .form { max-width: calc(100vw - 2rem); margin: 40px auto; } }
+@media (max-width: 360px) { .form { max-width: calc(100vw - 1.5rem); } }

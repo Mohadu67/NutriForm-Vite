@@ -1,92 +1,120 @@
+/* Mobile‑first, dark‑mode aware table styling for exercise inputs */
+
 .table {
   display: grid;
-  gap: 8px;
+  gap: 10px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 4px;
+  padding: 6px 4px 8px;
 }
 
+/* Sticky header with subtle translucency */
 .rowHead,
 .rowSet {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .rowHead {
-  font-weight: 700;
-  color: #7b8595;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  grid-template-columns: auto repeat(3, minmax(64px, 1fr)) 40px;
+  font-weight: 800;
   font-size: 14px;
+  color: var(--muted-ink);
+  background: color-mix(in oklab, var(--paper) 85%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  border-radius: 12px 12px 0 0;
 }
 
+/* Rows */
 .rowSet {
-  border-radius: 8px;
+  grid-template-columns: auto repeat(3, minmax(64px, 1fr)) 40px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--paper) 92%, transparent);
+  box-shadow: var(--shadow-sm);
+  padding: 8px 10px;
 }
 
+/* Inputs */
 .rowSet input {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  background: #fff;
-  color: #333;
-  padding: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--paper) 94%, transparent);
+  color: var(--ink);
+  padding: 10px 12px;
   font-size: 16px;
+  line-height: 1.2;
+  text-align: center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
 }
+
+.rowSet input::placeholder { color: var(--muted-ink); }
+
+/* Remove number arrows, keep centered numeric fields */
+.rowSet input[type="number"]::-webkit-outer-spin-button,
+.rowSet input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.rowSet input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
 
 .rowSet input:focus {
-  border-color: #F7B186;
-  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.25);
-  outline: 0;
+  outline: none;
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--line-strong));
+  box-shadow: var(--ring);
 }
-
-.iconBtn {
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  padding: 6px 10px;
-  cursor: pointer;
+.iconBtn { 
+    border: 2px solid #333;
+    color: var(--accent-red);
+    border-radius: 10px;
+    padding: .35rem .6rem;
+    margin-left: .5rem;
+    background-color: #F7F6F2;
+    transition: all .12s ease;
+    cursor: pointer;
 }
+.iconBtn:hover {
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+    transition: all .12s ease;
+  }
+.iconBtn:active { transform: translateY(0); box-shadow: 0 4px 12px color-mix(in oklab, var(--accent-2) 35%, transparent); }
 
-.actions {
-  margin-top: 6px;
-}
-
+/* Actions */
+.actions { margin-top: 6px; display: flex; justify-content: center; gap: 8px; }
 .actions > button {
-  background: #F7B186;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
   color: #fff;
   border: none;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-weight: 700;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 20px color-mix(in oklab, var(--accent-2) 45%, transparent);
+  transition: transform .12s ease, box-shadow .2s ease;
 }
+.actions > button:hover { transform: translateY(-1px); }
+.actions > button:active { transform: translateY(0); box-shadow: 0 4px 12px color-mix(in oklab, var(--accent-2) 35%, transparent); }
 
 /* Medium screens */
 @media (min-width: 480px) {
   .rowHead,
   .rowSet {
-    grid-template-columns: auto repeat(auto-fit, minmax(70px, 1fr)) 40px;
-    gap: 8px;
-  }
-
-  .rowHead {
-    font-size: 15px;
-  }
-}
-
-@media (min-width: 768px) {
-  .table {
+    grid-template-columns: auto repeat(4, minmax(72px, 1fr)) 44px;
     gap: 10px;
   }
+  .rowHead { font-size: 15px; }
+}
 
-  .rowHead {
-    font-size: 16px;
-    font-weight: 800;
-  }
-
-  .rowSet input {
-    padding: 10px;
-  }
+/* Larger screens */
+@media (min-width: 768px) {
+  .table { gap: 12px; }
+  .rowHead { font-size: 16px; }
+  .rowSet input { padding: 12px; font-size: 17px; }
 }

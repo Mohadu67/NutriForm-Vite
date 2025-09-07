@@ -1,57 +1,80 @@
+:root {
+  color-scheme: light dark;
+  --paper: #ffffff;
+  --ink: #222325;
+  --muted: #6b7280;
+  --line: rgba(0,0,0,.08);
+  --shadow-sm: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-md: 0 8px 20px rgba(0,0,0,0.12);
+  --accent-blue: #4a90e2;
+  --accent-green: #27ae60;
+  --accent-orange: #f39c12;
+}
 
-
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12151b;
+    --ink: #e9ecf1;
+    --muted: #a6b0bf;
+    --line: rgba(255,255,255,.1);
+    --shadow-sm: 0 4px 12px rgba(0,0,0,0.45);
+    --shadow-md: 0 8px 20px rgba(0,0,0,0.65);
+  }
+}
 
 .tipCard {
-  background: #fff;
-  border-radius: 10px;
-  padding: 16px 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  background: var(--paper);
+  border-radius: 14px;
+  padding: 1.25rem 1rem;
+  box-shadow: var(--shadow-sm);
   margin: 16px 0;
+  border: 1px solid var(--line);
+  transition: transform .15s ease, box-shadow .2s ease;
 }
+.tipCard:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
 .tipHeader {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  gap: 10px;
 }
 
-.tipIcon {
-  font-size: 1.5rem;
-  margin-right: 8px;
-}
+.tipIcon { font-size: 1.6rem; }
 
 .tipTitle {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #222;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .tipText {
-  font-size: 0.95rem;
-  color: #555;
-  line-height: 1.4;
-  margin: 8px 0 12px;
+  font-size: 1rem;
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 8px 0 14px;
 }
 
 .tipTags {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .tipTag {
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #fff;
-  background: #4a90e2;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
 }
 
-.tipTag:nth-child(2) {
-  background: #27ae60;
-}
+.tipTag:nth-child(1) { background: var(--accent-blue); }
+.tipTag:nth-child(2) { background: var(--accent-green); }
+.tipTag:nth-child(3) { background: var(--accent-orange); }
 
-.tipTag:nth-child(3) {
-  background: #f39c12;
+@media (min-width: 640px) {
+  .tipCard { padding: 1.5rem 1.25rem; }
+  .tipTitle { font-size: 1.35rem; }
 }

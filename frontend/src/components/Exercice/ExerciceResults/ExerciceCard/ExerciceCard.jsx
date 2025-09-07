@@ -95,20 +95,20 @@ export default function ExerciceCard({ exo, onAdd, isAdded = false, draggable = 
 
               <div className={styles.metaGrid}>
                 <div>
-                  <strong>Type</strong>
-                  <div>{(exo.type || []).join(", ") || "—"}</div>
+                  <strong >Type</strong>
+                  <div >{(exo.type || []).join(", ") || "—"}</div>
                 </div>
                 <div>
                   <strong>Objectifs</strong>
-                  <div>{(exo.objectives || []).join(", ") || "—"}</div>
+                  <div >{(exo.objectives || []).join(", ") || "—"}</div>
                 </div>
                 <div>
                   <strong>Muscles</strong>
-                  <div>{(exo.muscles || []).join(", ") || "—"}</div>
+                  <div >{(exo.muscles || []).join(", ") || "—"}</div>
                 </div>
                 <div>
                   <strong>Équipement</strong>
-                  <div>{(exo.equipment || []).join(", ") || "—"}</div>
+                  <div >{(exo.equipment || []).join(", ") || "—"}</div>
                 </div>
               </div>
 

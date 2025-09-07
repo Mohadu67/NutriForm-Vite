@@ -7,7 +7,6 @@ import SuivieExo from "../ExerciceSuivie/SuivieExo.jsx";
 import ChercherExo from "../ExerciceSuivie/MoteurRechercheUser/ChercherExo.jsx";
 import SuivieSeance from "../TableauBord/SuivieSeance.jsx";
 import Stat from "../TableauBord/stats/Stat.jsx";
-import { endSessionMessage } from "../subtitlePools.jsx";
 import { saveSession } from "../TableauBord/sessionApi.js";
 import ConseilJour from "./ConseilJour.jsx";
 import { idOf } from "../Shared/diOf";

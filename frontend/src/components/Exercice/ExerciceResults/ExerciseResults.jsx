@@ -87,7 +87,6 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   }, [data, typeId, equipIds, muscleIds]);
 
   useEffect(() => {
-    console.log("[ER] results computed=", results.length);
   }, [results]);
 
   useEffect(() => {
@@ -96,21 +95,17 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     }
   }, [results]);
 
-  // Track previous filterKey and reset selection/dismissed when filters change
   const prevFilterKeyRef = useRef(filterKey);
   useEffect(() => {
-    if (prevFilterKeyRef.current === filterKey) return; // no change
+    if (prevFilterKeyRef.current === filterKey) return;
     prevFilterKeyRef.current = filterKey;
-    // New filter set: clear dismissals and allow prefill
     setDismissed(new Set());
     setHasTouched(false);
 
     if (Array.isArray(results) && results.length > 0) {
-      // Results already ready: prefill immediately
       setOrdered(results);
       broadcastSelection(results);
     } else {
-      // Results not ready yet: purge selection so prefill can run when results arrive
       setOrdered([]);
       try {
         localStorage.setItem("dynamiHasTouched", "0");
@@ -122,7 +117,6 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
 
   useEffect(() => {
     if (Array.isArray(results) && results.length > 0 && Array.isArray(ordered) && ordered.length === 0) {
-      console.log("[ER] prefill (force) results=", results.length, "hasTouched=", hasTouched);
       setOrdered(results);
       broadcastSelection(results);
     }
@@ -143,7 +137,6 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
 
   useEffect(() => {
     if (Array.isArray(ordered) && ordered.length > 0) {
-      console.log("[ER] ordered changed=", ordered.length);
       broadcastSelection(ordered);
     }
   }, [ordered]);
@@ -182,7 +175,6 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   }, [dismissed]);
 
   function broadcastSelection(next) {
-    console.log("[ER] broadcastSelection count=", next.length);
     try {
       const str = JSON.stringify(next);
       localStorage.setItem("dynamiSelected", str);

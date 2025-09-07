@@ -1,67 +1,94 @@
 /* Footer.module.css */
 
+:root {
+  color-scheme: light dark;
+  --paper: #ffffff;
+  --ink: #222325;
+  --muted: #6b7280;
+  --line: rgba(0,0,0,.08);
+  --accent: var(--couleur-bouton-action, #F7B186);
+  --shadow-sm: 0 6px 16px rgba(0,0,0,.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12151b;
+    --ink: #e9ecf1;
+    --muted: #a6b0bf;
+    --line: rgba(255,255,255,.1);
+    --shadow-sm: 0 6px 16px rgba(0,0,0,.45);
+  }
+}
+
 footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-around;
-    padding: 20px;
-    text-align: center;
-    gap: 20px;
-    background-color: #efede8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  gap: 20px;
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+  color: var(--ink);
 }
 
 footer ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    width: 250px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-width: 300px;
 }
 
 footer li {
-    flex: 1 1 calc(50% - 10px);
-    display: flex;
-    justify-content: center;
+  flex: 1 1 calc(50% - 10px);
+  display: flex;
+  justify-content: center;
 }
 
 footer ul li a {
-    border: 2px solid var(--couleur-text-noir);
-    border-radius: 8px;
-    display: flex;
-    width: 100px;
-    height: 28px;
-    justify-content: center;
-    align-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  display: flex;
+  width: 110px;
+  height: 32px;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  transition: background-color .2s ease, color .2s ease, transform .15s ease;
 }
 
 footer ul li a:hover {
-    background-color: var(--couleur-text-noir);
-    color: var(--couleur-principale);
-    transition: background-color 0.3s ease;
+  background-color: var(--ink);
+  color: var(--paper);
+  transform: translateY(-1px);
 }
 
 footer a.org {
-  border: 2px solid var(--couleur-bouton-action);
+  border: 2px solid var(--accent);
 }
 
-footer .org:hover {
-  background-color: var(--couleur-bouton-action);
-  color: var(--couleur-principale);
-}
-
-@media (min-width: 768px) {
-    footer {
-        flex-direction: row; 
-    }
+footer a.org:hover {
+  background-color: var(--accent);
+  color: var(--paper);
 }
 
 .legalLinks p {
-    font-size: 0.8rem;
-    color: #666;
-    margin: 0;
-    text-align: center;
-    
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  footer ul { max-width: none; }
 }
