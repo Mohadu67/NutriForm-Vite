@@ -1,16 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import ExerciceCard from "../DynamiChoice/ExerciceCard.jsx";
+import { useEffect, useMemo, useRef, useState } from "react";
+import ExerciceCard from "./ExerciceCard/ExerciceCard.jsx";
 import { rechercherExercices } from "../DynamiChoice/MoteurRecherche/MoteurRecherche.jsx";
 import Button from "../../BoutonAction/BoutonAction.jsx";
 import styles from "./ExerciseResults.module.css";
+import { idOf } from "../Shared/diOf";
+import { sameIds, mergeById } from "../Shared/selectionUtils";
 
-const keyOf = (ex) =>
-  String(ex?.id ?? ex?.name ?? "")
-    .toLowerCase()
-    .normalize("NFD").replace(/\p{Diacritic}/gu, "")
-    .trim();
-
-export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [], onChange, onResultsChange, onSearch }) {
+export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [], onChange, onResultsChange, onSearch, initialSelected }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,12 +37,12 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   });
   const [dragKey, setDragKey] = useState(null);
 
-  function broadcastSelection(next) {
-    try { localStorage.setItem("dynamiSelected", JSON.stringify(next)); } catch {}
-    window.dispatchEvent(new CustomEvent("dynami:selected:update", { detail: { items: next } }));
-    if (onResultsChange) onResultsChange(next);
-    else if (onChange) onChange(next);
-  }
+  // Stable filter fingerprint for type/equipment/muscle filters
+  const filterKey = useMemo(() => {
+    const eq = Array.isArray(equipIds) ? [...equipIds].slice().sort() : [];
+    const mu = Array.isArray(muscleIds) ? [...muscleIds].slice().sort() : [];
+    return JSON.stringify({ typeId: typeId || null, equip: eq, muscle: mu });
+  }, [typeId, equipIds, muscleIds]);
 
   useEffect(() => {
     if (Array.isArray(ordered) && ordered.length > 0) setHasTouched(true);
@@ -91,17 +87,52 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   }, [data, typeId, equipIds, muscleIds]);
 
   useEffect(() => {
-    if (!hasTouched && ordered.length === 0 && results.length > 0) {
+    console.log("[ER] results computed=", results.length);
+  }, [results]);
+
+  useEffect(() => {
+    if (Array.isArray(results) && results.length > 0) {
+      try { localStorage.setItem("dynamiLastResults", JSON.stringify(results)); } catch {}
+    }
+  }, [results]);
+
+  // Track previous filterKey and reset selection/dismissed when filters change
+  const prevFilterKeyRef = useRef(filterKey);
+  useEffect(() => {
+    if (prevFilterKeyRef.current === filterKey) return; // no change
+    prevFilterKeyRef.current = filterKey;
+    // New filter set: clear dismissals and allow prefill
+    setDismissed(new Set());
+    setHasTouched(false);
+
+    if (Array.isArray(results) && results.length > 0) {
+      // Results already ready: prefill immediately
+      setOrdered(results);
+      broadcastSelection(results);
+    } else {
+      // Results not ready yet: purge selection so prefill can run when results arrive
+      setOrdered([]);
+      try {
+        localStorage.setItem("dynamiHasTouched", "0");
+        localStorage.setItem("formSelectedExercises", "[]");
+        localStorage.removeItem("dynamiSelected");
+      } catch {}
+    }
+  }, [filterKey, results]);
+
+  useEffect(() => {
+    if (Array.isArray(results) && results.length > 0 && Array.isArray(ordered) && ordered.length === 0) {
+      console.log("[ER] prefill (force) results=", results.length, "hasTouched=", hasTouched);
       setOrdered(results);
       broadcastSelection(results);
     }
-  }, [results, hasTouched, ordered.length]);
+  }, [results, ordered, hasTouched]);
 
   const proposed = useMemo(() => {
     if (!results.length) return [];
-    const chosenKeys = new Set(ordered.map((x) => keyOf(x)));
+    const chosenKeys = new Set(ordered.map((x) => idOf(x)));
     return results.filter((ex) => {
-      const k = keyOf(ex);
+      const k = idOf(ex);
       return !chosenKeys.has(k) && !dismissed.has(k);
     });
   }, [results, ordered, dismissed]);
@@ -111,15 +142,66 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   }, [ordered, proposed]);
 
   useEffect(() => {
-    broadcastSelection(ordered);
+    if (Array.isArray(ordered) && ordered.length > 0) {
+      console.log("[ER] ordered changed=", ordered.length);
+      broadcastSelection(ordered);
+    }
   }, [ordered]);
+
+  useEffect(() => {
+    if (!initialSelected) return;
+    const next = Array.isArray(initialSelected) ? initialSelected : [];
+    setHasTouched(true);
+    setOrdered((prev) => {
+      const merged = mergeById(prev, next);
+      if (sameIds(prev, merged)) return prev;
+      broadcastSelection(merged);
+      return merged;
+    });
+  }, [initialSelected]);
+
+  useEffect(() => {
+    function handleReplace(e) {
+      const items = Array.isArray(e?.detail?.items) ? e.detail.items : [];
+      if (!items || items.length === 0) return;
+      setHasTouched(true);
+      setDismissed(new Set());
+      setOrdered((prev) => {
+        const merged = mergeById(prev, items);
+        if (sameIds(prev, merged)) return prev;
+        broadcastSelection(merged);
+        return merged;
+      });
+    }
+    window.addEventListener('dynami:selected:replace', handleReplace);
+    return () => window.removeEventListener('dynami:selected:replace', handleReplace);
+  }, []);
 
   useEffect(() => {
     try { localStorage.setItem("dynamiDismissed", JSON.stringify(Array.from(dismissed))); } catch {}
   }, [dismissed]);
 
+  function broadcastSelection(next) {
+    console.log("[ER] broadcastSelection count=", next.length);
+    try {
+      const str = JSON.stringify(next);
+      localStorage.setItem("dynamiSelected", str);
+      localStorage.setItem("formSelectedExercises", str);
+      localStorage.setItem("dynamiHasTouched", "1");
+    } catch {}
+    setTimeout(() => {
+      try {
+        window.dispatchEvent(new CustomEvent("dynami:selected:update", { detail: { items: next } }));
+      } catch {}
+      try {
+        if (onResultsChange) onResultsChange(next);
+        else if (onChange) onChange(next);
+      } catch {}
+    }, 0);
+  }
+
   function onDragStartItem(e, exo) {
-    setDragKey(keyOf(exo));
+    setDragKey(idOf(exo));
   }
   function onDragOverItem(e, exo) {
     e.preventDefault();
@@ -127,12 +209,12 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   function onDropItem(e, exo) {
     setHasTouched(true);
     const fromKey = dragKey;
-    const toKey = keyOf(exo);
+    const toKey = idOf(exo);
     if (!fromKey || fromKey === toKey) return;
     setOrdered((prev) => {
       const arr = [...prev];
-      const from = arr.findIndex((x) => keyOf(x) === fromKey);
-      const to = arr.findIndex((x) => keyOf(x) === toKey);
+      const from = arr.findIndex((x) => idOf(x) === fromKey);
+      const to = arr.findIndex((x) => idOf(x) === toKey);
       if (from === -1 || to === -1) return prev;
       const [moved] = arr.splice(from, 1);
       arr.splice(to, 0, moved);
@@ -141,16 +223,22 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     });
     setDragKey(null);
   }
-  function onRemoveItem(exo) {
+  function onRemoveItem(exOrId) {
     setHasTouched(true);
+    const id = idOf(exOrId);
     setOrdered((prev) => {
-      const arr = prev.filter((x) => keyOf(x) !== keyOf(exo));
+      const arr = prev.filter((x) => idOf(x) !== id);
       broadcastSelection(arr);
       return arr;
     });
+    setDismissed((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
   }
-  function onDismissItem(exo) {
-    const k = keyOf(exo);
+  function onDismissItem(exOrId) {
+    const k = idOf(exOrId);
     setDismissed((prev) => {
       const next = new Set(prev);
       next.add(k);
@@ -167,33 +255,13 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     }
   }
 
-  useEffect(() => {
-    setDismissed(new Set());
-    try { localStorage.removeItem("dynamiDismissed"); } catch {}
-
-    setOrdered((prev) => {
-      const resultKeys = new Set(results.map((ex) => keyOf(ex)));
-
-      // Si la sélection devient vide après un changement de filtres, on remplit avec les résultats courants
-      const next = prev.filter((ex) => resultKeys.has(keyOf(ex)));
-
-      if (next.length === 0 && results.length > 0) {
-        broadcastSelection(results);
-        return results;
-      }
-
-      if (next.length !== prev.length) broadcastSelection(next);
-      return next;
-    });
-  }, [typeId, equipIds, muscleIds, results]);
-
   if (loading) return <p>Chargement des exercices…</p>;
   if (error) return <p className={styles.error}>Erreur: {error}</p>;
   if (!results.length) return (
     <div className={styles.noResults}>
       <p>Aucun exercice trouvé… pour l’instant ! On travaille en salle pour ajouter plus d’exos. Tu peux aussi élargir tes filtres.</p>
       {onSearch && (
-        <Button type="button" onClick={onSearch} aria-label="Ajouter des exercices">
+        <Button type="button" onClick={() => onSearch(ordered)} aria-label="Ajouter des exercices">
           + Ajouter d'autres exercices
         </Button>
       )}
@@ -209,7 +277,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
               Réinitialiser les suggestions
             </button>
           )}
-          <Button className={styles.BtnAjout} type="button" onClick={onSearch} aria-label="Ajouter des exercices">
+          <Button className={styles.BtnAjout} type="button" onClick={() => onSearch(ordered)} aria-label="Ajouter d'autres exercices">
             + Ajouter d'autres exercices
           </Button>
         </div>
@@ -220,8 +288,8 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
           <p className={styles.empty}>Aucun exercice sélectionné pour l’instant.</p>
         ) : (
           combined.map((exo) => {
-            const key = keyOf(exo);
-            const isSelected = ordered.some((x) => keyOf(x) === key);
+            const key = idOf(exo);
+            const isSelected = ordered.some((x) => idOf(x) === key);
             return (
               <ExerciceCard
                 key={key}
@@ -235,7 +303,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
                   if (isSelected) return;
                   setHasTouched(true);
                   setOrdered((prev) => {
-                    if (prev.some((x) => keyOf(x) === key)) return prev;
+                    if (prev.some((x) => idOf(x) === key)) return prev;
                     const arr = [...prev, exo];
                     broadcastSelection(arr);
                     return arr;

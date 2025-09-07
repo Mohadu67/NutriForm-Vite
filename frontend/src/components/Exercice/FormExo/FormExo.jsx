@@ -10,6 +10,7 @@ import Stat from "../TableauBord/stats/Stat.jsx";
 import { endSessionMessage } from "../subtitlePools.jsx";
 import { saveSession } from "../TableauBord/sessionApi.js";
 import ConseilJour from "./ConseilJour.jsx";
+import { idOf } from "../Shared/diOf";
 
 export default function FormExo({ user }) {
   const [sessionName, setSessionName] = useState(() => {
@@ -30,6 +31,7 @@ export default function FormExo({ user }) {
   const [showSummary, setShowSummary] = useState(false);
   const [lastStats, setLastStats] = useState(null);
   const [lastItems, setLastItems] = useState([]);
+  const [searchCb, setSearchCb] = useState(null);
   useEffect(() => { try { localStorage.setItem("formSessionName", JSON.stringify(sessionName)); } catch {} }, [sessionName]);
   useEffect(() => { try { localStorage.setItem("formCurrentStep", String(currentStep)); } catch {} }, [currentStep]);
   useEffect(() => { try { localStorage.setItem("formMode", mode); } catch {} }, [mode]);
@@ -107,6 +109,17 @@ export default function FormExo({ user }) {
     { title: "Exercices", sub: "Personnalisez votre séance" },
   ];
 
+  const suiviKey = (() => {
+    try {
+      const ids = Array.isArray(selectedExercises)
+        ? selectedExercises.map(idOf).join("|")
+        : "";
+      return `${sessionName}|${ids}`;
+    } catch {
+      return `${sessionName}|len:${Array.isArray(selectedExercises) ? selectedExercises.length : 0}`;
+    }
+  })();
+
   return (
     <div className={styles.form}>
       {mode === "builder" ? (
@@ -134,17 +147,39 @@ export default function FormExo({ user }) {
           <DynamiChoice
             requestedStep={currentStep}
             onStepChange={setCurrentStep}
+            onResultsChange={(arr) => {
+              const next = Array.isArray(arr) ? arr : [];
+              setSelectedExercises(next);
+              console.log("FormExo.onResultsChange next=", next);
+              try {
+                localStorage.setItem("formSelectedExercises", JSON.stringify(next));
+                localStorage.setItem("dynamiSelected", JSON.stringify(next));
+                localStorage.setItem("dynamiHasTouched", "1");
+              } catch {}
+            }}
+            onChange={(arr) => {
+              const next = Array.isArray(arr) ? arr : [];
+              setSelectedExercises(next);
+              console.log("FormExo.onChange next=", next);
+              try {
+                localStorage.setItem("formSelectedExercises", JSON.stringify(next));
+                localStorage.setItem("dynamiSelected", JSON.stringify(next));
+                localStorage.setItem("dynamiHasTouched", "1");
+              } catch {}
+            }}
             onComplete={(selection) => {
-              console.log("Choix séance:", selection);
+              console.log("Choix séance raw=", selection);
               const list = Array.isArray(selection)
                 ? selection
                 : (selection?.selectedExercises || selection?.exercises || []);
+              console.log("Choix séance parsed=", list);
               setSelectedExercises(list);
               setMode("session");
             }}
-            onSearch={(current) => {
+            onSearch={(current, cb) => {
               const safe = Array.isArray(current) ? current : [];
               setSearchDraft(safe);
+              setSearchCb(() => cb);
               try {
                 localStorage.setItem("dynamiSelected", JSON.stringify(safe));
                 localStorage.setItem("dynamiHasTouched", "1");
@@ -156,9 +191,16 @@ export default function FormExo({ user }) {
       ) : mode === "session" ? (
         <>
           <SuivieExo
+            key={suiviKey}
             sessionName={sessionName}
             exercises={selectedExercises}
-            onBack={() => setMode("builder")}
+            onBack={(updated) => {
+              if (Array.isArray(updated)) {
+                setSelectedExercises(updated);
+                try { localStorage.setItem("formSelectedExercises", JSON.stringify(updated)); } catch {}
+              }
+              setMode("builder");
+            }}
             onFinish={async (payload) => {
               const stats = {
                 durationSec: payload?.durationSec ?? 0,
@@ -203,13 +245,21 @@ export default function FormExo({ user }) {
           onCancel={() => setMode("builder")}
           onConfirm={(picked) => {
             const byId = (x) => x.id ?? x._id ?? x.slug ?? (x.name || x.title);
-            setSearchDraft(prev => {
-              const map = new Map(prev.map(x => [byId(x), x]));
-              picked.forEach(p => map.set(byId(p), p));
-              const merged = Array.from(map.values());
-              try { localStorage.setItem("dynamiSelected", JSON.stringify(merged)); } catch {}
-              return merged;
-            });
+            const merged = (() => {
+              const map = new Map(searchDraft.map(x => [byId(x), x]));
+              (Array.isArray(picked) ? picked : []).forEach(p => map.set(byId(p), p));
+              return Array.from(map.values());
+            })();
+            setSelectedExercises(merged);
+            setSearchDraft(merged);
+            try {
+              localStorage.setItem("dynamiSelected", JSON.stringify(merged));
+              localStorage.setItem("formSelectedExercises", JSON.stringify(merged));
+            } catch {}
+            if (typeof searchCb === 'function') {
+              try { searchCb(merged, { mode: 'replace' }); } catch {}
+              setSearchCb(null);
+            }
             setMode("builder");
           }}
         />
