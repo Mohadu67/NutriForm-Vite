@@ -7,7 +7,6 @@ function safeStringify(obj) {
   try {
     return JSON.stringify(obj);
   } catch (e) {
-    // Fallback: strip functions, handle BigInt, avoid cycles
     const seen = new WeakSet();
     return JSON.stringify(obj, (key, value) => {
       if (typeof value === 'function') return undefined;
@@ -35,16 +34,27 @@ function getToken() {
   }
 }
 
-async function request(path, options = {}) {
+function buildAuthHeaders() {
   const token = getToken();
-  const auth = token ? (token.startsWith('Bearer ') ? token : `Bearer ${token}`) : null;
-  if (!auth && (typeof window !== 'undefined') && !import.meta.env.PROD) {
+  if (!token) return {};
+  const bearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+  return {
+    Authorization: bearer,
+    'x-auth-token': token.replace(/^Bearer\s+/i, ''),
+    'x-access-token': token.replace(/^Bearer\s+/i, ''),
+  };
+}
+
+async function request(path, options = {}) {
+  const authHeaders = buildAuthHeaders();
+  if (!authHeaders.Authorization && (typeof window !== 'undefined') && !import.meta.env.PROD) {
     console.warn('[sessionApi] No Authorization header. Using cookies only. API_BASE=', API_BASE);
   }
   const headers = {
     Accept: 'application/json',
-    ...(auth ? { Authorization: auth } : {}),
-    ...(options.headers || {})
+    'X-Requested-With': 'XMLHttpRequest',
+    ...authHeaders,
+    ...(options.headers || {}),
   };
   if (options.body && !headers['Content-Type'] && !(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json; charset=utf-8';
@@ -65,10 +75,12 @@ async function request(path, options = {}) {
   let data = null;
   try { data = await res.json(); } catch {}
   if (!res.ok) {
-    const msg = (data && (data.error || data.message)) || 'request_failed';
+    const msg = (data && (data.error || data.message)) || `request_failed_${res.status}`;
     const err = new Error(msg);
     err.status = res.status;
     err.data = data;
+    err.url = `${API_BASE}${path}`;
+    err.method = (options.method || 'GET').toUpperCase();
     throw err;
   }
   return data;
@@ -79,48 +91,63 @@ function fetchHistorySummary() {
 }
 
 function mapItemsToEntries(items = []) {
+  if (!Array.isArray(items) || items.length === 0) return [];
+
+  const num = (v, d = 0) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : d;
+  };
+
   return items
     .map((it) => {
+      if (!it) return null;
       const d = (it && typeof it.data === 'object' && it.data) ? it.data : {};
-      const cardioSets = Array.isArray(d.cardioSets) ? d.cardioSets : [];
-      const muscuSets = Array.isArray(d.sets) ? d.sets : (Array.isArray(d.series) ? d.series : []);
 
-      const rawType = (it && (it.mode ?? it.type)) ?? '';
-      let type = typeof rawType === 'string' ? rawType.toLowerCase() : String(rawType || '').toLowerCase();
+      const rawType = (it.mode ?? it.type ?? '').toString().toLowerCase();
+      let type = rawType.includes('cardio') ? 'cardio' : rawType.includes('muscu') ? 'muscu' : '';
+      const cardioSetsRaw = Array.isArray(d.cardioSets) ? d.cardioSets : [];
+      const muscuSetsRaw = Array.isArray(d.sets) ? d.sets : (Array.isArray(d.series) ? d.series : []);
+      if (!type) type = cardioSetsRaw.length ? 'cardio' : (muscuSetsRaw.length ? 'muscu' : '');
 
-      if (!type) type = cardioSets.length ? "cardio" : (muscuSets.length ? "muscu" : "poids_du_corps");
+      if (type === 'cardio') {
+        let sets = cardioSetsRaw.map((cs) => {
+          const durationSec = num(cs?.durationSec, 0) || (num(cs?.durationMin ?? cs?.minutes, 0) * 60);
+          const distanceKm = cs?.distanceKm != null ? num(cs.distanceKm) : (cs?.km != null ? num(cs.km) : (cs?.meters != null ? num(cs.meters) / 1000 : 0));
+          const calories = num(cs?.calories, 0);
+          return { durationSec: durationSec || undefined, distanceKm: distanceKm || undefined, calories: calories || undefined };
+        }).filter(s => (s.durationSec || s.distanceKm || s.calories));
 
-      let sets;
-      if (type === "cardio") {
-        sets = cardioSets.map((cs) => ({
-          durationMin: (cs.durationSec != null && !isNaN(Number(cs.durationSec))) ? undefined : Number(cs.durationMin ?? cs.minutes ?? 0) || undefined,
-          durationSec: (cs.durationSec != null && !isNaN(Number(cs.durationSec))) ? Number(cs.durationSec) : undefined,
-          distanceKm: (cs.distanceKm != null) ? Number(cs.distanceKm) : (cs.km != null ? Number(cs.km) : (cs.meters != null ? Number(cs.meters) / 1000 : undefined))
-        }));
-        // filter out empty cardio sets
-        sets = sets.filter(s => (s.durationMin != null) || (s.durationSec != null) || (s.distanceKm != null));
-      } else {
-        sets = muscuSets.map((ms) => ({
-          reps: (ms.reps != null) ? Number(ms.reps) : (ms.rep != null ? Number(ms.rep) : undefined),
-          weightKg: (ms.weightKg != null) ? Number(ms.weightKg) : (ms.weight != null ? Number(ms.weight) : (ms.kg != null ? Number(ms.kg) : (ms.poids != null ? Number(ms.poids) : undefined)))
-        })).filter(s => s.reps != null || s.weightKg != null);
-        if (!sets.length && (d.reps != null || d.weightKg != null || d.weight != null)) {
-          sets = [{
-            reps: d.reps != null ? Number(d.reps) : undefined,
-            weightKg: d.weightKg != null ? Number(d.weightKg) : (d.weight != null ? Number(d.weight) : undefined)
-          }];
+        if (sets.length === 0) return null;
+        return {
+          exerciseId: it.id || it._id || it.slug || String(it.name || it.label || 'exo').toLowerCase(),
+          name: String(it.name || it.label || it.exoName || 'Exercice'),
+          type: 'cardio',
+          sets,
+        };
+      }
+
+      let msets = muscuSetsRaw.map((ms) => {
+        const reps = ms?.reps != null ? num(ms.reps) : (ms?.rep != null ? num(ms.rep) : 0);
+        const weightKg = ms?.weightKg != null ? num(ms.weightKg) : (ms?.weight != null ? num(ms.weight) : (ms?.kg != null ? num(ms.kg) : (ms?.poids != null ? num(ms.poids) : 0)));
+        const durationSec = ms?.durationSec != null ? num(ms.durationSec) : (ms?.timeSec != null ? num(ms.timeSec) : 0);
+        return { reps: reps || undefined, weightKg: weightKg || undefined, durationSec: durationSec || undefined };
+      }).filter(s => (s.reps || s.weightKg || s.durationSec));
+
+      if (msets.length === 0) {
+        const reps = d?.reps != null ? num(d.reps) : 0;
+        const weightKg = d?.weightKg != null ? num(d.weightKg) : (d?.weight != null ? num(d.weight) : 0);
+        const durationSec = d?.durationSec != null ? num(d.durationSec) : (d?.timeSec != null ? num(d.timeSec) : 0);
+        if (reps || weightKg || durationSec) {
+          msets = [{ reps: reps || undefined, weightKg: weightKg || undefined, durationSec: durationSec || undefined }];
         }
       }
 
-      if (!Array.isArray(sets) || sets.length === 0) {
-        return null; // skip entries with no valid sets
-      }
-
+      if (msets.length === 0) return null;
       return {
-        exerciseName: String(it?.name || it?.label || it?.exoName || "Exercice"),
-        muscleGroup: d?.muscleGroup || it?.muscleGroup || it?.group || d?.group || d?.target || undefined,
-        type,
-        sets
+        exerciseId: it.id || it._id || it.slug || String(it.name || it.label || 'exo').toLowerCase(),
+        name: String(it.name || it.label || it.exoName || 'Exercice'),
+        type: 'muscu',
+        sets: msets,
       };
     })
     .filter(Boolean);
@@ -131,6 +158,11 @@ function saveSession(payload) {
   if (!body.entries && Array.isArray(body.items)) {
     body.entries = mapItemsToEntries(body.items);
     delete body.items;
+  }
+  if (Array.isArray(body.entries) && body.entries.length === 0) {
+    const e = new Error('NO_VALID_ENTRIES');
+    e.status = 400;
+    throw e;
   }
   return request('/api/sessions', {
     method: 'POST',
@@ -187,6 +219,7 @@ function getLastSession() {
 }
 
 export {
+  API_BASE,
   request,
   getToken,
   fetchHistorySummary,

@@ -1,27 +1,39 @@
 import { useState } from "react";
-import { request } from "../../../TableauBord/sessionApi";
+import { saveSession as apiSaveSession, mapItemsToEntries } from "../../../TableauBord/sessionApi";
 
 export default function useSaveSession() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  /**
-   * Sauvegarde une séance complète (une seule requête) avec toutes les entrées.
-   * @param {Object} params
-   * @param {Array} params.entries - Tableau d'entrées (exercices) déjà mappées
-   * @param {number} params.durationSec - Durée totale en secondes
-   * @param {string} params.label - Nom/label de la séance
-   * @param {Object} params.summary - Résumé côté client de la séance
-   */
-  async function save({ entries = [], durationSec = 0, label = "", summary = null } = {}) {
+  async function save(opts = {}) {
     setError(null);
     setSaving(true);
+
+    const snapshot = opts.snapshot || {};
+    const label = opts.label || snapshot.sessionName || snapshot.name || "";
+    const durSec = Number(opts.durationSec ?? snapshot.durationSec ?? 0) || 0;
+    const summary = opts.summary || snapshot.summary || null;
+
+    let entries = Array.isArray(opts.entries) ? opts.entries : null;
+    if (!entries || entries.length === 0) {
+      const items = Array.isArray(opts.items)
+        ? opts.items
+        : Array.isArray(snapshot.items)
+        ? snapshot.items
+        : [];
+      entries = mapItemsToEntries(items);
+    }
+
+    if (!entries || entries.length === 0) {
+      console.info("[useSaveSession] Skip save: NO_VALID_ENTRIES");
+      setSaving(false);
+      return { ok: true, skipped: true, reason: "NO_VALID_ENTRIES" };
+    }
+
     try {
-      const now = Date.now();
-      const durSec = Math.max(0, Number(durationSec) || 0);
-      const startedAt = new Date(now - durSec * 1000).toISOString();
-      const endedAt = new Date(now).toISOString();
-      const durationMinutes = Math.round(durSec / 60);
+      const startedAt = snapshot.startedAt || snapshot.started_at || opts.startedAt || new Date(Date.now() - durSec * 1000).toISOString();
+      const endedAt = snapshot.finishedAt || snapshot.endedAt || opts.endedAt || new Date().toISOString();
+      const durationMinutes = Math.max(0, Math.round(durSec / 60));
 
       const body = {
         entries,
@@ -29,18 +41,14 @@ export default function useSaveSession() {
         startedAt,
         endedAt,
         durationMinutes,
+        meta: {
+          durationSec: durSec,
+          ...(summary && typeof summary === "object" ? summary : {}),
+        },
       };
 
-      if (summary !== null) {
-        body.summary = summary;
-      }
-
-      const data = await request('/api/sessions', {
-        method: 'POST',
-        body,
-      });
-
-      return { ok: true, data };
+      const data = await apiSaveSession(body);
+      return { ok: true, skipped: false, data };
     } catch (e) {
       setError(e?.message || String(e));
       return { ok: false, error: e };

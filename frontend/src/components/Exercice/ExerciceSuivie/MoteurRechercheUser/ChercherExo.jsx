@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Button from "../../../BoutonAction/BoutonAction";
 import styles from "./ChercherExo.module.css";
-import { idOf } from "../../Shared/diOf";
+import { idOf } from "../../Shared/idOf";
 import { mergeById } from "../../Shared/selectionUtils";
 
 export default function ChercherExo({

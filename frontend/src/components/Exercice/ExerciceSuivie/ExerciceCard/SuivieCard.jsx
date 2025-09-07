@@ -13,6 +13,8 @@ import PdcTable from "./Tables/PdcTable";
 import NotesSection from "./Notes/NotesSection";
 import notesStyles from "./Notes/NotesSaction.module.css";
 
+import { idOf } from "../../Shared/idOf.js";
+
 export default function SuivieCard({ exo, value, onChange }) {
   const [open, setOpen] = useState(false);
   const [toast, setToast] = useState(null);
@@ -40,16 +42,38 @@ export default function SuivieCard({ exo, value, onChange }) {
   const imgSrc = Array.isArray(exo?.images) && exo.images.length ? exo.images[0] : null;
   const initialLetter = exo?.name?.trim()?.[0]?.toUpperCase() || "?";
 
+  function isExerciseDone(nextData) {
+    if (!nextData) return false;
+    if (Array.isArray(nextData.cardioSets) && nextData.cardioSets.length > 0) {
+      return nextData.cardioSets.some(cs => {
+        const dur = Number(cs?.durationSec ?? cs?.duration ?? 0);
+        const dist = Number(cs?.distance ?? 0);
+        const cals = Number(cs?.calories ?? 0);
+        return dur > 0 || dist > 0 || cals > 0;
+        
+      });
+    }
+    const sets = Array.isArray(nextData.sets) ? nextData.sets : [];
+    return sets.some(s => {
+      const reps = Number(s?.reps ?? 0);
+      const time = Number(s?.durationSec ?? s?.timeSec ?? 0);
+      const w   = Number(s?.weight ?? s?.weightKg ?? 0);
+      return reps > 0 || time > 0 || w > 0;
+    });
+  }
+
   function handleClosePopup() {
+    const payload = { ...data, mode };
+    const done = isExerciseDone(payload);
+    const next = { ...payload, done };
     try {
       if (typeof emit === 'function') {
-        emit(data);
-      } else if (typeof onChange === 'function') {
-        const id = exo?.id ?? exo?._id ?? exo?.name;
-        onChange(id, data);
+        emit(next);
+      }
+      if (typeof onChange === 'function') {
+        onChange(idOf(exo), next);
       }
     } catch {}
-
     setOpen(false);
   }
 
@@ -68,12 +92,12 @@ export default function SuivieCard({ exo, value, onChange }) {
           role="dialog"
           aria-modal="true"
           aria-hidden={!open}
-          onClick={() => setOpen(false)}
+          onClick={handleClosePopup}
         >
           <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
             <header className={styles.popupHeader}>
               <h3 className={styles.popupTitle}>{exo?.name}</h3>
-              <button type="button" className={styles.closeBtn} onClick={() => setOpen(false)} aria-label="Fermer">
+              <button type="button" className={styles.closeBtn} onClick={handleClosePopup} aria-label="Fermer">
                 ×
               </button>
             </header>

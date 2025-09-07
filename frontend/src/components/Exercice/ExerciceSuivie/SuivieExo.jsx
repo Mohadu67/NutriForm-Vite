@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "./SuivieExo.module.css";
 import SuivieCard from "./ExerciceCard/SuivieCard.jsx";
 import Chrono from "./Chrono/Chrono.jsx";
-import { idOf } from "../Shared/diOf";
+import { idOf } from "../Shared/idOf.js";
 
 
 export default function SuivieExo({ sessionName, exercises = [], onBack, onSearch, onFinish = () => {} }) {
@@ -50,6 +50,27 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
     return anyWeight ? "muscu" : "pdc";
   }
 
+  function isExerciseDone(nextData) {
+    if (!nextData) return false;
+
+    if (Array.isArray(nextData.cardioSets) && nextData.cardioSets.length > 0) {
+      return nextData.cardioSets.some(cs => {
+        const dur = Number(cs?.durationSec ?? cs?.duration ?? 0);
+        const dist = Number(cs?.distance ?? 0);
+        const cals = Number(cs?.calories ?? 0);
+        return dur > 0 || dist > 0 || cals > 0;
+      });
+    }
+
+    const sets = Array.isArray(nextData.sets) ? nextData.sets : [];
+    return sets.some(s => {
+      const reps = Number(s?.reps ?? 0);
+      const time = Number(s?.durationSec ?? s?.timeSec ?? 0);
+      const w   = Number(s?.weight ?? s?.weightKg ?? 0);
+      return reps > 0 || time > 0 || w > 0;
+    });
+  }
+
   function updateItemById(id, nextData) {
     setTouched(true);
     setItems(prev => {
@@ -57,7 +78,8 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
       const idx = copy.findIndex(x => idOf(x) === id);
       if (idx === -1) return copy;
       const nextMode = inferModeFromData(nextData) ?? copy[idx]?.mode;
-      copy[idx] = { ...copy[idx], data: nextData, mode: nextMode };
+      const done = isExerciseDone(nextData);
+      copy[idx] = { ...copy[idx], data: nextData, mode: nextMode, done };
       return copy;
     });
   }

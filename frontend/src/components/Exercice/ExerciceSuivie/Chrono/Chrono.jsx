@@ -25,31 +25,44 @@ function Chrono({ label, items = [], onFinish = () => {} }) {
     const total = safe.length;
 
     const hasAnySet = (it) => {
+      if (it?.done) return true;
       const d = it?.data || {};
-      const cardioN = Array.isArray(d.cardioSets) ? d.cardioSets.length : 0;
-      const muscuN = Array.isArray(d.sets) ? d.sets.length : 0;
-      return cardioN > 0 || muscuN > 0;
+
+      if (Array.isArray(d.cardioSets) && d.cardioSets.length > 0) {
+        return d.cardioSets.some(cs => {
+          const dur = Number(cs?.durationSec ?? cs?.duration ?? 0);
+          const dist = Number(cs?.distance ?? 0);
+          const cals = Number(cs?.calories ?? 0);
+          return dur > 0 || dist > 0 || cals > 0;
+        });
+      }
+
+      const sets = Array.isArray(d.sets) ? d.sets : (Array.isArray(d.series) ? d.series : []);
+      return sets.some(s => {
+        const reps = Number(s?.reps ?? s?.rep ?? 0);
+        const time = Number(s?.durationSec ?? s?.timeSec ?? 0);
+        const w   = Number(s?.weightKg ?? s?.weight ?? 0);
+        return reps > 0 || time > 0 || w > 0;
+      });
     };
 
     const done = safe.filter(hasAnySet).length;
 
-    // Improved estimation (front-only): simple MET-like per-minute constants by exercise family
     const nameOf = (it) => String(it?.name || it?.label || it?.exoName || '').toLowerCase();
     const guessType = (it, d) => {
       const raw = String(it?.mode ?? it?.type ?? '').toLowerCase();
       if (raw.includes('cardio')) return 'cardio';
       if (raw.includes('muscu')) return 'muscu';
-      // Fallback by data shape
       if (Array.isArray(d.cardioSets)) return 'cardio';
       return 'muscu';
     };
     const perMinKcal = (label) => {
-      if (label.includes('course') || label.includes('run')) return 11; // running
-      if (label.includes('velo') || label.includes('cycle') || label.includes('bike')) return 8; // cycling
-      if (label.includes('rameur') || label.includes('row')) return 7; // rowing
-      if (label.includes('marche') || label.includes('walk')) return 5; // walking
-      if (label.includes('corde') || label.includes('saut')) return 10; // jump rope
-      return 7; // generic cardio
+      if (label.includes('course') || label.includes('run')) return 11;
+      if (label.includes('velo') || label.includes('cycle') || label.includes('bike')) return 8;
+      if (label.includes('rameur') || label.includes('row')) return 7;
+      if (label.includes('marche') || label.includes('walk')) return 5;
+      if (label.includes('corde') || label.includes('saut')) return 10; 
+      return 7;
     };
 
     let kcal = 0;
@@ -62,7 +75,7 @@ function Chrono({ label, items = [], onFinish = () => {} }) {
         for (const s of sets) {
           const min = Number(s.durationMin ?? s.minutes ?? 0) || 0;
           const sec = Number(s.durationSec ?? 0) || 0;
-          const durMin = (min + sec / 60) || 5 / 60; // if empty seconds-only 0, fallback tiny
+          const durMin = (min + sec / 60) || 5 / 60; 
           kcal += durMin * rate;
         }
       } else {
@@ -70,25 +83,47 @@ function Chrono({ label, items = [], onFinish = () => {} }) {
         for (const s of sets) {
           const w = Number(s.weightKg ?? s.weight ?? 0) || 0;
           const r = Number(s.reps ?? s.rep ?? 0) || 0;
-          // simple muscular work proxy: time-under-tension approximated by reps, add base cost per set
           const perSet = w && r ? (w * r * 0.075) : (r ? r * 0.8 : 4);
           kcal += perSet;
         }
       }
     }
-    // clamp and round the estimate
     const est = Math.max(0, Math.round(kcal));
     return { totalExercises: total, doneExercises: done, calories: est };
   }, [items, time]);
 
   async function handleConfirmFinish() {
-    setRunning(false);
-    setShowConfirm(false);
-
     const safe = Array.isArray(items) ? items : [];
-    const entries = mapItemsToEntries(safe);
+    let entries = mapItemsToEntries(safe);
 
-    // Build a client-side summary: total selected vs completed + list of exercises with done flag
+    if (!Array.isArray(entries) || entries.length === 0) {
+      const fallback = safe
+        .filter(it => it && (it.done || (it.data && (Array.isArray(it.data.sets) ? it.data.sets.length : 0) > 0)))
+        .map(it => {
+          const d = it?.data || {};
+          const sets = Array.isArray(d.sets) && d.sets.length > 0
+            ? d.sets
+            : [{ reps: Number(d.reps ?? 0) || 1, weightKg: Number(d.weightKg ?? d.weight ?? 0) || 0 }];
+          const id = it?.id || it?.slug || it?._id || String(it?.name || 'exo').toLowerCase();
+          const name = String(it?.name || it?.label || 'Exercice');
+          const typeRaw = String(it?.mode ?? (Array.isArray(it?.type) ? it.type.join(',') : it?.type) ?? '').toLowerCase();
+          const type = typeRaw.includes('cardio') ? 'cardio' : 'muscu';
+          return { exerciseId: id, name, type, sets };
+        });
+
+      if (fallback.length > 0) {
+        entries = fallback;
+      }
+    }
+
+    if (!Array.isArray(entries) || entries.length === 0) {
+      console.info('[Chrono] Session not saved: NO_VALID_ENTRIES');
+      if (typeof onFinish === 'function') {
+        onFinish({ durationSec: time, savedCount: 0, calories, doneExercises, totalExercises });
+      }
+      return;
+    }
+
     const summary = (() => {
       const list = safe.map((it) => {
         const d = (it && typeof it.data === 'object' && it.data) ? it.data : {};
@@ -109,16 +144,17 @@ function Chrono({ label, items = [], onFinish = () => {} }) {
       };
     })();
 
-    const res = await save({ entries, durationSec: time, label, summary });
-
-    if (typeof onFinish === "function") {
-      onFinish({
-        durationSec: time,
-        savedCount: res?.ok ? 1 : 0,
-        calories,
-        doneExercises,
-        totalExercises,
-      });
+    try {
+      const res = await save({ entries, durationSec: time, label, summary });
+      const savedCount = res?.ok && !res?.skipped ? 1 : 0;
+      if (typeof onFinish === 'function') {
+        onFinish({ durationSec: time, savedCount, calories, doneExercises, totalExercises });
+      }
+    } catch (err) {
+      console.error('[Chrono] save failed', err);
+      if (typeof onFinish === 'function') {
+        onFinish({ durationSec: time, savedCount: 0, calories, doneExercises, totalExercises });
+      }
     }
   }
 
