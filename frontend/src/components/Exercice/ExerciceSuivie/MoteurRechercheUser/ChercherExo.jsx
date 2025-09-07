@@ -84,15 +84,12 @@ export default function ChercherExo({
   }
 
   function handleConfirm() {
-    // Build lists using the same id logic for consistency
     const selected = new Set(selectedIds);
     const pickedNew = all.filter((ex) => selected.has(idOf(ex)));
     const pickedPre = all.filter((ex) => preSet.has(idOf(ex)));
 
-    // Merge without duplicates by id (pre + new)
     const merged = mergeById(pickedPre, pickedNew);
 
-    // Persist for downstream consumers (DynamiChoice/FormExo/SuivieExo)
     try {
       const str = JSON.stringify(merged);
       localStorage.setItem("dynamiSelected", str);
@@ -100,15 +97,12 @@ export default function ChercherExo({
       localStorage.setItem("dynamiHasTouched", "1");
     } catch {}
 
-    // Notify parent
     try { onConfirm && onConfirm(merged); } catch {}
 
-    // Also notify ExerciseResults listeners (fallback path)
     try {
       window.dispatchEvent(new CustomEvent('dynami:selected:replace', { detail: { items: merged } }));
     } catch {}
 
-    // Reset local UI state
     setQ("");
     setSelectedIds(new Set());
   }
@@ -132,7 +126,6 @@ export default function ChercherExo({
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              // Toggle the first non-preselected filtered item
               const first = filtered.find(ex => !preSet.has(idOf(ex)));
               if (first) {
                 e.preventDefault();

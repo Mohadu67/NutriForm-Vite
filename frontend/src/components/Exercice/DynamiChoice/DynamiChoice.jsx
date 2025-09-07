@@ -132,15 +132,12 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   const handleResultsChange = useCallback((next) => {
     Promise.resolve().then(() => {
       setSelectedExercises(Array.isArray(next) ? next : []);
-      console.log("DynamiChoice.handleResultsChange next=", next);
     });
   }, []);
 
-  // Open external search modal; when it returns, update selection
   const openSearch = useCallback((currentSelection) => {
     if (!onSearch) return;
     const arr = Array.isArray(currentSelection) ? currentSelection : (Array.isArray(selectedExercises) ? selectedExercises : []);
-    // Persist the latest selection coming from ExerciseResults before opening the modal
     try {
       const str = JSON.stringify(arr);
       localStorage.setItem("dynamiSelected", str);
@@ -148,15 +145,12 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
       localStorage.setItem("dynamiHasTouched", "1");
     } catch {}
     setSelectedExercises(arr);
-    console.log("DynamiChoice.openSearch initial arr=", arr);
 
-    // Open the modal and apply result via callback
     onSearch(arr, (next, options = {}) => {
-      const mode = options.mode || 'replace'; // 'replace' | 'merge'
+      const mode = options.mode || 'replace';
       setSelectedExercises((prev) => {
         const nextArr = Array.isArray(next) ? next : [];
         const merged = mode === 'merge' ? mergeById(prev, nextArr) : nextArr;
-        console.log("DynamiChoice.openSearch merged=", merged, "mode=", mode);
         try {
           const s = JSON.stringify(merged);
           localStorage.setItem("dynamiSelected", s);
@@ -185,7 +179,6 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
         const fromLS = v ? JSON.parse(v) : [];
         if (Array.isArray(fromLS) && fromLS.length) arr = fromLS;
       } catch {}
-      console.log("DynamiChoice.onNext final arr=", arr);
       onComplete({ typeId, equipIds, muscleIds, exercises: arr });
     }
   }

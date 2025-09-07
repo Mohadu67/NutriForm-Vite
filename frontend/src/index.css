@@ -1,36 +1,64 @@
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* Reset and base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-ul {
-    list-style: none;
-}
+ul { list-style: none; }
 
 a {
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
-body {
-    font-family: var(--font-p);
-    background-color: var(--couleur-principale);
-    color: var(--couleur-text-noir);
-}   
-
 button {
-    cursor: pointer; 
-    border: none;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
 }
 
 :root {
-    --couleur-principale: #F7F6F2;
-    --couleur-bouton-action: #F7B186;
-    --couleur-bouton-selection: #B5EAD7;
-    --couleur-text-noir: #333;
-    --font-titre: 'Merriweather', serif;
-    --font-p: 'Montserrat', sans-serif;
+  color-scheme: light dark;
 
+  --couleur-principale: #F7F6F2;
+  --couleur-bouton-action: #F7B186;
+  --couleur-bouton-selection: #B5EAD7;
+  --couleur-text-noir: #222325;
+  --font-titre: 'Merriweather', serif;
+  --font-p: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+
+  --paper: #ffffff;
+  --ink: var(--couleur-text-noir);
+  --line: rgba(0,0,0,.08);
+  --shadow-sm: 0 4px 12px rgba(0,0,0,.08);
+  --shadow-md: 0 12px 30px rgba(0,0,0,.12);
 }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --couleur-principale: #0c0e12;
+    --paper: #12151b;
+    --ink: #e9ecf1;
+    --couleur-text-noir: #e9ecf1;
+    --line: rgba(255,255,255,.1);
+    --shadow-sm: 0 4px 12px rgba(0,0,0,.45);
+    --shadow-md: 0 12px 30px rgba(0,0,0,.65);
+  }
+}
+
+body {
+  font-family: var(--font-p);
+  background-color: var(--couleur-principale);
+  color: var(--couleur-text-noir);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img, picture, video, canvas, svg { display: block; max-width: 100%; }
+
+input, textarea, select { font: inherit; }
+
+h1,h2,h3,h4,h5,h6 { font-family: var(--font-titre); font-weight: 800; line-height: 1.25; color: var(--ink); }
