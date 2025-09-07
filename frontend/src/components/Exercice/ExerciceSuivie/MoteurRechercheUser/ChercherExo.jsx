@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Button from "../../../BoutonAction/BoutonAction";
 import styles from "./ChercherExo.module.css";
+import { idOf } from "../../Shared/diOf";
+import { mergeById } from "../../Shared/selectionUtils";
 
 export default function ChercherExo({
   sourceUrl = "/data/db.json",
@@ -20,14 +22,7 @@ export default function ChercherExo({
 
   const [selectedIds, setSelectedIds] = useState(() => new Set());
 
-  const canon = (s) =>
-    String(s || "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]/g, "");
-
-  const preSet = useMemo(() => new Set(preselectedIds || []), [preselectedIds]);
+  const preSet = useMemo(() => new Set((preselectedIds || []).map(idOf)), [preselectedIds]);
 
   useEffect(() => {
     let alive = true;
@@ -64,16 +59,16 @@ export default function ChercherExo({
       const okQ = !qn || name.includes(qn);
 
       const types = Array.isArray(ex.type) ? ex.type : (ex.type ? String(ex.type).split(/[,;]+/).map(s=>s.trim()) : []);
-      const typesC = types.map(canon);
-      const okT = !type || typesC.some((t) => t.includes(canon(type)));
+      const typesC = types.map(t => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, ""));
+      const okT = !type || typesC.some((t) => t.includes(type.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "")));
 
       const muscles = Array.isArray(ex.muscles) ? ex.muscles : (ex.muscle ? [ex.muscle] : []);
-      const musclesC = muscles.map(canon);
-      const okM = !muscle || musclesC.some((m) => m.includes(canon(muscle)));
+      const musclesC = muscles.map(m => String(m || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, ""));
+      const okM = !muscle || musclesC.some((m) => m.includes(muscle.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "")));
 
       const equips = Array.isArray(ex.equipment) ? ex.equipment : (ex.equip ? [ex.equip] : []);
-      const equipsC = equips.map(canon);
-      const okE = !equip || equipsC.some((e) => e.includes(canon(equip)));
+      const equipsC = equips.map(e => String(e || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, ""));
+      const okE = !equip || equipsC.some((e) => e.includes(equip.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "")));
 
       return okQ && okT && okM && okE;
     });
@@ -89,8 +84,33 @@ export default function ChercherExo({
   }
 
   function handleConfirm() {
-    const picked = all.filter((ex) => selectedIds.has(ex.id ?? ex._id ?? ex.slug ?? canon(ex.name || ex.title)));
-    onConfirm(picked);
+    // Build lists using the same id logic for consistency
+    const selected = new Set(selectedIds);
+    const pickedNew = all.filter((ex) => selected.has(idOf(ex)));
+    const pickedPre = all.filter((ex) => preSet.has(idOf(ex)));
+
+    // Merge without duplicates by id (pre + new)
+    const merged = mergeById(pickedPre, pickedNew);
+
+    // Persist for downstream consumers (DynamiChoice/FormExo/SuivieExo)
+    try {
+      const str = JSON.stringify(merged);
+      localStorage.setItem("dynamiSelected", str);
+      localStorage.setItem("formSelectedExercises", str);
+      localStorage.setItem("dynamiHasTouched", "1");
+    } catch {}
+
+    // Notify parent
+    try { onConfirm && onConfirm(merged); } catch {}
+
+    // Also notify ExerciseResults listeners (fallback path)
+    try {
+      window.dispatchEvent(new CustomEvent('dynami:selected:replace', { detail: { items: merged } }));
+    } catch {}
+
+    // Reset local UI state
+    setQ("");
+    setSelectedIds(new Set());
   }
 
   return (
@@ -110,6 +130,16 @@ export default function ChercherExo({
           placeholder="Rechercher par nom…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              // Toggle the first non-preselected filtered item
+              const first = filtered.find(ex => !preSet.has(idOf(ex)));
+              if (first) {
+                e.preventDefault();
+                toggle(idOf(first));
+              }
+            }
+          }}
           className={styles.search}
         />
         <div className={styles.selects}>
@@ -143,7 +173,7 @@ export default function ChercherExo({
       {!loading && !error && (
         <ul className={styles.list}>
           {filtered.map((ex) => {
-            const id = ex.id ?? ex._id ?? ex.slug ?? canon(ex.name || ex.title);
+            const id = idOf(ex);
             const isPre = preSet.has(id);
             const checked = selectedIds.has(id);
             const subtitle = [

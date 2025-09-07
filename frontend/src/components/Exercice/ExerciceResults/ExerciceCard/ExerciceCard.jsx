@@ -1,6 +1,15 @@
 import React, { useState, useId } from "react";
 import styles from "./ExerciceCard.module.css";
 
+const canon = (s) =>
+  String(s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+
+const idOf = (ex) => (ex?.id ?? ex?._id ?? ex?.slug ?? canon(ex?.name || ex?.title));
+
 export default function ExerciceCard({ exo, onAdd, isAdded = false, draggable = false, onDragStart, onDragOver, onDrop, onRemove }) {
   const [open, setOpen] = useState(false);
   const dialogId = useId();
@@ -51,7 +60,7 @@ export default function ExerciceCard({ exo, onAdd, isAdded = false, draggable = 
           <button
             type="button"
             className={styles.deleteBtn}
-            onClick={(e) => { e.stopPropagation(); onRemove(exo); }}
+            onClick={(e) => { e.stopPropagation(); onRemove(idOf(exo)); }}
             aria-label="Supprimer cet exercice"
             title="Supprimer"
           >
