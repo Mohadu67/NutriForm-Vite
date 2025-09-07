@@ -1,6 +1,6 @@
 
 
-import { idOf } from "./diOf";
+import { idOf } from "./idOf";
 
 export const sameIds = (a = [], b = []) => {
   if (!Array.isArray(a) || !Array.isArray(b)) return false;

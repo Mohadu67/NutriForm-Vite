@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
-import { idOf } from "../Shared/diOf";
+import { idOf } from "../Shared/idOf.js";
 import { mergeById } from "../Shared/selectionUtils";
 import CardChoice, { TYPE_CARDS, EQUIP_CARDS, MUSCLE_CARDS } from "./CardChoice/CardChoice.jsx";
 import { useStepSubtitle, buildFunnyMessage } from "../subtitlePools";

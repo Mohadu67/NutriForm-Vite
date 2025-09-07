@@ -9,7 +9,7 @@ import SuivieSeance from "../TableauBord/SuivieSeance.jsx";
 import Stat from "../TableauBord/stats/Stat.jsx";
 import { saveSession } from "../TableauBord/sessionApi.js";
 import ConseilJour from "./ConseilJour.jsx";
-import { idOf } from "../Shared/diOf";
+import { idOf } from "../Shared/idOf.js";
 
 export default function FormExo({ user }) {
   const [sessionName, setSessionName] = useState(() => {

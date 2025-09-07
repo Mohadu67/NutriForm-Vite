@@ -3,7 +3,7 @@ import ExerciceCard from "./ExerciceCard/ExerciceCard.jsx";
 import { rechercherExercices } from "../DynamiChoice/MoteurRecherche/MoteurRecherche.jsx";
 import Button from "../../BoutonAction/BoutonAction.jsx";
 import styles from "./ExerciseResults.module.css";
-import { idOf } from "../Shared/diOf";
+import { idOf } from "../Shared/idOf.js";
 import { sameIds, mergeById } from "../Shared/selectionUtils";
 
 export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [], onChange, onResultsChange, onSearch, initialSelected }) {
