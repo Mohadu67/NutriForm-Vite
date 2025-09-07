@@ -1,61 +1,46 @@
-
-
 import { useState } from "react";
-import { saveSession, buildSessionFromEntry } from "../../../TableauBord/sessionApi.js";
+import { request } from "../../../TableauBord/sessionApi";
 
 export default function useSaveSession() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  async function save({ exo, data, mode, sessionName }) {
+  /**
+   * Sauvegarde une séance complète (une seule requête) avec toutes les entrées.
+   * @param {Object} params
+   * @param {Array} params.entries - Tableau d'entrées (exercices) déjà mappées
+   * @param {number} params.durationSec - Durée totale en secondes
+   * @param {string} params.label - Nom/label de la séance
+   * @param {Object} params.summary - Résumé côté client de la séance
+   */
+  async function save({ entries = [], durationSec = 0, label = "", summary = null } = {}) {
     setError(null);
     setSaving(true);
     try {
-      const isCardio = mode === "cardio";
-      const isPdc = mode === "pdc";
+      const now = Date.now();
+      const durSec = Math.max(0, Number(durationSec) || 0);
+      const startedAt = new Date(now - durSec * 1000).toISOString();
+      const endedAt = new Date(now).toISOString();
+      const durationMinutes = Math.round(durSec / 60);
 
-      const entry = {
-        exerciseName: exo?.name || "Exercice",
-        type: isCardio ? "cardio" : isPdc ? "poids_du_corps" : "muscu",
-        order: 1,
-        notes: data?.notes || "",
-        sets: [],
+      const body = {
+        entries,
+        label: label || `Séance – ${new Date().toLocaleDateString()}`,
+        startedAt,
+        endedAt,
+        durationMinutes,
       };
 
-      if (isCardio) {
-        const arr = Array.isArray(data?.cardioSets) ? data.cardioSets : [];
-        if (!arr.length) throw new Error("Ajoute au moins une série cardio.");
-        entry.sets = arr.map((s, i) => ({
-          setNumber: i + 1,
-          durationMin: numberOrZero(s?.durationMin),
-          durationSec: numberOrZero(s?.durationSec),
-          intensity: numberOrDefault(s?.intensity, 5),
-        }));
-      } else if (isPdc) {
-        const arr = Array.isArray(data?.sets) ? data.sets : [];
-        if (!arr.length) throw new Error("Ajoute au moins une série.");
-        entry.sets = arr.map((s, i) => ({
-          setNumber: i + 1,
-          reps: numberOrZero(s?.reps),
-          restSec: numberOrZero(s?.restSec),
-        }));
-      } else {
-        const arr = Array.isArray(data?.sets) ? data.sets : [];
-        if (!arr.length) throw new Error("Ajoute au moins une série.");
-        entry.sets = arr.map((s, i) => ({
-          setNumber: i + 1,
-          weightKg: numberOrZero(s?.weight),
-          reps: numberOrZero(s?.reps),
-          restSec: numberOrZero(s?.restSec),
-        }));
+      if (summary !== null) {
+        body.summary = summary;
       }
 
-      const payload = buildSessionFromEntry(entry, {
-        name: sessionName || `Séance – ${new Date().toLocaleDateString()}`,
+      const data = await request('/api/sessions', {
+        method: 'POST',
+        body,
       });
 
-      await saveSession(payload);
-      return { ok: true };
+      return { ok: true, data };
     } catch (e) {
       setError(e?.message || String(e));
       return { ok: false, error: e };
@@ -65,16 +50,4 @@ export default function useSaveSession() {
   }
 
   return { saving, error, save };
-}
-
-function numberOrZero(v) {
-  if (v === "" || v == null) return 0;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function numberOrDefault(v, d) {
-  if (v === "" || v == null) return d;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : d;
 }

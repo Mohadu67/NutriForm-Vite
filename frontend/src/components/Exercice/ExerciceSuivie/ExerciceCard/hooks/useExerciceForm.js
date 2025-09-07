@@ -11,6 +11,10 @@ export function isCardioExo(exo) {
 export default function useExerciceForm(exo, value, onChange) {
   const detected = isCardioExo(exo) ? "cardio" : "muscu";
   const [mode, setMode] = useState(detected);
+  // Resync default mode when the exercise changes (avoid stale mode between exercises)
+  useEffect(() => {
+    setMode(isCardioExo(exo) ? "cardio" : "muscu");
+  }, [exo]);
 
   const initial = useMemo(() => {
     const base = value || {};
@@ -63,7 +67,10 @@ export default function useExerciceForm(exo, value, onChange) {
 
   function emit(next) {
     setData(next);
-    if (typeof onChange === "function") onChange(exo?.id || exo?.name, next);
+    if (typeof onChange === "function") {
+      const key = exo?.id ?? exo?.slug ?? exo?.name ?? exo?.label ?? undefined;
+      onChange(key, next);
+    }
   }
 
   function addSet() {

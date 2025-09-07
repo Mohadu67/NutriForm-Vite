@@ -3,6 +3,15 @@ const WorkoutSession = require('../models/WorkoutSession');
 const { deriveFromHistory, deriveFromSessions } = require('../services/stats.service');
 const { computeSessionFromEntries } = require('../services/calorie.service');
 
+function numOrNull(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function pickWeight(meta = {}) {
+  return numOrNull(meta.poids ?? meta.weightKg ?? meta.weight);
+}
+
 async function addHistory(req, res) {
   try {
     if (process.env.NODE_ENV !== 'production') {
@@ -78,8 +87,8 @@ async function getUserSummary(req, res) {
       .limit(500)
       .lean();
 
-    let lastWeight = null;
-    let imc = null;
+    const derived = deriveFromHistory(history, weekAgo);
+
     let calories = null;
     let lastSession = null;
     let lastWorkoutDuration = null;
@@ -87,8 +96,8 @@ async function getUserSummary(req, res) {
     let caloriesBurnedWeek = 0;
     let totalSessions = 0;
     let streakDays = 0;
-    let favoriteMuscleGroup = null;
     let nextGoal = null;
+    let lastSessionSummary = null;
 
     let workoutsCount7dSess = 0;
     let calories7dSess = 0;
@@ -96,25 +105,15 @@ async function getUserSummary(req, res) {
     let fromSessions = null;
 
     const workoutDaysSet = new Set();
-    const muscleCount = new Map();
 
     for (const h of history) {
       const meta = h.meta || {};
 
-      if (lastWeight == null) {
-        if (typeof meta.poids === 'number') lastWeight = meta.poids;
-        else if (typeof meta.weightKg === 'number') lastWeight = meta.weightKg;
-      }
-      if (imc == null && typeof meta.bmi === 'number') imc = meta.bmi;
       if (calories == null) {
         if (typeof meta.calorie === 'number') calories = meta.calorie;
         else if (typeof meta.dailyCalories === 'number') calories = meta.dailyCalories;
-      }
-
-      if (lastWeight == null && typeof meta.weight === 'number') lastWeight = meta.weight;
-      if (imc == null && (typeof meta.imc === 'number' || typeof meta.imc === 'string')) imc = meta.imc;
-      if (calories == null && (typeof meta.caloriesDaily === 'number' || typeof meta.calories === 'number')) {
-        calories = meta.caloriesDaily ?? meta.calories;
+        else if (typeof meta.caloriesDaily === 'number') calories = meta.caloriesDaily;
+        else if (typeof meta.calories === 'number') calories = meta.calories;
       }
 
       const isWorkout =
@@ -140,7 +139,7 @@ async function getUserSummary(req, res) {
         }
         totalSessions += 1;
 
-        const d = new Date(h.createdAt);
+        const d = h?.createdAt ? new Date(h.createdAt) : (h?.date ? new Date(h.date) : new Date());
         const key = d.toISOString().slice(0, 10);
         workoutDaysSet.add(key);
 
@@ -148,14 +147,6 @@ async function getUserSummary(req, res) {
           if (typeof meta.caloriesBurned === 'number') caloriesBurnedWeek += meta.caloriesBurned;
           else if (typeof meta.kcalBurned === 'number') caloriesBurnedWeek += meta.kcalBurned;
           else if (typeof meta.kcal === 'number') caloriesBurnedWeek += meta.kcal;
-        }
-
-        if (Array.isArray(meta.muscles)) {
-          for (const m of meta.muscles) {
-            const k = String(m).trim();
-            if (!k) continue;
-            muscleCount.set(k, (muscleCount.get(k) || 0) + 1);
-          }
         }
       }
 
@@ -170,7 +161,10 @@ async function getUserSummary(req, res) {
         if (Array.isArray(sessions) && sessions.length) {
           totalSessions = Math.max(totalSessions, sessions.length);
 
-          const weightForCalc = lastWeight ?? (history.find(h => (h.meta?.poids ?? h.meta?.weightKg ?? h.meta?.weight))?.meta?.poids || null);
+          const weightForCalc = derived.latestWeight ?? (() => {
+            const hw = history.find(h => pickWeight(h.meta) != null);
+            return hw ? pickWeight(hw.meta) : null;
+          })();
           const enriched = sessions.map((s) => {
             const hasKcal = typeof s.caloriesBurned === 'number' || typeof s.kcal === 'number';
             const hasDur = typeof s.durationMinutes === 'number' || typeof s.duration === 'number' || (s.endedAt && s.startedAt);
@@ -184,8 +178,14 @@ async function getUserSummary(req, res) {
           });
 
           const s0 = enriched[0];
+          if (s0 && s0.clientSummary) {
+            lastSessionSummary = s0.clientSummary;
+          }
           let dur0 = s0?.durationMinutes ?? s0?.duration ?? (s0?.endedAt && s0?.startedAt ? Math.round((new Date(s0.endedAt) - new Date(s0.startedAt)) / 60000) : null);
           if (typeof dur0 === 'number' && dur0 < 0) dur0 = null; // clamp valeurs négatives
+          if (lastWorkoutDuration == null && dur0 != null) {
+            lastWorkoutDuration = typeof dur0 === 'number' ? `${dur0} min` : String(dur0);
+          }
           if (!lastSession) lastSession = s0?.name || s0?.label || 'Séance';
           if (lastCaloriesBurned == null && typeof s0?.caloriesBurned === 'number') lastCaloriesBurned = s0.caloriesBurned;
 
@@ -215,39 +215,48 @@ async function getUserSummary(req, res) {
       }
     }
 
-    if (muscleCount.size > 0) {
-      favoriteMuscleGroup = Array.from(muscleCount.entries()).sort((a, b) => b[1] - a[1])[0][0];
+    if (calories == null && derived.dailyCalories != null) {
+      calories = derived.dailyCalories;
     }
-
-    const derived = deriveFromHistory(history, weekAgo);
-
-    if (lastCaloriesBurned == null && derived.lastCaloriesBurnedDerived != null) {
-      lastCaloriesBurned = derived.lastCaloriesBurnedDerived;
+    if (lastCaloriesBurned == null) {
+      lastCaloriesBurned = derived.lastCaloriesBurned ?? derived.lastCaloriesBurnedDerived ?? null;
     }
+    caloriesBurnedWeek = Math.max(caloriesBurnedWeek, derived.caloriesBurnedWeek ?? 0);
 
     return res.json({
-
-      avgWorkoutDurationMin: null,
+      avgWorkoutDurationMin: derived.avgWorkoutDurationMin ?? null,
       avgCaloriesPerWorkout: derived.avgCaloriesPerWorkout ?? null,
       workoutsCount7d: workoutsCount7dSess || (derived.workoutsCount7d ?? 0),
       calories7d: calories7dSess || (derived.calories7d ?? 0),
+      avgDailyCalories7d: derived.avgDailyCalories7d ?? null,
+      avgCaloriesPerWorkout7d: derived.avgCaloriesPerWorkout7d ?? null,
 
-      lastWeight,
-      imc,
+      lastWeight: (derived.previousWeight != null ? derived.previousWeight : (derived.latestWeight ?? null)),
+      imc: derived.imc ?? null,
       calories,
       lastSession: lastSession || (fromSessions ? fromSessions.lastSessionName : null),
-      lastWorkoutDuration: null,
-      lastCaloriesBurned,
+      lastWorkoutDuration: lastWorkoutDuration ?? null,
+      lastCaloriesBurned: lastCaloriesBurned ?? derived.lastCaloriesBurnedDerived ?? null,
+      lastPlannedExercises: lastSessionSummary?.plannedExercises ?? null,
+      lastCompletedExercises: lastSessionSummary?.completedExercises ?? null,
+      lastSkippedExercises: lastSessionSummary?.skippedExercises ?? null,
+      lastExercisesList: Array.isArray(lastSessionSummary?.exercises) ? lastSessionSummary.exercises : [],
       caloriesBurnedWeek,
       totalSessions: totalSessions || (fromSessions ? fromSessions.totalSessions : 0),
       streakDays,
-      favoriteMuscleGroup,
+      favoriteMuscleGroup: derived.favoriteMuscleGroup || (fromSessions ? fromSessions.favoriteMuscleGroupFromSessions : null),
+      topMuscles7d: derived.topMuscles7d || (fromSessions ? fromSessions.topMuscles7dFromSessions : []),
+      muscleCounts7d: derived.muscleCounts7d || (fromSessions ? fromSessions.muscleCounts7dFromSessions : {}),
       nextGoal,
 
-      initialWeight: derived.initialWeight,
-      latestWeight: derived.latestWeight,
-      weightChange: derived.weightChange,
-      lastWorkoutAt: derived.lastWorkoutAt,
+      variation: derived.variation ?? derived.weightChange ?? null,
+      lastDate: derived.lastDate ?? null,
+
+      initialWeight: derived.initialWeight ?? null,
+      latestWeight: derived.latestWeight ?? null,
+      previousWeight: derived.previousWeight ?? null,
+      weightChange: derived.weightChange ?? null,
+      lastWorkoutAt: derived.lastWorkoutAt ?? null,
     });
   } catch (error) {
     console.error('Erreur getUserSummary:', error);

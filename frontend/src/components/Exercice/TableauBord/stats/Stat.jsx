@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import styles from "./Stat.module.css";
 import { computeSessionStats } from "./computeSessionStats";
 
-export default function Stat({ lastSession, items = [], bodyMassKg, titleOverride }) {
+export default function Stat({ lastSession, items = [], bodyMassKg, titleOverride, serverData }) {
   const computed = useMemo(() => {
     const fallback = {
       percentDone: 0,
@@ -16,12 +16,12 @@ export default function Stat({ lastSession, items = [], bodyMassKg, titleOverrid
       delta: null,
     };
     try {
-      const res = computeSessionStats(lastSession, items || [], { bodyMassKg });
+      const res = computeSessionStats(lastSession, items || [], { bodyMassKg, serverData });
       return { ...fallback, ...(res || {}) };
     } catch (e) {
       return fallback;
     }
-  }, [lastSession, items, bodyMassKg]);
+  }, [lastSession, items, bodyMassKg, serverData]);
 
   const cardioPct = clampPct(computed.cardioPct);
   const muscuPct = clampPct(computed.muscuPct);
@@ -43,7 +43,17 @@ export default function Stat({ lastSession, items = [], bodyMassKg, titleOverrid
         </div>
         <div className={styles.item}>
           <div className={`${styles.icon} ${styles.iconTarget}`}>🎯</div>
-          <div className={styles.value}>{computed.exercisesDone}/{computed.totalExercises}</div>
+          <div className={styles.value}>{(() => {
+            const a = Number(serverData?.lastCompletedExercises);
+            const b = Number(serverData?.lastPlannedExercises);
+            if (Number.isFinite(a) && Number.isFinite(b) && b > 0) return `${a}/${b}`;
+            const list = Array.isArray(serverData?.lastExercisesList) ? serverData.lastExercisesList : null;
+            if (list && list.length) {
+              const done = list.filter(x => x && x.done).length;
+              return `${done}/${list.length}`;
+            }
+            return `${computed.exercisesDone}/${computed.totalExercises}`;
+          })()}</div>
           <div className={styles.label}>Exercices</div>
         </div>
         <div className={styles.item}>

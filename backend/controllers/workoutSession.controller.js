@@ -81,10 +81,13 @@ async function createSession(req, res) {
 
     const {
       name = "",
+      label = "",
       startedAt = new Date().toISOString(),
       endedAt = null,
       notes = "",
-      entries = []
+      entries = [],
+      durationMinutes: durationMinutesFromBody = null,
+      clientSummary = (req.body && req.body.summary) ? req.body.summary : null
     } = req.body || {};
 
     if (!Array.isArray(entries) || entries.length === 0) {
@@ -104,6 +107,28 @@ async function createSession(req, res) {
       }
     }
 
+    // If cardio sets have no duration, spread the overall session duration across them so calories aren't 0
+    try {
+      const totalMin = Number(durationMinutesFromBody ?? 0) || 0;
+      if (totalMin > 0) {
+        const cardioWithoutDur = [];
+        for (const e of normalized) {
+          if (e?.type === 'cardio' && Array.isArray(e.sets)) {
+            for (const s of e.sets) {
+              const hasDur = (s.durationMin != null && Number.isFinite(Number(s.durationMin))) || (s.durationSec != null && Number.isFinite(Number(s.durationSec)));
+              if (!hasDur) cardioWithoutDur.push(s);
+            }
+          }
+        }
+        if (cardioWithoutDur.length) {
+          const perSet = Math.max(1, Math.floor((totalMin * 60) / cardioWithoutDur.length));
+          for (const s of cardioWithoutDur) {
+            if (s.durationSec == null && s.durationMin == null) s.durationSec = perSet;
+          }
+        }
+      }
+    } catch (_) { /* ignore */ }
+
     const userWeight = await getLatestWeight(userId);
     const derived = computeSessionFromEntries(normalized, userWeight);
 
@@ -112,13 +137,14 @@ async function createSession(req, res) {
 
     const doc = await WorkoutSession.create({
       userId: new mongoose.Types.ObjectId(userId),
-      name,
+      name: (name || label),
       startedAt: _startedAt,
       endedAt: _endedAt,
       durationMinutes: derived.durationMinutes ?? undefined,
       caloriesBurned: derived.caloriesBurned ?? undefined,
       notes,
-      entries: normalized
+      entries: normalized,
+      clientSummary
     });
 
     return res.status(201).json(doc);
