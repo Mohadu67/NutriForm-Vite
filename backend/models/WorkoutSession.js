@@ -43,7 +43,18 @@ const WorkoutSessionSchema = new Schema({
   startedAt: { type: Date },
   endedAt: { type: Date },
   notes: { type: String },
-  entries: [EntrySchema]
+  entries: [EntrySchema],
+  clientSummary: {
+    plannedExercises: { type: Number },
+    completedExercises: { type: Number },
+    skippedExercises: { type: Number },
+    exercises: [
+      new Schema({
+        exerciseName: { type: String },
+        done: { type: Boolean }
+      }, { _id: false })
+    ]
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model("WorkoutSession", WorkoutSessionSchema);

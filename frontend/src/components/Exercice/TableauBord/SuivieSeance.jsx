@@ -29,43 +29,9 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
     };
   }, []);
 
-  const data = useMemo(() => ({ ...(user || {}), ...(serverData || {}) }), [user, serverData]);
+  const data = useMemo(() => (serverData || {}), [serverData]);
 
-  const favoriteMuscleGroup = useMemo(() => {
-    const list = Array.isArray(sessions) ? sessions
-      : (Array.isArray(serverData?.sessions) ? serverData.sessions : []);
-    if (!list.length) return null;
-
-    const scoreByGroup = new Map();
-    for (const sess of list) {
-      const entries = Array.isArray(sess?.entries) ? sess.entries : [];
-      for (const e of entries) {
-        const group = (e?.muscleGroup || e?.group || e?.muscle || e?.target || e?.primaryMuscle || e?.data?.muscleGroup || e?.data?.group || "").toString().trim();
-        if (!group) continue;
-        const sets = Array.isArray(e?.sets) ? e.sets : [];
-        let score = 0;
-        for (const s of sets) {
-          const reps = Number(s?.reps ?? s?.rep);
-          const w = Number(s?.weightKg ?? s?.weight ?? s?.kg ?? s?.poids);
-          if (Number.isFinite(w) && Number.isFinite(reps)) score += Math.max(0, w) * Math.max(0, reps);
-          else if (Number.isFinite(reps)) score += Math.max(0, reps);
-          else score += 1; // fallback: compte le set
-        }
-        scoreByGroup.set(group, (scoreByGroup.get(group) || 0) + score);
-      }
-    }
-    if (!scoreByGroup.size) return null;
-    let best = null, bestScore = -1;
-    for (const [g, sc] of scoreByGroup.entries()) {
-      if (sc > bestScore) { best = g; bestScore = sc; }
-    }
-    return best;
-  }, [sessions, serverData]);
-
-  const combinedData = useMemo(() => ({
-    ...data,
-    ...(favoriteMuscleGroup ? { favoriteMuscleGroup } : {}),
-  }), [data, favoriteMuscleGroup]);
+  const combinedData = data;
 
   function extractCompletedSessions(src) {
     const arrays = [];
@@ -134,13 +100,13 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
     if (!s) return null;
     const itemsSrc = Array.isArray(s?.entries) ? s.entries : (Array.isArray(s?.items) ? s.items : []);
     try {
-      const st = computeSessionStats(s, itemsSrc, {});
+      const st = computeSessionStats(s, itemsSrc, { serverData });
       const kcal = Number(st?.calories);
       return Number.isFinite(kcal) && kcal > 0 ? Math.round(kcal) : null;
     } catch {
       return null;
     }
-  }, [primarySession]);
+  }, [primarySession, serverData]);
 
   const avgCaloriesPerSession = useMemo(() => {
     const list = Array.isArray(sessions) ? sessions
@@ -149,7 +115,7 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
     const vals = list.map((s) => {
       const itemsSrc = Array.isArray(s?.entries) ? s.entries : (Array.isArray(s?.items) ? s.items : []);
       try {
-        const st = computeSessionStats(s, itemsSrc, {});
+        const st = computeSessionStats(s, itemsSrc, { serverData });
         const kcal = Number(st?.calories);
         return Number.isFinite(kcal) ? kcal : 0;
       } catch { return 0; }
@@ -180,6 +146,8 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
       { key: "avgCaloriesPerWorkout", label: "Calories moy./séance", fmt: (v) => `${v} kcal` },
       { key: "workoutsCount7d", label: "Séances sur 7 jours" },
       { key: "calories7d", label: "Calories totales sur 7 jours", fmt: (v) => `${v} kcal` },
+      { key: "avgDailyCalories7d", label: "Apport moyen (7 jours)", fmt: (v) => `${v} kcal` },
+      { key: "avgCaloriesPerWorkout7d", label: "Calories moy./séance (7 jours)", fmt: (v) => `${v} kcal` },
     ];
 
     return defs.map(({ key, label, fmt }) => {
@@ -202,6 +170,8 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
       initialWeight: (v) => `${v} kg`,
       latestWeight: (v) => `${v} kg`,
       weightChange: (v) => `${v > 0 ? '+' : ''}${v} kg`,
+      avgDailyCalories7d: (v) => `${v} kcal`,
+      avgCaloriesPerWorkout7d: (v) => `${v} kcal`,
     };
     const raw = combinedData && Object.prototype.hasOwnProperty.call(combinedData, key) ? combinedData[key] : undefined;
     const has = raw !== null && raw !== undefined && String(raw).trim() !== "";
@@ -245,7 +215,7 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
             <div className={styles.divider} />
             <div className={styles.row}>
               <span className={styles.statLabel}>Variation de poids</span>
-              <span className={styles.rowValue}>{get('weightChange')}</span>
+              <span className={styles.rowValue}>{getEither('weightChange','variation')}</span>
             </div>
           </div>
         </div>
@@ -254,17 +224,23 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
           <div className={styles.rows}>
             <div className={styles.row}>
               <span className={styles.statLabel}>Calories journalières</span>
-              <span className={styles.rowValue}>{get('calories')}</span>
+              <span className={styles.rowValue}>{getEither('calories','dailyCalories')}</span>
             </div>
             <div className={styles.divider} />
             <div className={styles.row}>
               <span className={styles.statLabel}>Calories moy./séance</span>
-              <span className={styles.rowValue}>{avgCaloriesPerSession != null ? `${avgCaloriesPerSession} kcal` : 'Aucune donnée'}</span>
+              <span className={styles.rowValue}>{getEither('avgCaloriesPerWorkout7d','avgCaloriesPerWorkout')}</span>
             </div>
             <div className={styles.divider} />
             <div className={styles.row}>
               <span className={styles.statLabel}>Calories brûlées (dernière séance)</span>
-              <span className={styles.rowValue}>{lastSessionCalories != null ? `${lastSessionCalories} kcal` : 'Aucune donnée'}</span>
+              <span className={styles.rowValue}>
+                {(() => {
+                  const v = get('lastCaloriesBurned');
+                  if (v !== 'Aucune donnée') return v;
+                  return lastSessionCalories != null ? `${lastSessionCalories} kcal` : 'Aucune donnée';
+                })()}
+              </span>
             </div>
           </div>
         </div>
@@ -274,6 +250,23 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
             <div className={styles.row}>
               <span className={styles.statLabel}>Dernière séance</span>
               <span className={styles.rowValue}>{get('lastSession')}</span>
+            </div>
+            <div className={styles.divider} />
+            <div className={styles.row}>
+              <span className={styles.statLabel}>Exercices (dernière séance)</span>
+              <span className={styles.rowValue}>
+                {(() => {
+                  const a = Number(combinedData?.lastCompletedExercises);
+                  const b = Number(combinedData?.lastPlannedExercises);
+                  if (Number.isFinite(a) && Number.isFinite(b) && b > 0) return `${a} / ${b}`;
+                  const list = Array.isArray(combinedData?.lastExercisesList) ? combinedData.lastExercisesList : null;
+                  if (list && list.length) {
+                    const done = list.filter(x => x && x.done).length;
+                    return `${done} / ${list.length}`;
+                  }
+                  return 'Aucune donnée';
+                })()}
+              </span>
             </div>
             <div className={styles.divider} />
             <div className={styles.row}>
@@ -306,6 +299,8 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
             'Séances sur 7 jours',
             'Total séances complétées',
             'Série de jours actifs',
+            'Apport moyen (7 jours)',
+            'Calories moy./séance (7 jours)',
           ].includes(label))
           .map(([label, value]) => (
             <div key={label} className={styles.statCard}>
@@ -324,7 +319,7 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
                 : (Array.isArray(s?.items) ? s.items : []));
           return (
             <div className={styles.statsSlide} key={it.key}>
-              <Stat lastSession={s} items={items} titleOverride={it.title} />
+              <Stat lastSession={s} items={items} titleOverride={it.title} serverData={serverData} />
             </div>
           );
         })}

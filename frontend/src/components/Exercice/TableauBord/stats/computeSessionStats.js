@@ -19,13 +19,11 @@ export function computeSessionStats(lastSession = null, items = [], options = {}
     });
   }
 
-  // 2) Totals
   const totalExercises = entries.length;
   const doneEntries = entries.filter(e => hasAnySet(e.sets));
   const exercisesDone = doneEntries.length;
   const percentDone = totalExercises ? Math.round((exercisesDone / totalExercises) * 100) : 0;
 
-  // 3) Volume (muscu et poids du corps)
   let volumeKg = 0;
   for (const e of doneEntries) {
     if (e.type === 'cardio') continue;
@@ -37,9 +35,7 @@ export function computeSessionStats(lastSession = null, items = [], options = {}
     }
   }
 
-  // 4) Duration estimation if missing
   if (!durationSec) {
-    // naive but practical: 120s per muscu set, 300s per cardio set
     let sec = 0;
     for (const e of doneEntries) {
       if (e.type === 'cardio') {
@@ -51,9 +47,6 @@ export function computeSessionStats(lastSession = null, items = [], options = {}
     durationSec = sec;
   }
 
-  // 5) Calories estimation (refined)
-  // Cardio: MET-based by intensity and duration
-  // Muscu: weight*reps cost scaled by intensity, with fallback per-set cost
   if (!calories) {
     let kcal = 0;
 
@@ -69,7 +62,6 @@ export function computeSessionStats(lastSession = null, items = [], options = {}
           if (totalMin > 0) {
             const met = intensityToMET(s.intensity || s.level || s.pace);
             const mass = resolveBodyMassKg(lastSession, options, bodyMassKg);
-            // kcal = MET * 3.5 * mass(kg) / 200 * minutes
             kcal += (met * 3.5 * mass / 200) * totalMin;
           }
         }
@@ -79,27 +71,23 @@ export function computeSessionStats(lastSession = null, items = [], options = {}
           const r = Math.max(1, toNumber(s.reps ?? s.rep, 0));
           const mult = intensityMultiplier(s.intensity || s.tempo || s.rpe);
           if (w && r) {
-            // Empirical: 0.1 kcal per (kg*rep), scaled by intensity
             kcal += (w * r * 0.10) * mult;
           } else {
-            // Bodyweight or unspecified load: scale baseline with body mass
             const mass = resolveBodyMassKg(lastSession, options, bodyMassKg);
-            kcal += (mass / 80) * 5 * mult; // 5 kcal baseline scaled around 80 kg
+            kcal += (mass / 80) * 5 * mult;
           }
         }
       }
     }
 
-    calories = Math.round(kcal);
+    calories = Math.max(0, Math.round(kcal));
   }
 
-  // 6) Split cardio / muscu on performed exercises only
   const cardioCount = entries.filter(e => e.type === 'cardio').length;
   const exercisesCount = totalExercises;
   const cardioPct = exercisesCount ? Math.round((cardioCount / exercisesCount) * 100) : 0;
   const muscuPct = exercisesCount ? 100 - cardioPct : 0;
 
-  // 7) Delta vs previous if provided
   let delta = null;
   if (previous && typeof previous === 'object') {
     const prevDuration = toNumber(previous.durationSec, 0);
@@ -132,9 +120,18 @@ function resolveBodyMassKg(lastSession, options = {}, fallback = 85) {
     return null;
   };
   const raw = pick(
+    options.serverData?.latestWeight,
+    options.serverData?.lastWeight,
+    options.serverData?.previousWeight,
+    options.serverData?.initialWeight,
+    options.backendWeightKg,
+    options.latestWeightKg,
+    options.lastWeightKg,
+
     options.bodyMassKg,
     options.weightKg,
     options.user?.weightKg,
+
     lastSession?.bodyMassKg,
     lastSession?.weightKg,
     lastSession?.user?.weightKg,
@@ -144,7 +141,6 @@ function resolveBodyMassKg(lastSession, options = {}, fallback = 85) {
   return Math.min(250, Math.max(30, n));
 }
 
-// ----------------- helpers -----------------
 
 function hasAnySet(sets) {
   if (!Array.isArray(sets) || sets.length === 0) return false;
@@ -164,7 +160,12 @@ function sumDuration(sets, fallbackPerSetSec) {
   let sum = 0;
   for (const s of sets || []) {
     const sec = toNumber(s.durationSec, null);
-    if (sec != null) sum += sec; else sum += fallbackPerSetSec;
+    const min = toNumber(s.durationMin ?? s.minutes, null);
+    if (sec != null || min != null) {
+      sum += (sec || 0) + ((min || 0) * 60);
+    } else {
+      sum += fallbackPerSetSec;
+    }
   }
   return sum;
 }

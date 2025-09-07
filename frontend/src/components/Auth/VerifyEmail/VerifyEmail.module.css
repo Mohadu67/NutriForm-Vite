@@ -45,9 +45,21 @@
 .title { font-family: var(--v-font-title); color: var(--v-text); font-size: clamp(1.15rem, 2.8vw, 1.65rem); margin: .35rem 0 .25rem; }
 .subtitle { display: none; }
 
-.titleSuccess { composes: title; color: #1a7f5a; }
-.titleError { composes: title; color: #c1463d; }
-.note { composes: subtitle; }
+.titleSuccess {
+  font-family: var(--v-font-title);
+  color: #1a7f5a;
+  font-size: clamp(1.15rem, 2.8vw, 1.65rem);
+  margin: .35rem 0 .25rem;
+}
+.titleError {
+  font-family: var(--v-font-title);
+  color: #c1463d;
+  font-size: clamp(1.15rem, 2.8vw, 1.65rem);
+  margin: .35rem 0 .25rem;
+}
+.note {
+  display: none;
+}
 
 .actions { margin-top: 1rem; display: flex; justify-content: center; gap: .75rem; flex-wrap: wrap; }
 .primaryBtn, .secondaryBtn {
