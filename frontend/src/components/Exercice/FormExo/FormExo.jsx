@@ -82,10 +82,37 @@ export default function FormExo({ user }) {
 
         <div className={styles.summaryActions}>
           <button className={styles.BtnRestart} type="button" onClick={() => {
+            // Set restart flag BEFORE switching back to the builder so DynamiChoice picks it up on mount
+            try { localStorage.setItem("forceDynamiStart", "1"); } catch {}
+            // UI and local state resets
             setShowSummary(false);
+            setSessionName("");
+            setSelectedExercises([]);
+            setSearchDraft([]);
+            setSearchCb(null);
+            setLastItems([]);
+            setLastStats(null);
+            // Clear persisted selections and session-related keys
+            try {
+              const KEYS = [
+                "dynamiSelected",
+                "dynamiHasTouched",
+                "formSelectedExercises",
+                "formCurrentStep",
+                "formMode",
+                "formSessionName",
+                "suivieStartedAt",
+                "SuivieExoDraft",
+                "suivie_exo_draft",
+                "DRAFT_KEY"
+              ];
+              KEYS.forEach(k => localStorage.removeItem(k));
+            } catch {}
+            // Now switch back to the builder at step 0
             setMode("builder");
             setCurrentStep(0);
-            setSelectedExercises([]);
+            // Visual comfort: scroll to top
+            try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch {}
           }}>
             🔄 Recommencer
           </button>

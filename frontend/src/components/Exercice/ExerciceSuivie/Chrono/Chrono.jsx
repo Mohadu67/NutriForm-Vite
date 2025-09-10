@@ -2,23 +2,14 @@ import { useState, useEffect, useMemo } from "react";
 import { mapItemsToEntries } from "../../TableauBord/sessionApi";
 import styles from "./Chrono.module.css";
 import useSaveSession from "../ExerciceCard/hooks/useSaveSession";
+import useChronoCore from "./useChronoCore";
 
-function Chrono({ label, items = [], onFinish = () => {} }) {
-  const [time, setTime] = useState(0);
-  const [running, setRunning] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-
+function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onStart = null, onFinish = () => {} }) {
   const { save, saving } = useSaveSession();
 
-  useEffect(() => {
-    let interval;
-    if (running) {
-      interval = setInterval(() => {
-        setTime((prev) => prev + 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [running]);
+  const { time, setTime, running, setRunning, showConfirm, setShowConfirm, startTs, setStartTs, stopAndReset, freezeClock } = useChronoCore(startedAt, { resume: resumeFromStartedAt });
+
+  const hasSession = Boolean(startTs || startedAt);
 
   const { totalExercises, doneExercises, calories } = useMemo(() => {
     const safe = Array.isArray(items) ? items : [];
@@ -93,6 +84,9 @@ function Chrono({ label, items = [], onFinish = () => {} }) {
   }, [items, time]);
 
   async function handleConfirmFinish() {
+    // freeze the clock immediately via hook
+    const finalSec = freezeClock(time, startTs);
+
     const safe = Array.isArray(items) ? items : [];
     let entries = mapItemsToEntries(safe);
 
@@ -119,8 +113,10 @@ function Chrono({ label, items = [], onFinish = () => {} }) {
     if (!Array.isArray(entries) || entries.length === 0) {
       console.info('[Chrono] Session not saved: NO_VALID_ENTRIES');
       if (typeof onFinish === 'function') {
-        onFinish({ durationSec: time, savedCount: 0, calories, doneExercises, totalExercises });
+        onFinish({ durationSec: finalSec, savedCount: 0, calories, doneExercises, totalExercises });
       }
+      setShowConfirm(false);
+      stopAndReset();
       return;
     }
 
@@ -145,16 +141,20 @@ function Chrono({ label, items = [], onFinish = () => {} }) {
     })();
 
     try {
-      const res = await save({ entries, durationSec: time, label, summary });
+      const res = await save({ entries, durationSec: finalSec, label, summary });
       const savedCount = res?.ok && !res?.skipped ? 1 : 0;
       if (typeof onFinish === 'function') {
-        onFinish({ durationSec: time, savedCount, calories, doneExercises, totalExercises });
+        onFinish({ durationSec: finalSec, savedCount, calories, doneExercises, totalExercises });
       }
+      setShowConfirm(false);
+      stopAndReset();
     } catch (err) {
       console.error('[Chrono] save failed', err);
       if (typeof onFinish === 'function') {
-        onFinish({ durationSec: time, savedCount: 0, calories, doneExercises, totalExercises });
+        onFinish({ durationSec: finalSec, savedCount: 0, calories, doneExercises, totalExercises });
       }
+      setShowConfirm(false);
+      stopAndReset();
     }
   }
 
@@ -172,9 +172,44 @@ function Chrono({ label, items = [], onFinish = () => {} }) {
             C'est parti pour <span className={styles.highlight}>{label || "ta séance"}</span>
           </h2>
           <div className={styles.actions}>
-            <button className={styles.goBtn} onClick={() => setRunning(true)}>
-              Go for it
-            </button>
+            {(!hasSession) && (
+              <button
+                className={styles.goBtn}
+                onClick={() => {
+                  setTime(0);
+                  if (!startTs) {
+                    const ts = startedAt ? new Date(startedAt).getTime() : Date.now();
+                    const safeTs = Number.isNaN(ts) ? Date.now() : ts;
+                    setStartTs(safeTs);
+                    if (typeof onStart === "function") {
+                      try { onStart(new Date(safeTs).toISOString()); } catch {}
+                    }
+                  }
+                  setRunning(true);
+                }}>
+                Commencer
+              </button>
+            )}
+            {(hasSession && !running) && (
+              <button
+                className={styles.goBtn}
+                onClick={() => {
+                  if (!startTs) {
+                    // Derive a start timestamp from startedAt if present, otherwise from displayed time
+                    const parsed = startedAt ? new Date(startedAt).getTime() : NaN;
+                    const safeTs = Number.isNaN(parsed) ? (Date.now() - (Number(time || 0) * 1000)) : parsed;
+                    setStartTs(safeTs);
+                  }
+                  setRunning(true);
+                }}>
+                Reprendre
+              </button>
+            )}
+            {(hasSession && running) && (
+              <button className={styles.goBtn} disabled>
+                En cours…
+              </button>
+            )}
             <button className={styles.finishBtn} onClick={() => setShowConfirm(true)} disabled={saving} aria-busy={saving}>
               Terminer
             </button>
