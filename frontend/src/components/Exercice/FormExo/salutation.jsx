@@ -1,6 +1,6 @@
 
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
@@ -13,8 +13,9 @@ function getToken() {
   );
 }
 
-export default function Salutation({ className = "" }) {
+export default function Salutation({ className = "", seedKey = "static" }) {
   const [displayName, setDisplayName] = useState("");
+  const phraseRef = useRef("");
 
   useEffect(() => {
 
@@ -56,11 +57,16 @@ export default function Salutation({ className = "" }) {
     displayName ? `Salut ${displayName} 👋, prêt pour une séance ?` : "Salut 👋, prêt pour une séance ?",
     displayName ? `Allez ${displayName} 💪, montre à ces haltères qui est le patron !` : "Allez 💪, montre à ces haltères qui est le patron !",
     displayName ? `${displayName}, aujourd'hui c'est toi le champion 🏆` : "Aujourd'hui c'est toi le champion 🏆",
-    displayName ? `On compte sur toi ${displayName} 🚀` : "On compte sur toi 🚀"
+    displayName ? `Aujourd'hui c'est toi ${displayName} 🚀` : "On compte sur toi 🚀"
   ];
-  const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+
+  useEffect(() => {
+    const pool = Array.isArray(phrases) ? phrases : [];
+    const pick = pool.length ? pool[Math.floor(Math.random() * pool.length)] : "Bienvenue 👋";
+    phraseRef.current = pick;
+  }, [seedKey, displayName]);
 
   return (
-    <h2 className={className}>{randomPhrase}</h2>
+    <h2 className={className}>{phraseRef.current || "Bienvenue 👋"}</h2>
   );
 }
