@@ -4,6 +4,8 @@ import SuivieCard from "./ExerciceCard/SuivieCard.jsx";
 import Chrono from "./Chrono/Chrono.jsx";
 import { idOf } from "../Shared/idOf.js";
 
+const STARTED_KEY = "suivieStartedAt";
+
 
 export default function SuivieExo({ sessionName, exercises = [], onBack, onSearch, onFinish = () => {} }) {
   const label = (sessionName && sessionName.trim()) ? sessionName.trim() : "ta séance";
@@ -26,6 +28,20 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
     return Array.isArray(persisted) ? persisted : [];
   });
   const [touched, setTouched] = useState(false);
+  const [startedAt, setStartedAt] = useState(() => {
+    try {
+      const s = localStorage.getItem(STARTED_KEY);
+      return s && s !== "null" ? s : null;
+    } catch {
+      return null;
+    }
+  });
+  useEffect(() => {
+    try {
+      if (startedAt) localStorage.setItem(STARTED_KEY, startedAt);
+      else localStorage.removeItem(STARTED_KEY);
+    } catch {}
+  }, [startedAt]);
 
   useEffect(() => {
     const hasProps = Array.isArray(exercises) && exercises.length > 0;
@@ -93,6 +109,12 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
         <Chrono
           label={label}
           items={Array.isArray(items) ? items : []}
+          startedAt={startedAt}
+          resumeFromStartedAt={true}
+          onStart={(iso) => {
+            // Persist once when the user actually starts the session
+            setStartedAt(prev => prev || iso);
+          }}
           onFinish={(payload) => {
             const now = new Date().toISOString();
             const snapshot = Array.isArray(items)
@@ -111,6 +133,8 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
             };
             console.log('[SuivieExo] onFinish enriched:', enriched);
             if (typeof onFinish === 'function') onFinish(enriched);
+            // Reset local startedAt for next session
+            setStartedAt(null);
           }}
         />
       </div>
