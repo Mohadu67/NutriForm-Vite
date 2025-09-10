@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export function isCardioExo(exo) {
   const cat = String(exo?.category ?? exo?.type ?? "").toLowerCase();
@@ -6,6 +6,14 @@ export function isCardioExo(exo) {
   if (["muscu", "musculation", "renforcement", "force", "pdc", "poids du corps", "poids_du_corps"].includes(cat)) return false;
   const name = String(exo?.name ?? "").toLowerCase();
   return /(rameur|rower|rowing|tapis|course|elliptique|vélo|velo|bike|cycling|airdyne|skierg|ski-erg)/.test(name);
+}
+
+function isDeepEqual(a, b) {
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
 }
 
 export default function useExerciceForm(exo, value, onChange) {
@@ -45,7 +53,12 @@ export default function useExerciceForm(exo, value, onChange) {
   }, [value, mode]);
 
   const [data, setData] = useState(initial);
-  useEffect(() => { setData(initial); }, [initial]);
+  useEffect(() => {
+    if (!isDeepEqual(data, initial)) {
+      setData(initial);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initial]);
 
   const isCardio = mode === "cardio";
   const isPdc = mode === "pdc";
@@ -65,11 +78,20 @@ export default function useExerciceForm(exo, value, onChange) {
     }
   }, [isCardio]);
 
+  const lastSentRef = useRef(null);
+
   function emit(next) {
-    setData(next);
+    // Avoid unnecessary local state updates
+    if (!isDeepEqual(next, data)) {
+      setData(next);
+    }
+    // Avoid feedback loop if parent returns an equivalent object each render
     if (typeof onChange === "function") {
-      const key = exo?.id ?? exo?.slug ?? exo?.name ?? exo?.label ?? undefined;
-      onChange(key, next);
+      if (!isDeepEqual(lastSentRef.current, next)) {
+        lastSentRef.current = next;
+        const key = exo?.id ?? exo?.slug ?? exo?.name ?? exo?.label ?? undefined;
+        onChange(key, next);
+      }
     }
   }
 

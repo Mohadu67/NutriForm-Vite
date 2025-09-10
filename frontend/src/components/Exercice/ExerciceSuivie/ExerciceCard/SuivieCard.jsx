@@ -1,4 +1,26 @@
-import React, { useState } from "react";
+// Helpers for localStorage persistence of exercise form state
+const STORAGE_NS = "suivie_exo_inputs:";
+function storageKey(exo) {
+  const id = (exo && (exo.id || exo._id || exo.slug || exo.name)) ? String(exo.id || exo._id || exo.slug || exo.name) : "unknown";
+  return `${STORAGE_NS}${id}`;
+}
+function loadSaved(exo) {
+  try {
+    const raw = localStorage.getItem(storageKey(exo));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+function saveSaved(exo, data) {
+  try {
+    localStorage.setItem(storageKey(exo), JSON.stringify(data || null));
+  } catch {}
+}
+function clearSaved(exo) {
+  try { localStorage.removeItem(storageKey(exo)); } catch {}
+}
+import React, { useState, useEffect } from "react";
 import styles from "./SuivieCard.module.css";
 
 import useExerciceForm from "./hooks/useExerciceForm";
@@ -19,6 +41,10 @@ export default function SuivieCard({ exo, value, onChange }) {
   const [open, setOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
+  // Prefer prop "value" when provided; otherwise fall back to saved draft
+  const savedDraft = loadSaved(exo);
+  const hydratedValue = value != null ? value : savedDraft;
+
   const {
     mode,
     setMode,
@@ -33,7 +59,20 @@ export default function SuivieCard({ exo, value, onChange }) {
     addCardioSet,
     removeCardioSet,
     patchCardioSet,
-  } = useExerciceForm(exo, value, onChange);
+  } = useExerciceForm(exo, hydratedValue, (key, next) => {
+    // persist every change locally
+    saveSaved(exo, next);
+    if (typeof onChange === 'function') onChange(key, next);
+  });
+
+  // Ensure we keep the previously chosen mode (cardio/muscu/pdc) from saved draft
+  useEffect(() => {
+    if (hydratedValue && hydratedValue.mode && hydratedValue.mode !== mode) {
+      setMode(hydratedValue.mode);
+    }
+    // only run when saved mode changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydratedValue?.mode]);
 
 
   const sets = Array.isArray(data?.sets) ? data.sets : [];
@@ -67,11 +106,10 @@ export default function SuivieCard({ exo, value, onChange }) {
     const done = isExerciseDone(payload);
     const next = { ...payload, done };
     try {
+      // persist final state locally
+      saveSaved(exo, next);
       if (typeof emit === 'function') {
-        emit(next);
-      }
-      if (typeof onChange === 'function') {
-        onChange(idOf(exo), next);
+        emit(next); // will call onChange via wrapper
       }
     } catch {}
     setOpen(false);
@@ -105,7 +143,14 @@ export default function SuivieCard({ exo, value, onChange }) {
             <div className={styles.popupBody}>
               <ModeBar
                 mode={mode}
-                onChange={setMode}
+                onChange={(m) => {
+                  setMode(m);
+                  const next = { ...data, mode: m };
+                  // persist the chosen mode immediately
+                  saveSaved(exo, next);
+                  // propagate to parent value as well
+                  if (typeof emit === 'function') emit(next);
+                }}
                 classes={{ modeBar: modeStyles.modeBar, selectControl: modeStyles.selectControl }}
               />
 

@@ -108,6 +108,16 @@ export default function FormExo({ user }) {
               ];
               KEYS.forEach(k => localStorage.removeItem(k));
             } catch {}
+            // Also clear every per-exercise draft (namespace: suivie_exo_inputs:)
+            try {
+              const NS = "suivie_exo_inputs:";
+              const toDelete = [];
+              for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && k.startsWith(NS)) toDelete.push(k);
+              }
+              toDelete.forEach(k => localStorage.removeItem(k));
+            } catch {}
             // Now switch back to the builder at step 0
             setMode("builder");
             setCurrentStep(0);
