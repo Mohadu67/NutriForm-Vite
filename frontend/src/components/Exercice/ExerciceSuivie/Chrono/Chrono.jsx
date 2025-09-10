@@ -169,7 +169,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
       <div className={styles.card}>
         <div className={styles.header}>
           <h2 className={styles.title}>
-            C'est parti pour <span className={styles.highlight}>{label || "ta séance"}</span>
+            C'est parti pour ta séance <span className={styles.highlight}>{label || "ta séance"}</span>
           </h2>
           <div className={styles.actions}>
             {(!hasSession) && (
