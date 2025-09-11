@@ -3,6 +3,8 @@ import styles from "./SuivieSeance.module.css";
 import Stat from "./stats/Stat.jsx";
 import { computeSessionStats } from "./stats/computeSessionStats";
 
+const API_BASE = (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
+
 export default function SuivieSeance({ user, lastSession: propLastSession, sessions }) {
   const [serverData, setServerData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,7 +16,8 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const res = await fetch("/api/history/summary", { credentials: "include", headers });
+        const summaryUrl = API_BASE ? `${API_BASE}/api/history/summary` : "/api/history/summary";
+        const res = await fetch(summaryUrl, { credentials: "include", headers });
         if (!res.ok) throw new Error("bad status");
         const json = await res.json();
         if (!cancelled) setServerData(json);

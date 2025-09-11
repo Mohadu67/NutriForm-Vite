@@ -1,6 +1,8 @@
 import React, { useMemo, useEffect, useState } from "react";
 import style from "../HistoryUser.module.css";
 
+const API_BASE = (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
+
 function parseDate(raw) {
   if (!raw) return null;
   if (raw instanceof Date) return isNaN(raw) ? null : raw;
@@ -68,7 +70,8 @@ export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
     if (!ok) return;
     try {
       setDeletingId(id);
-      const res = await fetch(`/api/sessions/${id}`, {
+      const url = API_BASE ? `${API_BASE}/api/sessions/${id}` : `/api/sessions/${id}`;
+      const res = await fetch(url, {
         method: 'DELETE',
         credentials: 'include'
       });
