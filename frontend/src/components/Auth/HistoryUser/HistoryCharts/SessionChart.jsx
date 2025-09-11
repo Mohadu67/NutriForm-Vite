@@ -1,9 +1,11 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import style from "./HistoryCharts.module.css";
 
 export default function SessionChart({ points }) {
   const [tooltip, setTooltip] = useState(null);
   const [selectedIdx, setSelectedIdx] = useState(null);
+  const [showTooltip, setShowTooltip] = useState(true);
+  const containerRef = useRef(null);
 
   const toDate = useCallback((raw) => {
     if (!raw) return null;
@@ -21,13 +23,56 @@ export default function SessionChart({ points }) {
     return null;
   }, []);
 
+  useEffect(() => {
+    function handleDocClick(ev) {
+      if (containerRef.current && !containerRef.current.contains(ev.target)) {
+        setShowTooltip(false);
+        setTooltip(null);
+        setSelectedIdx(null);
+      }
+    }
+    document.addEventListener('click', handleDocClick);
+    return () => document.removeEventListener('click', handleDocClick);
+  }, []);
+
   const getExercisesCount = useCallback((src) => {
     const o = src || {};
     if (Array.isArray(o.entries)) return o.entries.length;
     if (Array.isArray(o.exercises)) return o.exercises.length;
     if (Array.isArray(o.items)) return o.items.length;
+    if (Array.isArray(o.original?.entries)) return o.original.entries.length;
+    if (Array.isArray(o.original?.exercises)) return o.original.exercises.length;
+    if (Array.isArray(o.original?.items)) return o.original.items.length;
     const n = Number(o.exercisesCount ?? o.nbExercises ?? o.countExercises ?? o.value ?? o.count);
     return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
+  }, []);
+
+  const getExercisesList = useCallback((src) => {
+    const o = src || {};
+    const tryArrays = [
+      o.entries,
+      o.exercises,
+      o.items,
+      o.session?.entries,
+      o.session?.exercises,
+      o.session?.items,
+      o.seance?.entries,
+      o.seance?.exercises,
+      o.seance?.items,
+      o.data?.entries,
+      o.data?.exercises,
+      o.data?.items,
+      o.original?.entries,
+      o.original?.exercises,
+      o.original?.items,
+      o.original?.data?.entries,
+      o.original?.data?.exercises,
+      o.original?.data?.items,
+    ];
+    for (const arr of tryArrays) {
+      if (Array.isArray(arr) && arr.length) return arr;
+    }
+    return null;
   }, []);
 
   const normalized = useMemo(() => {
@@ -36,7 +81,7 @@ export default function SessionChart({ points }) {
         const date = toDate(pt?.date ?? pt?.createdAt ?? pt?.day);
         const exercises = getExercisesCount(pt?.original || pt);
         const value = Number(pt?.value ?? pt?.count ?? exercises);
-        return { original: pt, date, value, exercises };
+        return { original: (pt?.original || pt), date, value, exercises };
       })
       .filter((p) => p.date && Number.isFinite(p.value))
       .sort((a, b) => a.date - b.date);
@@ -44,7 +89,7 @@ export default function SessionChart({ points }) {
 
   if (!normalized || normalized.length === 0) {
     return (
-      <div className={`${style.chartCard} ${style.chartContainer}`}>
+      <div className={`${style.chartCard} ${style.chartContainer}`} ref={containerRef}>
         <h4>Exercices par jour</h4>
         <p className={style.muted}>Aucune donnée disponible.</p>
       </div>
@@ -59,14 +104,18 @@ export default function SessionChart({ points }) {
 
   const groups = Array.from({ length: 7 }, () => []);
   for (const p of normalized) {
-    const count = Math.max(0, Math.floor(p.exercises ?? p.value ?? 0));
+    const exList = getExercisesList(p.original);
+    const inferredCount = getExercisesCount(p.original || p);
+    const count = exList ? exList.length : Math.max(0, Math.floor(inferredCount ?? 0));
     const idx = weekdayIndex(p.date);
     for (let i = 0; i < count; i++) {
+      const exObj = exList ? exList[i] : null;
       groups[idx].push({
         date: p.date,
         indexInSession: i + 1,
         totalInSession: count,
         original: p.original,
+        exObj,
       });
     }
   }
@@ -101,7 +150,7 @@ export default function SessionChart({ points }) {
     });
 
   return (
-    <div className={`${style.chartCard} ${style.chartContainer}`}>
+    <div className={`${style.chartCard} ${style.chartContainer}`} ref={containerRef}>
       <h4>Exercices par jour</h4>
       <svg
         className={style.svgChart}
@@ -110,7 +159,7 @@ export default function SessionChart({ points }) {
         role="img"
         aria-label="Chronologie hebdomadaire des exercices"
         onMouseLeave={handleLeave}
-        onClick={() => { setTooltip(null); setSelectedIdx(null); }}
+        onClick={(e) => { e.stopPropagation?.(); setShowTooltip(true); }}
         preserveAspectRatio="xMidYMid meet"
       >
         <rect x="0" y="0" width={width} height={height} fill="transparent" />
@@ -150,54 +199,38 @@ export default function SessionChart({ points }) {
   evt.stopPropagation();
   const bbox = evt.currentTarget.getBoundingClientRect();
   const parent = evt.currentTarget.ownerSVGElement.getBoundingClientRect();
+
   const o = d.original || {};
+
+  const exIdx = (d.indexInSession || 1) - 1;
+  const exObj = d.exObj ?? null;
 
   const sessionName = (
     o.sessionName || o.seanceName || o.workoutName || o.nameSession || o.session || o.title || null
   );
+
+  // 3) Exercise label
   const exerciseName = (
+    (exObj && (exObj.exerciseName || exObj.exoName || exObj.name || exObj.label)) ||
     o.exerciseName || o.exoName || o.exercise || o.label || o.name || null
   );
 
-  const rawType = String(
-    o.type || o.category || o.kind || o.mode || o.sport || ""
-  ).toLowerCase();
-  const isCardio = Boolean(
-    o.isCardio || /cardio|run|running|course|velo|cycle|bike|row|rameur|hiit|endurance/.test(rawType)
-  );
-  const isStrength = Boolean(
-    o.isStrength || /muscu|strength|force|poids|halt|weight|gym|power|souleve/.test(rawType)
-  );
+  // 4) Metrics from first set: weightKg + reps (what you asked for)
+  const pickNum = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
 
-  let detail = null;
-  if (isCardio) {
-    const minutes = Number(o.durationMinutes ?? o.minutes ?? (o.duration && o.duration / 60));
-    const seconds = Number(o.durationSeconds ?? o.seconds ?? (o.duration && o.duration % 60));
-    const distance = o.distance || o.km || o.meters;
-    const pace = o.pace || o.allure;
-    const parts = [];
-    if (Number.isFinite(minutes) && minutes > 0) parts.push(`${Math.floor(minutes)} min`);
-    if (Number.isFinite(seconds) && seconds > 0) parts.push(`${Math.floor(seconds)} s`);
-    if (distance) parts.push(`${distance}${typeof distance === 'number' ? ' km' : ''}`);
-    if (pace) parts.push(`allure ${pace}`);
-    detail = parts.length ? parts.join(" · ") : null;
-  } else if (isStrength) {
-    const weight = o.weight ?? o.poids ?? o.kg ?? o.load;
-    const sets = o.sets ?? o.series ?? o.séries;
-    const reps = o.reps ?? o.repetitions ?? o.répétitions;
-    const parts = [];
-    if (weight !== undefined && weight !== null && weight !== "") parts.push(`${weight} kg`);
-    if (sets) parts.push(`${sets} séries`);
-    if (reps) parts.push(`${reps} reps`);
-    detail = parts.length ? parts.join(" · ") : null;
-  } else {
-    const weight = o.weight ?? o.poids ?? o.kg ?? o.load;
-    const minutes = Number(o.durationMinutes ?? o.minutes);
-    const fallback = [];
-    if (weight) fallback.push(`${weight} kg`);
-    if (Number.isFinite(minutes) && minutes > 0) fallback.push(`${Math.floor(minutes)} min`);
-    detail = fallback.length ? fallback.join(" · ") : null;
-  }
+  const typeStr = String(exObj?.type || o.type || "").toLowerCase();
+  const firstSet = Array.isArray(exObj?.sets) && exObj.sets.length ? exObj.sets[0] : null;
+
+  const weight = pickNum(firstSet?.weightKg ?? firstSet?.weight ?? firstSet?.kg ?? null);
+  const reps   = pickNum(firstSet?.reps ?? firstSet?.repetitions ?? null);
+
+  const detailParts = [];
+  if (weight !== null) detailParts.push(`${weight} kg`);
+  if (reps !== null) detailParts.push(`${reps} reps`);
+  const detail = detailParts.length ? detailParts.join(" \u00b7 ") : null;
 
   const svgW = parent.width;
   let posX = bbox.x - parent.x + bbox.width / 2;
@@ -214,10 +247,12 @@ export default function SessionChart({ points }) {
   }
 
   const lines = [
-    sessionName ? `Séance: ${sessionName}` : null,
-    exerciseName ? `Exercice: ${exerciseName}` : null,
+    sessionName ? `${sessionName}` : null,
+    exerciseName ? `${exerciseName}` : (exObj ? `Exercice ${exIdx + 1}` : null),
     detail,
-  ].filter(Boolean);
+  ].filter((v) => typeof v === 'string' && v.trim().length > 0);
+
+  console.log("Tooltip data:", { sessionName, exerciseName, exObj, firstSet, detail, lines });
 
   setTooltip({
     x: posX,
@@ -226,6 +261,7 @@ export default function SessionChart({ points }) {
     pinned: true,
     align,
   });
+  setShowTooltip(true);
   setSelectedIdx(i);
 }}
                     >
@@ -249,18 +285,18 @@ export default function SessionChart({ points }) {
         })}
       </svg>
 
-      {tooltip && (
+      {showTooltip && tooltip && (
         <div
-          className={`${style.tooltip} ${tooltip.align === 'left' ? style.tooltipLeft : tooltip.align === 'right' ? style.tooltipRight : ''}`}
+          className={`${style.tooltip} ${tooltip.align === 'left' ? style.tooltipLeft : tooltip.align === 'right' ? style.tooltipRight : style.tooltipCenter}`}
           style={{ left: tooltip.x, top: tooltip.y }}
-        >
+       >
           {tooltip.lines.map((l, idx) => (
             <div key={idx}>{l}</div>
           ))}
         </div>
       )}
 
-      {tooltip?.pinned && (
+      {showTooltip && tooltip?.pinned && (
         <div className={style.tooltipHint}>
           Cliquez ailleurs pour fermer l’infobulle.
         </div>

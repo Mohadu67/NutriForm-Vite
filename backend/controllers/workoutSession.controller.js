@@ -132,16 +132,29 @@ async function createSession(req, res) {
     const userWeight = await getLatestWeight(userId);
     const derived = computeSessionFromEntries(normalized, userWeight);
 
+    const durationSec = (derived && Number.isFinite(Number(derived.durationMinutes)))
+      ? Math.round(Number(derived.durationMinutes) * 60)
+      : undefined;
+    const calories = (derived && Number.isFinite(Number(derived.caloriesBurned)))
+      ? Math.round(Number(derived.caloriesBurned))
+      : undefined;
+
     let _startedAt = new Date(startedAt);
-    let _endedAt = endedAt ? new Date(endedAt) : (derived.durationMinutes ? new Date(new Date(_startedAt).getTime() + derived.durationMinutes * 60000) : new Date(startedAt));
+    let _endedAt = endedAt
+      ? new Date(endedAt)
+      : (
+          Number.isFinite(Number(durationSec))
+            ? new Date(new Date(_startedAt).getTime() + Number(durationSec))
+            : new Date(startedAt)
+        );
 
     const doc = await WorkoutSession.create({
       userId: new mongoose.Types.ObjectId(userId),
       name: (name || label),
       startedAt: _startedAt,
       endedAt: _endedAt,
-      durationMinutes: derived.durationMinutes ?? undefined,
-      caloriesBurned: derived.caloriesBurned ?? undefined,
+      durationSec: durationSec,
+      calories: calories,
       notes,
       entries: normalized,
       clientSummary
@@ -172,13 +185,20 @@ async function getSessions(req, res) {
     }
 
     const docs = await WorkoutSession
-      .find(q)
+      .find(q, { name: 1, startedAt: 1, createdAt: 1, status: 1, entries: 1 })
       .sort({ startedAt: -1, _id: -1 })
-      .limit(Math.max(1, Math.min(Number(limit) || 20, 100)));
+      .limit(Math.max(1, Math.min(Number(limit) || 20, 100)))
+      .lean();
 
     const nextCursor = docs.length ? docs[docs.length - 1]._id : null;
 
-    return res.json({ items: docs, nextCursor });
+    const points = docs.map(s => ({
+      date: s.startedAt || s.createdAt,
+      value: Array.isArray(s.entries) ? s.entries.length : 0,
+      original: s,
+    }));
+
+    return res.json({ items: docs, points, nextCursor });
   } catch (err) {
     console.error("getSessions error:", err);
     return res.status(500).json({ error: "server_error" });
@@ -223,6 +243,13 @@ async function updateSession(req, res) {
     if (payload.startedAt) payload.startedAt = new Date(payload.startedAt);
     if (payload.endedAt) payload.endedAt = new Date(payload.endedAt);
 
+    if (payload.durationMinutes != null && payload.durationSec == null && Number.isFinite(Number(payload.durationMinutes))) {
+      payload.durationSec = Math.round(Number(payload.durationMinutes) * 60);
+    }
+    if (payload.caloriesBurned != null && payload.calories == null && Number.isFinite(Number(payload.caloriesBurned))) {
+      payload.calories = Math.round(Number(payload.caloriesBurned));
+    }
+
     let needRecalc = false;
     if (Array.isArray(payload.entries)) {
       payload.entries = payload.entries.map(normalizeEntry);
@@ -232,13 +259,23 @@ async function updateSession(req, res) {
     if (needRecalc) {
       const userWeight = await getLatestWeight(userId);
       const derived = computeSessionFromEntries(payload.entries || [], userWeight);
-      if (derived.durationMinutes != null && payload.durationMinutes == null) payload.durationMinutes = derived.durationMinutes;
-      if (derived.caloriesBurned != null && payload.caloriesBurned == null) payload.caloriesBurned = derived.caloriesBurned;
 
-      if (!payload.endedAt && (payload.startedAt || payload.durationMinutes != null)) {
+      const updDurationSec = (derived && Number.isFinite(Number(derived.durationMinutes)))
+        ? Math.round(Number(derived.durationMinutes) * 60)
+        : undefined;
+      const updCalories = (derived && Number.isFinite(Number(derived.caloriesBurned)))
+        ? Math.round(Number(derived.caloriesBurned))
+        : undefined;
+
+      if (updDurationSec != null && payload.durationSec == null) payload.durationSec = updDurationSec;
+      if (updCalories != null && payload.calories == null) payload.calories = updCalories;
+
+      if (!payload.endedAt && (payload.startedAt || payload.durationSec != null || updDurationSec != null)) {
         const baseStart = payload.startedAt ? new Date(payload.startedAt) : new Date();
-        const durMin = Number(payload.durationMinutes ?? derived.durationMinutes);
-        if (Number.isFinite(durMin)) payload.endedAt = new Date(baseStart.getTime() + durMin * 60000);
+        const durMs = Number.isFinite(Number(payload.durationSec))
+          ? Number(payload.durationSec)
+          : (Number.isFinite(Number(updDurationSec)) ? Number(updDurationSec) : null);
+        if (durMs != null) payload.endedAt = new Date(baseStart.getTime() + durMs);
       }
     }
 

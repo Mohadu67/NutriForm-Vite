@@ -17,12 +17,19 @@ function isDeepEqual(a, b) {
 }
 
 export default function useExerciceForm(exo, value, onChange) {
+  const exoId = useMemo(
+    () => String(exo?.id ?? exo?._id ?? exo?.slug ?? exo?.name ?? ""),
+    [exo]
+  );
   const detected = isCardioExo(exo) ? "cardio" : "muscu";
-  const [mode, setMode] = useState(detected);
-  // Resync default mode when the exercise changes (avoid stale mode between exercises)
+  const [mode, setMode] = useState(value?.mode ?? detected);
+
   useEffect(() => {
-    setMode(isCardioExo(exo) ? "cardio" : "muscu");
-  }, [exo]);
+    const wanted = value?.mode || (isCardioExo(exo) ? "cardio" : "muscu");
+    if (wanted && wanted !== mode) {
+      setMode(wanted);
+    }
+  }, [exoId, value?.mode]);
 
   const initial = useMemo(() => {
     const base = value || {};
@@ -57,7 +64,6 @@ export default function useExerciceForm(exo, value, onChange) {
     if (!isDeepEqual(data, initial)) {
       setData(initial);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initial]);
 
   const isCardio = mode === "cardio";
@@ -81,16 +87,15 @@ export default function useExerciceForm(exo, value, onChange) {
   const lastSentRef = useRef(null);
 
   function emit(next) {
-    // Avoid unnecessary local state updates
-    if (!isDeepEqual(next, data)) {
-      setData(next);
+    const withMode = next && next.mode ? next : { ...next, mode };
+    if (!isDeepEqual(withMode, data)) {
+      setData(withMode);
     }
-    // Avoid feedback loop if parent returns an equivalent object each render
     if (typeof onChange === "function") {
-      if (!isDeepEqual(lastSentRef.current, next)) {
-        lastSentRef.current = next;
+      if (!isDeepEqual(lastSentRef.current, withMode)) {
+        lastSentRef.current = withMode;
         const key = exo?.id ?? exo?.slug ?? exo?.name ?? exo?.label ?? undefined;
-        onChange(key, next);
+        onChange(key, withMode);
       }
     }
   }
