@@ -8,6 +8,8 @@ import SessionChart from "./HistoryCharts/SessionChart.jsx";
 import useHistoryData from "./UseHistoryData.js";
 import SuivieSeance from "../../Exercice/TableauBord/SuivieSeance.jsx";
 
+const API_BASE = (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
+
 export default function HistoryUser({ onClose, onLogout }) {
   const parseDate = (raw) => {
     if (!raw) return null;
@@ -32,7 +34,8 @@ export default function HistoryUser({ onClose, onLogout }) {
     let alive = true;
     (async () => {
       try {
-        const res = await fetch('/api/sessions', { credentials: 'include' });
+        const url = API_BASE ? `${API_BASE}/api/sessions` : '/api/sessions';
+        const res = await fetch(url, { credentials: 'include' });
         if (!res.ok) return;
         const json = await res.json();
         if (!alive) return;
