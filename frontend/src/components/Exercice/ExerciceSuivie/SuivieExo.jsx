@@ -4,7 +4,27 @@ import SuivieCard from "./ExerciceCard/SuivieCard.jsx";
 import Chrono from "./Chrono/Chrono.jsx";
 import { idOf } from "../Shared/idOf.js";
 
+
 const STARTED_KEY = "suivieStartedAt";
+const INPUT_NS = "suivie_exo_inputs:";
+function storageKey(it) {
+  const id = String(it?.id ?? it?._id ?? it?.slug ?? it?.name ?? "");
+  return INPUT_NS + id;
+}
+function saveSaved(it, data) {
+  try {
+    localStorage.setItem(storageKey(it), JSON.stringify(data ?? null));
+  } catch {}
+}
+
+function loadSaved(it) {
+  try {
+    const raw = localStorage.getItem(storageKey(it));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 
 export default function SuivieExo({ sessionName, exercises = [], onBack, onSearch, onFinish = () => {} }) {
@@ -46,13 +66,27 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
   useEffect(() => {
     const hasProps = Array.isArray(exercises) && exercises.length > 0;
     if (hasProps) {
-      setItems(exercises);
+      setItems(exercises.map(it => {
+        const saved = loadSaved(it);
+        if (!saved) return it;
+        const nextMode = saved?.mode ?? inferModeFromData(saved) ?? it?.mode;
+        const done = isExerciseDone(saved);
+        return { ...it, data: saved, mode: nextMode, done };
+      }));
       return;
     }
     setItems(prev => {
       if (Array.isArray(prev) && prev.length > 0 && touched) return prev; // don't override user edits
       const persisted = getPersistedSelection();
-      if (Array.isArray(persisted) && persisted.length > 0) return persisted;
+      if (Array.isArray(persisted) && persisted.length > 0) {
+        return persisted.map(it => {
+          const saved = loadSaved(it);
+          if (!saved) return it;
+          const nextMode = saved?.mode ?? inferModeFromData(saved) ?? it?.mode;
+          const done = isExerciseDone(saved);
+          return { ...it, data: saved, mode: nextMode, done };
+        });
+      }
       return prev;
     });
   }, [exercises, touched]);
@@ -91,11 +125,14 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
     setTouched(true);
     setItems(prev => {
       const copy = Array.isArray(prev) ? [...prev] : [];
-      const idx = copy.findIndex(x => idOf(x) === id);
+      const idx = copy.findIndex(x => String(idOf(x)) === String(id));
       if (idx === -1) return copy;
       const nextMode = inferModeFromData(nextData) ?? copy[idx]?.mode;
       const done = isExerciseDone(nextData);
       copy[idx] = { ...copy[idx], data: nextData, mode: nextMode, done };
+      try {
+        saveSaved(copy[idx], nextData);
+      } catch {}
       return copy;
     });
   }
@@ -112,7 +149,6 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
           startedAt={startedAt}
           resumeFromStartedAt={true}
           onStart={(iso) => {
-            // Persist once when the user actually starts the session
             setStartedAt(prev => prev || iso);
           }}
           onFinish={(payload) => {
@@ -145,6 +181,7 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
             <SuivieCard
               key={idOf(exo)}
               exo={exo}
+              value={exo?.data}
               onChange={(id, next) => updateItemById(id, next)}
             />
           ))}

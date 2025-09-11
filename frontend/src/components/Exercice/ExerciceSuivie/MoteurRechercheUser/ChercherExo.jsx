@@ -174,10 +174,19 @@ export default function ChercherExo({
               Array.isArray(ex.muscles) ? ex.muscles.join(", ") : ex.muscle,
               Array.isArray(ex.equipment) ? ex.equipment.join(", ") : ex.equip,
             ].filter(Boolean).join(" • ");
+            const imgSrc = ex.image || ex.img || ex.picture || ex.photo || ex.thumbnail || ex.thumb || ex.gif || (Array.isArray(ex.images) ? (ex.images[0]?.url || ex.images[0]) : null) || null;
             return (
               <li key={id} className={styles.item}>
                 <label className={styles.itemLabel}>
                   <input type="checkbox" checked={checked} onChange={() => toggle(id)} disabled={isPre} />
+                  {imgSrc && (
+                    <img
+                      src={imgSrc}
+                      alt={(ex.name || ex.title || "exercice") + " thumbnail"}
+                      loading="lazy"
+                      className={styles.thumb}
+                    />
+                  )}
                   <div>
                     <div className={styles.itemTitleRow}>
                       <span>{ex.name || ex.title}</span>

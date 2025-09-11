@@ -6,6 +6,8 @@ export default function LineChartSVG({
   color = "#333",
   width = 320,
   height = 140,
+  tooltipClassName,
+  showTooltip = true,
 }) {
   const [hovered, setHovered] = useState(null);
 
@@ -86,7 +88,7 @@ export default function LineChartSVG({
         );
       })}
 
-      {hovered && (() => {
+      {showTooltip && hovered && (() => {
         const tooltipWidth = 120;
         const tooltipHeight = 40;
 
@@ -106,7 +108,7 @@ export default function LineChartSVG({
             width={tooltipWidth}
             height={tooltipHeight}
           >
-            <div xmlns="http://www.w3.org/1999/xhtml" className={style.chartTooltip}>
+            <div xmlns="http://www.w3.org/1999/xhtml" className={tooltipClassName || style.chartTooltip}>
               {hovered.value} • {hovered.date.toLocaleDateString("fr-FR")}
             </div>
           </foreignObject>

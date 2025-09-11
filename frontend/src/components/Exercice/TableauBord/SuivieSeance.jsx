@@ -66,7 +66,6 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
 
     if (doneSorted.length) return doneSorted;
 
-    // fallback: nothing explicitly marked finished -> sort by date only
     return flat
       .map((s) => ({ s, d: toDate(s) }))
       .filter((x) => x.d && !isNaN(x.d))
@@ -124,6 +123,30 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
     return Math.round(vals.reduce((a,b) => a + b, 0) / vals.length);
   }, [sessions, serverData]);
 
+  const favoriteMuscleGroupFallback = useMemo(() => {
+    const source = Array.isArray(sessions) && sessions.length
+      ? sessions
+      : (Array.isArray(serverData?.sessions) ? serverData.sessions : []);
+    if (!source.length) return null;
+    const muscleMap = new Map();
+    for (const s of source) {
+      const items = Array.isArray(s?.entries) ? s.entries : (Array.isArray(s?.items) ? s.items : (Array.isArray(s?.exercises) ? s.exercises : []));
+      for (const e of items) {
+        const groups = Array.isArray(e?.muscles) ? e.muscles : (e?.muscleGroup ? [e.muscleGroup] : (e?.muscle ? [e.muscle] : []));
+        for (const g of groups) {
+          const key = String(g || '').trim();
+          if (!key) continue;
+          muscleMap.set(key, (muscleMap.get(key) || 0) + 1);
+        }
+      }
+    }
+    let top = null;
+    for (const [name, count] of muscleMap.entries()) {
+      if (!top || count > top.count) top = { name, count };
+    }
+    return top?.name || null;
+  }, [sessions, serverData]);
+
   const items = useMemo(() => {
     const defs = [
       // Stats existantes
@@ -138,7 +161,6 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
       { key: "streakDays", label: "Série de jours actifs", fmt: (v) => `${v} j` },
       { key: "favoriteMuscleGroup", label: "Groupe musculaire le plus travaillé" },
 
-      // Nouvelles stats dérivées (stats.service)
       { key: "initialWeight", label: "Poids initial", fmt: (v) => `${v} kg` },
       { key: "latestWeight", label: "Poids actuel (calculé)", fmt: (v) => `${v} kg` },
       { key: "weightChange", label: "Variation de poids", fmt: (v) => `${v > 0 ? '+' : ''}${v} kg` },
@@ -151,12 +173,22 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
     ];
 
     return defs.map(({ key, label, fmt }) => {
+      if (key === 'favoriteMuscleGroup') {
+        const serverVal = (combinedData && Object.prototype.hasOwnProperty.call(combinedData, key)) ? combinedData[key] : undefined;
+        const raw = (serverVal !== undefined && serverVal !== null && String(serverVal).trim() !== '')
+          ? serverVal
+          : favoriteMuscleGroupFallback;
+        const has = raw !== null && raw !== undefined && String(raw).trim() !== '';
+        const value = has ? String(raw) : 'Aucune donnée';
+        return [label, value];
+      }
+
       const raw = combinedData && Object.prototype.hasOwnProperty.call(combinedData, key) ? combinedData[key] : undefined;
-      const has = raw !== null && raw !== undefined && String(raw).trim() !== "";
-      const value = has ? (fmt ? fmt(raw) : String(raw)) : "Aucune donnée";
+      const has = raw !== null && raw !== undefined && String(raw).trim() !== '';
+      const value = has ? (fmt ? fmt(raw) : String(raw)) : 'Aucune donnée';
       return [label, value];
     });
-  }, [combinedData]);
+  }, [combinedData, favoriteMuscleGroupFallback]);
 
   const get = (key) => {
     const def = {
@@ -229,7 +261,13 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
             <div className={styles.divider} />
             <div className={styles.row}>
               <span className={styles.statLabel}>Calories moy./séance</span>
-              <span className={styles.rowValue}>{getEither('avgCaloriesPerWorkout7d','avgCaloriesPerWorkout')}</span>
+              <span className={styles.rowValue}>
+                {(() => {
+                  const serverVal = getEither('avgCaloriesPerWorkout7d','avgCaloriesPerWorkout');
+                  if (serverVal !== 'Aucune donnée') return serverVal;
+                  return avgCaloriesPerSession != null ? `${avgCaloriesPerSession} kcal` : 'Aucune donnée';
+                })()}
+              </span>
             </div>
             <div className={styles.divider} />
             <div className={styles.row}>
@@ -264,6 +302,9 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
                     const done = list.filter(x => x && x.done).length;
                     return `${done} / ${list.length}`;
                   }
+                  const s = primarySession;
+                  const items = Array.isArray(s?.entries) ? s.entries : (Array.isArray(s?.items) ? s.items : (Array.isArray(s?.exercises) ? s.exercises : []));
+                  if (items.length) return `${items.length}`;
                   return 'Aucune donnée';
                 })()}
               </span>

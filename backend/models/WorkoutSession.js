@@ -28,11 +28,31 @@ const EntrySchema = new Schema({
   type: { type: String, enum: ["muscu", "cardio", "poids_du_corps"], required: true },
   order: { type: Number },
   notes: { type: String },
+  // Optional muscle metadata for stats
+  muscleGroup: { type: String },
+  muscle: { type: String }, // legacy/alias
+  muscles: { type: [String], default: [] },
   sets: {
     type: [Schema.Types.Mixed],
     default: []
   }
 }, { _id: false });
+
+// Heuristic mapper: very small, can be expanded later
+function guessMuscleGroup(name = "", type = "") {
+  const n = String(name).toLowerCase();
+  const t = String(type).toLowerCase();
+  if (/mollet|calf/.test(n)) return "Mollets";
+  if (/pompe|push[- ]?up|bench|développé|developpe|pec/.test(n)) return "Pectoraux";
+  if (/traction|pull[- ]?up|row|tirage|dos/.test(n)) return "Dos";
+  if (/squat|presse|leg|fente|deadlift|soulevé/.test(n)) return "Jambes";
+  if (/curl|biceps/.test(n)) return "Biceps";
+  if (/triceps|dip/.test(n)) return "Triceps";
+  if (/épaule|epaule|shoulder|overhead|militaire|lateral/.test(n)) return "Épaules";
+  if (/abdo|crunch|gainage|core|planche/.test(n)) return "Abdos";
+  if (t === "cardio") return "Cardio";
+  return null;
+}
 
 const WorkoutSessionSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -56,5 +76,25 @@ const WorkoutSessionSchema = new Schema({
     ]
   }
 }, { timestamps: true });
+
+// Auto-populate muscle metadata on save when missing
+WorkoutSessionSchema.pre('save', function(next) {
+  try {
+    if (!Array.isArray(this.entries)) return next();
+    for (const e of this.entries) {
+      if (!e) continue;
+      const hasAny = (Array.isArray(e.muscles) && e.muscles.length) || e.muscleGroup || e.muscle;
+      if (!hasAny) {
+        const g = guessMuscleGroup(e.exerciseName, e.type);
+        if (g) {
+          e.muscleGroup = e.muscleGroup || g;
+          e.muscle = e.muscle || g;
+          if (!Array.isArray(e.muscles) || e.muscles.length === 0) e.muscles = [g];
+        }
+      }
+    }
+  } catch (_) {}
+  next();
+});
 
 module.exports = mongoose.model("WorkoutSession", WorkoutSessionSchema);

@@ -98,6 +98,9 @@ async function getUserSummary(req, res) {
     let streakDays = 0;
     let nextGoal = null;
     let lastSessionSummary = null;
+    let avgKcalAll = null;
+    let lastExercisesListFallback = [];
+    let favoriteMuscleGroupFallback = null;
 
     let workoutsCount7dSess = 0;
     let calories7dSess = 0;
@@ -165,15 +168,27 @@ async function getUserSummary(req, res) {
             const hw = history.find(h => pickWeight(h.meta) != null);
             return hw ? pickWeight(hw.meta) : null;
           })();
+
+          const pickKcal = (obj) => {
+            const v = obj?.calories ?? obj?.caloriesBurned ?? obj?.kcal;
+            const n = Number(v);
+            return Number.isFinite(n) ? n : null;
+          };
+
           const enriched = sessions.map((s) => {
-            const hasKcal = typeof s.caloriesBurned === 'number' || typeof s.kcal === 'number';
+            const hasKcal = typeof s.calories === 'number' || typeof s.caloriesBurned === 'number' || typeof s.kcal === 'number';
             const hasDur = typeof s.durationMinutes === 'number' || typeof s.duration === 'number' || (s.endedAt && s.startedAt);
             if (hasKcal && hasDur) return s;
             const est = computeSessionFromEntries(s.entries || [], weightForCalc);
+            const kcalValue = hasKcal ? (s.calories ?? s.caloriesBurned ?? s.kcal) : est.caloriesBurned;
+            const durMin = hasDur
+              ? (s.durationMinutes ?? s.duration ?? (s.endedAt && s.startedAt ? Math.round((new Date(s.endedAt) - new Date(s.startedAt)) / 60000) : null))
+              : est.durationMinutes;
             return {
               ...s,
-              caloriesBurned: hasKcal ? (s.caloriesBurned ?? s.kcal) : est.caloriesBurned,
-              durationMinutes: hasDur ? (s.durationMinutes ?? s.duration ?? (s.endedAt && s.startedAt ? Math.round((new Date(s.endedAt) - new Date(s.startedAt)) / 60000) : null)) : est.durationMinutes,
+              calories: typeof s.calories === 'number' ? s.calories : kcalValue,
+              caloriesBurned: typeof s.caloriesBurned === 'number' ? s.caloriesBurned : kcalValue,
+              durationMinutes: durMin,
             };
           });
 
@@ -187,16 +202,44 @@ async function getUserSummary(req, res) {
             lastWorkoutDuration = typeof dur0 === 'number' ? `${dur0} min` : String(dur0);
           }
           if (!lastSession) lastSession = s0?.name || s0?.label || 'Séance';
-          if (lastCaloriesBurned == null && typeof s0?.caloriesBurned === 'number') lastCaloriesBurned = s0.caloriesBurned;
+          if (lastCaloriesBurned == null) {
+            if (typeof s0?.calories === 'number') lastCaloriesBurned = s0.calories;
+            else if (typeof s0?.caloriesBurned === 'number') lastCaloriesBurned = s0.caloriesBurned;
+          }
 
           const within7d = (d) => new Date(d) >= weekAgo;
           const weekSessions = enriched.filter((s) => s.startedAt ? within7d(s.startedAt) : (s.createdAt ? within7d(s.createdAt) : false));
-          const sumKcal = weekSessions.reduce((acc, s) => acc + (Number(s.caloriesBurned || s.kcal || 0) || 0), 0);
+          const sumKcal = weekSessions.reduce((acc, s) => acc + (Number(s.calories ?? s.caloriesBurned ?? s.kcal ?? 0) || 0), 0);
           caloriesBurnedWeek = Math.max(caloriesBurnedWeek, sumKcal);
           workoutsCount7dSess = weekSessions.length;
           calories7dSess = sumKcal;
 
           fromSessions = deriveFromSessions(enriched);
+
+          avgKcalAll = kcalArray.length ? Math.round(kcalArray.reduce((a,b)=>a+b,0) / kcalArray.length) : null;
+
+          lastExercisesListFallback = [];
+          if ((!lastSessionSummary || !Array.isArray(lastSessionSummary.exercises) || !lastSessionSummary.exercises.length) && Array.isArray(s0?.entries)) {
+            lastExercisesListFallback = s0.entries.map(e => ({ exerciseName: e.exerciseName || e.name || e.label || 'Exercice', done: true }));
+          }
+
+          let favoriteMuscleFromEntries = null;
+          const muscleMap = new Map();
+          for (const sess of enriched) {
+            const entries = Array.isArray(sess?.entries) ? sess.entries : [];
+            for (const e of entries) {
+              const groups = Array.isArray(e?.muscles) ? e.muscles : (e?.muscleGroup ? [e.muscleGroup] : (e?.muscle ? [e.muscle] : []));
+              for (const g of groups) {
+                const key = String(g).trim();
+                if (!key) continue;
+                muscleMap.set(key, (muscleMap.get(key) || 0) + 1);
+              }
+            }
+          }
+          for (const [k, v] of muscleMap.entries()) {
+            if (!favoriteMuscleFromEntries || v > favoriteMuscleFromEntries.count) favoriteMuscleFromEntries = { name: k, count: v };
+          }
+          favoriteMuscleGroupFallback = favoriteMuscleFromEntries?.name || null;
         }
       }
     } catch (_) {}
@@ -225,7 +268,7 @@ async function getUserSummary(req, res) {
 
     return res.json({
       avgWorkoutDurationMin: derived.avgWorkoutDurationMin ?? null,
-      avgCaloriesPerWorkout: derived.avgCaloriesPerWorkout ?? null,
+      avgCaloriesPerWorkout: derived.avgCaloriesPerWorkout ?? avgKcalAll ?? null,
       workoutsCount7d: workoutsCount7dSess || (derived.workoutsCount7d ?? 0),
       calories7d: calories7dSess || (derived.calories7d ?? 0),
       avgDailyCalories7d: derived.avgDailyCalories7d ?? null,
@@ -240,11 +283,11 @@ async function getUserSummary(req, res) {
       lastPlannedExercises: lastSessionSummary?.plannedExercises ?? null,
       lastCompletedExercises: lastSessionSummary?.completedExercises ?? null,
       lastSkippedExercises: lastSessionSummary?.skippedExercises ?? null,
-      lastExercisesList: Array.isArray(lastSessionSummary?.exercises) ? lastSessionSummary.exercises : [],
+      lastExercisesList: Array.isArray(lastSessionSummary?.exercises) && lastSessionSummary.exercises.length ? lastSessionSummary.exercises : lastExercisesListFallback,
       caloriesBurnedWeek,
       totalSessions: totalSessions || (fromSessions ? fromSessions.totalSessions : 0),
       streakDays,
-      favoriteMuscleGroup: derived.favoriteMuscleGroup || (fromSessions ? fromSessions.favoriteMuscleGroupFromSessions : null),
+      favoriteMuscleGroup: derived.favoriteMuscleGroup || (fromSessions ? fromSessions.favoriteMuscleGroupFromSessions : null) || favoriteMuscleGroupFallback,
       topMuscles7d: derived.topMuscles7d || (fromSessions ? fromSessions.topMuscles7dFromSessions : []),
       muscleCounts7d: derived.muscleCounts7d || (fromSessions ? fromSessions.muscleCounts7dFromSessions : {}),
       nextGoal,

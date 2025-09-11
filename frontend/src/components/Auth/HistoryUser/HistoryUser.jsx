@@ -26,10 +26,27 @@ export default function HistoryUser({ onClose, onLogout }) {
   };
   const { records, sessions, status, error, displayName, setRecords, handleDelete } = useHistoryData();
 
+  const [wsSessions, setWsSessions] = useState(null);
+  const [wsPoints, setWsPoints] = useState(null);
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/sessions', { credentials: 'include' });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!alive) return;
+        setWsSessions(Array.isArray(json.items) ? json.items : null);
+        setWsPoints(Array.isArray(json.points) ? json.points : null);
+      } catch (e) {}
+    })();
+    return () => { alive = false; };
+  }, []);
 
   const [userSessions, setUserSessions] = useState([]);
   React.useEffect(() => {
-    const list = Array.isArray(sessions) ? sessions : [];
+    const base = Array.isArray(wsSessions) ? wsSessions : sessions;
+    const list = Array.isArray(base) ? base : [];
 
     const normalize = (s) => {
 
@@ -50,7 +67,7 @@ export default function HistoryUser({ onClose, onLogout }) {
     };
 
     setUserSessions(list.map(normalize));
-  }, [sessions]);
+  }, [sessions, wsSessions]);
 
   const imcPoints = useMemo(() => records.filter(r => r.type === 'imc'), [records]);
   const weightPoints = useMemo(() =>
@@ -61,6 +78,14 @@ export default function HistoryUser({ onClose, onLogout }) {
   , [imcPoints]);
 
   const sessionPoints = useMemo(() => {
+    if (Array.isArray(wsPoints) && wsPoints.length) {
+      const norm = wsPoints
+        .map(p => ({ ...p, date: parseDate(p.date) }))
+        .filter(p => p.date)
+        .sort((a, b) => a.date - b.date);
+      return norm;
+    }
+
     const safeDate = (raw) => parseDate(
       raw?.date || raw?.createdAt || raw?.day || raw?.performedAt || raw?.startedAt || raw?.endedAt || raw
     );
@@ -115,7 +140,7 @@ export default function HistoryUser({ onClose, onLogout }) {
 
     pts.sort((a, b) => a.date - b.date);
     return pts;
-  }, [userSessions, parseDate]);
+  }, [wsPoints, userSessions, parseDate]);
 
   const lastCompletedSession = useMemo(() => {
     const list = Array.isArray(userSessions) ? userSessions : [];
@@ -161,7 +186,7 @@ export default function HistoryUser({ onClose, onLogout }) {
       </div>
 
       <div className={style.recapGrid}>
-        <ImcRecapCard imcPoints={imcPoints} onDelete={handleDelete} />
+        <ImcRecapCard imcPoints={imcPoints} sessions={userSessions} lastSession={lastCompletedSession} onDelete={handleDelete} />
       </div>
 
       <div className={style.suivieSeanceBlock}>

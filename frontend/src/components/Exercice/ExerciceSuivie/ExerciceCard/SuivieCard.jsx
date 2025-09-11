@@ -1,26 +1,4 @@
-// Helpers for localStorage persistence of exercise form state
-const STORAGE_NS = "suivie_exo_inputs:";
-function storageKey(exo) {
-  const id = (exo && (exo.id || exo._id || exo.slug || exo.name)) ? String(exo.id || exo._id || exo.slug || exo.name) : "unknown";
-  return `${STORAGE_NS}${id}`;
-}
-function loadSaved(exo) {
-  try {
-    const raw = localStorage.getItem(storageKey(exo));
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-function saveSaved(exo, data) {
-  try {
-    localStorage.setItem(storageKey(exo), JSON.stringify(data || null));
-  } catch {}
-}
-function clearSaved(exo) {
-  try { localStorage.removeItem(storageKey(exo)); } catch {}
-}
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./SuivieCard.module.css";
 
 import useExerciceForm from "./hooks/useExerciceForm";
@@ -37,13 +15,28 @@ import notesStyles from "./Notes/NotesSaction.module.css";
 
 import { idOf } from "../../Shared/idOf.js";
 
+const STORAGE_NS = "suivie_exo_inputs:";
+function storageKeyFromExo(exo) {
+  try {
+    return STORAGE_NS + String(idOf(exo));
+  } catch {
+    return STORAGE_NS + "unknown";
+  }
+}
+function loadSavedDraft(exo) {
+  try {
+    const raw = localStorage.getItem(storageKeyFromExo(exo));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function SuivieCard({ exo, value, onChange }) {
   const [open, setOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Prefer prop "value" when provided; otherwise fall back to saved draft
-  const savedDraft = loadSaved(exo);
-  const hydratedValue = value != null ? value : savedDraft;
+  const hydratedOnMountRef = useRef(false);
 
   const {
     mode,
@@ -59,20 +52,7 @@ export default function SuivieCard({ exo, value, onChange }) {
     addCardioSet,
     removeCardioSet,
     patchCardioSet,
-  } = useExerciceForm(exo, hydratedValue, (key, next) => {
-    // persist every change locally
-    saveSaved(exo, next);
-    if (typeof onChange === 'function') onChange(key, next);
-  });
-
-  // Ensure we keep the previously chosen mode (cardio/muscu/pdc) from saved draft
-  useEffect(() => {
-    if (hydratedValue && hydratedValue.mode && hydratedValue.mode !== mode) {
-      setMode(hydratedValue.mode);
-    }
-    // only run when saved mode changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydratedValue?.mode]);
+  } = useExerciceForm(exo, value, onChange);
 
 
   const sets = Array.isArray(data?.sets) ? data.sets : [];
@@ -106,14 +86,31 @@ export default function SuivieCard({ exo, value, onChange }) {
     const done = isExerciseDone(payload);
     const next = { ...payload, done };
     try {
-      // persist final state locally
-      saveSaved(exo, next);
       if (typeof emit === 'function') {
-        emit(next); // will call onChange via wrapper
+        emit(next);
+      }
+      if (typeof onChange === 'function') {
+        onChange(idOf(exo), next);
       }
     } catch {}
     setOpen(false);
   }
+
+  useEffect(() => {
+    if (hydratedOnMountRef.current) return;
+    const saved = loadSavedDraft(exo);
+    if (saved) {
+      if (saved.mode && saved.mode !== mode) {
+        setMode(saved.mode);
+      }
+      const done = isExerciseDone(saved);
+      const enriched = { ...saved, mode: saved.mode || mode, done };
+      if (typeof emit === "function") {
+        emit(enriched);
+      }
+    }
+    hydratedOnMountRef.current = true;
+  }, []);
 
   return (
     <div className={styles.card}>
@@ -146,10 +143,10 @@ export default function SuivieCard({ exo, value, onChange }) {
                 onChange={(m) => {
                   setMode(m);
                   const next = { ...data, mode: m };
-                  // persist the chosen mode immediately
-                  saveSaved(exo, next);
-                  // propagate to parent value as well
-                  if (typeof emit === 'function') emit(next);
+                  const enriched = { ...next, done: isExerciseDone(next) };
+                  if (typeof emit === 'function') {
+                    emit(enriched);
+                  }
                 }}
                 classes={{ modeBar: modeStyles.modeBar, selectControl: modeStyles.selectControl }}
               />
