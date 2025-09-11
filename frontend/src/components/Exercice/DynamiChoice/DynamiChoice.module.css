@@ -1,6 +1,5 @@
 :root {
   color-scheme: light dark;
-  /* Base tokens (light) */
   --couleur-principale: #F7F6F2;
   --couleur-bouton-action: #F7B186;
   --couleur-bouton-selection: #B5EAD7;
@@ -8,7 +7,6 @@
   --font-titre: 'Merriweather', serif;
   --font-p: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 
-  /* Derived tokens */
   --bg: var(--couleur-principale);
   --paper: #ffffff;
   --ink: var(--couleur-text-noir);
