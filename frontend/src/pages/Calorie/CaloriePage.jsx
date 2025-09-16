@@ -1,4 +1,3 @@
-// src/pages/Calorie/CaloriePage.jsx
 import React, { useState } from "react";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import FormCalorie from "./FormCalorie/FormCalorie.jsx";
