@@ -6,18 +6,18 @@ export default function SocialLinks({ className = "" }) {
     <div>
 
         <div className={`${styles.social} ${className}`}>
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer nofollow" aria-label="Facebook">
                 <FaFacebook />
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferre nofollow" aria-label="Instagram">
                 <FaInstagram />
             </a>
         </div>
 
-        <div className={`${styles.social} ${className}`}>            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+        <div className={`${styles.social} ${className}`}>            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer nofollow" aria-label="Twitter">
                 <FaTwitter />
             </a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer nofollow" aria-label="LinkedIn">
                 <FaLinkedin />
             </a>
         </div>
