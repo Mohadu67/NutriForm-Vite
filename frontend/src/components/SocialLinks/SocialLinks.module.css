@@ -1,3 +1,16 @@
+:root {
+  color-scheme: light dark;
+  --social-ink: #121212;
+  --social-hover: #444;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --social-ink: #f4f7fb;
+    --social-hover: rgba(244, 247, 251, 0.75);
+  }
+}
+
 .social {
   display: flex;
   gap: 12px;
@@ -5,11 +18,18 @@
 
 .social a {
   font-size: 24px;
-  color: #000; 
-  transition: color 0.3s ease;
+  color: var(--social-ink, #121212);
+  transition: color 0.3s ease, transform 0.3s ease;
 }
 
-.social a:hover {
+.social a:hover,
+.social a:focus-visible {
   transform: scale(1.2);
-  transition: transform 0.4s ease;
+  color: var(--social-hover, #444);
+}
+
+.social a:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--social-hover, #444) 60%, transparent);
+  border-radius: 50%;
 }
