@@ -13,6 +13,7 @@
     <link rel="icon" type="image/svg+xml" href="/src/assets/img/logo/Logo.svg">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tarteaucitronjs@1.9.7/css/tarteaucitron.css">
     <link rel="stylesheet" href="/tarteaucitron-custom.css">
+
   </head>
   <body>
     <div id="root"></div>
@@ -36,19 +37,12 @@
         "useExternalCss": true
       });
 
-      tarteaucitron.services.gtag = {
-        "key": "gtag",
-        "type": "analytic",
-        "name": "Google Analytics (GA4)",
-        "needConsent": true,
-        "cookies": ['_ga', '_ga_*', '_gid'],
-        "js": function () {
-        tarteaucitron.addScript("https://www.googletagmanager.com/gtag/js?id=G-W8MHL50PHX");
+      // Utiliser le service GA4 natif de Tarteaucitron
+      tarteaucitron.user.gtagUa = 'G-W8MHL50PHX';
+      tarteaucitron.user.gtagMore = function () {
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-  gtag('config', 'G-W8MHL50PHX', { anonymize_ip: true });
+        if (typeof gtag === 'function') {
+          gtag('config', 'G-W8MHL50PHX', { anonymize_ip: true });
         }
       };
 
