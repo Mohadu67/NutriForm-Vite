@@ -95,7 +95,6 @@
   border-radius: 12px;
   font-weight: 600;
   border: 1px solid color-mix(in srgb, var(--line, rgba(0,0,0,.08)) 82%, transparent);
-  background: color-mix(in srgb, var(--footer-bg, #f1f4f8) 88%, var(--footer-ink, #1f2933) 12%);
   color: var(--footer-ink, #1f2933);
   text-decoration: none;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.15);
@@ -151,8 +150,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--footer-bg, #f1f4f8) 75%, var(--footer-ink, #1f2933) 25%);
   color: var(--footer-ink, #1f2933);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.15);
+
   border: 1px solid color-mix(in srgb, var(--line, rgba(0,0,0,.08)) 60%, transparent);
   transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
