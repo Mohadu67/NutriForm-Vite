@@ -88,13 +88,20 @@
 
 /* Primary auth CTA */
 .authLink {
-  background: var(--accent);
   color: var(--accent-ink);
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 10px 18px rgba(224,122,71,.20), 0 2px 6px rgba(0,0,0,.06);
   transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease, filter .15s ease;
   text-align: center;
+  border-radius: 10px;
+}
+
+.burger li.authLink {
+  background-color: var(--accent);
+    border-radius: 10px;
+
+
 }
 
 .burger li.authLink {
