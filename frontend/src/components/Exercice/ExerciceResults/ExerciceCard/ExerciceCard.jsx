@@ -10,7 +10,21 @@ const canon = (s) =>
 
 const idOf = (ex) => (ex?.id ?? ex?._id ?? ex?.slug ?? canon(ex?.name || ex?.title));
 
-export default function ExerciceCard({ exo, onAdd, isAdded = false, draggable = false, onDragStart, onDragOver, onDrop, onRemove }) {
+export default function ExerciceCard({
+  exo,
+  onAdd,
+  isAdded = false,
+  draggable = false,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onRemove,
+  disableTap = false,
+  isTouchDragging = false,
+  onTouchReorderStart,
+  onTouchReorderMove,
+  onTouchReorderEnd,
+}) {
   const [open, setOpen] = useState(false);
   const dialogId = useId();
 
@@ -18,15 +32,20 @@ export default function ExerciceCard({ exo, onAdd, isAdded = false, draggable = 
 
   const imgSrc = Array.isArray(exo.images) && exo.images.length > 0 ? exo.images[0] : null;
   const initial = exo.name?.trim()?.[0]?.toUpperCase() || "?";
+  const exId = idOf(exo);
 
   return (
     <>
       <div
         role="button"
         tabIndex={0}
-        className={styles.row}
-        onClick={() => setOpen(true)}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(true); } }}
+        className={`${styles.row} ${isTouchDragging ? styles.isTouchDragging : ""}`}
+        data-ex-id={exId}
+        onClick={() => { if (!disableTap) setOpen(true); }}
+        onKeyDown={(e) => {
+          if (disableTap) return;
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(true); }
+        }}
         aria-haspopup="dialog"
         aria-controls={dialogId}
         aria-expanded={open}
@@ -37,6 +56,26 @@ export default function ExerciceCard({ exo, onAdd, isAdded = false, draggable = 
           onDragStart={(e) => { e.stopPropagation(); onDragStart && onDragStart(e, exo); }}
           onDragOver={(e) => { if (!draggable) return; e.preventDefault(); e.stopPropagation(); onDragOver && onDragOver(e, exo); }}
           onDrop={(e) => { if (!draggable) return; e.preventDefault(); e.stopPropagation(); onDrop && onDrop(e, exo); }}
+          onPointerDown={(e) => {
+            if (e.pointerType === "touch") {
+              onTouchReorderStart && onTouchReorderStart(e, exo);
+            }
+          }}
+          onPointerMove={(e) => {
+            if (e.pointerType === "touch") {
+              onTouchReorderMove && onTouchReorderMove(e);
+            }
+          }}
+          onPointerUp={(e) => {
+            if (e.pointerType === "touch") {
+              onTouchReorderEnd && onTouchReorderEnd(e);
+            }
+          }}
+          onPointerCancel={(e) => {
+            if (e.pointerType === "touch") {
+              onTouchReorderEnd && onTouchReorderEnd(e, true);
+            }
+          }}
           title="Glisser pour réordonner"
           aria-label="Glisser pour réordonner"
         >
@@ -60,7 +99,7 @@ export default function ExerciceCard({ exo, onAdd, isAdded = false, draggable = 
           <button
             type="button"
             className={styles.deleteBtn}
-            onClick={(e) => { e.stopPropagation(); onRemove(idOf(exo)); }}
+            onClick={(e) => { e.stopPropagation(); onRemove(exId); }}
             aria-label="Supprimer cet exercice"
             title="Supprimer"
           >
