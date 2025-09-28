@@ -1,10 +1,19 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
-import { idOf } from "../Shared/idOf.js";
 import { mergeById } from "../Shared/selectionUtils";
-import CardChoice, { TYPE_CARDS, EQUIP_CARDS, MUSCLE_CARDS } from "./CardChoice/CardChoice.jsx";
+import CardChoice, { TYPE_CARDS, EQUIP_CARDS } from "./CardChoice/CardChoice.jsx";
 import { useStepSubtitle, buildFunnyMessage } from "../subtitlePools";
 import ExerciseResults from "../ExerciceResults/ExerciseResults.jsx";
+import AdSlot from "../../AdSlot/AdSlot.jsx";
 import styles from "./DynamiChoice.module.css";
+
+const MUSCLE_CARDS = [
+  { id: "pectoraux", icon: "💥", label: "Pectoraux" },
+  { id: "dos", icon: "🕸️", label: "Dos" },
+  { id: "epaules", icon: "🏹", label: "Épaules" },
+  { id: "bras", icon: "💪", label: "Bras" },
+  { id: "jambes", icon: "🦵", label: "Jambes" },
+  { id: "core", icon: "🎛️", label: "Core" },
+];
 
 export default function DynamiChoice({ onComplete = () => {}, onStepChange, requestedStep, onSearch }) {
   const [step, setStep] = useState(() => {
@@ -227,6 +236,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
       </header>
 
       <div className={styles.body}>{renderCards()}</div>
+      <AdSlot slot="1234567890" />
 
       {funnyMessage && <p className={`${styles.funny} ${styles.funnyMessage}`}>{funnyMessage}</p>}
 

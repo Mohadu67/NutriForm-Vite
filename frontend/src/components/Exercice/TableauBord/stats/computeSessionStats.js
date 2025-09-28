@@ -49,6 +49,7 @@ export function computeSessionStats(lastSession = null, items = [], options = {}
 
   if (!calories) {
     let kcal = 0;
+    const mass = resolveBodyMassKg(lastSession, options, bodyMassKg);
 
     for (const e of entries) {
       const sets = Array.isArray(e.sets) ? e.sets : [];
@@ -56,26 +57,22 @@ export function computeSessionStats(lastSession = null, items = [], options = {}
 
       if (e.type === 'cardio') {
         for (const s of validSets) {
-          const minPart = toNumber(s.durationMin, 0);
-          const secPart = toNumber(s.durationSec, 0);
-          const totalMin = (minPart || 0) + (secPart || 0) / 60;
-          if (totalMin > 0) {
+          const minutes = estimateSetDurationMin(s, 300);
+          if (minutes > 0) {
             const met = intensityToMET(s.intensity || s.level || s.pace);
-            const mass = resolveBodyMassKg(lastSession, options, bodyMassKg);
-            kcal += (met * 3.5 * mass / 200) * totalMin;
+            kcal += (met * 3.5 * mass / 200) * minutes;
           }
         }
       } else {
         for (const s of validSets) {
-          const w = toNumber(s.weightKg ?? s.weight, 0);
-          const r = Math.max(1, toNumber(s.reps ?? s.rep, 0));
-          const mult = intensityMultiplier(s.intensity || s.tempo || s.rpe);
-          if (w && r) {
-            kcal += (w * r * 0.10) * mult;
-          } else {
-            const mass = resolveBodyMassKg(lastSession, options, bodyMassKg);
-            kcal += (mass / 80) * 5 * mult;
-          }
+          const minutes = estimateSetDurationMin(s, e.type === 'poids_du_corps' ? 90 : 120);
+          if (minutes <= 0) continue;
+
+          const reps = Math.max(1, toNumber(s.reps ?? s.rep ?? s.repetitions ?? s['répétitions'], 0));
+          const load = inferSetLoadKg(s, e.type, mass);
+          const volumePerSet = load * reps;
+          const met = strengthSetMET(e.type, s.intensity || s.tempo || s.rpe, volumePerSet, mass);
+          kcal += (met * 3.5 * mass / 200) * minutes;
         }
       }
     }
@@ -186,11 +183,10 @@ function inferTypeFromData(data, sets, fallbackMode) {
 
 function intensityToMET(intensity) {
   const val = String(intensity || '').toLowerCase();
-  if (!val) return 7; // default moderate
+  if (!val) return 7;
   if (/(low|faible|lent|easy|light)/.test(val)) return 5;
   if (/(high|élevé|eleve|hard|intense|vigorous|sprint)/.test(val)) return 11;
   if (/(moder|moyen|tempo|steady)/.test(val)) return 8;
-  // numeric intensity (e.g., RPE 1-10)
   const num = parseFloat(val);
   if (!isNaN(num)) {
     if (num <= 3) return 5; if (num >= 8) return 11; return 8;
@@ -198,17 +194,53 @@ function intensityToMET(intensity) {
   return 7;
 }
 
-function intensityMultiplier(intensity) {
+function strengthSetMET(type, intensity, volumePerSet, bodyMassKg) {
+  const base = type === 'poids_du_corps' ? 5.0 : 4.5;
+  const intensityAdj = strengthIntensityMultiplier(intensity);
+  const relativeVolume = bodyMassKg > 0 ? volumePerSet / bodyMassKg : 0;
+  const volumeAdj = Math.min(1.5, Math.max(0, relativeVolume / 12));
+  const met = (base * intensityAdj) + volumeAdj;
+  return clamp(met, 3.0, 8.5);
+}
+
+function inferSetLoadKg(set, type, bodyMassKg) {
+  const weight = toNumber(set.weightKg ?? set.weight ?? set.kg ?? set.poids, null);
+  if (Number.isFinite(weight) && weight > 0) return weight;
+  if (type === 'poids_du_corps') {
+    const reps = Math.max(1, toNumber(set.reps ?? set.rep ?? set.repetitions ?? set['répétitions'], 0));
+    const assumedLoad = bodyMassKg * 0.35;
+    return Math.max(10, assumedLoad + (reps > 15 ? assumedLoad * 0.15 : 0));
+  }
+  return bodyMassKg * 0.25; 
+}
+
+function estimateSetDurationMin(set, fallbackSec) {
+  const sec = toNumber(set.durationSec, null);
+  const min = toNumber(set.durationMin ?? set.minutes, null);
+  if (sec != null || min != null) {
+    return ((min || 0) * 60 + (sec || 0)) / 60;
+  }
+  if (!fallbackSec) return 0;
+  return fallbackSec / 60;
+}
+
+function strengthIntensityMultiplier(intensity) {
   const val = String(intensity || '').toLowerCase();
   if (!val) return 1.0;
-  if (/(low|faible|easy|light)/.test(val)) return 0.85;
-  if (/(high|élevé|eleve|hard|intense|vigorous|sprint)/.test(val)) return 1.2;
-  if (/(moder|moyen|tempo|steady)/.test(val)) return 1.0;
+  if (/(low|faible|easy|light|léger|leger)/.test(val)) return 0.8;
+  if (/(high|élevé|eleve|hard|intense|vigorous|sprint|heavy|lourd)/.test(val)) return 1.25;
+  if (/(moder|moyen|tempo|steady|normal)/.test(val)) return 1.0;
   const num = parseFloat(val);
   if (!isNaN(num)) {
-    if (num <= 3) return 0.9; if (num >= 8) return 1.2; return 1.0;
+    if (num <= 3) return 0.85;
+    if (num >= 8) return 1.25;
+    return 1.05;
   }
   return 1.0;
+}
+
+function clamp(n, min, max) {
+  return Math.min(max, Math.max(min, n));
 }
 
 function toNumber(v, fallback) {

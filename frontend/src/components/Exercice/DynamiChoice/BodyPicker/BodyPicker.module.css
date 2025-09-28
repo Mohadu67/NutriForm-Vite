@@ -1,0 +1,109 @@
+:root {
+  --accent-fill: rgba(255, 130, 40, 0.48);
+  --accent-stroke: rgba(255, 130, 40, 0.95);
+  --accent-hover-fill: rgba(255, 130, 40, 0.32);
+  --accent-hover-stroke: rgba(255, 130, 40, 0.74);
+  --zone-base-fill: rgba(24, 24, 24, 0.18);
+  --zone-base-stroke: rgba(24, 24, 24, 0.48);
+  --badge-bg: rgba(255, 130, 40, 0.10);
+  --badge-bg-hover: rgba(255, 130, 40, 0.18);
+  --badge-border: rgba(255, 130, 40, 0.38);
+  --badge-text: #3a3a3a;
+}
+
+/* Reset default fills/strokes from the raw SVG so nothing stays black by default */
+.wrapper svg path,
+.wrapper svg polygon,
+.wrapper svg rect,
+.wrapper svg ellipse,
+.wrapper svg circle,
+.wrapper svg g {
+  fill: var(--zone-base-fill) !important;
+  stroke: var(--zone-base-stroke) !important;
+  pointer-events: none; /* important: only .zone re-enables */
+}
+.wrapper { display: grid; gap: 18px; justify-items: center; }
+.figures { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; }
+.figure { flex: 1 1 220px; display: flex; justify-content: center; }
+.figureInteractive { cursor: default; }
+
+/* Fallback sizing for injected SVG without the module class */
+.wrapper svg {
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  display: block;
+  preserveAspectRatio: xMidYMid meet;
+}
+.svg { width: 100%; max-width: 340px; height: auto; touch-action: manipulation; }
+
+/* Zone base style, including all descendants */
+.zone,
+.zone * {
+  fill: var(--zone-base-fill) !important;
+  cursor: pointer;
+  transition: transform 0.18s ease, fill 0.18s ease, stroke 0.18s ease, filter 0.18s ease;
+  stroke: var(--zone-base-stroke) !important;
+  stroke-width: 1.6;
+  pointer-events: auto !important;
+}
+@media (hover: hover) and (pointer: fine) {
+  .zone:hover,
+  .zone:hover * {
+    transform: translateY(-2px);
+    fill: var(--accent-hover-fill) !important;
+    stroke: var(--accent-hover-stroke) !important;
+  }
+}
+.zone:active,
+.zone:active * {
+  transform: scale(0.99);
+  fill: rgba(24, 24, 24, 0.26) !important;
+}
+
+.zone.active,
+.zone.active * {
+  fill: var(--accent-fill) !important;
+  stroke: var(--accent-stroke) !important;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.18));
+}
+.zoneOutline {
+  fill: none;
+  stroke: rgba(20, 20, 20, 0.28);
+  stroke-width: 1.2;
+}
+/* Ensure only interactive zones capture clicks, not decorative outlines */
+.zoneOutline { pointer-events: none; }
+.zone { pointer-events: auto; }
+
+
+.legend { color: var(--ink, #1f2933); font-size: 0.9rem; text-align: center; }
+
+.selectedList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  margin-top: -8px; /* rapproche des instructions */
+}
+
+.zone:focus,
+.selectedBadge:focus {
+  outline: none;
+}
+
+
+
+@media (hover: hover) and (pointer: fine) {
+  .selectedBadge:hover {
+    background: var(--badge-bg-hover);
+    transform: translateY(-1px);
+    transition: transform 0.18s ease, background 0.18s ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zone { transition: none; }
+  .zone:hover, .zone:active { transform: none; }
+}

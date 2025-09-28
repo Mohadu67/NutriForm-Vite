@@ -1,6 +1,6 @@
 .footer {
-  --footer-bg: #f1f4f8;
-  --footer-ink: #1f2933;
+  --footer-bg: var(--couleur-principale, #F7F6F2);
+  --footer-ink: var(--couleur-text-noir, #222325);
   --footer-hover-ink: #0f172a;
 
   background: var(--footer-bg);
@@ -12,8 +12,8 @@
 
 @media (prefers-color-scheme: dark) {
   .footer {
-    --footer-bg: #0f172a;
-    --footer-ink: #f8fafc;
+    --footer-bg: var(--couleur-principale, #0c0e12);
+    --footer-ink: var(--ink, #e9ecf1);
     --footer-hover-ink: #0b1220;
     border-top-color: color-mix(in srgb, var(--line, rgba(255,255,255,.12)) 70%, transparent);
   }

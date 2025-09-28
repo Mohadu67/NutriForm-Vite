@@ -82,9 +82,8 @@ export default function FormExo({ user }) {
 
         <div className={styles.summaryActions}>
           <button className={styles.BtnRestart} type="button" onClick={() => {
-            // Set restart flag BEFORE switching back to the builder so DynamiChoice picks it up on mount
-            try { localStorage.setItem("forceDynamiStart", "1"); } catch {}
-            // UI and local state resets
+            setMode("builder");
+            setCurrentStep(0);
             setShowSummary(false);
             setSessionName("");
             setSelectedExercises([]);
@@ -92,11 +91,16 @@ export default function FormExo({ user }) {
             setSearchCb(null);
             setLastItems([]);
             setLastStats(null);
-            // Clear persisted selections and session-related keys
             try {
               const KEYS = [
                 "dynamiSelected",
                 "dynamiHasTouched",
+                "dynamiStep",
+                "dynamiType",
+                "dynamiEquip",
+                "dynamiMuscle",
+                "dynamiLastResults",
+                "dynamiDismissed",
                 "formSelectedExercises",
                 "formCurrentStep",
                 "formMode",
@@ -104,11 +108,11 @@ export default function FormExo({ user }) {
                 "suivieStartedAt",
                 "SuivieExoDraft",
                 "suivie_exo_draft",
-                "DRAFT_KEY"
+                "DRAFT_KEY",
+                "forceDynamiStart"
               ];
               KEYS.forEach(k => localStorage.removeItem(k));
             } catch {}
-            // Also clear every per-exercise draft (namespace: suivie_exo_inputs:)
             try {
               const NS = "suivie_exo_inputs:";
               const toDelete = [];
@@ -118,10 +122,6 @@ export default function FormExo({ user }) {
               }
               toDelete.forEach(k => localStorage.removeItem(k));
             } catch {}
-            // Now switch back to the builder at step 0
-            setMode("builder");
-            setCurrentStep(0);
-            // Visual comfort: scroll to top
             try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch {}
           }}>
             🔄 Recommencer
