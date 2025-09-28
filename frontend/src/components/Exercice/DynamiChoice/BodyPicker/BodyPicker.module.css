@@ -107,3 +107,38 @@
   .zone { transition: none; }
   .zone:hover, .zone:active { transform: none; }
 }
+
+/* --------------------------------------------------
+   Dark mode: make the body visible on dark surfaces
+   -------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* lighter fills and strokes on dark backgrounds */
+    --zone-base-fill: rgba(255, 255, 255, 0.12);
+    --zone-base-stroke: rgba(255, 255, 255, 0.40);
+
+    /* badges more legible in dark */
+    --badge-bg: rgba(255, 130, 40, 0.18);
+    --badge-bg-hover: rgba(255, 130, 40, 0.26);
+    --badge-border: rgba(255, 130, 40, 0.50);
+    --badge-text: #f3f4f6;
+  }
+
+  .legend { color: #e5e7eb; }
+
+  /* outlines must be visible on dark */
+  .zoneOutline { stroke: rgba(255, 255, 255, 0.28); }
+}
+
+/* Optional explicit data-theme hook if your app toggles themes manually */
+.wrapper[data-theme="dark"] {
+  --zone-base-fill: rgba(255, 255, 255, 0.12);
+  --zone-base-stroke: rgba(255, 255, 255, 0.40);
+  --badge-bg: rgba(255, 130, 40, 0.18);
+  --badge-bg-hover: rgba(255, 130, 40, 0.26);
+  --badge-border: rgba(255, 130, 40, 0.50);
+  --badge-text: #f3f4f6;
+}
+
+.wrapper[data-theme="dark"] .legend { color: #e5e7eb; }
+.wrapper[data-theme="dark"] .zoneOutline { stroke: rgba(255, 255, 255, 0.28); }
