@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import styles from "./AdSlot.module.css";
 
-export default function AdSlot({ slot, format = "auto", responsive = "true" }) {
+export default function AdSlot({ slot, format = "auto", responsive = "true", className = "" }) {
   useEffect(() => {
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -9,14 +10,20 @@ export default function AdSlot({ slot, format = "auto", responsive = "true" }) {
     }
   }, []);
 
+  const containerClass = useMemo(
+    () => [styles.container, className].filter(Boolean).join(" "),
+    [className]
+  );
+
   return (
-    <ins
-      className="adsbygoogle"
-      style={{ display: "block" }}
-      data-ad-client="ca-pub-1782627044363694"  // ton ID client AdSense
-      data-ad-slot={slot}                       // l’ID du slot (AdSense te le donne pour chaque pub)
-      data-ad-format={format}
-      data-full-width-responsive={responsive}
-    ></ins>
+    <div className={containerClass}>
+      <ins
+        className={`adsbygoogle ${styles.slot}`.trim()}
+        data-ad-client="ca-pub-1782627044363694"
+        data-ad-slot={slot}
+        data-ad-format={format}
+        data-full-width-responsive={responsive}
+      ></ins>
+    </div>
   );
 }

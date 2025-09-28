@@ -38,7 +38,7 @@ function startCleanerOnce() {
     try {
       const now = new Date();
       const res = await User.deleteMany({ emailVerifie: false, verificationExpires: { $lt: now } });
-      if (res?.deletedCount) console.log(`[verify.cleaner] Comptes non vérifiés supprimés: ${res.deletedCount}`);
+      if (res?.deletedCount) console.info(`[verify.cleaner] Comptes non vérifiés supprimés: ${res.deletedCount}`);
     } catch (e) {
       console.error('[verify.cleaner] erreur:', e);
     }

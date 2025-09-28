@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ExerciceCard from "./ExerciceCard/ExerciceCard.jsx";
 import { rechercherExercices } from "../DynamiChoice/MoteurRecherche/MoteurRecherche.jsx";
 import Button from "../../BoutonAction/BoutonAction.jsx";
@@ -36,6 +36,11 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     }
   });
   const [dragKey, setDragKey] = useState(null);
+  const listRef = useRef(null);
+  const touchDragState = useRef(null);
+  const [touchDraggingId, setTouchDraggingId] = useState(null);
+  const [touchSuppressTap, setTouchSuppressTap] = useState(false);
+  const touchSuppressTimeout = useRef(null);
 
   const filterKey = useMemo(() => {
     const eq = Array.isArray(equipIds) ? [...equipIds].slice().sort() : [];
@@ -164,23 +169,152 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     return [...ordered, ...proposed];
   }, [ordered, proposed]);
 
-  useEffect(() => {
-    if (Array.isArray(ordered) && ordered.length > 0) {
-      broadcastSelection(ordered);
+  const clearTouchState = useCallback((state, canceled = false) => {
+    const current = state || touchDragState.current;
+    if (!current) return;
+    if (current.timer) {
+      clearTimeout(current.timer);
     }
+    if (current.active && current.captureTarget && current.pointerId != null) {
+      try {
+        current.captureTarget.releasePointerCapture(current.pointerId);
+      } catch {}
+    }
+    touchDragState.current = null;
+    setTouchDraggingId(null);
+    if (current.active && !canceled) {
+      setTouchSuppressTap(true);
+      if (touchSuppressTimeout.current) {
+        clearTimeout(touchSuppressTimeout.current);
+      }
+      touchSuppressTimeout.current = window.setTimeout(() => setTouchSuppressTap(false), 160);
+    }
+  }, []);
+
+  const startTouchReorder = useCallback((event, exo) => {
+    if (!exo || event.pointerType !== "touch") return;
+
+    if (touchDragState.current && touchDragState.current.timer) {
+      clearTimeout(touchDragState.current.timer);
+    }
+
+    const id = idOf(exo);
+    const pointerId = event.pointerId;
+    const captureTarget = event.currentTarget;
+    const startX = event.clientX;
+    const startY = event.clientY;
+
+    const state = {
+      id,
+      pointerId,
+      captureTarget,
+      startX,
+      startY,
+      active: false,
+      timer: window.setTimeout(() => {
+        state.active = true;
+        setTouchDraggingId(id);
+        setHasTouched(true);
+        try {
+          captureTarget.setPointerCapture(pointerId);
+        } catch {}
+      }, 220),
+    };
+
+    touchDragState.current = state;
+  }, [setHasTouched]);
+
+  const moveTouchReorder = useCallback((event) => {
+    const state = touchDragState.current;
+    if (!state || state.pointerId !== event.pointerId) return;
+
+    if (!state.active) {
+      const dx = Math.abs(event.clientX - state.startX);
+      const dy = Math.abs(event.clientY - state.startY);
+      if (dx > 6 || dy > 6) {
+        clearTouchState(state, true);
+      }
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const listEl = listRef.current;
+    if (!listEl) return;
+    const items = Array.from(listEl.querySelectorAll('[data-ex-id]'));
+    if (!items.length) return;
+
+    const currentIndex = items.findIndex((el) => el.dataset.exId === state.id);
+    if (currentIndex === -1) return;
+
+    let targetIndex = currentIndex;
+    const pointerY = event.clientY;
+    for (let i = 0; i < items.length; i++) {
+      const rect = items[i].getBoundingClientRect();
+      const midpoint = rect.top + rect.height / 2;
+      if (pointerY < midpoint) {
+        targetIndex = i;
+        break;
+      }
+      targetIndex = i;
+    }
+
+    if (targetIndex === currentIndex) return;
+
+    setOrdered((prev) => {
+      if (!Array.isArray(prev) || prev.length < 2) return prev;
+      const arr = [...prev];
+      const from = arr.findIndex((item) => idOf(item) === state.id);
+      if (from === -1) return prev;
+      const to = Math.min(arr.length - 1, Math.max(0, targetIndex));
+      if (from === to) return prev;
+      const [moved] = arr.splice(from, 1);
+      arr.splice(to, 0, moved);
+      return arr;
+    });
+  }, [clearTouchState]);
+
+  const endTouchReorder = useCallback((event, canceled = false) => {
+    const state = touchDragState.current;
+    if (!state || state.pointerId !== event.pointerId) return;
+    if (state.active) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    clearTouchState(state, canceled);
+  }, [clearTouchState]);
+
+  useEffect(() => {
+    if (!Array.isArray(ordered)) return;
+    broadcastSelection(ordered);
   }, [ordered]);
 
   useEffect(() => {
     if (!initialSelected) return;
-    const next = Array.isArray(initialSelected) ? initialSelected : [];
-    setHasTouched(true);
+    const incoming = Array.isArray(initialSelected) ? initialSelected : [];
+    const allowed = Array.isArray(results) && results.length ? new Set(results.map((ex) => idOf(ex))) : null;
+
+    if (incoming.length) setHasTouched(true);
+
     setOrdered((prev) => {
-      const merged = mergeById(prev, next);
-      if (sameIds(prev, merged)) return prev;
-      broadcastSelection(merged);
+      let working = Array.isArray(prev) ? prev : [];
+      if (allowed) {
+        const filteredPrev = working.filter((item) => allowed.has(idOf(item)));
+        if (!sameIds(working, filteredPrev)) {
+          working = filteredPrev;
+        }
+      }
+
+      if (!incoming.length) {
+        return working;
+      }
+
+      const merged = mergeById(working, incoming);
+      if (sameIds(working, merged)) return working;
       return merged;
     });
-  }, [initialSelected]);
+  }, [initialSelected, results]);
 
   useEffect(() => {
     function handleReplace(e) {
@@ -191,7 +325,6 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
       setOrdered((prev) => {
         const merged = mergeById(prev, items);
         if (sameIds(prev, merged)) return prev;
-        broadcastSelection(merged);
         return merged;
       });
     }
@@ -204,19 +337,25 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   }, [dismissed]);
 
   function broadcastSelection(next) {
+    const arr = Array.isArray(next) ? next : [];
     try {
-      const str = JSON.stringify(next);
-      localStorage.setItem("dynamiSelected", str);
-      localStorage.setItem("formSelectedExercises", str);
-      localStorage.setItem("dynamiHasTouched", "1");
+      const str = JSON.stringify(arr);
+      if (arr.length > 0) {
+        localStorage.setItem("dynamiSelected", str);
+        localStorage.setItem("formSelectedExercises", str);
+      } else {
+        localStorage.removeItem("dynamiSelected");
+        localStorage.setItem("formSelectedExercises", "[]");
+      }
+      localStorage.setItem("dynamiHasTouched", arr.length > 0 ? "1" : "0");
     } catch {}
     setTimeout(() => {
       try {
-        window.dispatchEvent(new CustomEvent("dynami:selected:update", { detail: { items: next } }));
+        window.dispatchEvent(new CustomEvent("dynami:selected:update", { detail: { items: arr } }));
       } catch {}
       try {
-        if (onResultsChange) onResultsChange(next);
-        else if (onChange) onChange(next);
+        if (onResultsChange) onResultsChange(arr);
+        else if (onChange) onChange(arr);
       } catch {}
     }, 0);
   }
@@ -239,7 +378,6 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
       if (from === -1 || to === -1) return prev;
       const [moved] = arr.splice(from, 1);
       arr.splice(to, 0, moved);
-      broadcastSelection(arr);
       return arr;
     });
     setDragKey(null);
@@ -247,11 +385,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   function onRemoveItem(exOrId) {
     setHasTouched(true);
     const id = idOf(exOrId);
-    setOrdered((prev) => {
-      const arr = prev.filter((x) => idOf(x) !== id);
-      broadcastSelection(arr);
-      return arr;
-    });
+    setOrdered((prev) => prev.filter((x) => idOf(x) !== id));
     setDismissed((prev) => {
       const next = new Set(prev);
       next.add(id);
@@ -271,8 +405,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     setHasTouched(true);
     setDismissed(new Set());
     if (Array.isArray(results) && results.length > 0) {
-      setOrdered(results);
-      broadcastSelection(results);
+      setOrdered(results.slice());
     }
   }
 
@@ -320,14 +453,14 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
                 onDragOver={isSelected ? onDragOverItem : undefined}
                 onDrop={isSelected ? onDropItem : undefined}
                 onRemove={isSelected ? onRemoveItem : onDismissItem}
+                onMoveUp={isSelected ? () => moveItem(key, -1) : undefined}
+                onMoveDown={isSelected ? () => moveItem(key, 1) : undefined}
                 onAdd={(e) => {
                   if (isSelected) return;
                   setHasTouched(true);
                   setOrdered((prev) => {
                     if (prev.some((x) => idOf(x) === key)) return prev;
-                    const arr = [...prev, exo];
-                    broadcastSelection(arr);
-                    return arr;
+                    return [...prev, exo];
                   });
                 }}
                 isAdded={isSelected}

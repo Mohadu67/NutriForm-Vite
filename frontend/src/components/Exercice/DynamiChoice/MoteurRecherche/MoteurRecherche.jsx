@@ -191,7 +191,6 @@ function expandTypes(typeIds) {
   return uniq(res.map(norm));
 }
 
-// Amélioration: sépare biceps et triceps quand ils sont explicitement demandés
 function expandMuscles(muscleIds) {
   const ids = Array.isArray(muscleIds) ? muscleIds : [muscleIds].filter(Boolean);
   const requestedTokens = uniq(normArr(ids));

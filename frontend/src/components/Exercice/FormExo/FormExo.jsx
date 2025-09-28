@@ -30,6 +30,7 @@ export default function FormExo({ user }) {
   const [showSummary, setShowSummary] = useState(false);
   const [lastStats, setLastStats] = useState(null);
   const [lastItems, setLastItems] = useState([]);
+  const [lastSummary, setLastSummary] = useState(null);
   const [searchCb, setSearchCb] = useState(null);
   useEffect(() => { try { localStorage.setItem("formSessionName", JSON.stringify(sessionName)); } catch {} }, [sessionName]);
   useEffect(() => { try { localStorage.setItem("formCurrentStep", String(currentStep)); } catch {} }, [currentStep]);
@@ -57,6 +58,9 @@ export default function FormExo({ user }) {
       name: sessionName,
       durationSec: lastStats?.durationSec || 0,
       calories: lastStats?.calories || 0,
+      plannedExercises: lastSummary?.plannedExercises ?? lastStats?.totalExercises ?? undefined,
+      completedExercises: lastSummary?.completedExercises ?? lastStats?.doneExercises ?? undefined,
+      clientSummary: lastSummary || undefined,
       entries: Array.isArray(lastItems)
         ? lastItems.map(it => {
             const d = it?.data || {};
@@ -67,7 +71,12 @@ export default function FormExo({ user }) {
               : (muscuSets.length > 0
                   ? (muscuSets.some(s => (s.weight ?? s.weightKg ?? '') !== '') ? 'muscu' : 'poids_du_corps')
                   : (it?.mode === 'cardio' ? 'cardio' : (it?.mode === 'muscu' ? 'muscu' : 'poids_du_corps')));
-            return { type, sets: cardioSets.length ? cardioSets : muscuSets };
+            return {
+              type,
+              sets: cardioSets.length ? cardioSets : muscuSets,
+              notes: typeof d?.notes === 'string' ? d.notes : undefined,
+              name: it?.name || it?.label || it?.exoName,
+            };
           })
         : [],
     };
@@ -91,6 +100,7 @@ export default function FormExo({ user }) {
             setSearchCb(null);
             setLastItems([]);
             setLastStats(null);
+            setLastSummary(null);
             try {
               const KEYS = [
                 "dynamiSelected",
@@ -186,7 +196,6 @@ export default function FormExo({ user }) {
             onResultsChange={(arr) => {
               const next = Array.isArray(arr) ? arr : [];
               setSelectedExercises(next);
-              console.log("FormExo.onResultsChange next=", next);
               try {
                 localStorage.setItem("formSelectedExercises", JSON.stringify(next));
                 localStorage.setItem("dynamiSelected", JSON.stringify(next));
@@ -196,7 +205,6 @@ export default function FormExo({ user }) {
             onChange={(arr) => {
               const next = Array.isArray(arr) ? arr : [];
               setSelectedExercises(next);
-              console.log("FormExo.onChange next=", next);
               try {
                 localStorage.setItem("formSelectedExercises", JSON.stringify(next));
                 localStorage.setItem("dynamiSelected", JSON.stringify(next));
@@ -204,11 +212,9 @@ export default function FormExo({ user }) {
               } catch {}
             }}
             onComplete={(selection) => {
-              console.log("Choix séance raw=", selection);
               const list = Array.isArray(selection)
                 ? selection
                 : (selection?.selectedExercises || selection?.exercises || []);
-              console.log("Choix séance parsed=", list);
               setSelectedExercises(list);
               setMode("session");
             }}
@@ -238,17 +244,59 @@ export default function FormExo({ user }) {
               setMode("builder");
             }}
             onFinish={async (payload) => {
+              const summary = payload?.summary && typeof payload.summary === 'object'
+                ? payload.summary
+                : null;
+              const totalExercises = (() => {
+                const fromSummary = Number(summary?.plannedExercises);
+                if (Number.isFinite(fromSummary) && fromSummary > 0) return fromSummary;
+                const fromPayload = Number(payload?.totalExercises);
+                if (Number.isFinite(fromPayload) && fromPayload > 0) return fromPayload;
+                return Array.isArray(selectedExercises) ? selectedExercises.length : 0;
+              })();
+              const doneExercises = (() => {
+                const fromSummary = Number(summary?.completedExercises);
+                if (Number.isFinite(fromSummary) && fromSummary >= 0) return fromSummary;
+                const fromPayload = Number(payload?.doneExercises);
+                if (Number.isFinite(fromPayload) && fromPayload >= 0) return fromPayload;
+                return 0;
+              })();
+
               const stats = {
                 durationSec: payload?.durationSec ?? 0,
                 savedCount: payload?.savedCount ?? 0,
                 calories: payload?.calories ?? 0,
-                doneExercises: payload?.doneExercises ?? 0,
-                totalExercises: payload?.totalExercises ?? (Array.isArray(selectedExercises) ? selectedExercises.length : 0),
+                doneExercises,
+                totalExercises,
                 exercisesCount: Array.isArray(selectedExercises) ? selectedExercises.length : 0,
                 sessionName,
                 when: new Date().toISOString(),
               };
               const items = Array.isArray(payload?.items) ? payload.items : [];
+
+              const summaryForSave = summary || (() => {
+                const exercisesList = items.map(it => {
+                  const data = it?.data || {};
+                  return {
+                    exerciseName: it?.name || it?.label || it?.exoName || 'Exercice',
+                    done: Boolean(it?.done || data?.cardioSets?.length || data?.sets?.length),
+                    note: typeof data?.notes === 'string' && data.notes.trim() ? data.notes.trim() : undefined,
+                  };
+                });
+                const completed = Number.isFinite(doneExercises) && doneExercises >= 0
+                  ? doneExercises
+                  : exercisesList.filter(x => x.done).length;
+                const planned = Number.isFinite(totalExercises) && totalExercises > 0
+                  ? totalExercises
+                  : exercisesList.length;
+                const skipped = Math.max(0, planned - completed);
+                return {
+                  plannedExercises: planned,
+                  completedExercises: completed,
+                  skippedExercises: skipped,
+                  exercises: exercisesList,
+                };
+              })();
 
               try {
                 if (user && (user.id || user._id)) {
@@ -257,7 +305,10 @@ export default function FormExo({ user }) {
                     startedAt: stats?.when || new Date().toISOString(),
                     endedAt: new Date().toISOString(),
                     notes: "",
-                    items
+                    items,
+                    summary: summaryForSave,
+                    plannedExercises: summaryForSave?.plannedExercises,
+                    completedExercises: summaryForSave?.completedExercises,
                   };
                   const saved = await saveSession(body);
                   if (saved && (saved.id || saved._id)) {
@@ -270,6 +321,7 @@ export default function FormExo({ user }) {
 
               setLastStats(stats);
               setLastItems(items);
+              setLastSummary(summaryForSave);
               setShowSummary(true);
             }}
           />

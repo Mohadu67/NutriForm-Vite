@@ -84,7 +84,6 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
   }, [items, time]);
 
   async function handleConfirmFinish() {
-    // freeze the clock immediately via hook
     const finalSec = freezeClock(time, startTs);
 
     const safe = Array.isArray(items) ? items : [];
@@ -128,7 +127,8 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
         const hasMuscu = muscuSets.length > 0;
         return {
           exerciseName: String(it?.name || it?.label || it?.exoName || 'Exercice'),
-          done: Boolean(hasCardio || hasMuscu),
+          done: Boolean(it?.done || hasCardio || hasMuscu),
+          note: typeof d?.notes === 'string' && d.notes.trim() ? d.notes.trim() : undefined,
         };
       });
       const completed = list.filter(x => x.done).length;
@@ -144,14 +144,14 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
       const res = await save({ entries, durationSec: finalSec, label, summary });
       const savedCount = res?.ok && !res?.skipped ? 1 : 0;
       if (typeof onFinish === 'function') {
-        onFinish({ durationSec: finalSec, savedCount, calories, doneExercises, totalExercises });
+        onFinish({ durationSec: finalSec, savedCount, calories, doneExercises, totalExercises, summary });
       }
       setShowConfirm(false);
       stopAndReset();
     } catch (err) {
       console.error('[Chrono] save failed', err);
       if (typeof onFinish === 'function') {
-        onFinish({ durationSec: finalSec, savedCount: 0, calories, doneExercises, totalExercises });
+        onFinish({ durationSec: finalSec, savedCount: 0, calories, doneExercises, totalExercises, summary });
       }
       setShowConfirm(false);
       stopAndReset();
@@ -195,7 +195,6 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
                 className={styles.goBtn}
                 onClick={() => {
                   if (!startTs) {
-                    // Derive a start timestamp from startedAt if present, otherwise from displayed time
                     const parsed = startedAt ? new Date(startedAt).getTime() : NaN;
                     const safeTs = Number.isNaN(parsed) ? (Date.now() - (Number(time || 0) * 1000)) : parsed;
                     setStartTs(safeTs);

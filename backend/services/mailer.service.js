@@ -22,9 +22,6 @@ async function sendMail({ to, subject, html, text, replyTo }) {
   if (!to || !subject || (!html && !text)) throw new Error('sendMail: paramètres manquants');
   const t = getTransporter();
   const info = await t.sendMail({ from, to, subject, html, text, replyTo: replyTo || undefined });
-  if (process.env.NODE_ENV !== 'production') {
-    try { console.log('[mailer] Email envoyé:', info && info.messageId); } catch (_) {}
-  }
   return info;
 }
 

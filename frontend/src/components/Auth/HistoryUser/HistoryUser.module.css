@@ -42,6 +42,8 @@ body {
 .popup-header-row span {
   color: var(--nf-ink);
   font-size: larger;
+  text-transform: capitalize;
+
 }
 
 .headerSubtitle {

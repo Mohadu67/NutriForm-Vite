@@ -13,6 +13,17 @@ export default function useSaveSession() {
     const label = opts.label || snapshot.sessionName || snapshot.name || "";
     const durSec = Number(opts.durationSec ?? snapshot.durationSec ?? 0) || 0;
     const summary = opts.summary || snapshot.summary || null;
+    const summaryCounts = (() => {
+      if (!summary || typeof summary !== 'object') return {};
+      const planned = Number(summary.plannedExercises);
+      const completed = Number(summary.completedExercises);
+      const skipped = Number(summary.skippedExercises);
+      return {
+        plannedExercises: Number.isFinite(planned) ? planned : undefined,
+        completedExercises: Number.isFinite(completed) ? completed : undefined,
+        skippedExercises: Number.isFinite(skipped) ? skipped : undefined,
+      };
+    })();
 
     let entries = Array.isArray(opts.entries) ? opts.entries : null;
     if (!entries || entries.length === 0) {
@@ -45,6 +56,8 @@ export default function useSaveSession() {
           durationSec: durSec,
           ...(summary && typeof summary === "object" ? summary : {}),
         },
+        summary: summary && typeof summary === 'object' ? summary : undefined,
+        ...summaryCounts,
       };
 
       const data = await apiSaveSession(body);
