@@ -37,7 +37,6 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   });
   const [dragKey, setDragKey] = useState(null);
 
-  // Stable filter fingerprint for type/equipment/muscle filters
   const filterKey = useMemo(() => {
     const eq = Array.isArray(equipIds) ? [...equipIds].slice().sort() : [];
     const mu = Array.isArray(muscleIds) ? [...muscleIds].slice().sort() : [];
@@ -103,24 +102,54 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     setHasTouched(false);
 
     if (Array.isArray(results) && results.length > 0) {
-      setOrdered(results);
-      broadcastSelection(results);
+      setOrdered(results.slice());
     } else {
       setOrdered([]);
-      try {
-        localStorage.setItem("dynamiHasTouched", "0");
-        localStorage.setItem("formSelectedExercises", "[]");
-        localStorage.removeItem("dynamiSelected");
-      } catch {}
     }
   }, [filterKey, results]);
 
   useEffect(() => {
     if (Array.isArray(results) && results.length > 0 && Array.isArray(ordered) && ordered.length === 0) {
-      setOrdered(results);
-      broadcastSelection(results);
+      setOrdered(results.slice());
     }
   }, [results, ordered, hasTouched]);
+
+  useEffect(() => {
+    if (!Array.isArray(results)) return;
+
+    if (results.length === 0) {
+      setOrdered((prev) => {
+        if (!Array.isArray(prev) || prev.length === 0) return prev;
+        return [];
+      });
+      setDismissed((prev) => {
+        if (!(prev instanceof Set) || prev.size === 0) return prev;
+        return new Set();
+      });
+      return;
+    }
+
+    const allowedIds = new Set(results.map((ex) => idOf(ex)));
+
+    setOrdered((prev) => {
+      if (!Array.isArray(prev) || prev.length === 0) return prev;
+      const filtered = prev.filter((item) => allowedIds.has(idOf(item)));
+      const next = filtered.length ? filtered : results.slice();
+      if (sameIds(prev, next)) return prev;
+      return next;
+    });
+
+    setDismissed((prev) => {
+      if (!(prev instanceof Set) || prev.size === 0) return prev;
+      let changed = false;
+      const next = new Set();
+      prev.forEach((id) => {
+        if (allowedIds.has(id)) next.add(id);
+        else changed = true;
+      });
+      return changed ? next : prev;
+    });
+  }, [results]);
 
   const proposed = useMemo(() => {
     if (!results.length) return [];
