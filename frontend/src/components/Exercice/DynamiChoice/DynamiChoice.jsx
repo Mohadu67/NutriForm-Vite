@@ -103,7 +103,9 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
     { title: "Exercices proposés" },
   ], []);
 
-  const subtitle = useStepSubtitle(step);
+  const safeStep = Math.max(0, Math.min(3, step));
+
+  const subtitle = useStepSubtitle(safeStep);
 
   const allowedEquipIds = useMemo(() => {
     if (!typeId) return EQUIP_CARDS.map((c) => c.id);
@@ -230,12 +232,15 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   return (
     <section className={styles.container}>
       <header className={styles.header}>
-        <h3 className={styles.title}>{headings[step].title}</h3>
+        <h3 className={styles.title}>{headings[safeStep].title}</h3>
         <p className={styles.subtitle}>{subtitle}</p>
       </header>
 
       {funnyMessage && <p className={`${styles.funny} ${styles.funnyMessage}`}>{funnyMessage}</p>}
 
+      <div className={styles.content}>
+        {renderCards()}
+      </div>
 
       <div className={styles.footer}>
         <button type="button" className={styles.prevBtn} onClick={onPrev} disabled={step === 0}>
