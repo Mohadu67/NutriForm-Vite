@@ -1,0 +1,36 @@
+
+
+/* Publicité – conteneur discret et responsive */
+.adContainer {
+  margin: 24px auto;
+  max-width: 320px; /* mobile par défaut */
+  text-align: center;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--shadow-sm);
+  padding: 8px 0; /* petit souffle pour ne pas coller */
+}
+
+/* Élargir doucement sur tablettes/desktop pour les formats auto/leaderboard */
+@media (min-width: 768px) {
+  .adContainer {
+    max-width: 468px; /* format medium rectangle / bannière responsive */
+  }
+}
+
+@media (min-width: 1024px) {
+  .adContainer {
+    max-width: 728px; /* leaderboard si disponible, sinon l’ins s’adapte */
+  }
+}
+
+/* Évite l’animation d’apparition agressive sur la pub */
+.adContainer .adsbygoogle { animation: none !important; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
