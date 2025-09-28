@@ -3,7 +3,6 @@ import { mergeById } from "../Shared/selectionUtils";
 import CardChoice, { TYPE_CARDS, EQUIP_CARDS } from "./CardChoice/CardChoice.jsx";
 import { useStepSubtitle, buildFunnyMessage } from "../subtitlePools";
 import ExerciseResults from "../ExerciceResults/ExerciseResults.jsx";
-import AdSlot from "../../AdSlot/AdSlot.jsx";
 import styles from "./DynamiChoice.module.css";
 
 const MUSCLE_CARDS = [
@@ -235,10 +234,8 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
         <p className={styles.subtitle}>{subtitle}</p>
       </header>
 
-      <div className={styles.body}>{renderCards()}</div>
-      <AdSlot slot="1234567890" />
-
       {funnyMessage && <p className={`${styles.funny} ${styles.funnyMessage}`}>{funnyMessage}</p>}
+
 
       <div className={styles.footer}>
         <button type="button" className={styles.prevBtn} onClick={onPrev} disabled={step === 0}>
