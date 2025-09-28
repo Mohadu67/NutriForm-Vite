@@ -1,4 +1,4 @@
-import AdSlot from "../../components/Ads/AdSlot.jsx";
+import AdSlot from "../../components/AdSlot/AdSlot.jsx";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import Footer from "../../components/Footer/Footer.jsx";
 import Header from "../../components/Header/Header.jsx";
@@ -11,7 +11,7 @@ export default function Home() {
     <>
       <Header />
       <Main />
-      <div style={{ margin: "20px auto", maxWidth: "300px", textAlign: "center" }}>
+      <div style={{ margin: "20px auto", borderRadius: "10px", maxWidth: "300px", textAlign: "center" }}>
         <AdSlot slot="1234567890" />
       </div>
       <Footer />
