@@ -15,7 +15,6 @@ const getToken = () =>
 
 
 export default function FormCalorie({ onResult, onCalculate }) {
-    console.log(onCalculate)
   const [showReminder, setShowReminder] = useState(false);
   const [form, setForm] = useState({
     sexe: "homme",

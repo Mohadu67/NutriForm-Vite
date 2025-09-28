@@ -53,11 +53,30 @@ export default function Salutation({ className = "", seedKey = "static" }) {
       .catch(() => {});
   }, []);
 
+  const displayNameSpan = displayName ? (
+    <span style={{ textTransform: "capitalize" }}>{displayName}</span>
+  ) : null;
   const phrases = [
-    displayName ? `Salut ${displayName} 👋, prêt pour une séance ?` : "Salut 👋, prêt pour une séance ?",
-    displayName ? `Allez ${displayName} 💪, montre à ces haltères qui est le patron !` : "Allez 💪, montre à ces haltères qui est le patron !",
-    displayName ? `${displayName}, aujourd'hui c'est toi le champion 🏆` : "Aujourd'hui c'est toi le champion 🏆",
-    displayName ? `Aujourd'hui c'est toi ${displayName} 🚀` : "On compte sur toi 🚀"
+    displayName
+      ? (
+        <>Salut {displayNameSpan} 👋, prêt pour une séance ?</>
+      )
+      : "Salut 👋, prêt pour une séance ?",
+    displayName
+      ? (
+        <>Allez {displayNameSpan} 💪, montre à ces haltères qui est le patron !</>
+      )
+      : "Allez 💪, montre à ces haltères qui est le patron !",
+    displayName
+      ? (
+        <>{displayNameSpan}, aujourd&apos;hui c&apos;est toi le champion 🏆</>
+      )
+      : "Aujourd'hui c'est toi le champion 🏆",
+    displayName
+      ? (
+        <>Aujourd&apos;hui c&apos;est toi {displayNameSpan} 🚀</>
+      )
+      : "On compte sur toi 🚀"
   ];
 
   useEffect(() => {
@@ -67,6 +86,8 @@ export default function Salutation({ className = "", seedKey = "static" }) {
   }, [seedKey, displayName]);
 
   return (
-    <h2 className={className}>{phraseRef.current || "Bienvenue 👋"}</h2>
+    <h2 className={className}>
+      {phraseRef.current || "Bienvenue 👋"}
+    </h2>
   );
 }

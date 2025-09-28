@@ -6,10 +6,17 @@ export function computeSessionStats(lastSession = null, items = [], options = {}
   let calories = toNumber(lastSession?.calories, 0);
   const previous = lastSession?.prev || null;
 
+  let entriesFromSession = [];
   if (Array.isArray(lastSession?.entries)) {
-    entries = lastSession.entries.map(e => ({ type: e?.type || inferTypeFromData(null, e?.sets), sets: Array.isArray(e?.sets) ? e.sets : [] }));
-  } else if (Array.isArray(items) && items.length) {
-    entries = items.map(it => {
+    entriesFromSession = lastSession.entries.map(e => ({
+      type: e?.type || inferTypeFromData(null, e?.sets),
+      sets: Array.isArray(e?.sets) ? e.sets : []
+    }));
+  }
+
+  let entriesFromItems = [];
+  if (Array.isArray(items) && items.length) {
+    entriesFromItems = items.map(it => {
       const d = it?.data || {};
       const cardioSets = Array.isArray(d.cardioSets) ? d.cardioSets : [];
       const muscuSets = Array.isArray(d.sets) ? d.sets : [];
@@ -19,10 +26,29 @@ export function computeSessionStats(lastSession = null, items = [], options = {}
     });
   }
 
-  const totalExercises = entries.length;
+  entries = entriesFromSession.length >= entriesFromItems.length
+    ? entriesFromSession
+    : entriesFromItems;
+
+  let totalExercises = entries.length;
   const doneEntries = entries.filter(e => hasAnySet(e.sets));
-  const exercisesDone = doneEntries.length;
-  const percentDone = totalExercises ? Math.round((exercisesDone / totalExercises) * 100) : 0;
+  let exercisesDone = doneEntries.length;
+  let percentDone = totalExercises ? Math.round((exercisesDone / totalExercises) * 100) : 0;
+
+  const cs = lastSession?.clientSummary;
+  const isDoneFlag = (x) => !!(x && (x.done === true || x.completed === true || x.status === 'done' || x.status === 'completed'));
+  if (cs && typeof cs === 'object') {
+    const csList = Array.isArray(cs.exercises) ? cs.exercises : null;
+    const csPlannedRaw = toNumber(cs.plannedExercises, null);
+    const csCompletedRaw = toNumber(cs.completedExercises, null);
+    const csPlanned = csPlannedRaw != null ? csPlannedRaw : (csList ? csList.length : null);
+    const csCompleted = csCompletedRaw != null ? csCompletedRaw : (csList ? csList.filter(isDoneFlag).length : null);
+
+    if (csPlanned != null) totalExercises = Math.max(totalExercises, csPlanned);
+    if (csCompleted != null) exercisesDone = Math.max(exercisesDone, Math.min(csCompleted, totalExercises));
+
+    percentDone = totalExercises ? Math.round((exercisesDone / totalExercises) * 100) : 0;
+  }
 
   let volumeKg = 0;
   for (const e of doneEntries) {

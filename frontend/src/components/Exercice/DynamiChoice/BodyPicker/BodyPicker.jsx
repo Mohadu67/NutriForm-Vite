@@ -2,12 +2,10 @@ import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import * as assets from "./figureAssets";
 import cls from "./BodyPicker.module.css";
 import bodySvgMarkup from "./body.svg?raw";
-// Compat: tolerate missing named exports during HMR by aliasing from namespace
 const FRONT_ZONE_LABELS = assets.FRONT_ZONE_LABELS || {};
 const FRONT_ZONE_METADATA = assets.FRONT_ZONE_METADATA || [];
 const FRONT_SVG_ZONE_MAP = assets.FRONT_SVG_ZONE_MAP || {};
 
-// Zones additionnelles gérées côté code (sans toucher figureAssets)
 const EXTRA_ZONES = Object.freeze([]);
 
 const EXTRA_LABELS = Object.freeze({
@@ -28,7 +26,6 @@ const INSTRUCTIONS = Object.freeze({
 });
 
 function BodyPicker({ value, onChange, multiple = false }) {
-  // Map id -> label (priorité aux extras)
   const zoneIdToLabel = useMemo(
     () => new Map([...
       Object.entries(FRONT_ZONE_LABELS || {}),
@@ -37,14 +34,12 @@ function BodyPicker({ value, onChange, multiple = false }) {
     []
   );
 
-  // Ensemble des ids valides (métadonnées front + extras)
   const VALID_IDS = useMemo(() => {
     const base = new Set((FRONT_ZONE_METADATA || []).map((z) => z.id));
     EXTRA_ZONES.forEach((id) => base.add(id));
     return base;
   }, []);
 
-  // Ordre d'affichage stable
   const ORDERED_IDS = useMemo(
     () => [ ...(FRONT_ZONE_METADATA || []).map((z) => z.id), ...EXTRA_ZONES ],
     []
@@ -57,7 +52,6 @@ function BodyPicker({ value, onChange, multiple = false }) {
     []
   );
 
-  // Sélection courante sous forme d'ensemble
   const activeSet = useMemo(() => {
     if (multiple) {
       const arr = Array.isArray(value) ? value : [];
@@ -141,32 +135,28 @@ function BodyPicker({ value, onChange, multiple = false }) {
       const raw = node.getAttribute("data-elem") || node.getAttribute("id");
       if (!raw) return;
 
-      // Conversion id SVG -> zone logique
       let zoneId = svgIdToZoneId.get(raw) || null;
       const low = raw.toLowerCase();
       const lowNorm = low
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         .replace(/[\s._-]+/g, "");
 
-      // Torse / Pectoraux
       if (
         low.includes("chest") || low.includes("pec") || low.includes("pecs") || low.includes("peck") ||
         low.includes("pector") || low.includes("thorax") || lowNorm.includes("pectoraux")
       ) {
         zoneId = "pectoraux";
       }
-      // Abdos
       else if (
         low.includes("oblique") || low.includes("side abs") || lowNorm.includes("obliques")
       ) {
-        zoneId = "abdos-lateraux"; // obliques
+        zoneId = "abdos-lateraux";
       }
       else if (
         low.includes("abs") || low.includes("abdo") || low.includes("rectus") || low.includes("sixpack")
       ) {
-        zoneId = "abdos-centre"; // abdos centraux
+        zoneId = "abdos-centre";
       }
-      // Bras
       else if (low.includes("bicep")) zoneId = "biceps";
       else if (low.includes("tricep")) zoneId = "triceps";
       else if (
@@ -175,15 +165,14 @@ function BodyPicker({ value, onChange, multiple = false }) {
       ) {
         zoneId = "avant-bras";
       }
-      // Jambes
       else if (low.includes("quad") || low.includes("quadricep") || low.includes("cuisse")) {
-        zoneId = "cuisses-externes"; // cuisses avant/externe
+        zoneId = "cuisses-externes";
       }
       else if (
         low.includes("hamstring") || low.includes("ischio") ||
         low.includes("arriere-cuisse") || low.includes("arrière-cuisse") || lowNorm.includes("arrierecuisse")
       ) {
-        zoneId = "cuisses-internes"; // arrière cuisse
+        zoneId = "cuisses-internes";
       }
       else if (low.includes("calf") || low.includes("calves") || low.includes("mollet")) {
         zoneId = "mollets";
@@ -191,7 +180,6 @@ function BodyPicker({ value, onChange, multiple = false }) {
       else if (low.includes("glute") || low.includes("glutes") || low.includes("fess")) {
         zoneId = "fessiers";
       }
-      // Dos (haut/bas)
       else if (
         low.includes("upper-back") || low.includes("haut-du-dos") || low.includes("haut du dos") ||
         low.includes("traps") || low.includes("trapeze") || low.includes("trapèze") || lowNorm.includes("hautdos")
@@ -206,12 +194,10 @@ function BodyPicker({ value, onChange, multiple = false }) {
       ) {
         zoneId = "dos-inferieur";
       }
-      // Fallback générique: si l'id contient simplement "back" ou "dos" (sans "traps"), mappe sur le bas du dos
       else if ((low.includes("back") || low.includes("dos")) && !low.includes("trap")) {
         zoneId = "dos-inferieur";
       }
 
-      // Fallback: if raw id matches a known zone id directly
       if (!zoneId) {
         const rawUpper = raw.toUpperCase();
         if (VALID_IDS.has(rawUpper)) zoneId = rawUpper;
@@ -219,7 +205,6 @@ function BodyPicker({ value, onChange, multiple = false }) {
 
       if (!zoneId || !VALID_IDS.has(zoneId)) return;
 
-      // Marque comme zone interactive
       node.setAttribute("role", "button");
       node.setAttribute("tabindex", "0");
       node.setAttribute("data-zone", zoneId);
@@ -234,7 +219,6 @@ function BodyPicker({ value, onChange, multiple = false }) {
     });
   }, [handleZoneKeyDown, svgIdToZoneId, toggleZone, VALID_IDS, zoneIdToLabel]);
 
-  // Injection du SVG au montage
   useEffect(() => {
     const host = containerRef.current;
     if (!host) return undefined;
@@ -266,7 +250,6 @@ function BodyPicker({ value, onChange, multiple = false }) {
     };
   }, []);
 
-  // Rebind quand props changent
   useEffect(() => {
     if (!svgRootRef.current) return;
     unbind();
@@ -275,7 +258,6 @@ function BodyPicker({ value, onChange, multiple = false }) {
     return () => unbind();
   }, [bind, syncActive, unbind]);
 
-  // Sync seulement l'état actif
   useEffect(() => {
     syncActive();
   }, [syncActive]);

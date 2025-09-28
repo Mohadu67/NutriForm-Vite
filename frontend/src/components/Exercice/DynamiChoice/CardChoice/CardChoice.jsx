@@ -22,18 +22,15 @@ export const EQUIP_CARDS = [
 ];
 
 export default function CardChoice({ value, onChange, initialValue = null, cards = TYPE_CARDS, multiple = false }) {
-  // Groupes de base requis pour afficher le BodyPicker (hors bras/jambes qui peuvent être splittés)
   const CORE_BASE_IDS = ["pectoraux", "dos", "epaules", "core"];
   const hasCoreBase = Array.isArray(cards)
     && CORE_BASE_IDS.every(reqId => cards.some(c => c.id === reqId));
 
-  // Bras: soit une seule carte "bras", soit deux cartes "biceps" + "triceps"
   const hasArmsGroup = Array.isArray(cards) && (
     cards.some(c => c.id === "bras") ||
     (cards.some(c => c.id === "biceps") && cards.some(c => c.id === "triceps"))
   );
 
-  // Jambes: soit une carte "jambes", soit des cartes spécifiques: cuisses/quadriceps, ischios/hamstrings, mollets/calves, fessiers/glutes
   const hasLegsGroup = Array.isArray(cards) && (
     cards.some(c => c.id === "jambes") ||
     cards.some(c => ["cuisses", "quadriceps"].includes(c.id)) ||

@@ -57,6 +57,15 @@ function normalizeEntry(e = {}) {
     out.durationMin = out.sets[0].durationMin;
   }
 
+  if (typeof e.notes === 'string' && e.notes.trim()) {
+    out.notes = e.notes.trim();
+  } else if (typeof out.notes === 'string') {
+    out.notes = out.notes.trim();
+    if (!out.notes) delete out.notes;
+  } else if (e.data && typeof e.data.notes === 'string' && e.data.notes.trim()) {
+    out.notes = e.data.notes.trim();
+  }
+
   return out;
 }
 
@@ -72,6 +81,92 @@ async function getLatestWeight(userId) {
     const m = doc.meta || {};
     return Number(m.poids ?? m.weightKg ?? m.weight) || null;
   } catch (_) { return null; }
+}
+
+function buildClientSummary(entries = [], existing = null) {
+  const list = Array.isArray(entries) ? entries : [];
+  const num = (v, d = 0) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : d;
+  };
+  const isSetDone = (s = {}) => {
+    const n = (v) => Number.isFinite(Number(v)) ? Number(v) : null;
+    const hasReps = n(s.reps ?? s.rep ?? s.repetitions) > 0;
+    const hasW = n(s.weightKg ?? s.weight) > 0;
+    const hasDur = n(s.durationSec) > 0 || n(s.durationMin ?? s.minutes) > 0;
+    const hasDist = n(s.distanceKm ?? s.km ?? s.meters) > 0;
+    return !!(hasReps || hasW || hasDur || hasDist);
+  };
+  const isEntryDone = (e = {}) => Array.isArray(e.sets) && e.sets.some(isSetDone);
+
+  const plannedExercises = list.length;
+  const completedExercises = list.filter(isEntryDone).length;
+  const skippedExercises = Math.max(0, plannedExercises - completedExercises);
+  const existingList = Array.isArray(existing?.exercises) ? existing.exercises : [];
+  const exercises = list.map(e => {
+    const exerciseName = e.exerciseName || e.name || "Exercice";
+    const note = typeof e.notes === 'string' && e.notes.trim() ? e.notes.trim() : undefined;
+    const base = { exerciseName, done: isEntryDone(e), note };
+    if (!base.note) {
+      const match = existingList.find((ex) => (ex?.exerciseName || ex?.name) === exerciseName);
+      if (match) {
+        const matchNote = typeof match.note === 'string' && match.note.trim() ? match.note.trim()
+          : (typeof match.notes === 'string' && match.notes.trim() ? match.notes.trim() : undefined);
+        if (matchNote) base.note = matchNote;
+      }
+    }
+    return base;
+  });
+
+  let mergedExercises = exercises;
+  const ePlanned = num(existing?.plannedExercises, null);
+  const eCompleted = num(existing?.completedExercises, null);
+  const eList = Array.isArray(existing?.exercises) ? existing.exercises : [];
+
+  if (eList.length) {
+    const byName = new Map();
+    for (const it of exercises) {
+      const key = (it?.exerciseName || it?.name || '').toString();
+      byName.set(key, { ...it });
+    }
+    for (const it of eList) {
+      const key = (it?.exerciseName || it?.name || '').toString();
+      const prev = byName.get(key);
+      const noteExisting = typeof it?.note === 'string' && it.note.trim() ? it.note.trim() : (typeof it?.notes === 'string' && it.notes.trim() ? it.notes.trim() : undefined);
+      if (prev) {
+        const done = !!(prev.done || it?.done || it?.completed === true || it?.status === 'done' || it?.status === 'completed');
+        const note = noteExisting || prev.note;
+        byName.set(key, { exerciseName: key || prev.exerciseName || 'Exercice', done, note });
+      } else {
+        byName.set(key, {
+          exerciseName: key || it?.exerciseName || 'Exercice',
+          done: !!(it?.done || it?.completed === true || it?.status === 'done' || it?.status === 'completed'),
+          note: noteExisting
+        });
+      }
+    }
+    mergedExercises = Array.from(byName.values());
+  }
+
+  let mergedPlanned = plannedExercises;
+  let mergedCompleted = completedExercises;
+  if (ePlanned != null) mergedPlanned = Math.max(mergedPlanned, ePlanned);
+  if (eCompleted != null) mergedCompleted = Math.max(mergedCompleted, eCompleted);
+
+  const mergedSkipped = Math.max(0, mergedPlanned - mergedCompleted);
+
+  const summary = {
+    plannedExercises: mergedPlanned,
+    completedExercises: mergedCompleted,
+    skippedExercises: mergedSkipped,
+    exercises: mergedExercises,
+  };
+
+  if (existing && typeof existing === 'object') {
+    const { plannedExercises: _p, completedExercises: _c, skippedExercises: _s, exercises: _e, ...rest } = existing;
+    return { ...rest, ...summary };
+  }
+  return summary;
 }
 
 async function createSession(req, res) {
@@ -107,7 +202,6 @@ async function createSession(req, res) {
       }
     }
 
-    // If cardio sets have no duration, spread the overall session duration across them so calories aren't 0
     try {
       const totalMin = Number(durationMinutesFromBody ?? 0) || 0;
       if (totalMin > 0) {
@@ -127,7 +221,7 @@ async function createSession(req, res) {
           }
         }
       }
-    } catch (_) { /* ignore */ }
+    } catch (_) {}
 
     const userWeight = await getLatestWeight(userId);
     const derived = computeSessionFromEntries(normalized, userWeight);
@@ -148,6 +242,7 @@ async function createSession(req, res) {
             : new Date(startedAt)
         );
 
+    const summary = buildClientSummary(normalized, clientSummary);
     const doc = await WorkoutSession.create({
       userId: new mongoose.Types.ObjectId(userId),
       name: (name || label),
@@ -157,7 +252,7 @@ async function createSession(req, res) {
       calories: calories,
       notes,
       entries: normalized,
-      clientSummary
+      clientSummary: summary
     });
 
     return res.status(201).json(doc);
@@ -185,20 +280,26 @@ async function getSessions(req, res) {
     }
 
     const docs = await WorkoutSession
-      .find(q, { name: 1, startedAt: 1, createdAt: 1, status: 1, entries: 1 })
+      .find(q, { name: 1, startedAt: 1, endedAt: 1, createdAt: 1, status: 1, durationSec: 1, calories: 1, entries: 1, clientSummary: 1, notes: 1 })
       .sort({ startedAt: -1, _id: -1 })
       .limit(Math.max(1, Math.min(Number(limit) || 20, 100)))
       .lean();
 
-    const nextCursor = docs.length ? docs[docs.length - 1]._id : null;
+    const normalizedDocs = docs.map((s) => {
+      const entries = Array.isArray(s?.entries) ? s.entries : [];
+      const summary = buildClientSummary(entries, s?.clientSummary);
+      return { ...s, clientSummary: summary };
+    });
 
-    const points = docs.map(s => ({
+    const nextCursor = normalizedDocs.length ? normalizedDocs[normalizedDocs.length - 1]._id : null;
+
+    const points = normalizedDocs.map(s => ({
       date: s.startedAt || s.createdAt,
       value: Array.isArray(s.entries) ? s.entries.length : 0,
       original: s,
     }));
 
-    return res.json({ items: docs, points, nextCursor });
+    return res.json({ items: normalizedDocs, points, nextCursor });
   } catch (err) {
     console.error("getSessions error:", err);
     return res.status(500).json({ error: "server_error" });
@@ -253,6 +354,7 @@ async function updateSession(req, res) {
     let needRecalc = false;
     if (Array.isArray(payload.entries)) {
       payload.entries = payload.entries.map(normalizeEntry);
+      payload.clientSummary = buildClientSummary(payload.entries, payload.clientSummary);
       needRecalc = true;
     }
 

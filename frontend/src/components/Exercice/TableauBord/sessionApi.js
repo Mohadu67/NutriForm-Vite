@@ -122,6 +122,7 @@ function mapItemsToEntries(items = []) {
           exerciseId: it.id || it._id || it.slug || String(it.name || it.label || 'exo').toLowerCase(),
           name: String(it.name || it.label || it.exoName || 'Exercice'),
           type: 'cardio',
+          notes: typeof d?.notes === 'string' && d.notes.trim() ? d.notes.trim() : undefined,
           sets,
         };
       }
@@ -147,6 +148,7 @@ function mapItemsToEntries(items = []) {
         exerciseId: it.id || it._id || it.slug || String(it.name || it.label || 'exo').toLowerCase(),
         name: String(it.name || it.label || it.exoName || 'Exercice'),
         type: 'muscu',
+        notes: typeof d?.notes === 'string' && d.notes.trim() ? d.notes.trim() : undefined,
         sets: msets,
       };
     })

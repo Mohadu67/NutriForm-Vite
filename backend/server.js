@@ -29,7 +29,7 @@ mongoose
     dbName: 'nutriform',
     authSource: 'admin',
   })
-  .then(() => console.log('🟢 Connecté à MongoDB'))
+  .then(() => console.info('🟢 Connecté à MongoDB'))
   .catch(err => {
     console.error('Erreur MongoDB :', err.message || err);
     process.exit(1);
@@ -57,5 +57,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(config.port, () => {
-  console.log(`🚀 Serveur en ligne sur http://localhost:${config.port}`);
+  console.info(`🚀 Serveur en ligne sur http://localhost:${config.port}`);
 });

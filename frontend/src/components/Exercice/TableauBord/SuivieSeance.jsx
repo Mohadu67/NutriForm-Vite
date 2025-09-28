@@ -3,7 +3,20 @@ import styles from "./SuivieSeance.module.css";
 import Stat from "./stats/Stat.jsx";
 import { computeSessionStats } from "./stats/computeSessionStats";
 
+
 const API_BASE = (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
+
+function pickRichestItemsFromSession(s) {
+  if (!s) return [];
+  const candidates = [];
+  if (Array.isArray(s.entries)) candidates.push(s.entries);
+  if (Array.isArray(s.exercises)) candidates.push(s.exercises);
+  if (Array.isArray(s.items)) candidates.push(s.items);
+  if (Array.isArray(s.clientSummary?.exercises)) candidates.push(s.clientSummary.exercises);
+  if (!candidates.length) return [];
+  candidates.sort((a, b) => b.length - a.length);
+  return candidates[0] || [];
+}
 
 export default function SuivieSeance({ user, lastSession: propLastSession, sessions }) {
   const [serverData, setServerData] = useState(null);
@@ -100,7 +113,7 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
   const lastSessionCalories = useMemo(() => {
     const s = primarySession;
     if (!s) return null;
-    const itemsSrc = Array.isArray(s?.entries) ? s.entries : (Array.isArray(s?.items) ? s.items : []);
+    const itemsSrc = pickRichestItemsFromSession(s);
     try {
       const st = computeSessionStats(s, itemsSrc, { serverData });
       const kcal = Number(st?.calories);
@@ -115,7 +128,7 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
       : (Array.isArray(serverData?.sessions) ? serverData.sessions : []);
     if (!list.length) return null;
     const vals = list.map((s) => {
-      const itemsSrc = Array.isArray(s?.entries) ? s.entries : (Array.isArray(s?.items) ? s.items : []);
+      const itemsSrc = pickRichestItemsFromSession(s);
       try {
         const st = computeSessionStats(s, itemsSrc, { serverData });
         const kcal = Number(st?.calories);
@@ -152,7 +165,6 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
 
   const items = useMemo(() => {
     const defs = [
-      // Stats existantes
       { key: "lastWeight", label: "Dernier poids enregistré", fmt: (v) => `${v} kg` },
       { key: "imc", label: "IMC" },
       { key: "calories", label: "Calories journalières" },
@@ -286,41 +298,21 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
           </div>
         </div>
 
-        <div className={`${styles.statCard} ${styles.compactCard}`}>
-          <div className={styles.rows}>
-            <div className={styles.row}>
-              <span className={styles.statLabel}>Dernière séance</span>
-              <span className={styles.rowValue}>{get('lastSession')}</span>
+        <div className={styles.rowCards}>
+          <div className={`${styles.statCard} ${styles.compactCard}`}>
+            <div className={styles.rows}>
+              <div className={styles.colum}>
+                <span className={styles.statLabel}>Séances sur 7 jours</span>
+                <span className={styles.rowValue}>{get('workoutsCount7d')}</span>
+              </div>
             </div>
-            <div className={styles.divider} />
-            <div className={styles.row}>
-              <span className={styles.statLabel}>Exercices (dernière séance)</span>
-              <span className={styles.rowValue}>
-                {(() => {
-                  const a = Number(combinedData?.lastCompletedExercises);
-                  const b = Number(combinedData?.lastPlannedExercises);
-                  if (Number.isFinite(a) && Number.isFinite(b) && b > 0) return `${a} / ${b}`;
-                  const list = Array.isArray(combinedData?.lastExercisesList) ? combinedData.lastExercisesList : null;
-                  if (list && list.length) {
-                    const done = list.filter(x => x && x.done).length;
-                    return `${done} / ${list.length}`;
-                  }
-                  const s = primarySession;
-                  const items = Array.isArray(s?.entries) ? s.entries : (Array.isArray(s?.items) ? s.items : (Array.isArray(s?.exercises) ? s.exercises : []));
-                  if (items.length) return `${items.length}`;
-                  return 'Aucune donnée';
-                })()}
-              </span>
-            </div>
-            <div className={styles.divider} />
-            <div className={styles.row}>
-              <span className={styles.statLabel}>Séances sur 7 jours</span>
-              <span className={styles.rowValue}>{get('workoutsCount7d')}</span>
-            </div>
-            <div className={styles.divider} />
-            <div className={styles.row}>
-              <span className={styles.statLabel}>Total séances complétées</span>
-              <span className={styles.rowValue}>{get('totalSessions')}</span>
+          </div>
+          <div className={`${styles.statCard} ${styles.compactCard}`}>
+            <div className={styles.rows}>
+              <div className={styles.colum}>
+                <span className={styles.statLabel}>Total séances complétées</span>
+                <span className={styles.rowValue}>{get('totalSessions')}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -356,11 +348,7 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
       <div className={styles.statsCarousel} aria-label="Historique des séances (défilement horizontal)">
         {carouselSessions.map((it) => {
           const s = it.session;
-          const items = Array.isArray(s?.entries)
-            ? s.entries
-            : (Array.isArray(s?.exercises)
-                ? s.exercises
-                : (Array.isArray(s?.items) ? s.items : []));
+          const items = pickRichestItemsFromSession(s);
           return (
             <div className={styles.statsSlide} key={it.key}>
               <Stat lastSession={s} items={items} titleOverride={it.title} serverData={serverData} />

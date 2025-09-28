@@ -209,13 +209,11 @@ export default function SessionChart({ points }) {
     o.sessionName || o.seanceName || o.workoutName || o.nameSession || o.session || o.title || null
   );
 
-  // 3) Exercise label
   const exerciseName = (
     (exObj && (exObj.exerciseName || exObj.exoName || exObj.name || exObj.label)) ||
     o.exerciseName || o.exoName || o.exercise || o.label || o.name || null
   );
 
-  // 4) Metrics from first set: weightKg + reps (what you asked for)
   const pickNum = (v) => {
     const n = Number(v);
     return Number.isFinite(n) ? n : null;
@@ -251,8 +249,6 @@ export default function SessionChart({ points }) {
     exerciseName ? `${exerciseName}` : (exObj ? `Exercice ${exIdx + 1}` : null),
     detail,
   ].filter((v) => typeof v === 'string' && v.trim().length > 0);
-
-  console.log("Tooltip data:", { sessionName, exerciseName, exObj, firstSet, detail, lines });
 
   setTooltip({
     x: posX,

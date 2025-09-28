@@ -76,7 +76,7 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
       return;
     }
     setItems(prev => {
-      if (Array.isArray(prev) && prev.length > 0 && touched) return prev; // don't override user edits
+      if (Array.isArray(prev) && prev.length > 0 && touched) return prev;
       const persisted = getPersistedSelection();
       if (Array.isArray(persisted) && persisted.length > 0) {
         return persisted.map(it => {
@@ -167,9 +167,7 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
               finishedAt: now,
               items: snapshot,
             };
-            console.log('[SuivieExo] onFinish enriched:', enriched);
             if (typeof onFinish === 'function') onFinish(enriched);
-            // Reset local startedAt for next session
             setStartedAt(null);
           }}
         />

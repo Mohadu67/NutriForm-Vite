@@ -26,8 +26,6 @@ exports.requestPasswordReset = async (req, res) => {
     user.resetPasswordExpires = expires;
     await user.save();
 
-    console.log('[forgot] set token', token, 'expires', new Date(expires).toISOString());
-
     const front = buildFrontBaseUrl();
     const resetUrl = `${front}/reset-password?token=${encodeURIComponent(token)}`;
 
