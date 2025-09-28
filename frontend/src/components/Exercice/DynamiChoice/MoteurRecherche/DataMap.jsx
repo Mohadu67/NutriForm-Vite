@@ -7,32 +7,202 @@ export const TYPE_MAP = {
   meditation: ["meditation", "méditation", "mindfulness"],
 };
 
-export const MUSCLE_MAP = {
-  bras: [
-    "biceps", "triceps", "avant-bras", "forearms", "arm", "bras"
-  ],
-  dos: [
-    "dos-lats", "dos-trap", "trapèzes", "lats", "traps",
-    "rear-delts", "arriere-epaules", "dos", "back",
-    "rhomboides", "grand-dorsal", "grand-rond", "rhomboids", "teres-major"
-  ],
-  epaules: [
-    "deltoides-ant", "deltoides-lat", "deltoides-post", "deltoides",
-    "front-delts", "side-delts", "rear-delts", "epaules", "shoulders", "delts"
-  ],
-  pectoraux: [
-    "pectoraux", "pectoraux-superieurs", "pectoraux-inferieurs", "pec", "pecs",
-    "upper-chest", "lower-chest", "chest"
-  ],
-  jambes: [
-    "quadriceps", "ischios", "isquios", "fessiers", "mollets", "adducteurs",
-    "abducteurs", "quads", "hamstrings", "glutes", "calves", "jambes", "legs", "hanches"
-  ],
-  core: [
-    "abdos", "obliques", "lombaires", "core", "abs", "lower-back",
-    "tronc", "sangle-abdo", "abdominales", "gainage", "plank"
-  ],
-};
+export const MUSCLE_ZONES = Object.freeze({
+  pectoraux: Object.freeze([
+    "pectoraux",
+    "pectoraux-superieurs",
+    "pectoraux-inferieurs",
+    "pec",
+    "pecs",
+    "upper-chest",
+    "upper chest",
+    "lower-chest",
+    "lower chest",
+    "chest",
+    "thorax",
+    "sternum"
+  ]),
+  epaules: Object.freeze([
+    "epaules",
+    "épaule",
+    "epaule",
+    "deltoides",
+    "deltoide",
+    "delts",
+    "rear-delts",
+    "shoulders",
+    "shoulder",
+    "deltoides-ant",
+    "deltoides-lat",
+    "deltoides-post",
+    "front-delts",
+    "side-delts",
+    "rear-delts",
+    "arriere-epaules",
+    "arriere epaule",
+    "rear delts"
+  ]),
+  biceps: Object.freeze([
+    "biceps",
+    "bicep",
+    "arm curl",
+    "flexion biceps",
+    "curl biceps"
+  ]),
+  triceps: Object.freeze([
+    "triceps",
+    "tricep",
+    "extension triceps",
+    "dips",
+    "kickback"
+  ]),
+  "avant-bras": Object.freeze([
+    "avant-bras",
+    "avant bras",
+    "forearms",
+    "forearm",
+    "poignet",
+    "poignets",
+    "wrist",
+    "wrists",
+    "grip"
+  ]),
+  "abdos-centre": Object.freeze([
+    "abdos-centre",
+    "abdos",
+    "abs",
+    "six-pack",
+    "six pack",
+    "rectus abdominis",
+    "grand droit",
+    "core",
+    "tronc",
+    "sangle-abdo",
+    "sangle abdominale",
+    "centre du tronc"
+  ]),
+  "abdos-lateraux": Object.freeze([
+    "abdos-lateraux",
+    "abdos lateraux",
+    "obliques",
+    "oblique",
+    "side abs",
+    "side-ab",
+    "transverse",
+    "transverses",
+    "gainage lateral",
+    "gainage latéral",
+    "love handles"
+  ]),
+  "dos-superieur": Object.freeze([
+    "dos-superieur",
+    "dos supérieur",
+    "upper back",
+    "upper-back",
+    "haut du dos",
+    "dos haut",
+    "dos",
+    "dos-trap",
+    "dos trap",
+    "trapèzes",
+    "trapezes",
+    "traps",
+    "dos-lats",
+    "dos lats",
+    "lats",
+    "grand-dorsal",
+    "grand dorsal",
+    "grand-rond",
+    "grand rond",
+    "rhomboides",
+    "rhomboids",
+    "arriere-epaules",
+    "rear delts"
+  ]),
+  "dos-inferieur": Object.freeze([
+    "dos-inferieur",
+    "dos inferieur",
+    "lower back",
+    "lower-back",
+    "low back",
+    "bas du dos",
+    "dos bas",
+    "dos",
+    "lombaires",
+    "lombaire",
+    "erector spinae",
+    "spinal erectors",
+    "dos-lats",
+    "dos lats",
+    "gainage lombaire"
+  ]),
+  fessiers: Object.freeze([
+    "fessiers",
+    "fessier",
+    "glutes",
+    "glute",
+    "grand fessier",
+    "moyen fessier",
+    "petit fessier",
+    "butt",
+    "fess",
+    "hanches"
+  ]),
+  "cuisses-externes": Object.freeze([
+    "cuisses-externes",
+    "cuisses externes",
+    "quadriceps",
+    "quads",
+    "vastus lateralis",
+    "front thigh",
+    "cuisse avant",
+    "exterieur cuisse"
+  ]),
+  "cuisses-internes": Object.freeze([
+    "cuisses-internes",
+    "cuisses internes",
+    "ischios",
+    "isquios",
+    "hamstrings",
+    "adducteurs",
+    "adductors",
+    "abducteurs",
+    "inner thigh",
+    "inner thighs",
+    "posterior chain",
+    "psoas",
+    "psoas iliaque",
+    "flechisseurs-hanche",
+    "flechisseurs hanche",
+    "hip flexors"
+  ]),
+  mollets: Object.freeze([
+    "mollets",
+    "mollet",
+    "calves",
+    "calf",
+    "soleus",
+    "gastrocnemius",
+    "cheville",
+    "ankle plantar flexors"
+  ]),
+});
+
+export const MUSCLE_GROUPS = Object.freeze({
+  bras: Object.freeze(["biceps", "triceps", "avant-bras"]),
+  dos: Object.freeze(["dos-superieur", "dos-inferieur"]),
+  core: Object.freeze(["abdos-centre", "abdos-lateraux", "dos-inferieur"]),
+  jambes: Object.freeze(["cuisses-externes", "cuisses-internes", "mollets", "fessiers"]),
+});
+
+export const MUSCLE_MAP = Object.freeze({
+  ...Object.fromEntries(
+    Object.entries(MUSCLE_ZONES).map(([zone, synonyms]) => [zone, Array.from(synonyms)])
+  ),
+  ...Object.fromEntries(
+    Object.entries(MUSCLE_GROUPS).map(([groupId, zoneIds]) => [groupId, Array.from(zoneIds)])
+  ),
+});
 
 export const EQUIP_MAP = {
   "poids-du-corps": [
@@ -51,4 +221,4 @@ export const EQUIP_MAP = {
   "poulie": ["poulie", "poulies", "cable", "cables", "cable machine", "cable crossover"],
 };
 
-export default { TYPE_MAP, MUSCLE_MAP, EQUIP_MAP };
+export default { TYPE_MAP, MUSCLE_MAP, MUSCLE_ZONES, MUSCLE_GROUPS, EQUIP_MAP };

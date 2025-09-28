@@ -12,8 +12,12 @@ import PrivacyPolicy from "./pages/RGPD/PrivacyPolicy.jsx";
 import NotFound from "./pages/NotFound/NotFound.jsx";
 import ExoPage from "./pages/Exo/Exo.jsx";
 import PageOutils from "./pages/OutilsCalcul/PageOutils.jsx";
+import Clarity from '@microsoft/clarity';
 
 export default function App() {
+  useEffect(() => {
+    Clarity.init("thd0hih6t5");
+  }, []);
 
   return (
     <Routes>

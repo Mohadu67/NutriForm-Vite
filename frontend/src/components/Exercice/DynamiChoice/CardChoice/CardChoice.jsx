@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "./CardChoice.module.css";
+import BodyPicker from "../BodyPicker/BodyPicker";
 
 
 export const TYPE_CARDS = [
@@ -20,16 +21,29 @@ export const EQUIP_CARDS = [
   { id: "poulie", icon: "🎯", label: "Poulie" },
 ];
 
-export const MUSCLE_CARDS = [
-  { id: "pectoraux", icon: "💥", label: "Pectoraux" },
-  { id: "dos", icon: "🕸️", label: "Dos" },
-  { id: "epaules", icon: "🏹", label: "Épaules" },
-  { id: "bras", icon: "💪", label: "Bras" },
-  { id: "jambes", icon: "🦵", label: "Jambes" },
-  { id: "core", icon: "🎛️", label: "Core" },
-];
-
 export default function CardChoice({ value, onChange, initialValue = null, cards = TYPE_CARDS, multiple = false }) {
+  // Groupes de base requis pour afficher le BodyPicker (hors bras/jambes qui peuvent être splittés)
+  const CORE_BASE_IDS = ["pectoraux", "dos", "epaules", "core"];
+  const hasCoreBase = Array.isArray(cards)
+    && CORE_BASE_IDS.every(reqId => cards.some(c => c.id === reqId));
+
+  // Bras: soit une seule carte "bras", soit deux cartes "biceps" + "triceps"
+  const hasArmsGroup = Array.isArray(cards) && (
+    cards.some(c => c.id === "bras") ||
+    (cards.some(c => c.id === "biceps") && cards.some(c => c.id === "triceps"))
+  );
+
+  // Jambes: soit une carte "jambes", soit des cartes spécifiques: cuisses/quadriceps, ischios/hamstrings, mollets/calves, fessiers/glutes
+  const hasLegsGroup = Array.isArray(cards) && (
+    cards.some(c => c.id === "jambes") ||
+    cards.some(c => ["cuisses", "quadriceps"].includes(c.id)) ||
+    cards.some(c => ["ischios", "hamstrings"].includes(c.id)) ||
+    cards.some(c => ["mollets", "calves"].includes(c.id)) ||
+    cards.some(c => ["fessiers", "glutes"].includes(c.id))
+  );
+
+  const isMuscleCards = hasCoreBase && hasArmsGroup && hasLegsGroup;
+
   const [selected, setSelected] = useState(() => {
     if (multiple) return Array.isArray(value ?? initialValue) ? (value ?? initialValue) : [];
     return value ?? initialValue ?? null;
@@ -53,6 +67,10 @@ export default function CardChoice({ value, onChange, initialValue = null, cards
   }
 
   const isSelected = (id) => multiple ? (Array.isArray(value) && value.includes(id)) : selected === id;
+
+  if (isMuscleCards) {
+    return <BodyPicker value={value} onChange={onChange} multiple={multiple} />;
+  }
 
   return (
     <div className={styles.cardsGrid} role="list">

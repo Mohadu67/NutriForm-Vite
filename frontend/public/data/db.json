@@ -138,95 +138,2287 @@
     }
   ],
   "exercises": [
-    {"id":"exo-001","name":"Vélo stationnaire","type":["cardio"],"objectives":["endurance"],"muscles":["quadriceps","ischios","mollets","fessiers"],"equipment":["velo-stationnaire"],"images":["images/Exo/VeloStationnaire.gif"],"explanation":"Cadence fluide 80–95 rpm, épaules relâchées, bassin fixe, garde un rythme constant et une respiration régulière."},
-    {"id":"exo-002","name":"Course sur tapis","type":["cardio"],"objectives":["endurance"],"muscles":["quadriceps","ischios","mollets","fessiers","core"],"equipment":["tapis"],"images":["images/Exo/CourseTapis.jpeg"],"explanation":"Cours à une allure où tu peux parler sans t’essouffler, inclinaison légère 1–2%, foulée légère, regarde loin, épaules détendues."},
-    {"id":"exo-003","name":"Marche rapide incliné tapis","type":["cardio"],"objectives":["endurance"],"muscles":["quadriceps","mollets","fessiers","core"],"equipment":["tapis"],"images":["images/Exo/MarcheTapisIncline.gif"],"explanation":"Marche avec une posture droite, bras actifs, incline le tapis si possible, déroule bien le pied du talon vers la pointe."},
-    {"id":"exo-004","name":"Rameur","type":["cardio","renforcement"],"objectives":["endurance"],"muscles":["dos-lats","dos-trap","deltoides-post","biceps","core","quadriceps","ischios"],"equipment":["rameur"],"images":["images/Exo/Rameur.jpeg"],"explanation":"Pousse d’abord avec les jambes, puis le buste, puis les bras. Garde le dos neutre et tire la poignée jusqu’au bas du sternum, retour contrôlé."},
-    {"id":"exo-005","name":"Corde à sauter","type":["cardio","hiit"],"objectives":["endurance"],"muscles":["mollets","deltoides-ant","avant-bras","core"],"equipment":["corde-a-sauter"],"images":["images/Exo/CordeSauter.gif"],"explanation":"Saute en gardant les atterrissages doux sur l’avant-pied, coudes près du corps, épaules relâchées, reste sur un sol stable."},
-    {"id":"exo-006","name":"Elliptique","type":["cardio"],"objectives":["endurance"],"muscles":["quadriceps","ischios","fessiers","deltoides-ant"],"equipment":["elliptique"],"images":["images/Exo/Elliptique.jpeg"],"explanation":"Effectue un mouvement fluide, talons bien posés, mains légères sur les poignées, garde un rythme constant et respire régulièrement."},
-    {"id":"exo-007","name":"Stepper","type":["cardio"],"objectives":["endurance"],"muscles":["quadriceps","fessiers","mollets"],"equipment":["stepper"],"images":[],"explanation":"Garde une posture droite, effectue des pas courts, évite de t’appuyer sur la rampe, rythme soutenu mais toujours contrôlé."},
-    {"id":"exo-008","name":"Natation crawl","type":["cardio"],"objectives":["endurance"],"muscles":["dos-lats","deltoides","triceps","core","quadriceps"],"equipment":["piscine"],"images":["images/Exo/NatationCrawl.gif"],"explanation":"Garde un gainage fort, respire tous les 2–3 mouvements, tire avec le coude haut, allonge bien la glisse, reste détendu."},
-    {"id":"exo-009","name":"Natation brasse","type":["cardio"],"objectives":["endurance"],"muscles":["pectoraux","adducteurs","quadriceps","core"],"equipment":["piscine"],"images":["images/Exo/NatationBrasse.gif"],"explanation":"Effectue une traction ample puis glisse, fais un battement en fouet, garde la tête dans l’axe, rythme régulier, posture détendue."},
-    {"id":"exo-010","name":"SkiErg","type":["cardio","hiit"],"objectives":["endurance"],"muscles":["dos-lats","triceps","core"],"equipment":["ski-erg"],"images":["images/Exo/SkiErg.gif"],"explanation":"Tire d’abord avec les dorsaux puis les bras, ferme la hanche, garde un gainage fort, contrôle le retour, respire régulièrement."},
-    {"id":"exo-011","name":"Assault Bike","type":["cardio","hiit"],"objectives":["endurance"],"muscles":["quadriceps","ischios","deltoides","triceps","core"],"equipment":["assault-bike"],"images":["images/Exo/AssaultBike.gif"],"explanation":"Pousse et tire avec bras et jambes, cadence fluide, épaules relâchées, respiration rythmée, garde le buste stable."},
-    {"id":"exo-012","name":"Pompes","type":["muscu","poids-du-corps"],"objectives":["force","hypertrophie","endurance"],"muscles":["pectoraux","triceps","deltoides-ant","core"],"equipment":["poids-du-corps","aucun"],"images":["images/Exo/Pompe.gif"],"explanation":"Place les mains sous les épaules, corps bien gainé, coudes à 45°, descends jusqu’à frôler le sol, remonte sans cambrer le dos.","slug":"pompes","primaryMuscle":"pectoraux"},
-    {"id":"exo-013","name":"Pompes déclinées","type":["muscu","poids-du-corps"],"objectives":["force","hypertrophie"],"muscles":["pectoraux","deltoides-ant","triceps"],"equipment":["poids-du-corps","banc-plat","aucun"],"images":["images/Exo/GifPompeDecline.gif"],"explanation":"Place les pieds surélevés, buste bien gainé, descends la poitrine vers le sol puis remonte en gardant le contrôle, dos droit.","slug":"pompes-declinees","primaryMuscle":"pectoraux"},
-    {"id":"exo-014","name":"Pompes diamant","type":["muscu","poids-du-corps"],"objectives":["force","hypertrophie"],"muscles":["triceps","pectoraux"],"equipment":["poids-du-corps","aucun"],"images":["images/Exo/PompeDiamant.gif"],"explanation":"Mains rapprochées en losange sous le sternum, coudes près du corps, pousse fort sur les triceps, corps bien gainé.","slug":"pompes-diamant","primaryMuscle":"triceps"},
-    {"id":"exo-015","name":"Tractions pronation","type":["muscu","poids-du-corps"],"objectives":["force","hypertrophie"],"muscles":["dos-lats","biceps","avant-bras","deltoides-post"],"equipment":["barre-fixe"],"images":["images/Exo/TractionsPronation.gif"],"explanation":"Prends la barre en pronation largeur épaules, serre les omoplates, tire la poitrine vers la barre, contrôle la descente.","slug":"tractions-pronation","primaryMuscle":"dos-lats"},
-    {"id":"exo-016","name":"Tractions supination","type":["muscu","poids-du-corps"],"objectives":["force","hypertrophie"],"muscles":["biceps","dos-lats","avant-bras"],"equipment":["barre-fixe"],"images":["images/Exo/TractionSupination.gif"],"explanation":"Prends la barre en supination largeur épaules, tire la poitrine vers la barre, coudes devant, contrôle le mouvement sans balancer.","slug":"tractions-supination","primaryMuscle":"biceps"},
-    {"id":"exo-017","name":"Dips parallèles","type":["muscu","poids-du-corps"],"objectives":["force","hypertrophie"],"muscles":["triceps","pectoraux","deltoides-ant"],"equipment":["barres-paralleles","aucun"],"images":["images/Exo/DipsParalleles.gif"],"explanation":"Garde les épaules basses, buste légèrement penché, descends jusqu’à 90° de coude, remonte en poussant dans les barres.","slug":"dips-paralleles","primaryMuscle":"triceps"},
-    {"id":"exo-018","name":"Squat poids du corps","type":["muscu","poids-du-corps"],"objectives":["endurance","hypertrophie"],"muscles":["quadriceps","fessiers","ischios","core"],"equipment":["poids-du-corps","aucun"],"images":["images/Exo/SquatPoidsCorps.gif"],"explanation":"Place les pieds largeur épaules, genoux dans l’axe des orteils, pousse les hanches en arrière, dos neutre, descends selon ta mobilité.","slug":"squat-poids-du-corps","primaryMuscle":"quadriceps"},
-    {"id":"exo-019","name":"Fentes avant (poids du corps)","type":["muscu","poids-du-corps"],"objectives":["endurance","hypertrophie"],"muscles":["quadriceps","fessiers","ischios"],"equipment":["poids-du-corps","aucun"],"images":["images/Exo/FentesAvantPDC.gif"],"explanation":"Fais un grand pas, genou avant au-dessus du pied, talon arrière décollé, buste droit, pousse par le talon avant pour revenir.","slug":"fentes-avant-poids-du-corps","primaryMuscle":"quadriceps"},
-    {"id":"exo-020","name":"Planche (gainage)","type":["muscu","poids-du-corps"],"objectives":["endurance"],"muscles":["abdos","obliques","lombaires"],"equipment":["poids-du-corps","aucun"],"images":[],"explanation":"Corps bien gainé en ligne droite, bassin neutre, omoplates actives, respiration calme et régulière par le nez.","slug":"planche-gainage","primaryMuscle":"abdos"},
-    {"id":"exo-021","name":"Mountain climbers","type":["hiit","poids-du-corps"],"objectives":["endurance"],"muscles":["abdos","deltoides-ant","quadriceps"],"equipment":["poids-du-corps","aucun"],"images":["images/Exo/MountainClimbers.gif"],"explanation":"Amène les genoux vers la poitrine en rythme, garde les hanches basses, mains sous les épaules, dos neutre, mouvement fluide."},
-    {"id":"exo-022","name":"Crunch","type":["muscu","poids-du-corps"],"objectives":["endurance"],"muscles":["abdos"],"equipment":["poids-du-corps","aucun"],"images":["images/Exo/Crunch.gif"],"explanation":"Allonge-toi sur le dos, bas du dos plaqué au sol, enroule la colonne en montant légèrement le buste, menton dégagé, contrôle la descente."},
-    {"id":"exo-023","name":"Développé couché barre","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["pectoraux","triceps","deltoides-ant"],"equipment":["barre","banc-plat"],"images":["images/Exo/DevelopperCoucherBarre.gif"],"explanation":"Allonge-toi sur le banc, prise médiane sur la barre, omoplates serrées, trajectoire en léger J, pieds bien ancrés, mouvement contrôlé sur la poitrine."},
-    {"id":"exo-024","name":"Développé incliné barre","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["pectoraux-superieurs","deltoides-ant","triceps"],"equipment":["barre","banc-incline"],"images":["images/Exo/DeveloppeInclineBarre.gif"],"explanation":"Allonge-toi sur un banc incliné, barre descend vers le haut des pectoraux, coudes à environ 45°, trajectoire verticale, contrôle le mouvement."},
-    {"id":"exo-025","name":"Écartés inclinés avec haltères","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["pectoraux-superieurs","deltoides-ant"],"equipment":["halteres","banc-incline"],"images":["images/Exo/DeveloppeInclineHalteres.gif"],"explanation":"Allonge-toi sur un banc incliné, bras tendus mais coudes souples, ouvre les bras en arc, étire sans douleur, ramène en serrant la poitrine."},
-    {"id":"exo-026","name":"Écartés couchés avec haltères","type":["muscu"],"objectives":["hypertrophie"],"muscles":["pectoraux","deltoides-ant"],"equipment":["halteres","banc-plat"],"images":["images/Exo/EcartesCouchesHalteres.gif"],"explanation":"Allonge-toi sur le banc, bras tendus au-dessus de la poitrine, descends les haltères en arc, poignets neutres, légère flexion des coudes, contrôle la remontée."},
-    {"id":"exo-027","name":"Développé militaire barre","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["deltoides-ant","deltoides-lat","triceps"],"equipment":["barre"],"images":["images/Exo/DevloppeMilitaireBarre.gif"],"explanation":"Debout, gainage serré, fessiers contractés, barre en ligne verticale, descends devant le visage puis pousse au-dessus de la tête, tête en retrait sous la barre."},
-    {"id":"exo-028","name":"Développé militaire haltères","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["deltoides-ant","deltoides-lat","triceps"],"equipment":["halteres"],"images":["images/Exo/DeveloppeMilitaireHaltere.gif"],"explanation":"Assis ou debout, dos droit, haltères au niveau des épaules, trajectoire verticale, coudes sous les poignets, évite la cambrure excessive."},
-    {"id":"exo-029","name":"Élévations latérales haltères","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["deltoides-lat"],"equipment":["halteres"],"images":["images/Exo/ElevationsLateralesHalteres.gif"],"explanation":"Debout, bras légèrement fléchis, monte les haltères jusqu'à l’horizontale, pouces légèrement vers le bas, pause en haut, mouvement contrôlé."},
-    {"id":"exo-030","name":"Oiseau haltères","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["deltoides-post"],"equipment":["halteres"],"images":["images/Exo/Oiseau.gif"],"explanation":"Buste penché, dos plat, bras légèrement fléchis, lève les haltères sur les côtés jusqu’à l’horizontale, omoplates serrées, contrôle la descente."},
-    {"id":"exo-031","name":"Rowing barre","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["dos-lats","dos-trap","arriere-epaules","biceps"],"equipment":["barre"],"images":["images/Exo/RowingBarre.gif"],"explanation":"Buste incliné à 30–45°, dos neutre, barre proche des jambes, tire vers le nombril, coudes près du corps, mouvement contrôlé.","slug":"rowing-barre","primaryMuscle":"dos-lats"},
-    {"id":"exo-032","name":"Rowing haltère un bras","type":["muscu"],"objectives":["hypertrophie","force"],"muscles":["dos-lats","biceps","arriere-epaules"],"equipment":["halteres","banc-plat"],"images":["images/Exo/GifRowingHaltereBras.gif"],"explanation":"Un genou et une main sur le banc, dos plat, tire l’haltère vers la hanche, pause en haut, contrôle le retour, évite de bouger le buste.","slug":"rowing-haltere-un-bras","primaryMuscle":"dos-lats"},
-    {"id":"exo-033","name":"Tirage vertical poulie (lat pulldown)","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["dos-lats","biceps"],"equipment":["poulie"],"images":["images/Exo/TirageVerticalPoulie.gif"],"explanation":"Assis, prise un peu plus large que les épaules, tire la barre vers le haut de la poitrine, poitrine sortie, coudes vers le bas, contrôle le retour.","slug":"tirage-vertical-poulie","primaryMuscle":"dos-lats"},
-    {"id":"exo-034","name":"Extension des triceps à la poulie barre","type":["muscu"],"objectives":["hypertrophie","endurance","force"],"muscles":["triceps"],"equipment":["poulie","barre-ez"],"images":["images/Exo/ExtensionTricepsPoulieBarre.gif"],"explanation":"Debout face à la poulie, coudes collés au corps, descends la barre en contrôlant, bras tendus en bas, remonte doucement sans bouger les épaules."},
-    {"id":"exo-035","name":"Face pull poulie","type":["muscu"],"objectives":["endurance","hypertrophie"],"muscles":["deltoides-post","dos-trap"],"equipment":["poulie"],"images":["images/Exo/FacepullPoulie.gif"],"explanation":"Tire la corde vers le visage, coudes hauts, serre les omoplates, reste gainé et évite de cambrer le bas du dos."},
-    {"id":"exo-036","name":"Pullover haltère","type":["muscu"],"objectives":["endurance","hypertrophie"],"muscles":["pectoraux","dos-lats"],"equipment":["halteres","banc-plat"],"images":["images/Exo/PulloverHaltere.gif"],"explanation":"Allongé sur un banc, bras tendus au-dessus, descends l’haltère derrière la tête en contrôlant, garde le bas du dos plaqué."},
-    {"id":"exo-037","name":"Développé couché haltères","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["pectoraux","triceps","deltoides-ant"],"equipment":["halteres","banc-plat"],"images":["images/Exo/DeveloppeCoucheHalteres.gif"],"explanation":"Allongé sur un banc, haltères au-dessus de la poitrine, descends en contrôlant, coudes sous les poignets, remonte en poussant droit."},
-    {"id":"exo-038","name":"Élévations frontales haltères","type":["muscu"],"objectives":["endurance","hypertrophie"],"muscles":["deltoides-ant"],"equipment":["halteres"],"images":["images/Exo/ElevationFrontalesHalteres.gif"],"explanation":"Debout, bras tendus mais légèrement fléchis, monte les haltères devant toi jusqu’à l’horizontale, contrôle la descente."},
-    {"id":"exo-039","name":"Burpees","type":["hiit","poids-du-corps"],"objectives":["endurance","hypertrophie"],"muscles":["abdos","quadriceps","pectoraux","deltoides-ant","triceps","core"],"equipment":["poids-du-corps","aucun"],"images":["images/Exo/Burpees.gif"],"explanation":"Depuis debout, descends en planche, fais une pompe, ramène les pieds et saute explosivement en l’air, mouvement fluide."},
-    {"id":"exo-040","name":"Jumping jacks","type":["hiit","poids-du-corps"],"objectives":["endurance"],"muscles":["mollets","deltoides-lat","abdos"],"equipment":["poids-du-corps","aucun"],"images":["images/Exo/JumpingJacks.gif"],"explanation":"Saute en écartant bras et jambes, garde un rythme constant, abdos gainés, respire régulièrement."},
-    {"id":"exo-041","name":"High knees","type":["hiit","poids-du-corps"],"objectives":["endurance"],"muscles":["quadriceps","mollets","abdos"],"equipment":["poids-du-corps","aucun"],"images":["images/Exo/HighKnees.gif"],"explanation":"Monte les genoux à hauteur de hanches, cadence rapide, buste droit, bras actifs."},
-    {"id":"exo-042","name":"Sprints (tapis/piste)","type":["hiit","cardio"],"objectives":["endurance","force"],"muscles":["quadriceps","ischios","mollets","fessiers","core"],"equipment":["tapis"],"images":[],"explanation":"Cours à pleine vitesse sur courte distance, foulée dynamique, bras puissants, regarde loin."},
-    {"id":"exo-043","name":"Box jumps","type":["hiit","poids-du-corps"],"objectives":["force","endurance"],"muscles":["quadriceps","fessiers","mollets","core"],"equipment":["box"],"images":["images/Exo/Boxjumps.gif"],"explanation":"Debout face à la box, saute en utilisant les bras, atterris doucement en fléchissant les genoux, redescends avec contrôle."},
-    {"id":"exo-044","name":"Battle ropes","type":["hiit","renforcement"],"objectives":["endurance"],"muscles":["deltoides","triceps","biceps","core"],"equipment":["battle-ropes"],"images":["images/Exo/BattleRopes.gif"],"explanation":"Garde un gainage fort, épaules basses, alterne les vagues rapides et puissantes, respiration rythmée."},
-    {"id":"exo-045","name":"Kettlebell swing","type":["muscu","hiit"],"objectives":["endurance","hypertrophie","force"],"muscles":["fessiers","ischios","lombaires","deltoides-post","core"],"equipment":["kettlebell"],"images":[],"explanation":"Charnière de hanche explosive, dos neutre, les hanches propulsent la kettlebell, bras relâchés."},
-    {"id":"exo-046","name":"Kettlebell clean & Jerk","type":["muscu"],"objectives":["hypertrophie","force"],"muscles":["fessiers","ischios","deltoides","biceps","core"],"equipment":["kettlebell"],"images":["images/Exo/KettlebellSwing.gif"],"explanation":"Trajectoire proche du corps, extension de hanche, réception en rack, poignet neutre, évite l’impact sur l’avant-bras."},
-    {"id":"exo-047","name":"Kettlebell snatch","type":["muscu"],"objectives":["endurance","force"],"muscles":["deltoides","triceps","lombaires","fessiers","core"],"equipment":["kettlebell"],"images":["images/Exo/KettlebellSnatch.gif"],"explanation":"Extension de hanche puissante, trajectoire fluide, verrouille le bras au-dessus de la tête, contrôle le retour."},
-    {"id":"exo-051","name":"Écartés inclinés à la poulie","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["pectoraux-superieurs","deltoides-ant"],"equipment":["machine","poulie","banc-incline"],"images":["images/Exo/EcartesInclinespoulie.gif"],"explanation":"Debout entre deux poulies, bras légèrement fléchis, rapproche les poignées en arc, contraction de la poitrine, retour contrôlé."},
-    {"id":"exo-054","name":"Pec deck (butterfly)","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["pectoraux"],"equipment":["pec-deck"],"images":["images/Exo/PecDeckbutterfly.gif"],"explanation":"Assis, coudes pliés sur les pads, rapproche les bras devant la poitrine, serre les pectoraux, retour lent."},
-    {"id":"exo-055","name":"Shoulder press machine","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["deltoides-ant","deltoides-lat","triceps"],"equipment":["shoulder-press-machine"],"images":["images/Exo/ShoulderPressMachine.gif"],"explanation":"Assis, dos plaqué, pousse les poignées au-dessus de la tête, contrôle la descente, garde les pieds au sol."},
-    {"id":"exo-056","name":"Upright row barre","type":["muscu"],"objectives":["hypertrophie"],"muscles":["deltoides-lat","dos-trap"],"equipment":["barre"],"images":["images/Exo/UprightRowBarre.webp"],"explanation":"Tire la barre vers le menton en gardant les coudes hauts, dos droit, mouvement contrôlé, évite de hausser les épaules."},
-    {"id":"exo-057","name":"Shrugs haltères","type":["muscu"],"objectives":["hypertrophie","force"],"muscles":["dos-trap"],"equipment":["halteres"],"images":["images/Exo/ShrugsHalteres.gif"],"explanation":"Debout, haltères le long du corps, hausse les épaules vers les oreilles, contraction en haut, descente contrôlée."},
-    {"id":"exo-058","name":"Rowing T-bar","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["dos-lats","dos-trap","arriere-epaules","biceps"],"equipment":["barre"],"images":["images/Exo/RowingBarreT.gif"],"explanation":"Buste penché, dos neutre, tire la barre vers le ventre, coudes près du corps, contraction du dos, contrôle la descente."},
-    {"id":"exo-059","name":"Tirage horizontal poulie","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["dos-lats","biceps","dos-trap"],"equipment":["poulie"],"images":["images/Exo/TirageHorizontalPoulie.gif"],"explanation":"Assis, dos droit, tire la poignée vers l’abdomen, garde les coudes serrés, omoplates qui se rapprochent, retour contrôlé."},
-    {"id":"exo-060","name":"Good mornings barre","type":["muscu"],"objectives":["hypertrophie","force"],"muscles":["lombaires","ischios","fessiers"],"equipment":["barre"],"images":["images/Exo/GoodMorningBarre.gif"],"explanation":"Barre posée sur les trapèzes, charnière de hanche, dos droit, descends le buste jusqu’à sentir l’étirement des ischios, remonte en contractant les fessiers."},
-    {"id":"exo-061","name":"Hip thrust barre","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["fessiers","ischios"],"equipment":["barre","banc-plat"],"images":["images/Exo/hipsThrustBarre.gif"],"explanation":"Épaules calées sur un banc, pieds au sol, pousse les hanches vers le haut, contraction des fessiers, dos neutre."},
-    {"id":"exo-062","name":"Hack squat machine","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["quadriceps","fessiers","ischios"],"equipment":["hack-squat"],"images":["images/Exo/HackSquatMachine.gif"],"explanation":"Dos plaqué, pieds légèrement avancés, descends en contrôlant, pousse fort dans les talons pour remonter."},
-    {"id":"exo-063","name":"Smith machine squat","type":["muscu"],"objectives":["hypertrophie","force"],"muscles":["quadriceps","fessiers","ischios","core"],"equipment":["smith-machine"],"images":["images/Exo/SmithMachineSquat.gif"],"explanation":"Pieds sous la barre, descends en squat naturel, genoux alignés, pousse dans les talons, dos neutre."},
-    {"id":"exo-064","name":"Bulgarian split squat (haltères)","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["quadriceps","fessiers","ischios","core"],"equipment":["halteres","banc-plat"],"images":["images/Exo/BulgarianSplitSquatHaltere.gif"],"explanation":"Un pied surélevé derrière, descends en fléchissant le genou avant, buste droit, pousse par le talon avant."},
-    {"id":"exo-066","name":"Nordic curl","type":["muscu","renforcement"],"objectives":["force","hypertrophie"],"muscles":["ischios"],"equipment":["banc-plat"],"images":["images/Exo/NordiCurl.gif.gif"],"explanation":"Genoux calés, descends le buste en contrôlant avec les ischios, garde le corps droit, remonte en poussant fort."},
-    {"id":"exo-067","name":"Glute bridge (poids du corps)","type":["muscu","poids-du-corps"],"objectives":["endurance","hypertrophie"],"muscles":["fessiers","ischios","lombaires"],"equipment":["poids-du-corps","aucun"],"images":["images/Exo/GluteBridgePDC.gif"],"explanation":"Allongé sur le dos, pieds proches des fessiers, pousse les hanches vers le haut, contraction des fessiers, dos neutre."},
-    {"id":"exo-068","name":"Abducteurs machine","type":["muscu"],"objectives":["endurance","hypertrophie"],"muscles":["abducteurs"],"equipment":["hip-abductor"],"images":["images/Exo/AbducteursExterieurMachine.gif"],"explanation":"Assis, pousse les jambes vers l’extérieur, contraction des abducteurs, contrôle le retour."},
-    {"id":"exo-069","name":"Adducteurs machine","type":["muscu"],"objectives":["endurance","hypertrophie"],"muscles":["adducteurs"],"equipment":["hip-adductor"],"images":["images/Exo/AbducteursInterieurMachine.gif"],"explanation":"Assis, rapproche les jambes en contractant l’intérieur des cuisses, contrôle le mouvement, dos plaqué."},
-    {"id":"exo-070","name":"Mollets assis Barre","type":["muscu"],"objectives":["endurance","hypertrophie"],"muscles":["mollets"],"equipment":["Barre"],"images":["images/Exo/MolletsAssisBarre.gif"],"explanation":"Assis, pousse sur la pointe des pieds, contraction des mollets, redescends lentement."},
-    {"id":"exo-071","name":"Mollets à la presse","type":["muscu"],"objectives":["endurance","hypertrophie"],"muscles":["mollets"],"equipment":["calf-raise-presse","machine"],"images":["images/Exo/MolletsPresse.gif"],"explanation":"Pieds sur la plateforme, pousse sur la pointe, contraction en haut, retour contrôlé."},
-    {"id":"exo-072","name":"Curl incliné haltères","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["biceps","avant-bras"],"equipment":["halteres","banc-incline"],"images":["images/Exo/CurlInclineeHalteres.gif"],"explanation":"Assis sur banc incliné, bras relâchés, fléchis les coudes sans bouger les épaules, contrôle la descente."},
-    {"id":"exo-073","name":"Concentration curl haltère","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["biceps","avant-bras"],"equipment":["halteres","banc-plat"],"images":[],"explanation":"Assis, coude appuyé contre la cuisse, monte l’haltère vers l’épaule, contraction du biceps, redescends lentement."},
-    {"id":"exo-074","name":"Triceps dips (banc)","type":["muscu","poids-du-corps"],"objectives":["hypertrophie","endurance"],"muscles":["triceps","pectoraux","deltoides-ant"],"equipment":["banc-plat","aucun"],"images":["images/Exo/TricepsDipsBanc.gif"],"explanation":"Mains derrière sur le banc, descends les fesses proches du banc, coudes vers l’arrière, pousse fort pour remonter."},
-    {"id":"exo-075","name":"Extension triceps haltère (un bras)","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["triceps"],"equipment":["halteres","banc-plat"],"images":["images/Exo/ExtensionTricepsHaltereMu.jpeg"],"explanation":"Allongé sur banc, haltère dans une main, descends l’haltère vers l’oreille, remonte en tendant le bras, coude fixe."},
-    {"id":"exo-076","name":"Extension triceps haltères (deux bras)","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["triceps"],"equipment":["halteres","banc-plat"],"images":["images/Exo/ExtensionTricepsHaltere.gif"],"explanation":"Allongé sur banc, haltères au-dessus de la tête, descends derrière le crâne, remonte en contractant les triceps, coudes serrés."},
-    {"id":"exo-077","name":"Face pull poulie","type":["muscu"],"objectives":["endurance","hypertrophie"],"muscles":["deltoides-post","dos-trap"],"equipment":["machine","poulie","barre-ez"],"images":["images/Exo/FacePullPoulie.gif"],"explanation":"Tire la barre vers le front, coudes hauts, omoplates serrées, dos gainé, mouvement contrôlé."},
-    {"id":"exo-078","name":"Cable crossover","type":["muscu"],"objectives":["hypertrophie"],"muscles":["pectoraux"],"equipment":["poulie","machine"],"images":["images/Exo/CableCrossoverMiddle.gif"],"explanation":"Debout entre deux poulies, bras légèrement fléchis, ramène les poignées devant la poitrine en arc, contraction, retour lent."},
-    {"id":"exo-079","name":"Reverse fly machine","type":["muscu"],"objectives":["endurance","hypertrophie"],"muscles":["deltoides-post","dos-trap"],"equipment":["reverse-fly-machine"],"images":["images/Exo/ReverseFlyMachine.gif"],"explanation":"Assis face au dossier, bras tendus légèrement, ouvre en arrière, contraction des deltoïdes postérieurs, retour contrôlé."},
-    {"id":"exo-081","name":"Hanging leg raise","type":["muscu","poids-du-corps"],"objectives":["endurance","hypertrophie"],"muscles":["abdos","obliques"],"equipment":["barre-fixe","aucun"],"images":["images/Exo/HangingLegRaise.gif"],"explanation":"Accroché à la barre, monte les jambes tendues ou fléchies, abdos contractés, évite de balancer."},
-    {"id":"exo-082","name":"Ab wheel rollout","type":["muscu"],"objectives":["endurance","force"],"muscles":["abdos","obliques","lombaires"],"equipment":["ab-wheel"],"images":["images/Eco/AbWheelRollout.gif"],"explanation":"À genoux, roule la roue vers l’avant, dos neutre, descends selon ton contrôle, ramène en contractant les abdos."},
-    {"id":"exo-083","name":"Russian twist","type":["muscu"],"objectives":["endurance"],"muscles":["abdos","obliques"],"equipment":["poids-du-corps","halteres","kettlebell","aucun"],"images":["images/Exo/RussianTwist.webp"],"explanation":"Assis, buste légèrement penché, tourne les épaules de gauche à droite, abdos gainés, mouvement fluide."},
-    {"id":"exo-084","name":"Side plank (gainage latéral)","type":["muscu","poids-du-corps"],"objectives":["endurance"],"muscles":["obliques","lombaires","abdos"],"equipment":["poids-du-corps","aucun"],"images":["images/Exo/SidePlankLaterale.gif"],"explanation":"Allongé sur le côté, appui sur l’avant-bras, bassin relevé, corps aligné, tiens la posture en respirant."},
-    {"id":"exo-085","name":"Hollow body hold","type":["muscu","poids-du-corps"],"objectives":["endurance"],"muscles":["abdos"],"equipment":["poids-du-corps","aucun"],"images":["images/Exo/HollowBodyHold.webp"],"explanation":"Allongé sur le dos, lève jambes et épaules, bas du dos plaqué au sol, bras tendus, tiens la position."},
-    {"id":"exo-086","name":"Superman","type":["muscu","poids-du-corps"],"objectives":["endurance"],"muscles":["lombaires","fessiers"],"equipment":["poids-du-corps","aucun"],"images":["images/Exo/Superman.gif"],"explanation":"Allongé sur le ventre, lève bras et jambes simultanément, contraction des lombaires et fessiers, garde la nuque neutre."},
-    {"id":"exo-087","name":"Leg press machine","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["quadriceps","fessiers","ischios"],"equipment":["leg-press"],"images":["images/Exo/LegPress.gif"],"explanation":"Assis sur la presse, pieds largeur épaules, pousse la plateforme en gardant le dos plaqué, contrôle le retour sans décoller les fessiers."},
-    {"id":"exo-088","name":"Chest press machine","type":["muscu"],"objectives":["hypertrophie","force"],"muscles":["pectoraux","triceps","deltoides-ant"],"equipment":["machine","chest-press"],"images":["images/Exo/ChestPressMachine.gif"],"explanation":"Assis, dos plaqué, pousse les poignées vers l’avant, garde les coudes sous les poignets, contrôle le retour."},
-    {"id":"exo-090","name":"Leg curl machine","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["ischios"],"equipment":["leg-curl"],"images":["images/Exo/LegCurlMachine.gif"],"explanation":"Allongé sur la machine, talons calés, plie les jambes vers les fessiers, contrôle la descente."},
-    {"id":"exo-091","name":"Leg extension machine","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["quadriceps"],"equipment":["leg-extension"],"images":["images/Exo/LegExtension.gif"],"explanation":"Assis, pousse le rouleau avec les tibias jusqu’à tendre les jambes, contraction forte, redescends lentement."},
-    {"id":"exo-092","name":"Soulevé de terre barre","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["fessiers","ischios","lombaires","trapèzes"],"equipment":["barre"],"images":["images/Exo/SouleveTerre.gif"],"explanation":"Pieds largeur épaules, barre proche des tibias, dos neutre, tends les jambes et hanches en même temps, contracte les fessiers en haut."},
-    {"id":"exo-093","name":"Front squat barre","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["quadriceps","fessiers","core"],"equipment":["barre"],"images":["images/Exo/FrontSquatBarre.gif"],"explanation":"Barre posée sur l’avant des épaules, coudes hauts, descends en squat contrôlé, dos droit, remonte en poussant dans les talons."},
-    {"id":"exo-094","name":"Rowing Yates (supination)","type":["muscu"],"objectives":["hypertrophie"],"muscles":["dos-lats","biceps"],"equipment":["barre"],"images":["images/Exo/RowingYates.gif"],"explanation":"Buste légèrement penché, prise supination, tire la barre vers l’abdomen, garde le dos droit, contrôle le retour."},
-    {"id":"exo-095","name":"Overhead squat barre","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["quadriceps","fessiers","epaules","core"],"equipment":["barre"],"images":["images/Exo/OverheadSquatBarre.gif"],"explanation":"Barre au-dessus de la tête bras tendus, descends lentement en squat profond, gainage fort, dos neutre."},
-    {"id":"exo-096","name":"Goblet squat kettlebell","type":["muscu"],"objectives":["hypertrophie","endurance"],"muscles":["quadriceps","fessiers","core"],"equipment":["kettlebell"],"images":["images/Exo/GobletSquat.gif"],"explanation":"Tiens la kettlebell contre la poitrine, pieds largeur épaules, descends en squat profond, dos droit, remonte en poussant dans les talons."},
-    {"id":"exo-097","name":"Kettlebell deadlift","type":["muscu"],"objectives":["force","hypertrophie"],"muscles":["fessiers","ischios","lombaires"],"equipment":["kettlebell"],"images":["images/Exo/KettlebellDeadlift.gif"],"explanation":"Kettlebell au sol entre les pieds, charnière de hanche, dos droit, descends, pousse dans les talons pour revenir debout."},
-    {"id":"exo-098","name":"Kettlebell thruster","type":["muscu"],"objectives":["force","endurance"],"muscles":["quadriceps","epaules","triceps","core"],"equipment":["kettlebell"],"images":["images/Exo/KettlebellThruster.gif"],"explanation":"Tiens la kettlebell en rack, fais un squat puis enchaîne avec un développé au-dessus de la tête en un seul mouvement fluide."}
+    {
+      "id": "exo-001",
+      "name": "Vélo stationnaire",
+      "type": [
+        "cardio"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "velo-stationnaire"
+      ],
+      "images": [
+        "images/Exo/VeloStationnaire.gif"
+      ],
+      "explanation": "Cadence fluide 80–95 rpm, épaules relâchées, bassin fixe, garde un rythme constant et une respiration régulière. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-002",
+      "name": "Course sur tapis",
+      "type": [
+        "cardio"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "tapis"
+      ],
+      "images": [
+        "images/Exo/CourseTapis.jpeg"
+      ],
+      "explanation": "Cours à une allure où tu peux parler sans t’essouffler, inclinaison légère 1–2%, foulée légère, regarde loin, épaules détendues. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-003",
+      "name": "Marche rapide incliné tapis",
+      "type": [
+        "cardio"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "fessiers",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "tapis"
+      ],
+      "images": [
+        "images/Exo/MarcheTapisIncline.gif"
+      ],
+      "explanation": "Marche avec une posture droite, bras actifs, incline le tapis si possible, déroule bien le pied du talon vers la pointe. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-004",
+      "name": "Rameur",
+      "type": [
+        "cardio",
+        "renforcement"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "biceps",
+        "cuisses-externes",
+        "cuisses-internes",
+        "deltoides-post",
+        "dos-lats",
+        "dos-superieur",
+        "dos-trap",
+        "ischios",
+        "quadriceps"
+      ],
+      "equipment": [
+        "rameur"
+      ],
+      "images": [
+        "images/Exo/Rameur.jpeg"
+      ],
+      "explanation": "Pousse d’abord avec les jambes, puis le buste, puis les bras. Garde le dos neutre et tire la poignée jusqu’au bas du sternum, retour contrôlé. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-005",
+      "name": "Corde à sauter",
+      "type": [
+        "cardio",
+        "hiit"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "avant-bras",
+        "deltoides-ant",
+        "mollets"
+      ],
+      "equipment": [
+        "corde-a-sauter"
+      ],
+      "images": [
+        "images/Exo/CordeSauter.gif"
+      ],
+      "explanation": "Saute en gardant les atterrissages doux sur l’avant-pied, coudes près du corps, épaules relâchées, reste sur un sol stable. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-006",
+      "name": "Elliptique",
+      "type": [
+        "cardio"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "cuisses-internes",
+        "deltoides-ant",
+        "fessiers",
+        "ischios",
+        "quadriceps"
+      ],
+      "equipment": [
+        "elliptique"
+      ],
+      "images": [
+        "images/Exo/Elliptique.jpeg"
+      ],
+      "explanation": "Effectue un mouvement fluide, talons bien posés, mains légères sur les poignées, garde un rythme constant et respire régulièrement. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-007",
+      "name": "Stepper",
+      "type": [
+        "cardio"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "fessiers",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "stepper"
+      ],
+      "images": [],
+      "explanation": "Garde une posture droite, effectue des pas courts, évite de t’appuyer sur la rampe, rythme soutenu mais toujours contrôlé. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-008",
+      "name": "Natation crawl",
+      "type": [
+        "cardio"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "deltoides",
+        "dos-lats",
+        "dos-superieur",
+        "quadriceps",
+        "triceps"
+      ],
+      "equipment": [
+        "piscine"
+      ],
+      "images": [
+        "images/Exo/NatationCrawl.gif"
+      ],
+      "explanation": "Garde un gainage fort, respire tous les 2–3 mouvements, tire avec le coude haut, allonge bien la glisse, reste détendu. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-009",
+      "name": "Natation brasse",
+      "type": [
+        "cardio"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "adducteurs",
+        "cuisses-externes",
+        "cuisses-internes",
+        "pectoraux",
+        "quadriceps"
+      ],
+      "equipment": [
+        "piscine"
+      ],
+      "images": [
+        "images/Exo/NatationBrasse.gif"
+      ],
+      "explanation": "Effectue une traction ample puis glisse, fais un battement en fouet, garde la tête dans l’axe, rythme régulier, posture détendue. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-010",
+      "name": "SkiErg",
+      "type": [
+        "cardio",
+        "hiit"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "dos-lats",
+        "dos-superieur",
+        "triceps"
+      ],
+      "equipment": [
+        "ski-erg"
+      ],
+      "images": [
+        "images/Exo/SkiErg.gif"
+      ],
+      "explanation": "Tire d’abord avec les dorsaux puis les bras, ferme la hanche, garde un gainage fort, contrôle le retour, respire régulièrement. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-011",
+      "name": "Assault Bike",
+      "type": [
+        "cardio",
+        "hiit"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "cuisses-internes",
+        "deltoides",
+        "ischios",
+        "quadriceps",
+        "triceps"
+      ],
+      "equipment": [
+        "assault-bike"
+      ],
+      "images": [
+        "images/Exo/AssaultBike.gif"
+      ],
+      "explanation": "Pousse et tire avec bras et jambes, cadence fluide, épaules relâchées, respiration rythmée, garde le buste stable. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-012",
+      "name": "Pompes",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "pectoraux",
+        "triceps"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/Pompe.gif"
+      ],
+      "explanation": "Place les mains sous les épaules, corps bien gainé, coudes à 45°, descends jusqu’à frôler le sol, remonte sans cambrer le dos. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée.",
+      "slug": "pompes",
+      "primaryMuscle": "pectoraux"
+    },
+    {
+      "id": "exo-013",
+      "name": "Pompes déclinées",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "pectoraux",
+        "triceps"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "banc-plat",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/GifPompeDecline.gif"
+      ],
+      "explanation": "Place les pieds surélevés, buste bien gainé, descends la poitrine vers le sol puis remonte en gardant le contrôle, dos droit. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée.",
+      "slug": "pompes-declinees",
+      "primaryMuscle": "pectoraux"
+    },
+    {
+      "id": "exo-014",
+      "name": "Pompes diamant",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "pectoraux",
+        "triceps"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/PompeDiamant.gif"
+      ],
+      "explanation": "Mains rapprochées en losange sous le sternum, coudes près du corps, pousse fort sur les triceps, corps bien gainé. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée.",
+      "slug": "pompes-diamant",
+      "primaryMuscle": "triceps"
+    },
+    {
+      "id": "exo-015",
+      "name": "Tractions pronation",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-post",
+        "dos-lats",
+        "dos-superieur"
+      ],
+      "equipment": [
+        "barre-fixe"
+      ],
+      "images": [
+        "images/Exo/TractionsPronation.gif"
+      ],
+      "explanation": "Prends la barre en pronation largeur épaules, serre les omoplates, tire la poitrine vers la barre, contrôle la descente. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée.",
+      "slug": "tractions-pronation",
+      "primaryMuscle": "dos-superieur"
+    },
+    {
+      "id": "exo-016",
+      "name": "Tractions supination",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "dos-lats",
+        "dos-superieur"
+      ],
+      "equipment": [
+        "barre-fixe"
+      ],
+      "images": [
+        "images/Exo/TractionSupination.gif"
+      ],
+      "explanation": "Prends la barre en supination largeur épaules, tire la poitrine vers la barre, coudes devant, contrôle le mouvement sans balancer. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée.",
+      "slug": "tractions-supination",
+      "primaryMuscle": "biceps"
+    },
+    {
+      "id": "exo-017",
+      "name": "Dips parallèles",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "pectoraux",
+        "triceps"
+      ],
+      "equipment": [
+        "barres-paralleles",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/DipsParalleles.gif"
+      ],
+      "explanation": "Garde les épaules basses, buste légèrement penché, descends jusqu’à 90° de coude, remonte en poussant dans les barres. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée.",
+      "slug": "dips-paralleles",
+      "primaryMuscle": "triceps"
+    },
+    {
+      "id": "exo-018",
+      "name": "Squat poids du corps",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "quadriceps"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/SquatPoidsCorps.gif"
+      ],
+      "explanation": "Place les pieds largeur épaules, genoux dans l’axe des orteils, pousse les hanches en arrière, dos neutre, descends selon ta mobilité. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée.",
+      "slug": "squat-poids-du-corps",
+      "primaryMuscle": "cuisses-externes"
+    },
+    {
+      "id": "exo-019",
+      "name": "Fentes avant (poids du corps)",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "quadriceps"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/FentesAvantPDC.gif"
+      ],
+      "explanation": "Fais un grand pas, genou avant au-dessus du pied, talon arrière décollé, buste droit, pousse par le talon avant pour revenir. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée.",
+      "slug": "fentes-avant-poids-du-corps",
+      "primaryMuscle": "cuisses-externes"
+    },
+    {
+      "id": "exo-020",
+      "name": "Planche (gainage)",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre",
+        "abdos-lateraux",
+        "dos-inferieur",
+        "lombaires",
+        "obliques"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Corps bien gainé en ligne droite, bassin neutre, omoplates actives, respiration calme et régulière par le nez. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée.",
+      "slug": "planche-gainage",
+      "primaryMuscle": "abdos-centre"
+    },
+    {
+      "id": "exo-021",
+      "name": "Mountain climbers",
+      "type": [
+        "hiit",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre",
+        "cuisses-externes",
+        "deltoides-ant",
+        "quadriceps"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/MountainClimbers.gif"
+      ],
+      "explanation": "Amène les genoux vers la poitrine en rythme, garde les hanches basses, mains sous les épaules, dos neutre, mouvement fluide. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-022",
+      "name": "Crunch",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/Crunch.gif"
+      ],
+      "explanation": "Allonge-toi sur le dos, bas du dos plaqué au sol, enroule la colonne en montant légèrement le buste, menton dégagé, contrôle la descente. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-023",
+      "name": "Développé couché barre",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "pectoraux",
+        "triceps"
+      ],
+      "equipment": [
+        "barre",
+        "banc-plat"
+      ],
+      "images": [
+        "images/Exo/DevelopperCoucherBarre.gif"
+      ],
+      "explanation": "Allonge-toi sur le banc, prise médiane sur la barre, omoplates serrées, trajectoire en léger J, pieds bien ancrés, mouvement contrôlé sur la poitrine. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-024",
+      "name": "Développé incliné barre",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "pectoraux-superieurs",
+        "triceps"
+      ],
+      "equipment": [
+        "barre",
+        "banc-incline"
+      ],
+      "images": [
+        "images/Exo/DeveloppeInclineBarre.gif"
+      ],
+      "explanation": "Allonge-toi sur un banc incliné, barre descend vers le haut des pectoraux, coudes à environ 45°, trajectoire verticale, contrôle le mouvement. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-025",
+      "name": "Écartés inclinés avec haltères",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "pectoraux-superieurs"
+      ],
+      "equipment": [
+        "halteres",
+        "banc-incline"
+      ],
+      "images": [
+        "images/Exo/DeveloppeInclineHalteres.gif"
+      ],
+      "explanation": "Allonge-toi sur un banc incliné, bras tendus mais coudes souples, ouvre les bras en arc, étire sans douleur, ramène en serrant la poitrine. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-026",
+      "name": "Écartés couchés avec haltères",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "pectoraux"
+      ],
+      "equipment": [
+        "halteres",
+        "banc-plat"
+      ],
+      "images": [
+        "images/Exo/EcartesCouchesHalteres.gif"
+      ],
+      "explanation": "Allonge-toi sur le banc, bras tendus au-dessus de la poitrine, descends les haltères en arc, poignets neutres, légère flexion des coudes, contrôle la remontée. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-027",
+      "name": "Développé militaire barre",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "deltoides-lat",
+        "triceps"
+      ],
+      "equipment": [
+        "barre"
+      ],
+      "images": [
+        "images/Exo/DevloppeMilitaireBarre.gif"
+      ],
+      "explanation": "Debout, gainage serré, fessiers contractés, barre en ligne verticale, descends devant le visage puis pousse au-dessus de la tête, tête en retrait sous la barre. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-028",
+      "name": "Développé militaire haltères",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "deltoides-lat",
+        "triceps"
+      ],
+      "equipment": [
+        "halteres"
+      ],
+      "images": [
+        "images/Exo/DeveloppeMilitaireHaltere.gif"
+      ],
+      "explanation": "Assis ou debout, dos droit, haltères au niveau des épaules, trajectoire verticale, coudes sous les poignets, évite la cambrure excessive. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-029",
+      "name": "Élévations latérales haltères",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "deltoides-lat"
+      ],
+      "equipment": [
+        "halteres"
+      ],
+      "images": [
+        "images/Exo/ElevationsLateralesHalteres.gif"
+      ],
+      "explanation": "Debout, bras légèrement fléchis, monte les haltères jusqu'à l’horizontale, pouces légèrement vers le bas, pause en haut, mouvement contrôlé. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-030",
+      "name": "Oiseau haltères",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "deltoides-post",
+        "dos-superieur"
+      ],
+      "equipment": [
+        "halteres"
+      ],
+      "images": [
+        "images/Exo/Oiseau.gif"
+      ],
+      "explanation": "Buste penché, dos plat, bras légèrement fléchis, lève les haltères sur les côtés jusqu’à l’horizontale, omoplates serrées, contrôle la descente. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-031",
+      "name": "Rowing barre",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "arriere-epaules",
+        "dos-lats",
+        "dos-superieur",
+        "dos-trap"
+      ],
+      "equipment": [
+        "barre"
+      ],
+      "images": [
+        "images/Exo/RowingBarre.gif"
+      ],
+      "explanation": "Buste incliné à 30–45°, dos neutre, barre proche des jambes, tire vers le nombril, coudes près du corps, mouvement contrôlé. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée.",
+      "slug": "rowing-barre",
+      "primaryMuscle": "dos-superieur"
+    },
+    {
+      "id": "exo-032",
+      "name": "Rowing haltère un bras",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "force"
+      ],
+      "muscles": [
+        "dos-lats"
+      ],
+      "equipment": [
+        "halteres",
+        "banc-plat"
+      ],
+      "images": [
+        "images/Exo/GifRowingHaltereBras.gif"
+      ],
+      "explanation": "Un genou et une main sur le banc, dos plat, tire l’haltère vers la hanche, pause en haut, contrôle le retour, évite de bouger le buste. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée.",
+      "slug": "rowing-haltere-un-bras",
+      "primaryMuscle": "dos-superieur"
+    },
+    {
+      "id": "exo-033",
+      "name": "Tirage vertical poulie (lat pulldown)",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "dos-lats",
+        "dos-superieur"
+      ],
+      "equipment": [
+        "poulie"
+      ],
+      "images": [
+        "images/Exo/TirageVerticalPoulie.gif"
+      ],
+      "explanation": "Assis, prise un peu plus large que les épaules, tire la barre vers le haut de la poitrine, poitrine sortie, coudes vers le bas, contrôle le retour. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée.",
+      "slug": "tirage-vertical-poulie",
+      "primaryMuscle": "dos-superieur"
+    },
+    {
+      "id": "exo-034",
+      "name": "Extension des triceps à la poulie barre",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance",
+        "force"
+      ],
+      "muscles": [
+        "triceps"
+      ],
+      "equipment": [
+        "poulie",
+        "barre-ez"
+      ],
+      "images": [
+        "images/Exo/ExtensionTricepsPoulieBarre.gif"
+      ],
+      "explanation": "Debout face à la poulie, coudes collés au corps, descends la barre en contrôlant, bras tendus en bas, remonte doucement sans bouger les épaules. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-035",
+      "name": "Face pull poulie",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-post",
+        "dos-superieur",
+        "dos-trap"
+      ],
+      "equipment": [
+        "poulie"
+      ],
+      "images": [
+        "images/Exo/FacepullPoulie.gif"
+      ],
+      "explanation": "Tire la corde vers le visage, coudes hauts, serre les omoplates, reste gainé et évite de cambrer le bas du dos. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-036",
+      "name": "Pullover haltère",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "pectoraux"
+      ],
+      "equipment": [
+        "halteres",
+        "banc-plat"
+      ],
+      "images": [
+        "images/Exo/PulloverHaltere.gif"
+      ],
+      "explanation": "Allongé sur un banc, bras tendus au-dessus, descends l’haltère derrière la tête en contrôlant, garde le bas du dos plaqué. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-037",
+      "name": "Développé couché haltères",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "pectoraux",
+        "triceps"
+      ],
+      "equipment": [
+        "halteres",
+        "banc-plat"
+      ],
+      "images": [
+        "images/Exo/DeveloppeCoucheHalteres.gif"
+      ],
+      "explanation": "Allongé sur un banc, haltères au-dessus de la poitrine, descends en contrôlant, coudes sous les poignets, remonte en poussant droit. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-038",
+      "name": "Élévations frontales haltères",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-ant"
+      ],
+      "equipment": [
+        "halteres"
+      ],
+      "images": [
+        "images/Exo/ElevationFrontalesHalteres.gif"
+      ],
+      "explanation": "Debout, bras tendus mais légèrement fléchis, monte les haltères devant toi jusqu’à l’horizontale, contrôle la descente. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-039",
+      "name": "Burpees",
+      "type": [
+        "hiit",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre",
+        "cuisses-externes",
+        "deltoides-ant",
+        "pectoraux",
+        "quadriceps",
+        "triceps"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/Burpees.gif"
+      ],
+      "explanation": "Depuis debout, descends en planche, fais une pompe, ramène les pieds et saute explosivement en l’air, mouvement fluide. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-040",
+      "name": "Jumping jacks",
+      "type": [
+        "hiit",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre",
+        "deltoides-lat",
+        "mollets"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/JumpingJacks.gif"
+      ],
+      "explanation": "Saute en écartant bras et jambes, garde un rythme constant, abdos gainés, respire régulièrement. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-041",
+      "name": "High knees",
+      "type": [
+        "hiit",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre",
+        "cuisses-externes",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/HighKnees.gif"
+      ],
+      "explanation": "Monte les genoux à hauteur de hanches, cadence rapide, buste droit, bras actifs. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-042",
+      "name": "Sprints (tapis/piste)",
+      "type": [
+        "hiit",
+        "cardio"
+      ],
+      "objectives": [
+        "endurance",
+        "force"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "tapis"
+      ],
+      "images": [],
+      "explanation": "Cours à pleine vitesse sur courte distance, foulée dynamique, bras puissants, regarde loin. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-043",
+      "name": "Box jumps",
+      "type": [
+        "hiit",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "force",
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "fessiers",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "box"
+      ],
+      "images": [
+        "images/Exo/Boxjumps.gif"
+      ],
+      "explanation": "Debout face à la box, saute en utilisant les bras, atterris doucement en fléchissant les genoux, redescends avec contrôle. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-044",
+      "name": "Battle ropes",
+      "type": [
+        "hiit",
+        "renforcement"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "biceps",
+        "deltoides",
+        "triceps"
+      ],
+      "equipment": [
+        "battle-ropes"
+      ],
+      "images": [
+        "images/Exo/BattleRopes.gif"
+      ],
+      "explanation": "Garde un gainage fort, épaules basses, alterne les vagues rapides et puissantes, respiration rythmée. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-045",
+      "name": "Kettlebell swing",
+      "type": [
+        "muscu",
+        "hiit"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie",
+        "force"
+      ],
+      "muscles": [
+        "cuisses-internes",
+        "deltoides-post",
+        "dos-inferieur",
+        "dos-superieur",
+        "fessiers",
+        "ischios",
+        "lombaires"
+      ],
+      "equipment": [
+        "kettlebell"
+      ],
+      "images": [],
+      "explanation": "Charnière de hanche explosive, dos neutre, les hanches propulsent la kettlebell, bras relâchés. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-046",
+      "name": "Kettlebell clean & Jerk",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "force"
+      ],
+      "muscles": [
+        "biceps",
+        "cuisses-internes",
+        "deltoides",
+        "fessiers",
+        "ischios"
+      ],
+      "equipment": [
+        "kettlebell"
+      ],
+      "images": [
+        "images/Exo/KettlebellSwing.gif"
+      ],
+      "explanation": "Trajectoire proche du corps, extension de hanche, réception en rack, poignet neutre, évite l’impact sur l’avant-bras. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-047",
+      "name": "Kettlebell snatch",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "endurance",
+        "force"
+      ],
+      "muscles": [
+        "deltoides",
+        "dos-inferieur",
+        "fessiers",
+        "lombaires",
+        "triceps"
+      ],
+      "equipment": [
+        "kettlebell"
+      ],
+      "images": [
+        "images/Exo/KettlebellSnatch.gif"
+      ],
+      "explanation": "Extension de hanche puissante, trajectoire fluide, verrouille le bras au-dessus de la tête, contrôle le retour. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-051",
+      "name": "Écartés inclinés à la poulie",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "pectoraux-superieurs"
+      ],
+      "equipment": [
+        "machine",
+        "poulie",
+        "banc-incline"
+      ],
+      "images": [
+        "images/Exo/EcartesInclinesPoulie.gif"
+      ],
+      "explanation": "Debout entre deux poulies, bras légèrement fléchis, rapproche les poignées en arc, contraction de la poitrine, retour contrôlé. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-054",
+      "name": "Pec deck (butterfly)",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "pectoraux"
+      ],
+      "equipment": [
+        "pec-deck"
+      ],
+      "images": [
+        "images/Exo/PecDeckbutterfly.gif"
+      ],
+      "explanation": "Assis, coudes pliés sur les pads, rapproche les bras devant la poitrine, serre les pectoraux, retour lent. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-055",
+      "name": "Shoulder press machine",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "deltoides-lat",
+        "triceps"
+      ],
+      "equipment": [
+        "shoulder-press-machine"
+      ],
+      "images": [
+        "images/Exo/ShoulderPressMachine.gif"
+      ],
+      "explanation": "Assis, dos plaqué, pousse les poignées au-dessus de la tête, contrôle la descente, garde les pieds au sol. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-056",
+      "name": "Upright row barre",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-lat",
+        "dos-superieur",
+        "dos-trap"
+      ],
+      "equipment": [
+        "barre"
+      ],
+      "images": [
+        "images/Exo/UprightRowBarre.webp"
+      ],
+      "explanation": "Tire la barre vers le menton en gardant les coudes hauts, dos droit, mouvement contrôlé, évite de hausser les épaules. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-057",
+      "name": "Shrugs haltères",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "force"
+      ],
+      "muscles": [
+        "dos-superieur",
+        "dos-trap"
+      ],
+      "equipment": [
+        "halteres"
+      ],
+      "images": [
+        "images/Exo/ShrugsHalteres.gif"
+      ],
+      "explanation": "Debout, haltères le long du corps, hausse les épaules vers les oreilles, contraction en haut, descente contrôlée. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-058",
+      "name": "Rowing T-bar",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "arriere-epaules",
+        "dos-lats",
+        "dos-superieur",
+        "dos-trap"
+      ],
+      "equipment": [
+        "barre"
+      ],
+      "images": [
+        "images/Exo/RowingBarreT.gif"
+      ],
+      "explanation": "Buste penché, dos neutre, tire la barre vers le ventre, coudes près du corps, contraction du dos, contrôle la descente. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-059",
+      "name": "Tirage horizontal poulie",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "dos-lats",
+        "dos-superieur",
+        "dos-trap"
+      ],
+      "equipment": [
+        "poulie"
+      ],
+      "images": [
+        "images/Exo/TirageHorizontalPoulie.gif"
+      ],
+      "explanation": "Assis, dos droit, tire la poignée vers l’abdomen, garde les coudes serrés, omoplates qui se rapprochent, retour contrôlé. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-060",
+      "name": "Good mornings barre",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "force"
+      ],
+      "muscles": [
+        "cuisses-internes",
+        "dos-inferieur",
+        "fessiers",
+        "ischios",
+        "lombaires"
+      ],
+      "equipment": [
+        "barre"
+      ],
+      "images": [
+        "images/Exo/GoodMorningBarre.gif"
+      ],
+      "explanation": "Barre posée sur les trapèzes, charnière de hanche, dos droit, descends le buste jusqu’à sentir l’étirement des ischios, remonte en contractant les fessiers. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-061",
+      "name": "Hip thrust barre",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "cuisses-internes",
+        "fessiers",
+        "ischios"
+      ],
+      "equipment": [
+        "barre",
+        "banc-plat"
+      ],
+      "images": [
+        "images/Exo/hipsThrustBarre.gif"
+      ],
+      "explanation": "Épaules calées sur un banc, pieds au sol, pousse les hanches vers le haut, contraction des fessiers, dos neutre. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-062",
+      "name": "Hack squat machine",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "quadriceps"
+      ],
+      "equipment": [
+        "hack-squat"
+      ],
+      "images": [
+        "images/Exo/HackSquatMachine.gif"
+      ],
+      "explanation": "Dos plaqué, pieds légèrement avancés, descends en contrôlant, pousse fort dans les talons pour remonter. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-063",
+      "name": "Smith machine squat",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "force"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "quadriceps"
+      ],
+      "equipment": [
+        "smith-machine"
+      ],
+      "images": [
+        "images/Exo/SmithMachineSquat.gif"
+      ],
+      "explanation": "Pieds sous la barre, descends en squat naturel, genoux alignés, pousse dans les talons, dos neutre. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-064",
+      "name": "Bulgarian split squat (haltères)",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "quadriceps"
+      ],
+      "equipment": [
+        "halteres",
+        "banc-plat"
+      ],
+      "images": [
+        "images/Exo/BulgarianSplitSquatHaltere.gif"
+      ],
+      "explanation": "Un pied surélevé derrière, descends en fléchissant le genou avant, buste droit, pousse par le talon avant. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-066",
+      "name": "Nordic curl",
+      "type": [
+        "muscu",
+        "renforcement"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "cuisses-internes",
+        "ischios"
+      ],
+      "equipment": [
+        "banc-plat"
+      ],
+      "images": [
+        "images/Exo/NordiCurl.gif.gif"
+      ],
+      "explanation": "Genoux calés, descends le buste en contrôlant avec les ischios, garde le corps droit, remonte en poussant fort. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-067",
+      "name": "Glute bridge (poids du corps)",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "cuisses-internes",
+        "dos-inferieur",
+        "fessiers",
+        "ischios",
+        "lombaires"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/GluteBridgePDC.gif"
+      ],
+      "explanation": "Allongé sur le dos, pieds proches des fessiers, pousse les hanches vers le haut, contraction des fessiers, dos neutre. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-068",
+      "name": "Abducteurs machine",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "abducteurs"
+      ],
+      "equipment": [
+        "hip-abductor"
+      ],
+      "images": [
+        "images/Exo/AbducteursExterieurMachine.gif"
+      ],
+      "explanation": "Assis, pousse les jambes vers l’extérieur, contraction des abducteurs, contrôle le retour. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-069",
+      "name": "Adducteurs machine",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "adducteurs",
+        "cuisses-internes"
+      ],
+      "equipment": [
+        "hip-adductor"
+      ],
+      "images": [
+        "images/Exo/AbducteursInterieurMachine.gif"
+      ],
+      "explanation": "Assis, rapproche les jambes en contractant l’intérieur des cuisses, contrôle le mouvement, dos plaqué. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-070",
+      "name": "Mollets assis Barre",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "mollets"
+      ],
+      "equipment": [
+        "Barre"
+      ],
+      "images": [
+        "images/Exo/MolletsAssisBarre.gif"
+      ],
+      "explanation": "Assis, pousse sur la pointe des pieds, contraction des mollets, redescends lentement. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-071",
+      "name": "Mollets à la presse",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "mollets"
+      ],
+      "equipment": [
+        "calf-raise-presse",
+        "machine"
+      ],
+      "images": [
+        "images/Exo/MolletsPresse.gif"
+      ],
+      "explanation": "Pieds sur la plateforme, pousse sur la pointe, contraction en haut, retour contrôlé. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-072",
+      "name": "Curl incliné haltères",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "avant-bras",
+        "biceps"
+      ],
+      "equipment": [
+        "halteres",
+        "banc-incline"
+      ],
+      "images": [
+        "images/Exo/CurlInclineeHalteres.gif"
+      ],
+      "explanation": "Assis sur banc incliné, bras relâchés, fléchis les coudes sans bouger les épaules, contrôle la descente. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-073",
+      "name": "Concentration curl haltère",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "avant-bras",
+        "biceps"
+      ],
+      "equipment": [
+        "halteres",
+        "banc-plat"
+      ],
+      "images": [],
+      "explanation": "Assis, coude appuyé contre la cuisse, monte l’haltère vers l’épaule, contraction du biceps, redescends lentement. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-074",
+      "name": "Triceps dips (banc)",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "pectoraux",
+        "triceps"
+      ],
+      "equipment": [
+        "banc-plat",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/TricepsDipsBanc.gif"
+      ],
+      "explanation": "Mains derrière sur le banc, descends les fesses proches du banc, coudes vers l’arrière, pousse fort pour remonter. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-075",
+      "name": "Extension triceps haltère (un bras)",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "triceps"
+      ],
+      "equipment": [
+        "halteres",
+        "banc-plat"
+      ],
+      "images": [
+        "images/Exo/ExtensionTricepsHaltereMu.jpeg"
+      ],
+      "explanation": "Allongé sur banc, haltère dans une main, descends l’haltère vers l’oreille, remonte en tendant le bras, coude fixe. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-076",
+      "name": "Extension triceps haltères (deux bras)",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "triceps"
+      ],
+      "equipment": [
+        "halteres",
+        "banc-plat"
+      ],
+      "images": [
+        "images/Exo/ExtensionTricepsHaltere.gif"
+      ],
+      "explanation": "Allongé sur banc, haltères au-dessus de la tête, descends derrière le crâne, remonte en contractant les triceps, coudes serrés. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-077",
+      "name": "Face pull poulie",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-post",
+        "dos-superieur",
+        "dos-trap"
+      ],
+      "equipment": [
+        "machine",
+        "poulie",
+        "barre-ez"
+      ],
+      "images": [
+        "images/Exo/FacePullPoulie.gif"
+      ],
+      "explanation": "Tire la barre vers le front, coudes hauts, omoplates serrées, dos gainé, mouvement contrôlé. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-078",
+      "name": "Cable crossover",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie"
+      ],
+      "muscles": [
+        "pectoraux"
+      ],
+      "equipment": [
+        "poulie",
+        "machine"
+      ],
+      "images": [
+        "images/Exo/CableCrossoverMiddle.gif"
+      ],
+      "explanation": "Debout entre deux poulies, bras légèrement fléchis, ramène les poignées devant la poitrine en arc, contraction, retour lent. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-079",
+      "name": "Reverse fly machine",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-post",
+        "dos-superieur",
+        "dos-trap"
+      ],
+      "equipment": [
+        "reverse-fly-machine"
+      ],
+      "images": [
+        "images/Exo/ReverseFlyMachine.gif"
+      ],
+      "explanation": "Assis face au dossier, bras tendus légèrement, ouvre en arrière, contraction des deltoïdes postérieurs, retour contrôlé. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-081",
+      "name": "Hanging leg raise",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre",
+        "abdos-lateraux",
+        "obliques"
+      ],
+      "equipment": [
+        "barre-fixe",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/HangingLegRaise.gif"
+      ],
+      "explanation": "Accroché à la barre, monte les jambes tendues ou fléchies, abdos contractés, évite de balancer. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-082",
+      "name": "Ab wheel rollout",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "endurance",
+        "force"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre",
+        "abdos-lateraux",
+        "dos-inferieur",
+        "lombaires",
+        "obliques"
+      ],
+      "equipment": [
+        "ab-wheel"
+      ],
+      "images": [
+        "images/Eco/AbWheelRollout.gif"
+      ],
+      "explanation": "À genoux, roule la roue vers l’avant, dos neutre, descends selon ton contrôle, ramène en contractant les abdos. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-083",
+      "name": "Russian twist",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre",
+        "abdos-lateraux",
+        "obliques"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "halteres",
+        "kettlebell",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/RussianTwist.webp"
+      ],
+      "explanation": "Assis, buste légèrement penché, tourne les épaules de gauche à droite, abdos gainés, mouvement fluide. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-084",
+      "name": "Side plank (gainage latéral)",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre",
+        "abdos-lateraux",
+        "dos-inferieur",
+        "lombaires",
+        "obliques"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/SidePlankLaterale.gif"
+      ],
+      "explanation": "Allongé sur le côté, appui sur l’avant-bras, bassin relevé, corps aligné, tiens la posture en respirant. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-085",
+      "name": "Hollow body hold",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/HollowBodyHold.webp"
+      ],
+      "explanation": "Allongé sur le dos, lève jambes et épaules, bas du dos plaqué au sol, bras tendus, tiens la position. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-086",
+      "name": "Superman",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "dos-inferieur",
+        "fessiers",
+        "lombaires"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "images/Exo/Superman.gif"
+      ],
+      "explanation": "Allongé sur le ventre, lève bras et jambes simultanément, contraction des lombaires et fessiers, garde la nuque neutre. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-087",
+      "name": "Leg press machine",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "quadriceps"
+      ],
+      "equipment": [
+        "leg-press"
+      ],
+      "images": [
+        "images/Exo/LegPress.gif"
+      ],
+      "explanation": "Assis sur la presse, pieds largeur épaules, pousse la plateforme en gardant le dos plaqué, contrôle le retour sans décoller les fessiers. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-088",
+      "name": "Chest press machine",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "force"
+      ],
+      "muscles": [
+        "deltoides-ant",
+        "pectoraux",
+        "triceps"
+      ],
+      "equipment": [
+        "machine",
+        "chest-press"
+      ],
+      "images": [
+        "images/Exo/ChestPressMachine.gif"
+      ],
+      "explanation": "Assis, dos plaqué, pousse les poignées vers l’avant, garde les coudes sous les poignets, contrôle le retour. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-090",
+      "name": "Leg curl machine",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "cuisses-internes",
+        "ischios"
+      ],
+      "equipment": [
+        "leg-curl"
+      ],
+      "images": [
+        "images/Exo/LegCurlMachine.gif"
+      ],
+      "explanation": "Allongé sur la machine, talons calés, plie les jambes vers les fessiers, contrôle la descente. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-091",
+      "name": "Leg extension machine",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "quadriceps"
+      ],
+      "equipment": [
+        "leg-extension"
+      ],
+      "images": [
+        "images/Exo/LegExtension.gif"
+      ],
+      "explanation": "Assis, pousse le rouleau avec les tibias jusqu’à tendre les jambes, contraction forte, redescends lentement. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-092",
+      "name": "Soulevé de terre barre",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "cuisses-internes",
+        "dos-inferieur",
+        "fessiers",
+        "ischios",
+        "lombaires"
+      ],
+      "equipment": [
+        "barre"
+      ],
+      "images": [
+        "images/Exo/SouleveTerre.gif"
+      ],
+      "explanation": "Pieds largeur épaules, barre proche des tibias, dos neutre, tends les jambes et hanches en même temps, contracte les fessiers en haut. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-093",
+      "name": "Front squat barre",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "fessiers",
+        "quadriceps"
+      ],
+      "equipment": [
+        "barre"
+      ],
+      "images": [
+        "images/Exo/FrontSquatBarre.gif"
+      ],
+      "explanation": "Barre posée sur l’avant des épaules, coudes hauts, descends en squat contrôlé, dos droit, remonte en poussant dans les talons. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-094",
+      "name": "Rowing Yates (supination)",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie"
+      ],
+      "muscles": [
+        "dos-lats",
+        "dos-superieur"
+      ],
+      "equipment": [
+        "barre"
+      ],
+      "images": [
+        "images/Exo/RowingYates.gif"
+      ],
+      "explanation": "Buste légèrement penché, prise supination, tire la barre vers l’abdomen, garde le dos droit, contrôle le retour. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-095",
+      "name": "Overhead squat barre",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "epaules",
+        "fessiers",
+        "quadriceps"
+      ],
+      "equipment": [
+        "barre"
+      ],
+      "images": [
+        "images/Exo/OverheadSquatBarre.gif"
+      ],
+      "explanation": "Barre au-dessus de la tête bras tendus, descends lentement en squat profond, gainage fort, dos neutre. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-096",
+      "name": "Goblet squat kettlebell",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "hypertrophie",
+        "endurance"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "fessiers",
+        "quadriceps"
+      ],
+      "equipment": [
+        "kettlebell"
+      ],
+      "images": [
+        "images/Exo/GobletSquat.gif"
+      ],
+      "explanation": "Tiens la kettlebell contre la poitrine, pieds largeur épaules, descends en squat profond, dos droit, remonte en poussant dans les talons. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-097",
+      "name": "Kettlebell deadlift",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "cuisses-internes",
+        "dos-inferieur",
+        "fessiers",
+        "ischios",
+        "lombaires"
+      ],
+      "equipment": [
+        "kettlebell"
+      ],
+      "images": [
+        "images/Exo/KettlebellDeadlift.gif"
+      ],
+      "explanation": "Kettlebell au sol entre les pieds, charnière de hanche, dos droit, descends, pousse dans les talons pour revenir debout. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-098",
+      "name": "Kettlebell thruster",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "endurance"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "epaules",
+        "quadriceps",
+        "triceps"
+      ],
+      "equipment": [
+        "kettlebell"
+      ],
+      "images": [
+        "images/Exo/KettlebellThruster.gif"
+      ],
+      "explanation": "Tiens la kettlebell en rack, fais un squat puis enchaîne avec un développé au-dessus de la tête en un seul mouvement fluide. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
+    },
+    {
+      "id": "exo-099",
+      "name": "Étirement ischio-jambiers debout",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "cuisses-internes",
+        "dos-inferieur",
+        "ischios",
+        "lombaires"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Place un talon sur un support bas, allonge la jambe et penche légèrement le buste depuis les hanches en gardant le dos droit jusqu'à sentir l'étirement à l'arrière de la cuisse. Respiration : inspire par le nez pour préparer le mouvement et expire lentement en accompagnant l'étirement sans rebondir. Points clés : maintiens la sangle abdominale engagée, garde les épaules alignées et relâche seulement jusqu'à une tension confortable."
+    },
+    {
+      "id": "exo-100",
+      "name": "Étirement du psoas en fente basse",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "fléchisseurs-hanche",
+        "psoas",
+        "quadriceps"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Depuis une position de fente, pose le genou arrière au sol et bascule doucement le bassin vers l'avant en gardant le buste haut pour sentir l'allongement du psoas. Respiration : inspire pour te grandir et expire en laissant le bassin descendre progressivement. Points clés : garde la jambe avant à 90°, engage le core et évite de cambrer le bas du dos."
+    },
+    {
+      "id": "exo-101",
+      "name": "Chien tête en bas (Adho Mukha Svanasana)",
+      "type": [
+        "yoga",
+        "etirement"
+      ],
+      "objectives": [
+        "mobilite",
+        "relaxation"
+      ],
+      "muscles": [
+        "cuisses-internes",
+        "dos",
+        "epaules",
+        "ischios",
+        "mollets"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Depuis la planche, pousse les hanches vers le ciel pour former un V inversé, allonge la colonne et cherche à poser les talons vers le sol sans forcer. Respiration : inspire en allongeant le dos et expire en rapprochant légèrement le ventre des cuisses. Points clés : répartis le poids entre mains et pieds, relâche la nuque et garde les épaules loin des oreilles."
+    },
+    {
+      "id": "exo-102",
+      "name": "Guerrier II (Virabhadrasana II)",
+      "type": [
+        "yoga"
+      ],
+      "objectives": [
+        "mobilite",
+        "equilibre",
+        "concentration"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "epaules",
+        "fessiers",
+        "quadriceps"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Écarte largement les pieds, fléchis la jambe avant à 90° et ouvre les bras à l'horizontale tout en fixant un point devant toi. Respiration : inspire pour allonger la colonne et expire en enfonçant les pieds dans le sol pour stabiliser la posture. Points clés : garde les hanches ouvertes, les épaules détendues et répartis le poids de manière équilibrée."
+    }
   ]
 }

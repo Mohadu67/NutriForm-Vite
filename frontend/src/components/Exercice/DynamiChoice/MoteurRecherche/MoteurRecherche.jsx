@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { TYPE_MAP, MUSCLE_MAP, EQUIP_MAP } from "./DataMap";
+import { TYPE_MAP, MUSCLE_ZONES, MUSCLE_GROUPS, EQUIP_MAP } from "./DataMap";
 
 const LVL = { beginner: 1, easy: 1, intermediate: 2, medium: 2, advanced: 3, hard: 3 };
 
@@ -12,10 +12,60 @@ const SCORE_WEIGHTS = {
 
 function norm(v) {
   if (!v && v !== 0) return "";
-  return String(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return String(v)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
 }
 function normArr(arr) {
   return (arr || []).map(norm);
+}
+
+const ZONE_SYNONYM_INDEX = buildZoneSynonymIndex();
+const GROUP_TO_ZONES = buildGroupIndex();
+
+function buildZoneSynonymIndex() {
+  const map = new Map();
+  Object.entries(MUSCLE_ZONES || {}).forEach(([zoneId, synonyms]) => {
+    const bucket = new Set([zoneId, ...(synonyms || [])]);
+    bucket.forEach((syn) => {
+      const key = norm(syn);
+      if (!key) return;
+      if (!map.has(key)) map.set(key, new Set());
+      map.get(key).add(zoneId);
+    });
+  });
+  return new Map(
+    Array.from(map.entries(), ([key, set]) => [key, Array.from(set)])
+  );
+}
+
+function buildGroupIndex() {
+  const map = new Map();
+  const add = (alias, zones) => {
+    const key = norm(alias);
+    if (!key || !zones || !zones.length) return;
+    map.set(key, Array.from(new Set(zones)));
+  };
+
+  Object.entries(MUSCLE_GROUPS || {}).forEach(([groupId, zones]) => {
+    add(groupId, zones);
+  });
+
+  add("bras", MUSCLE_GROUPS?.bras);
+  add("arms", MUSCLE_GROUPS?.bras);
+  add("arm", MUSCLE_GROUPS?.bras);
+  add("jambes", MUSCLE_GROUPS?.jambes);
+  add("legs", MUSCLE_GROUPS?.jambes);
+  add("lower-body", MUSCLE_GROUPS?.jambes);
+  add("lower body", MUSCLE_GROUPS?.jambes);
+  add("dos", MUSCLE_GROUPS?.dos);
+  add("back", MUSCLE_GROUPS?.dos);
+  add("core", MUSCLE_GROUPS?.core);
+  add("tronc", MUSCLE_GROUPS?.core);
+
+  return map;
 }
 
 function uniq(arr) {
@@ -28,12 +78,6 @@ function intersectCount(a, b) {
   let n = 0;
   for (const x of a) if (sb.has(x)) n++;
   return n;
-}
-
-function hasEvery(a, b) {
-  const sa = new Set(a);
-  for (const x of b) if (!sa.has(x)) return false;
-  return true;
 }
 
 function parseLvl(l) {
@@ -56,18 +100,43 @@ function matchTypes(exo, tSet) {
   return exoTypesN.some((t) => crits.some((crit) => t.includes(crit)));
 }
 
-function matchMuscles(exo, muscles, mSet, musclePolicy) {
-  const exoMus = uniq(normArr([ ...toArray(exo.muscles), ...toArray(exo.primaryMuscle), ...toArray(exo.muscle) ]));
-  const musMatches = mSet.size ? intersectCount(exoMus, muscles) : 0;
-  if (!mSet.size) return { ok: true, count: 0 };
-  if (musclePolicy === "all" && !muscles.every((m) => exoMus.some((em) => em.includes(m)))) {
-    return { ok: false, count: 0 };
+function gatherExerciseMuscleData(exo) {
+  const tokens = uniq(normArr([
+    ...toArray(exo.muscles),
+    ...toArray(exo.primaryMuscle),
+    ...toArray(exo.muscle),
+  ]));
+
+  const zoneSet = new Set();
+  tokens.forEach((token) => {
+    const zones = ZONE_SYNONYM_INDEX.get(token);
+    if (zones) zones.forEach((zoneId) => zoneSet.add(zoneId));
+  });
+
+  return { tokens, zoneSet };
+}
+
+function matchMuscles(exerciseMuscleData, requestedZones, musclePolicy, fallbackTokens = []) {
+  if (!requestedZones.length) {
+    if (!fallbackTokens.length) {
+      return { ok: true, count: 0, matchedZones: [] };
+    }
+    const hits = intersectCount(exerciseMuscleData.tokens, fallbackTokens);
+    return hits > 0
+      ? { ok: true, count: 1, matchedZones: [] }
+      : { ok: false, count: 0, matchedZones: [] };
   }
-  if (musclePolicy === "anyRequired" && musMatches === 0) {
-    const hasSome = muscles.some((m) => exoMus.some((em) => em.includes(m)));
-    if (!hasSome) return { ok: false, count: 0 };
+
+  const matchedZones = requestedZones.filter((zoneId) => exerciseMuscleData.zoneSet.has(zoneId));
+
+  if (musclePolicy === "all" && matchedZones.length !== requestedZones.length) {
+    return { ok: false, count: matchedZones.length, matchedZones };
   }
-  return { ok: true, count: musMatches };
+  if (musclePolicy === "anyRequired" && matchedZones.length === 0) {
+    return { ok: false, count: 0, matchedZones };
+  }
+
+  return { ok: true, count: matchedZones.length, matchedZones };
 }
 
 function matchEquipments(exo, eSet, equipmentPolicy) {
@@ -122,15 +191,45 @@ function expandTypes(typeIds) {
   return uniq(res.map(norm));
 }
 
+// Amélioration: sépare biceps et triceps quand ils sont explicitement demandés
 function expandMuscles(muscleIds) {
   const ids = Array.isArray(muscleIds) ? muscleIds : [muscleIds].filter(Boolean);
-  const res = [];
-  for (const id of ids) {
-    const m = MUSCLE_MAP?.[id];
-    if (Array.isArray(m) && m.length) res.push(...m);
-    else if (id) res.push(id);
+  const requestedTokens = uniq(normArr(ids));
+  if (!ids.length) {
+    return { requestedZones: [], requestedTokens, matchTokens: [] };
   }
-  return uniq(res.map(norm));
+
+  const zoneSet = new Set();
+  requestedTokens.forEach((token) => {
+    if (!token) return;
+    const groupZones = GROUP_TO_ZONES.get(token);
+    if (groupZones) groupZones.forEach((zoneId) => zoneSet.add(zoneId));
+
+    const zones = ZONE_SYNONYM_INDEX.get(token);
+    if (zones) zones.forEach((zoneId) => zoneSet.add(zoneId));
+  });
+
+  ids.forEach((raw) => {
+    const key = norm(raw);
+    if (MUSCLE_ZONES?.[key]) zoneSet.add(key);
+  });
+
+  const matchTokens = new Set();
+  zoneSet.forEach((zoneId) => {
+    matchTokens.add(norm(zoneId));
+    const synonyms = MUSCLE_ZONES?.[zoneId] || [];
+    synonyms.forEach((syn) => matchTokens.add(norm(syn)));
+  });
+
+  if (!zoneSet.size && requestedTokens.length) {
+    requestedTokens.forEach((token) => matchTokens.add(token));
+  }
+
+  return {
+    requestedZones: Array.from(zoneSet),
+    requestedTokens,
+    matchTokens: Array.from(matchTokens),
+  };
 }
 
 function expandEquipments(equipIds) {
@@ -173,24 +272,31 @@ export function rechercherExercices(criteria = {}, exercises) {
 
   const list = baseList(exercises);
   const types = expandTypes(typeId ? [typeId, ...typeIds] : typeIds);
-  const muscles = expandMuscles(muscleIds);
+  const muscleCtx = expandMuscles(muscleIds);
   const tokens = tokeniser(q);
   const tSet = new Set(types.map(norm));
-  const mSet = new Set(muscles.map(norm));
   const eSet = new Set(expandEquipments(equipIds));
   const bpSet = new Set((bodyParts || []).map(norm));
   const incTags = new Set((includeTags || []).map(norm));
   const excTags = new Set((excludeTags || []).map(norm));
+  const effectiveMusclePolicy = requireAllMuscles ? "all" : musclePolicy;
+  const effectiveEquipmentPolicy = requireAllEquipments ? "all" : equipmentPolicy;
 
   const scored = [];
 
   for (const exo of list) {
     if (!matchTypes(exo, tSet)) continue;
 
-    const musResult = matchMuscles(exo, muscles, mSet, musclePolicy);
+    const muscleData = gatherExerciseMuscleData(exo);
+    const musResult = matchMuscles(
+      muscleData,
+      muscleCtx.requestedZones,
+      effectiveMusclePolicy,
+      muscleCtx.matchTokens
+    );
     if (!musResult.ok) continue;
 
-    const eqResult = matchEquipments(exo, eSet, equipmentPolicy);
+    const eqResult = matchEquipments(exo, eSet, effectiveEquipmentPolicy);
     if (!eqResult.ok) continue;
 
     const exBodyList = normArr(toArray(exo.bodyPart));
@@ -229,7 +335,12 @@ export function rechercherExercices(criteria = {}, exercises) {
       }
     }
 
-    scored.push({ ...exo, _score: score, _eq: eqResult.count, _mus: musResult.count });
+    scored.push({
+      ...exo,
+      _score: score,
+      _eq: eqResult.count,
+      _mus: musResult.count,
+    });
   }
 
   let out = scored;
@@ -246,9 +357,16 @@ export function rechercherAvecMeta(criteria = {}, exercises) {
   const total = all.length;
   const facets = { muscles: {}, equipments: {}, bodyParts: {}, types: {} };
   for (const e of all) {
-    for (const m of toArray(e.muscles)) {
-      const k = norm(m);
-      facets.muscles[k] = (facets.muscles[k] || 0) + 1;
+    const muscleData = gatherExerciseMuscleData(e);
+    if (muscleData.zoneSet.size) {
+      muscleData.zoneSet.forEach((zoneId) => {
+        const k = norm(zoneId);
+        facets.muscles[k] = (facets.muscles[k] || 0) + 1;
+      });
+    } else {
+      muscleData.tokens.forEach((token) => {
+        facets.muscles[token] = (facets.muscles[token] || 0) + 1;
+      });
     }
     for (const eq of [...toArray(e.equipments), ...toArray(e.equipment)]) {
       const k = norm(eq);
