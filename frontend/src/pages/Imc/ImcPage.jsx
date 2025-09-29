@@ -1,7 +1,5 @@
 import { useState } from "react";
 import usePageTitle from "../../hooks/usePageTitle.js";
-import Header from "../../components/Header/Header.jsx";
-import Footer from "../../components/Footer/Footer.jsx";
 import FormImc from "./FormImc/FormImc.jsx";
 import ResultCards from "./ResultCards/ResultCards.jsx";
 import ImcGraph from "./Graph/ImcGraph.jsx";
