@@ -7,12 +7,12 @@
   background: var(--paper, #ffffff);
   box-shadow: var(--shadow-sm, 0 6px 16px rgba(0, 0, 0, 0.08));
   padding: 8px 0;
-  max-height: 200px;
+  max-height: 100px;
 }
 
 .slot {
   display: block;
   width: 100%;
-  animation: none !important;
-  max-height: 100px;
 }
+
+.empty { display: none; }
