@@ -1,8 +1,7 @@
 // src/components/Logo/Logo.jsx
 
 import { useState, useEffect } from "react";
-import DeskLogo from "../../assets/img/logo/Logo-complet.svg";
-import MobiLogo from "../../assets/img/logo/domaine-logo.svg";
+import LogoAnimated from "./mascotte.jsx";
 import styles from "./Logo.module.css";
 
 
@@ -18,10 +17,6 @@ export default function Logo({ alt = "NutriForm logo", className = "" }) {
   }, []);
 
   return (
-    <img
-      src={isMobile ? MobiLogo : DeskLogo}
-      alt={alt}
-      className={`${styles.logo} ${isMobile ? styles.mobile : styles.desktop}`}
-    />
+    <LogoAnimated className={`${styles.logo} ${isMobile ? styles.mobile : styles.desktop}`} />
   );
 }
