@@ -2,19 +2,33 @@
 
 
 .logo {
-  width: auto;
-  transition: transform 0.3s ease;
-  cursor: pointer;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  transition: transform 0.35s ease-in-out;
 }
 
 .desktop {
-  height: 150px;
+  height: clamp(230px, 12vw, 160px);
 }
 
-.mobile {
-  height: 50px;
-}
 
 .logo:hover {
-  transform: scale(1.05);
+  transform: scale(1.08);
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15));
+}
+
+.logo:focus,
+.logo:active,
+.logo:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Mobile overrides */
+@media (max-width: 767px) {
+  .logo {
+    height: clamp(100px, 6vw, 40px);
+  }
 }
