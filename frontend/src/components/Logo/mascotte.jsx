@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 
-const MODES = ['stretch', 'bounce', 'wiggle', 'wave', 'pop', 'swing', 'explode'];
+const MODES = ['stretch', 'bounce', 'wiggle', 'wave', 'pop', 'swing', 'explode', 'fall'];
 
 const LogoAnimated = ({ className = "" }) => {
   const stackRef = useRef(null);
@@ -34,7 +34,7 @@ const LogoAnimated = ({ className = "" }) => {
 
     setTimeout(() => {
       elements.forEach(el => el && el.classList.remove('go'));
-    }, 2200);
+    }, 2400);
   };
 
   const onKeyDown = (e) => {
@@ -333,6 +333,45 @@ const LogoAnimated = ({ className = "" }) => {
             94% { transform: scaleX(1.05); opacity:.155; }
           }
 
+          /* ========= MODE 8: FALL (tout s'écroule puis se remet en place avec difficulté) ========= */
+          @keyframes fall-tilt {
+            0% { transform: rotate(0deg); }
+            15% { transform: rotate(-6deg); }
+            100% { transform: rotate(0deg); }
+          }
+          @keyframes fall-shadow {
+            0% { transform: scaleX(1); opacity:.16; }
+            35% { transform: scaleX(1.8); opacity:.06; }
+            60% { transform: scaleX(1.4); opacity:.10; }
+            85% { transform: scaleX(1.1); opacity:.13; }
+            100% { transform: scaleX(1); opacity:.16; }
+          }
+          /* chaque galet tombe puis remonte en luttant (secousses) */
+          @keyframes fall-top {
+            0%   { transform: translateY(0) rotate(0deg); }
+            35%  { transform: translateY(140px) rotate(-35deg); }
+            60%  { transform: translateY(-18px) rotate(8deg); }
+            75%  { transform: translateY(10px) rotate(-4deg); }
+            88%  { transform: translateY(-6px) rotate(2deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+          }
+          @keyframes fall-mid {
+            0%   { transform: translateY(0) rotate(0deg); }
+            35%  { transform: translateY(120px) rotate(28deg); }
+            60%  { transform: translateY(-14px) rotate(-6deg); }
+            75%  { transform: translateY(8px) rotate(3deg); }
+            88%  { transform: translateY(-5px) rotate(-1.5deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+          }
+          @keyframes fall-base {
+            0%   { transform: translateY(0) rotate(0deg); }
+            35%  { transform: translateY(90px) rotate(-18deg); }
+            60%  { transform: translateY(-10px) rotate(4deg); }
+            75%  { transform: translateY(6px) rotate(-2deg); }
+            88%  { transform: translateY(-3px) rotate(1deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+          }
+
           /* Application des animations */
           /* STRETCH */
           #stack[data-mode="stretch"].go { animation: stretch-tilt var(--dur-base) var(--ease) both; }
@@ -379,6 +418,13 @@ const LogoAnimated = ({ className = "" }) => {
           #stack[data-mode="explode"].go #mid  { animation: explode-mid 2.2s cubic-bezier(.34,.46,.14,.98) both; animation-delay: 0.02s; }
           #stack[data-mode="explode"].go #base { animation: explode-base 2.2s cubic-bezier(.34,.46,.14,.98) both; animation-delay: 0.04s; }
           #stack[data-mode="explode"].go ~ #shadow { animation: explode-shadow 2.2s cubic-bezier(.16,.8,.3,.98) both; }
+
+          /* FALL */
+          #stack[data-mode="fall"].go { animation: fall-tilt 1.9s var(--ease-smooth) both; }
+          #stack[data-mode="fall"].go #top  { animation: fall-top 1.9s var(--ease-smooth) both; }
+          #stack[data-mode="fall"].go #mid  { animation: fall-mid 1.9s var(--ease-smooth) both; animation-delay: .03s; }
+          #stack[data-mode="fall"].go #base { animation: fall-base 1.9s var(--ease-smooth) both; animation-delay: .06s; }
+          #stack[data-mode="fall"].go ~ #shadow { animation: fall-shadow 1.9s var(--ease-smooth) both; }
 
           /* Reduced motion */
           @media (prefers-reduced-motion: reduce) {
