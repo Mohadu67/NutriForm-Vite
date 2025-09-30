@@ -7,6 +7,11 @@
   display: block;
   margin: 0 auto;
   transition: transform 0.35s ease-in-out;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-focus-ring-color: transparent;
+  user-select: none;
+  outline: none;
+  outline-color: transparent;
 }
 
 .desktop {
@@ -26,9 +31,22 @@
   box-shadow: none;
 }
 
+.logo *,
+.logo:focus,
+.logo:active,
+.logo:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.selectedBadge:focus {
+  outline: none;
+}
+
 /* Mobile overrides */
 @media (max-width: 767px) {
   .logo {
-    height: clamp(100px, 6vw, 40px);
+    height: clamp(30px, 6vw, 40px);
   }
 }
+
