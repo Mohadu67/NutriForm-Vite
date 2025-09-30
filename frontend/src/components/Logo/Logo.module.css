@@ -46,7 +46,7 @@
 /* Mobile overrides */
 @media (max-width: 767px) {
   .logo {
-    height: clamp(30px, 6vw, 40px);
+    height: clamp(120px, 6vw, 40px);
   }
 }
 
