@@ -90,8 +90,6 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     );
   }, [data, typeId, equipIds, muscleIds]);
 
-  useEffect(() => {
-  }, [results]);
 
   useEffect(() => {
     if (Array.isArray(results) && results.length > 0) {
@@ -106,11 +104,8 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     setDismissed(new Set());
     setHasTouched(false);
 
-    if (Array.isArray(results) && results.length > 0) {
-      setOrdered(results.slice());
-    } else {
-      setOrdered([]);
-    }
+    // Toujours réinitialiser avec les nouveaux résultats quand les filtres changent
+    setOrdered(Array.isArray(results) && results.length > 0 ? results.slice() : []);
   }, [filterKey, results]);
 
   useEffect(() => {
@@ -306,11 +301,17 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
         }
       }
 
+      // Ne fusionner que si initialSelected contient des exercices valides pour les filtres actuels
       if (!incoming.length) {
         return working;
       }
 
-      const merged = mergeById(working, incoming);
+      const validIncoming = incoming.filter((item) => !allowed || allowed.has(idOf(item)));
+      if (!validIncoming.length) {
+        return working;
+      }
+
+      const merged = mergeById(working, validIncoming);
       if (sameIds(working, merged)) return working;
       return merged;
     });
@@ -398,6 +399,18 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
       const next = new Set(prev);
       next.add(k);
       return next;
+    });
+  }
+
+  function moveItem(key, direction) {
+    setOrdered((prev) => {
+      const idx = prev.findIndex((x) => idOf(x) === key);
+      if (idx === -1) return prev;
+      const newIdx = idx + direction;
+      if (newIdx < 0 || newIdx >= prev.length) return prev;
+      const arr = [...prev];
+      [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+      return arr;
     });
   }
 

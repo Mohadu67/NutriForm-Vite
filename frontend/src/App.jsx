@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound/NotFound.jsx";
 import ExoPage from "./pages/Exo/Exo.jsx";
 import PageOutils from "./pages/OutilsCalcul/PageOutils.jsx";
 import Clarity from '@microsoft/clarity';
+import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 
 export default function App() {
   useEffect(() => {
@@ -20,7 +21,8 @@ export default function App() {
   }, []);
 
   return (
-    <Routes>
+    <ErrorBoundary>
+      <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/imc" element={<ImcPage />} />
       <Route path="/calorie" element={<CaloriePage />} />
@@ -34,6 +36,7 @@ export default function App() {
       <Route path="/exo" element={<ExoPage />} />
       <Route path="/outils" element={<PageOutils />} />
       <Route path="*" element={<NotFound />} />
-    </Routes>
+      </Routes>
+    </ErrorBoundary>
   );
 }

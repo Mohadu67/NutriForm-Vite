@@ -209,35 +209,65 @@ function inferTypeFromData(data, sets, fallbackMode) {
 
 function intensityToMET(intensity) {
   const val = String(intensity || '').toLowerCase();
-  if (!val) return 7;
-  if (/(low|faible|lent|easy|light)/.test(val)) return 5;
-  if (/(high|élevé|eleve|hard|intense|vigorous|sprint)/.test(val)) return 11;
-  if (/(moder|moyen|tempo|steady)/.test(val)) return 8;
+  if (!val) return 7.5;
+  if (/(low|faible|lent|easy|light|marche)/.test(val)) return 4.5;
+  if (/(high|élevé|eleve|hard|intense|vigorous|sprint|hiit)/.test(val)) return 12.0;
+  if (/(moder|moyen|tempo|steady)/.test(val)) return 8.5;
   const num = parseFloat(val);
   if (!isNaN(num)) {
-    if (num <= 3) return 5; if (num >= 8) return 11; return 8;
+    if (num <= 3) return 4.5;
+    if (num >= 8) return 12.0;
+    if (num >= 6) return 9.5;
+    return 7.0;
   }
-  return 7;
+  return 7.5;
 }
 
 function strengthSetMET(type, intensity, volumePerSet, bodyMassKg) {
-  const base = type === 'poids_du_corps' ? 5.0 : 4.5;
+  const base = type === 'poids_du_corps' ? 4.8 : 4.0;
   const intensityAdj = strengthIntensityMultiplier(intensity);
+
   const relativeVolume = bodyMassKg > 0 ? volumePerSet / bodyMassKg : 0;
-  const volumeAdj = Math.min(1.5, Math.max(0, relativeVolume / 12));
+  let volumeAdj = 0;
+
+  if (relativeVolume > 0) {
+    if (relativeVolume < 5) {
+      volumeAdj = 0.3;
+    } else if (relativeVolume < 10) {
+      volumeAdj = 0.8;
+    } else if (relativeVolume < 15) {
+      volumeAdj = 1.2;
+    } else if (relativeVolume < 20) {
+      volumeAdj = 1.6;
+    } else {
+      volumeAdj = 2.0;
+    }
+  }
+
   const met = (base * intensityAdj) + volumeAdj;
-  return clamp(met, 3.0, 8.5);
+  return clamp(met, 3.0, 9.5);
 }
 
 function inferSetLoadKg(set, type, bodyMassKg) {
   const weight = toNumber(set.weightKg ?? set.weight ?? set.kg ?? set.poids, null);
   if (Number.isFinite(weight) && weight > 0) return weight;
+
   if (type === 'poids_du_corps') {
     const reps = Math.max(1, toNumber(set.reps ?? set.rep ?? set.repetitions ?? set['répétitions'], 0));
-    const assumedLoad = bodyMassKg * 0.35;
-    return Math.max(10, assumedLoad + (reps > 15 ? assumedLoad * 0.15 : 0));
+    let assumedLoad = bodyMassKg * 0.40;
+
+    if (reps > 20) {
+      assumedLoad = bodyMassKg * 0.30;
+    } else if (reps > 15) {
+      assumedLoad = bodyMassKg * 0.35;
+    } else if (reps <= 5) {
+      assumedLoad = bodyMassKg * 0.50;
+    }
+
+    return Math.max(12, assumedLoad);
   }
-  return bodyMassKg * 0.25; 
+
+  return bodyMassKg * 0.20;
 }
 
 function estimateSetDurationMin(set, fallbackSec) {

@@ -20,6 +20,7 @@ function pickRichestItemsFromSession(s) {
 
 export default function SuivieSeance({ user, lastSession: propLastSession, sessions }) {
   const [serverData, setServerData] = useState(null);
+  const [exercisesDb, setExercisesDb] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -38,6 +39,25 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
         if (!cancelled) setError("no-server");
       } finally {
         if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/data/db.json');
+        if (!res.ok) throw new Error('Failed to load exercises DB');
+        const json = await res.json();
+        if (!cancelled && Array.isArray(json.exercises)) {
+          setExercisesDb(json.exercises);
+        }
+      } catch (e) {
+        console.warn('Could not load exercises database:', e);
       }
     })();
     return () => {
@@ -143,25 +163,49 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
     const source = Array.isArray(sessions) && sessions.length
       ? sessions
       : (Array.isArray(serverData?.sessions) ? serverData.sessions : []);
-    if (!source.length) return null;
+
+    if (!source.length || !exercisesDb.length) return null;
+
+    const exerciseMap = new Map();
+    exercisesDb.forEach(ex => {
+      const id = ex.id || ex._id || ex.slug;
+      if (id) exerciseMap.set(id.toLowerCase(), ex);
+    });
+
     const muscleMap = new Map();
+
     for (const s of source) {
       const items = Array.isArray(s?.entries) ? s.entries : (Array.isArray(s?.items) ? s.items : (Array.isArray(s?.exercises) ? s.exercises : []));
-      for (const e of items) {
-        const groups = Array.isArray(e?.muscles) ? e.muscles : (e?.muscleGroup ? [e.muscleGroup] : (e?.muscle ? [e.muscle] : []));
-        for (const g of groups) {
-          const key = String(g || '').trim();
-          if (!key) continue;
-          muscleMap.set(key, (muscleMap.get(key) || 0) + 1);
+
+      for (const entry of items) {
+        const exerciseId = (entry?.exerciseId || entry?.id || entry?._id || entry?.exoId || entry?.name || '').toLowerCase();
+        const exerciseName = (entry?.name || entry?.exerciseName || entry?.exoName || '').toLowerCase();
+
+        let dbExercise = exerciseMap.get(exerciseId);
+        if (!dbExercise && exerciseName) {
+          dbExercise = exercisesDb.find(ex =>
+            (ex.name || '').toLowerCase() === exerciseName ||
+            (ex.slug || '').toLowerCase() === exerciseName
+          );
+        }
+
+        if (dbExercise && Array.isArray(dbExercise.muscles)) {
+          for (const muscle of dbExercise.muscles) {
+            const key = String(muscle || '').trim();
+            if (!key) continue;
+            muscleMap.set(key, (muscleMap.get(key) || 0) + 1);
+          }
         }
       }
     }
+
     let top = null;
     for (const [name, count] of muscleMap.entries()) {
       if (!top || count > top.count) top = { name, count };
     }
+
     return top?.name || null;
-  }, [sessions, serverData]);
+  }, [sessions, serverData, exercisesDb]);
 
   const items = useMemo(() => {
     const defs = [

@@ -141,19 +141,76 @@
   margin-bottom: 16px;
 }
 
-.modalTitle { font-family: var(--font-titre); font-size: 1.6rem; font-weight: 800; margin-bottom: 14px; color: var(--ink); text-align: center; }
-.modalText { font-family: var(--font-paragraphe); font-size: 1rem; color: var(--ink); line-height: 1.65; }
-
-.btn {
-  display: inline-block;
-  padding: 12px 20px;
-  border: 2px solid var(--couleur-bouton-action);
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 700;
+.modalTitle {
+  font-family: var(--font-titre);
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 14px;
+  color: var(--ink);
   text-align: center;
-  text-decoration: none;
-  margin: 20px auto 0;
-  transition: background .2s ease, transform .15s ease, box-shadow .2s ease;
 }
-.btn:hover { background: rgba(255,179,133,0.15); transform: translateY(-2px); box-shadow: var(--shadow-s); }
+
+.modalText {
+  font-family: var(--font-paragraphe);
+  font-size: 1rem;
+  color: var(--ink);
+  line-height: 1.65;
+  margin-bottom: 12px;
+}
+
+.fullArticle {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.readMoreButton,
+.reduceButton {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  margin-top: 20px;
+  background: linear-gradient(135deg, var(--couleur-bouton-action), color-mix(in oklab, var(--couleur-bouton-action) 80%, #ff6b35));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-titre);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+}
+
+.readMoreButton:hover,
+.reduceButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 179, 133, 0.4);
+}
+
+.readMoreButton:active,
+.reduceButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 179, 133, 0.3);
+}
+
+.reduceButton {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.reduceButton:hover {
+  box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+}

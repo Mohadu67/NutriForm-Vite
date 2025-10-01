@@ -5,9 +5,9 @@ import styles from "./Navbar.module.css";
 export default function NavLinks({ links }) {
   return (
     <>
-      {links.map((link, index) => (
+      {links.map((link) => (
         <li
-          key={index}
+          key={link.path || link.label}
           className={
             link.auth ? styles.authLink : link.special ? styles.org : ""
           }

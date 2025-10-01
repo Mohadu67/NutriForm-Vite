@@ -1,22 +1,24 @@
 
 
 import React, { useEffect, useState } from "react";
-import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
 import styles from "./ArticlesCalorie.module.css";
 
 export default function ArticlesCalorie() {
   const [articles, setArticles] = useState([]);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showFullArticle, setShowFullArticle] = useState(false);
 
   const openModal = (article) => {
     setSelectedArticle(article);
     setIsModalOpen(true);
+    setShowFullArticle(false);
   };
 
   const closeModal = () => {
     setSelectedArticle(null);
     setIsModalOpen(false);
+    setShowFullArticle(false);
   };
 
   useEffect(() => {
@@ -99,19 +101,43 @@ export default function ArticlesCalorie() {
               <p className={styles.modalText}>{selectedArticle.description}</p>
             )}
 
-            {selectedArticle.excedent && typeof selectedArticle.excedent === "string" && selectedArticle.excedent.includes("<") ? (
-              <div
-                className={styles.modalText}
-                dangerouslySetInnerHTML={{ __html: selectedArticle.excedent }}
-              />
-            ) : (
-              selectedArticle.excedent && (
-                <p className={styles.modalText}>{selectedArticle.excedent}</p>
-              )
+            {!showFullArticle && (
+              <button
+                className={styles.readMoreButton}
+                onClick={() => setShowFullArticle(true)}
+              >
+                Lire l&apos;article complet
+              </button>
             )}
-            <BoutonAction to="/not-found">
-              Lire l&apos;article
-            </BoutonAction>
+
+            {showFullArticle && (
+              <>
+                {selectedArticle.excedent && typeof selectedArticle.excedent === "string" && selectedArticle.excedent.includes("<") ? (
+                  <div
+                    className={`${styles.modalText} ${styles.fullArticle}`}
+                    dangerouslySetInnerHTML={{ __html: selectedArticle.excedent }}
+                  />
+                ) : (
+                  selectedArticle.excedent && (
+                    <p className={`${styles.modalText} ${styles.fullArticle}`}>{selectedArticle.excedent}</p>
+                  )
+                )}
+
+                {selectedArticle.fullContent && (
+                  <div
+                    className={`${styles.modalText} ${styles.fullArticle}`}
+                    dangerouslySetInnerHTML={{ __html: selectedArticle.fullContent }}
+                  />
+                )}
+
+                <button
+                  className={styles.reduceButton}
+                  onClick={() => setShowFullArticle(false)}
+                >
+                  Réduire
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
