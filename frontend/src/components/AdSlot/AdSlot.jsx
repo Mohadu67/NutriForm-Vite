@@ -24,7 +24,6 @@ export default function AdSlot({ slot, format = "auto", responsive = "true", cla
       }
     };
 
-    // If the script isn't present, inject it; otherwise, push immediately or on load
     let script = document.getElementById("adsbygoogle-script");
     if (!script) {
       script = document.createElement("script");
