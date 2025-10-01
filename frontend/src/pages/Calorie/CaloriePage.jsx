@@ -11,11 +11,28 @@ export default function CaloriePage() {
   const [popupOrigin, setPopupOrigin] = useState({ x: 50, y: 50 });
   const [calories, setCalories] = useState(null);
 
-  const computeMacros = (cals) => ({
-    glucides: Math.round((cals * 0.5) / 4),
-    proteines: Math.round((cals * 0.2) / 4),
-    lipides: Math.round((cals * 0.3) / 9),
-  });
+  const computeMacros = (cals, type) => {
+    if (type === "perte") {
+      return {
+        glucides: Math.round((cals * 0.35) / 4),
+        proteines: Math.round((cals * 0.35) / 4),
+        lipides: Math.round((cals * 0.30) / 9),
+      };
+    } else if (type === "prise") {
+      return {
+        glucides: Math.round((cals * 0.35) / 4),
+        proteines: Math.round((cals * 0.35) / 4),
+        lipides: Math.round((cals * 0.30) / 9),
+      };
+    } else {
+      // stabiliser
+      return {
+        glucides: Math.round((cals * 0.45) / 4),
+        proteines: Math.round((cals * 0.25) / 4),
+        lipides: Math.round((cals * 0.30) / 9),
+      };
+    }
+  };
 
   return (
     <>
@@ -55,7 +72,7 @@ export default function CaloriePage() {
                   : selectedCard === "stabiliser"
                   ? calories
                   : calories + 500;
-              return computeMacros(base);
+              return computeMacros(base, selectedCard);
             })()}
             onClose={() => setSelectedCard(null)}
             origin={popupOrigin}
