@@ -428,9 +428,7 @@
         "endurance"
       ],
       "muscles": [
-        "deltoides-ant",
-        "pectoraux",
-        "triceps"
+        "pectoraux"
       ],
       "equipment": [
         "poids-du-corps",
@@ -455,9 +453,7 @@
         "hypertrophie"
       ],
       "muscles": [
-        "deltoides-ant",
-        "pectoraux",
-        "triceps"
+        "pectoraux"
       ],
       "equipment": [
         "poids-du-corps",
@@ -483,7 +479,6 @@
         "hypertrophie"
       ],
       "muscles": [
-        "pectoraux",
         "triceps"
       ],
       "equipment": [
@@ -509,7 +504,6 @@
         "hypertrophie"
       ],
       "muscles": [
-        "deltoides-post",
         "dos-lats",
         "dos-superieur"
       ],
@@ -560,8 +554,6 @@
         "hypertrophie"
       ],
       "muscles": [
-        "deltoides-ant",
-        "pectoraux",
         "triceps"
       ],
       "equipment": [
@@ -720,9 +712,7 @@
         "hypertrophie"
       ],
       "muscles": [
-        "deltoides-ant",
-        "pectoraux",
-        "triceps"
+        "pectoraux"
       ],
       "equipment": [
         "barre",
@@ -744,9 +734,7 @@
         "hypertrophie"
       ],
       "muscles": [
-        "deltoides-ant",
-        "pectoraux-superieurs",
-        "triceps"
+        "pectoraux-superieurs"
       ],
       "equipment": [
         "barre",
@@ -768,7 +756,6 @@
         "endurance"
       ],
       "muscles": [
-        "deltoides-ant",
         "pectoraux-superieurs"
       ],
       "equipment": [
@@ -790,7 +777,6 @@
         "hypertrophie"
       ],
       "muscles": [
-        "deltoides-ant",
         "pectoraux"
       ],
       "equipment": [
@@ -814,8 +800,7 @@
       ],
       "muscles": [
         "deltoides-ant",
-        "deltoides-lat",
-        "triceps"
+        "deltoides-lat"
       ],
       "equipment": [
         "barre"
@@ -837,8 +822,7 @@
       ],
       "muscles": [
         "deltoides-ant",
-        "deltoides-lat",
-        "triceps"
+        "deltoides-lat"
       ],
       "equipment": [
         "halteres"
@@ -880,8 +864,7 @@
         "endurance"
       ],
       "muscles": [
-        "deltoides-post",
-        "dos-superieur"
+        "deltoides-post"
       ],
       "equipment": [
         "halteres"
@@ -902,10 +885,8 @@
         "hypertrophie"
       ],
       "muscles": [
-        "arriere-epaules",
         "dos-lats",
-        "dos-superieur",
-        "dos-trap"
+        "dos-superieur"
       ],
       "equipment": [
         "barre"
@@ -1044,9 +1025,7 @@
         "hypertrophie"
       ],
       "muscles": [
-        "deltoides-ant",
-        "pectoraux",
-        "triceps"
+        "pectoraux"
       ],
       "equipment": [
         "halteres",
@@ -1247,13 +1226,9 @@
         "force"
       ],
       "muscles": [
-        "cuisses-internes",
-        "deltoides-post",
         "dos-inferieur",
-        "dos-superieur",
         "fessiers",
-        "ischios",
-        "lombaires"
+        "ischios"
       ],
       "equipment": [
         "kettlebell"
@@ -1272,11 +1247,9 @@
         "force"
       ],
       "muscles": [
-        "biceps",
-        "cuisses-internes",
         "deltoides",
         "fessiers",
-        "ischios"
+        "quadriceps"
       ],
       "equipment": [
         "kettlebell"
@@ -1298,10 +1271,8 @@
       ],
       "muscles": [
         "deltoides",
-        "dos-inferieur",
         "fessiers",
-        "lombaires",
-        "triceps"
+        "ischios"
       ],
       "equipment": [
         "kettlebell"
@@ -1322,7 +1293,6 @@
         "endurance"
       ],
       "muscles": [
-        "deltoides-ant",
         "pectoraux-superieurs"
       ],
       "equipment": [
@@ -1368,8 +1338,7 @@
       ],
       "muscles": [
         "deltoides-ant",
-        "deltoides-lat",
-        "triceps"
+        "deltoides-lat"
       ],
       "equipment": [
         "shoulder-press-machine"
@@ -1390,7 +1359,6 @@
       ],
       "muscles": [
         "deltoides-lat",
-        "dos-superieur",
         "dos-trap"
       ],
       "equipment": [
@@ -1412,7 +1380,6 @@
         "force"
       ],
       "muscles": [
-        "dos-superieur",
         "dos-trap"
       ],
       "equipment": [
@@ -1434,10 +1401,8 @@
         "hypertrophie"
       ],
       "muscles": [
-        "arriere-epaules",
         "dos-lats",
-        "dos-superieur",
-        "dos-trap"
+        "dos-superieur"
       ],
       "equipment": [
         "barre"
@@ -1459,8 +1424,7 @@
       ],
       "muscles": [
         "dos-lats",
-        "dos-superieur",
-        "dos-trap"
+        "dos-superieur"
       ],
       "equipment": [
         "poulie"
@@ -1481,11 +1445,8 @@
         "force"
       ],
       "muscles": [
-        "cuisses-internes",
         "dos-inferieur",
-        "fessiers",
-        "ischios",
-        "lombaires"
+        "ischios"
       ],
       "equipment": [
         "barre"
@@ -1506,9 +1467,7 @@
         "hypertrophie"
       ],
       "muscles": [
-        "cuisses-internes",
-        "fessiers",
-        "ischios"
+        "fessiers"
       ],
       "equipment": [
         "barre",
@@ -1607,7 +1566,6 @@
         "hypertrophie"
       ],
       "muscles": [
-        "cuisses-internes",
         "ischios"
       ],
       "equipment": [
@@ -1630,11 +1588,8 @@
         "hypertrophie"
       ],
       "muscles": [
-        "cuisses-internes",
-        "dos-inferieur",
         "fessiers",
-        "ischios",
-        "lombaires"
+        "ischios"
       ],
       "equipment": [
         "poids-du-corps",
@@ -1677,8 +1632,7 @@
         "hypertrophie"
       ],
       "muscles": [
-        "adducteurs",
-        "cuisses-internes"
+        "adducteurs"
       ],
       "equipment": [
         "hip-adductor"
@@ -1742,7 +1696,6 @@
         "endurance"
       ],
       "muscles": [
-        "avant-bras",
         "biceps"
       ],
       "equipment": [
@@ -1765,7 +1718,6 @@
         "endurance"
       ],
       "muscles": [
-        "avant-bras",
         "biceps"
       ],
       "equipment": [
@@ -1787,8 +1739,6 @@
         "endurance"
       ],
       "muscles": [
-        "deltoides-ant",
-        "pectoraux",
         "triceps"
       ],
       "equipment": [
@@ -1902,8 +1852,7 @@
       ],
       "muscles": [
         "deltoides-post",
-        "dos-superieur",
-        "dos-trap"
+        "dos-superieur"
       ],
       "equipment": [
         "reverse-fly-machine"
@@ -2101,9 +2050,7 @@
         "force"
       ],
       "muscles": [
-        "deltoides-ant",
-        "pectoraux",
-        "triceps"
+        "pectoraux"
       ],
       "equipment": [
         "machine",
@@ -2125,7 +2072,6 @@
         "endurance"
       ],
       "muscles": [
-        "cuisses-internes",
         "ischios"
       ],
       "equipment": [
@@ -2147,7 +2093,6 @@
         "endurance"
       ],
       "muscles": [
-        "cuisses-externes",
         "quadriceps"
       ],
       "equipment": [
@@ -2169,11 +2114,9 @@
         "hypertrophie"
       ],
       "muscles": [
-        "cuisses-internes",
         "dos-inferieur",
         "fessiers",
-        "ischios",
-        "lombaires"
+        "ischios"
       ],
       "equipment": [
         "barre"
@@ -2194,7 +2137,6 @@
         "hypertrophie"
       ],
       "muscles": [
-        "cuisses-externes",
         "fessiers",
         "quadriceps"
       ],
@@ -2238,8 +2180,7 @@
         "hypertrophie"
       ],
       "muscles": [
-        "cuisses-externes",
-        "epaules",
+        "deltoides",
         "fessiers",
         "quadriceps"
       ],
@@ -2262,7 +2203,6 @@
         "endurance"
       ],
       "muscles": [
-        "cuisses-externes",
         "fessiers",
         "quadriceps"
       ],
@@ -2285,11 +2225,9 @@
         "hypertrophie"
       ],
       "muscles": [
-        "cuisses-internes",
         "dos-inferieur",
         "fessiers",
-        "ischios",
-        "lombaires"
+        "ischios"
       ],
       "equipment": [
         "kettlebell"
@@ -2310,10 +2248,9 @@
         "endurance"
       ],
       "muscles": [
-        "cuisses-externes",
-        "epaules",
-        "quadriceps",
-        "triceps"
+        "deltoides",
+        "fessiers",
+        "quadriceps"
       ],
       "equipment": [
         "kettlebell"
@@ -2419,6 +2356,549 @@
       ],
       "images": [],
       "explanation": "Écarte largement les pieds, fléchis la jambe avant à 90° et ouvre les bras à l'horizontale tout en fixant un point devant toi. Respiration : inspire pour allonger la colonne et expire en enfonçant les pieds dans le sol pour stabiliser la posture. Points clés : garde les hanches ouvertes, les épaules détendues et répartis le poids de manière équilibrée."
+    },
+    {
+      "id": "exo-103",
+      "name": "Bulgarian split squat",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "fessiers",
+        "quadriceps"
+      ],
+      "equipment": [
+        "halteres",
+        "banc"
+      ],
+      "images": [],
+      "explanation": "Place un pied sur un banc derrière toi, l'autre devant, descends en fente en gardant le buste droit jusqu'à ce que le genou avant atteigne 90°. Respiration : inspire en descendant, expire en remontant. Points clés : garde le genou avant aligné avec la cheville, engage le core et pousse dans le talon avant."
+    },
+    {
+      "id": "exo-104",
+      "name": "Face pull poulie",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "deltoides-post",
+        "dos-trap"
+      ],
+      "equipment": [
+        "poulie",
+        "corde"
+      ],
+      "images": [],
+      "explanation": "À la poulie haute avec une corde, tire vers le visage en écartant les coudes et en contractant les deltoïdes postérieurs. Respiration : expire en tirant, inspire en revenant. Points clés : garde les épaules basses, écarte bien les mains en fin de mouvement et contrôle la phase négative."
+    },
+    {
+      "id": "exo-105",
+      "name": "Curl marteau haltères",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "biceps"
+      ],
+      "equipment": [
+        "halteres"
+      ],
+      "images": [],
+      "explanation": "Debout, haltères en position neutre (pouces vers le haut), monte les haltères en fléchissant les coudes sans bouger les épaules. Respiration : expire en montant, inspire en descendant. Points clés : garde les coudes près du corps, contrôle la descente et évite de balancer."
+    },
+    {
+      "id": "exo-106",
+      "name": "Extension triceps poulie haute",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "triceps"
+      ],
+      "equipment": [
+        "poulie",
+        "corde"
+      ],
+      "images": [],
+      "explanation": "À la poulie haute, pousse vers le bas en gardant les coudes fixes près du corps jusqu'à extension complète des bras. Respiration : expire en poussant, inspire en remontant. Points clés : garde les coudes immobiles, étend complètement en bas et contrôle la remontée."
+    },
+    {
+      "id": "exo-107",
+      "name": "Fentes marchées haltères",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "endurance"
+      ],
+      "muscles": [
+        "fessiers",
+        "quadriceps"
+      ],
+      "equipment": [
+        "halteres"
+      ],
+      "images": [],
+      "explanation": "Haltères dans chaque main, avance en fente alternée, descends jusqu'à ce que le genou arrière frôle le sol puis propulse-toi en avant. Respiration : inspire en descendant, expire en avançant. Points clés : garde le buste droit, aligne le genou avant avec la cheville et engage le core."
+    },
+    {
+      "id": "exo-108",
+      "name": "Presse à cuisses inclinée",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "fessiers",
+        "quadriceps"
+      ],
+      "equipment": [
+        "machine"
+      ],
+      "images": [],
+      "explanation": "Assis sur la machine, pieds largeur épaules sur la plateforme, pousse en tendant les jambes sans verrouiller les genoux. Respiration : inspire en descendant, expire en poussant. Points clés : garde le dos plaqué, descends jusqu'à 90° et contrôle la charge."
+    },
+    {
+      "id": "exo-109",
+      "name": "Mollets debout machine",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "mollets"
+      ],
+      "equipment": [
+        "machine"
+      ],
+      "images": [],
+      "explanation": "Debout sur la machine à mollets, monte sur la pointe des pieds en contractant les mollets, puis redescends lentement. Respiration : expire en montant, inspire en descendant. Points clés : amplitude complète, contraction en haut et descente contrôlée."
+    },
+    {
+      "id": "exo-110",
+      "name": "Tirage vertical prise serrée",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "dos-lats"
+      ],
+      "equipment": [
+        "poulie",
+        "barre"
+      ],
+      "images": [],
+      "explanation": "À la poulie haute avec prise serrée, tire la barre vers le haut de la poitrine en sortant légèrement le torse. Respiration : expire en tirant, inspire en relâchant. Points clés : garde les épaules basses, contracte les dorsaux et évite de tirer avec les bras."
+    },
+    {
+      "id": "exo-111",
+      "name": "Planche latérale",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "force",
+        "equilibre"
+      ],
+      "muscles": [
+        "abdos-obliques"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "En appui sur un avant-bras et les pieds, maintiens le corps aligné sur le côté, hanches levées. Respiration : respire calmement en maintenant la position. Points clés : garde le corps droit, engage les obliques et les fessiers."
+    },
+    {
+      "id": "exo-112",
+      "name": "Crunch inversé",
+      "type": [
+        "muscu",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "abdos-bas"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Allongé sur le dos, jambes pliées, ramène les genoux vers la poitrine en décollant les hanches du sol. Respiration : expire en montant, inspire en descendant. Points clés : contrôle le mouvement, engage le bas des abdos et évite l'élan."
+    },
+    {
+      "id": "exo-113",
+      "name": "Guerrier I (Virabhadrasana I)",
+      "type": [
+        "yoga"
+      ],
+      "objectives": [
+        "mobilite",
+        "equilibre",
+        "force"
+      ],
+      "muscles": [
+        "quadriceps",
+        "fessiers",
+        "deltoides"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Depuis une fente profonde, pied arrière à 45°, lève les bras vers le ciel en gardant les hanches face à l'avant. Respiration : inspire en levant les bras, expire en enracinant les pieds. Points clés : garde le genou avant à 90°, engage le core et allonge la colonne."
+    },
+    {
+      "id": "exo-114",
+      "name": "Posture du cobra (Bhujangasana)",
+      "type": [
+        "yoga",
+        "etirement"
+      ],
+      "objectives": [
+        "mobilite",
+        "relaxation"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "dos-inferieur",
+        "pectoraux"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Allongé sur le ventre, mains sous les épaules, pousse doucement pour lever le buste en gardant les hanches au sol. Respiration : inspire en montant, expire en redescendant. Points clés : garde les épaules loin des oreilles, engage légèrement les fessiers et ne force pas la cambrure."
+    },
+    {
+      "id": "exo-115",
+      "name": "Posture de l'enfant (Balasana)",
+      "type": [
+        "yoga",
+        "etirement"
+      ],
+      "objectives": [
+        "relaxation",
+        "recovery"
+      ],
+      "muscles": [
+        "dos",
+        "epaules"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "À genoux, assis sur les talons, étends les bras devant toi et pose le front au sol en relâchant tout le corps. Respiration : respire profondément et calmement dans le dos. Points clés : relâche les épaules, laisse le poids du corps descendre et reste aussi longtemps que nécessaire."
+    },
+    {
+      "id": "exo-116",
+      "name": "Torsion assise (Ardha Matsyendrasana)",
+      "type": [
+        "yoga",
+        "etirement"
+      ],
+      "objectives": [
+        "mobilite",
+        "relaxation"
+      ],
+      "muscles": [
+        "abdos-obliques",
+        "dos"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Assis, une jambe pliée par-dessus l'autre, tourne le buste vers la jambe levée en plaçant le coude opposé à l'extérieur du genou. Respiration : inspire pour t'allonger, expire pour approfondir la torsion. Points clés : garde la colonne allongée, ne force pas la rotation et regarde derrière toi."
+    },
+    {
+      "id": "exo-117",
+      "name": "Posture du pigeon (Eka Pada Rajakapotasana)",
+      "type": [
+        "yoga",
+        "etirement"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "fessiers",
+        "fléchisseurs-hanche"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Plie une jambe devant toi, l'autre tendue derrière, descends le buste vers l'avant pour étirer la hanche et le fessier de la jambe pliée. Respiration : inspire en te grandissant, expire en descendant. Points clés : garde les hanches droites, relâche dans l'étirement et ne force pas."
+    },
+    {
+      "id": "exo-118",
+      "name": "Posture du chat-vache (Marjaryasana-Bitilasana)",
+      "type": [
+        "yoga",
+        "etirement"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "dos",
+        "abdos-centre"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "À quatre pattes, alterne entre dos rond (chat) en expirant et dos creux (vache) en inspirant de manière fluide. Respiration : inspire en creusant le dos, expire en arrondissant. Points clés : mobilise toute la colonne, va lentement et synchronise avec la respiration."
+    },
+    {
+      "id": "exo-119",
+      "name": "Posture de l'arbre (Vrksasana)",
+      "type": [
+        "yoga"
+      ],
+      "objectives": [
+        "equilibre",
+        "concentration"
+      ],
+      "muscles": [
+        "fessiers",
+        "quadriceps",
+        "abdos-centre"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Debout sur une jambe, place l'autre pied sur l'intérieur de la cuisse ou du mollet (pas sur le genou), mains jointes devant la poitrine ou levées. Respiration : respire calmement en fixant un point devant toi. Points clés : engage le core, presse le pied contre la jambe et trouve ton équilibre."
+    },
+    {
+      "id": "exo-120",
+      "name": "Étirement quadriceps debout",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "quadriceps"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Debout, attrape un pied derrière toi et ramène le talon vers les fessiers en gardant les genoux alignés. Respiration : respire calmement en maintenant l'étirement. Points clés : garde le bassin neutre, ne cambre pas le dos et tiens-toi à un support si nécessaire."
+    },
+    {
+      "id": "exo-121",
+      "name": "Étirement des mollets au mur",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "mollets"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Face à un mur, place un pied en arrière jambe tendue, pousse le talon au sol et penche-toi légèrement vers l'avant. Respiration : respire calmement pendant l'étirement. Points clés : garde le talon au sol, la jambe arrière tendue et le corps aligné."
+    },
+    {
+      "id": "exo-122",
+      "name": "Étirement des fessiers allongé",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "fessiers"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Allongé sur le dos, croise une cheville sur le genou opposé et tire la cuisse vers toi pour étirer le fessier. Respiration : respire profondément en maintenant l'étirement. Points clés : garde la tête au sol, ne force pas et maintiens 20-30 secondes."
+    },
+    {
+      "id": "exo-123",
+      "name": "Étirement du dos (cat stretch)",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "dos"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "À quatre pattes, arrondis le dos vers le plafond en rentrant le menton, puis relâche. Respiration : expire en arrondissant, inspire en revenant. Points clés : mobilise toute la colonne, va lentement et ne force pas."
+    },
+    {
+      "id": "exo-124",
+      "name": "Étirement des épaules bras croisés",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "deltoides",
+        "epaules"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Debout ou assis, ramène un bras devant toi à hauteur d'épaule et tire avec l'autre main pour étirer l'épaule. Respiration : respire calmement pendant l'étirement. Points clés : garde les épaules basses, ne tire pas trop fort et maintiens 20-30 secondes."
+    },
+    {
+      "id": "exo-125",
+      "name": "Étirement des triceps au-dessus de la tête",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "triceps"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Lève un bras, plie le coude pour amener la main derrière la tête et tire doucement le coude avec l'autre main. Respiration : respire calmement pendant l'étirement. Points clés : garde le dos droit, ne force pas et maintiens 20-30 secondes."
+    },
+    {
+      "id": "exo-126",
+      "name": "Étirement des pectoraux au cadre de porte",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "pectoraux"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Place un avant-bras contre un cadre de porte, tourne le corps dans la direction opposée pour étirer le pectoral. Respiration : respire calmement pendant l'étirement. Points clés : garde les épaules basses, ajuste la hauteur du bras et maintiens 20-30 secondes."
+    },
+    {
+      "id": "exo-127",
+      "name": "Salutation au soleil (Surya Namaskar)",
+      "type": [
+        "yoga"
+      ],
+      "objectives": [
+        "mobilite",
+        "endurance",
+        "recovery"
+      ],
+      "muscles": [
+        "corps-entier"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Enchaînement fluide de 12 postures synchronisées avec la respiration : debout, bras levés, flexion avant, planche, chien tête en bas, puis retour. Respiration : une posture = une respiration, coordonne mouvement et souffle. Points clés : reste fluide, adapte à ton niveau et répète plusieurs cycles."
+    },
+    {
+      "id": "exo-128",
+      "name": "Étirement du cou latéral",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "cou",
+        "dos-trap"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Assis ou debout, incline doucement la tête sur le côté en amenant l'oreille vers l'épaule jusqu'à sentir l'étirement du côté opposé. Respiration : respire calmement pendant l'étirement. Points clés : ne force pas, garde les épaules basses et maintiens 15-20 secondes de chaque côté."
     }
   ]
 }
