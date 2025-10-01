@@ -19,7 +19,6 @@ const LogoAnimated = ({ className = "" }) => {
 
     if (!stack) return;
 
-    // Cycle through animations
     modeIndexRef.current = (modeIndexRef.current + 1) % MODES.length;
     const mode = MODES[modeIndexRef.current];
     stack.setAttribute('data-mode', mode);
