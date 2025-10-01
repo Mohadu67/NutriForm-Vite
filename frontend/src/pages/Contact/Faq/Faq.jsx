@@ -37,19 +37,19 @@ export default function Faq() {
     <section className={styles.faqSection} aria-labelledby="faq-title">
       <h2>Foire Aux Questions</h2>
 
-      {DATA.map((item, idx) => (
+      {DATA.map((item) => (
         <div
-          key={idx}
+          key={item.q}
           className={styles.faqItem}
           role="button"
           tabIndex={0}
-          aria-expanded={openIndex === idx}
-          aria-controls={`faq-panel-${idx}`}
-          onClick={() => toggle(idx)}
+          aria-expanded={openIndex === item.q}
+          aria-controls={`faq-panel-${item.q}`}
+          onClick={() => toggle(item.q)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              toggle(idx);
+              toggle(item.q);
             }
           }}
         >
@@ -57,9 +57,9 @@ export default function Faq() {
             <span>{item.q}</span>
           </h3>
           <div
-            id={`faq-panel-${idx}`}
+            id={`faq-panel-${item.q}`}
             role="region"
-            hidden={openIndex !== idx}
+            hidden={openIndex !== item.q}
           >
             <p className={styles.reponse}>{item.a}</p>
           </div>

@@ -9,24 +9,61 @@
 .tooltip {
   position: absolute;
   transform: translate(-50%, -100%);
-  background: rgba(17, 24, 39, 0.95);
+  background: rgba(17, 24, 39, 0.96);
   color: #f9fafb;
-  padding: 8px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1);
   pointer-events: none;
-  z-index: 2;
-  max-width: 240px;
+  z-index: 10;
+  max-width: 260px;
   white-space: pre-wrap;
   overflow-wrap: break-word;
   word-break: break-word;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  animation: tooltipFadeIn 0.2s ease-out;
+}
+
+.tooltip > div:first-child {
+  font-weight: 600;
+  color: #60a5fa;
+  margin-bottom: 4px;
+}
+
+.tooltip > div:not(:first-child) {
+  color: #e5e7eb;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -105%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
 }
 
 .tooltipHint {
   font-size: 12px;
-  color: #6b7280;}
+  color: #6b7280;
+  margin-top: 12px;
+  text-align: center;
+  font-style: italic;
+}
+
+.svgChart {
+  overflow: visible;
+}
+
+.muted {
+  color: #9ca3af;
+  font-size: 14px;
+}
 
 .chartCard {
   background: var(--nf-bg-card);

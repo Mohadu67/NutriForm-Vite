@@ -120,21 +120,21 @@ export default function SessionChart({ points }) {
     }
   }
 
-  const width = 560;
-  const height = 320;
-  const margin = { top: 24, right: 24, bottom: 64, left: 24 };
+  const width = 600;
+  const height = 360;
+  const margin = { top: 32, right: 32, bottom: 72, left: 32 };
   const chartW = width - margin.left - margin.right;
   const chartH = height - margin.top - margin.bottom;
 
   const colW = chartW / 7;
   const lineTop = margin.top;
-  const lineBottom = margin.top + chartH - 24;
+  const lineBottom = margin.top + chartH - 32;
 
   const maxDotsPerCol = Math.max(
     1,
     ...groups.map((g) => g.length)
   );
-  const dotRadius = 5;
+  const dotRadius = 6;
 
   const handleLeave = () => {
     if (tooltip?.pinned) return;
@@ -178,9 +178,10 @@ export default function SessionChart({ points }) {
                 x2={x}
                 y1={lineTop}
                 y2={colBottom}
-                stroke="#bfc6d1"
+                stroke={isSelected ? "#2e86de" : "#d1d5db"}
                 strokeWidth={strokeW}
                 strokeLinecap="round"
+                style={{ transition: "all 0.2s ease" }}
               />
 
               {col.map((d, k) => {
@@ -191,9 +192,14 @@ export default function SessionChart({ points }) {
                       cx={x}
                       cy={cy}
                       r={dotRadius}
-                      fill="#2e86de"
+                      fill={isSelected ? "#1d6bb8" : "#2e86de"}
                       stroke="#ffffff"
-                      strokeWidth="1.5"
+                      strokeWidth="2"
+                      style={{
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        filter: isSelected ? "drop-shadow(0 2px 4px rgba(46, 134, 222, 0.4))" : "none"
+                      }}
                       onMouseEnter={() => {}}
                       onClick={(evt) => {
   evt.stopPropagation();
@@ -271,11 +277,25 @@ export default function SessionChart({ points }) {
                 x={x}
                 y={height - 28}
                 textAnchor="middle"
-                fontSize="12"
-                fill="#586271"
+                fontSize="14"
+                fontWeight={isSelected ? "600" : "500"}
+                fill={isSelected ? "#2e86de" : "#6b7280"}
+                style={{ transition: "all 0.2s ease" }}
               >
                 {weekdays[i]}
               </text>
+              {safeCount > 0 && (
+                <text
+                  x={x}
+                  y={height - 12}
+                  textAnchor="middle"
+                  fontSize="11"
+                  fill="#9ca3af"
+                  fontWeight="400"
+                >
+                  {safeCount} exo{safeCount > 1 ? 's' : ''}
+                </text>
+              )}
             </g>
           );
         })}

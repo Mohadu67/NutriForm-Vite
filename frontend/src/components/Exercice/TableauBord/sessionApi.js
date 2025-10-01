@@ -1,7 +1,9 @@
+import { API_BASE_URL } from '../../../shared/config/api.js';
+
 const DEFAULT_DEV_API = (typeof window !== 'undefined' && window.location && window.location.port === '5173')
   ? 'http://localhost:3000'
   : '';
-const API_BASE = (import.meta?.env?.VITE_API_URL || DEFAULT_DEV_API);
+const API_BASE = API_BASE_URL || DEFAULT_DEV_API;
 
 function safeStringify(obj) {
   try {
@@ -221,7 +223,6 @@ function getLastSession() {
 }
 
 export {
-  API_BASE,
   request,
   getToken,
   fetchHistorySummary,

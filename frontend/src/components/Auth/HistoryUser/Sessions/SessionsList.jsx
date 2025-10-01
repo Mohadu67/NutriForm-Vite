@@ -1,7 +1,6 @@
 import React, { useMemo, useEffect, useState } from "react";
 import style from "../HistoryUser.module.css";
-
-const API_BASE = (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
+import { API_BASE_URL } from "../../../../shared/config/api.js";
 
 function parseDate(raw) {
   if (!raw) return null;
@@ -70,7 +69,7 @@ export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
     if (!ok) return;
     try {
       setDeletingId(id);
-      const url = API_BASE ? `${API_BASE}/api/sessions/${id}` : `/api/sessions/${id}`;
+      const url = API_BASE_URL ? `${API_BASE_URL}/api/sessions/${id}` : `/api/sessions/${id}`;
       const res = await fetch(url, {
         method: 'DELETE',
         credentials: 'include'
@@ -98,8 +97,8 @@ export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
     <div className={style.sessionsSection}>
       <h4>Mes dernières séances</h4>
       <ul className={style.sessionList}>
-        {localRows.map((s) => (
-          <li key={s.id} className={style.sessionItem}>
+        {localRows.map((s, idx) => (
+          <li key={s.id || `session-${idx}`} className={style.sessionItem}>
             <span className={style.sessionName}>{s.name}</span>
             <span className={style.sessionDate}>
               {s.date ? s.date.toLocaleDateString('fr-FR') : '—'}
