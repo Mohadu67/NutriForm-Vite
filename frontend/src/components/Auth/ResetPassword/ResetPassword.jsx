@@ -59,7 +59,7 @@ export default function ResetPassword() {
   return (
     <div className={styles.container}>
       <div className={styles.popup}>
-        <img src={MobiLogo} alt="NutriForm" className={styles.logo} />
+        <img src={MobiLogo} alt="Harmonith" className={styles.logo} />
         <p className={styles.subtitle}>T’as oublié ton mot de passe ? Tranquille, on n’en parlera à personne.</p>
         <form onSubmit={onSubmit} className={styles.form}>
           <LabelField label="Nouveau mot de passe" htmlFor="new-password">

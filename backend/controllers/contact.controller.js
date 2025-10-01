@@ -59,7 +59,7 @@ exports.handleContact = async (req, res) => {
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:720px;margin:0 auto;background:#111;border:1px solid rgba(255,255,255,.06);border-radius:12px;">
     <tr><td style="padding:20px 22px;">
       <h2 style="margin:0 0 6px 0;color:#fff;">Nouveau message de contact</h2>
-      <p style="margin:0;color:#bdbdbd;">Depuis le site NutriForm</p>
+      <p style="margin:0;color:#bdbdbd;">Depuis le site Harmonith</p>
       <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:16px 0;" />
       <p style="margin:0 0 8px 0;"><strong>Nom:</strong> ${safeName}</p>
       <p style="margin:0 0 8px 0;"><strong>Email:</strong> ${escapeHtml(emailNorm)}</p>
@@ -71,7 +71,7 @@ exports.handleContact = async (req, res) => {
   </table>
 </body></html>`;
 
-    const text = `Nouveau message de contact (NutriForm)\n\nNom: ${senderName || 'Anonyme'}\nEmail: ${emailNorm}\nSujet: ${subjectLine}\n\n${content}`;
+    const text = `Nouveau message de contact (Harmonith)\n\nNom: ${senderName || 'Anonyme'}\nEmail: ${emailNorm}\nSujet: ${subjectLine}\n\n${content}`;
 
     await sendMail({
       to: TO,

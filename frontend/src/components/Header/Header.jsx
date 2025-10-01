@@ -9,7 +9,7 @@ export default function Header() {
 
   return (
     <header className={styles.header}>
-      <Link to="/" aria-label="Accueil NutriForm - Retour à l'accueil">
+      <Link to="/" aria-label="Accueil Harmonith - Retour à l'accueil">
         <Logo className={styles.logo} />
       </Link>
       <Navbar />
