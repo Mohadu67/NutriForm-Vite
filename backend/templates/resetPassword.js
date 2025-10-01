@@ -5,7 +5,7 @@ if (!base && process.env.NODE_ENV === 'production') {
 const brand = {
   name: 'Harmonith',
   url: base || 'http://localhost:5173',
-  logo: `${base || 'http://localhost:5173'}/logo/domaine-logo.svg`,
+  logo: `${base || 'http://localhost:5173'}/assets/logo/harmonith-domain.svg`,
 };
 
 module.exports = function resetPasswordTemplate({ toName = 'utilisateur', resetUrl }) {
@@ -24,6 +24,7 @@ Si tu n'es pas à l'origine de cette demande, ignore ce message.`;
   <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;color:#111;">
     <div style="max-width:560px;margin:0 auto;padding:24px;">
       <div style="text-align:center;margin-bottom:24px;">
+        <img src="${brand.logo}" alt="Harmonith" style="height:50px;margin-bottom:12px;display:block;margin-left:auto;margin-right:auto;" />
         <h1 style="font-size:28px;margin:0;color:#111;font-weight:700;">Harmonith</h1>
         <p style="font-size:14px;margin:4px 0 0;color:#666;font-weight:400;">Ton coach encore plus proche</p>
       </div>
