@@ -5,7 +5,7 @@ import LogoAnimated from "./mascotte.jsx";
 import styles from "./Logo.module.css";
 
 
-export default function Logo({ alt = "NutriForm logo", className = "" }) {
+export default function Logo({ alt = "Harmonith logo", className = "" }) {
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false
   );

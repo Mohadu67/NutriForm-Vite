@@ -3,9 +3,9 @@ import { useEffect } from "react";
 export default function usePageTitle(title) {
   useEffect(() => {
     if (title) {
-      document.title = `${title} | NutriForm`;
+      document.title = `${title} | Harmonith`;
     } else {
-      document.title = "NutriForm";
+      document.title = "Harmonith";
     }
   }, [title]);
 }

@@ -78,7 +78,7 @@ export default function Footer() {
           <div className={styles.brand}>
             <Logo className={styles.logo} />
             <p className={styles.tagline}>
-              NutriForm t’accompagne avec des programmes personnalisés, des outils de suivi et des conseils adaptés à ton rythme.
+              Harmonith t'accompagne avec des programmes personnalisés, des outils de suivi et des conseils adaptés à ton rythme.
             </p>
           </div>
 

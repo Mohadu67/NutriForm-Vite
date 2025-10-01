@@ -29,7 +29,7 @@ const MentionsLegales = () => {
           <h2>Mentions légales</h2>
           <p>
             <strong>Éditeur du site :</strong> Hamiani Mohammed, Strasbourg<br />
-            <strong>Contact :</strong> contactnutriiform@gmail.com<br />
+            <strong>Contact :</strong> contact.harmonith@gmail.com<br />
             <strong>Hébergeur BackEnd :</strong> Render<br />
             <a href="https://render.com/" target="_blank" rel="noopener noreferrer">
               https://render.com
@@ -50,7 +50,7 @@ const MentionsLegales = () => {
           </p>
           <p>
             Conformément au RGPD, vous disposez d’un droit d’accès, de rectification et de suppression de vos données. Pour toute demande, contactez-nous à l’adresse :{" "}
-            <a href="mailto:contact@nutriform.fr">contact@nutriform.fr</a>.
+            <a href="mailto:contact.harmonith@gmail.com">contact.harmonith@gmail.com</a>.
           </p>
           <p>
             Vos données ne sont jamais cédées à des tiers sans votre consentement. Nous prenons toutes les mesures nécessaires pour assurer leur sécurité.

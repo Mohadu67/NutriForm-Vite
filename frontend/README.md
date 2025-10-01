@@ -1,7 +1,7 @@
-# NutriForm Project
+# Harmonith Project
 
 ## Description
-NutriForm currently offers IMC and calorie calculators with a clean and user-friendly interface. It includes a dynamic exercise selection flow allowing users to choose exercise type, equipment, muscle group, and specific exercises. The app features exercise cards with popup details and a progress stepper to guide users through the process. The UI is styled using CSS modules with a mobile-first approach.
+Harmonith currently offers IMC and calorie calculators with a clean and user-friendly interface. It includes a dynamic exercise selection flow allowing users to choose exercise type, equipment, muscle group, and specific exercises. The app features exercise cards with popup details and a progress stepper to guide users through the process. The UI is styled using CSS modules with a mobile-first approach.
 
 ## Tech Stack
 
@@ -30,11 +30,11 @@ NutriForm currently offers IMC and calorie calculators with a clean and user-fri
 ### Frontend
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/nutriform-vite.git
+   git clone https://github.com/yourusername/harmonith-vite.git
    ```
 2. Navigate to the frontend directory:
    ```bash
-   cd nutriform-vite/frontend
+   cd harmonith-vite/frontend
    ```
 3. Install dependencies:
    ```bash
@@ -48,7 +48,7 @@ NutriForm currently offers IMC and calorie calculators with a clean and user-fri
 ### Backend
 1. Navigate to the backend directory:
    ```bash
-   cd nutriform-vite/backend
+   cd harmonith-vite/backend
    ```
 2. Install dependencies:
    ```bash

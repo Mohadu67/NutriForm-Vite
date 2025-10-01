@@ -56,8 +56,8 @@ export default function VerifyEmail() {
 
         {status === 'loading' && (
           <div className={`${style.card} ${style.loadingCard}`}>
-            <img src={MobiLogo} alt="NutriForm" className={style.logoMobile} />
-            <img src={DeskLogo} alt="NutriForm" className={style.logoDesk} />
+            <img src={MobiLogo} alt="Harmonith" className={style.logoMobile} />
+            <img src={DeskLogo} alt="Harmonith" className={style.logoDesk} />
             <object
               type="image/svg+xml"
               data={logoAnimate}
@@ -73,8 +73,8 @@ export default function VerifyEmail() {
 
         {status === 'success' && (
           <div className={`${style.card} ${style.successCard}`}>
-            <img src={MobiLogo} alt="NutriForm" className={style.logoMobile} />
-            <img src={DeskLogo} alt="NutriForm" className={style.logoDesk} />
+            <img src={MobiLogo} alt="Harmonith" className={style.logoMobile} />
+            <img src={DeskLogo} alt="Harmonith" className={style.logoDesk} />
             <h1 className={style.title}>Email vérifié ✅</h1>
             <p className={style.subtitle}>{message || "Adresse e‑mail vérifiée. Tu peux maintenant te connecter."}</p>
             <div className={style.actions}>
@@ -87,8 +87,8 @@ export default function VerifyEmail() {
 
         {status === 'error' && (
           <div className={`${style.card} ${style.errorCard}`}>
-            <img src={MobiLogo} alt="NutriForm" className={style.logoMobile} />
-            <img src={DeskLogo} alt="NutriForm" className={style.logoDesk} />
+            <img src={MobiLogo} alt="Harmonith" className={style.logoMobile} />
+            <img src={DeskLogo} alt="Harmonith" className={style.logoDesk} />
             <h1 className={style.title}>Vérification échouée ❌</h1>
             <p className={style.subtitle}>{message || "Lien invalide ou expiré."}</p>
             <div className={style.actions}>
@@ -101,8 +101,8 @@ export default function VerifyEmail() {
 
         {status === 'invalid' && (
           <div className={`${style.card} ${style.errorCard}`}>
-            <img src={MobiLogo} alt="NutriForm" className={style.logoMobile} />
-            <img src={DeskLogo} alt="NutriForm" className={style.logoDesk} />
+            <img src={MobiLogo} alt="Harmonith" className={style.logoMobile} />
+            <img src={DeskLogo} alt="Harmonith" className={style.logoDesk} />
             <div className={style.actions}>
               <button type="button" className={style.secondaryBtn} onClick={goLogin}>
                 Revenir à l'accueil
