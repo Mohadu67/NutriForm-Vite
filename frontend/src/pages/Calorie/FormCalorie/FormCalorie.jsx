@@ -21,9 +21,10 @@ export default function FormCalorie({ onResult, onCalculate }) {
     poids: "",
     taille: "",
     age: "",
-    formule: "standard",
+    formule: "mifflin",
     masseGrasse: "",
-    activite: "faible", 
+    activite: "faible",
+    objectif: "stabiliser",
   });
 
   const update = (name, value) => {
@@ -62,11 +63,18 @@ export default function FormCalorie({ onResult, onCalculate }) {
       if (payload.masseGrasse === undefined || Number.isNaN(payload.masseGrasse)) return;
       const masseMaigre = payload.poids * (1 - payload.masseGrasse / 100);
       tmb = 370 + 21.6 * masseMaigre;
-    } else {
+    } else if (payload.formule === "mifflin") {
+      // Mifflin-St Jeor (plus précise)
       tmb =
         payload.sexe === "homme"
           ? 10 * payload.poids + 6.25 * payload.taille - 5 * payload.age + 5
           : 10 * payload.poids + 6.25 * payload.taille - 5 * payload.age - 161;
+    } else {
+      // Harris-Benedict (standard)
+      tmb =
+        payload.sexe === "homme"
+          ? 88.362 + 13.397 * payload.poids + 4.799 * payload.taille - 5.677 * payload.age
+          : 447.593 + 9.247 * payload.poids + 3.098 * payload.taille - 4.330 * payload.age;
     }
 
     const facteurs = {
@@ -134,11 +142,17 @@ export default function FormCalorie({ onResult, onCalculate }) {
             value={form.formule}
             onChange={(e) => update("formule", e.target.value)}
           >
-            <option value="standard">Standard </option>
-            <option value="mifflin">Mifflin-St Jeor ( Pro )</option>
-            <option value="katch">Katch-McArdle (nécessite % masse grasse)</option>
+            <option value="standard">Harris-Benedict (Standard)</option>
+            <option value="mifflin">Mifflin-St Jeor (Recommandée)</option>
+            <option value="katch">Katch-McArdle (Avancée)</option>
           </select>
         </LabelField>
+
+        {form.formule === "katch" && (
+          <div className={styles.infoBox}>
+            <p>💡 La formule Katch-McArdle est la plus précise mais nécessite de connaître votre pourcentage de masse grasse.</p>
+          </div>
+        )}
 
         <h4>Sexe</h4>
         <BoutonSelection
@@ -197,7 +211,7 @@ export default function FormCalorie({ onResult, onCalculate }) {
         </LabelField>
 
         {form.formule === "katch" && (
-          <LabelField label="Masse grasse (%)" htmlFor="masseGrasse" required helper="ex: 18">
+          <LabelField label="Masse grasse (%)" htmlFor="masseGrasse" >
             <input
               id="masseGrasse"
               type="number"
