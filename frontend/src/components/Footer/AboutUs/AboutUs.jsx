@@ -26,7 +26,7 @@ export default function AboutUs() {
   return (
     <section className={styles.aboutSection}>
       <div className={styles.container}>
-        {/* Header */}
+
         {(data.title || data.subtitle) && (
           <div className={styles.header}>
             {data.title && <h2 className={styles.title}>{data.title}</h2>}
