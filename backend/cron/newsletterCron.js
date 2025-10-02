@@ -2,12 +2,10 @@ const cron = require('node-cron');
 const Newsletter = require('../models/Newsletter');
 const { sendNewsletterToAll } = require('../services/emailService');
 
-// Fonction pour vérifier et envoyer les newsletters programmées
 const checkAndSendNewsletters = async () => {
   try {
     const now = new Date();
 
-    // Trouver toutes les newsletters programmées dont la date est passée
     const newslettersToSend = await Newsletter.find({
       status: 'scheduled',
       scheduledDate: { $lte: now }
@@ -23,11 +21,9 @@ const checkAndSendNewsletters = async () => {
     for (const newsletter of newslettersToSend) {
       console.log(`📨 Envoi de la newsletter: ${newsletter.title}`);
 
-      // Envoyer la newsletter
       const result = await sendNewsletterToAll(newsletter);
 
       if (result.success) {
-        // Mettre à jour le statut
         newsletter.status = 'sent';
         newsletter.sentAt = new Date();
         newsletter.recipientCount = result.totalRecipients;
