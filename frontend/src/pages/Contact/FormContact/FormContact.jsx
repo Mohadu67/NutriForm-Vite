@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import styles from "./FormContact.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
@@ -6,6 +7,7 @@ import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
 const API_URL = import.meta.env.VITE_API_URL || "";
 
 export default function FormContact({ onSend }) {
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [form, setForm] = useState({ nom: "", email: "", sujet: "", message: "", consent: false });
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle");
@@ -28,17 +30,26 @@ export default function FormContact({ onSend }) {
     e.preventDefault();
     const start = Date.now();
     if (!validate()) return;
+
+    if (!executeRecaptcha) {
+      setStatus("error");
+      return;
+    }
+
     try {
       setStatus("sending");
 
+      // Obtenir le token reCAPTCHA
+      const captchaToken = await executeRecaptcha('contact_form');
+
       if (typeof onSend === "function") {
-        await onSend({ ...form });
+        await onSend({ ...form, captchaToken });
       } else {
         const endpoint = API_URL ? `${API_URL}/api/contact` : "/api/contact";
         const res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
+          body: JSON.stringify({ ...form, captchaToken }),
         });
         const data = await res.json().catch(() => null);
         if (!res.ok) throw new Error(data?.message || "fail");

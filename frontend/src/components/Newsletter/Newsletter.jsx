@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import styles from "./Newsletter.module.css";
 
 export default function Newsletter() {
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // idle, loading, success, error
   const [message, setMessage] = useState("");
@@ -15,15 +17,24 @@ export default function Newsletter() {
       return;
     }
 
+    if (!executeRecaptcha) {
+      setStatus("error");
+      setMessage("reCAPTCHA non chargé. Réessaye.");
+      return;
+    }
+
     setStatus("loading");
 
     try {
+      // Obtenir le token reCAPTCHA
+      const captchaToken = await executeRecaptcha('newsletter_subscribe');
+
       const response = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, captchaToken }),
       });
 
       const data = await response.json();

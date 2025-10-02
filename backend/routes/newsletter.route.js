@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const NewsletterSubscriber = require('../models/NewsletterSubscriber');
+const verifyCaptcha = require('../middlewares/recaptcha.middleware');
 
 // POST /api/newsletter/subscribe - S'inscrire à la newsletter
-router.post('/subscribe', async (req, res) => {
+router.post('/subscribe', verifyCaptcha, async (req, res) => {
   try {
     const { email } = req.body;
 

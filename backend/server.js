@@ -18,6 +18,8 @@ const contactRoutes = require('./routes/contact.route.js');
 const historyRoutes = require('./routes/history.route.js');
 const workoutSessionRoutes = require('./routes/workoutSession.route.js');
 const newsletterRoutes = require('./routes/newsletter.route.js');
+const newsletterAdminRoutes = require('./routes/newsletter-admin.route.js');
+const { startNewsletterCron } = require('./cron/newsletterCron');
 
 const app = express();
 if (!config.mongoUri) {
@@ -53,6 +55,7 @@ app.use('/api', contactRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api', workoutSessionRoutes);
 app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/newsletter-admin', newsletterAdminRoutes);
 
 app.get('/', (req, res) => {
   res.send('Bienvenue sur le backend de NutriForm 🚀');
@@ -60,4 +63,7 @@ app.get('/', (req, res) => {
 
 app.listen(config.port, () => {
   console.info(`🚀 Serveur en ligne sur http://localhost:${config.port}`);
+
+  // Démarrer le cron job pour les newsletters
+  startNewsletterCron();
 });

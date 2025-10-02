@@ -53,7 +53,7 @@ exports.login = async (req, res) => {
     if (!ok) return res.status(401).json({ message: 'Identifiants invalides.' });
 
     const token = jwt.sign(
-      { id: user._id, email: user.email },
+      { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET || 'secret',
       { expiresIn: '7d' }
     );
@@ -72,7 +72,7 @@ exports.login = async (req, res) => {
       message: 'Connexion réussie.',
       token,
       displayName,
-      user: { id: user._id, prenom: user.prenom, pseudo: user.pseudo, email: user.email },
+      user: { id: user._id, prenom: user.prenom, pseudo: user.pseudo, email: user.email, role: user.role },
     });
   } catch (err) {
     console.error('POST /login', err);
