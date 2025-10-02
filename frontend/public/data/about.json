@@ -26,6 +26,18 @@
         "twitter": "",
         "instagram": "https://www.linkedin.com/in/nolwenn-le-rohellec-1720a2218"
       }
+    },
+    {
+      "id": "3",
+      "name": "Chems",
+      "role": "Community Manager",
+      "bio": "Énergique et créative, je fais vivre la communauté Harmonith au quotidien. Entre motivation, sport et esprit d’équipe, mon objectif est de créer du lien et d’inspirer chacun à avancer plus loin, ensemble.",
+      "photo": "images/teams/chems.jpg",
+      "socials": {
+        "linkedin": "",
+        "twitter": "",
+        "instagram": ""
+      }
     }
   ],
   "stats": [
