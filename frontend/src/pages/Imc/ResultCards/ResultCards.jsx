@@ -68,12 +68,12 @@ export default function ResultCards({ categorie }) {
             <p dangerouslySetInnerHTML={{ __html: entry.item.more }} />
             {entry.item.link && (
               <Link to={entry.item.link} className={styles.ctaLink} aria-label={`Aller vers ${entry.item.link}`}>
-                Découvrir l’outil
+                Découvrir l'outil
               </Link>
             )}
           </div>
 
-          <button className={styles.learnMore} onClick={() => toggle(idx)}>
+          <button className={styles.learnMore} onClick={() => toggle(idx)} aria-expanded={openIndex === idx}>
             {openIndex === idx ? "Lire moins" : "Lire plus"}
           </button>
         </div>

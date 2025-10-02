@@ -1,11 +1,7 @@
-import AdSlot from "../../components/AdSlot/AdSlot.jsx";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import Footer from "../../components/Footer/Footer.jsx";
 import Header from "../../components/Header/Header.jsx";
-
 import Main from "./Main/Main.jsx";
-
-
 
 export default function Home() {
   usePageTitle("Accueil");
@@ -13,7 +9,6 @@ export default function Home() {
   return (
     <>
       <Header />
-      <AdSlot slot="1234567890" />
       <Main />
       <Footer />
     </>
