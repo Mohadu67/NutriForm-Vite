@@ -136,7 +136,27 @@
     transition: all .12s ease;
   }
 
-.popupBody { padding: 14px; display: grid; gap: 14px; }
+.popupBody {
+  padding: 14px;
+  display: grid;
+  gap: 14px;
+}
+
+/* Smooth transitions for table changes */
+.popupBody > * {
+  animation: fadeInUp .3s cubic-bezier(.4, 0, .2, 1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 .popupBody input,
 .popupBody textarea,

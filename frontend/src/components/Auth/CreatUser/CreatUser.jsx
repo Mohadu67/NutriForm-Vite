@@ -12,6 +12,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [agree, setAgree] = useState(false);
+  const [newsletter, setNewsletter] = useState(false);
   const [pseudo, setPseudo] = useState("");
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -91,6 +92,20 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
       if (!res.ok) {
         const msg = data?.message || (res.status === 500 ? "Erreur serveur" : `Erreur HTTP ${res.status}`);
         throw new Error(msg);
+      }
+
+      // Si l'utilisateur a coché la newsletter, on l'inscrit
+      if (newsletter) {
+        try {
+          await fetch(`${API_URL}/api/newsletter/subscribe`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: emailNorm })
+          });
+          // Silently fail - l'inscription au compte est plus importante
+        } catch (newsletterErr) {
+          console.warn("Newsletter subscription failed:", newsletterErr);
+        }
       }
 
       setStatus("success");
@@ -236,6 +251,15 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
             onChange={(e) => setAgree(e.target.checked)}
           />
           <span>J'accepte la politique de confidentialité</span>
+        </label>
+
+        <label className={cstyle.checkRow}>
+          <input
+            type="checkbox"
+            checked={newsletter}
+            onChange={(e) => setNewsletter(e.target.checked)}
+          />
+          <span>📬 Je veux recevoir la newsletter (conseils fitness, nouveautés)</span>
         </label>
 
         {errorMsg && <p className={cstyle.error} role="alert" aria-live="assertive" style={{ marginTop: 0 }}>{errorMsg}</p>}

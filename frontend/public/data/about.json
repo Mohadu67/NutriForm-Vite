@@ -1,0 +1,70 @@
+{
+  "title": "Qui sommes-nous ?",
+  "subtitle": "Notre mission : Rendre le fitness simple et accessible à tous",
+  "description": "Harmonith (anciennement Nutri’Form) est une application pensée pour rendre le fitness simple, fun et accessible. Elle permet de choisir ses exercices, d’ajuster la charge, le nombre de répétitions ou le temps de cardio, et de suivre facilement sa progression.",
+  "team": [
+    {
+      "id": "1",
+      "name": "Moha",
+      "role": "Developpeur de l'app",
+      "bio": "Passionné de code (et adepte du mode flemmard assumé), j’ai imaginé Harmonith pour simplifier le fitness. Mon but : mélanger mon amour du développement avec ma passion pour le sport, pour créer une app qui s’adapte à moi… et à toi.",
+      "photo": "images/teams/moha.jpeg",
+      "socials": {
+        "linkedin": "https://www.linkedin.com/public-profile/settings?trk=d_flagship3_profile_self_view_public_profile",
+        "twitter": "",
+        "instagram": "https://www.instagram.com/berkou_kess?igsh=MW8zenc1MHlqcGl2cw%3D%3D&utm_source=qr"
+      }
+    },
+    {
+      "id": "2",
+      "name": "Nono",
+      "role": "Redactrice du site",
+      "bio": "Passionnée d’écriture et accro au sport, j’apporte ma touche pour rendre Harmonith clair, motivant et inspirant. Mon but : transformer les infos en textes simples et motivants, pour que chacun trouve la force d’aller plus loin.",
+      "photo": "images/teams/nono.JPG",
+      "socials": {
+        "linkedin": "",
+        "twitter": "",
+        "instagram": "https://www.linkedin.com/in/nolwenn-le-rohellec-1720a2218"
+      }
+    }
+  ],
+  "stats": [
+    {
+      "label": "Exercices disponibles",
+      "value": "300+",
+      "icon": "💪"
+    },
+    {
+      "label": "Programmes personnalisés",
+      "value": "Illimités",
+      "icon": "📋"
+    },
+    {
+      "label": "Temps de configuration",
+      "value": "< 2 min",
+      "icon": "⚡"
+    },
+    {
+      "label": "Gratuit",
+      "value": "100%",
+      "icon": "🎁"
+    }
+  ],
+  "values": [
+    {
+      "title": "Simplicité avant tout",
+      "description": "Interface épurée et intuitive : choisis tes exercices, ajuste tes paramètres et lance ta séance en quelques clics. Pas de blabla, que de l'action.",
+      "icon": "🎯"
+    },
+    {
+      "title": "Progression visible",
+      "description": "Suivi en temps réel de tes performances : charge levée, reps, temps de cardio. Vois concrètement tes progrès semaine après semaine.",
+      "icon": "📈"
+    },
+    {
+      "title": "100% personnalisable",
+      "description": "Ton programme, tes règles. Muscle ciblé, équipement dispo, objectif du jour : l'app s'adapte à toi, pas l'inverse.",
+      "icon": "⚙️"
+    }
+  ]
+}
