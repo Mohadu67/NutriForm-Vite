@@ -6,7 +6,7 @@ if (fs.existsSync('.env.local')) {
 }
 const cookieParser = require('cookie-parser');
 const config = require('./config');
-const { frontUrl } = config;
+const { allowedOrigins } = config;
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -39,7 +39,7 @@ mongoose
   });
 
 app.use(cors({
-  origin: frontUrl,
+  origin: allowedOrigins,
   credentials: true,
 }));
 app.use(express.json());
