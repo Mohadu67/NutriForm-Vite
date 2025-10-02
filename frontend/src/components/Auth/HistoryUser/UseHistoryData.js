@@ -17,6 +17,7 @@ export default function useHistoryData() {
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const token = getToken();
@@ -39,6 +40,7 @@ export default function useHistoryData() {
           data?.displayName ||
           (data?.email ? data.email.split("@")[0] : "");
         setDisplayName(name || "Utilisateur");
+        setUser(data);
       })
       .catch(() => {});
 
@@ -93,7 +95,7 @@ export default function useHistoryData() {
         setStatus("error");
       });
 
-    fetch(`${API_URL}/api/sessions`, {
+    fetch(`${API_URL}/api/workouts/sessions`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -156,5 +158,5 @@ export default function useHistoryData() {
     }
   };
 
-  return { records, sessions, status, error, displayName, setRecords, handleDelete };
+  return { records, sessions, status, error, displayName, user, setRecords, handleDelete };
 }

@@ -7,6 +7,7 @@ import WeightChart from "./HistoryCharts/WeightChart.jsx";
 import SessionChart from "./HistoryCharts/SessionChart.jsx";
 import useHistoryData from "./UseHistoryData.js";
 import SuivieSeance from "../../Exercice/TableauBord/SuivieSeance.jsx";
+import ProfilePhoto from "./ProfilePhoto/ProfilePhoto.jsx";
 
 const API_BASE = (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
@@ -26,7 +27,7 @@ export default function HistoryUser({ onClose, onLogout }) {
     }
     return null;
   };
-  const { records, sessions, status, error, displayName, setRecords, handleDelete } = useHistoryData();
+  const { records, sessions, status, error, displayName, user, setRecords, handleDelete } = useHistoryData();
 
   const [wsSessions, setWsSessions] = useState(null);
   const [wsPoints, setWsPoints] = useState(null);
@@ -34,7 +35,7 @@ export default function HistoryUser({ onClose, onLogout }) {
     let alive = true;
     (async () => {
       try {
-        const url = API_BASE ? `${API_BASE}/api/sessions` : '/api/sessions';
+        const url = API_BASE ? `${API_BASE}/api/workouts/sessions` : '/api/workouts/sessions';
         const res = await fetch(url, { credentials: 'include' });
         if (!res.ok) return;
         const json = await res.json();
@@ -182,6 +183,8 @@ export default function HistoryUser({ onClose, onLogout }) {
       {records.length === 0 && status === "idle" && (
         <p>Aucune donnée pour l'instant. Enregistre un IMC, des calories ou une séance pour voir les courbes.</p>
       )}
+
+      <ProfilePhoto user={user} />
 
       <div className={style.historyGrid}>
         <WeightChart points={weightPoints} />

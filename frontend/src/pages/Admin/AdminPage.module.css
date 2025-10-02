@@ -1,0 +1,389 @@
+/* Container */
+.container {
+  min-height: 100vh;
+  background: var(--paper, #ffffff);
+  padding: 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .container {
+    background: #0c0e12;
+  }
+}
+
+/* Header */
+.header {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.title {
+  font-family: 'Merriweather', serif;
+  font-size: clamp(28px, 5vw, 38px);
+  font-weight: 800;
+  color: var(--ink, #222);
+  margin: 0;
+  background: linear-gradient(135deg, #222325, #6b7280);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@media (prefers-color-scheme: dark) {
+  .title {
+    background: linear-gradient(135deg, #e9ecf1, #a6b0bf);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.backButton {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.backButton:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+@media (prefers-color-scheme: dark) {
+  .backButton {
+    background: #2a2d34;
+    color: #a6b0bf;
+  }
+
+  .backButton:hover {
+    background: #3a3d44;
+    color: #e9ecf1;
+  }
+}
+
+/* Message */
+.message {
+  max-width: 1200px;
+  margin: 0 auto 20px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.message.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 2px solid #10b981;
+}
+
+.message.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 2px solid #ef4444;
+}
+
+@media (prefers-color-scheme: dark) {
+  .message.success {
+    background: #064e3b;
+    color: #d1fae5;
+  }
+
+  .message.error {
+    background: #7f1d1d;
+    color: #fee2e2;
+  }
+}
+
+/* Tabs */
+.tabs {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.tabActive {
+  background: linear-gradient(135deg, #FFB385, #f49b69);
+  color: #fff;
+}
+
+.tabActive:hover {
+  background: linear-gradient(135deg, #f49b69, #FFB385);
+}
+
+@media (prefers-color-scheme: dark) {
+  .tab {
+    background: #2a2d34;
+    color: #a6b0bf;
+  }
+
+  .tab:hover {
+    background: #3a3d44;
+    color: #e9ecf1;
+  }
+}
+
+/* Content */
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sectionTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink, #222);
+  margin: 0 0 24px 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sectionTitle {
+    color: #e9ecf1;
+  }
+}
+
+.loading,
+.noData {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted, #6b7280);
+  font-size: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .loading,
+  .noData {
+    color: #a6b0bf;
+  }
+}
+
+/* Reviews List */
+.reviewsList {
+  display: grid;
+  gap: 20px;
+}
+
+.reviewCard {
+  background: var(--paper, #ffffff);
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.reviewCard:hover {
+  border-color: #FFB385;
+  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  .reviewCard {
+    background: #12151b;
+    border-color: #2d3139;
+  }
+
+  .reviewCard:hover {
+    box-shadow: 0 4px 12px rgba(255, 179, 133, 0.15);
+  }
+}
+
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.reviewName {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink, #222);
+  margin: 0 0 4px 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .reviewName {
+    color: #e9ecf1;
+  }
+}
+
+.reviewDate {
+  font-size: 13px;
+  color: var(--muted, #6b7280);
+  margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .reviewDate {
+    color: #a6b0bf;
+  }
+}
+
+.reviewRating {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.reviewComment {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--muted, #6b7280);
+  margin: 0 0 16px 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .reviewComment {
+    color: #a6b0bf;
+  }
+}
+
+.reviewStatus {
+  margin-bottom: 16px;
+}
+
+.statusApproved {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.statusPending {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+@media (prefers-color-scheme: dark) {
+  .statusApproved {
+    background: #064e3b;
+    color: #d1fae5;
+  }
+
+  .statusPending {
+    background: #78350f;
+    color: #fef3c7;
+  }
+}
+
+.reviewActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.approveButton,
+.deleteButton {
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.approveButton {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.approveButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.deleteButton {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.deleteButton:hover {
+  background: #fecaca;
+  color: #7f1d1d;
+}
+
+@media (prefers-color-scheme: dark) {
+  .deleteButton {
+    background: #7f1d1d;
+    color: #fee2e2;
+  }
+
+  .deleteButton:hover {
+    background: #991b1b;
+    color: #fecaca;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .backButton {
+    width: 100%;
+  }
+
+  .tabs {
+    flex-direction: column;
+  }
+
+  .tab {
+    width: 100%;
+  }
+
+  .reviewCard {
+    padding: 20px;
+  }
+
+  .reviewHeader {
+    flex-direction: column;
+  }
+}

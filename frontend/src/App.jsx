@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound/NotFound.jsx";
 import ExoPage from "./pages/Exo/Exo.jsx";
 import PageOutils from "./pages/OutilsCalcul/PageOutils.jsx";
 import NewsletterAdmin from "./pages/Admin/NewsletterAdmin.jsx";
+import AdminPage from "./pages/Admin/AdminPage.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 
@@ -36,7 +37,9 @@ export default function App() {
       <Route path="/mentions-legales" element={<MentionsLegales />} />
       <Route path="/exo" element={<ExoPage />} />
       <Route path="/outils" element={<PageOutils />} />
-      <Route path="/admin/newsletter" element={<NewsletterAdmin />} />
+      <Route path="/admin" element={<AdminPage />} />
+      <Route path="/admin/newsletter/new" element={<NewsletterAdmin />} />
+      <Route path="/admin/newsletter/:id" element={<NewsletterAdmin />} />
       <Route path="*" element={<NotFound />} />
       </Routes>
     </ErrorBoundary>
