@@ -12,6 +12,7 @@ import PrivacyPolicy from "./pages/RGPD/PrivacyPolicy.jsx";
 import NotFound from "./pages/NotFound/NotFound.jsx";
 import ExoPage from "./pages/Exo/Exo.jsx";
 import PageOutils from "./pages/OutilsCalcul/PageOutils.jsx";
+import NewsletterAdmin from "./pages/Admin/NewsletterAdmin.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 
@@ -35,6 +36,7 @@ export default function App() {
       <Route path="/mentions-legales" element={<MentionsLegales />} />
       <Route path="/exo" element={<ExoPage />} />
       <Route path="/outils" element={<PageOutils />} />
+      <Route path="/admin/newsletter" element={<NewsletterAdmin />} />
       <Route path="*" element={<NotFound />} />
       </Routes>
     </ErrorBoundary>

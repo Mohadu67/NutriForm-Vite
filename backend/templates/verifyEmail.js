@@ -21,23 +21,70 @@ ${safeVerifyUrl}
 
 Si tu n'es pas à l'origine de cette demande, ignore ce message.`;
   const html = `
-  <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;color:#111;">
-    <div style="max-width:560px;margin:0 auto;padding:24px;">
-      <div style="text-align:center;margin-bottom:24px;">
-        <img src="${brand.logo}" alt="Harmonith" style="height:50px;margin-bottom:12px;display:block;margin-left:auto;margin-right:auto;" />
-        <h1 style="font-size:28px;margin:0;color:#111;font-weight:700;">Harmonith</h1>
-        <p style="font-size:14px;margin:4px 0 0;color:#666;font-weight:400;">Ton coach encore plus proche</p>
-      </div>
-      <h2 style="font-size:20px;margin:0 0 12px;">Bienvenue 👋</h2>
-      <p>Salut <strong>${toName}</strong>, confirme ton adresse pour activer ton compte.</p>
-      <p style="margin:20px 0;">
-        <a href="${safeVerifyUrl}" style="display:inline-block;background:#111;color:#fff;text-decoration:none;padding:12px 16px;border-radius:8px;">Confirmer mon email</a>
-      </p>
-      <p style="font-size:12px;color:#666">Si le bouton ne fonctionne pas, copie ce lien :</p>
-      <p style="font-size:12px;color:#666;word-break:break-all;">${safeVerifyUrl}</p>
-      <hr style="border:none;border-top:1px solid #eee;margin:24px 0"/>
-      <p style="font-size:12px;color:#666">Tu n’es pas à l’origine de cette action ? Ignore ce message.</p>
-    </div>
-  </div>`;
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" style="width: 600px; max-width: 100%; border-collapse: collapse; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.1);">
+
+          <!-- Header avec gradient -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #F7B186 0%, #f49b69 100%); padding: 40px 32px; text-align: center;">
+              <h1 style="margin: 0; color: white; font-size: 28px; font-weight: 800; font-family: 'Merriweather', serif;">
+                Harmonith
+              </h1>
+              <p style="margin: 8px 0 0; color: rgba(255,255,255,0.95); font-size: 14px;">
+                Ton coach encore plus proche
+              </p>
+            </td>
+          </tr>
+
+          <!-- Contenu principal -->
+          <tr>
+            <td style="padding: 40px 32px; color: #333; line-height: 1.7; font-size: 15px;">
+              <h2 style="font-size: 22px; margin: 0 0 16px; color: #222325; font-weight: 700;">Bienvenue 👋</h2>
+              <p style="margin: 0 0 20px;">Salut <strong>${toName}</strong>,</p>
+              <p style="margin: 0 0 24px;">Merci de t'être inscrit ! Pour activer ton compte et commencer ton parcours fitness, confirme ton adresse email.</p>
+
+              <table role="presentation" style="margin: 32px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="${safeVerifyUrl}" style="display: inline-block; background: linear-gradient(135deg, #F7B186, #f49b69); color: white; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);">
+                      ✅ Confirmer mon email
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="font-size: 13px; color: #777; margin: 24px 0 8px;">Si le bouton ne fonctionne pas, copie-colle ce lien :</p>
+              <p style="font-size: 12px; color: #999; word-break: break-all; background: #f8f8f8; padding: 12px; border-radius: 8px; border: 1px solid #e0e0e0;">${safeVerifyUrl}</p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: #f8f8f8; padding: 32px; text-align: center; border-top: 1px solid #e0e0e0;">
+              <p style="margin: 0 0 8px; color: #666; font-size: 13px;">
+                🔒 Ce lien est personnel et sécurisé
+              </p>
+              <p style="margin: 0; font-size: 12px; color: #999;">
+                Tu n'es pas à l'origine de cette inscription ? Ignore ce message.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
   return { subject, text, html };
 };

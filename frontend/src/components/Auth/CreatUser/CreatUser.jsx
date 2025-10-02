@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import MobiLogo from "../../../assets/img/logo/domaine-logo.svg";
 import cstyle from "./CreatUser.module.css";
@@ -8,6 +9,7 @@ const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const EMAIL_REGEX = /[^\s@]+@[^\s@]+\.[^\s@]+/;
 
 export default function CreatUser({ onCreated, toLogin, onClose }) {
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -72,6 +74,12 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+
+    if (!executeRecaptcha) {
+      setErrorMsg("reCAPTCHA non chargé. Réessaye.");
+      return;
+    }
+
     try {
       setStatus("sending");
       setErrorMsg("");
@@ -80,10 +88,13 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
         throw new Error("Configuration API manquante (VITE_API_URL)");
       }
 
+      // Obtenir le token reCAPTCHA
+      const captchaToken = await executeRecaptcha('register');
+
       const res = await fetch(`${API_URL}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailNorm, motdepasse: password, pseudo: pseudo.trim() })
+        body: JSON.stringify({ email: emailNorm, motdepasse: password, pseudo: pseudo.trim(), captchaToken })
       });
 
       let data = {};
@@ -97,10 +108,11 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
       // Si l'utilisateur a coché la newsletter, on l'inscrit
       if (newsletter) {
         try {
+          const newsletterCaptchaToken = await executeRecaptcha('newsletter_subscribe');
           await fetch(`${API_URL}/api/newsletter/subscribe`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: emailNorm })
+            body: JSON.stringify({ email: emailNorm, captchaToken: newsletterCaptchaToken })
           });
           // Silently fail - l'inscription au compte est plus importante
         } catch (newsletterErr) {
