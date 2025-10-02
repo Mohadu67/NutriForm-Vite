@@ -148,6 +148,12 @@ function BodyPicker({ value, onChange, multiple = false }) {
         zoneId = "pectoraux";
       }
       else if (
+        low.includes("shoulder") || low.includes("epaule") || low.includes("épaule") ||
+        low.includes("deltoid") || low.includes("delto") || lowNorm.includes("epaules")
+      ) {
+        zoneId = "epaules";
+      }
+      else if (
         low.includes("oblique") || low.includes("side abs") || lowNorm.includes("obliques")
       ) {
         zoneId = "abdos-lateraux";

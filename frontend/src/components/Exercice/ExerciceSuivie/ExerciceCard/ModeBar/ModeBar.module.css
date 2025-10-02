@@ -1,10 +1,152 @@
-/* Mobile‑first mode selector — uses global tokens from :root */
+/* Modern mode selector with visual buttons */
 
-.modeBar {
+.modernModeBar {
+  margin-bottom: 16px;
+}
+
+.modeGrid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  margin-bottom: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.modeButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 10px;
+  border: 2px solid var(--line-strong);
+  border-radius: 14px;
+  background: color-mix(in oklab, var(--paper) 96%, transparent);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all .2s cubic-bezier(.4, 0, .2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.modeButton::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+
+.modeButton:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--accent) 35%, var(--line-strong));
+  box-shadow: 0 8px 20px rgba(0,0,0,.1);
+}
+
+.modeButton:active {
+  transform: translateY(0);
+}
+
+.modeButtonActive {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: white;
+  box-shadow: 0 8px 24px color-mix(in oklab, var(--accent) 40%, transparent);
+}
+
+.modeButtonActive::before {
+  opacity: 1;
+}
+
+.modeIcon {
+  font-size: 28px;
+  position: relative;
+  z-index: 1;
+  transition: transform .2s ease;
+}
+
+.modeButton:hover .modeIcon {
+  transform: scale(1.1);
+}
+
+.modeButtonActive .modeIcon {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+}
+
+.modeLabel {
+  font-weight: 700;
+  font-size: 14px;
+  position: relative;
+  z-index: 1;
+  letter-spacing: 0.3px;
+}
+
+.modeDescription {
+  font-size: 11px;
+  opacity: 0.8;
+  position: relative;
+  z-index: 1;
+  font-weight: 500;
+}
+
+.modeButtonActive .modeDescription {
+  opacity: 0.95;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .modeGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .modeButton {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .modeIcon {
+    font-size: 24px;
+  }
+
+  .modeLabel {
+    flex: 1;
+    text-align: left;
+  }
+
+  .modeDescription {
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 640px) {
+  .modeGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .modeButton {
+    padding: 12px 8px;
+  }
+
+  .modeIcon {
+    font-size: 24px;
+  }
+
+  .modeLabel {
+    font-size: 13px;
+  }
+
+  .modeDescription {
+    font-size: 10px;
+  }
+}
+
+/* Old styles kept for backwards compatibility */
+.modeBar {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
 }
 
 .selectControl {
@@ -47,9 +189,8 @@
   background: color-mix(in oklab, var(--paper) 90%, transparent);
 }
 
-/* Slightly denser layout on wider screens */
 @media (min-width: 560px) {
-  .modeBar { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .modeBar { grid-template-columns: repeat(3, 1fr);; gap: 12px; }
 }
 
 @media (min-width: 900px) {

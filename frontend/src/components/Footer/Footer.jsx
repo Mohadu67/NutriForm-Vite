@@ -5,6 +5,8 @@ import Logo from "../Logo/Logo";
 import NavLinks from "../Navbar/Navlinks.jsx";
 import PopupUser from "../Auth/PopupUser.jsx";
 import SocialLinks from "../SocialLinks/SocialLinks";
+import Newsletter from "../Newsletter/Newsletter.jsx";
+import AboutUs from "./AboutUs/AboutUs.jsx";
 import styles from "./Footer.module.css";
 
 const CORE_LINKS = [
@@ -73,6 +75,9 @@ export default function Footer() {
 
   return (
     <>
+      <Newsletter />
+      <AboutUs />
+
       <footer className={styles.footer}>
         <div className={styles.inner}>
           <div className={styles.brand}>
