@@ -7,6 +7,11 @@ function bool(v, def = false) {
 const rawFrontUrl = process.env.FRONTEND_BASE_URL || "http://localhost:5173";
 const frontUrl = rawFrontUrl.endsWith("/") ? rawFrontUrl.slice(0, -1) : rawFrontUrl;
 
+// Configuration des origines autorisées pour CORS
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+  : [frontUrl];
+
 module.exports = {
   env: process.env.NODE_ENV || "development",
   isProd: process.env.NODE_ENV === "production",
@@ -14,6 +19,7 @@ module.exports = {
   mongoUri: process.env.MONGODB_URI || "mongodb://localhost:27017/nutriform",
   jwtSecret: process.env.JWT_SECRET || "secret",
   frontUrl,
+  allowedOrigins,
   smtp: {
     host: process.env.SMTP_HOST || "smtp.gmail.com",
     port: Number(process.env.SMTP_PORT || 465),
