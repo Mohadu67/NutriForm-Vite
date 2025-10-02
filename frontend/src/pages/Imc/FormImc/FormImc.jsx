@@ -18,11 +18,40 @@ function calculerIMC(poids, taille) {
   const imcValue = poids / ((taille / 100) ** 2);
   const imc = Math.round(imcValue * 10) / 10;
   let categorie = "";
-  if (imc < 18.5) categorie = "maigreur";
-  else if (imc < 25) categorie = "normal";
-  else if (imc < 30) categorie = "surpoids";
-  else categorie = "obésité";
-  return { imc, categorie };
+  let description = "";
+  let conseil = "";
+
+  if (imc < 16.5) {
+    categorie = "dénutrition";
+    description = "Dénutrition sévère";
+    conseil = "Consultez rapidement un professionnel de santé.";
+  } else if (imc < 18.5) {
+    categorie = "maigreur";
+    description = "Insuffisance pondérale";
+    conseil = "Un suivi médical est recommandé pour évaluer votre santé.";
+  } else if (imc < 25) {
+    categorie = "normal";
+    description = "Corpulence normale";
+    conseil = "Maintenez vos bonnes habitudes alimentaires et votre activité physique.";
+  } else if (imc < 30) {
+    categorie = "surpoids";
+    description = "Surpoids";
+    conseil = "Adoptez une alimentation équilibrée et augmentez votre activité physique.";
+  } else if (imc < 35) {
+    categorie = "obésité";
+    description = "Obésité modérée";
+    conseil = "Consultez un professionnel de santé pour un accompagnement personnalisé.";
+  } else if (imc < 40) {
+    categorie = "obésité";
+    description = "Obésité sévère";
+    conseil = "Un suivi médical est fortement recommandé.";
+  } else {
+    categorie = "obésité";
+    description = "Obésité massive";
+    conseil = "Consultez rapidement un professionnel de santé.";
+  }
+
+  return { imc, categorie, description, conseil };
 }
 
 export default function FormImc({ onCalculate }) {
@@ -49,8 +78,8 @@ export default function FormImc({ onCalculate }) {
     const userId = localStorage.getItem("userId");
     setShowReminder(!userId);
 
-    const { imc, categorie } = calculerIMC(p, t);
-    onCalculate?.(imc, categorie);
+    const { imc, categorie, description, conseil } = calculerIMC(p, t);
+    onCalculate?.(imc, categorie, description, conseil);
 
     try {
       const token =

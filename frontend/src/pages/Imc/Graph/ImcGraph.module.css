@@ -28,13 +28,14 @@
 
 .imcCard {
   --imc-pos: 50%;
-  background: var(--paper);
+  background: linear-gradient(135deg, var(--paper) 0%, color-mix(in oklab, var(--paper) 96%, var(--accent)) 100%);
   color: var(--ink);
   border: 1px solid var(--line);
   border-radius: 20px;
-  padding: 22px 18px;
+  padding: 24px 20px;
   box-shadow: var(--shadow-md);
   width: 100%;
+  max-width: 700px;
   margin: 56px auto;
 }
 
@@ -132,15 +133,14 @@
 
 .badge {
   text-align: center;
-  padding: 6px 8px;
+  padding: 8px 10px;
   border-radius: 999px;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: .2px;
   color: var(--ink);
-  background: color-mix(in oklab, var(--paper) 86%, transparent);
+  background: color-mix(in oklab, var(--paper) 90%, transparent);
   border: 1px solid var(--line);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 1px 3px rgba(0,0,0,.08);
 }
 
 .badge:nth-child(1),
@@ -187,12 +187,38 @@
   .badge[data-state="active"] { transition: none !important; animation: none !important; }
 }
 
+.descriptionBox {
+  margin-top: 20px;
+  padding: 16px;
+  background: color-mix(in oklab, var(--paper) 96%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.descriptionTitle {
+  font-family: var(--font-titre);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--cat-color);
+  margin: 0 0 8px 0;
+}
+
+.conseil {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0;
+}
+
 @media (max-width: 520px) {
   .imcCard { padding: 16px; border-radius: 16px; margin: 28px 12px; }
   .track { height: 12px; }
   .track::after { height: 36px; width: 6px; }
   .ticks { top: -12px; font-size: 10px; }
   .value { font-size: 18px; }
+  .descriptionTitle { font-size: 16px; }
+  .conseil { font-size: 13px; }
 }
 .trackHighlight {
   position: absolute;

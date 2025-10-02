@@ -5,6 +5,7 @@ import styles from "./ImcGraph.module.css";
 
 const palette = {
   maigreur: "#4aa8ff",
+  "dénutrition": "#1e88e5",
   normal: "#2ecc71",
   surpoids: "#ffae42",
   obesite: "#ff5252",
@@ -17,7 +18,7 @@ const getCategory = (val) => {
   return "obesite";
 };
 
-export default function ImcGraph({ imc, visible = true, scrollOnShow = false }) {
+export default function ImcGraph({ imc, description, conseil, visible = true, scrollOnShow = false }) {
   const min = 15, max = 40;
   const toNumber = (x) => (x === null || x === undefined || x === "") ? min : Number(x);
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
@@ -67,6 +68,13 @@ export default function ImcGraph({ imc, visible = true, scrollOnShow = false }) 
         <div className={styles.badge} data-key="surpoids" data-state={cat==="surpoids"?"active":"idle"}>Surpoids</div>
         <div className={styles.badge} data-key="obesite" data-state={cat==="obesite"?"active":"idle"}>Obésité</div>
       </div>
+
+      {description && (
+        <div className={styles.descriptionBox}>
+          <h3 className={styles.descriptionTitle}>{description}</h3>
+          {conseil && <p className={styles.conseil}>{conseil}</p>}
+        </div>
+      )}
     </div>
   );
 }
