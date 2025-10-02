@@ -19,6 +19,8 @@ const historyRoutes = require('./routes/history.route.js');
 const workoutSessionRoutes = require('./routes/workoutSession.route.js');
 const newsletterRoutes = require('./routes/newsletter.route.js');
 const newsletterAdminRoutes = require('./routes/newsletter-admin.route.js');
+const reviewsRoutes = require('./routes/reviews.js');
+const uploadRoutes = require('./routes/upload.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 
 const app = express();
@@ -53,9 +55,11 @@ app.use('/api', authRoutes);
 app.use('/api', passwordResetRoutes);
 app.use('/api', contactRoutes);
 app.use('/api/history', historyRoutes);
-app.use('/api', workoutSessionRoutes);
+app.use('/api/workouts', workoutSessionRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/newsletter-admin', newsletterAdminRoutes);
+app.use('/api/reviews', reviewsRoutes);
+app.use('/api/upload', uploadRoutes);
 
 app.get('/', (req, res) => {
   res.send('Bienvenue sur le backend de NutriForm 🚀');

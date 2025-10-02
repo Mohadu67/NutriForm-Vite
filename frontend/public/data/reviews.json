@@ -1,0 +1,31 @@
+{
+  "professionalReviews": [
+    {
+      "id": "1",
+      "name": "Paul",
+      "profession": "Coach sportif",
+      "photo": "/images/imgpro/paul.JPG",
+      "rating": 5,
+      "comment": "J’ai testé Harmonith et je l’utilise désormais en complément de mes séances de coaching. L’application permet à mes clients de suivre leurs entraînements, leur progression et leur nutrition même lorsque je ne suis pas à leurs côtés. Grâce aux suivis d’IMC, aux calculs caloriques, aux propositions d’exercices et aux recettes adaptées, mes utilisateurs restent motivés et autonomes. Harmonith est devenu un vrai outil de continuité pour optimiser leurs résultats et garder le cap entre deux séances. ",
+      "date": "2025-01-15"
+    },
+    {
+      "id": "2",
+      "name": "Mahmut",
+      "profession": "Kinésithérapeute",
+      "photo": "/images/imgpro/moha.jpg",
+      "rating": 5,
+      "comment": "En tant que kinésithérapeute, j’ai testé Harmonith et je le recommande désormais à mes patients. L’application leur permet de mieux suivre leur progression, de rester actifs entre les séances et de bénéficier de conseils adaptés grâce aux suivis d’IMC, au calcul des calories, ainsi qu’aux exercices et recettes proposés. C’est un excellent complément pour favoriser une rééducation durable et encourager l’autonomie.",
+      "date": "2025-01-10"
+    },
+    {
+      "id": "3",
+      "name": "Daniella",
+      "profession": "Diététicienne",
+      "photo": "/images/imgpro/dani.jpeg",
+      "rating": 5,
+      "comment": " Après avoir testé Harmonith en profondeur, je peux dire que cette application se distingue réellement des autres outils de suivi. Elle combine de façon claire et intuitive le suivi des entraînements, le calcul des calories et de l’IMC, tout en proposant des exercices adaptés et des recettes équilibrées. C’est un vrai gain de temps pour accompagner mes clients dans leur progression, car toutes les informations essentielles sont centralisées au même endroit. Je recommande vivement Harmonith à toute personne souhaitant optimiser son suivi santé et atteindre ses objectifs de manière durable. ",
+      "date": "2025-01-05"
+    }
+  ]
+}

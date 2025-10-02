@@ -46,6 +46,10 @@ const userSchema = new mongoose.Schema(
       unique: true,
       sparse: true
     },
+    photo: {
+      type: String,
+      default: null
+    },
     imc: [imcSchema],
     calories: [caloriesSchema],
     role: {
