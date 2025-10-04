@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import * as assets from "./figureAssets";
 import cls from "./BodyPicker.module.css";
 import bodySvgMarkup from "./body.svg?raw";
@@ -20,19 +21,18 @@ const EXTRA_LABELS = Object.freeze({
   BACK_LOWER: "Bas du dos",
 });
 
-const INSTRUCTIONS = Object.freeze({
-  multi: "Sélectionne une ou plusieurs zones musculaires pour filtrer la recherche.",
-  single: "Sélectionne une zone musculaire principale.",
-});
-
 function BodyPicker({ value, onChange, multiple = false }) {
-  const zoneIdToLabel = useMemo(
-    () => new Map([...
-      Object.entries(FRONT_ZONE_LABELS || {}),
-      ...Object.entries(EXTRA_LABELS),
-    ]),
-    []
-  );
+  const { t } = useTranslation();
+  const zoneIdToLabel = useMemo(() => {
+    const map = new Map();
+    Object.entries(FRONT_ZONE_LABELS || {}).forEach(([id, fallback]) => {
+      map.set(id, t(`exercise.bodyPicker.zones.${id}`, { defaultValue: fallback }));
+    });
+    Object.entries(EXTRA_LABELS).forEach(([id, fallback]) => {
+      map.set(id, t(`exercise.bodyPicker.zones.${id}`, { defaultValue: fallback }));
+    });
+    return map;
+  }, [t]);
 
   const VALID_IDS = useMemo(() => {
     const base = new Set((FRONT_ZONE_METADATA || []).map((z) => z.id));
@@ -268,14 +268,20 @@ function BodyPicker({ value, onChange, multiple = false }) {
     syncActive();
   }, [syncActive]);
 
-  const instructions = multiple ? INSTRUCTIONS.multi : INSTRUCTIONS.single;
+  const instructions = multiple
+    ? t("exercise.bodyPicker.instructions.multi")
+    : t("exercise.bodyPicker.instructions.single");
 
 
   return (
-    <div className={cls.wrapper}>
+    <div className={`${cls.wrapper} ${cls.bodyPickerWrapper}`}>
       <div className={cls.figures}>
         <div className={`${cls.figure} ${cls.figureInteractive}`}>
-          <div ref={containerRef} className={cls.svg} aria-label="Sélecteur de zones musculaires" />
+          <div
+            ref={containerRef}
+            className={cls.svg}
+            aria-label={t("exercise.bodyPicker.aria")}
+          />
         </div>
       </div>
       <p className={cls.legend}>{instructions}</p>

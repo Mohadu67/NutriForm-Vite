@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 
 import Logo from "../Logo/Logo";
 import NavLinks from "../Navbar/Navlinks.jsx";
@@ -11,13 +12,8 @@ import UserReviews from "../UserReviews/UserReviews.jsx";
 import AboutUs from "./AboutUs/AboutUs.jsx";
 import styles from "./Footer.module.css";
 
-const CORE_LINKS = [
-  { label: "Outils", path: "/outils", special: true },
-  { label: "S'entrainer", path: "/exo", special: true },
-  { label: "Contact", path: "/contact" },
-];
-
 export default function Footer() {
+  const { t } = useTranslation();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState("login");
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -27,6 +23,12 @@ export default function Footer() {
     return !!localStorage.getItem("token");
   });
   const location = useLocation();
+
+  const CORE_LINKS = [
+    { label: t('nav.tools'), path: "/outils", special: true },
+    { label: t('nav.exercises'), path: "/exo", special: true },
+    { label: t('nav.contact'), path: "/contact" },
+  ];
 
   useEffect(() => {
     const onStorage = () => setIsLoggedIn(!!localStorage.getItem("token"));
@@ -40,16 +42,16 @@ export default function Footer() {
 
   const links = useMemo(() => {
     const connexion = isLoggedIn
-      ? { label: "Historique", auth: true, onClick: () => { setPopupView("history"); setIsPopupOpen(true); } }
-      : { label: "Connexion", auth: true, onClick: () => { setPopupView("login"); setIsPopupOpen(true); } };
+      ? { label: t('workout.history'), auth: true, onClick: () => { setPopupView("history"); setIsPopupOpen(true); } }
+      : { label: t('nav.login'), auth: true, onClick: () => { setPopupView("login"); setIsPopupOpen(true); } };
 
     if (path === "/") {
       return [...CORE_LINKS, connexion];
     }
 
     const filtered = CORE_LINKS.filter((link) => link.path !== path);
-    return [{ label: "Accueil", path: "/" }, ...filtered, connexion];
-  }, [isLoggedIn, path]);
+    return [{ label: t('nav.home'), path: "/" }, ...filtered, connexion];
+  }, [isLoggedIn, path, CORE_LINKS, t]);
 
   const linkListRef = useRef(null);
   const [linksVisible, setLinksVisible] = useState(false);
@@ -87,12 +89,12 @@ export default function Footer() {
           <div className={styles.brand}>
             <Logo className={styles.logo} />
             <p className={styles.tagline}>
-              Harmonith t'accompagne avec des programmes personnalisés, des outils de suivi et des conseils adaptés à ton rythme.
+              {t('footer.aboutText')}
             </p>
           </div>
 
           <nav className={styles.navigation} aria-label="Navigation pied de page">
-            <h3 className={styles.sectionTitle}>Explorer</h3>
+            <h3 className={styles.sectionTitle}>{t('footer.quickLinks')}</h3>
             <ul
               ref={linkListRef}
               className={`${styles.linkList} ${linksVisible ? styles.linkListVisible : ""}`}
@@ -102,14 +104,14 @@ export default function Footer() {
           </nav>
 
           <div className={styles.socialBlock}>
-            <h3 className={styles.sectionTitle}>Restons connectés</h3>
+            <h3 className={styles.sectionTitle}>{t('footer.followUs')}</h3>
             <SocialLinks className={styles.socialList} />
           </div>
         </div>
 
         <div className={styles.legal}>
           <p>
-            <Link to="/mentions-legales">Mentions légales</Link> · © 2025 Mohammed HAMIANI. Tous droits réservés.
+            <Link to="/mentions-legales">{t('footer.legal')}</Link> · © 2025 Mohammed HAMIANI. {t('footer.rights')}.
           </p>
         </div>
       </footer>

@@ -1,5 +1,7 @@
-:root {
-  color-scheme: light dark;
+:root,
+:global(html.light),
+:global(body.light) {
+  color-scheme: light;
   --paper: #ffffff;
   --ink: #222325;
   --muted: #6b7280;
@@ -12,8 +14,20 @@
   --shadow-md: 0 12px 30px rgba(0,0,0,.14);
 }
 
+:global(html.dark),
+:global(body.dark) {
+  color-scheme: dark;
+  --paper: #12151b;
+  --ink: #e9ecf1;
+  --muted: #a6b0bf;
+  --line: rgba(255,255,255,.10);
+  --line-strong: rgba(255,255,255,.16);
+  --shadow-sm: 0 6px 16px rgba(0,0,0,.45);
+  --shadow-md: 0 12px 30px rgba(0,0,0,.65);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --paper: #12151b;
     --ink: #e9ecf1;
     --muted: #a6b0bf;

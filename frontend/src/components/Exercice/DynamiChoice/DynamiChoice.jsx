@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { mergeById } from "../Shared/selectionUtils";
 import CardChoice, { TYPE_CARDS, EQUIP_CARDS } from "./CardChoice/CardChoice.jsx";
 import { useStepSubtitle, buildFunnyMessage } from "../subtitlePools";
@@ -15,6 +16,7 @@ const MUSCLE_CARDS = [
 ];
 
 export default function DynamiChoice({ onComplete = () => {}, onStepChange, requestedStep, onSearch }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(() => {
     try {
       const v = localStorage.getItem("dynamiStep");
@@ -109,7 +111,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   const allowedEquipIds = useMemo(() => {
     if (!typeId) return EQUIP_CARDS.map((c) => c.id);
-    if (["yoga", "meditation"].includes(typeId)) return ["poids-du-corps"];
+    if (["natation", "meditation"].includes(typeId)) return ["poids-du-corps"];
     if (typeId === "etirement") return ["poids-du-corps"];
     return EQUIP_CARDS.map((c) => c.id);
   }, [typeId]);
@@ -138,6 +140,23 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   useEffect(() => {
     setEquipIds((prev) => prev.filter((id) => allowedEquipIds.includes(id)));
   }, [allowedEquipIds]);
+
+  // Auto-sélection pour natation et méditation
+  useEffect(() => {
+    if (!typeId) return;
+
+    // Natation : auto-sélection équipement + tous les muscles
+    if (typeId === "natation") {
+      setEquipIds(["poids-du-corps"]);
+      setMuscleIds(MUSCLE_CARDS.map(c => c.id));
+    }
+
+    // Méditation : auto-sélection équipement sans muscles
+    if (typeId === "meditation") {
+      setEquipIds(["poids-du-corps"]);
+      setMuscleIds([]);
+    }
+  }, [typeId]);
 
   const handleResultsChange = useCallback((next) => {
     Promise.resolve().then(() => {
@@ -181,7 +200,12 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   function onNext() {
     if (step < 3) {
-      setStep(step + 1);
+      // Si on est à l'étape 0 et que c'est natation ou méditation, sauter directement à l'étape 3
+      if (step === 0 && (typeId === "natation" || typeId === "meditation")) {
+        setStep(3);
+      } else {
+        setStep(step + 1);
+      }
     } else {
       let arr = Array.isArray(selectedExercises) ? selectedExercises : [];
       try {
@@ -194,7 +218,14 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   }
 
   function onPrev() {
-    if (step > 0) setStep(step - 1);
+    if (step > 0) {
+      // Si on est à l'étape 3 et que c'est natation ou méditation, revenir directement à l'étape 0
+      if (step === 3 && (typeId === "natation" || typeId === "meditation")) {
+        setStep(0);
+      } else {
+        setStep(step - 1);
+      }
+    }
   }
 
   function renderCards() {
@@ -244,7 +275,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
       <div className={styles.footer}>
         <button type="button" className={styles.prevBtn} onClick={onPrev} disabled={step === 0}>
-          Précédent
+          {t('exercice.previous')}
         </button>
         <button
           type="button"
@@ -252,7 +283,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
           onClick={onNext}
           disabled={step < 3 ? !canNext : false}
         >
-          {step < 3 ? "Suivant" : "Lets go !"}
+          {step < 3 ? t('exercice.next') : t('exercice.letsgo')}
         </button>
       </div>
     </section>
