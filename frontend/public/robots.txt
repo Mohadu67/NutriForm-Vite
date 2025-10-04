@@ -1,0 +1,17 @@
+# robots.txt pour Harmonith
+User-agent: *
+Allow: /
+Allow: /outils
+Allow: /exo
+Allow: /about
+Allow: /contact
+
+# Bloquer les chemins d'administration si nécessaire
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://incandescent-dolphin-d90e0a.netlify.app/sitemap.xml
+
+# Crawl-delay pour éviter surcharge
+Crawl-delay: 1

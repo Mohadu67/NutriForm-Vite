@@ -7,7 +7,7 @@ export const TYPE_CARDS = [
   { id: "muscu", icon: "🏋️‍♂️", label: "Muscu" },
   { id: "cardio", icon: "🚴", label: "Cardio" },
   { id: "renfo", icon: "💪", label: "Renforcement" },
-  { id: "yoga", icon: "🧘", label: "Yoga" },
+  { id: "natation", icon: "🏊", label: "Natation" },
   { id: "etirement", icon: "🤸", label: "Étirement" },
   { id: "meditation", icon: "🧘‍♂️", label: "Méditation" },
 ];

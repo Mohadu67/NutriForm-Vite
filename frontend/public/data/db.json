@@ -322,7 +322,7 @@
       "id": "exo-008",
       "name": "Natation crawl",
       "type": [
-        "cardio"
+        "natation"
       ],
       "objectives": [
         "endurance"
@@ -337,7 +337,7 @@
         "triceps"
       ],
       "equipment": [
-        "piscine"
+        "poids-du-corps"
       ],
       "images": [
         "images/Exo/NatationCrawl.gif"
@@ -348,7 +348,7 @@
       "id": "exo-009",
       "name": "Natation brasse",
       "type": [
-        "cardio"
+        "natation"
       ],
       "objectives": [
         "endurance"
@@ -362,15 +362,83 @@
         "quadriceps"
       ],
       "equipment": [
-        "piscine"
+        "poids-du-corps"
       ],
       "images": [
         "images/Exo/NatationBrasse.gif"
       ],
-      "explanation": "Effectue une traction ample puis glisse, fais un battement en fouet, garde la tête dans l’axe, rythme régulier, posture détendue. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+      "explanation": "Effectue une traction ample puis glisse, fais un battement en fouet, garde la tête dans l'axe, rythme régulier, posture détendue. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
     },
     {
       "id": "exo-010",
+      "name": "Méditation guidée pleine conscience",
+      "type": [
+        "meditation"
+      ],
+      "objectives": [
+        "bien-être",
+        "relaxation"
+      ],
+      "muscles": [],
+      "equipment": [
+        "poids-du-corps"
+      ],
+      "images": [],
+      "explanation": "Assieds-toi confortablement, ferme les yeux, concentre-toi sur ta respiration. Observe tes pensées sans jugement, reviens doucement à ta respiration. Pratique 5 à 20 minutes par jour. Respiration : inspire profondément par le nez, expire lentement par la bouche. Points clés : reste patient, accepte les distractions, cultive la bienveillance envers toi-même."
+    },
+    {
+      "id": "exo-010b",
+      "name": "Méditation scan corporel",
+      "type": [
+        "meditation"
+      ],
+      "objectives": [
+        "bien-être",
+        "relaxation"
+      ],
+      "muscles": [],
+      "equipment": [
+        "poids-du-corps"
+      ],
+      "images": [],
+      "explanation": "Allonge-toi confortablement, ferme les yeux. Porte ton attention sur chaque partie de ton corps, des pieds à la tête. Observe les sensations sans chercher à les modifier. Détends progressivement chaque zone. Respiration : naturelle et fluide, synchronisée avec ton observation. Points clés : prends ton temps, reste présent, accueille toutes les sensations."
+    },
+    {
+      "id": "exo-010c",
+      "name": "Méditation respiration consciente",
+      "type": [
+        "meditation"
+      ],
+      "objectives": [
+        "bien-être",
+        "gestion-stress"
+      ],
+      "muscles": [],
+      "equipment": [
+        "poids-du-corps"
+      ],
+      "images": [],
+      "explanation": "Assieds-toi confortablement, dos droit. Concentre-toi uniquement sur ta respiration : l'air qui entre, l'air qui sort. Compte tes respirations de 1 à 10, puis recommence. Quand ton esprit s'évade, reviens gentiment au souffle. Respiration : naturelle, profonde, régulière. Points clés : simplicité, constance, douceur."
+    },
+    {
+      "id": "exo-010d",
+      "name": "Méditation marche consciente",
+      "type": [
+        "meditation"
+      ],
+      "objectives": [
+        "bien-être",
+        "mindfulness"
+      ],
+      "muscles": [],
+      "equipment": [
+        "poids-du-corps"
+      ],
+      "images": [],
+      "explanation": "Marche lentement, en pleine conscience. Ressens chaque pas : le contact du pied avec le sol, le transfert de poids, le mouvement des jambes. Synchronise ta respiration avec tes pas. Reste présent à chaque instant. Respiration : inspire sur 2-3 pas, expire sur 2-3 pas. Points clés : lenteur, attention, ancrage dans le moment présent."
+    },
+    {
+      "id": "exo-010e",
       "name": "SkiErg",
       "type": [
         "cardio",
@@ -391,7 +459,7 @@
       "images": [
         "images/Exo/SkiErg.gif"
       ],
-      "explanation": "Tire d’abord avec les dorsaux puis les bras, ferme la hanche, garde un gainage fort, contrôle le retour, respire régulièrement. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+      "explanation": "Tire d'abord avec les dorsaux puis les bras, ferme la hanche, garde un gainage fort, contrôle le retour, respire régulièrement. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
     },
     {
       "id": "exo-011",
