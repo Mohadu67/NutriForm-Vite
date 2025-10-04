@@ -4,6 +4,38 @@
   --nf-peach: #FFB385;
   --nf-ink: #2B2B2B;
   --nf-shadow: 0 20px 50px rgba(0,0,0,.20), 0 4px 14px rgba(0,0,0,.10);
+  --nf-card-bg: rgba(255,255,255,.9);
+  --nf-card-bg-2: rgba(255,255,255,.86);
+  --nf-close-bg: rgba(255,255,255,.7);
+  --nf-close-hover: rgba(255,255,255,.9);
+}
+
+/* Dark mode manuel */
+:global(.dark) {
+  --nf-bg: #0c0e12;
+  --nf-green: #7bc4a8;
+  --nf-peach: #FFB385;
+  --nf-ink: #e9ecf1;
+  --nf-shadow: 0 20px 50px rgba(0,0,0,.60), 0 4px 14px rgba(0,0,0,.40);
+  --nf-card-bg: rgba(18,21,27,.95);
+  --nf-card-bg-2: rgba(18,21,27,.92);
+  --nf-close-bg: rgba(255,255,255,.15);
+  --nf-close-hover: rgba(255,255,255,.25);
+}
+
+/* Dark mode auto */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --nf-bg: #0c0e12;
+    --nf-green: #7bc4a8;
+    --nf-peach: #FFB385;
+    --nf-ink: #e9ecf1;
+    --nf-shadow: 0 20px 50px rgba(0,0,0,.60), 0 4px 14px rgba(0,0,0,.40);
+    --nf-card-bg: rgba(18,21,27,.95);
+    --nf-card-bg-2: rgba(18,21,27,.92);
+    --nf-close-bg: rgba(255,255,255,.15);
+    --nf-close-hover: rgba(255,255,255,.25);
+  }
 }
 
 .popup-overlay {
@@ -36,7 +68,7 @@
   max-width: 600px;
 
   background:
-    linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.86)) padding-box,
+    linear-gradient(180deg, var(--nf-card-bg), var(--nf-card-bg-2)) padding-box,
     linear-gradient(135deg, rgba(181,234,215,.8), rgba(255,179,133,.8)) border-box;
   border: 1.5px solid transparent;
   background-clip: padding-box, border-box;
@@ -60,7 +92,7 @@
   height: 32px;
   border-radius: 50%;
   border: 1px solid rgba(0,0,0,.12);
-  background: rgba(255,255,255,.7);
+  background: var(--nf-close-bg);
   color: var(--nf-ink);
   font-size: 20px;
   display: flex;
@@ -72,7 +104,7 @@
   -webkit-backdrop-filter: blur(4px);
   transition: background-color .12s ease, transform .12s ease;
 }
-.popup-close:hover { background: rgba(255,255,255,.9); transform: rotate(90deg) scale(1.05); }
+.popup-close:hover { background: var(--nf-close-hover); transform: rotate(90deg) scale(1.05); }
 
 .popup-card::before {
   content: "";

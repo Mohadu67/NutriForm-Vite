@@ -279,7 +279,7 @@ export default function SessionChart({ points }) {
                 textAnchor="middle"
                 fontSize="14"
                 fontWeight={isSelected ? "600" : "500"}
-                fill={isSelected ? "#2e86de" : "#6b7280"}
+                fill={isSelected ? "#2e86de" : "var(--ink, #6b7280)"}
                 style={{ transition: "all 0.2s ease" }}
               >
                 {weekdays[i]}
@@ -290,7 +290,7 @@ export default function SessionChart({ points }) {
                   y={height - 12}
                   textAnchor="middle"
                   fontSize="11"
-                  fill="#9ca3af"
+                  fill="var(--muted, #9ca3af)"
                   fontWeight="400"
                 >
                   {safeCount} exo{safeCount > 1 ? 's' : ''}

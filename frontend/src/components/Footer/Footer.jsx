@@ -6,6 +6,8 @@ import NavLinks from "../Navbar/Navlinks.jsx";
 import PopupUser from "../Auth/PopupUser.jsx";
 import SocialLinks from "../SocialLinks/SocialLinks";
 import Newsletter from "../Newsletter/Newsletter.jsx";
+import ReviewsCarousel from "../ReviewsCarousel/ReviewsCarousel.jsx";
+import UserReviews from "../UserReviews/UserReviews.jsx";
 import AboutUs from "./AboutUs/AboutUs.jsx";
 import styles from "./Footer.module.css";
 
@@ -76,6 +78,8 @@ export default function Footer() {
   return (
     <>
       <Newsletter />
+      <ReviewsCarousel />
+      <UserReviews />
       <AboutUs />
 
       <footer className={styles.footer}>

@@ -1,0 +1,87 @@
+.topBar {
+  background: linear-gradient(135deg, #222325, #3a3d40);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.languageSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.langBtn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.langBtn:hover {
+  color: #FFB385;
+  background: rgba(255, 179, 133, 0.1);
+}
+
+.langBtn.active {
+  color: #FFB385;
+  background: rgba(255, 179, 133, 0.15);
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+}
+
+.darkModeBtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px;
+}
+
+.darkModeBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .topBar {
+    padding: 6px 0;
+  }
+
+  .langBtn {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+
+  .darkModeBtn {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+}
