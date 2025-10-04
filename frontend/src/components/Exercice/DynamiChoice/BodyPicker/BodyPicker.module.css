@@ -3,25 +3,27 @@
   --accent-stroke: rgba(255, 130, 40, 0.95);
   --accent-hover-fill: rgba(255, 130, 40, 0.32);
   --accent-hover-stroke: rgba(255, 130, 40, 0.74);
-  --zone-base-fill: rgba(24, 24, 24, 0.18);
-  --zone-base-stroke: rgba(24, 24, 24, 0.48);
-  --badge-bg: rgba(255, 130, 40, 0.10);
-  --badge-bg-hover: rgba(255, 130, 40, 0.18);
+  --zone-base-fill: rgba(52, 72, 94, 0.22);
+  --zone-base-stroke: rgba(38, 48, 68, 0.44);
+  --zone-outline-stroke: rgba(38, 48, 68, 0.35);
+  --badge-bg: rgba(255, 130, 40, 0.12);
+  --badge-bg-hover: rgba(255, 130, 40, 0.20);
   --badge-border: rgba(255, 130, 40, 0.38);
-  --badge-text: #3a3a3a;
+  --badge-text: #2d3646;
 }
 
-.wrapper svg path,
-.wrapper svg polygon,
-.wrapper svg rect,
-.wrapper svg ellipse,
-.wrapper svg circle,
-.wrapper svg g {
-  fill: var(--zone-base-fill) !important;
-  stroke: var(--zone-base-stroke) !important;
-  pointer-events: none;
+:global(.dark) .bodyPickerWrapper {
+  --zone-base-fill: rgba(255, 255, 255, 0.12);
+  --zone-base-stroke: rgba(255, 255, 255, 0.88);
+  --zone-outline-stroke: rgba(255, 255, 255, 0.52);
+  --badge-bg: rgba(255, 130, 40, 0.18);
+  --badge-bg-hover: rgba(255, 130, 40, 0.26);
+  --badge-border: rgba(255, 130, 40, 0.50);
+  --badge-text: #f3f4f6;
 }
-.wrapper { display: grid; gap: 18px; justify-items: center; }
+
+.wrapper { display: grid; gap: 18px; justify-items: center; color: inherit; }
+.bodyPickerWrapper { color: inherit; }
 .figures { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; }
 .figure { flex: 1 1 220px; display: flex; justify-content: center; }
 .figureInteractive { cursor: default; }
@@ -33,6 +35,17 @@
   display: block;
 }
 .svg { width: 100%; max-width: 340px; height: auto; touch-action: manipulation; }
+
+.wrapper svg path,
+.wrapper svg polygon,
+.wrapper svg rect,
+.wrapper svg ellipse,
+.wrapper svg circle,
+.wrapper svg g {
+  fill: var(--zone-base-fill) !important;
+  stroke: var(--zone-base-stroke) !important;
+  pointer-events: none;
+}
 
 .zone,
 .zone * {
@@ -54,7 +67,7 @@
 .zone:active,
 .zone:active * {
   transform: scale(0.99);
-  fill: rgba(24, 24, 24, 0.26) !important;
+  fill: color-mix(in srgb, var(--zone-base-fill) 65%, rgba(30,30,30,0.26) 35%) !important;
 }
 
 .zone.active,
@@ -65,12 +78,11 @@
 }
 .zoneOutline {
   fill: none;
-  stroke: rgba(20, 20, 20, 0.28);
+  stroke: var(--zone-outline-stroke);
   stroke-width: 1.2;
 }
 .zoneOutline { pointer-events: none; }
 .zone { pointer-events: auto; }
-
 
 .legend { color: var(--ink, #1f2933); font-size: 0.9rem; text-align: center; }
 
@@ -88,8 +100,6 @@
   outline: none;
 }
 
-
-
 @media (hover: hover) and (pointer: fine) {
   .selectedBadge:hover {
     background: var(--badge-bg-hover);
@@ -102,31 +112,3 @@
   .zone { transition: none; }
   .zone:hover, .zone:active { transform: none; }
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --zone-base-fill: rgba(255, 255, 255, 0.12);
-    --zone-base-stroke: rgba(255, 255, 255, 0.40);
-
-    --badge-bg: rgba(255, 130, 40, 0.18);
-    --badge-bg-hover: rgba(255, 130, 40, 0.26);
-    --badge-border: rgba(255, 130, 40, 0.50);
-    --badge-text: #f3f4f6;
-  }
-
-  .legend { color: #e5e7eb; }
-
-  .zoneOutline { stroke: rgba(255, 255, 255, 0.28); }
-}
-
-.wrapper[data-theme="dark"] {
-  --zone-base-fill: rgba(255, 255, 255, 0.12);
-  --zone-base-stroke: rgba(255, 255, 255, 0.40);
-  --badge-bg: rgba(255, 130, 40, 0.18);
-  --badge-bg-hover: rgba(255, 130, 40, 0.26);
-  --badge-border: rgba(255, 130, 40, 0.50);
-  --badge-text: #f3f4f6;
-}
-
-.wrapper[data-theme="dark"] .legend { color: #e5e7eb; }
-.wrapper[data-theme="dark"] .zoneOutline { stroke: rgba(255, 255, 255, 0.28); }

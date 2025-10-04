@@ -1,35 +1,14 @@
-:root {
-  color-scheme: light dark;
-  --paper: #ffffff;
-  --ink: #222325;
-  --muted: #6b7280;
-  --line: rgba(0,0,0,.08);
-  --accent: #FFB385;
-  --shadow-sm: 0 6px 16px rgba(0,0,0,0.08);
-  --shadow-md: 0 12px 30px rgba(0,0,0,0.12);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #12151b;
-    --ink: #e9ecf1;
-    --muted: #a6b0bf;
-    --line: rgba(255,255,255,.1);
-    --shadow-sm: 0 6px 16px rgba(0,0,0,0.45);
-    --shadow-md: 0 12px 30px rgba(0,0,0,0.65);
-  }
-}
-
 .form {
   display: grid;
   gap: 1rem;
   width: 95%;
   margin: 120px auto;
   padding: 1.25rem 1rem;
-  background: var(--paper);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
   border: 1px solid var(--line);
   border-radius: 12px;
   box-shadow: var(--shadow-sm);
+  --form-accent: var(--couleur-bouton-action, #FFB385);
 }
 
 .title {
@@ -89,17 +68,17 @@
 
 .BtnRestart {
   border: 1px solid var(--line);
-  background: var(--paper);
+  background: color-mix(in srgb, var(--paper) 92%, var(--muted) 8%);
   color: var(--ink);
 }
-.BtnRestart:hover { background: var(--muted); color: #fff; transform: translateY(-1px); }
+.BtnRestart:hover { background: color-mix(in srgb, var(--paper) 85%, var(--muted) 15%); color: var(--ink); transform: translateY(-1px); }
 
 .BtnReturn {
-  background: var(--accent);
+  background: var(--form-accent);
   border: none;
   color: #fff;
 }
-.BtnReturn:hover { background: color-mix(in oklab, var(--accent) 85%, #e37935); transform: translateY(-1px); }
+.BtnReturn:hover { background: color-mix(in oklab, var(--form-accent) 85%, #e37935); transform: translateY(-1px); }
 
 .history {
   margin: 1rem auto;
@@ -128,7 +107,7 @@
   margin-top: 16px;
   padding: 14px;
   border-radius: 12px;
-  background: color-mix(in oklab, var(--accent) 18%, transparent);
+  background: color-mix(in oklab, var(--form-accent) 18%, transparent);
   box-shadow: var(--shadow-sm);
   text-align: center;
 }
@@ -143,13 +122,13 @@
   display: inline-block;
   padding: 8px 14px;
   border-radius: 8px;
-  background: var(--accent);
+  background: var(--form-accent);
   color: white;
   font-weight: 600;
   text-decoration: none;
   transition: background .2s ease;
 }
-.connectReminderButton:hover { background: color-mix(in oklab, var(--accent) 85%, #e37935); }
+.connectReminderButton:hover { background: color-mix(in oklab, var(--form-accent) 85%, #e37935); }
 
 @media (min-width: 640px) {
   .form { max-width: 640px; padding: 1.5rem; }

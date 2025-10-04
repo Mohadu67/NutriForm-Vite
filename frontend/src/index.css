@@ -34,6 +34,19 @@ button {
   --line: rgba(0,0,0,.08);
   --shadow-sm: 0 4px 12px rgba(0,0,0,.08);
   --shadow-md: 0 12px 30px rgba(0,0,0,.12);
+  --muted: #6b7280;
+}
+
+/* Light mode manuel - force les couleurs claires */
+.light {
+  --couleur-principale: #F7F6F2;
+  --paper: #ffffff;
+  --ink: #222325;
+  --couleur-text-noir: #222325;
+  --line: rgba(0,0,0,.08);
+  --shadow-sm: 0 4px 12px rgba(0,0,0,.08);
+  --shadow-md: 0 12px 30px rgba(0,0,0,.12);
+  --muted: #6b7280;
 }
 
 /* Dark mode manuel avec classe .dark */
@@ -45,6 +58,7 @@ button {
   --line: rgba(255,255,255,.1);
   --shadow-sm: 0 4px 12px rgba(0,0,0,.45);
   --shadow-md: 0 12px 30px rgba(0,0,0,.65);
+  --muted: #a6b0bf;
 }
 
 /* Dark mode automatique */
@@ -57,6 +71,7 @@ button {
     --line: rgba(255,255,255,.1);
     --shadow-sm: 0 4px 12px rgba(0,0,0,.45);
     --shadow-md: 0 12px 30px rgba(0,0,0,.65);
+    --muted: #a6b0bf;
   }
 }
 

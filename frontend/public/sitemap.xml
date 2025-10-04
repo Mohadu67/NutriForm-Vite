@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Page d'accueil -->
+  <url>
+    <loc>https://incandescent-dolphin-d90e0a.netlify.app/</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://incandescent-dolphin-d90e0a.netlify.app/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://incandescent-dolphin-d90e0a.netlify.app/en" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://incandescent-dolphin-d90e0a.netlify.app/de" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://incandescent-dolphin-d90e0a.netlify.app/es" />
+  </url>
+
+  <!-- Page Outils -->
+  <url>
+    <loc>https://incandescent-dolphin-d90e0a.netlify.app/outils</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Page Exercices -->
+  <url>
+    <loc>https://incandescent-dolphin-d90e0a.netlify.app/exo</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Page À propos -->
+  <url>
+    <loc>https://incandescent-dolphin-d90e0a.netlify.app/about</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Page Contact -->
+  <url>
+    <loc>https://incandescent-dolphin-d90e0a.netlify.app/contact</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>

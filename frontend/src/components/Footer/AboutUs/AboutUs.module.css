@@ -14,6 +14,20 @@
   --about-radius: 16px;
 }
 
+/* Light mode manuel - force les couleurs claires */
+:global(.light) {
+  --about-bg: #F7F6F2;
+  --about-paper: #ffffff;
+  --about-ink: #222325;
+  --about-muted: #8a8f98;
+  --about-line: rgba(0,0,0,0.08);
+  --about-accent: #F7B186;
+  --about-accent-2: #f49b69;
+  --about-shadow-sm: 0 4px 12px rgba(0,0,0,.06);
+  --about-shadow-md: 0 8px 24px rgba(0,0,0,.1);
+  --about-shadow-lg: 0 16px 40px rgba(0,0,0,.14);
+}
+
 /* Dark mode manuel */
 :global(.dark) {
   --about-bg: #0c0e12;
