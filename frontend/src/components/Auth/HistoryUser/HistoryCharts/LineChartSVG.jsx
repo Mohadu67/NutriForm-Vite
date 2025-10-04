@@ -39,15 +39,15 @@ export default function LineChartSVG({
         </linearGradient>
       </defs>
 
-      <g stroke="rgba(0,0,0,0.08)" strokeWidth="0.5">
+      <g stroke="var(--line, rgba(0,0,0,0.08))" strokeWidth="0.5">
         {[0, 0.25, 0.5, 0.75, 1].map((p) => {
           const y = 10 + p * (height - 20);
           return <line key={p} x1="0" x2={width} y1={y} y2={y} />;
         })}
       </g>
 
-      <line x1="10" x2={width - 10} y1={height - 10} y2={height - 10} stroke="var(--nf-border)" strokeWidth="1" />
-      <line x1="10" x2="10" y1="10" y2={height - 10} stroke="var(--nf-border)" strokeWidth="1" />
+      <line x1="10" x2={width - 10} y1={height - 10} y2={height - 10} stroke="var(--line, var(--nf-border, rgba(0,0,0,0.08)))" strokeWidth="1" />
+      <line x1="10" x2="10" y1="10" y2={height - 10} stroke="var(--line, var(--nf-border, rgba(0,0,0,0.08)))" strokeWidth="1" />
 
       <path
         d={`M ${points

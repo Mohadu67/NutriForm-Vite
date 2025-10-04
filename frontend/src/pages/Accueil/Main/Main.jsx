@@ -1,20 +1,21 @@
 // src/pages/Accueil/Main/Main.jsx
+import { useTranslation } from "react-i18next";
 import IntroOutils from "./IntrOutils";
 import OutilsCards from "./OutilsCards";
 import styles from "./Main.module.css";
 
 export default function Main() {
+  const { t } = useTranslation();
+
   return (
     <main className={styles.main}>
       <IntroOutils
-        title="Nutrition, bien-être, performance : transforme ton quotidien."
-        text={
-          "Calcule rapidement ton IMC et reçois des conseils personnalisés adaptés à ton profil. Ensuite, explore ton métabolisme grâce à notre calculateur de besoins caloriques pour une vision complète de tes apports énergétiques. Une approche simple et pratique pour progresser vers un meilleur équilibre santé."
-        }
+        title={t('home.mainTitle')}
+        text={t('home.mainSubtitle')}
       />
 
       <IntroOutils
-        title="Calcule, adapte, progresse !"
+        title={t('home.toolsTitle')}
       >
         <OutilsCards />
       </IntroOutils>

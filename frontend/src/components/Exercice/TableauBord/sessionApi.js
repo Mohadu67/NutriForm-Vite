@@ -168,7 +168,7 @@ function saveSession(payload) {
     e.status = 400;
     throw e;
   }
-  return request('/api/sessions', {
+  return request('/api/workouts/sessions', {
     method: 'POST',
     body
   });
@@ -180,22 +180,22 @@ function getSessions({ date, limit, cursor } = {}) {
   if (limit) params.set('limit', String(limit));
   if (cursor) params.set('cursor', String(cursor));
   const qs = params.toString() ? `?${params.toString()}` : '';
-  return request(`/api/sessions${qs}`);
+  return request(`/api/workouts/sessions${qs}`);
 }
 
 function getSessionById(id) {
-  return request(`/api/sessions/${id}`);
+  return request(`/api/workouts/sessions/${id}`);
 }
 
 function updateSession(id, patch) {
-  return request(`/api/sessions/${id}`, {
+  return request(`/api/workouts/sessions/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(patch)
   });
 }
 
 function deleteSession(id) {
-  return request(`/api/sessions/${id}`, { method: 'DELETE' });
+  return request(`/api/workouts/sessions/${id}`, { method: 'DELETE' });
 }
 
 function getDailySummary(from, to) {

@@ -195,6 +195,13 @@ export default function NewsletterAdmin() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
+        <button
+          className={styles.btnBack}
+          onClick={() => navigate('/admin')}
+          title="Retour à l'administration"
+        >
+          ← Retour
+        </button>
         <h1 className={styles.title}>Gestion des Newsletters</h1>
         <button
           className={styles.btnPrimary}

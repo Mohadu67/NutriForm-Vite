@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "tools": "Werkzeuge",
+    "exercises": "Übungen",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "myAccount": "Mein Konto",
+    "logout": "Abmelden"
+  },
+  "hero": {
+    "title": "Verwandle deinen Körper, verwandle dein Leben",
+    "subtitle": "Erreiche deine Fitnessziele mit personalisierten Tools und professionellem Tracking",
+    "cta": "Jetzt starten"
+  },
+  "home": {
+    "mainTitle": "Ernährung, Wohlbefinden, Leistung: Verwandle deinen Alltag.",
+    "mainSubtitle": "Berechne schnell deinen BMI und erhalte personalisierte Ratschläge, die auf dein Profil zugeschnitten sind. Erkunde dann deinen Stoffwechsel mit unserem Kalorienbedarfsrechner für einen vollständigen Überblick über deine Energiezufuhr. Ein einfacher und praktischer Ansatz für ein besseres Gesundheitsgleichgewicht.",
+    "toolsTitle": "Berechnen, anpassen, Fortschritt machen!"
+  },
+  "tools": {
+    "title": "Unsere Werkzeuge",
+    "imc": "BMI-Rechner",
+    "calories": "Kalorienbedarf",
+    "tdee": "Energieverbrauch"
+  },
+  "common": {
+    "loading": "Lädt...",
+    "error": "Fehler",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen"
+  }
+}

@@ -148,6 +148,8 @@ exports.me = async (req, res) => {
       email: user.email,
       prenom: user.prenom,
       pseudo: user.pseudo,
+      photo: user.photo,
+      role: user.role,
       displayName,
     });
   } catch (e) {
