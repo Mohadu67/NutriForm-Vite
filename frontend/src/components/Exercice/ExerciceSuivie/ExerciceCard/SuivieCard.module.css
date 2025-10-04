@@ -1,5 +1,8 @@
-:root {
+:root,
+:global(html.light),
+:global(body.light) {
   /* Light mode tokens */
+  color-scheme: light;
   --bg: #F7F6F2;
   --paper: #ffffff;
   --ink: #222325;
@@ -17,8 +20,25 @@
   --ring: 0 0 0 3px rgba(247, 177, 134, .35);
 }
 
+:global(html.dark),
+:global(body.dark) {
+  color-scheme: dark;
+  --bg: #0c0e12;
+  --paper: #12151b;
+  --ink: #e9ecf1;
+  --muted-ink: #a6b0bf;
+  --line: rgba(255,255,255,0.08);
+  --line-strong: rgba(255,255,255,0.14);
+  --accent: #ffb581;
+  --accent-2: #ff9655;
+  --shadow-sm: 0 6px 16px rgba(0,0,0,.35);
+  --shadow-md: 0 12px 30px rgba(0,0,0,.45);
+  --shadow-xl: 0 28px 60px rgba(0,0,0,.6);
+  --ring: 0 0 0 3px rgba(255, 181, 129, .3);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --bg: #0c0e12;
     --paper: #12151b;
     --ink: #e9ecf1;

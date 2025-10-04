@@ -1,82 +1,270 @@
 {
-  "title": "Qui sommes-nous ?",
-  "subtitle": "Notre mission : Rendre le fitness simple et accessible à tous",
-  "description": "Harmonith est une application pensée pour rendre le fitness simple, fun et accessible. Elle permet de choisir ses exercices, d’ajuster la charge, le nombre de répétitions ou le temps de cardio, et de suivre facilement sa progression.",
-  "team": [
-    {
-      "id": "1",
-      "name": "Moha",
-      "role": "Developpeur de l'app",
-      "bio": "Passionné de code (et adepte du mode flemmard assumé), j’ai imaginé Harmonith pour simplifier le fitness. Mon but : mélanger mon amour du développement avec ma passion pour le sport, pour créer une app qui s’adapte à moi… et à toi.",
-      "photo": "images/teams/moha.jpeg",
-      "socials": {
-        "linkedin": "https://www.linkedin.com/public-profile/settings?trk=d_flagship3_profile_self_view_public_profile",
-        "twitter": "",
-        "instagram": "https://www.instagram.com/berkou_kess?igsh=MW8zenc1MHlqcGl2cw%3D%3D&utm_source=qr"
+  "fr": {
+    "title": "Qui sommes-nous ?",
+    "subtitle": "Notre mission : rendre le fitness simple et accessible à tous",
+    "description": "Harmonith est une application pensée pour rendre le fitness simple, fun et accessible. Elle permet de choisir ses exercices, d’ajuster la charge, le nombre de répétitions ou le temps de cardio, et de suivre facilement sa progression.",
+    "teamTitle": "Notre équipe",
+    "team": [
+      {
+        "id": "1",
+        "name": "Moha",
+        "role": "Développeur de l'app",
+        "bio": "Passionné de code (et adepte du mode flemmard assumé), j’ai imaginé Harmonith pour simplifier le fitness. Mon but : mélanger mon amour du développement avec ma passion pour le sport, pour créer une app qui s’adapte à moi… et à toi.",
+        "photo": "images/teams/moha.jpeg",
+        "socials": {
+          "linkedin": "https://www.linkedin.com/public-profile/settings?trk=d_flagship3_profile_self_view_public_profile",
+          "twitter": "",
+          "instagram": "https://www.instagram.com/berkou_kess?igsh=MW8zenc1MHlqcGl2cw%3D%3D&utm_source=qr"
+        }
+      },
+      {
+        "id": "2",
+        "name": "Nono",
+        "role": "Rédactrice du site",
+        "bio": "Passionnée d’écriture et accro au sport, j’apporte ma touche pour rendre Harmonith clair, motivant et inspirant. Mon but : transformer les infos en textes simples et motivants, pour que chacun trouve la force d’aller plus loin.",
+        "photo": "images/teams/nono.JPG",
+        "socials": {
+          "linkedin": "https://www.linkedin.com/in/nolwenn-le-rohellec-1720a2218",
+          "twitter": "",
+          "instagram": ""
+        }
+      },
+      {
+        "id": "3",
+        "name": "Chems",
+        "role": "Community manager",
+        "bio": "Énergique et créatif, je fais vivre la communauté Harmonith au quotidien. Entre motivation, sport et esprit d’équipe, mon objectif est de créer du lien et d’inspirer chacun à avancer plus loin, ensemble.",
+        "photo": "images/teams/chems.jpg",
+        "socials": {
+          "linkedin": "",
+          "twitter": "",
+          "instagram": ""
+        }
       }
-    },
-    {
-      "id": "2",
-      "name": "Nono",
-      "role": "Redactrice du site",
-      "bio": "Passionnée d’écriture et accro au sport, j’apporte ma touche pour rendre Harmonith clair, motivant et inspirant. Mon but : transformer les infos en textes simples et motivants, pour que chacun trouve la force d’aller plus loin.",
-      "photo": "images/teams/nono.JPG",
-      "socials": {
-        "linkedin": "",
-        "twitter": "",
-        "instagram": "https://www.linkedin.com/in/nolwenn-le-rohellec-1720a2218"
+    ],
+    "stats": [
+      { "label": "Exercices disponibles", "value": "300+", "icon": "💪" },
+      { "label": "Programmes personnalisés", "value": "Illimités", "icon": "📋" },
+      { "label": "Temps de configuration", "value": "< 2 min", "icon": "⚡" },
+      { "label": "Gratuit", "value": "100%", "icon": "🎁" }
+    ],
+    "values": [
+      {
+        "title": "Simplicité avant tout",
+        "description": "Interface épurée et intuitive : choisis tes exercices, ajuste tes paramètres et lance ta séance en quelques clics.",
+        "icon": "🎯"
+      },
+      {
+        "title": "Progression visible",
+        "description": "Suivi en temps réel de tes performances : charge levée, reps, temps de cardio. Vois concrètement tes progrès semaine après semaine.",
+        "icon": "📈"
+      },
+      {
+        "title": "100% personnalisable",
+        "description": "Ton programme, tes règles. Muscle ciblé, équipement dispo, objectif du jour : l'app s'adapte à toi, pas l'inverse.",
+        "icon": "⚙️"
       }
-    },
-    {
-      "id": "3",
-      "name": "Chems",
-      "role": "Community Manager",
-      "bio": "Énergique et créatif, je fais vivre la communauté Harmonith au quotidien. Entre motivation, sport et esprit d’équipe, mon objectif est de créer du lien et d’inspirer chacun à avancer plus loin, ensemble.",
-      "photo": "images/teams/chems.jpg",
-      "socials": {
-        "linkedin": "",
-        "twitter": "",
-        "instagram": ""
+    ]
+  },
+  "en": {
+    "title": "Who are we?",
+    "subtitle": "Our mission: make fitness simple and accessible for everyone",
+    "description": "Harmonith was built to make fitness simple, fun, and accessible. Choose your exercises, tweak the load, reps, or cardio time, and track your progress with ease.",
+    "teamTitle": "Our team",
+    "team": [
+      {
+        "id": "1",
+        "name": "Moha",
+        "role": "App developer",
+        "bio": "A code enthusiast (and proud lazy-mode advocate), Moha designed Harmonith to take the friction out of fitness. Blending a passion for development with love for training, the goal is an app that adapts to me… and to you.",
+        "photo": "images/teams/moha.jpeg",
+        "socials": {
+          "linkedin": "https://www.linkedin.com/public-profile/settings?trk=d_flagship3_profile_self_view_public_profile",
+          "twitter": "",
+          "instagram": "https://www.instagram.com/berkou_kess?igsh=MW8zenc1MHlqcGl2cw%3D%3D&utm_source=qr"
+        }
+      },
+      {
+        "id": "2",
+        "name": "Nono",
+        "role": "Content editor",
+        "bio": "Hooked on writing and fitness, Nono helps keep Harmonith clear, inspiring, and motivating. The aim: turn information into helpful, energizing content so everyone feels ready to push further.",
+        "photo": "images/teams/nono.JPG",
+        "socials": {
+          "linkedin": "https://www.linkedin.com/in/nolwenn-le-rohellec-1720a2218",
+          "twitter": "",
+          "instagram": ""
+        }
+      },
+      {
+        "id": "3",
+        "name": "Chems",
+        "role": "Community manager",
+        "bio": "Energetic and creative, Chems brings the Harmonith community to life every day. Between motivation, sport, and team spirit, the goal is to connect people and inspire everyone to go further—together.",
+        "photo": "images/teams/chems.jpg",
+        "socials": {
+          "linkedin": "",
+          "twitter": "",
+          "instagram": ""
+        }
       }
-    }
-  ],
-  "stats": [
-    {
-      "label": "Exercices disponibles",
-      "value": "300+",
-      "icon": "💪"
-    },
-    {
-      "label": "Programmes personnalisés",
-      "value": "Illimités",
-      "icon": "📋"
-    },
-    {
-      "label": "Temps de configuration",
-      "value": "< 2 min",
-      "icon": "⚡"
-    },
-    {
-      "label": "Gratuit",
-      "value": "100%",
-      "icon": "🎁"
-    }
-  ],
-  "values": [
-    {
-      "title": "Simplicité avant tout",
-      "description": "Interface épurée et intuitive : choisis tes exercices, ajuste tes paramètres et lance ta séance en quelques clics. Pas de blabla, que de l'action.",
-      "icon": "🎯"
-    },
-    {
-      "title": "Progression visible",
-      "description": "Suivi en temps réel de tes performances : charge levée, reps, temps de cardio. Vois concrètement tes progrès semaine après semaine.",
-      "icon": "📈"
-    },
-    {
-      "title": "100% personnalisable",
-      "description": "Ton programme, tes règles. Muscle ciblé, équipement dispo, objectif du jour : l'app s'adapte à toi, pas l'inverse.",
-      "icon": "⚙️"
-    }
-  ]
+    ],
+    "stats": [
+      { "label": "Exercises available", "value": "300+", "icon": "💪" },
+      { "label": "Custom programs", "value": "Unlimited", "icon": "📋" },
+      { "label": "Setup time", "value": "< 2 min", "icon": "⚡" },
+      { "label": "Free", "value": "100%", "icon": "🎁" }
+    ],
+    "values": [
+      {
+        "title": "Simplicity first",
+        "description": "A clean, intuitive interface: pick your exercises, tweak the details, and start your session in seconds.",
+        "icon": "🎯"
+      },
+      {
+        "title": "Progress you can see",
+        "description": "Track weight, reps, and cardio in real time. Watch your progress build week after week.",
+        "icon": "📈"
+      },
+      {
+        "title": "Fully customizable",
+        "description": "Your programme, your rules. Target muscle, available gear, daily goal—the app adapts to you.",
+        "icon": "⚙️"
+      }
+    ]
+  },
+  "es": {
+    "title": "¿Quiénes somos?",
+    "subtitle": "Nuestra misión: hacer el fitness simple y accesible para todos",
+    "description": "Harmonith nace para que el fitness sea sencillo, divertido y accesible. Elige tus ejercicios, ajusta la carga, las repeticiones o el tiempo de cardio y sigue tu progreso fácilmente.",
+    "teamTitle": "Nuestro equipo",
+    "team": [
+      {
+        "id": "1",
+        "name": "Moha",
+        "role": "Desarrollador de la app",
+        "bio": "Apasionado por el código (y orgulloso defensor del modo perezoso), imaginó Harmonith para simplificar el fitness. Su meta: unir desarrollo y deporte para crear una app que se adapte a mí… y a ti.",
+        "photo": "images/teams/moha.jpeg",
+        "socials": {
+          "linkedin": "https://www.linkedin.com/public-profile/settings?trk=d_flagship3_profile_self_view_public_profile",
+          "twitter": "",
+          "instagram": "https://www.instagram.com/berkou_kess?igsh=MW8zenc1MHlqcGl2cw%3D%3D&utm_source=qr"
+        }
+      },
+      {
+        "id": "2",
+        "name": "Nono",
+        "role": "Editora de contenidos",
+        "bio": "Amante de la escritura y fan del deporte, aporta un toque claro, motivador e inspirador. Su objetivo: transformar la información en textos sencillos que den ganas de ir más lejos.",
+        "photo": "images/teams/nono.JPG",
+        "socials": {
+          "linkedin": "https://www.linkedin.com/in/nolwenn-le-rohellec-1720a2218",
+          "twitter": "",
+          "instagram": ""
+        }
+      },
+      {
+        "id": "3",
+        "name": "Chems",
+        "role": "Community manager",
+        "bio": "Enérgico y creativo, da vida a la comunidad Harmonith a diario. Entre motivación, deporte y espíritu de equipo, busca crear vínculos e inspirar a todos a avanzar, juntos.",
+        "photo": "images/teams/chems.jpg",
+        "socials": {
+          "linkedin": "",
+          "twitter": "",
+          "instagram": ""
+        }
+      }
+    ],
+    "stats": [
+      { "label": "Ejercicios disponibles", "value": "300+", "icon": "💪" },
+      { "label": "Programas personalizados", "value": "Ilimitados", "icon": "📋" },
+      { "label": "Tiempo de configuración", "value": "< 2 min", "icon": "⚡" },
+      { "label": "Gratis", "value": "100%", "icon": "🎁" }
+    ],
+    "values": [
+      {
+        "title": "Simplicidad ante todo",
+        "description": "Interfaz limpia e intuitiva: elige tus ejercicios, ajusta los parámetros y comienza en cuestión de segundos.",
+        "icon": "🎯"
+      },
+      {
+        "title": "Progreso visible",
+        "description": "Sigue tu rendimiento en tiempo real: carga, repeticiones, cardio. Observa tus avances semana tras semana.",
+        "icon": "📈"
+      },
+      {
+        "title": "100 % personalizable",
+        "description": "Tu programa, tus reglas. Músculo objetivo, equipo disponible, meta del día: la app se adapta a ti.",
+        "icon": "⚙️"
+      }
+    ]
+  },
+  "de": {
+    "title": "Wer sind wir?",
+    "subtitle": "Unsere Mission: Fitness einfach und für alle zugänglich machen",
+    "description": "Harmonith wurde entwickelt, um Fitness einfach, motivierend und zugänglich zu machen. Wähle deine Übungen, passe Gewicht, Wiederholungen oder Cardiozeit an und verfolge deinen Fortschritt mühelos.",
+    "teamTitle": "Unser Team",
+    "team": [
+      {
+        "id": "1",
+        "name": "Moha",
+        "role": "App-Entwickler",
+        "bio": "Programmieren begeistert mich mindestens so sehr wie Sport – und ja, der gemütliche Modus gehört dazu. Harmonith soll Fitness einfacher machen und sich an mich… und an dich anpassen.",
+        "photo": "images/teams/moha.jpeg",
+        "socials": {
+          "linkedin": "https://www.linkedin.com/public-profile/settings?trk=d_flagship3_profile_self_view_public_profile",
+          "twitter": "",
+          "instagram": "https://www.instagram.com/berkou_kess?igsh=MW8zenc1MHlqcGl2cw%3D%3D&utm_source=qr"
+        }
+      },
+      {
+        "id": "2",
+        "name": "Nono",
+        "role": "Redakteurin",
+        "bio": "Mit einer Liebe zum Schreiben und zum Sport sorge ich dafür, dass Harmonith klar, motivierend und inspirierend bleibt. Informationen verwandle ich in Texte, die Lust machen, dranzubleiben.",
+        "photo": "images/teams/nono.JPG",
+        "socials": {
+          "linkedin": "https://www.linkedin.com/in/nolwenn-le-rohellec-1720a2218",
+          "twitter": "",
+          "instagram": ""
+        }
+      },
+      {
+        "id": "3",
+        "name": "Chems",
+        "role": "Community Manager",
+        "bio": "Mit viel Energie und Kreativität lasse ich die Harmonith-Community jeden Tag aufleben. Motivation, Teamgeist und Spaß stehen im Mittelpunkt – damit wir gemeinsam weiterkommen.",
+        "photo": "images/teams/chems.jpg",
+        "socials": {
+          "linkedin": "",
+          "twitter": "",
+          "instagram": ""
+        }
+      }
+    ],
+    "stats": [
+      { "label": "Verfügbare Übungen", "value": "300+", "icon": "💪" },
+      { "label": "Personalisierte Programme", "value": "Unbegrenzt", "icon": "📋" },
+      { "label": "Einrichtungszeit", "value": "< 2 Min", "icon": "⚡" },
+      { "label": "Kostenlos", "value": "100%", "icon": "🎁" }
+    ],
+    "values": [
+      {
+        "title": "Einfachheit zuerst",
+        "description": "Eine klare, intuitive Oberfläche: Wähle Übungen, passe Parameter an und starte dein Training in wenigen Sekunden.",
+        "icon": "🎯"
+      },
+      {
+        "title": "Sichtbarer Fortschritt",
+        "description": "Verfolge Gewicht, Wiederholungen und Cardiozeiten in Echtzeit und sieh deinen Fortschritt Woche für Woche.",
+        "icon": "📈"
+      },
+      {
+        "title": "100 % anpassbar",
+        "description": "Dein Programm, deine Regeln. Zielmuskel, verfügbares Equipment, Tagesziel – die App passt sich dir an.",
+        "icon": "⚙️"
+      }
+    ]
+  }
 }

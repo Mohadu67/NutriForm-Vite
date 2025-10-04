@@ -1,6 +1,5 @@
-
-
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
@@ -14,6 +13,7 @@ function getToken() {
 }
 
 export default function Salutation({ className = "", seedKey = "static" }) {
+  const { t } = useTranslation();
   const [displayName, setDisplayName] = useState("");
   const phraseRef = useRef("");
 
@@ -53,41 +53,37 @@ export default function Salutation({ className = "", seedKey = "static" }) {
       .catch(() => {});
   }, []);
 
-  const displayNameSpan = displayName ? (
-    <span style={{ textTransform: "capitalize" }}>{displayName}</span>
-  ) : null;
-  const phrases = [
-    displayName
-      ? (
-        <>Salut {displayNameSpan} 👋, prêt pour une séance ?</>
-      )
-      : "Salut 👋, prêt pour une séance ?",
-    displayName
-      ? (
-        <>Allez {displayNameSpan} 💪, montre à ces haltères qui est le patron !</>
-      )
-      : "Allez 💪, montre à ces haltères qui est le patron !",
-    displayName
-      ? (
-        <>{displayNameSpan}, aujourd&apos;hui c&apos;est toi le champion 🏆</>
-      )
-      : "Aujourd'hui c'est toi le champion 🏆",
-    displayName
-      ? (
-        <>Aujourd&apos;hui c&apos;est toi {displayNameSpan} 🚀</>
-      )
-      : "On compte sur toi 🚀"
-  ];
+  const capitalizedName = useMemo(() => {
+    if (!displayName) return "";
+    const trimmed = displayName.trim();
+    if (!trimmed) return "";
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+  }, [displayName]);
+
+  const phrasePool = useMemo(() => {
+    const key = capitalizedName
+      ? "exercise.salutation.named"
+      : "exercise.salutation.generic";
+    const options = {
+      returnObjects: true,
+    };
+    if (capitalizedName) options.name = capitalizedName;
+    const list = t(key, options);
+    if (Array.isArray(list) && list.length > 0) return list;
+    return [t("exercise.salutation.fallback", { name: capitalizedName })];
+  }, [t, capitalizedName]);
 
   useEffect(() => {
-    const pool = Array.isArray(phrases) ? phrases : [];
-    const pick = pool.length ? pool[Math.floor(Math.random() * pool.length)] : "Bienvenue 👋";
+    const pool = Array.isArray(phrasePool) ? phrasePool : [];
+    const pick = pool.length
+      ? pool[Math.floor(Math.random() * pool.length)]
+      : t("exercise.salutation.fallback", { name: capitalizedName });
     phraseRef.current = pick;
-  }, [seedKey, displayName]);
+  }, [seedKey, phrasePool, t, capitalizedName]);
 
   return (
     <h2 className={className}>
-      {phraseRef.current || "Bienvenue 👋"}
+      {phraseRef.current || t("exercise.salutation.fallback", { name: capitalizedName })}
     </h2>
   );
 }

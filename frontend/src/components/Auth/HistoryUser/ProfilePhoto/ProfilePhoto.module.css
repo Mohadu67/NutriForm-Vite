@@ -9,7 +9,8 @@
 
 @media (prefers-color-scheme: dark) {
   .container {
-    background: #12151b;
+      background: var(--paper, #ffffff);
+
   }
 }
 

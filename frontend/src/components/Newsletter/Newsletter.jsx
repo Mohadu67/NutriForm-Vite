@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { useTranslation } from "react-i18next";
 import styles from "./Newsletter.module.css";
 
 export default function Newsletter() {
+  const { t } = useTranslation();
   const { executeRecaptcha } = useGoogleReCaptcha();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // idle, loading, success, error
@@ -13,13 +15,13 @@ export default function Newsletter() {
 
     if (!email || !email.includes("@")) {
       setStatus("error");
-      setMessage("Merci d'entrer une adresse email valide");
+      setMessage(t('newsletter.errorInvalidEmail'));
       return;
     }
 
     if (!executeRecaptcha) {
       setStatus("error");
-      setMessage("reCAPTCHA non chargé. Réessaye.");
+      setMessage(t('newsletter.errorCaptcha'));
       return;
     }
 
@@ -41,7 +43,7 @@ export default function Newsletter() {
 
       if (response.ok) {
         setStatus("success");
-        setMessage("Merci ! Tu es maintenant inscrit(e) à notre newsletter 🎉");
+        setMessage(t('newsletter.successMessage'));
         setEmail("");
 
         // Reset après 5 secondes
@@ -51,11 +53,11 @@ export default function Newsletter() {
         }, 5000);
       } else {
         setStatus("error");
-        setMessage(data.message || "Une erreur est survenue. Réessaye plus tard.");
+        setMessage(data.message || t('newsletter.errorGeneric'));
       }
     } catch (error) {
       setStatus("error");
-      setMessage("Impossible de s'inscrire pour le moment. Vérifie ta connexion.");
+      setMessage(t('newsletter.errorNetwork'));
     }
   };
 
@@ -64,26 +66,25 @@ export default function Newsletter() {
       <div className={styles.container}>
         <div className={styles.content}>
           <div className={styles.textBlock}>
-            <span className={styles.badge}>Newsletter</span>
+            <span className={styles.badge}>{t('newsletter.badge')}</span>
             <h2 className={styles.title}>
-              Reste dans la boucle 💌
+              {t('newsletter.title')}
             </h2>
             <p className={styles.description}>
-              Reçois nos nouveautés, conseils fitness et astuces pour progresser directement dans ta boîte mail.
-              Promis, pas de spam, que du contenu utile !
+              {t('newsletter.description')}
             </p>
             <div className={styles.features}>
               <div className={styles.feature}>
                 <span className={styles.featureIcon}>✨</span>
-                <span>Nouveaux exercices</span>
+                <span>{t('newsletter.feature1')}</span>
               </div>
               <div className={styles.feature}>
                 <span className={styles.featureIcon}>💡</span>
-                <span>Conseils d'experts</span>
+                <span>{t('newsletter.feature2')}</span>
               </div>
               <div className={styles.feature}>
                 <span className={styles.featureIcon}>🎁</span>
-                <span>Offres exclusives</span>
+                <span>{t('newsletter.feature3')}</span>
               </div>
             </div>
           </div>
@@ -93,12 +94,12 @@ export default function Newsletter() {
               <div className={styles.inputGroup}>
                 <input
                   type="email"
-                  placeholder="ton@email.com"
+                  placeholder={t('newsletter.placeholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={styles.input}
                   disabled={status === "loading" || status === "success"}
-                  aria-label="Adresse email"
+                  aria-label={t('newsletter.ariaLabel')}
                 />
                 <button
                   type="submit"
@@ -108,9 +109,9 @@ export default function Newsletter() {
                   {status === "loading" ? (
                     <span className={styles.spinner}></span>
                   ) : status === "success" ? (
-                    "✓ Inscrit !"
+                    t('newsletter.buttonSuccess')
                   ) : (
-                    "S'inscrire"
+                    t('newsletter.buttonSubscribe')
                   )}
                 </button>
               </div>
@@ -122,7 +123,7 @@ export default function Newsletter() {
               )}
 
               <p className={styles.privacy}>
-                🔒 Tes données sont protégées. Désinscris-toi quand tu veux.
+                {t('newsletter.privacy')}
               </p>
             </form>
           </div>

@@ -60,8 +60,8 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 150,
-        tolerance: 5,
+        delay: 250,
+        tolerance: 8,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -87,6 +87,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     let isMounted = true;
     setLoading(true);
     setError(null);
+
     fetch("/data/db.json")
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -95,15 +96,14 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
       .then((json) => {
         if (!isMounted) return;
         setData(Array.isArray(json.exercises) ? json.exercises : []);
+        setLoading(false);
       })
       .catch((e) => {
         if (!isMounted) return;
         setError(e.message || "Erreur de chargement");
-      })
-      .finally(() => {
-        if (!isMounted) return;
         setLoading(false);
       });
+
     return () => {
       isMounted = false;
     };
@@ -314,7 +314,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     }
   }
 
-  if (loading) return <p>Chargement des exercices…</p>;
+  if (loading) return <p className={styles.loadingText}>Chargement des exercices…</p>;
   if (error) return <p className={styles.error}>Erreur: {error}</p>;
   if (!results.length) return (
     <div className={styles.noResults}>

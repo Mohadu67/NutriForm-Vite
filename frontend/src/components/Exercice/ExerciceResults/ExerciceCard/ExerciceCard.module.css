@@ -1,6 +1,8 @@
 /* ExerciceCard popup — mobile‑first, dark‑mode aware, glassy look */
 
-:root {
+:root,
+:global(html.light),
+:global(body.light) {
   --paper: #ffffff;
   --fg: #1b1b1b;
   --muted: #6b7280;
@@ -17,11 +19,27 @@
   --radius-md: 12px;
   --radius-sm: 8px;
   --ring: 0 0 0 3px rgba(247,177,134,.35);
-  color-scheme: light dark;
+  color-scheme: light;
+}
+
+:global(html.dark),
+:global(body.dark) {
+  --paper: #13161b;
+  --fg: #e9ecf1;
+  --muted: #a6b0bf;
+  --line: rgba(255,255,255,.14);
+  --subtle: #1b2027;
+  --surface: #171b22;
+  --overlay: rgba(0,0,0,.6);
+  --shadow-sm: 0 6px 16px rgba(0,0,0,.35);
+  --shadow-md: 0 14px 36px rgba(0,0,0,.45);
+  --shadow-xl: 0 30px 80px rgba(0,0,0,.65);
+  --ring: 0 0 0 3px rgba(247,177,134,.28);
+  color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --paper: #13161b;
     --fg: #e9ecf1;
     --muted: #a6b0bf;
@@ -55,6 +73,10 @@
   text-align: left;
   transition: background .18s ease, box-shadow .18s ease, transform .12s ease, border-color .18s ease;
   box-shadow: var(--shadow-sm);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 .row:hover { background: color-mix(in oklab, var(--paper) 88%, var(--subtle)); box-shadow: 0 6px 16px rgba(0,0,0,.10); }
 .row:active { transform: translateY(0); }
@@ -92,7 +114,7 @@
 .popup {
   width: min(92%, 720px);
   margin: auto;
-  max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 10px);
+  max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 80px);
   overflow: auto;
   border: 1px solid transparent;
   border-top-left-radius: var(--radius-lg);
@@ -247,7 +269,7 @@
 /* Responsive tweaks */
 @media (min-width: 600px) {
   .overlay { place-items: center; }
-  .popup { max-height: 88vh; border-radius: var(--radius-lg); }
+  .popup { max-height: calc(88vh - 60px); border-radius: var(--radius-lg); }
   .popupHeader { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
   .thumb { width: 56px; height: 56px; }
   .rowTitle { font-size: 1rem; }
@@ -272,7 +294,16 @@
 }
 
 .sortable {
-  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+@media (pointer: coarse) {
+  .sortable {
+    touch-action: none;
+  }
 }
 
 .sortable .handle {

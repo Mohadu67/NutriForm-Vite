@@ -38,7 +38,7 @@ export function useStepSubtitle(step) {
 export function buildFunnyMessage(typeId, equipId, EQUIP_CARDS) {
   const label = (EQUIP_CARDS.find((c) => c.id === equipId)?.label || equipId).toLowerCase();
   const ctx = typeId || "cet entraînement";
-  if (typeId === "yoga" || typeId === "meditation") {
+  if (typeId === "natation" || typeId === "meditation") {
     switch (equipId) {
       case "halteres":
         return `Des haltères pour du ${ctx} ? On respire, on ne curl pas. 😅`;

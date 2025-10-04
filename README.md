@@ -8,17 +8,28 @@ Application web de fitness et nutrition complète pour suivre ses exercices, cal
 - **Calculateur de calories** - Calcul du métabolisme de base avec 3 formules (Harris-Benedict, Mifflin-St Jeor, Katch-McArdle)
 - **Calculateur IMC** - Calcul de l'Indice de Masse Corporelle avec catégorisation détaillée et conseils personnalisés
 - **Bibliothèque d'exercices** - Plus de 300 exercices disponibles
-- **Programmes personnalisés** - Création illimitée de programmes d'entraînement
+  - Musculation (poids du corps, haltères, barres, machines, kettlebells, poulies)
+  - Cardio (course, vélo, rameur, elliptique, corde à sauter, etc.)
+  - Natation (crawl, brasse)
+  - Méditation (pleine conscience, scan corporel, respiration consciente, marche consciente)
+  - Étirement et renforcement
+- **Moteur de recherche d'exercices intelligent** - Filtrage avancé par type, équipement, groupes musculaires
+- **Programmes personnalisés** - Création illimitée de programmes d'entraînement avec drag-and-drop
 - **Suivi de progression avec graphiques** - Visualisation de vos performances et évolution
 - **Historique des séances d'entraînement** - Consultation de toutes vos séances passées
 - **Newsletter** - Inscription à la newsletter pour rester informé
 - **Système d'authentification** - Connexion sécurisée avec email/password et JWT
 - **Mode sombre/clair** - Interface adaptative avec support du mode sombre manuel et automatique
-- **Multilingue** - Support de 4 langues (FR, EN, DE, ES)
+- **Multilingue** - Support de 4 langues (FR, EN, DE, ES) avec traductions complètes
 - **Sécurité renforcée** - Helmet.js et rate limiting pour protéger l'API
+- **SEO optimisé** - Schema.org, sitemap, robots.txt, meta tags complets
+- **Interface mobile optimisée** - Touch gestures, drag-and-drop mobile friendly
 
 ### 🔄 En développement
 - **Authentification Google OAuth** - Connexion simplifiée avec compte Google (en cours ⚡)
+- **Audio guidé pour méditation** - Sessions de méditation avec accompagnement vocal
+- **Notifications push** - Rappels et motivation pour les séances d'entraînement
+- **Synchronisation calories avec smartphone** - Connexion avec Apple Health / Google Fit
 
 ### 📋 Fonctionnalités planifiées (voir FEATURES.md & ROADMAP.md)
 - Authentification via Apple Sign In
@@ -72,6 +83,35 @@ npm install
 # Démarrer le projet (depuis la racine)
 npm run dev
 ```
+
+## 📋 TODO - Prochaines tâches
+
+### Traductions
+- [ ] Compléter les traductions dans les composants suivants :
+  - `MuscuTable.jsx`, `CardioTable.jsx`, `PdcTable.jsx` - "+ Ajouter une série" et "Supprimer la série"
+  - `NotesSection.jsx` - "Ajouter des notes..."
+  - `ExerciceCard.jsx` (dans ExerciceResults) - Labels "Ajouter", "Supprimer"
+  - `ExerciseResults.jsx` - "+ Ajouter d'autres exercices", messages d'erreur
+
+### Exercices et types
+- [ ] **Remplacer "Renforcement" par "Yoga"** dans CardChoice
+  - Changer la position : placer Yoga avant Natation
+  - Ajouter des exercices de yoga dans la base de données (db.json)
+  - Créer les exercices avec type "yoga", équipement "poids-du-corps"
+
+### Échauffement
+- [ ] **Ajouter un bouton "Échauffement" dans le formulaire de suivi d'exercices**
+  - Positionner le bouton en haut du formulaire
+  - Au clic : proposer une routine d'échauffement de 5 minutes
+  - Afficher un chrono de 5 minutes
+  - Afficher un GIF animé de l'échauffement
+  - Générer un texte explicatif adapté aux exercices sélectionnés par l'utilisateur
+  - L'échauffement doit être contextualisé selon les groupes musculaires ciblés
+
+### Audio et notifications
+- [ ] Implémenter l'audio guidé pour les séances de méditation
+- [ ] Mettre en place le système de notifications push
+- [ ] Intégrer la synchronisation avec Apple Health / Google Fit
 
 ## 📝 Licence
 
