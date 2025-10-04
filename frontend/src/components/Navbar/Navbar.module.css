@@ -123,12 +123,82 @@
 /* Legacy helper */
 .orange { color: var(--ink); text-decoration: none; }
 
+/* Icons Row Container */
+.iconsRow {
+  display: none;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
+}
+
+/* Icon Links - Hidden by default on mobile */
+.iconLink {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  width: 46px !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.iconButton {
+  padding: 8px !important;
+  display: none !important;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  opacity: 0 !important;
+  transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+  color: #F7B186 !important;
+  text-decoration: none;
+  font-weight: 700 !important; 
+}
+
+.iconButton svg {
+  transition: inherit;
+  color: inherit;
+  width: 38px;
+  height: 28px;
+}
+
+.iconButton:hover {
+  transform: scale(1.15);
+  color: #222325 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .iconButton:hover {
+    color: #e9ecf1 !important;
+  }
+}
+
+/* Show icons when burger is open */
+.burger.open .iconsRow {
+  display: flex;
+}
+
+.burger.open .iconLink {
+  height: 46px !important;
+}
+
+.burger.open .iconButton {
+  display: flex !important;
+  opacity: 1 !important;
+}
+
 /* Desktop: items are always expanded and aligned */
 @media (min-width: 640px) {
   .burger {
     flex-direction: column;
     flex-wrap: wrap;
     gap: 10px;
+    align-items: center;
   }
 
   .burger li {
@@ -169,5 +239,24 @@
     box-shadow: 0 14px 24px rgba(224,122,71,.25), 0 4px 8px rgba(0,0,0,.08);
     transform: translateY(-2px);
     background-color: var(--accent);
+  }
+
+  /* Icon links on desktop - always visible */
+  .iconsRow {
+    display: flex !important;
+  }
+
+  .iconLink {
+    width: 46px !important;
+    height: 46px !important;
+  }
+
+  .iconButton {
+    display: flex !important;
+    opacity: 1 !important;
+  }
+
+  .iconLink:hover {
+    background: transparent !important;
   }
 }

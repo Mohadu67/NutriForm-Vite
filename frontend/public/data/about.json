@@ -1,7 +1,7 @@
 {
   "title": "Qui sommes-nous ?",
   "subtitle": "Notre mission : Rendre le fitness simple et accessible à tous",
-  "description": "Harmonith (anciennement Nutri’Form) est une application pensée pour rendre le fitness simple, fun et accessible. Elle permet de choisir ses exercices, d’ajuster la charge, le nombre de répétitions ou le temps de cardio, et de suivre facilement sa progression.",
+  "description": "Harmonith est une application pensée pour rendre le fitness simple, fun et accessible. Elle permet de choisir ses exercices, d’ajuster la charge, le nombre de répétitions ou le temps de cardio, et de suivre facilement sa progression.",
   "team": [
     {
       "id": "1",
@@ -31,7 +31,7 @@
       "id": "3",
       "name": "Chems",
       "role": "Community Manager",
-      "bio": "Énergique et créative, je fais vivre la communauté Harmonith au quotidien. Entre motivation, sport et esprit d’équipe, mon objectif est de créer du lien et d’inspirer chacun à avancer plus loin, ensemble.",
+      "bio": "Énergique et créatif, je fais vivre la communauté Harmonith au quotidien. Entre motivation, sport et esprit d’équipe, mon objectif est de créer du lien et d’inspirer chacun à avancer plus loin, ensemble.",
       "photo": "images/teams/chems.jpg",
       "socials": {
         "linkedin": "",

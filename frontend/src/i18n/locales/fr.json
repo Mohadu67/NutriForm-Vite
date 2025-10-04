@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "tools": "Outils",
+    "exercises": "Exercices",
+    "about": "À propos",
+    "contact": "Contact",
+    "login": "Connexion",
+    "register": "Inscription",
+    "myAccount": "Mon compte",
+    "logout": "Déconnexion"
+  },
+  "home": {
+    "mainTitle": "Nutrition, bien-être, performance : transforme ton quotidien.",
+    "mainSubtitle": "Calcule rapidement ton IMC et reçois des conseils personnalisés adaptés à ton profil. Ensuite, explore ton métabolisme grâce à notre calculateur de besoins caloriques pour une vision complète de tes apports énergétiques. Une approche simple et pratique pour progresser vers un meilleur équilibre santé.",
+    "toolsTitle": "Calcule, adapte, progresse !"
+  },
+  "hero": {
+    "title": "Transforme ton corps, transforme ta vie",
+    "subtitle": "Atteins tes objectifs de fitness avec des outils personnalisés et un suivi professionnel",
+    "cta": "Commencer maintenant"
+  },
+  "tools": {
+    "title": "Nos Outils",
+    "imc": "Calculateur IMC",
+    "calories": "Besoins Caloriques",
+    "tdee": "Dépense Énergétique"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer"
+  }
+}
