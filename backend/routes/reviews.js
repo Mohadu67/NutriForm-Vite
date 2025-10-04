@@ -25,12 +25,19 @@ router.get('/users', async (req, res) => {
     const reviews = await Review.find({ isApproved: true })
       .sort({ createdAt: -1 })
       .limit(50) // Limite à 50 avis
+      .populate('userId', 'photo pseudo') // Récupérer la photo et le pseudo de l'utilisateur
       .select('-isReported -__v'); // Exclure certains champs
+
+    // Ajouter la photo de l'utilisateur dans chaque avis
+    const reviewsWithPhotos = reviews.map(review => ({
+      ...review.toObject(),
+      photo: review.userId?.photo || review.photo || null
+    }));
 
     res.status(200).json({
       success: true,
-      count: reviews.length,
-      reviews
+      count: reviewsWithPhotos.length,
+      reviews: reviewsWithPhotos
     });
   } catch (error) {
     console.error('Erreur récupération avis:', error);

@@ -16,8 +16,19 @@
   --nf-accent-weak: rgba(255, 179, 133, 0.15);
 }
 
+/* Dark mode manuel */
+:global(.dark) {
+  --nf-bg: #0d0d0d;
+  --nf-bg-card: #151515;
+  --nf-ink: #f5f5f5;
+  --nf-muted: #aaa;
+  --nf-border: rgba(255, 255, 255, 0.1);
+  --nf-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* Dark mode auto */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --nf-bg: #0d0d0d;
     --nf-bg-card: #151515;
     --nf-ink: #f5f5f5;
@@ -101,6 +112,17 @@ body {
 .muted {
   color: var(--nf-muted);
   font-size: 0.85rem;
+}
+
+.lastValue {
+  color: var(--nf-ink);
+  font-size: 0.9rem;
+  margin: var(--space-2) 0;
+}
+
+.lastValue strong {
+  color: var(--nf-accent);
+  font-weight: 700;
 }
 
 .chips {

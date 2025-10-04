@@ -36,8 +36,20 @@ button {
   --shadow-md: 0 12px 30px rgba(0,0,0,.12);
 }
 
+/* Dark mode manuel avec classe .dark */
+.dark {
+  --couleur-principale: #0c0e12;
+  --paper: #12151b;
+  --ink: #e9ecf1;
+  --couleur-text-noir: #e9ecf1;
+  --line: rgba(255,255,255,.1);
+  --shadow-sm: 0 4px 12px rgba(0,0,0,.45);
+  --shadow-md: 0 12px 30px rgba(0,0,0,.65);
+}
+
+/* Dark mode automatique */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --couleur-principale: #0c0e12;
     --paper: #12151b;
     --ink: #e9ecf1;

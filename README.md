@@ -12,15 +12,17 @@ Application web de fitness et nutrition complète pour suivre ses exercices, cal
 - **Suivi de progression avec graphiques** - Visualisation de vos performances et évolution
 - **Historique des séances d'entraînement** - Consultation de toutes vos séances passées
 - **Newsletter** - Inscription à la newsletter pour rester informé
+- **Système d'authentification** - Connexion sécurisée avec email/password et JWT
+- **Mode sombre/clair** - Interface adaptative avec support du mode sombre manuel et automatique
+- **Multilingue** - Support de 4 langues (FR, EN, DE, ES)
+- **Sécurité renforcée** - Helmet.js et rate limiting pour protéger l'API
 
 ### 🔄 En développement
 - **Authentification Google OAuth** - Connexion simplifiée avec compte Google (en cours ⚡)
-- Système d'authentification (email/password)
 
 ### 📋 Fonctionnalités planifiées (voir FEATURES.md & ROADMAP.md)
 - Authentification via Apple Sign In
 - Système de dons pour soutenir le projet
-- Mode sombre/clair
 - Système d'amis et suivi social
 - Classements et leaderboards
 - Système de compte Premium avec fonctionnalités avancées
@@ -33,12 +35,16 @@ Application web de fitness et nutrition complète pour suivre ses exercices, cal
 - React 18 + Vite
 - React Router
 - CSS Modules
+- i18next (Internationalisation)
 - Microsoft Clarity (Analytics)
 
 ### Backend
 - Node.js + Express
 - MongoDB (Base de données NoSQL)
 - Mongoose (ODM)
+- JWT (Authentification)
+- Helmet.js (Sécurité HTTP)
+- Express Rate Limit (Protection contre les abus)
 
 ## 📦 Installation
 

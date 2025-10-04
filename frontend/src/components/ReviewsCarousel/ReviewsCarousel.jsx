@@ -33,7 +33,6 @@ export default function ReviewsCarousel() {
 
   if (loading || reviews.length === 0) return null;
 
-  // Dupliquer les avis pour créer un effet de boucle infinie
   const duplicatedReviews = [...reviews, ...reviews, ...reviews];
 
   return (

@@ -50,7 +50,7 @@
 
 .tooltipHint {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--nf-muted, #6b7280);
   margin-top: 12px;
   text-align: center;
   font-style: italic;
@@ -61,7 +61,7 @@
 }
 
 .muted {
-  color: #9ca3af;
+  color: var(--nf-muted, #9ca3af);
   font-size: 14px;
 }
 

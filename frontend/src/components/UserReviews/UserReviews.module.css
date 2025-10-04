@@ -162,6 +162,15 @@
   flex-shrink: 0;
 }
 
+.authorPhoto {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  flex-shrink: 0;
+}
+
 .authorInfo {
   flex: 1;
 }

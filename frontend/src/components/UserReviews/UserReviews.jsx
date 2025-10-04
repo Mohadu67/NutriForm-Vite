@@ -146,9 +146,17 @@ export default function UserReviews() {
               <div key={review._id} className={styles.reviewCard}>
                 <div className={styles.cardHeader}>
                   <div className={styles.authorSection}>
-                    <div className={styles.authorInitial}>
-                      {review.name.charAt(0).toUpperCase()}
-                    </div>
+                    {review.photo ? (
+                      <img
+                        src={review.photo}
+                        alt={review.name}
+                        className={styles.authorPhoto}
+                      />
+                    ) : (
+                      <div className={styles.authorInitial}>
+                        {review.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                     <div className={styles.authorInfo}>
                       <h4 className={styles.authorName}>{review.name}</h4>
                       <p className={styles.reviewDate}>
