@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "./FormExo.module.css";
 import DynamiChoice from "../DynamiChoice/DynamiChoice.jsx";
 import Progress from "../BarreDetape/Etapes.jsx";
@@ -12,6 +13,7 @@ import ConseilJour from "./ConseilJour.jsx";
 import { idOf } from "../Shared/idOf.js";
 
 export default function FormExo({ user }) {
+  const { t, i18n } = useTranslation();
   const [sessionName, setSessionName] = useState(() => {
     try { return JSON.parse(localStorage.getItem("formSessionName")) || ""; } catch { return ""; }
   });
@@ -38,6 +40,30 @@ export default function FormExo({ user }) {
   useEffect(() => { try { localStorage.setItem("formSelectedExercises", JSON.stringify(selectedExercises)); } catch {} }, [selectedExercises]);
   useEffect(() => {
   }, [user]);
+
+  const defaultExerciseName = useMemo(() => t("exercise.form.defaultExerciseName"), [t]);
+
+  const steps = useMemo(
+    () => [
+      {
+        title: t("exercise.form.steps.training.title"),
+        sub: t("exercise.form.steps.training.subtitle"),
+      },
+      {
+        title: t("exercise.form.steps.equipment.title"),
+        sub: t("exercise.form.steps.equipment.subtitle"),
+      },
+      {
+        title: t("exercise.form.steps.muscles.title"),
+        sub: t("exercise.form.steps.muscles.subtitle"),
+      },
+      {
+        title: t("exercise.form.steps.exercises.title"),
+        sub: t("exercise.form.steps.exercises.subtitle"),
+      },
+    ],
+    [t]
+  );
 
   function getBodyMassKg(u) {
     if (!u) return undefined;
@@ -134,10 +160,10 @@ export default function FormExo({ user }) {
             } catch {}
             try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch {}
           }}>
-            🔄 Recommencer
+            {t("exercise.form.actions.restart")}
           </button>
           <button className={styles.BtnReturn} type="button" onClick={() => setShowSummary(false)}>
-            ← Retour
+            {t("exercise.form.actions.back")}
           </button>
         </div>
 
@@ -147,13 +173,6 @@ export default function FormExo({ user }) {
       </div>
     );
   }
-
-  const steps = [
-    { title: "Entrainement", sub: "Choisi ton entrainement" },
-    { title: "Équipement", sub: "Sélectionne tes équipement" },
-    { title: "Muscles", sub: "Cible les muscles" },
-    { title: "Exercices", sub: "Personnalisez votre séance" },
-  ];
 
   const suiviKey = (() => {
     try {
@@ -176,10 +195,10 @@ export default function FormExo({ user }) {
 
       {mode === "builder" && (
         <div className={styles.sessionName}>
-          <label>Nom de ta séance :</label>
+          <label>{t("exercise.form.sessionName.label")}</label>
           <input
             type="text"
-            placeholder="Ex: Séance Dos,Biceps"
+            placeholder={t("exercise.form.sessionName.placeholder")}
             value={sessionName}
             onChange={(e) => setSessionName(e.target.value)}
           />
@@ -278,7 +297,7 @@ export default function FormExo({ user }) {
                 const exercisesList = items.map(it => {
                   const data = it?.data || {};
                   return {
-                    exerciseName: it?.name || it?.label || it?.exoName || 'Exercice',
+                    exerciseName: it?.name || it?.label || it?.exoName || defaultExerciseName,
                     done: Boolean(it?.done || data?.cardioSets?.length || data?.sets?.length),
                     note: typeof data?.notes === 'string' && data.notes.trim() ? data.notes.trim() : undefined,
                   };
@@ -301,7 +320,11 @@ export default function FormExo({ user }) {
               try {
                 if (user && (user.id || user._id)) {
                   const body = {
-                    name: sessionName || `Séance – ${new Date().toLocaleDateString()}`,
+                    name:
+                      sessionName ||
+                      t("exercise.form.defaultSessionName", {
+                        date: new Date().toLocaleDateString(i18n.language),
+                      }),
                     startedAt: stats?.when || new Date().toISOString(),
                     endedAt: new Date().toISOString(),
                     notes: "",

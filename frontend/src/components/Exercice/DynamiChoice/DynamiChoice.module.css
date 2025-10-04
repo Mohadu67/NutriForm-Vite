@@ -1,5 +1,7 @@
-:root {
-  color-scheme: light dark;
+:root,
+:global(html.light),
+:global(body.light) {
+  color-scheme: light;
   --couleur-principale: #F7F6F2;
   --couleur-bouton-action: #F7B186;
   --couleur-bouton-selection: #B5EAD7;
@@ -21,8 +23,21 @@
   --ring: 0 0 0 3px color-mix(in oklab, var(--couleur-bouton-action) 40%, transparent);
 }
 
+:global(html.dark),
+:global(body.dark) {
+  color-scheme: dark;
+  --bg: #0c0e12;
+  --paper: #12151b;
+  --ink: #e9ecf1;
+  --muted-ink: #a6b0bf;
+  --line: rgba(255,255,255,0.08);
+  --line-strong: rgba(255,255,255,0.14);
+  --shadow-sm: 0 6px 16px rgba(0,0,0,.35);
+  --shadow-md: 0 12px 30px rgba(0,0,0,.45);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --bg: #0c0e12;
     --paper: #12151b;
     --ink: #e9ecf1;

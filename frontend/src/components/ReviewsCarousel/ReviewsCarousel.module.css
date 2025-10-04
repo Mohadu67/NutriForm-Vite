@@ -5,12 +5,19 @@
   overflow: hidden;
 }
 
-:global(.dark) .carouselSection {
+:global(html.light) .carouselSection,
+:global(body.light) .carouselSection {
+  background: linear-gradient(135deg, #F7F6F2 0%, #FFF8F0 100%);
+}
+
+:global(html.dark) .carouselSection,
+:global(body.dark) .carouselSection {
   background: linear-gradient(135deg, #0c0e12 0%, #12151b 100%);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not(.light) .carouselSection {
+  :global(html:not(.light)) .carouselSection,
+  :global(body:not(.light)) .carouselSection {
     background: linear-gradient(135deg, #0c0e12 0%, #12151b 100%);
   }
 }
@@ -33,7 +40,8 @@
   background-clip: text;
 }
 
-:global(.dark) .title {
+:global(html.dark) .title,
+:global(body.dark) .title {
   background: linear-gradient(135deg, #e9ecf1, #a6b0bf);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -41,7 +49,8 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not(.light) .title {
+  :global(html:not(.light)) .title,
+  :global(body:not(.light)) .title {
     background: linear-gradient(135deg, #e9ecf1, #a6b0bf);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -126,22 +135,26 @@
   box-shadow: 0 12px 32px rgba(255, 179, 133, 0.2);
 }
 
-:global(.dark) .reviewCard {
+:global(html.dark) .reviewCard,
+:global(body.dark) .reviewCard {
   background: #12151b;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
-:global(.dark) .reviewCard:hover {
+:global(html.dark) .reviewCard:hover,
+:global(body.dark) .reviewCard:hover {
   box-shadow: 0 12px 32px rgba(255, 179, 133, 0.15);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not(.light) .reviewCard {
+  :global(html:not(.light)) .reviewCard,
+  :global(body:not(.light)) .reviewCard {
     background: #12151b;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
 
-  :root:not(.light) .reviewCard:hover {
+  :global(html:not(.light)) .reviewCard:hover,
+  :global(body:not(.light)) .reviewCard:hover {
     box-shadow: 0 12px 32px rgba(255, 179, 133, 0.15);
   }
 }
@@ -196,12 +209,14 @@
   margin: 0 0 4px 0;
 }
 
-:global(.dark) .authorName {
+:global(html.dark) .authorName,
+:global(body.dark) .authorName {
   color: #e9ecf1;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not(.light) .authorName {
+  :global(html:not(.light)) .authorName,
+  :global(body:not(.light)) .authorName {
     color: #e9ecf1;
   }
 }
@@ -232,12 +247,14 @@
   color: #d1d5db;
 }
 
-:global(.dark) .starEmpty {
+:global(html.dark) .starEmpty,
+:global(body.dark) .starEmpty {
   color: #4b5563;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not(.light) .starEmpty {
+  :global(html:not(.light)) .starEmpty,
+  :global(body:not(.light)) .starEmpty {
     color: #4b5563;
   }
 }
@@ -254,12 +271,14 @@
   overflow: hidden;
 }
 
-:global(.dark) .reviewComment {
+:global(html.dark) .reviewComment,
+:global(body.dark) .reviewComment {
   color: #a6b0bf;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not(.light) .reviewComment {
+  :global(html:not(.light)) .reviewComment,
+  :global(body:not(.light)) .reviewComment {
     color: #a6b0bf;
   }
 }
@@ -280,13 +299,15 @@
   pointer-events: none;
 }
 
-:global(.dark) .proBadge {
+:global(html.dark) .proBadge,
+:global(body.dark) .proBadge {
   color: #a6b0bf;
   border-color: #374151;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not(.light) .proBadge {
+  :global(html:not(.light)) .proBadge,
+  :global(body:not(.light)) .proBadge {
     color: #a6b0bf;
     border-color: #374151;
   }

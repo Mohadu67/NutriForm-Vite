@@ -49,6 +49,36 @@
   font-size: 12px;
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.iconBtn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #f5f5f5;
+}
+
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+
+.iconBtn svg {
+  pointer-events: none;
+}
+
 .darkModeBtn {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -79,9 +109,18 @@
     padding: 3px 6px;
   }
 
+  .actions {
+    gap: 6px;
+  }
+
   .darkModeBtn {
     width: 32px;
     height: 32px;
     font-size: 16px;
+  }
+
+  .iconBtn {
+    width: 32px;
+    height: 32px;
   }
 }

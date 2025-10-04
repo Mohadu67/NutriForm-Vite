@@ -2,7 +2,7 @@ export const TYPE_MAP = {
   muscu: ["muscu", "renforcement", "strength", "weightlifting", "musculation", "fitness", "crossfit"],
   cardio: ["cardio", "hiit", "endurance", "aerobic", "aérobie", "conditioning"],
   renfo: ["renforcement", "muscu", "conditioning", "strength"],
-  yoga: ["yoga", "hatha", "vinyasa", "ashtanga"],
+  natation: ["natation", "swimming", "nage", "piscine", "crawl", "brasse", "papillon", "dos crawlé"],
   etirement: ["etirement", "étirement", "stretching", "stretch"],
   meditation: ["meditation", "méditation", "mindfulness"],
 };
@@ -189,6 +189,8 @@ export const MUSCLE_ZONES = Object.freeze({
 });
 
 export const MUSCLE_GROUPS = Object.freeze({
+  pectoraux: Object.freeze(["pectoraux"]),
+  epaules: Object.freeze(["epaules"]),
   bras: Object.freeze(["biceps", "triceps", "avant-bras"]),
   dos: Object.freeze(["dos-superieur", "dos-inferieur"]),
   core: Object.freeze(["abdos-centre", "abdos-lateraux", "dos-inferieur"]),
@@ -206,7 +208,7 @@ export const MUSCLE_MAP = Object.freeze({
 
 export const EQUIP_MAP = {
   "poids-du-corps": [
-    "poids du corps", "bodyweight", "body weight", "none", "no equipment",
+    "poids-du-corps", "poids du corps", "bodyweight", "body weight", "none", "no equipment",
     "weightless", "barre-fixe", "barre fixe", "pull-up bar", "pullup bar", "sans matériel", "aucun"
   ],
   "halteres": ["halteres", "haltères", "dumbbell", "dumbbells", "dumbell", "dumb bell"],

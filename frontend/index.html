@@ -9,8 +9,15 @@
     <meta name="description" content="Harmonith, ton coach encore plus proche. Calcule ton IMC, tes besoins caloriques journaliers et crée ton programme d'entraînement personnalisé. Outils gratuits de nutrition et fitness.">
     <meta name="keywords" content="calculateur IMC, calculateur calories, coach sportif, nutrition, fitness, macronutriments, perte de poids, prise de masse, entraînement personnalisé">
     <meta name="author" content="Harmonith">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <link rel="canonical" href="https://incandescent-dolphin-d90e0a.netlify.app/">
+
+    <!-- Langue alternative -->
+    <link rel="alternate" hreflang="fr" href="https://incandescent-dolphin-d90e0a.netlify.app/">
+    <link rel="alternate" hreflang="en" href="https://incandescent-dolphin-d90e0a.netlify.app/en">
+    <link rel="alternate" hreflang="de" href="https://incandescent-dolphin-d90e0a.netlify.app/de">
+    <link rel="alternate" hreflang="es" href="https://incandescent-dolphin-d90e0a.netlify.app/es">
+    <link rel="alternate" hreflang="x-default" href="https://incandescent-dolphin-d90e0a.netlify.app/">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -18,6 +25,9 @@
     <meta property="og:title" content="Harmonith - Calculateur IMC et Calories | Coach Sportif en Ligne">
     <meta property="og:description" content="Calcule ton IMC, tes besoins caloriques et crée ton programme d'entraînement personnalisé avec Harmonith, ton coach encore plus proche.">
     <meta property="og:image" content="https://incandescent-dolphin-d90e0a.netlify.app/assets/icons/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Harmonith - Coach Sportif en Ligne">
     <meta property="og:locale" content="fr_FR">
     <meta property="og:site_name" content="Harmonith">
 
@@ -28,34 +38,134 @@
     <meta name="twitter:description" content="Calcule ton IMC, tes besoins caloriques et crée ton programme d'entraînement personnalisé.">
     <meta name="twitter:image" content="https://incandescent-dolphin-d90e0a.netlify.app/assets/icons/og-image.jpg">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/src/assets/img/logo/Logo.svg">
-    <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+    <!-- Favicon - Multiple formats pour compatibilité maximale -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="msapplication-TileColor" content="#B5EAD7">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    <meta name="theme-color" content="#B5EAD7">
+
+    <!-- Sitemap -->
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
 
     <!-- Schema.org Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Harmonith",
-      "description": "Application web gratuite pour calculer ton IMC, tes besoins caloriques et créer ton programme d'entraînement personnalisé",
-      "url": "https://incandescent-dolphin-d90e0a.netlify.app/",
-      "applicationCategory": "HealthApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "EUR"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "ratingCount": "127"
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Mohammed Hamiani"
-      }
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://incandescent-dolphin-d90e0a.netlify.app/#website",
+          "url": "https://incandescent-dolphin-d90e0a.netlify.app/",
+          "name": "Harmonith",
+          "description": "Calculateur IMC et Calories | Coach Sportif en Ligne",
+          "image": {
+            "@type": "ImageObject",
+            "url": "https://incandescent-dolphin-d90e0a.netlify.app/favicon.png"
+          },
+          "publisher": {
+            "@id": "https://incandescent-dolphin-d90e0a.netlify.app/#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://incandescent-dolphin-d90e0a.netlify.app/?s={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://incandescent-dolphin-d90e0a.netlify.app/#organization",
+          "name": "Harmonith",
+          "url": "https://incandescent-dolphin-d90e0a.netlify.app/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://incandescent-dolphin-d90e0a.netlify.app/logo.svg",
+            "width": "512",
+            "height": "512"
+          },
+          "image": {
+            "@type": "ImageObject",
+            "url": "https://incandescent-dolphin-d90e0a.netlify.app/assets/icons/og-image.jpg"
+          }
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://incandescent-dolphin-d90e0a.netlify.app/#webapp",
+          "name": "Harmonith",
+          "description": "Application web gratuite pour calculer ton IMC, tes besoins caloriques et créer ton programme d'entraînement personnalisé",
+          "url": "https://incandescent-dolphin-d90e0a.netlify.app/",
+          "applicationCategory": "HealthApplication",
+          "operatingSystem": "Web",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "127"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Mohammed Hamiani"
+          }
+        },
+        {
+          "@type": "ItemList",
+          "@id": "https://incandescent-dolphin-d90e0a.netlify.app/#navigation",
+          "name": "Navigation principale",
+          "itemListElement": [
+            {
+              "@type": "SiteNavigationElement",
+              "position": 1,
+              "name": "Accueil",
+              "url": "https://incandescent-dolphin-d90e0a.netlify.app/"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 2,
+              "name": "Outils",
+              "url": "https://incandescent-dolphin-d90e0a.netlify.app/outils"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 3,
+              "name": "Exercices",
+              "url": "https://incandescent-dolphin-d90e0a.netlify.app/exo"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 4,
+              "name": "À propos",
+              "url": "https://incandescent-dolphin-d90e0a.netlify.app/about"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 5,
+              "name": "Contact",
+              "url": "https://incandescent-dolphin-d90e0a.netlify.app/contact"
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": "https://incandescent-dolphin-d90e0a.netlify.app/#breadcrumb",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Harmonith",
+              "item": "https://incandescent-dolphin-d90e0a.netlify.app/"
+            }
+          ]
+        }
+      ]
     }
     </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tarteaucitronjs@1.9.7/css/tarteaucitron.css">
