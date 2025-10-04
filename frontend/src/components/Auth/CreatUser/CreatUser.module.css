@@ -48,6 +48,90 @@
   border: none;
   cursor: pointer;
   font-size: 1.2rem;
+}
+
+/* Photo Upload */
+.photoUpload {
+  width: 100%;
+}
+
+.photoLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+  border: 2px dashed #FFB385;
+  border-radius: 12px;
+  background: #FFF8F0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--ink, #222);
+}
+
+.photoLabel:hover {
+  border-color: #f49b69;
+  background: #FFE8D6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .photoLabel {
+    background: #1a1d24;
+    color: #e9ecf1;
+  }
+
+  .photoLabel:hover {
+    background: #2a2d34;
+  }
+}
+
+.photoIcon {
+  font-size: 32px;
+}
+
+.photoInput {
+  display: none;
+}
+
+.photoPreviewContainer {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+}
+
+.photoPreview {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #FFB385;
+  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+}
+
+.removePhoto {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFB385, #f49b69);
+  color: #fff;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(255, 179, 133, 0.4);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.removePhoto:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.5);
   line-height: 1;
   color: #2B2B2B;
 }

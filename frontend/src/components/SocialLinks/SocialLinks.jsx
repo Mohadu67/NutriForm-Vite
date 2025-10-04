@@ -13,7 +13,7 @@ export default function SocialLinks({ className = "" }) {
         <FaFacebook />
       </a>
       <a
-        href="https://instagram.com"
+        href="https://www.instagram.com/harmonith.fr?igsh=MWtiMmt0YmhhMWVhMA%3D%3D&utm_source=qr"
         target="_blank"
         rel="noopener noreferrer nofollow"
         aria-label="Instagram"
@@ -29,7 +29,7 @@ export default function SocialLinks({ className = "" }) {
         <FaTwitter />
       </a>
       <a
-        href="https://linkedin.com"
+        href="https://linkedin.com/company/harmonith"
         target="_blank"
         rel="noopener noreferrer nofollow"
         aria-label="LinkedIn"

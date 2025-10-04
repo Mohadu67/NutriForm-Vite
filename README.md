@@ -9,16 +9,22 @@ Application web de fitness et nutrition complète pour suivre ses exercices, cal
 - **Calculateur IMC** - Calcul de l'Indice de Masse Corporelle avec catégorisation détaillée et conseils personnalisés
 - **Bibliothèque d'exercices** - Plus de 300 exercices disponibles
 - **Programmes personnalisés** - Création illimitée de programmes d'entraînement
+- **Suivi de progression avec graphiques** - Visualisation de vos performances et évolution
+- **Historique des séances d'entraînement** - Consultation de toutes vos séances passées
 - **Newsletter** - Inscription à la newsletter pour rester informé
+- **Système d'authentification** - Connexion sécurisée avec email/password et JWT
+- **Mode sombre/clair** - Interface adaptative avec support du mode sombre manuel et automatique
+- **Multilingue** - Support de 4 langues (FR, EN, DE, ES)
+- **Sécurité renforcée** - Helmet.js et rate limiting pour protéger l'API
 
 ### 🔄 En développement
-- Système d'authentification (email/password)
-- Suivi de progression avec graphiques
-- Historique des séances d'entraînement
+- **Authentification Google OAuth** - Connexion simplifiée avec compte Google (en cours ⚡)
 
-### 📋 Fonctionnalités planifiées (voir FEATURES.md)
-- Authentification via Google OAuth
+### 📋 Fonctionnalités planifiées (voir FEATURES.md & ROADMAP.md)
 - Authentification via Apple Sign In
+- Système de dons pour soutenir le projet
+- Système d'amis et suivi social
+- Classements et leaderboards
 - Système de compte Premium avec fonctionnalités avancées
 - Mode hors-ligne (PWA)
 - Application mobile (React Native)
@@ -29,11 +35,16 @@ Application web de fitness et nutrition complète pour suivre ses exercices, cal
 - React 18 + Vite
 - React Router
 - CSS Modules
+- i18next (Internationalisation)
 - Microsoft Clarity (Analytics)
 
 ### Backend
 - Node.js + Express
-- Base de données (à préciser)
+- MongoDB (Base de données NoSQL)
+- Mongoose (ODM)
+- JWT (Authentification)
+- Helmet.js (Sécurité HTTP)
+- Express Rate Limit (Protection contre les abus)
 
 ## 📦 Installation
 
@@ -41,16 +52,42 @@ Application web de fitness et nutrition complète pour suivre ses exercices, cal
 # Cloner le repo
 git clone [url-du-repo]
 
-# Installer les dépendances
+# Installer les dépendances (root)
 npm install
 
-# Démarrer le projet
+# Installer les dépendances frontend
+cd frontend
+npm install
+
+# Installer les dépendances backend
+cd ../backend
+npm install
+
+# Configurer les variables d'environnement
+# Créer un fichier .env dans /backend avec :
+# MONGODB_URI=your_mongodb_connection_string
+# JWT_SECRET=your_secret_key
+# PORT=3000
+
+# Démarrer le projet (depuis la racine)
 npm run dev
 ```
 
 ## 📝 Licence
 
-À préciser
+Ce projet est sous licence **MIT License**.
+
+Vous êtes libre de :
+- ✅ Utiliser le code à des fins commerciales
+- ✅ Modifier le code
+- ✅ Distribuer le code
+- ✅ Utiliser le code en privé
+
+Conditions :
+- 📄 Inclure une copie de la licence et du copyright dans toute distribution
+- ⚠️ Le logiciel est fourni "tel quel", sans garantie d'aucune sorte
+
+Voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
 ## 👥 Équipe
 
