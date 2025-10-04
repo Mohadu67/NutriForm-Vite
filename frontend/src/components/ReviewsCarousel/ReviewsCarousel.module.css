@@ -5,8 +5,12 @@
   overflow: hidden;
 }
 
+:global(.dark) .carouselSection {
+  background: linear-gradient(135deg, #0c0e12 0%, #12151b 100%);
+}
+
 @media (prefers-color-scheme: dark) {
-  .carouselSection {
+  :root:not(.light) .carouselSection {
     background: linear-gradient(135deg, #0c0e12 0%, #12151b 100%);
   }
 }
@@ -29,8 +33,15 @@
   background-clip: text;
 }
 
+:global(.dark) .title {
+  background: linear-gradient(135deg, #e9ecf1, #a6b0bf);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 @media (prefers-color-scheme: dark) {
-  .title {
+  :root:not(.light) .title {
     background: linear-gradient(135deg, #e9ecf1, #a6b0bf);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -115,13 +126,22 @@
   box-shadow: 0 12px 32px rgba(255, 179, 133, 0.2);
 }
 
+:global(.dark) .reviewCard {
+  background: #12151b;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+:global(.dark) .reviewCard:hover {
+  box-shadow: 0 12px 32px rgba(255, 179, 133, 0.15);
+}
+
 @media (prefers-color-scheme: dark) {
-  .reviewCard {
+  :root:not(.light) .reviewCard {
     background: #12151b;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
 
-  .reviewCard:hover {
+  :root:not(.light) .reviewCard:hover {
     box-shadow: 0 12px 32px rgba(255, 179, 133, 0.15);
   }
 }
@@ -176,8 +196,12 @@
   margin: 0 0 4px 0;
 }
 
+:global(.dark) .authorName {
+  color: #e9ecf1;
+}
+
 @media (prefers-color-scheme: dark) {
-  .authorName {
+  :root:not(.light) .authorName {
     color: #e9ecf1;
   }
 }
@@ -208,8 +232,12 @@
   color: #d1d5db;
 }
 
+:global(.dark) .starEmpty {
+  color: #4b5563;
+}
+
 @media (prefers-color-scheme: dark) {
-  .starEmpty {
+  :root:not(.light) .starEmpty {
     color: #4b5563;
   }
 }
@@ -226,24 +254,42 @@
   overflow: hidden;
 }
 
+:global(.dark) .reviewComment {
+  color: #a6b0bf;
+}
+
 @media (prefers-color-scheme: dark) {
-  .reviewComment {
+  :root:not(.light) .reviewComment {
     color: #a6b0bf;
   }
 }
 
 /* Pro Badge */
 .proBadge {
-  background: linear-gradient(135deg, #FFB385, #f49b69);
-  color: #fff;
+  background: transparent;
+  color: #6b7280;
+  border: 2px solid #e5e7eb;
   padding: 6px 14px;
-  border-radius: 20px;
+  border-radius: 6px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.8px;
   text-transform: uppercase;
   display: inline-block;
-  box-shadow: 0 2px 8px rgba(255, 179, 133, 0.3);
+  cursor: default;
+  pointer-events: none;
+}
+
+:global(.dark) .proBadge {
+  color: #a6b0bf;
+  border-color: #374151;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .proBadge {
+    color: #a6b0bf;
+    border-color: #374151;
+  }
 }
 
 /* Responsive */

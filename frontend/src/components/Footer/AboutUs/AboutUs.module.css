@@ -14,8 +14,23 @@
   --about-radius: 16px;
 }
 
+/* Dark mode manuel */
+:global(.dark) {
+  --about-bg: #0c0e12;
+  --about-paper: #12151b;
+  --about-ink: #e9ecf1;
+  --about-muted: #a6b0bf;
+  --about-line: rgba(255,255,255,0.08);
+  --about-accent: #ffb581;
+  --about-accent-2: #ff9655;
+  --about-shadow-sm: 0 4px 12px rgba(0,0,0,.3);
+  --about-shadow-md: 0 8px 24px rgba(0,0,0,.4);
+  --about-shadow-lg: 0 16px 40px rgba(0,0,0,.5);
+}
+
+/* Dark mode auto */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --about-bg: #0c0e12;
     --about-paper: #12151b;
     --about-ink: #e9ecf1;

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import styles from "./Navbar.module.css";
 import NavLinks from "./Navlinks.jsx";
 import PopupUser from "../Auth/PopupUser.jsx";
@@ -30,6 +31,7 @@ const ClipboardData = ({ size = 24 }) => (
 );
 
 export default function Navbar() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState("login");
@@ -47,9 +49,9 @@ export default function Navbar() {
   }, []);
 
   const core = [
-    { label: "Outils", path: "/outils", special: true },
-    { label: "S'entrainer", path: "/exo", special: true },
-    { label: "Contact", path: "/contact" },
+    { label: t('nav.tools'), path: "/outils", special: true },
+    { label: t('nav.exercises'), path: "/exo", special: true },
+    { label: t('nav.contact'), path: "/contact" },
   ];
 
   const authIcons = isLoggedIn

@@ -31,9 +31,7 @@ export default function ProfilePhoto({ user }) {
       const formData = new FormData();
       formData.append('photo', file);
 
-      const token = localStorage.getItem('token');
-      console.log('Token:', token ? 'présent' : 'absent');
-      console.log('API URL:', API_URL);
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
       const response = await fetch(`${API_URL}/api/upload/profile-photo`, {
         method: "POST",
@@ -43,9 +41,7 @@ export default function ProfilePhoto({ user }) {
         body: formData
       });
 
-      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (data.success) {
         setPhoto(data.photo);
@@ -69,7 +65,7 @@ export default function ProfilePhoto({ user }) {
     setMessage({ type: "", text: "" });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/upload/profile-photo`, {
         method: "DELETE",
         headers: {

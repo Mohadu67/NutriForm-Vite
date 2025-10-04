@@ -16,6 +16,7 @@ import NewsletterAdmin from "./pages/Admin/NewsletterAdmin.jsx";
 import AdminPage from "./pages/Admin/AdminPage.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
+import './i18n/config';
 
 export default function App() {
   useEffect(() => {

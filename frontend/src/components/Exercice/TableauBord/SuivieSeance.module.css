@@ -7,11 +7,11 @@
 }
 
 .statCard {
-  background: #f9fafb;
+  background: var(--paper, #f9fafb);
   padding: 0.9rem;
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.04));
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -19,12 +19,12 @@
 }
 .statCard:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-md, 0 6px 14px rgba(0,0,0,0.06));
 }
 
 .statLabel {
   font-size: 0.92rem;
-  color: #374151;
+  color: var(--muted, #374151);
   margin-bottom: 6px;
   letter-spacing: .2px;
 }
@@ -32,7 +32,7 @@
 .statValue {
   font-size: 1.15rem;
   font-weight: 800;
-  color: #111827; 
+  color: var(--ink, #111827);
 }
 
 .section {
@@ -43,15 +43,15 @@
   font-weight: 800;
   margin: 8px 0 10px;
   letter-spacing: .3px;
-  color: #111827;
+  color: var(--ink, #111827);
 }
 .sectionGrid {
   display: grid;
-  grid-template-columns: 1fr; 
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 .cardMuted { opacity: .85; }
-.valueMuted { color: #6b7280; } 
+.valueMuted { color: var(--muted, #6b7280); }
 
 .compactCard { padding: 0.75rem 0.9rem; }
 .colum {
@@ -65,17 +65,17 @@
   justify-content: space-between;
   gap: 10px;
 }
-.rowLabel { 
+.rowLabel {
   font-size: 0.9rem;
-  color: #4b5563;
+  color: var(--muted, #4b5563);
 }
 .rowValue {
   font-size: 1.06rem;
   font-weight: 800;
-  color: #111827;
+  color: var(--ink, #111827);
   white-space: nowrap;
 }
-.divider { height: 1px; background: rgba(0,0,0,0.06); }
+.divider { height: 1px; background: var(--line, rgba(0,0,0,0.06)); }
 
 .rowCards {
   display: flex;

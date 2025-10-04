@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "home": "Home",
+    "tools": "Tools",
+    "exercises": "Exercises",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Sign Up",
+    "myAccount": "My Account",
+    "logout": "Logout"
+  },
+  "hero": {
+    "title": "Transform your body, transform your life",
+    "subtitle": "Achieve your fitness goals with personalized tools and professional tracking",
+    "cta": "Start Now"
+  },
+  "home": {
+    "mainTitle": "Nutrition, wellness, performance: transform your daily life.",
+    "mainSubtitle": "Quickly calculate your BMI and receive personalized advice tailored to your profile. Then explore your metabolism with our calorie needs calculator for a complete view of your energy intake. A simple and practical approach to progress towards better health balance.",
+    "toolsTitle": "Calculate, adapt, progress!"
+  },
+  "tools": {
+    "title": "Our Tools",
+    "imc": "BMI Calculator",
+    "calories": "Calorie Needs",
+    "tdee": "Energy Expenditure"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close"
+  }
+}

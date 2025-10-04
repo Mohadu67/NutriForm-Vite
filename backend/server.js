@@ -1,15 +1,20 @@
 const fs = require('fs');
 if (fs.existsSync('.env.local')) {
   require('dotenv').config({ path: '.env.local' });
+  console.log('📁 Chargement de .env.local');
 } else {
   require('dotenv').config();
+  console.log('📁 Chargement de .env');
 }
+console.log('🔑 JWT_SECRET:', process.env.JWT_SECRET ? '✅ Défini' : '❌ NON DÉFINI');
 const cookieParser = require('cookie-parser');
 const config = require('./config');
 const { allowedOrigins } = config;
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const authRoutes = require('./routes/auth.route.js');
 const verifyRoutes = require('./routes/verify.route.js');
@@ -40,12 +45,28 @@ mongoose
     process.exit(1);
   });
 
+// Helmet pour sécuriser les headers HTTP
+app.use(helmet({
+  contentSecurityPolicy: false, // Désactivé pour ne pas bloquer les ressources
+  crossOriginEmbedderPolicy: false
+}));
+
+// Rate limiting global
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Max 100 requêtes par IP
+  message: 'Trop de requêtes depuis cette IP, réessayez plus tard.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 app.use(cors({
   origin: allowedOrigins,
   credentials: true,
 }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(globalLimiter);
 
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
