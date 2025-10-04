@@ -8,7 +8,8 @@
     "login": "Connexion",
     "register": "Inscription",
     "myAccount": "Mon compte",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "history": "Historique"
   },
   "home": {
     "mainTitle": "Nutrition, bien-être, performance : transforme ton quotidien.",
@@ -21,10 +22,148 @@
     "cta": "Commencer maintenant"
   },
   "tools": {
-    "title": "Nos Outils",
+    "title": "Nos outils",
     "imc": "Calculateur IMC",
-    "calories": "Besoins Caloriques",
-    "tdee": "Dépense Énergétique"
+    "calories": "Besoins caloriques",
+    "tdee": "Dépense énergétique"
+  },
+  "auth": {
+    "loginTitle": "Connexion",
+    "registerTitle": "Inscription",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "alreadyAccount": "Déjà un compte ?",
+    "signUp": "S'inscrire",
+    "signIn": "Se connecter",
+    "rememberMe": "Se souvenir de moi",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "backToLogin": "Retour à la connexion",
+    "verifyEmail": "Vérifier l'email",
+    "logout": "Déconnexion"
+  },
+  "footer": {
+    "aboutTitle": "À propos d'Harmonith",
+    "aboutText": "Harmonith t'accompagne dans ta transformation physique et ton bien-être au quotidien.",
+    "quickLinks": "Liens rapides",
+    "legal": "Mentions légales",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation",
+    "followUs": "Suis-nous",
+    "rights": "Tous droits réservés"
+  },
+  "newsletter": {
+    "badge": "Newsletter",
+    "title": "Reste dans la boucle 💌",
+    "description": "Reçois nos nouveautés, conseils fitness et astuces pour progresser directement dans ta boîte mail. Promis, pas de spam, que du contenu utile !",
+    "feature1": "Nouveaux exercices",
+    "feature2": "Conseils d'experts",
+    "feature3": "Offres exclusives",
+    "placeholder": "ton@email.com",
+    "ariaLabel": "Adresse email",
+    "buttonSubscribe": "S'abonner",
+    "buttonSuccess": "✓ Abonné(e) !",
+    "privacy": "🔒 Tes données sont protégées. Désinscris-toi quand tu veux.",
+    "successMessage": "Merci ! Tu es maintenant abonné(e) à notre newsletter 🎉",
+    "errorInvalidEmail": "Entre une adresse email valide",
+    "errorCaptcha": "reCAPTCHA non chargé. Réessaye.",
+    "errorGeneric": "Une erreur est survenue. Réessaye plus tard.",
+    "errorNetwork": "Impossible de s'inscrire pour le moment. Vérifie ta connexion."
+  },
+  "reviews": {
+    "title": "Ce que disent nos utilisateurs",
+    "carouselTitle": "Ils nous font confiance",
+    "professionalBadge": "PROFESSIONNEL",
+    "userReviews": "Avis utilisateurs",
+    "proReviews": "Avis professionnels"
+  },
+  "aboutUs": {
+    "title": "Qui sommes-nous ?",
+    "subtitle": "Une équipe passionnée à ton service",
+    "description": "Chez Harmonith, nous croyons que chaque personne mérite d'atteindre ses objectifs de santé et de bien-être. Notre mission est de rendre le fitness accessible à tous grâce à des outils innovants et personnalisés.",
+    "ourValues": "Nos valeurs",
+    "innovation": "Innovation",
+    "innovationDesc": "Des outils modernes et intuitifs pour faciliter ton parcours fitness",
+    "personalization": "Personnalisation",
+    "personalizationDesc": "Des conseils adaptés à tes besoins et objectifs spécifiques",
+    "community": "Communauté",
+    "communityDesc": "Un espace bienveillant pour progresser ensemble",
+    "ourTeam": "Notre équipe"
+  },
+  "exercises": {
+    "search": "Rechercher un exercice",
+    "filter": "Filtrer",
+    "muscleGroup": "Groupe musculaire",
+    "difficulty": "Difficulté",
+    "equipment": "Équipement",
+    "all": "Tous",
+    "beginner": "Débutant",
+    "intermediate": "Intermédiaire",
+    "advanced": "Avancé",
+    "noResults": "Aucun exercice trouvé",
+    "createProgram": "Créer un programme",
+    "myPrograms": "Mes programmes",
+    "addToProgram": "Ajouter au programme"
+  },
+  "workout": {
+    "startWorkout": "Commencer la séance",
+    "endWorkout": "Terminer la séance",
+    "pauseWorkout": "Mettre en pause",
+    "resumeWorkout": "Reprendre",
+    "duration": "Durée",
+    "calories": "Calories",
+    "exercises": "Exercices",
+    "sets": "Séries",
+    "reps": "Répétitions",
+    "weight": "Poids",
+    "rest": "Repos",
+    "notes": "Notes",
+    "addNote": "Ajouter une note",
+    "sessionCompleted": "Séance terminée !",
+    "sessionStats": "Statistiques de la séance",
+    "history": "Historique",
+    "lastWorkout": "Dernière séance",
+    "totalWorkouts": "Séances totales",
+    "weekStreak": "Série hebdomadaire"
+  },
+  "profile": {
+    "myProfile": "Mon profil",
+    "personalInfo": "Informations personnelles",
+    "statistics": "Statistiques",
+    "progress": "Progression",
+    "uploadPhoto": "Télécharger une photo",
+    "changePassword": "Changer le mot de passe",
+    "height": "Taille",
+    "weight": "Poids",
+    "age": "Âge",
+    "gender": "Genre",
+    "male": "Homme",
+    "female": "Femme",
+    "goal": "Objectif",
+    "loseWeight": "Perdre du poids",
+    "gainMuscle": "Prendre du muscle",
+    "maintain": "Maintenir"
+  },
+  "stats": {
+    "bmi": "IMC",
+    "lastWeight": "Dernier poids",
+    "initialWeight": "Poids initial",
+    "currentWeight": "Poids actuel (calculé)",
+    "weightChange": "Variation de poids",
+    "dailyCalories": "Calories journalières",
+    "avgCaloriesPerWorkout": "Calories moy./séance",
+    "lastCaloriesBurned": "Calories brûlées (dernière séance)",
+    "workoutsLast7Days": "Séances sur 7 jours",
+    "totalWorkouts": "Total des séances complétées",
+    "favoriteMuscleGroup": "Groupe musculaire le plus travaillé",
+    "noData": "Aucune donnée",
+    "sessionStats": "Statistiques de la séance",
+    "completed": "complétées",
+    "volumeTotal": "Volume total",
+    "cardio": "Cardio",
+    "strength": "Force"
   },
   "common": {
     "loading": "Chargement...",
@@ -33,6 +172,156 @@
     "cancel": "Annuler",
     "delete": "Supprimer",
     "edit": "Modifier",
-    "close": "Fermer"
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "select": "Sélectionner",
+    "kg": "kg",
+    "kcal": "kcal",
+    "min": "min",
+    "sec": "sec",
+    "day": "jour",
+    "days": "jours"
+  },
+  "homeTools": {
+    "imc": {
+      "title": "Calculateur IMC",
+      "description": "Mesure ton Indice de Masse Corporelle et reçois une analyse claire accompagnée de pistes d'amélioration personnalisées.",
+      "cta": "Calculer mon IMC"
+    },
+    "calories": {
+      "title": "Besoins caloriques",
+      "description": "Détermine tes apports quotidiens idéaux pour soutenir une perte de poids, une prise de masse ou un simple maintien.",
+      "cta": "Calibrer mes calories"
+    },
+    "rm": {
+      "title": "Calculateur de 1RM",
+      "description": "Estime ta répétition maximale (1RM) pour programmer des cycles de progression précis et sécurisés."
+    },
+    "heart": {
+      "title": "Zones de fréquence cardiaque",
+      "description": "Visualise tes zones cardio personnalisées pour optimiser endurance, récupération et performance."
+    },
+    "badgeSoon": "Bientôt disponible",
+    "upcomingLabel": "Outils en préparation"
+  },
+  "exercice": {
+    "previous": "Précédent",
+    "next": "Suivant",
+    "letsgo": "C'est parti !",
+    "addExercises": "Ajouter des exercices",
+    "add": "Ajouter",
+    "addOtherExercises": "+ Ajouter d'autres exercices",
+    "addSet": "+ Ajouter une série",
+    "delete": "Supprimer",
+    "deleteSet": "Supprimer la série {{index}}",
+    "addNotes": "Ajouter des notes...",
+    "noExerciseFound": "Aucun exercice trouvé… pour l'instant ! On travaille en salle pour ajouter plus d'exos. Tu peux aussi élargir tes filtres.",
+    "noExerciseSelected": "Aucun exercice sélectionné pour l'instant.",
+    "resetSuggestions": "Réinitialiser les suggestions",
+    "loading": "Chargement des exercices…",
+    "searchByName": "Rechercher par nom…",
+    "allTypes": "Tous types",
+    "allMuscles": "Tous muscles",
+    "allEquipment": "Tout équipement",
+    "alreadyAdded": "déjà ajouté",
+    "noResults": "Aucun résultat. Essaie un autre mot-clé ou retire des filtres.",
+    "cancel": "Annuler"
+  },
+  "exercise": {
+    "form": {
+      "steps": {
+        "training": {
+          "title": "Entraînement",
+          "subtitle": "Choisis ton type de séance"
+        },
+        "equipment": {
+          "title": "Équipement",
+          "subtitle": "Sélectionne le matériel disponible"
+        },
+        "muscles": {
+          "title": "Muscles",
+          "subtitle": "Cible les zones à travailler"
+        },
+        "exercises": {
+          "title": "Exercices",
+          "subtitle": "Personnalise ta séance"
+        }
+      },
+      "sessionName": {
+        "label": "Nom de ta séance :",
+        "placeholder": "Ex : Dos & Biceps"
+      },
+      "actions": {
+        "restart": "🔄 Recommencer",
+        "back": "← Retour"
+      },
+      "defaultSessionName": "Séance – {{date}}",
+      "defaultExerciseName": "Exercice"
+    },
+    "salutation": {
+      "named": [
+        "Salut {{name}} 👋, prêt pour une séance ?",
+        "Allez {{name}} 💪, montre à ces haltères qui est le patron !",
+        "Aujourd'hui c'est toi le champion {{name}} 🏆",
+        "Aujourd'hui c'est ton tour {{name}} 🚀"
+      ],
+      "generic": [
+        "Salut 👋, prêt pour une séance ?",
+        "Allez 💪, montre à ces haltères qui est le patron !",
+        "Aujourd'hui c'est toi le champion 🏆",
+        "On compte sur toi 🚀"
+      ],
+      "fallback": "Bienvenue 👋"
+    },
+    "bodyPicker": {
+      "instructions": {
+        "multi": "Sélectionne une ou plusieurs zones musculaires pour filtrer la recherche.",
+        "single": "Sélectionne une zone musculaire principale."
+      },
+      "aria": "Sélecteur de zones musculaires",
+      "zones": {
+        "pectoraux": "Pectoraux",
+        "epaules": "Épaules",
+        "biceps": "Biceps",
+        "triceps": "Triceps",
+        "avant-bras": "Avant-bras",
+        "abdos-centre": "Abdos (milieu)",
+        "abdos-lateraux": "Abdos (latéraux)",
+        "dos-superieur": "Dos (haut)",
+        "dos-inferieur": "Dos (bas)",
+        "fessiers": "Fessiers",
+        "cuisses-externes": "Cuisses externes",
+        "cuisses-internes": "Cuisses internes",
+        "mollets": "Mollets",
+        "BICEPS": "Biceps",
+        "TRICEPS": "Triceps",
+        "FOREARMS": "Avant-bras",
+        "QUADRICEPS": "Quadriceps",
+        "HAMSTRINGS": "Ischios",
+        "CALVES": "Mollets",
+        "GLUTES": "Fessiers",
+        "BACK_UPPER": "Dos (haut)",
+        "BACK_LOWER": "Dos (bas)"
+      }
+    },
+    "finish": {
+      "saving": "Enregistrement… {{current}}/{{total}}",
+      "saved": "Séance enregistrée ✅",
+      "actions": {
+        "endSession": "Fin de séance",
+        "finish": "Terminer"
+      },
+      "congratsTitle": "🎉 Bravo !",
+      "successMessage": "Tu as terminé ta séance. Repose-toi, hydrate-toi et profite de tes progrès ! 💪",
+      "errorMessage_one": "Terminé avec {{count}} erreur.",
+      "errorMessage_other": "Terminé avec {{count}} erreurs."
+    }
   }
 }

@@ -38,12 +38,31 @@
   font-size: 0.95rem;
 }
 
+.loadingText {
+  font-size: 1rem;
+  color: var(--muted);
+  font-weight: 500;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
 .list {
   /* Mobile: simple vertical list */
   display: grid;
   gap: 8px;
+  position: relative;
+  z-index: 1;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
-.list { position: relative; z-index: 1; }
+
+@media (pointer: coarse) {
+  .list {
+    touch-action: none;
+  }
+}
 
 .BtnAjout {
   padding: 12px 16px;

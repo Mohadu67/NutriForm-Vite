@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Button from "../../../BoutonAction/BoutonAction";
 import styles from "./ChercherExo.module.css";
 import { idOf } from "../../Shared/idOf";
@@ -11,6 +12,7 @@ export default function ChercherExo({
   onBack,
   onCancel,
 }) {
+  const { t } = useTranslation();
   const [all, setAll] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -45,7 +47,7 @@ export default function ChercherExo({
 
   const options = useMemo(() => {
     return {
-      type: ["", "muscu", "cardio", "yoga", "meditation", "endurance", "etirement"],
+      type: ["", "muscu", "cardio", "natation", "meditation", "endurance", "etirement"],
       muscle: ["", "pectoraux", "dos", "epaules", "bras", "jambes", "core"],
       equip: ["", "poids-du-corps", "halteres", "machine", "barre", "kettlebell", "poulie"],
     };
@@ -110,10 +112,10 @@ export default function ChercherExo({
   return (
     <section className={styles.container}>
       <header className={styles.header}>
-        <h3 style={{ margin: 0 }}>Ajouter des exercices</h3>
+        <h3 style={{ margin: 0 }}>{t('exercice.addExercises')}</h3>
         <div className={styles.headerActions}>
           {onCancel && (
-            <Button className={styles.btnAnnule} type="button" onClick={onCancel}>Annuler</Button>
+            <Button className={styles.btnAnnule} type="button" onClick={onCancel}>{t('exercice.cancel')}</Button>
           )}
         </div>
       </header>
@@ -121,7 +123,7 @@ export default function ChercherExo({
       <div className={styles.filters}>
         <input
           type="search"
-          placeholder="Rechercher par nom…"
+          placeholder={t('exercice.searchByName')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => {
@@ -139,21 +141,21 @@ export default function ChercherExo({
           <select value={type} onChange={(e) => setType(e.target.value)} className={styles.select}>
             {options.type.map((v, i) => (
               <option key={i} value={v}>
-                {v === "" ? "Tous types" : v === "etirement" ? "étirement" : v}
+                {v === "" ? t('exercice.allTypes') : v === "etirement" ? "étirement" : v}
               </option>
             ))}
           </select>
           <select value={muscle} onChange={(e) => setMuscle(e.target.value)} className={styles.select}>
             {options.muscle.map((v, i) => (
               <option key={i} value={v}>
-                {v === "" ? "Tous muscles" : v === "epaules" ? "épaules" : v}
+                {v === "" ? t('exercice.allMuscles') : v === "epaules" ? "épaules" : v}
               </option>
             ))}
           </select>
           <select value={equip} onChange={(e) => setEquip(e.target.value)} className={styles.select}>
             {options.equip.map((v, i) => (
               <option key={i} value={v}>
-                {v === "" ? "Tout équipement" : v.replace(/-/g, " ")}
+                {v === "" ? t('exercice.allEquipment') : v.replace(/-/g, " ")}
               </option>
             ))}
           </select>
@@ -192,7 +194,7 @@ export default function ChercherExo({
                       <span>{ex.name || ex.title}</span>
                       {isPre && (
                         <span className={styles.badge}>
-                          déjà ajouté
+                          {t('exercice.alreadyAdded')}
                         </span>
                       )}
                     </div>
@@ -203,14 +205,14 @@ export default function ChercherExo({
             );
           })}
           {filtered.length === 0 && (
-            <li className={styles.empty}>Aucun résultat. Essaie un autre mot-clé ou retire des filtres.</li>
+            <li className={styles.empty}>{t('exercice.noResults')}</li>
           )}
         </ul>
       )}
 
       <div className={styles.footer}>
         <Button type="button" onClick={handleConfirm} disabled={selectedIds.size === 0}>
-          Ajouter {selectedIds.size > 0 ? `(${selectedIds.size})` : ""}
+          {t('exercice.add')} {selectedIds.size > 0 ? `(${selectedIds.size})` : ""}
         </Button>
       </div>
     </section>

@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "./ReviewsCarousel.module.css";
 
 export default function ReviewsCarousel() {
+  const { t } = useTranslation();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef(null);
@@ -38,7 +40,7 @@ export default function ReviewsCarousel() {
   return (
     <section className={styles.carouselSection}>
       <div className={styles.container}>
-        <h2 className={styles.title}>Ils nous font confiance</h2>
+        <h2 className={styles.title}>{t('reviews.carouselTitle')}</h2>
 
         <div className={styles.carouselWrapper}>
           <div className={styles.carousel} ref={scrollRef}>
@@ -66,7 +68,7 @@ export default function ReviewsCarousel() {
                     {renderStars(review.rating)}
                   </div>
                   <p className={styles.reviewComment}>{review.comment}</p>
-                  <div className={styles.proBadge}>PROFESSIONNEL</div>
+                  <div className={styles.proBadge}>{t('reviews.professionalBadge')}</div>
                 </div>
               ))}
             </div>

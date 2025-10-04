@@ -16,6 +16,16 @@
   --nf-accent-weak: rgba(255, 179, 133, 0.15);
 }
 
+/* Light mode manuel - force les couleurs claires */
+:global(.light) {
+  --nf-bg: #f9f9fb;
+  --nf-bg-card: #ffffff;
+  --nf-ink: #1a1a1a;
+  --nf-muted: #888;
+  --nf-border: rgba(0, 0, 0, 0.08);
+  --nf-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
 /* Dark mode manuel */
 :global(.dark) {
   --nf-bg: #0d0d0d;

@@ -1,0 +1,22 @@
+{
+  "name": "Harmonith - Coach Sportif en Ligne",
+  "short_name": "Harmonith",
+  "description": "Calculateur IMC, calories et programme d'entraînement personnalisé",
+  "icons": [
+    {
+      "src": "/assets/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#B5EAD7",
+  "background_color": "#F7F6F2",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}

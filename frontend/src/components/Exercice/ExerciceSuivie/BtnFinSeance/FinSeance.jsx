@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "./FinSeance.module.css";
 import useSaveSession from "../ExerciceCard/hooks/useSaveSession";
 
 export default function FinSeance({ items = [], onFinish }) {
+  const { t } = useTranslation();
   const { saving, error, save } = useSaveSession();
   const [done, setDone] = useState(false);
   const [progress, setProgress] = useState({ total: 0, current: 0 });
@@ -12,11 +14,16 @@ export default function FinSeance({ items = [], onFinish }) {
 
   const buttonLabel = useMemo(() => {
     if (saving && progress.total > 0) {
-      return `Enregistrement… ${progress.current}/${progress.total}`;
+      return t("exercise.finish.saving", {
+        current: progress.current,
+        total: progress.total,
+      });
     }
-    if (done) return "Séance enregistrée ✅";
-    return hasItems ? "Fin de séance" : "Terminer";
-  }, [saving, progress, done, hasItems]);
+    if (done) return t("exercise.finish.saved");
+    return hasItems
+      ? t("exercise.finish.actions.endSession")
+      : t("exercise.finish.actions.finish");
+  }, [saving, progress, done, hasItems, t]);
 
   async function handleFinish() {
     setErrors([]);
@@ -52,11 +59,11 @@ export default function FinSeance({ items = [], onFinish }) {
   if (done) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.title}>🎉 Bravo !</h2>
+        <h2 className={styles.title}>{t("exercise.finish.congratsTitle")}</h2>
         <p className={styles.text}>
           {errors.length === 0
-            ? "Tu as terminé ta séance. Repose-toi, hydrate-toi et profite de tes progrès ! 💪"
-            : `Terminé avec ${errors.length} erreur(s).`}
+            ? t("exercise.finish.successMessage")
+            : t("exercise.finish.errorMessage", { count: errors.length })}
         </p>
       </div>
     );
