@@ -1,0 +1,230 @@
+{
+  "exercises": [
+    {
+      "id": "exo-001",
+      "name": "Vélo stationnaire",
+      "type": [
+        "cardio"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "velo-stationnaire"
+      ],
+      "images": [
+        "/images/Exo/VeloStationnaire.gif"
+      ],
+      "explanation": "Cadence fluide 80–95 rpm, épaules relâchées, bassin fixe, garde un rythme constant et une respiration régulière. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-002",
+      "name": "Course sur tapis",
+      "type": [
+        "cardio"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "tapis"
+      ],
+      "images": [
+        "/images/Exo/CourseTapis.jpeg"
+      ],
+      "explanation": "Cours à une allure où tu peux parler sans t’essouffler, inclinaison légère 1–2%, foulée légère, regarde loin, épaules détendues. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-003",
+      "name": "Marche rapide incliné tapis",
+      "type": [
+        "cardio"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "fessiers",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "tapis"
+      ],
+      "images": [
+        "/images/Exo/MarcheTapisIncline.gif"
+      ],
+      "explanation": "Marche avec une posture droite, bras actifs, incline le tapis si possible, déroule bien le pied du talon vers la pointe. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-004",
+      "name": "Rameur",
+      "type": [
+        "cardio",
+        "renforcement"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "biceps",
+        "cuisses-externes",
+        "cuisses-internes",
+        "deltoides-post",
+        "dos-lats",
+        "dos-superieur",
+        "dos-trap",
+        "ischios",
+        "quadriceps"
+      ],
+      "equipment": [
+        "rameur"
+      ],
+      "images": [
+        "/images/Exo/Rameur.jpeg"
+      ],
+      "explanation": "Pousse d’abord avec les jambes, puis le buste, puis les bras. Garde le dos neutre et tire la poignée jusqu’au bas du sternum, retour contrôlé. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-005",
+      "name": "Corde à sauter",
+      "type": [
+        "cardio",
+        "hiit"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "avant-bras",
+        "deltoides-ant",
+        "mollets"
+      ],
+      "equipment": [
+        "corde-a-sauter"
+      ],
+      "images": [
+        "/images/Exo/CordeSauter.gif"
+      ],
+      "explanation": "Saute en gardant les atterrissages doux sur l’avant-pied, coudes près du corps, épaules relâchées, reste sur un sol stable. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-006",
+      "name": "Elliptique",
+      "type": [
+        "cardio"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "cuisses-internes",
+        "deltoides-ant",
+        "fessiers",
+        "ischios",
+        "quadriceps"
+      ],
+      "equipment": [
+        "elliptique"
+      ],
+      "images": [
+        "/images/Exo/Elliptique.jpeg"
+      ],
+      "explanation": "Effectue un mouvement fluide, talons bien posés, mains légères sur les poignées, garde un rythme constant et respire régulièrement. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-007",
+      "name": "Stepper",
+      "type": [
+        "cardio"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "fessiers",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "stepper"
+      ],
+      "images": [],
+      "explanation": "Garde une posture droite, effectue des pas courts, évite de t’appuyer sur la rampe, rythme soutenu mais toujours contrôlé. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-010r",
+      "name": "SkiErg",
+      "type": [
+        "cardio",
+        "hiit"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "dos-lats",
+        "dos-superieur",
+        "triceps"
+      ],
+      "equipment": [
+        "ski-erg"
+      ],
+      "images": [
+        "/images/Exo/SkiErg.gif"
+      ],
+      "explanation": "Tire d'abord avec les dorsaux puis les bras, ferme la hanche, garde un gainage fort, contrôle le retour, respire régulièrement. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-011",
+      "name": "Assault Bike",
+      "type": [
+        "cardio",
+        "hiit"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "cuisses-internes",
+        "deltoides",
+        "ischios",
+        "quadriceps",
+        "triceps"
+      ],
+      "equipment": [
+        "assault-bike"
+      ],
+      "images": [
+        "/images/Exo/AssaultBike.gif"
+      ],
+      "explanation": "Pousse et tire avec bras et jambes, cadence fluide, épaules relâchées, respiration rythmée, garde le buste stable. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    }
+  ]
+}

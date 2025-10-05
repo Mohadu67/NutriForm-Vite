@@ -17,6 +17,7 @@ const MUSCLE_CARDS = [
 
 export default function DynamiChoice({ onComplete = () => {}, onStepChange, requestedStep, onSearch }) {
   const { t } = useTranslation();
+  const containerRef = useRef(null);
   const [step, setStep] = useState(() => {
     try {
       const v = localStorage.getItem("dynamiStep");
@@ -62,6 +63,11 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   useEffect(() => {
     if (typeof onStepChange === "function") onStepChange(step);
+
+    // Scroll to top of container when step changes
+    if (containerRef.current) {
+      containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }, [step, onStepChange]);
 
   useEffect(() => {
@@ -111,7 +117,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   const allowedEquipIds = useMemo(() => {
     if (!typeId) return EQUIP_CARDS.map((c) => c.id);
-    if (["natation", "meditation"].includes(typeId)) return ["poids-du-corps"];
+    if (["natation", "meditation", "yoga"].includes(typeId)) return ["poids-du-corps"];
     if (typeId === "etirement") return ["poids-du-corps"];
     return EQUIP_CARDS.map((c) => c.id);
   }, [typeId]);
@@ -141,12 +147,18 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
     setEquipIds((prev) => prev.filter((id) => allowedEquipIds.includes(id)));
   }, [allowedEquipIds]);
 
-  // Auto-sélection pour natation et méditation
+  // Auto-sélection pour natation, méditation et yoga
   useEffect(() => {
     if (!typeId) return;
 
     // Natation : auto-sélection équipement + tous les muscles
     if (typeId === "natation") {
+      setEquipIds(["poids-du-corps"]);
+      setMuscleIds(MUSCLE_CARDS.map(c => c.id));
+    }
+
+    // Yoga : auto-sélection équipement + tous les muscles
+    if (typeId === "yoga") {
       setEquipIds(["poids-du-corps"]);
       setMuscleIds(MUSCLE_CARDS.map(c => c.id));
     }
@@ -200,8 +212,8 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   function onNext() {
     if (step < 3) {
-      // Si on est à l'étape 0 et que c'est natation ou méditation, sauter directement à l'étape 3
-      if (step === 0 && (typeId === "natation" || typeId === "meditation")) {
+      // Si on est à l'étape 0 et que c'est natation, yoga ou méditation, sauter directement à l'étape 3
+      if (step === 0 && (typeId === "natation" || typeId === "yoga" || typeId === "meditation")) {
         setStep(3);
       } else {
         setStep(step + 1);
@@ -219,8 +231,8 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   function onPrev() {
     if (step > 0) {
-      // Si on est à l'étape 3 et que c'est natation ou méditation, revenir directement à l'étape 0
-      if (step === 3 && (typeId === "natation" || typeId === "meditation")) {
+      // Si on est à l'étape 3 et que c'est natation, yoga ou méditation, revenir directement à l'étape 0
+      if (step === 3 && (typeId === "natation" || typeId === "yoga" || typeId === "meditation")) {
         setStep(0);
       } else {
         setStep(step - 1);
@@ -261,7 +273,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   }
 
   return (
-    <section className={styles.container}>
+    <section className={styles.container} ref={containerRef}>
       <header className={styles.header}>
         <h3 className={styles.title}>{headings[safeStep].title}</h3>
         <p className={styles.subtitle}>{subtitle}</p>

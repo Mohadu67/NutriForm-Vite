@@ -4,9 +4,9 @@ import Button from "../../../BoutonAction/BoutonAction";
 import styles from "./ChercherExo.module.css";
 import { idOf } from "../../Shared/idOf";
 import { mergeById } from "../../Shared/selectionUtils";
+import { loadExercises } from "../../../../utils/exercisesLoader";
 
 export default function ChercherExo({
-  sourceUrl = "/data/db.json",
   preselectedIds = [],
   onConfirm = () => {},
   onBack,
@@ -31,23 +31,20 @@ export default function ChercherExo({
     (async () => {
       try {
         setLoading(true);
-        const res = await fetch(sourceUrl, { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : (data.exercises || data.items || []);
-        if (alive) setAll(Array.isArray(list) ? list : []);
+        const exercises = await loadExercises('all');
+        if (alive) setAll(exercises);
       } catch (e) {
-        if (alive) setError(e?.message || "Impossible de charger bd.json");
+        if (alive) setError(e?.message || "Impossible de charger les exercices");
       } finally {
         if (alive) setLoading(false);
       }
     })();
     return () => { alive = false; };
-  }, [sourceUrl]);
+  }, []);
 
   const options = useMemo(() => {
     return {
-      type: ["", "muscu", "cardio", "natation", "meditation", "endurance", "etirement"],
+      type: ["", "muscu", "cardio", "yoga", "natation", "meditation", "endurance", "etirement"],
       muscle: ["", "pectoraux", "dos", "epaules", "bras", "jambes", "core"],
       equip: ["", "poids-du-corps", "halteres", "machine", "barre", "kettlebell", "poulie"],
     };
