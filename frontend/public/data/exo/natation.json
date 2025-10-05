@@ -1,0 +1,55 @@
+{
+  "exercises": [
+    {
+      "id": "exo-008",
+      "name": "Natation crawl",
+      "type": [
+        "natation"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "deltoides",
+        "dos-lats",
+        "dos-superieur",
+        "quadriceps",
+        "triceps"
+      ],
+      "equipment": [
+        "poids-du-corps"
+      ],
+      "images": [
+        "/images/Exo/NatationCrawl.gif"
+      ],
+      "explanation": "Garde un gainage fort, respire tous les 2–3 mouvements, tire avec le coude haut, allonge bien la glisse, reste détendu. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    },
+    {
+      "id": "exo-009",
+      "name": "Natation brasse",
+      "type": [
+        "natation"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "adducteurs",
+        "cuisses-externes",
+        "cuisses-internes",
+        "pectoraux",
+        "quadriceps"
+      ],
+      "equipment": [
+        "poids-du-corps"
+      ],
+      "images": [
+        "/images/Exo/NatationBrasse.gif"
+      ],
+      "explanation": "Effectue une traction ample puis glisse, fais un battement en fouet, garde la tête dans l'axe, rythme régulier, posture détendue. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et ajuste la résistance pour rester fluide."
+    }
+  ]
+}

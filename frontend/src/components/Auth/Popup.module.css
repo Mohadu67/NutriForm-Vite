@@ -117,10 +117,16 @@
   overscroll-behavior: contain;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   padding: 1rem;
   animation: overlayDingue 260ms ease-out;
   color: var(--nf-ink);
+}
+
+.popup-overlay::before {
+  content: "";
+  min-height: calc(100% + 1px);
+  display: block;
 }
 
 @keyframes overlayDingue { from { opacity: 0 } to { opacity: 1 } }

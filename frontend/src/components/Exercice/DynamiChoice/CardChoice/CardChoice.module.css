@@ -3,17 +3,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: .75rem;
-}
-
-@media (min-width: 520px) {
-  .cardsGrid {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  }
-}
-@media (min-width: 820px) {
-  .cardsGrid {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  }
+  width: 100%;
 }
 
 .card {

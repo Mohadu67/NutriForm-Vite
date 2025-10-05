@@ -1,0 +1,215 @@
+{
+  "exercises": [
+    {
+      "id": "exo-099",
+      "name": "Étirement ischio-jambiers debout",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "cuisses-internes",
+        "dos-inferieur",
+        "ischios",
+        "lombaires"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Place un talon sur un support bas, allonge la jambe et penche légèrement le buste depuis les hanches en gardant le dos droit jusqu'à sentir l'étirement à l'arrière de la cuisse. Respiration : inspire par le nez pour préparer le mouvement et expire lentement en accompagnant l'étirement sans rebondir. Points clés : maintiens la sangle abdominale engagée, garde les épaules alignées et relâche seulement jusqu'à une tension confortable."
+    },
+    {
+      "id": "exo-100",
+      "name": "Étirement du psoas en fente basse",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "fléchisseurs-hanche",
+        "psoas",
+        "quadriceps"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Depuis une position de fente, pose le genou arrière au sol et bascule doucement le bassin vers l'avant en gardant le buste haut pour sentir l'allongement du psoas. Respiration : inspire pour te grandir et expire en laissant le bassin descendre progressivement. Points clés : garde la jambe avant à 90°, engage le core et évite de cambrer le bas du dos."
+    },
+    {
+      "id": "exo-120",
+      "name": "Étirement quadriceps debout",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "quadriceps"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Debout, attrape un pied derrière toi et ramène le talon vers les fessiers en gardant les genoux alignés. Respiration : respire calmement en maintenant l'étirement. Points clés : garde le bassin neutre, ne cambre pas le dos et tiens-toi à un support si nécessaire."
+    },
+    {
+      "id": "exo-121",
+      "name": "Étirement des mollets au mur",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "mollets"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Face à un mur, place un pied en arrière jambe tendue, pousse le talon au sol et penche-toi légèrement vers l'avant. Respiration : respire calmement pendant l'étirement. Points clés : garde le talon au sol, la jambe arrière tendue et le corps aligné."
+    },
+    {
+      "id": "exo-122",
+      "name": "Étirement des fessiers allongé",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "fessiers"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Allongé sur le dos, croise une cheville sur le genou opposé et tire la cuisse vers toi pour étirer le fessier. Respiration : respire profondément en maintenant l'étirement. Points clés : garde la tête au sol, ne force pas et maintiens 20-30 secondes."
+    },
+    {
+      "id": "exo-123",
+      "name": "Étirement du dos (cat stretch)",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "dos"
+      ],
+      "equipment": [
+        "tapis",
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "À quatre pattes, arrondis le dos vers le plafond en rentrant le menton, puis relâche. Respiration : expire en arrondissant, inspire en revenant. Points clés : mobilise toute la colonne, va lentement et ne force pas."
+    },
+    {
+      "id": "exo-124",
+      "name": "Étirement des épaules bras croisés",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "deltoides",
+        "epaules"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Debout ou assis, ramène un bras devant toi à hauteur d'épaule et tire avec l'autre main pour étirer l'épaule. Respiration : respire calmement pendant l'étirement. Points clés : garde les épaules basses, ne tire pas trop fort et maintiens 20-30 secondes."
+    },
+    {
+      "id": "exo-125",
+      "name": "Étirement des triceps au-dessus de la tête",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "triceps"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Lève un bras, plie le coude pour amener la main derrière la tête et tire doucement le coude avec l'autre main. Respiration : respire calmement pendant l'étirement. Points clés : garde le dos droit, ne force pas et maintiens 20-30 secondes."
+    },
+    {
+      "id": "exo-126",
+      "name": "Étirement des pectoraux au cadre de porte",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "pectoraux"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Place un avant-bras contre un cadre de porte, tourne le corps dans la direction opposée pour étirer le pectoral. Respiration : respire calmement pendant l'étirement. Points clés : garde les épaules basses, ajuste la hauteur du bras et maintiens 20-30 secondes."
+    },
+    {
+      "id": "exo-128",
+      "name": "Étirement du cou latéral",
+      "type": [
+        "etirement",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "mobilite",
+        "recovery"
+      ],
+      "muscles": [
+        "cou",
+        "dos-trap"
+      ],
+      "equipment": [
+        "aucun"
+      ],
+      "images": [],
+      "explanation": "Assis ou debout, incline doucement la tête sur le côté en amenant l'oreille vers l'épaule jusqu'à sentir l'étirement du côté opposé. Respiration : respire calmement pendant l'étirement. Points clés : ne force pas, garde les épaules basses et maintiens 15-20 secondes de chaque côté."
+    }
+  ]
+}

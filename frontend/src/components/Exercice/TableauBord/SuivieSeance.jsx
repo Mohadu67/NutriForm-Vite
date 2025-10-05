@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import styles from "./SuivieSeance.module.css";
 import Stat from "./stats/Stat.jsx";
 import { computeSessionStats } from "./stats/computeSessionStats";
+import { loadExercises } from "../../../utils/exercisesLoader";
 
 
 const API_BASE = (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
@@ -50,11 +51,9 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/data/db.json');
-        if (!res.ok) throw new Error('Failed to load exercises DB');
-        const json = await res.json();
-        if (!cancelled && Array.isArray(json.exercises)) {
-          setExercisesDb(json.exercises);
+        const exercises = await loadExercises('all');
+        if (!cancelled) {
+          setExercisesDb(exercises);
         }
       } catch (e) {
         console.warn('Could not load exercises database:', e);

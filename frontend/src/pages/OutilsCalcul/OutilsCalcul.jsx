@@ -7,7 +7,7 @@ export default function OutilsCalcul() {
   const [tab, setTab] = useState("imc");
 
   return (
-    <main className={styles.container}>
+    <main id="outils" className={styles.container}>
       <header className={styles.header}>
         <h2 style={{ margin: 0 }}>Outils de calcul</h2>
         <p style={{ margin: 0, color: "#666" }}>
