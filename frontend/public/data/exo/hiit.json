@@ -1,0 +1,186 @@
+{
+  "exercises": [
+    {
+      "id": "exo-021",
+      "name": "Mountain climbers",
+      "type": [
+        "hiit",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre",
+        "cuisses-externes",
+        "deltoides-ant",
+        "quadriceps"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "/images/Exo/MountainClimbers.gif"
+      ],
+      "explanation": "Amène les genoux vers la poitrine en rythme, garde les hanches basses, mains sous les épaules, dos neutre, mouvement fluide. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-039",
+      "name": "Burpees",
+      "type": [
+        "hiit",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre",
+        "cuisses-externes",
+        "deltoides-ant",
+        "pectoraux",
+        "quadriceps",
+        "triceps"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "/images/Exo/Burpees.gif"
+      ],
+      "explanation": "Depuis debout, descends en planche, fais une pompe, ramène les pieds et saute explosivement en l’air, mouvement fluide. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-040",
+      "name": "Jumping jacks",
+      "type": [
+        "hiit",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre",
+        "deltoides-lat",
+        "mollets"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "/images/Exo/JumpingJacks.gif"
+      ],
+      "explanation": "Saute en écartant bras et jambes, garde un rythme constant, abdos gainés, respire régulièrement. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-041",
+      "name": "High knees",
+      "type": [
+        "hiit",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos",
+        "abdos-centre",
+        "cuisses-externes",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "poids-du-corps",
+        "aucun"
+      ],
+      "images": [
+        "/images/Exo/HighKnees.gif"
+      ],
+      "explanation": "Monte les genoux à hauteur de hanches, cadence rapide, buste droit, bras actifs. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-042",
+      "name": "Sprints (tapis/piste)",
+      "type": [
+        "hiit",
+        "cardio"
+      ],
+      "objectives": [
+        "endurance",
+        "force"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "tapis"
+      ],
+      "images": [],
+      "explanation": "Cours à pleine vitesse sur courte distance, foulée dynamique, bras puissants, regarde loin. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-043",
+      "name": "Box jumps",
+      "type": [
+        "hiit",
+        "poids-du-corps"
+      ],
+      "objectives": [
+        "force",
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "fessiers",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "box"
+      ],
+      "images": [
+        "/images/Exo/Boxjumps.gif"
+      ],
+      "explanation": "Debout face à la box, saute en utilisant les bras, atterris doucement en fléchissant les genoux, redescends avec contrôle. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-044",
+      "name": "Battle ropes",
+      "type": [
+        "hiit",
+        "renforcement"
+      ],
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "biceps",
+        "deltoides",
+        "triceps"
+      ],
+      "equipment": [
+        "battle-ropes"
+      ],
+      "images": [
+        "/images/Exo/BattleRopes.gif"
+      ],
+      "explanation": "Garde un gainage fort, épaules basses, alterne les vagues rapides et puissantes, respiration rythmée. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    }
+  ]
+}

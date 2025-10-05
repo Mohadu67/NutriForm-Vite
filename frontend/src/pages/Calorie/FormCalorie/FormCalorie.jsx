@@ -1,5 +1,5 @@
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./FormCalorie.module.css";
 import ConnectReminder from "../../../components/MessageAlerte/ConnectReminder/ConnectReminder.jsx";
 import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
@@ -16,20 +16,48 @@ const getToken = () =>
 
 export default function FormCalorie({ onResult, onCalculate }) {
   const [showReminder, setShowReminder] = useState(false);
-  const [form, setForm] = useState({
-    sexe: "homme",
-    poids: "",
-    taille: "",
-    age: "",
-    formule: "mifflin",
-    masseGrasse: "",
-    activite: "faible",
-    objectif: "stabiliser",
+  const [form, setForm] = useState(() => {
+    const savedPoids = localStorage.getItem('userPoids');
+    const savedTaille = localStorage.getItem('userTaille');
+    return {
+      sexe: "homme",
+      poids: savedPoids || "",
+      taille: savedTaille || "",
+      age: "",
+      formule: "mifflin",
+      masseGrasse: "",
+      activite: "faible",
+      objectif: "stabiliser",
+    };
   });
 
   const update = (name, value) => {
     setForm((prev) => ({ ...prev, [name]: value }));
+
+    // Sauvegarder poids et taille dans localStorage
+    if (name === 'poids' && value) {
+      localStorage.setItem('userPoids', value);
+    }
+    if (name === 'taille' && value) {
+      localStorage.setItem('userTaille', value);
+    }
   };
+
+  // Écouter les changements depuis l'autre formulaire (IMC)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedPoids = localStorage.getItem('userPoids');
+      const savedTaille = localStorage.getItem('userTaille');
+      setForm((prev) => ({
+        ...prev,
+        poids: savedPoids || prev.poids,
+        taille: savedTaille || prev.taille,
+      }));
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -166,21 +194,6 @@ export default function FormCalorie({ onResult, onCalculate }) {
           onChange={(val) => update("sexe", val)}
         />
 
-        <LabelField label="Poids (kg)" htmlFor="poids" required>
-          <input
-            id="poids"
-            type="number"
-            inputMode="decimal"
-            min="50"
-            max="500"
-            step="0.1"
-            value={form.poids}
-            onChange={(e) => update("poids", e.target.value)}
-            placeholder="ex: 75"
-            required
-          />
-        </LabelField>
-
         <LabelField label="Taille (cm)" htmlFor="taille" required>
           <input
             id="taille"
@@ -192,6 +205,21 @@ export default function FormCalorie({ onResult, onCalculate }) {
             value={form.taille}
             onChange={(e) => update("taille", e.target.value)}
             placeholder="ex: 180"
+            required
+          />
+        </LabelField>
+
+        <LabelField label="Poids (kg)" htmlFor="poids" required>
+          <input
+            id="poids"
+            type="number"
+            inputMode="decimal"
+            min="50"
+            max="500"
+            step="0.1"
+            value={form.poids}
+            onChange={(e) => update("poids", e.target.value)}
+            placeholder="ex: 75"
             required
           />
         </LabelField>

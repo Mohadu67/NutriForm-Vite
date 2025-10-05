@@ -61,6 +61,9 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   padding: 1.2rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .header { text-align: center; }
@@ -80,10 +83,12 @@
   margin: 0;
 }
 
-.body {
+.content {
   display: grid;
   gap: 1rem;
   justify-items: center;
+  width: 100%;
+  max-width: 100%;
 }
 
 .footer {
