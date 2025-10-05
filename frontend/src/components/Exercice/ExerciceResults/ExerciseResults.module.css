@@ -4,7 +4,7 @@
   margin: 0 auto;
   padding: 8px;
   width: 100%;
-
+  max-width: 100%;
 }
 
 .noResults {
@@ -52,16 +52,8 @@
   gap: 8px;
   position: relative;
   z-index: 1;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-}
-
-@media (pointer: coarse) {
-  .list {
-    touch-action: none;
-  }
+  width: 100%;
+  max-width: 100%;
 }
 
 .BtnAjout {

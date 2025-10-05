@@ -62,14 +62,9 @@ export default function TopBar() {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('darkMode');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    let isDark;
-    if (savedTheme === null) {
-      isDark = systemPrefersDark;
-    } else {
-      isDark = savedTheme === 'true';
-    }
+    // Ne plus utiliser le système, uniquement le choix manuel de l'utilisateur
+    const isDark = savedTheme === 'true';
 
     setDarkMode(isDark);
     setDocumentTheme(isDark);

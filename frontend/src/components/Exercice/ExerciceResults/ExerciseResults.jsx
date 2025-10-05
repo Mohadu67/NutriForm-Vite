@@ -20,6 +20,7 @@ import Button from "../../BoutonAction/BoutonAction.jsx";
 import styles from "./ExerciseResults.module.css";
 import { idOf } from "../Shared/idOf.js";
 import { sameIds, mergeById } from "../Shared/selectionUtils";
+import { loadExercises } from "../../../utils/exercisesLoader.js";
 
 export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [], onChange, onResultsChange, onSearch, initialSelected }) {
   const [data, setData] = useState([]);
@@ -55,13 +56,13 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5,
       },
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 250,
-        tolerance: 8,
+        delay: 100,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -88,14 +89,10 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     setLoading(true);
     setError(null);
 
-    fetch("/data/db.json")
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((json) => {
+    loadExercises('all')
+      .then((exercises) => {
         if (!isMounted) return;
-        setData(Array.isArray(json.exercises) ? json.exercises : []);
+        setData(exercises);
         setLoading(false);
       })
       .catch((e) => {
