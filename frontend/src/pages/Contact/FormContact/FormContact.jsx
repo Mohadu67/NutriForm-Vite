@@ -72,7 +72,7 @@ export default function FormContact({ onSend }) {
   };
 
   return (
-    <section className={styles.wrapper} aria-labelledby="contact-title">
+    <section id="contact-form" className={styles.wrapper} aria-labelledby="contact-title">
       <h2 id="contact-title" className={styles.title}>Contacte-nous</h2>
 
       <form className={styles.form} onSubmit={handleSubmit} noValidate>

@@ -1,7 +1,7 @@
 export const TYPE_MAP = {
   muscu: ["muscu", "renforcement", "strength", "weightlifting", "musculation", "fitness", "crossfit"],
   cardio: ["cardio", "hiit", "endurance", "aerobic", "aérobie", "conditioning"],
-  renfo: ["renforcement", "muscu", "conditioning", "strength"],
+  yoga: ["yoga", "yogi", "asana", "vinyasa", "hatha", "ashtanga", "yin", "power yoga"],
   natation: ["natation", "swimming", "nage", "piscine", "crawl", "brasse", "papillon", "dos crawlé"],
   etirement: ["etirement", "étirement", "stretching", "stretch"],
   meditation: ["meditation", "méditation", "mindfulness"],

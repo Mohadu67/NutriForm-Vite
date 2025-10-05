@@ -1,5 +1,4 @@
 :root {
-  color-scheme: light dark;
   --ink: var(--couleur-text-noir);
   --card-bg: var(--couleur-principale);
   --gap-1: 10px;
@@ -12,14 +11,12 @@
   --shadow-l: 0 4px 20px rgba(0,0,0,0.18);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ink: #e9ecf1;
-    --card-bg: #12151b;
-    --shadow-s: 0 2px 8px rgba(0,0,0,0.35);
-    --shadow-m: 0 4px 12px rgba(0,0,0,0.45);
-    --shadow-l: 0 4px 20px rgba(0,0,0,0.6);
-  }
+:root.dark {
+  --ink: #e9ecf1;
+  --card-bg: #12151b;
+  --shadow-s: 0 2px 8px rgba(0,0,0,0.35);
+  --shadow-m: 0 4px 12px rgba(0,0,0,0.45);
+  --shadow-l: 0 4px 20px rgba(0,0,0,0.6);
 }
 
 .titleh2 {
@@ -172,10 +169,8 @@
   animation: fadeIn 0.3s ease-in;
 }
 
-@media (prefers-color-scheme: dark) {
-  .fullArticle {
-    border-top-color: rgba(255, 255, 255, 0.1);
-  }
+:root.dark .fullArticle {
+  border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 @keyframes fadeIn {
