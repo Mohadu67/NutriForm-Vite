@@ -4,7 +4,7 @@ import styles from "./ResultatsCalorie.module.css";
 
 export default function ResultatsCalorie({ perte, stabiliser, prise, onCardClick }) {
   return (
-    <div className={styles.resultatsContainer}>
+    <div id="result-container" className={styles.resultatsContainer}>
       <ResultatCard
         titre="Perdre du poids"
         icone="/assets/icons/graphdown.svg"

@@ -1,0 +1,94 @@
+{
+  "exercises": [
+    {
+      "id": "exo-010e",
+      "name": "Posture de l'enfant (Balasana)",
+      "type": [
+        "yoga"
+      ],
+      "objectives": [
+        "souplesse",
+        "relaxation"
+      ],
+      "muscles": [
+        "dos-inferieur",
+        "fessiers"
+      ],
+      "equipment": [
+        "poids-du-corps"
+      ],
+      "images": [
+        "/images/Exo/enfant.gif"
+      ],
+      "explanation": "Assieds-toi sur tes talons, penche-toi en avant et étends les bras devant toi. Pose ton front au sol, respire profondément. Maintiens 30 secondes à 2 minutes. Respiration : inspire profondément par le nez, expire lentement. Points clés : détends les épaules, laisse le poids du corps descendre naturellement, reste dans le confort."
+    },
+    {
+      "id": "exo-010f",
+      "name": "Chien tête en bas (Adho Mukha Svanasana)",
+      "type": [
+        "yoga"
+      ],
+      "objectives": [
+        "souplesse",
+        "force"
+      ],
+      "muscles": [
+        "dos-superieur",
+        "ischios",
+        "mollets",
+        "deltoides"
+      ],
+      "equipment": [
+        "poids-du-corps"
+      ],
+      "images": [
+        "/images/Exo/chienTeteBas.gif"
+      ],
+      "explanation": "Depuis les mains et genoux, soulève les hanches vers le ciel en formant un V inversé. Garde les bras tendus, talons cherchent le sol. Maintiens 30 secondes à 1 minute. Respiration : inspire en te positionnant, expire en poussant les hanches vers le haut. Points clés : presse fermement dans les paumes, engage les cuisses, détends la nuque."
+    },
+    {
+      "id": "exo-010j",
+      "name": "Cobra (Bhujangasana)",
+      "type": [
+        "yoga"
+      ],
+      "objectives": [
+        "souplesse",
+        "force"
+      ],
+      "muscles": [
+        "dos-superieur",
+        "abdos-centre",
+        "pectoraux"
+      ],
+      "equipment": [
+        "poids-du-corps"
+      ],
+      "images": [
+        "/images/Exo/cobra.gif"
+      ],
+      "explanation": "Allongé sur le ventre, mains sous les épaules, soulève le buste en gardant le bassin au sol. Regarde devant, épaules basses. Maintiens 15-30 secondes. Respiration : inspire en montant, expire en redescendant. Points clés : ne force pas la cambrure, engage les fessiers, coudes près du corps."
+    },
+    {
+      "id": "exo-010m",
+      "name": "Salutation au soleil (Surya Namaskar)",
+      "type": [
+        "yoga"
+      ],
+      "objectives": [
+        "échauffement",
+        "flow"
+      ],
+      "muscles": [
+        "corps-entier"
+      ],
+      "equipment": [
+        "poids-du-corps"
+      ],
+      "images": [
+        "/images/Exo/salutationSoleil.gif"
+      ],
+      "explanation": "Enchaînement fluide : Montagne → Bras levés → Flexion avant → Planche → Chaturanga → Cobra → Chien tête en bas → Flexion avant → Bras levés → Montagne. Répète 3-5 fois. Respiration : synchronise chaque mouvement avec une inspiration ou expiration. Points clés : fluidité, ne force pas, trouve ton rythme."
+    }
+  ]
+}

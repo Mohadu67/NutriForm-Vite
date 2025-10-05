@@ -1,5 +1,5 @@
 import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./FormImc.module.css";
 import ConnectReminder from "../../../components/MessageAlerte/ConnectReminder/ConnectReminder.jsx";
 import LabelField from "../../../components/LabelField/LabelField.jsx";
@@ -55,9 +55,21 @@ function calculerIMC(poids, taille) {
 }
 
 export default function FormImc({ onCalculate }) {
-  const [poids, setPoids] = useState("");
-  const [taille, setTaille] = useState("");
+  const [poids, setPoids] = useState(() => localStorage.getItem('userPoids') || "");
+  const [taille, setTaille] = useState(() => localStorage.getItem('userTaille') || "");
   const [showReminder, setShowReminder] = useState(false);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedPoids = localStorage.getItem('userPoids');
+      const savedTaille = localStorage.getItem('userTaille');
+      if (savedPoids) setPoids(savedPoids);
+      if (savedTaille) setTaille(savedTaille);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -154,7 +166,10 @@ export default function FormImc({ onCalculate }) {
           placeholder="ex: 180"
           value={taille}
           onKeyDown={blockNonNumeric}
-          onChange={(e) => setTaille(e.target.value)}
+          onChange={(e) => {
+            setTaille(e.target.value);
+            if (e.target.value) localStorage.setItem('userTaille', e.target.value);
+          }}
           required
         />
       </LabelField>
@@ -171,7 +186,10 @@ export default function FormImc({ onCalculate }) {
           placeholder="ex: 75"
           value={poids}
           onKeyDown={blockNonNumeric}
-          onChange={(e) => setPoids(e.target.value)}
+          onChange={(e) => {
+            setPoids(e.target.value);
+            if (e.target.value) localStorage.setItem('userPoids', e.target.value);
+          }}
           required
         />
       </LabelField>

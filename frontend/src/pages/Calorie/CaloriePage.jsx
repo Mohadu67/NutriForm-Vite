@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import FormCalorie from "./FormCalorie/FormCalorie.jsx";
 import ResultatsCalorie from "./ResultatsCalorie/ResultatsCalorie.jsx";
@@ -10,6 +10,17 @@ export default function CaloriePage() {
   const [selectedCard, setSelectedCard] = useState(null);
   const [popupOrigin, setPopupOrigin] = useState({ x: 50, y: 50 });
   const [calories, setCalories] = useState(null);
+
+  useEffect(() => {
+    if (calories !== null) {
+      setTimeout(() => {
+        const element = document.getElementById('result-container');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, [calories]);
 
   const computeMacros = (cals, type) => {
     if (type === "perte") {

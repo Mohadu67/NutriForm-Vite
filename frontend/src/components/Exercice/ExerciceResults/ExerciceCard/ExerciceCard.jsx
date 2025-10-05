@@ -2,15 +2,7 @@ import React, { useState, useId } from "react";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import styles from "./ExerciceCard.module.css";
-
-const canon = (s) =>
-  String(s || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]/g, "");
-
-const idOf = (ex) => (ex?.id ?? ex?._id ?? ex?.slug ?? canon(ex?.name || ex?.title));
+import { idOf } from "../../Shared/idOf.js";
 
 export default function ExerciceCard({
   exo,
@@ -28,6 +20,8 @@ export default function ExerciceCard({
   const initial = exo.name?.trim()?.[0]?.toUpperCase() || "?";
   const exId = idOf(exo);
 
+  const sortable = isSortable ? useSortable({ id: exId }) : null;
+
   const {
     attributes,
     listeners,
@@ -35,7 +29,7 @@ export default function ExerciceCard({
     transform,
     transition,
     isDragging,
-  } = isSortable ? useSortable({ id: exId }) : {
+  } = sortable || {
     attributes: {},
     listeners: {},
     setNodeRef: null,
@@ -55,17 +49,8 @@ export default function ExerciceCard({
       <div
         ref={isSortable ? setNodeRef : null}
         style={style}
-        role="button"
-        tabIndex={0}
         className={`${styles.row} ${isDragging ? styles.isDragging : ""} ${isSortable ? styles.sortable : styles.proposed}`}
         data-ex-id={exId}
-        onClick={() => setOpen(true)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(true); }
-        }}
-        aria-haspopup="dialog"
-        aria-controls={dialogId}
-        aria-expanded={open}
       >
         {isSortable && (
           <div
@@ -83,15 +68,23 @@ export default function ExerciceCard({
           </div>
         )}
 
-        <div className={styles.thumb} aria-hidden>
-          {imgSrc ? (
-            <img src={imgSrc} alt="" />
-          ) : (
-            <div className={styles.initial}>{initial}</div>
-          )}
-        </div>
+        <button
+          type="button"
+          className={styles.contentBtn}
+          onClick={() => setOpen(true)}
+        >
+          <div className={styles.thumb} aria-hidden>
+            {imgSrc ? (
+              <img src={imgSrc} alt="" />
+            ) : (
+              <div className={styles.initial}>{initial}</div>
+            )}
+          </div>
 
-        <div className={styles.rowTitle}>{exo.name}</div>
+          <div className={styles.rowTitle}>
+            {exo.name}
+          </div>
+        </button>
 
         {isSortable && onRemove && (
           <button
