@@ -12,6 +12,7 @@ export default function NewsletterAdmin() {
   const [editingId, setEditingId] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [expandedId, setExpandedId] = useState(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -290,40 +291,74 @@ export default function NewsletterAdmin() {
         {newsletters.length === 0 ? (
           <p className={styles.emptyState}>Aucune newsletter créée pour le moment.</p>
         ) : (
-          newsletters.map((newsletter) => (
-            <div key={newsletter._id} className={styles.newsletterCard}>
-              <div className={styles.cardHeader}>
-                <div>
-                  <h3 className={styles.cardTitle}>{newsletter.title}</h3>
-                  <p className={styles.cardSubject}>{newsletter.subject}</p>
+          newsletters.map((newsletter) => {
+            const isExpanded = expandedId === newsletter._id;
+            return (
+              <div key={newsletter._id} className={styles.newsletterCard}>
+                <div
+                  className={styles.cardHeader}
+                  onClick={() => setExpandedId(isExpanded ? null : newsletter._id)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div>
+                    <h3 className={styles.cardTitle}>
+                      {newsletter.title}
+                      <span style={{ marginLeft: '8px', fontSize: '14px' }}>
+                        {isExpanded ? '▼' : '▶'}
+                      </span>
+                    </h3>
+                    <p className={styles.cardSubject}>{newsletter.subject}</p>
+                  </div>
+                  {getStatusBadge(newsletter.status)}
                 </div>
-                {getStatusBadge(newsletter.status)}
-              </div>
 
-              <div className={styles.cardMeta}>
-                <span>📅 Programmée le {new Date(newsletter.scheduledDate).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                {newsletter.sentAt && (
-                  <span>✉️ Envoyée le {new Date(newsletter.sentAt).toLocaleDateString('fr-FR')}</span>
-                )}
-                {newsletter.recipientCount > 0 && (
-                  <span>👥 {newsletter.recipientCount} destinataires</span>
-                )}
-              </div>
+                <div className={styles.cardMeta}>
+                  <span>📅 Programmée le {new Date(newsletter.scheduledDate).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  {newsletter.sentAt && (
+                    <span>✉️ Envoyée le {new Date(newsletter.sentAt).toLocaleDateString('fr-FR')}</span>
+                  )}
+                  {newsletter.recipientCount > 0 && (
+                    <span>👥 {newsletter.recipientCount} destinataires</span>
+                  )}
+                </div>
 
-              <div className={styles.cardActions}>
-                {newsletter.status !== 'sent' && (
-                  <>
-                    <button onClick={() => handleEdit(newsletter)} className={styles.btnEdit}>
-                      ✏️ Modifier
-                    </button>
-                    <button onClick={() => handleDelete(newsletter._id)} className={styles.btnDelete}>
-                      🗑️ Supprimer
-                    </button>
-                  </>
+                {isExpanded && (
+                  <div className={styles.cardContent}>
+                    <h4 style={{ marginBottom: '12px', color: '#666' }}>Contenu :</h4>
+                    <div
+                      className={styles.contentPreview}
+                      dangerouslySetInnerHTML={{ __html: newsletter.content }}
+                    />
+                  </div>
                 )}
+
+                <div className={styles.cardActions}>
+                  {newsletter.status !== 'sent' && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(newsletter);
+                        }}
+                        className={styles.btnEdit}
+                      >
+                        ✏️ Modifier
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(newsletter._id);
+                        }}
+                        className={styles.btnDelete}
+                      >
+                        🗑️ Supprimer
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

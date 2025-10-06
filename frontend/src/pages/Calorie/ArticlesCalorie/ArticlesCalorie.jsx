@@ -13,12 +13,14 @@ export default function ArticlesCalorie() {
     setSelectedArticle(article);
     setIsModalOpen(true);
     setShowFullArticle(false);
+    document.body.style.overflow = 'hidden';
   };
 
   const closeModal = () => {
     setSelectedArticle(null);
     setIsModalOpen(false);
     setShowFullArticle(false);
+    document.body.style.overflow = '';
   };
 
   useEffect(() => {

@@ -1,20 +1,38 @@
 const nodemailer = require('nodemailer');
 const config = require('../config');
 
-// Configuration du transporteur SMTP
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT) || 587,
-    secure: false, // true pour 465, false pour autres ports
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
-  });
+// Créer UN SEUL transporter réutilisable avec pool
+let transporter = null;
+
+const getTransporter = () => {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT) || 587,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      },
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
+      rateDelta: 1000,
+      rateLimit: 5,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+      tls: {
+        rejectUnauthorized: false,
+        minVersion: 'TLSv1.2'
+      },
+      debug: process.env.NODE_ENV === 'development',
+      logger: process.env.NODE_ENV === 'development'
+    });
+  }
+  return transporter;
 };
 
-// Template HTML pour la newsletter
 const getNewsletterTemplate = (subject, content) => {
   return `
 <!DOCTYPE html>
@@ -72,10 +90,9 @@ const getNewsletterTemplate = (subject, content) => {
   `;
 };
 
-// Envoyer la newsletter à un destinataire
 const sendNewsletterEmail = async (to, subject, content, senderName = 'L\'équipe Harmonith') => {
   try {
-    const transporter = createTransporter();
+    const transporter = getTransporter();
 
     const htmlContent = getNewsletterTemplate(subject, content)
       .replace('{{email}}', encodeURIComponent(to));
@@ -129,9 +146,8 @@ const sendNewsletterToAll = async (newsletter) => {
       } else {
         failedCount++;
       }
-
-      // Petit délai pour éviter d'être bloqué par le serveur SMTP
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Délai pour éviter d'être bloqué par le serveur SMTP (500ms)
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     return {
