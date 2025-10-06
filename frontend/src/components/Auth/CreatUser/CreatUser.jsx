@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { toast } from 'sonner';
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import MobiLogo from "../../../assets/img/logo/domaine-logo.svg";
 import cstyle from "./CreatUser.module.css";
@@ -121,10 +122,13 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
       }
 
       setStatus("success");
+      toast.success("Compte créé ! Vérifie ton email pour l'activer.");
     } catch (err) {
       console.error(err);
       setStatus("error");
-      setErrorMsg(err.message || "Une erreur est survenue. Réessaie.");
+      const message = err.message || "Une erreur est survenue. Réessaie.";
+      setErrorMsg(message);
+      toast.error(message);
     }
   };
 

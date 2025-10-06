@@ -14,6 +14,7 @@ function getToken() {
 export default function useHistoryData() {
   const [records, setRecords] = useState([]);
   const [sessions, setSessions] = useState([]);
+  const [points, setPoints] = useState(null);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -105,6 +106,11 @@ export default function useHistoryData() {
           : Array.isArray(data?.items)
           ? data.items
           : [];
+
+        if (Array.isArray(data?.points)) {
+          setPoints(data.points);
+        }
+
         const normalizeEntries = (s) => {
           const raw = Array.isArray(s?.entries) ? s.entries
             : Array.isArray(s?.items) ? s.items
@@ -158,5 +164,5 @@ export default function useHistoryData() {
     }
   };
 
-  return { records, sessions, status, error, displayName, user, setRecords, handleDelete };
+  return { records, sessions, points, status, error, displayName, user, setRecords, handleDelete };
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useTranslation } from "react-i18next";
 import styles from "./Newsletter.module.css";
@@ -9,6 +9,13 @@ export default function Newsletter() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // idle, loading, success, error
   const [message, setMessage] = useState("");
+  const [captchaReady, setCaptchaReady] = useState(false);
+
+  useEffect(() => {
+    if (executeRecaptcha) {
+      setCaptchaReady(true);
+    }
+  }, [executeRecaptcha]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,9 +26,9 @@ export default function Newsletter() {
       return;
     }
 
-    if (!executeRecaptcha) {
+    if (!executeRecaptcha || !captchaReady) {
       setStatus("error");
-      setMessage(t('newsletter.errorCaptcha'));
+      setMessage("Protection anti-spam en cours de chargement... Veuillez réessayer dans un instant.");
       return;
     }
 
