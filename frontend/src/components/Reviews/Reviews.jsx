@@ -120,12 +120,12 @@ export default function Reviews() {
                         />
                       ) : (
                         <div className={styles.authorInitial}>
-                          {review.name.charAt(0).toUpperCase()}
+                          {review?.name?.charAt(0)?.toUpperCase() || '?'}
                         </div>
                       )}
                       <div className={styles.authorInfo}>
-                        <h4 className={styles.authorName}>{review.name}</h4>
-                        <p className={styles.authorProfession}>{review.profession}</p>
+                        <h4 className={styles.authorName}>{review?.name || 'Anonyme'}</h4>
+                        <p className={styles.authorProfession}>{review?.profession || ''}</p>
                       </div>
                     </div>
                     <div className={styles.proBadge}>PRO</div>
@@ -172,11 +172,11 @@ export default function Reviews() {
                               />
                             ) : (
                               <div className={styles.authorInitial}>
-                                {review.name.charAt(0).toUpperCase()}
+                                {review?.name?.charAt(0)?.toUpperCase() || '?'}
                               </div>
                             )}
                             <div className={styles.authorInfo}>
-                              <h4 className={styles.authorName}>{review.name}</h4>
+                              <h4 className={styles.authorName}>{review?.name || 'Anonyme'}</h4>
                             </div>
                           </div>
                         </div>

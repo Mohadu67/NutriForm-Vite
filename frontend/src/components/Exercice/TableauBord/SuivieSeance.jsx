@@ -278,37 +278,47 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
     return <div><p>Impossible de récupérer tes statistiques pour l’instant.</p></div>;
   }
 
+  const hasWeightData = serverData && (
+    combinedData?.imc ||
+    combinedData?.lastWeight ||
+    combinedData?.initialWeight ||
+    combinedData?.latestWeight ||
+    combinedData?.weightChange
+  );
+
   return (
     <div>
       <div className={styles.statsGrid}>
-        <div className={`${styles.statCard} ${styles.compactCard}`}>
-          <div className={styles.rows}>
-            <div className={styles.row}>
-              <span className={styles.statLabel}>IMC</span>
-              <span className={styles.rowValue}>{get('imc')}</span>
-            </div>
-            <div className={styles.divider} />
-            <div className={styles.row}>
-              <span className={styles.statLabel}>Dernier poids</span>
-              <span className={styles.rowValue}>{get('lastWeight')}</span>
-            </div>
-            <div className={styles.divider} />
-            <div className={styles.row}>
-              <span className={styles.statLabel}>Poids initial</span>
-              <span className={styles.rowValue}>{get('initialWeight')}</span>
-            </div>
-            <div className={styles.divider} />
-            <div className={styles.row}>
-              <span className={styles.statLabel}>Poids actuel (calculé)</span>
-              <span className={styles.rowValue}>{get('latestWeight')}</span>
-            </div>
-            <div className={styles.divider} />
-            <div className={styles.row}>
-              <span className={styles.statLabel}>Variation de poids</span>
-              <span className={styles.rowValue}>{getEither('weightChange','variation')}</span>
+        {hasWeightData && (
+          <div className={`${styles.statCard} ${styles.compactCard}`}>
+            <div className={styles.rows}>
+              <div className={styles.row}>
+                <span className={styles.statLabel}>IMC</span>
+                <span className={styles.rowValue}>{get('imc')}</span>
+              </div>
+              <div className={styles.divider} />
+              <div className={styles.row}>
+                <span className={styles.statLabel}>Dernier poids</span>
+                <span className={styles.rowValue}>{get('lastWeight')}</span>
+              </div>
+              <div className={styles.divider} />
+              <div className={styles.row}>
+                <span className={styles.statLabel}>Poids initial</span>
+                <span className={styles.rowValue}>{get('initialWeight')}</span>
+              </div>
+              <div className={styles.divider} />
+              <div className={styles.row}>
+                <span className={styles.statLabel}>Poids actuel (calculé)</span>
+                <span className={styles.rowValue}>{get('latestWeight')}</span>
+              </div>
+              <div className={styles.divider} />
+              <div className={styles.row}>
+                <span className={styles.statLabel}>Variation de poids</span>
+                <span className={styles.rowValue}>{getEither('weightChange','variation')}</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className={`${styles.statCard} ${styles.compactCard}`}>
           <div className={styles.rows}>
