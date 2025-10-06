@@ -4,6 +4,8 @@ import {
   GoogleReCaptchaContext,
 } from 'react-google-recaptcha-v3';
 
+const RECAPTCHA_ENABLED = import.meta.env.VITE_ENABLE_RECAPTCHA !== 'false' && import.meta.env.VITE_ENABLE_RECAPTCHA !== '0';
+
 export default function SafeGoogleReCaptchaProvider({
   reCaptchaKey,
   children,
@@ -16,7 +18,7 @@ export default function SafeGoogleReCaptchaProvider({
   const containerElement = container?.element;
   const fallbackValue = useMemo(() => {
     const executeRecaptcha = async () => {
-      if (typeof window !== 'undefined' && !import.meta.env.PROD) {
+      if (RECAPTCHA_ENABLED && typeof window !== 'undefined' && !import.meta.env.PROD) {
         // eslint-disable-next-line no-console
         console.warn('[SafeGoogleReCaptchaProvider] Aucun reCAPTCHA key détecté. Le fallback renvoie un token vide.');
       }
@@ -25,6 +27,14 @@ export default function SafeGoogleReCaptchaProvider({
 
     return { executeRecaptcha, container: containerElement };
   }, [containerElement]);
+
+  if (!RECAPTCHA_ENABLED) {
+    return (
+      <GoogleReCaptchaContext.Provider value={fallbackValue}>
+        {children}
+      </GoogleReCaptchaContext.Provider>
+    );
+  }
 
   if (!reCaptchaKey) {
     return (
