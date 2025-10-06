@@ -1,5 +1,11 @@
 .form { display: grid; gap: 1rem; }
 
+.loaderSvg {
+  width: 150px;
+  height: auto;
+  margin-bottom: 16px;
+}
+
 .label { font-weight: 700; color: #2B2B2B; }
 
 .input, .select {
