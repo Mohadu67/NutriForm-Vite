@@ -1,6 +1,5 @@
 /* Tarteaucitron Custom - Harmonith */
 
-/* === BANDEAU PRINCIPAL === */
 #tarteaucitronRoot #tarteaucitronAlertBig,
 #tarteaucitronRoot #tarteaucitronAlertSmall {
   background: linear-gradient(145deg, rgba(17, 17, 17, 0.98), rgba(30, 30, 30, 0.98)) !important;
@@ -100,7 +99,6 @@
   transform: translateY(-1px) !important;
 }
 
-/* Bouton "Personnaliser" */
 #tarteaucitronRoot #tarteaucitronCloseAlert {
   background: rgba(184, 221, 209, 0.15) !important;
   color: #b8ddd1 !important;
@@ -111,7 +109,6 @@
   background: rgba(184, 221, 209, 0.25) !important;
 }
 
-/* === MODAL PARAMÈTRES === */
 #tarteaucitronRoot #tarteaucitron {
   background: linear-gradient(145deg, rgba(17, 17, 17, 0.98), rgba(30, 30, 30, 0.98)) !important;
   backdrop-filter: blur(25px) saturate(180%);
@@ -124,7 +121,6 @@
   overflow: hidden !important;
 }
 
-/* === BOUTON FERMETURE MODAL === */
 #tarteaucitronRoot #tarteaucitron #tarteaucitronClosePanel {
   position: absolute !important;
   top: 20px !important;
@@ -214,7 +210,6 @@
   color: #FFB385 !important;
 }
 
-/* === SCROLLBAR === */
 #tarteaucitronRoot #tarteaucitronServices::-webkit-scrollbar {
   width: 8px;
 }
@@ -233,7 +228,6 @@
   background: linear-gradient(135deg, #F7B186, #FFB385);
 }
 
-/* === RESPONSIVE === */
 @media (max-width: 768px) {
   #tarteaucitronRoot #tarteaucitronAlertBig {
     border-radius: 12px !important;
@@ -246,7 +240,6 @@
   }
 }
 
-/* === ANIMATIONS === */
 @keyframes tarteaucitronFadeIn {
   from {
     opacity: 0;
