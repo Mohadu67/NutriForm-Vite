@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import styles from "./UserReviews.module.css";
 
 export default function UserReviews() {
@@ -15,13 +15,7 @@ export default function UserReviews() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  useEffect(() => {
-    fetchReviews();
-    checkAuth();
-  }, []);
-
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       setIsLoggedIn(false);
@@ -50,9 +44,9 @@ export default function UserReviews() {
       console.error("Erreur vérification auth:", err);
       setIsLoggedIn(false);
     }
-  };
+  }, []);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/reviews/users`);
       const data = await response.json();
@@ -64,7 +58,12 @@ export default function UserReviews() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchReviews();
+    checkAuth();
+  }, [fetchReviews, checkAuth]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -155,11 +154,11 @@ export default function UserReviews() {
                       />
                     ) : (
                       <div className={styles.authorInitial}>
-                        {review.name.charAt(0).toUpperCase()}
+                        {review?.name?.charAt(0)?.toUpperCase() || '?'}
                       </div>
                     )}
                     <div className={styles.authorInfo}>
-                      <h4 className={styles.authorName}>{review.name}</h4>
+                      <h4 className={styles.authorName}>{review?.name || 'Anonyme'}</h4>
                       <p className={styles.reviewDate}>
                         {new Date(review.createdAt).toLocaleDateString("fr-FR", {
                           year: "numeric",
