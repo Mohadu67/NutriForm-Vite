@@ -1,5 +1,6 @@
 import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
 import { useState, useEffect } from "react";
+import { toast } from 'sonner';
 import styles from "./FormImc.module.css";
 import ConnectReminder from "../../../components/MessageAlerte/ConnectReminder/ConnectReminder.jsx";
 import LabelField from "../../../components/LabelField/LabelField.jsx";
@@ -78,12 +79,12 @@ export default function FormImc({ onCalculate }) {
     const t = normalizeNumber(taille);
 
     if (p === null || t === null) {
-      alert("Veuillez entrer un poids et une taille valides.");
+      toast.error("Veuillez entrer un poids et une taille valides.");
       return;
     }
 
     if (t < 50 || t > 300 || p < 50 || p > 500) {
-      alert("Taille entre 50–300 cm et poids entre 50–500 kg.");
+      toast.error("Taille entre 50–300 cm et poids entre 50–500 kg.");
       return;
     }
 
@@ -91,6 +92,7 @@ export default function FormImc({ onCalculate }) {
     setShowReminder(!userId);
 
     const { imc, categorie, description, conseil } = calculerIMC(p, t);
+    toast.success(`IMC calculé : ${imc} (${description})`);
     onCalculate?.(imc, categorie, description, conseil);
 
     try {

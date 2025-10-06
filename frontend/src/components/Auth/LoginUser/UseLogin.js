@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from 'sonner';
 
 export default function useLogin(onLoginSuccess, options = {}) {
   const { minDurationMs = 2500 } = options;
@@ -72,6 +73,7 @@ export default function useLogin(onLoginSuccess, options = {}) {
         await sleep(minDurationMs - elapsed);
       }
       setStatus("success");
+      toast.success("Connexion réussie !");
       if (onLoginSuccess && user) onLoginSuccess(user);
       return { token, user };
     } catch (e) {
@@ -85,6 +87,7 @@ export default function useLogin(onLoginSuccess, options = {}) {
       setStatus("error");
       const message = e instanceof Error ? e.message : "Erreur lors de la connexion";
       setErrorMsg(message);
+      toast.error(message);
       return null;
     }
   };

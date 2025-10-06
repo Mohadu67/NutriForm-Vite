@@ -47,16 +47,16 @@ const checkAndSendNewsletters = async () => {
   }
 };
 
-// Planifier le cron job - toutes les 10 minutes
+// Planifier le cron job - toutes les 2 minutes
 const startNewsletterCron = () => {
   // Format: minute heure jour mois jour_semaine
-  // '*/10 * * * *' = toutes les 10 minutes
-  cron.schedule('*/10 * * * *', async () => {
+  // '*/2 * * * *' = toutes les 2 minutes
+  cron.schedule('*/2 * * * *', async () => {
     console.log('🔄 Vérification des newsletters programmées...');
     await checkAndSendNewsletters();
   });
 
-  console.log('✅ Cron job newsletter démarré (toutes les 10 minutes)');
+  console.log('✅ Cron job newsletter démarré (toutes les 2 minutes)');
 };
 
 // Fonction pour tester manuellement
