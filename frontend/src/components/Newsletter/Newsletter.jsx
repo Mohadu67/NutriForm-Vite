@@ -3,6 +3,8 @@ import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useTranslation } from "react-i18next";
 import styles from "./Newsletter.module.css";
 
+const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+
 export default function Newsletter() {
   const { t } = useTranslation();
   const { executeRecaptcha } = useGoogleReCaptcha();
@@ -38,7 +40,8 @@ export default function Newsletter() {
       // Obtenir le token reCAPTCHA
       const captchaToken = await executeRecaptcha('newsletter_subscribe');
 
-      const response = await fetch("/api/newsletter/subscribe", {
+      const endpoint = API_URL ? `${API_URL}/api/newsletter/subscribe` : "/api/newsletter/subscribe";
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
