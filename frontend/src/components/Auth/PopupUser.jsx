@@ -7,8 +7,6 @@ import ForgotUser from "./ForgotUser/ForgotUser.jsx";
 
 
 export default function PopupUser({ open, view = "login", setView, onClose, onLoginSuccess, onLogout }) {
-  if (!open) return null;
-
   const [currentView, setCurrentView] = useState(view);
 
   useEffect(() => {
@@ -16,19 +14,21 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
   }, [view, open]);
 
   useEffect(() => {
-    if (!open) return;
-
-    const prevBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const prevHtmlOverscroll = document.documentElement.style.overscrollBehavior;
-    document.documentElement.style.overscrollBehavior = 'none';
+    if (open) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    }
 
     return () => {
-      document.body.style.overflow = prevBodyOverflow || '';
-      document.documentElement.style.overscrollBehavior = prevHtmlOverscroll || '';
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
     };
   }, [open]);
+
+  if (!open) return null;
+
 
   const setBoth = (next) => {
     setView?.(next);
