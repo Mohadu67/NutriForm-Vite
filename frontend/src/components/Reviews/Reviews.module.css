@@ -190,6 +190,8 @@
   place-items: center;
   z-index: 1000;
   padding: 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .modal {

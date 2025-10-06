@@ -7,28 +7,14 @@ import ForgotUser from "./ForgotUser/ForgotUser.jsx";
 
 
 export default function PopupUser({ open, view = "login", setView, onClose, onLoginSuccess, onLogout }) {
-  if (!open) return null;
-
   const [currentView, setCurrentView] = useState(view);
 
   useEffect(() => {
     if (open) setCurrentView(view);
   }, [view, open]);
 
-  useEffect(() => {
-    if (!open) return;
+  if (!open) return null;
 
-    const prevBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const prevHtmlOverscroll = document.documentElement.style.overscrollBehavior;
-    document.documentElement.style.overscrollBehavior = 'none';
-
-    return () => {
-      document.body.style.overflow = prevBodyOverflow || '';
-      document.documentElement.style.overscrollBehavior = prevHtmlOverscroll || '';
-    };
-  }, [open]);
 
   const setBoth = (next) => {
     setView?.(next);

@@ -1,4 +1,4 @@
-import React, { useState, useId } from "react";
+import React, { useState, useId, useEffect } from "react";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import styles from "./ExerciceCard.module.css";
@@ -43,6 +43,7 @@ export default function ExerciceCard({
     transition,
     opacity: isDragging ? 0.5 : 1,
   } : {};
+
 
   return (
     <>
