@@ -20,6 +20,7 @@ export default function UserReviews() {
     checkAuth();
   }, []);
 
+
   const checkAuth = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
