@@ -135,6 +135,8 @@
   pointer-events: none;
   transition: opacity .22s ease, visibility .22s ease;
   z-index: 1000;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .overlay.isOpen,
 .overlay[aria-hidden="false"] {
