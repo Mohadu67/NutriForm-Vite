@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { toast } from 'sonner';
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
-import MobiLogo from "../../../assets/img/logo/domaine-logo.svg";
 import cstyle from "./CreatUser.module.css";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import LabelField from "../../LabelField/LabelField";
@@ -138,10 +137,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
           <h3 className={cstyle.title}>Création du compte</h3>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 0' }}>
-          <object type="image/svg+xml" data={logoAnimate} className={cstyle.loaderSvg} aria-label="Chargement">
-            <div className={cstyle.loaderFallback}></div>
-          </object>
-          <img src={MobiLogo} alt="Logo mobile" className={cstyle.mobileLogo} />
+          <img src={logoAnimate} alt="Chargement" className={cstyle.loaderSvg} />
           <p className={cstyle.muted} aria-live="polite">Création du compte en cours...</p>
           <p className={cstyle.muted} aria-live="polite">Merci de vérifier votre adresse email pour activer votre compte.</p>
         </div>
@@ -157,7 +153,6 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
       <div className={cstyle.body}>
         <div className={cstyle.headerRow}>
           <h3 className={cstyle.title}>Création du compte</h3>
-          <img src={MobiLogo} alt="Logo mobile" className={cstyle.mobileLogo} />
         </div>
         <div>
           <p className={cstyle.success}>Compte créé 🎉</p>
