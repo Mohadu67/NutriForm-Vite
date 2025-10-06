@@ -5,6 +5,7 @@ import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
+const RECAPTCHA_ENABLED = import.meta.env.VITE_ENABLE_RECAPTCHA !== 'false' && import.meta.env.VITE_ENABLE_RECAPTCHA !== '0';
 
 export default function FormContact({ onSend }) {
   const { executeRecaptcha } = useGoogleReCaptcha();
@@ -31,16 +32,12 @@ export default function FormContact({ onSend }) {
     const start = Date.now();
     if (!validate()) return;
 
-    if (!executeRecaptcha) {
-      setStatus("error");
-      return;
-    }
-
     try {
       setStatus("sending");
 
-      // Obtenir le token reCAPTCHA
-      const captchaToken = await executeRecaptcha('contact_form');
+      const captchaToken = RECAPTCHA_ENABLED && executeRecaptcha
+        ? await executeRecaptcha('contact_form')
+        : null;
 
       if (typeof onSend === "function") {
         await onSend({ ...form, captchaToken });
