@@ -13,6 +13,20 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
     if (open) setCurrentView(view);
   }, [view, open]);
 
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [open]);
+
   if (!open) return null;
 
 
