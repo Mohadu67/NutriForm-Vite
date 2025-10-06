@@ -7,6 +7,7 @@ import cstyle from "./CreatUser.module.css";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import LabelField from "../../LabelField/LabelField";
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+const RECAPTCHA_ENABLED = import.meta.env.VITE_ENABLE_RECAPTCHA !== 'false' && import.meta.env.VITE_ENABLE_RECAPTCHA !== '0';
 const EMAIL_REGEX = /[^\s@]+@[^\s@]+\.[^\s@]+/;
 
 export default function CreatUser({ onCreated, toLogin, onClose }) {
@@ -76,11 +77,6 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
     e.preventDefault();
     if (!validate()) return;
 
-    if (!executeRecaptcha) {
-      setErrorMsg("reCAPTCHA non chargé. Réessaye.");
-      return;
-    }
-
     try {
       setStatus("sending");
       setErrorMsg("");
@@ -89,8 +85,9 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
         throw new Error("Configuration API manquante (VITE_API_URL)");
       }
 
-      // Obtenir le token reCAPTCHA
-      const captchaToken = await executeRecaptcha('register');
+      const captchaToken = RECAPTCHA_ENABLED && executeRecaptcha
+        ? await executeRecaptcha('register')
+        : null;
 
       const res = await fetch(`${API_URL}/api/register`, {
         method: "POST",
@@ -109,7 +106,9 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
       // Si l'utilisateur a coché la newsletter, on l'inscrit
       if (newsletter) {
         try {
-          const newsletterCaptchaToken = await executeRecaptcha('newsletter_subscribe');
+          const newsletterCaptchaToken = RECAPTCHA_ENABLED && executeRecaptcha
+            ? await executeRecaptcha('newsletter_subscribe')
+            : null;
           await fetch(`${API_URL}/api/newsletter/subscribe`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
