@@ -123,12 +123,6 @@
   color: var(--nf-ink);
 }
 
-.popup-overlay::before {
-  content: "";
-  min-height: calc(100% + 1px);
-  display: block;
-}
-
 @keyframes overlayDingue { from { opacity: 0 } to { opacity: 1 } }
 
 .popup-card {
