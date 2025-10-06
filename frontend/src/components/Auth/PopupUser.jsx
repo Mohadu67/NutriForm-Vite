@@ -14,21 +14,17 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
   }, [view, open]);
 
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-    }
+    const prevBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const prevHtmlOverscroll = document.documentElement.style.overscrollBehavior;
+    document.documentElement.style.overscrollBehavior = 'none';
 
     return () => {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
+      document.body.style.overflow = prevBodyOverflow || '';
+      document.documentElement.style.overscrollBehavior = prevHtmlOverscroll || '';
     };
-  }, [open]);
-
-  if (!open) return null;
-
+  }, []);
 
   if (!open) return null;
 
