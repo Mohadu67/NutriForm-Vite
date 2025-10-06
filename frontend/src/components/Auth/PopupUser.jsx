@@ -30,6 +30,8 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
   if (!open) return null;
 
 
+  if (!open) return null;
+
   const setBoth = (next) => {
     setView?.(next);
     setCurrentView(next);
