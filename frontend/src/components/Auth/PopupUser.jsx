@@ -14,6 +14,8 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
   }, [view, open]);
 
   useEffect(() => {
+    if (!open) return;
+
     const prevBodyOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
@@ -24,7 +26,7 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
       document.body.style.overflow = prevBodyOverflow || '';
       document.documentElement.style.overscrollBehavior = prevHtmlOverscroll || '';
     };
-  }, []);
+  }, [open]);
 
   if (!open) return null;
 
