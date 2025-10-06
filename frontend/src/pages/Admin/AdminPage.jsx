@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./AdminPage.module.css";
 
@@ -12,16 +12,7 @@ export default function AdminPage() {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [newsletters, setNewsletters] = useState([]);
 
-  useEffect(() => {
-    checkAdmin();
-    if (activeTab === "reviews") {
-      fetchPendingReviews();
-    } else if (activeTab === "newsletter") {
-      fetchNewsletters();
-    }
-  }, [activeTab]);
-
-  const checkAdmin = async () => {
+  const checkAdmin = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/");
@@ -47,9 +38,9 @@ export default function AdminPage() {
       console.error("Erreur vérification admin:", err);
       navigate("/");
     }
-  };
+  }, [navigate]);
 
-  const fetchPendingReviews = async () => {
+  const fetchPendingReviews = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -68,7 +59,37 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const fetchNewsletters = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/api/newsletter-admin`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setNewsletters(data.newsletters);
+      }
+    } catch (err) {
+      console.error("Erreur chargement newsletters:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkAdmin();
+    if (activeTab === "reviews") {
+      fetchPendingReviews();
+    } else if (activeTab === "newsletter") {
+      fetchNewsletters();
+    }
+  }, [activeTab, checkAdmin, fetchPendingReviews, fetchNewsletters]);
 
   const handleApprove = async (id) => {
     try {
@@ -124,27 +145,6 @@ export default function AdminPage() {
     } catch (err) {
       console.error("Erreur suppression:", err);
       setMessage({ type: "error", text: "Erreur lors de la suppression" });
-    }
-  };
-
-  const fetchNewsletters = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/api/newsletter-admin`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setNewsletters(data.newsletters);
-      }
-    } catch (err) {
-      console.error("Erreur chargement newsletters:", err);
-    } finally {
-      setLoading(false);
     }
   };
 

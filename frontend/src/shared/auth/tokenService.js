@@ -3,7 +3,13 @@ const TOKEN_KEY = 'token';
 export const tokenService = {
   get() {
     try {
-      return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY) || null;
+      return (
+        localStorage.getItem(TOKEN_KEY) ||
+        sessionStorage.getItem(TOKEN_KEY) ||
+        localStorage.getItem('jwt') ||
+        localStorage.getItem('accessToken') ||
+        null
+      );
     } catch {
       return null;
     }

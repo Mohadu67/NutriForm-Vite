@@ -1,5 +1,6 @@
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 import { useState, useEffect } from "react";
+import { toast } from 'sonner';
 import styles from "./FormCalorie.module.css";
 import ConnectReminder from "../../../components/MessageAlerte/ConnectReminder/ConnectReminder.jsx";
 import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
@@ -115,6 +116,8 @@ export default function FormCalorie({ onResult, onCalculate }) {
 
     const calories = Math.round(tmb * facteur);
 
+    toast.success(`Besoins caloriques : ${calories} kcal/jour`);
+
     if (typeof onResult === "function") {
       onResult(calories);
     }
@@ -178,7 +181,7 @@ export default function FormCalorie({ onResult, onCalculate }) {
 
         {form.formule === "katch" && (
           <div className={styles.infoBox}>
-            <p>💡 La formule Katch-McArdle est la plus précise mais nécessite de connaître votre pourcentage de masse grasse.</p>
+            <p>La formule Katch-McArdle est la plus précise mais nécessite de connaître votre pourcentage de masse grasse.</p>
           </div>
         )}
 

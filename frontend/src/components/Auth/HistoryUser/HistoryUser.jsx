@@ -27,30 +27,11 @@ export default function HistoryUser({ onClose, onLogout }) {
     }
     return null;
   };
-  const { records, sessions, status, error, displayName, user, setRecords, handleDelete } = useHistoryData();
-
-  const [wsSessions, setWsSessions] = useState(null);
-  const [wsPoints, setWsPoints] = useState(null);
-  React.useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const url = API_BASE ? `${API_BASE}/api/workouts/sessions` : '/api/workouts/sessions';
-        const res = await fetch(url, { credentials: 'include' });
-        if (!res.ok) return;
-        const json = await res.json();
-        if (!alive) return;
-        setWsSessions(Array.isArray(json.items) ? json.items : null);
-        setWsPoints(Array.isArray(json.points) ? json.points : null);
-      } catch (e) {}
-    })();
-    return () => { alive = false; };
-  }, []);
+  const { records, sessions, points, status, error, displayName, user, setRecords, handleDelete } = useHistoryData();
 
   const [userSessions, setUserSessions] = useState([]);
   React.useEffect(() => {
-    const base = Array.isArray(wsSessions) ? wsSessions : sessions;
-    const list = Array.isArray(base) ? base : [];
+    const list = Array.isArray(sessions) ? sessions : [];
 
     const normalize = (s) => {
 
@@ -71,7 +52,7 @@ export default function HistoryUser({ onClose, onLogout }) {
     };
 
     setUserSessions(list.map(normalize));
-  }, [sessions, wsSessions]);
+  }, [sessions]);
 
   const imcPoints = useMemo(() => records.filter(r => r.type === 'imc'), [records]);
   const weightPoints = useMemo(() =>
@@ -82,8 +63,8 @@ export default function HistoryUser({ onClose, onLogout }) {
   , [imcPoints]);
 
   const sessionPoints = useMemo(() => {
-    if (Array.isArray(wsPoints) && wsPoints.length) {
-      const norm = wsPoints
+    if (Array.isArray(points) && points.length) {
+      const norm = points
         .map(p => ({ ...p, date: parseDate(p.date) }))
         .filter(p => p.date)
         .sort((a, b) => a.date - b.date);
@@ -144,7 +125,7 @@ export default function HistoryUser({ onClose, onLogout }) {
 
     pts.sort((a, b) => a.date - b.date);
     return pts;
-  }, [wsPoints, userSessions, parseDate]);
+  }, [points, userSessions, parseDate]);
 
   const lastCompletedSession = useMemo(() => {
     const list = Array.isArray(userSessions) ? userSessions : [];

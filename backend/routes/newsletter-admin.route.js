@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 
     const newsletters = await Newsletter.find(filter)
       .sort({ createdAt: -1 })
-      .select('title subject scheduledDate status sentAt recipientCount createdAt');
+      .select('title subject content scheduledDate status sentAt recipientCount createdAt');
 
     res.status(200).json({
       success: true,
@@ -234,6 +234,27 @@ router.post('/:id/test', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Erreur lors de l\'envoi du test'
+    });
+  }
+});
+
+// POST /api/newsletter-admin/force-send - Forcer l'envoi immédiat des newsletters programmées
+router.post('/force-send', async (req, res) => {
+  try {
+    const { checkAndSendNewsletters } = require('../cron/newsletterCron');
+
+    console.log('🔥 Envoi forcé des newsletters...');
+    await checkAndSendNewsletters();
+
+    res.status(200).json({
+      success: true,
+      message: 'Vérification et envoi des newsletters lancés'
+    });
+  } catch (error) {
+    console.error('Force send error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de l\'envoi forcé'
     });
   }
 });
