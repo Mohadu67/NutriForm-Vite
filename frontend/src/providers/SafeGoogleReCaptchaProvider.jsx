@@ -14,10 +14,17 @@ export default function SafeGoogleReCaptchaProvider({
   container,
 }) {
   const containerElement = container?.element;
-  const fallbackValue = useMemo(
-    () => ({ executeRecaptcha: undefined, container: containerElement }),
-    [containerElement]
-  );
+  const fallbackValue = useMemo(() => {
+    const executeRecaptcha = async () => {
+      if (typeof window !== 'undefined' && !import.meta.env.PROD) {
+        // eslint-disable-next-line no-console
+        console.warn('[SafeGoogleReCaptchaProvider] Aucun reCAPTCHA key détecté. Le fallback renvoie un token vide.');
+      }
+      return null;
+    };
+
+    return { executeRecaptcha, container: containerElement };
+  }, [containerElement]);
 
   if (!reCaptchaKey) {
     return (
