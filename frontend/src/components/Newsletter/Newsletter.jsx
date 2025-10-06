@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import styles from "./Newsletter.module.css";
 
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+const RECAPTCHA_ENABLED = import.meta.env.VITE_ENABLE_RECAPTCHA !== 'false' && import.meta.env.VITE_ENABLE_RECAPTCHA !== '0';
 
 export default function Newsletter() {
   const { t } = useTranslation();
@@ -28,7 +29,7 @@ export default function Newsletter() {
       return;
     }
 
-    if (!executeRecaptcha || !captchaReady) {
+    if (RECAPTCHA_ENABLED && (!executeRecaptcha || !captchaReady)) {
       setStatus("error");
       setMessage("Protection anti-spam en cours de chargement... Veuillez réessayer dans un instant.");
       return;
@@ -38,7 +39,9 @@ export default function Newsletter() {
 
     try {
       // Obtenir le token reCAPTCHA
-      const captchaToken = await executeRecaptcha('newsletter_subscribe');
+      const captchaToken = RECAPTCHA_ENABLED && executeRecaptcha
+        ? await executeRecaptcha('newsletter_subscribe')
+        : null;
 
       const endpoint = API_URL ? `${API_URL}/api/newsletter/subscribe` : "/api/newsletter/subscribe";
       const response = await fetch(endpoint, {

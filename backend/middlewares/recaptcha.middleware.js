@@ -8,6 +8,13 @@ async function verifyCaptcha(req, res, next) {
   const { captchaToken } = req.body;
   const secretKey = process.env.RECAPTCHA_SECRET_KEY;
 
+  if (process.env.RECAPTCHA_DISABLED === 'true') {
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('⚠️ reCAPTCHA désactivé via RECAPTCHA_DISABLED=true');
+    }
+    return next();
+  }
+
   // Si pas de clé secrète configurée
   if (!secretKey) {
     console.warn('⚠️ RECAPTCHA_SECRET_KEY manquante dans .env');
