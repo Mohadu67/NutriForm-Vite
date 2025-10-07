@@ -7,15 +7,18 @@ const { sendResetEmail } = require('../services/mailer.service');
 const { buildFrontBaseUrl } = require('../utils/urls');
 
 exports.requestPasswordReset = async (req, res) => {
+  console.log('[requestPasswordReset] START');
   const { email } = req.body;
   if (!email) {
     return res.status(400).json({ message: 'Email is required.' });
   }
   try {
     const emailNorm = String(email).trim().toLowerCase();
+    console.log('[requestPasswordReset] Looking for user:', emailNorm);
     const user = await User.findOne({ email: emailNorm });
 
     if (!user) {
+      console.log('[requestPasswordReset] User not found');
       return res.status(200).json({ message: 'If an account with that email exists, a reset link has been sent.' });
     }
 
@@ -25,19 +28,24 @@ exports.requestPasswordReset = async (req, res) => {
     user.resetPasswordToken = token;
     user.resetPasswordExpires = expires;
     await user.save();
+    console.log('[requestPasswordReset] Token saved');
 
     const front = buildFrontBaseUrl();
+    console.log('[requestPasswordReset] Frontend URL:', front);
     const resetUrl = `${front}/reset-password?token=${encodeURIComponent(token)}`;
 
+    console.log('[requestPasswordReset] Sending email to:', user.email);
     await sendResetEmail({
       to: user.email,
       toName: user.prenom || user.pseudo || user.email,
       resetUrl,
     });
+    console.log('[requestPasswordReset] Email sent successfully');
 
     return res.status(200).json({ message: 'If an account with that email exists, a reset link has been sent.' });
   } catch (err) {
     console.error('[forgotPassword] error:', err);
+    console.error('[forgotPassword] error stack:', err.stack);
     return res.status(500).json({ message: 'Server error.' });
   }
 };
