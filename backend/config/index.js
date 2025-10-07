@@ -7,7 +7,6 @@ function bool(v, def = false) {
 const rawFrontUrl = process.env.FRONTEND_BASE_URL || "http://localhost:5173";
 const frontUrl = rawFrontUrl.endsWith("/") ? rawFrontUrl.slice(0, -1) : rawFrontUrl;
 
-// Configuration des origines autorisées pour CORS
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
   : [frontUrl];
