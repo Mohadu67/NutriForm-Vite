@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import styles from "../../../components/Auth/ResetPassword/ResetPassword.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
-import MobiLogo from "../../../assets/img/logo/domaine-logo.svg";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import LabelField from "../../LabelField/LabelField";
 
@@ -59,8 +58,10 @@ export default function ResetPassword() {
   return (
     <div className={styles.container}>
       <div className={styles.popup}>
-        <img src={MobiLogo} alt="Harmonith" className={styles.logo} />
-        <p className={styles.subtitle}>T’as oublié ton mot de passe ? Tranquille, on n’en parlera à personne.</p>
+        <h1 className={styles.title}>Harmonith</h1>
+        <p className={styles.tagline}>Ton coach encore plus proche</p>
+        <h2 className={styles.subtitle}>Mot de passe oublié ? 😅</h2>
+        <p className={styles.description}>Pas de panique, ça arrive à tout le monde ! Choisis un nouveau mot de passe ci-dessous.</p>
         <form onSubmit={onSubmit} className={styles.form}>
           <LabelField label="Nouveau mot de passe" htmlFor="new-password">
             <input
