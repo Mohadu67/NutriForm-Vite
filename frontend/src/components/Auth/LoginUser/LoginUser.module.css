@@ -51,10 +51,11 @@
   font-size: .95rem;
 }
 
-.error { 
-  color: #D64545; 
-  font-weight: 700; 
-  margin-top: .25rem; 
+.error {
+  color: #D64545;
+  font-weight: 700;
+  margin-top: .25rem;
+  text-align: center;
 }
 
 .submit { 

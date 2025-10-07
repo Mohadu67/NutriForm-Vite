@@ -249,7 +249,7 @@
   box-shadow: 0 8px 18px rgba(123,196,168,.35);
 }
 
-.popup-error { color: #D64545; font-weight: 700; margin-top: 0.25rem; }
+.popup-error { color: #D64545; font-weight: 700; margin-top: 0.25rem; text-align: center; }
 
 .popup-body { display: block; flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 .popup-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
