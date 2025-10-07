@@ -37,7 +37,6 @@ button {
   --muted: #6b7280;
 }
 
-/* Light mode manuel - force les couleurs claires */
 .light {
   --couleur-principale: #F7F6F2;
   --paper: #ffffff;
