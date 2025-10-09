@@ -7,9 +7,32 @@ function bool(v, def = false) {
 const rawFrontUrl = process.env.FRONTEND_BASE_URL || "http://localhost:5173";
 const frontUrl = rawFrontUrl.endsWith("/") ? rawFrontUrl.slice(0, -1) : rawFrontUrl;
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
+const allowedOriginsList = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
   : [frontUrl];
+
+// Fonction CORS qui accepte les URLs configurées + les previews Netlify
+const allowedOrigins = (origin, callback) => {
+  // Autoriser les requêtes sans origin (apps mobiles, Postman, etc.)
+  if (!origin) return callback(null, true);
+
+  // Vérifier si l'origine est dans la liste autorisée
+  if (allowedOriginsList.includes(origin)) {
+    return callback(null, true);
+  }
+
+  // Autoriser les previews Netlify (deploy-preview-X et branch deploys)
+  if (origin.match(/https:\/\/.*\.netlify\.app$/)) {
+    return callback(null, true);
+  }
+
+  // Autoriser localhost en développement
+  if (origin.startsWith('http://localhost')) {
+    return callback(null, true);
+  }
+
+  callback(new Error('Non autorisé par CORS'));
+};
 
 module.exports = {
   env: process.env.NODE_ENV || "development",
