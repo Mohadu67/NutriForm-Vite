@@ -60,6 +60,13 @@ exports.login = async (req, res) => {
 
     const displayName = user.pseudo || user.prenom || user.email.split('@')[0];
 
+    // Convertir l'URL de la photo en URL complète si elle existe
+    let photoUrl = user.photo || null;
+    if (photoUrl && !photoUrl.startsWith('http')) {
+      const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+      photoUrl = `${backendBase}${photoUrl}`;
+    }
+
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -72,7 +79,14 @@ exports.login = async (req, res) => {
       message: 'Connexion réussie.',
       token,
       displayName,
-      user: { id: user._id, prenom: user.prenom, pseudo: user.pseudo, email: user.email, role: user.role },
+      user: {
+        id: user._id,
+        prenom: user.prenom,
+        pseudo: user.pseudo,
+        email: user.email,
+        role: user.role,
+        photo: photoUrl
+      },
     });
   } catch (err) {
     console.error('POST /login', err);

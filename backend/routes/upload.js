@@ -105,10 +105,13 @@ router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => 
     user.photo = photoUrl;
     await user.save();
 
+    // Retourner l'URL complète pour que le frontend puisse afficher l'image
+    const fullUrl = `${process.env.BACKEND_BASE_URL || 'http://localhost:3000'}${photoUrl}`;
+
     res.status(200).json({
       success: true,
       message: 'Photo de profil mise à jour',
-      photo: photoUrl
+      photo: fullUrl
     });
   } catch (error) {
     console.error('Erreur upload photo:', error);
