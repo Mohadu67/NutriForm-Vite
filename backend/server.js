@@ -68,6 +68,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(globalLimiter);
 
+// Servir les fichiers uploadés (photos de profil)
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '../frontend/public/uploads')));
+
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
