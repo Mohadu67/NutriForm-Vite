@@ -154,7 +154,7 @@ export default function FormImc({ onCalculate }) {
   };
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit} aria-describedby="form-help">
+    <form className={styles.form} onSubmit={handleSubmit}>
       <h1 className={styles.h1} > L'indice de masse corporelle</h1>
       <LabelField label="Taille (cm)" htmlFor="taille" required>
         <input
@@ -202,11 +202,6 @@ export default function FormImc({ onCalculate }) {
       </BoutonAction>
 
       <ConnectReminder show={showReminder} />
-
-
-      <p id="form-help" className={styles.helper}>
-        Entrez votre taille en centimètres (cm) et votre poids en kilogrammes (kg), puis cliquez sur "Calculer" pour obtenir votre indice de masse corporelle (IMC) et sa catégorie associée.
-      </p>
     </form>
   );
 }
