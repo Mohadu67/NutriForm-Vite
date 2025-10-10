@@ -84,7 +84,7 @@ body {
   display: grid;
   gap: var(--space-4);
   grid-template-columns: 1fr;
-  margin: var(--space-4);
+  margin: 30px auto;
 }
 
 @media (min-width: 768px) {
@@ -184,7 +184,7 @@ body {
 }
 
 .suivieSeanceBlock {
-  margin-top: var(--space-3);
+  margin: var(--space-4) var(--space-4) 0 var(--space-4);
 }
 
 .statsCarousel {
