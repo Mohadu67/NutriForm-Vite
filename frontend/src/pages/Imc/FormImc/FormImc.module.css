@@ -22,34 +22,14 @@
 
 .form {
   background: var(--bg-form);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   color: var(--fg-form);
-  border-radius: 24px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  width: 92%;
+  border-radius: 16px;
+  width: 100%;
   max-width: 600px;
-  margin: 60px auto;
-  padding: 2.5rem 2rem;
+  margin: 30px auto;
+  padding: 2rem;
   font-family: "Montserrat", system-ui, sans-serif;
-  position: relative;
-  overflow: hidden;
   border: 1px solid var(--line-form);
-}
-
-.form::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--accent-form-light), var(--accent-form));
-}
-
-:global(.dark) .form {
-  background: var(--bg-form);
-  box-shadow: 0 4px 30px rgba(0,0,0,0.5);
 }
 
 .form * {
@@ -70,7 +50,7 @@
 .fieldset {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: 2rem;
   border: none;
   margin: 0;
   padding: 0;
@@ -93,13 +73,13 @@
 
 .input {
   margin: 0;
-  padding: 1rem 1.25rem;
-  border: 2px solid var(--border-color);
-  border-radius: 14px;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   font-size: 1rem;
   background: var(--input-bg);
   color: var(--fg-form);
-  transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color .2s;
   width: 100%;
   font-family: inherit;
   text-align: center;
@@ -116,11 +96,7 @@
 
 .input:focus {
   border-color: var(--accent-form);
-  box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--accent-form) 15%, transparent),
-    0 4px 12px rgba(0,0,0,0.08);
   outline: none;
-  transform: translateY(-1px);
 }
 
 /* Clean numeric inputs */
@@ -134,18 +110,6 @@
   -moz-appearance: textfield;
 }
 
-.helper {
-  font-size: 0.9rem;
-  opacity: 0.75;
-  margin-top: 1.5rem;
-  text-align: center;
-  line-height: 1.6;
-  color: var(--fg-form);
-  background: color-mix(in srgb, var(--accent-form-light) 10%, transparent);
-  padding: 1rem 1.25rem;
-  border-radius: 12px;
-  border-left: 4px solid var(--accent-form-light);
-}
 
 .reminder {
   margin-top: 16px;
