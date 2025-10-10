@@ -5,14 +5,8 @@
   border: 1.5px solid transparent;
   border-radius: 14px;
   padding: 24px;
-  margin: 16px 16px 0 16px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.container:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  margin-bottom: 20px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -99,7 +93,6 @@
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
   border: none;
   position: relative;
 }
@@ -110,30 +103,15 @@
   box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
 }
 
-.uploadButton:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 179, 133, 0.4);
-}
-
 .deleteButton {
   background: #f3f4f6;
   color: #6b7280;
-}
-
-.deleteButton:hover:not(:disabled) {
-  background: #fee2e2;
-  color: #991b1b;
 }
 
 @media (prefers-color-scheme: dark) {
   .deleteButton {
     background: #2a2d34;
     color: #a6b0bf;
-  }
-
-  .deleteButton:hover:not(:disabled) {
-    background: #7f1d1d;
-    color: #fee2e2;
   }
 }
 

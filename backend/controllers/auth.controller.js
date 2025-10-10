@@ -157,12 +157,20 @@ exports.me = async (req, res) => {
     const user = await User.findById(req.userId).lean();
     if (!user) return res.status(404).json({ message: 'Utilisateur introuvable.' });
     const displayName = user.prenom || user.pseudo || (user.email ? user.email.split('@')[0] : '');
+
+    // Convertir l'URL de la photo en URL complète si elle existe
+    let photoUrl = user.photo || null;
+    if (photoUrl && !photoUrl.startsWith('http')) {
+      const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+      photoUrl = `${backendBase}${photoUrl}`;
+    }
+
     return res.json({
       id: user._id,
       email: user.email,
       prenom: user.prenom,
       pseudo: user.pseudo,
-      photo: user.photo,
+      photo: photoUrl,
       role: user.role,
       displayName,
     });
