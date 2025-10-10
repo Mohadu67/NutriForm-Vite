@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" width="220" height="220" role="img" aria-label="Centre de loisirs — Tri-Pulse (anim)">
+  <title>Centre de loisirs — Tri-Pulse (anim)</title>
+  <!-- Trajectoire bleue: dessin animé -->
+  <path id="pathBlue" d="M40 110c0-38 32-70 70-70 14 0 28 5 39 13"
+        fill="none" stroke="#3B82F6" stroke-width="16" stroke-linecap="round"
+        stroke-dasharray="320" stroke-dashoffset="320">
+    <animate id="animBlue" attributeName="stroke-dashoffset" from="320" to="0" dur="0.9s" begin="0.1s" fill="freeze" />
+  </path>
+
+  <!-- Trajectoire verte: dessin animé, commence après la bleue -->
+  <path id="pathGreen" d="M180 110c0 38-32 70-70 70-14 0-28-5-39-13"
+        fill="none" stroke="#10B981" stroke-width="16" stroke-linecap="round"
+        stroke-dasharray="320" stroke-dashoffset="320">
+    <animate id="animGreen" attributeName="stroke-dashoffset" from="320" to="0" dur="0.9s" begin="animBlue.end+0.1s" fill="freeze" />
+  </path>
+
+  <!-- Trait jaune: coup d'énergie -->
+  <path id="pathYellow" d="M65 155 L155 65"
+        fill="none" stroke="#F59E0B" stroke-width="16" stroke-linecap="round"
+        stroke-dasharray="200" stroke-dashoffset="200">
+    <animate id="animYellow" attributeName="stroke-dashoffset" from="200" to="0" dur="0.7s" begin="animGreen.end+0.05s" fill="freeze" />
+    <animate attributeName="opacity" values="1;0.85;1" dur="1.8s" begin="animYellow.end+0.2s" repeatCount="indefinite" />
+  </path>
+
+  <!-- Point central: pulse discret infini -->
+  <circle cx="110" cy="110" r="6" fill="#1F2937">
+    <animate attributeName="r" values="6;7.5;6" dur="1.6s" begin="animYellow.end" repeatCount="indefinite" />
+  </circle>
+</svg>
