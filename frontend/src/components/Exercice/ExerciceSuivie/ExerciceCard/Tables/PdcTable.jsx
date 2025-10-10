@@ -5,11 +5,10 @@ import styles from "./Tables.module.css";
 
 function PdcTable({ sets = [], onAdd, onRemove, onPatch }) {
   return (
-    <div className={styles.table}>
+    <div className={`${styles.table} ${styles.tablePdc}`}>
       <div className={styles.rowHead}>
         <div>Série</div>
         <div>Reps</div>
-        <div>Repos (s)</div>
         <div></div>
       </div>
 
@@ -23,15 +22,6 @@ function PdcTable({ sets = [], onAdd, onRemove, onPatch }) {
               value={s?.reps ?? ""}
               onChange={(e) => onPatch && onPatch(idx, { reps: e.target.value === "" ? "" : Number(e.target.value) })}
               aria-label={`Répétitions série ${idx + 1}`}
-            />
-          </div>
-          <div>
-            <input
-              type="number"
-              inputMode="numeric"
-              value={s?.restSec ?? ""}
-              onChange={(e) => onPatch && onPatch(idx, { restSec: e.target.value === "" ? "" : Number(e.target.value) })}
-              aria-label={`Repos en secondes série ${idx + 1}`}
             />
           </div>
           <div>
