@@ -3,6 +3,7 @@ import { mapItemsToEntries } from "../../TableauBord/sessionApi";
 import styles from "./Chrono.module.css";
 import useSaveSession from "../ExerciceCard/hooks/useSaveSession";
 import useChronoCore from "./useChronoCore";
+import EchauffementModal from "./EchauffementModal";
 
 function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onStart = null, onFinish = () => {} }) {
   const { save, saving } = useSaveSession();
@@ -10,6 +11,68 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
   const { time, setTime, running, setRunning, showConfirm, setShowConfirm, startTs, setStartTs, stopAndReset, freezeClock } = useChronoCore(startedAt, { resume: resumeFromStartedAt });
 
   const hasSession = Boolean(startTs || startedAt);
+  const [showWarmup, setShowWarmup] = useState(false);
+
+  const muscleGroups = useMemo(() => {
+    const safe = Array.isArray(items) ? items : [];
+    const groups = new Set();
+
+    safe.forEach(it => {
+      // Détecter le type d'activité
+      const typeRaw = String(it?.mode ?? it?.type ?? '').toLowerCase();
+      const nameRaw = String(it?.name ?? '').toLowerCase();
+
+      // Activités douces (sans échauffement physique)
+      if (typeRaw.includes('meditation') || nameRaw.includes('meditation') || nameRaw.includes('méditation')) {
+        groups.add('meditation');
+        return;
+      }
+      if (typeRaw.includes('yoga') || nameRaw.includes('yoga')) {
+        groups.add('yoga');
+        return;
+      }
+      if (typeRaw.includes('etirement') || typeRaw.includes('étirement') || nameRaw.includes('etirement') || nameRaw.includes('étirement')) {
+        groups.add('etirement');
+        return;
+      }
+
+      // Cardio
+      if (typeRaw.includes('cardio')) {
+        groups.add('cardio');
+        return;
+      }
+
+      // Analyser les muscles ciblés
+      const muscles = it?.muscles || [];
+      const muscleArray = Array.isArray(muscles) ? muscles : [muscles];
+
+      muscleArray.forEach(muscle => {
+        const muscleStr = String(muscle).toLowerCase();
+
+        // Mapper les muscles vers les groupes principaux
+        if (muscleStr.includes('pec') || muscleStr.includes('chest') || muscleStr.includes('poitrine')) {
+          groups.add('pectoraux');
+        }
+        if (muscleStr.includes('epaule') || muscleStr.includes('delt') || muscleStr.includes('shoulder')) {
+          groups.add('epaules');
+        }
+        if (muscleStr.includes('bicep') || muscleStr.includes('tricep') || muscleStr.includes('avant-bras') || muscleStr.includes('forearm')) {
+          groups.add('bras');
+        }
+        if (muscleStr.includes('dos') || muscleStr.includes('back') || muscleStr.includes('trap') || muscleStr.includes('lat') || muscleStr.includes('lombaire')) {
+          groups.add('dos');
+        }
+        if (muscleStr.includes('abdo') || muscleStr.includes('abs') || muscleStr.includes('oblique') || muscleStr.includes('core')) {
+          groups.add('core');
+        }
+        if (muscleStr.includes('cuisse') || muscleStr.includes('quad') || muscleStr.includes('ischio') || muscleStr.includes('fessier') || muscleStr.includes('mollet') || muscleStr.includes('jambe') || muscleStr.includes('leg') || muscleStr.includes('glute') || muscleStr.includes('calf')) {
+          groups.add('jambes');
+        }
+      });
+    });
+
+    return Array.from(groups);
+  }, [items]);
 
   const { totalExercises, doneExercises, calories } = useMemo(() => {
     const safe = Array.isArray(items) ? items : [];
@@ -164,8 +227,29 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
     return `${minutes}:${seconds}`;
   };
 
+  const handleStartSession = () => {
+    setTime(0);
+    if (!startTs) {
+      const ts = startedAt ? new Date(startedAt).getTime() : Date.now();
+      const safeTs = Number.isNaN(ts) ? Date.now() : ts;
+      setStartTs(safeTs);
+      if (typeof onStart === "function") {
+        try { onStart(new Date(safeTs).toISOString()); } catch {}
+      }
+    }
+    setRunning(true);
+    setShowWarmup(false);
+  };
+
   return (
     <>
+      {showWarmup && (
+        <EchauffementModal
+          onStart={handleStartSession}
+          onSkip={handleStartSession}
+          muscleGroups={muscleGroups}
+        />
+      )}
       <div className={styles.card}>
         <div className={styles.header}>
           <h2 className={styles.title}>
@@ -176,16 +260,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
               <button
                 className={styles.goBtn}
                 onClick={() => {
-                  setTime(0);
-                  if (!startTs) {
-                    const ts = startedAt ? new Date(startedAt).getTime() : Date.now();
-                    const safeTs = Number.isNaN(ts) ? Date.now() : ts;
-                    setStartTs(safeTs);
-                    if (typeof onStart === "function") {
-                      try { onStart(new Date(safeTs).toISOString()); } catch {}
-                    }
-                  }
-                  setRunning(true);
+                  setShowWarmup(true);
                 }}>
                 Commencer
               </button>
