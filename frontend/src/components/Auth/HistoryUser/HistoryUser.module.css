@@ -115,13 +115,6 @@
   border-radius: var(--nf-radius);
   padding: var(--space-5);
   box-shadow: var(--nf-shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.recapCard:hover,
-.sessionsSection:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 :global(.dark) .recapCard,
@@ -180,16 +173,8 @@
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
   color: var(--nf-ink);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.chip:hover {
-  background: linear-gradient(135deg, rgba(255, 179, 133, 0.15), rgba(181, 234, 215, 0.15));
-  border-color: var(--nf-peach);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(255, 179, 133, 0.2);
 }
 
 .chip:active {
@@ -215,13 +200,6 @@
   border-radius: 8px;
   border: 1px solid var(--nf-surface-border);
   font-size: 0.9rem;
-  transition: all 0.2s ease;
-}
-
-.sessionItem:hover {
-  background: rgba(181, 234, 215, 0.15);
-  transform: translateX(4px);
-  border-color: var(--nf-green);
 }
 
 .sessionName {
