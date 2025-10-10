@@ -68,9 +68,14 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(globalLimiter);
 
-// Servir les fichiers uploadés (photos de profil)
+// Servir les fichiers uploadés (photos de profil) avec CORS
 const path = require('path');
-app.use('/uploads', express.static(path.join(__dirname, '../frontend/public/uploads')));
+app.use('/uploads', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET');
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, '../frontend/public/uploads')));
 
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
