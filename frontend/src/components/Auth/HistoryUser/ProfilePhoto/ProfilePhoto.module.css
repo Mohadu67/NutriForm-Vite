@@ -4,7 +4,7 @@
   border: 2px solid #FFB385;
   border-radius: 20px;
   padding: 24px;
-  margin-bottom: 24px;
+  margin: 16px 16px 0 16px;
 }
 
 @media (prefers-color-scheme: dark) {

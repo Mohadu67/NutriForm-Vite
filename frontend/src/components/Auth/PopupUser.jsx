@@ -75,6 +75,7 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
 
         {currentView === "history" && (
           <HistoryUser
+            key={`history-${Date.now()}`}
             onLogout={() => {
               localStorage.removeItem("token");
               onLogout?.();
