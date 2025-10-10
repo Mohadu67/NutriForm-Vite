@@ -1,0 +1,318 @@
+{
+  "softActivities": {
+    "meditation": {
+      "title": "Préparez votre séance de méditation",
+      "icon": "🧘",
+      "needsTimer": false,
+      "recommendations": [
+        {
+          "text": "Trouvez un endroit calme et tranquille",
+          "gif": ""
+        },
+        {
+          "text": "Installez-vous confortablement (assis ou allongé)",
+          "gif": ""
+        },
+        {
+          "text": "Coupez les notifications de votre téléphone",
+          "gif": ""
+        },
+        {
+          "text": "Prévoyez un coussin ou tapis si nécessaire",
+          "gif": ""
+        },
+        {
+          "text": "Préparez une playlist de méditation (optionnel)",
+          "gif": ""
+        }
+      ]
+    },
+    "yoga": {
+      "title": "Préparez votre séance de yoga",
+      "icon": "🧘",
+      "needsTimer": false,
+      "recommendations": [
+        {
+          "text": "Installez votre tapis dans un espace dégagé",
+          "gif": ""
+        },
+        {
+          "text": "Portez des vêtements confortables et extensibles",
+          "gif": ""
+        },
+        {
+          "text": "Préparez une serviette et de l'eau",
+          "gif": ""
+        },
+        {
+          "text": "Assurez-vous d'avoir suffisamment d'espace autour de vous",
+          "gif": ""
+        },
+        {
+          "text": "Commencez par quelques respirations profondes",
+          "gif": ""
+        }
+      ]
+    },
+    "etirement": {
+      "title": "Préparez votre séance d'étirements",
+      "icon": "🧘",
+      "needsTimer": false,
+      "recommendations": [
+        {
+          "text": "Choisissez un espace confortable et calme",
+          "gif": ""
+        },
+        {
+          "text": "Portez des vêtements souples",
+          "gif": ""
+        },
+        {
+          "text": "Préparez un tapis ou surface douce",
+          "gif": ""
+        },
+        {
+          "text": "Respirez calmement et profondément",
+          "gif": ""
+        },
+        {
+          "text": "Ne forcez jamais, restez dans le confort",
+          "gif": ""
+        }
+      ]
+    }
+  },
+  "muscleGroups": {
+    "pectoraux": {
+      "title": "Échauffement pectoraux",
+      "icon": "🔥",
+      "needsTimer": true,
+      "exercises": [
+        {
+          "text": "Rotations des bras (cercles avant/arrière)",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Ouverture de poitrine dynamique",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Pompes inclinées légères",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Étirement dynamique pectoraux",
+          "duration": "30sec",
+          "gif": ""
+        }
+      ]
+    },
+    "epaules": {
+      "title": "Échauffement épaules",
+      "icon": "🔥",
+      "needsTimer": true,
+      "exercises": [
+        {
+          "text": "Rotations des épaules (avant/arrière)",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Élévations latérales à vide",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Rotation externe/interne des bras",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Cercles avec les bras tendus",
+          "duration": "30sec",
+          "gif": ""
+        }
+      ]
+    },
+    "bras": {
+      "title": "Échauffement bras",
+      "icon": "🔥",
+      "needsTimer": true,
+      "exercises": [
+        {
+          "text": "Rotations des poignets",
+          "duration": "20sec",
+          "gif": ""
+        },
+        {
+          "text": "Flexion/extension des coudes",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Rotations des avant-bras",
+          "duration": "20sec",
+          "gif": ""
+        },
+        {
+          "text": "Ouverture/fermeture des mains",
+          "duration": "20sec",
+          "gif": ""
+        }
+      ]
+    },
+    "dos": {
+      "title": "Échauffement dos",
+      "icon": "🔥",
+      "needsTimer": true,
+      "exercises": [
+        {
+          "text": "Cat-cow (dos rond/dos creux)",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Rotations du tronc",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Superman léger",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Étirement chat dynamique",
+          "duration": "30sec",
+          "gif": ""
+        }
+      ]
+    },
+    "core": {
+      "title": "Échauffement core",
+      "icon": "🔥",
+      "needsTimer": true,
+      "exercises": [
+        {
+          "text": "Rotations du bassin",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Flexions latérales douces",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Dead bug léger",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Planche genou",
+          "duration": "30sec",
+          "gif": ""
+        }
+      ]
+    },
+    "jambes": {
+      "title": "Échauffement jambes",
+      "icon": "🔥",
+      "needsTimer": true,
+      "exercises": [
+        {
+          "text": "Marche sur place genoux hauts",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Squats à vide",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Fentes alternées légères",
+          "duration": "30sec",
+          "gif": ""
+        },
+        {
+          "text": "Rotations des chevilles",
+          "duration": "20sec",
+          "gif": ""
+        },
+        {
+          "text": "Balancement jambes avant/arrière",
+          "duration": "20sec",
+          "gif": ""
+        }
+      ]
+    },
+    "cardio": {
+      "title": "Échauffement cardio",
+      "icon": "🔥",
+      "needsTimer": true,
+      "exercises": [
+        {
+          "text": "Marche sur place",
+          "duration": "1min",
+          "gif": ""
+        },
+        {
+          "text": "Montées de genoux",
+          "duration": "1min",
+          "gif": ""
+        },
+        {
+          "text": "Talons-fesses",
+          "duration": "1min",
+          "gif": ""
+        },
+        {
+          "text": "Jumping jacks légers",
+          "duration": "1min",
+          "gif": ""
+        },
+        {
+          "text": "Course légère sur place",
+          "duration": "1min",
+          "gif": ""
+        }
+      ]
+    }
+  },
+  "default": {
+    "title": "Échauffement recommandé",
+    "icon": "🔥",
+    "needsTimer": true,
+    "exercises": [
+      {
+        "text": "Marche sur place",
+        "duration": "1min",
+        "gif": ""
+      },
+      {
+        "text": "Rotations articulaires",
+        "duration": "1min",
+        "gif": ""
+      },
+      {
+        "text": "Squats légers",
+        "duration": "30sec",
+        "gif": ""
+      },
+      {
+        "text": "Rotations du tronc",
+        "duration": "30sec",
+        "gif": ""
+      },
+      {
+        "text": "Étirements dynamiques",
+        "duration": "1min",
+        "gif": ""
+      }
+    ]
+  }
+}
