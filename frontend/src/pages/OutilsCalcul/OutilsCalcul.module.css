@@ -77,6 +77,10 @@
   gap: .6rem;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  margin: 30px auto;
+  
+  max-width: 600px;
 }
 
 .tab {
