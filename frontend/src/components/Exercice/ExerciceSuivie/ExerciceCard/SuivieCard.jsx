@@ -6,6 +6,8 @@ import useExerciceForm from "./hooks/useExerciceForm";
 import ModeBar from "./ModeBar/ModeBar";
 import modeStyles from "./ModeBar/ModeBar.module.css";
 
+import GlobalRestTimer from "./GlobalRestTimer/GlobalRestTimer";
+
 import CardioTable from "./Tables/CardioTable";
 import MuscuTable from "./Tables/MuscuTable";
 import PdcTable from "./Tables/PdcTable";
@@ -150,6 +152,8 @@ export default function SuivieCard({ exo, value, onChange }) {
                 }}
                 classes={{ modeBar: modeStyles.modeBar, selectControl: modeStyles.selectControl }}
               />
+
+              {!isCardio && <GlobalRestTimer />}
 
               {isCardio ? (
                 <CardioTable
