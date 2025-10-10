@@ -252,6 +252,11 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
               {showConfirm ? "🙈" : "👁"}
             </button>
           </div>
+          {confirm && password !== confirm && (
+            <span className={cstyle.error} style={{ fontSize: '0.85rem', marginTop: '4px', display: 'block' }}>
+              Les mots de passe ne correspondent pas
+            </span>
+          )}
         </LabelField>
 
         <label className={cstyle.checkRow}>
