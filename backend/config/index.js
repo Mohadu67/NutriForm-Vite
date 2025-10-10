@@ -12,20 +12,29 @@ const allowedOriginsList = process.env.ALLOWED_ORIGINS
   : [frontUrl];
 
 const allowedOrigins = (origin, callback) => {
+  // Pas d'origin = requête same-origin ou depuis Postman/curl
   if (!origin) return callback(null, true);
 
+  // Vérifier la liste explicite
   if (allowedOriginsList.includes(origin)) {
+    console.log('[CORS] ✅ Origin autorisée (liste):', origin);
     return callback(null, true);
   }
 
-  if (origin.match(/https:\/\/.*\.netlify\.app$/)) {
+  // Autoriser TOUS les domaines netlify.app (deploy previews inclus)
+  if (origin.match(/^https:\/\/.*\.netlify\.app$/)) {
+    console.log('[CORS] ✅ Origin autorisée (Netlify):', origin);
     return callback(null, true);
   }
 
-  if (origin.startsWith('http://localhost')) {
+  // Autoriser localhost (dev)
+  if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+    console.log('[CORS] ✅ Origin autorisée (localhost):', origin);
     return callback(null, true);
   }
 
+  // Bloquer le reste
+  console.log('[CORS] ❌ Origin REFUSÉE:', origin);
   callback(new Error('Non autorisé par CORS'));
 };
 
