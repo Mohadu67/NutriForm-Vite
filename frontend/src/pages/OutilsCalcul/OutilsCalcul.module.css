@@ -100,12 +100,9 @@
 }
 
 .panel {
-  background: var(--paper);
+  background: transparent;
   color: var(--ink);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-sm);
-  padding: 1rem;
+  padding: 0;
 }
 
 /* Focus states for accessibility */

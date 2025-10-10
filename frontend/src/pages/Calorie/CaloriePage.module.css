@@ -42,14 +42,9 @@
 .section {
   margin: 0 auto 2rem auto;
   max-width: 900px;
-  background: var(--paper);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--line);
-  transition: transform .15s ease, box-shadow .2s ease;
+  background: transparent;
+  padding: 0;
 }
-.section:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
 .titre {
   font-family: var(--font-titre);
