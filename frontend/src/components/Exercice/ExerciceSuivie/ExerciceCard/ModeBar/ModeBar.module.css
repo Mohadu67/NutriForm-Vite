@@ -1,13 +1,13 @@
 /* Modern mode selector with visual buttons */
 
 .modernModeBar {
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .modeGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .modeButton {
@@ -15,14 +15,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 14px 10px;
-  border: 2px solid var(--line-strong);
-  border-radius: 14px;
-  background: color-mix(in oklab, var(--paper) 96%, transparent);
+  gap: 8px;
+  padding: 16px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
   color: var(--ink);
   cursor: pointer;
-  transition: all .2s cubic-bezier(.4, 0, .2, 1);
+  transition: all .25s cubic-bezier(.4, 0, .2, 1);
   position: relative;
   overflow: hidden;
 }
@@ -33,24 +33,25 @@
   inset: 0;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   opacity: 0;
-  transition: opacity .2s ease;
+  transition: opacity .25s ease;
 }
 
 .modeButton:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in oklab, var(--accent) 35%, var(--line-strong));
-  box-shadow: 0 8px 20px rgba(0,0,0,.1);
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px rgba(247, 143, 92, 0.2);
 }
 
 .modeButton:active {
-  transform: translateY(0);
+  transform: translateY(-1px);
 }
 
 .modeButtonActive {
-  border-color: var(--accent);
+  border-color: transparent;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   color: white;
-  box-shadow: 0 8px 24px color-mix(in oklab, var(--accent) 40%, transparent);
+  box-shadow: 0 6px 20px rgba(247, 143, 92, 0.4);
+  transform: translateY(-2px);
 }
 
 .modeButtonActive::before {
@@ -58,88 +59,90 @@
 }
 
 .modeIcon {
-  font-size: 28px;
+  font-size: 32px;
   position: relative;
   z-index: 1;
-  transition: transform .2s ease;
+  transition: transform .25s ease;
 }
 
 .modeButton:hover .modeIcon {
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
 
 .modeButtonActive .modeIcon {
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,.25));
+  transform: scale(1.05);
 }
 
 .modeLabel {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   position: relative;
   z-index: 1;
-  letter-spacing: 0.3px;
+  letter-spacing: -0.2px;
 }
 
 .modeDescription {
-  font-size: 11px;
-  opacity: 0.8;
+  font-size: 12px;
+  opacity: 0.7;
   position: relative;
   z-index: 1;
   font-weight: 500;
 }
 
 .modeButtonActive .modeDescription {
-  opacity: 0.95;
+  opacity: 0.9;
 }
 
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .modeGrid {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 10px;
   }
 
   .modeButton {
     flex-direction: row;
     justify-content: flex-start;
-    padding: 12px 14px;
-    gap: 12px;
+    padding: 14px 16px;
+    gap: 14px;
   }
 
   .modeIcon {
-    font-size: 24px;
+    font-size: 28px;
   }
 
   .modeLabel {
     flex: 1;
     text-align: left;
+    font-size: 16px;
   }
 
   .modeDescription {
-    font-size: 12px;
+    font-size: 13px;
   }
 }
 
 @media (min-width: 481px) and (max-width: 640px) {
   .modeGrid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    gap: 10px;
   }
 
   .modeButton {
-    padding: 12px 8px;
+    padding: 14px 10px;
   }
 
   .modeIcon {
-    font-size: 24px;
+    font-size: 28px;
   }
 
   .modeLabel {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .modeDescription {
-    font-size: 10px;
+    font-size: 11px;
   }
 }
 

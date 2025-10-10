@@ -10,7 +10,6 @@ function MuscuTable({ sets = [], onAdd, onRemove, onPatch }) {
         <div>Série</div>
         <div>Poids (kg)</div>
         <div>Reps</div>
-        <div>Repos (s)</div>
         <div></div>
       </div>
 
@@ -33,15 +32,6 @@ function MuscuTable({ sets = [], onAdd, onRemove, onPatch }) {
               value={s?.reps ?? ""}
               onChange={(e) => onPatch && onPatch(idx, { reps: e.target.value === "" ? "" : Number(e.target.value) })}
               aria-label={`Répétitions série ${idx + 1}`}
-            />
-          </div>
-          <div>
-            <input
-              type="number"
-              inputMode="numeric"
-              value={s?.restSec ?? ""}
-              onChange={(e) => onPatch && onPatch(idx, { restSec: e.target.value === "" ? "" : Number(e.target.value) })}
-              aria-label={`Repos en secondes série ${idx + 1}`}
             />
           </div>
           <div>
