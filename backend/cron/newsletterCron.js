@@ -23,24 +23,28 @@ const checkAndSendNewsletters = async () => {
 
       const result = await sendNewsletterToAll(newsletter);
 
+      newsletter.recipientCount = result.totalRecipients ?? 0;
+      newsletter.successCount = result.successCount ?? 0;
+      newsletter.failedCount = result.failedCount ?? 0;
+
       if (result.success) {
         newsletter.status = 'sent';
         newsletter.sentAt = new Date();
-        newsletter.recipientCount = result.totalRecipients;
-        newsletter.successCount = result.successCount;
-        newsletter.failedCount = result.failedCount;
-
-        await newsletter.save();
 
         console.log(`✅ Newsletter "${newsletter.title}" envoyée avec succès`);
         console.log(`   📊 Succès: ${result.successCount}, Échecs: ${result.failedCount}`);
       } else {
         // Marquer comme échouée
         newsletter.status = 'failed';
-        await newsletter.save();
+        newsletter.sentAt = undefined;
 
-        console.error(`❌ Échec de l'envoi de la newsletter "${newsletter.title}"`);
+        const partialInfo = newsletter.successCount > 0
+          ? ` (succès: ${newsletter.successCount}, échecs: ${newsletter.failedCount})`
+          : '';
+        console.error(`❌ Échec de l'envoi de la newsletter "${newsletter.title}"${partialInfo}`);
       }
+
+      await newsletter.save();
     }
   } catch (error) {
     console.error('❌ Erreur dans le cron de newsletter:', error);

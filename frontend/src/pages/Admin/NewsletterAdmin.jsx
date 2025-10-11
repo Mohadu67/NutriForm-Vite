@@ -4,6 +4,17 @@ import styles from "./NewsletterAdmin.module.css";
 
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
+const toDateTimeLocalValue = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  const offset = date.getTimezoneOffset() * 60000;
+  const localISO = new Date(date.getTime() - offset).toISOString();
+  return localISO.slice(0, 16);
+};
+
 export default function NewsletterAdmin() {
   const navigate = useNavigate();
   const [newsletters, setNewsletters] = useState([]);
@@ -104,11 +115,18 @@ export default function NewsletterAdmin() {
 
       const method = editingId ? "PUT" : "POST";
 
+      const payload = {
+        ...formData,
+        scheduledDate: formData.scheduledDate
+          ? new Date(formData.scheduledDate).toISOString()
+          : null
+      };
+
       const res = await fetch(url, {
         method,
         headers: getAuthHeaders(),
         credentials: 'include',
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
@@ -131,7 +149,7 @@ export default function NewsletterAdmin() {
       title: newsletter.title,
       subject: newsletter.subject,
       content: newsletter.content,
-      scheduledDate: newsletter.scheduledDate ? new Date(newsletter.scheduledDate).toISOString().slice(0, 16) : "",
+      scheduledDate: newsletter.scheduledDate ? toDateTimeLocalValue(newsletter.scheduledDate) : "",
       status: newsletter.status
     });
     setEditingId(newsletter._id);
