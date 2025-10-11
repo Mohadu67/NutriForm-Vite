@@ -74,6 +74,8 @@ async function sendMail({ to, subject, html, text, replyTo }) {
 }
 
 async function sendVerifyEmail({ to, toName, verifyUrl, replyTo }) {
+  console.log('[MAILER] Preparing verification email for:', to);
+  console.log('[MAILER] Verification URL:', verifyUrl);
   const { subject, text, html } = makeVerifyEmail({ toName, verifyUrl });
   return sendMail({ to, subject, text, html, replyTo });
 }

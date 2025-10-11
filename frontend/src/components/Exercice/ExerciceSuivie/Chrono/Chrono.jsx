@@ -4,6 +4,7 @@ import styles from "./Chrono.module.css";
 import useSaveSession from "../ExerciceCard/hooks/useSaveSession";
 import useChronoCore from "./useChronoCore";
 import EchauffementModal from "./EchauffementModal";
+import SaveLoadingAnimation from "./SaveLoadingAnimation";
 
 function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onStart = null, onFinish = () => {} }) {
   const { save, saving } = useSaveSession();
@@ -243,6 +244,8 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
 
   return (
     <>
+      {saving && <SaveLoadingAnimation />}
+
       {showWarmup && (
         <EchauffementModal
           onStart={handleStartSession}
