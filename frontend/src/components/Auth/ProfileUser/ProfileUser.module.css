@@ -231,6 +231,18 @@
   background: linear-gradient(135deg, #e5e7eb, #d1d5db);
 }
 
+.actions :global(button[variant="admin"]) {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #1e40af;
+  border: 2px solid #3b82f6;
+}
+
+.actions :global(button[variant="admin"]):hover {
+  background: linear-gradient(135deg, #bfdbfe, #93c5fd);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
 .actions :global(button[variant="logout"]) {
   background: linear-gradient(135deg, #fee2e2, #fecaca);
   color: #dc2626;
@@ -384,4 +396,17 @@
 :global(html.dark) .input:focus {
   background: #252525;
   border-color: #d97745;
+}
+
+:global(body.dark) .actions :global(button[variant="admin"]),
+:global(html.dark) .actions :global(button[variant="admin"]) {
+  background: linear-gradient(135deg, #1e3a8a, #1e40af);
+  color: #bfdbfe;
+  border-color: #3b82f6;
+}
+
+:global(body.dark) .actions :global(button[variant="admin"]):hover,
+:global(html.dark) .actions :global(button[variant="admin"]):hover {
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);
 }

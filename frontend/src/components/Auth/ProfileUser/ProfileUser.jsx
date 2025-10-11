@@ -139,6 +139,13 @@ export default function ProfileUser({ onClose, onLogout }) {
     onClose?.();
   };
 
+  const handleAdminClick = () => {
+    window.location.href = '/admin';
+    onClose?.();
+  };
+
+  const isAdmin = user?.role === 'admin' || user?.isAdmin === true;
+
   if (loading) {
     return (
       <div className={styles.body}>
@@ -188,6 +195,11 @@ export default function ProfileUser({ onClose, onLogout }) {
             </div>
 
             <div className={styles.actions}>
+              {isAdmin && (
+                <BoutonAction type="button" onClick={handleAdminClick} variant="admin">
+                  🛡️ Administration
+                </BoutonAction>
+              )}
               <BoutonAction type="button" onClick={() => setEditing(true)} variant="secondary">
                 Modifier mes informations
               </BoutonAction>
