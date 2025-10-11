@@ -23,9 +23,11 @@ export default function Newsletter() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !email.includes("@")) {
+    // Validation de l'email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
       setStatus("error");
-      setMessage(t('newsletter.errorInvalidEmail'));
+      setMessage(t('newsletter.errorInvalidEmail') || "Format d'email invalide. Vérifie ton adresse email.");
       return;
     }
 
@@ -113,6 +115,9 @@ export default function Newsletter() {
                   className={styles.input}
                   disabled={status === "loading" || status === "success"}
                   aria-label={t('newsletter.ariaLabel')}
+                  required
+                  pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+                  title="Veuillez entrer une adresse email valide"
                 />
                 <button
                   type="submit"

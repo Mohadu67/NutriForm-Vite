@@ -185,3 +185,91 @@ exports.me = async (req, res) => {
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const { prenom, pseudo, email } = req.body || {};
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: 'Utilisateur introuvable.' });
+
+    // Vérifier si l'email est déjà utilisé par un autre utilisateur
+    if (email && email !== user.email) {
+      const emailNorm = String(email).toLowerCase().trim();
+      const exists = await User.findOne({ email: emailNorm, _id: { $ne: req.userId } }).lean();
+      if (exists) return res.status(409).json({ message: 'Email déjà utilisé.' });
+      user.email = emailNorm;
+    }
+
+    // Vérifier si le pseudo est déjà utilisé par un autre utilisateur
+    if (pseudo && pseudo !== user.pseudo) {
+      const pseudoNorm = String(pseudo).toLowerCase().trim();
+      const bad = !/^[a-z0-9._-]{3,30}$/.test(pseudoNorm);
+      if (bad) return res.status(400).json({ message: 'Pseudo invalide (3-30, a-z0-9._-).' });
+      const pseudoTaken = await User.findOne({ pseudo: pseudoNorm, _id: { $ne: req.userId } }).lean();
+      if (pseudoTaken) return res.status(409).json({ message: 'Pseudo déjà pris.' });
+      user.pseudo = pseudoNorm;
+    }
+
+    // Mettre à jour le prénom
+    if (prenom !== undefined) {
+      user.prenom = String(prenom).trim() || undefined;
+    }
+
+    await user.save();
+
+    // Convertir l'URL de la photo en URL complète si elle existe
+    let photoUrl = user.photo || null;
+    if (photoUrl && !photoUrl.startsWith('http')) {
+      const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+      photoUrl = `${backendBase}${photoUrl}`;
+    }
+
+    return res.json({
+      message: 'Profil mis à jour avec succès.',
+      user: {
+        id: user._id,
+        email: user.email,
+        prenom: user.prenom,
+        pseudo: user.pseudo,
+        photo: photoUrl,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error('PUT /update-profile', err);
+    if (err?.code === 11000) return res.status(409).json({ message: 'Conflit (email/pseudo déjà pris).' });
+    return res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Mot de passe actuel et nouveau mot de passe requis.' });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ message: 'Le nouveau mot de passe doit contenir au moins 8 caractères.' });
+    }
+
+    const user = await User.findById(req.userId).select('+motdepasse');
+    if (!user) return res.status(404).json({ message: 'Utilisateur introuvable.' });
+
+    // Vérifier le mot de passe actuel
+    const isValid = await bcrypt.compare(currentPassword, user.motdepasse);
+    if (!isValid) {
+      return res.status(401).json({ message: 'Mot de passe actuel incorrect.' });
+    }
+
+    // Mettre à jour le mot de passe (le hash sera fait automatiquement par le pre-save hook)
+    user.motdepasse = newPassword;
+    await user.save();
+
+    return res.json({ message: 'Mot de passe modifié avec succès.' });
+  } catch (err) {
+    console.error('PUT /change-password', err);
+    return res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
