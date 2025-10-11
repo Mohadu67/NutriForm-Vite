@@ -1,19 +1,39 @@
 const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 const config = require('../config');
+
+// Vérifier si SendGrid est configuré pour la newsletter aussi
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+const USE_SENDGRID = !!SENDGRID_API_KEY;
+
+if (USE_SENDGRID) {
+  sgMail.setApiKey(SENDGRID_API_KEY);
+  console.log('[EMAIL_SERVICE] Using SendGrid for newsletter delivery');
+} else {
+  console.log('[EMAIL_SERVICE] Using SMTP for newsletter delivery');
+}
 
 // Créer UN SEUL transporter réutilisable avec pool
 let transporter = null;
 
 const getTransporter = () => {
   if (!transporter) {
+    console.log('[EMAIL_SERVICE] Creating transporter with config:', {
+      host: config.smtp.host,
+      port: config.smtp.port,
+      secure: config.smtp.secure,
+      user: config.smtp.user,
+      hasPass: !!config.smtp.pass
+    });
+
     transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT) || 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      },
+      host: config.smtp.host,
+      port: config.smtp.port,
+      secure: config.smtp.secure, // Utiliser la config au lieu de hardcoder false
+      auth: config.smtp.user && config.smtp.pass ? {
+        user: config.smtp.user,
+        pass: config.smtp.pass
+      } : undefined,
       pool: true,
       maxConnections: 5,
       maxMessages: 100,
@@ -92,22 +112,44 @@ const getNewsletterTemplate = (subject, content) => {
 
 const sendNewsletterEmail = async (to, subject, content, senderName = 'L\'équipe Harmonith') => {
   try {
-    const transporter = getTransporter();
-
     const htmlContent = getNewsletterTemplate(subject, content)
       .replace('{{email}}', encodeURIComponent(to));
 
-    const info = await transporter.sendMail({
-      from: `"${senderName} - Harmonith" <${process.env.SMTP_USER}>`,
-      to,
-      subject,
-      html: htmlContent
-    });
+    const from = config.smtp.from || config.smtp.user;
+    if (!from) {
+      throw new Error('CONFIG: smtp.from manquant pour newsletter');
+    }
 
-    console.log(`Email envoyé à ${to}: ${info.messageId}`);
-    return { success: true, messageId: info.messageId };
+    console.log(`[EMAIL_SERVICE] Sending newsletter to ${to}...`);
+
+    if (USE_SENDGRID) {
+      // Utiliser SendGrid pour la newsletter
+      const msg = {
+        to,
+        from,
+        subject,
+        html: htmlContent,
+      };
+      const result = await sgMail.send(msg);
+      console.log(`[EMAIL_SERVICE] ✅ Newsletter sent to ${to} via SendGrid: ${result[0]?.headers['x-message-id']}`);
+      return { success: true, messageId: result[0]?.headers['x-message-id'] };
+    } else {
+      // Utiliser SMTP pour la newsletter
+      const transporter = getTransporter();
+      const info = await transporter.sendMail({
+        from: `"${senderName} - Harmonith" <${from}>`,
+        to,
+        subject,
+        html: htmlContent
+      });
+
+      console.log(`[EMAIL_SERVICE] ✅ Newsletter sent to ${to} via SMTP: ${info.messageId}`);
+      return { success: true, messageId: info.messageId };
+    }
   } catch (error) {
-    console.error(`Erreur envoi email à ${to}:`, error);
+    console.error(`[EMAIL_SERVICE] ❌ Error sending newsletter to ${to}:`, error.message);
+    console.error('[EMAIL_SERVICE] Error code:', error.code);
+    console.error('[EMAIL_SERVICE] Full error:', error);
     return { success: false, error: error.message };
   }
 };

@@ -14,6 +14,7 @@ import ExoPage from "./pages/Exo/Exo.jsx";
 import PageOutils from "./pages/OutilsCalcul/PageOutils.jsx";
 import NewsletterAdmin from "./pages/Admin/NewsletterAdmin.jsx";
 import AdminPage from "./pages/Admin/AdminPage.jsx";
+import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import './i18n/config';
@@ -31,6 +32,7 @@ export default function App() {
       <Route path="/calorie" element={<CaloriePage />} />
       <Route path="/calories" element={<CaloriePage />} />
       <Route path="/contact" element={<ContactPage />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/cookies" element={<CookiesPolicy />} />
