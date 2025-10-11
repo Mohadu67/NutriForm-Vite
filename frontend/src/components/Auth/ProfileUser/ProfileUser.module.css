@@ -14,8 +14,12 @@
 /* Header avec gradient */
 .header {
   background: linear-gradient(135deg, #F7B186 0%, #f49b69 100%);
-  padding: 32px 24px;
+  padding: 32px 24px 40px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
 }
 
 .title {
@@ -26,6 +30,13 @@
   text-align: center;
   margin: 0;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Photo wrapper */
+.photoWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Content wrapper */
@@ -255,7 +266,8 @@
 
 @media (max-width: 479px) {
   .header {
-    padding: 24px 16px;
+    padding: 24px 16px 32px;
+    gap: 20px;
   }
 
   .title {
@@ -296,7 +308,8 @@
   }
 
   .header {
-    padding: 40px 32px;
+    padding: 40px 32px 48px;
+    gap: 28px;
   }
 
   .title {
