@@ -20,7 +20,7 @@
       "equipment": [
         "aucun"
       ],
-      "images": [],
+      "images": ["/images/Exo/etirIschioJambier.avif"],
       "explanation": "Place un talon sur un support bas, allonge la jambe et penche légèrement le buste depuis les hanches en gardant le dos droit jusqu'à sentir l'étirement à l'arrière de la cuisse. Respiration : inspire par le nez pour préparer le mouvement et expire lentement en accompagnant l'étirement sans rebondir. Points clés : maintiens la sangle abdominale engagée, garde les épaules alignées et relâche seulement jusqu'à une tension confortable."
     },
     {
@@ -64,7 +64,7 @@
       "equipment": [
         "aucun"
       ],
-      "images": [],
+      "images": ["/images/Exo/etirQuadriDebout.png"],
       "explanation": "Debout, attrape un pied derrière toi et ramène le talon vers les fessiers en gardant les genoux alignés. Respiration : respire calmement en maintenant l'étirement. Points clés : garde le bassin neutre, ne cambre pas le dos et tiens-toi à un support si nécessaire."
     },
     {
@@ -84,7 +84,7 @@
       "equipment": [
         "aucun"
       ],
-      "images": [],
+      "images": ["/images/Exo/etirMolletMur.avif"],
       "explanation": "Face à un mur, place un pied en arrière jambe tendue, pousse le talon au sol et penche-toi légèrement vers l'avant. Respiration : respire calmement pendant l'étirement. Points clés : garde le talon au sol, la jambe arrière tendue et le corps aligné."
     },
     {
@@ -105,7 +105,7 @@
         "tapis",
         "aucun"
       ],
-      "images": [],
+      "images": ["/images/Exo/etirFessierCouché.avif"],
       "explanation": "Allongé sur le dos, croise une cheville sur le genou opposé et tire la cuisse vers toi pour étirer le fessier. Respiration : respire profondément en maintenant l'étirement. Points clés : garde la tête au sol, ne force pas et maintiens 20-30 secondes."
     },
     {
@@ -126,7 +126,7 @@
         "tapis",
         "aucun"
       ],
-      "images": [],
+      "images": ["/images/Exo/etirChat.png"],
       "explanation": "À quatre pattes, arrondis le dos vers le plafond en rentrant le menton, puis relâche. Respiration : expire en arrondissant, inspire en revenant. Points clés : mobilise toute la colonne, va lentement et ne force pas."
     },
     {
@@ -147,7 +147,7 @@
       "equipment": [
         "aucun"
       ],
-      "images": [],
+      "images": ["/images/Exo/etirEpaule.avif"],
       "explanation": "Debout ou assis, ramène un bras devant toi à hauteur d'épaule et tire avec l'autre main pour étirer l'épaule. Respiration : respire calmement pendant l'étirement. Points clés : garde les épaules basses, ne tire pas trop fort et maintiens 20-30 secondes."
     },
     {

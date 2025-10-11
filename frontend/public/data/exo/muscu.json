@@ -232,7 +232,7 @@
         "poids-du-corps",
         "aucun"
       ],
-      "images": [],
+      "images": ["/images/Exo/planche.jpg"],
       "explanation": "Corps bien gainé en ligne droite, bassin neutre, omoplates actives, respiration calme et régulière par le nez. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée.",
       "slug": "planche-gainage",
       "primaryMuscle": "abdos-centre"
@@ -636,7 +636,7 @@
       "equipment": [
         "kettlebell"
       ],
-      "images": [],
+      "images": ["/images/Exo/swingKettleber.gif"],
       "explanation": "Charnière de hanche explosive, dos neutre, les hanches propulsent la kettlebell, bras relâchés. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
     },
     {
@@ -1127,7 +1127,7 @@
         "halteres",
         "banc-plat"
       ],
-      "images": [],
+      "images": ["/images/Exo/ConcentrationCurlHaltère.gif"],
       "explanation": "Assis, coude appuyé contre la cuisse, monte l’haltère vers l’épaule, contraction du biceps, redescends lentement. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
     },
     {
@@ -1656,7 +1656,7 @@
         "halteres",
         "banc"
       ],
-      "images": [],
+      "images": ["/images/Exo/BulgarianSplitSquatHaltere.gif"],
       "explanation": "Place un pied sur un banc derrière toi, l'autre devant, descends en fente en gardant le buste droit jusqu'à ce que le genou avant atteigne 90°. Respiration : inspire en descendant, expire en remontant. Points clés : garde le genou avant aligné avec la cheville, engage le core et pousse dans le talon avant."
     },
     {
@@ -1675,7 +1675,7 @@
       "equipment": [
         "halteres"
       ],
-      "images": [],
+      "images": ["/images/Exo/curlMarteauHaltere.gif"],
       "explanation": "Debout, haltères en position neutre (pouces vers le haut), monte les haltères en fléchissant les coudes sans bouger les épaules. Respiration : expire en montant, inspire en descendant. Points clés : garde les coudes près du corps, contrôle la descente et évite de balancer."
     },
     {
@@ -1695,7 +1695,7 @@
         "poulie",
         "corde"
       ],
-      "images": [],
+      "images": ["/images/Exo/extensionTricepsPoulie.gif"],
       "explanation": "À la poulie haute, pousse vers le bas en gardant les coudes fixes près du corps jusqu'à extension complète des bras. Respiration : expire en poussant, inspire en remontant. Points clés : garde les coudes immobiles, étend complètement en bas et contrôle la remontée."
     },
     {
@@ -1715,7 +1715,7 @@
       "equipment": [
         "halteres"
       ],
-      "images": [],
+      "images": ["/images/Exo/fenteMarche.gif"],
       "explanation": "Haltères dans chaque main, avance en fente alternée, descends jusqu'à ce que le genou arrière frôle le sol puis propulse-toi en avant. Respiration : inspire en descendant, expire en avançant. Points clés : garde le buste droit, aligne le genou avant avec la cheville et engage le core."
     },
     {
@@ -1754,7 +1754,7 @@
       "equipment": [
         "machine"
       ],
-      "images": [],
+      "images": ["/images/Exo/molletsDeboutMachine.gif"],
       "explanation": "Debout sur la machine à mollets, monte sur la pointe des pieds en contractant les mollets, puis redescends lentement. Respiration : expire en montant, inspire en descendant. Points clés : amplitude complète, contraction en haut et descente contrôlée."
     },
     {
@@ -1774,7 +1774,7 @@
         "poulie",
         "barre"
       ],
-      "images": [],
+      "images": ["/images/Exo/tirageVerticalPriseserrer.gif"],
       "explanation": "À la poulie haute avec prise serrée, tire la barre vers le haut de la poitrine en sortant légèrement le torse. Respiration : expire en tirant, inspire en relâchant. Points clés : garde les épaules basses, contracte les dorsaux et évite de tirer avec les bras."
     },
     {
@@ -1795,7 +1795,7 @@
         "tapis",
         "aucun"
       ],
-      "images": [],
+      "images": ["/images/Exo/plancheLateral.jpg"],
       "explanation": "En appui sur un avant-bras et les pieds, maintiens le corps aligné sur le côté, hanches levées. Respiration : respire calmement en maintenant la position. Points clés : garde le corps droit, engage les obliques et les fessiers."
     },
     {
@@ -1813,10 +1813,10 @@
         "abdos-bas"
       ],
       "equipment": [
-        "tapis",
+        "banc",
         "aucun"
       ],
-      "images": [],
+      "images": ["/images/Exo/crunchInverse.gif"],
       "explanation": "Allongé sur le dos, jambes pliées, ramène les genoux vers la poitrine en décollant les hanches du sol. Respiration : expire en montant, inspire en descendant. Points clés : contrôle le mouvement, engage le bas des abdos et évite l'élan."
     }
   ]
