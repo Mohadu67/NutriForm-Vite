@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import styles from "./Popup.module.css";
 import LoginUser from "./LoginUser/LoginUser.jsx";
 import CreatUser from "./CreatUser/CreatUser.jsx";
-import HistoryUser from "./HistoryUser/HistoryUser.jsx";
 import ForgotUser from "./ForgotUser/ForgotUser.jsx";
+import ProfileUser from "./ProfileUser/ProfileUser.jsx";
 
 
 export default function PopupUser({ open, view = "login", setView, onClose, onLoginSuccess, onLogout }) {
@@ -58,7 +58,7 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
 
         {currentView === "login" && (
           <LoginUser
-            onSuccess={(payload) => { onLoginSuccess?.(payload); setBoth("history"); }}
+            onSuccess={(payload) => { onLoginSuccess?.(payload); }}
             toSignup={() => setBoth("create")}
             toForgot={() => setBoth("forgot")}
             onClose={closeAndResetHash}
@@ -73,23 +73,18 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
           />
         )}
 
-        {currentView === "history" && (
-          <HistoryUser
-            key={`history-${Date.now()}`}
-            onLogout={() => {
-              localStorage.removeItem("token");
-              onLogout?.();
-              closeAndResetHash();
-            }}
-            onClose={closeAndResetHash}
-          />
-        )}
-
         {currentView === "forgot" && (
           <ForgotUser
             toLogin={() => setBoth("login")}
             onClose={closeAndResetHash}
             onSent={() => setBoth("login")}
+          />
+        )}
+
+        {currentView === "profile" && (
+          <ProfileUser
+            onClose={closeAndResetHash}
+            onLogout={onLogout}
           />
         )}
       </div>

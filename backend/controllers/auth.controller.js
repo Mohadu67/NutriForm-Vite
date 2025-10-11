@@ -132,16 +132,22 @@ exports.register = async (req, res) => {
 
     const verifyUrl = `${frontBase()}/verify-email?token=${encodeURIComponent(token)}`;
 
+    console.log('[AUTH] Registration: sending verification email to', emailNorm);
+    console.log('[AUTH] Verification URL:', verifyUrl);
+
     try {
-      await sendVerifyEmail({
+      const result = await sendVerifyEmail({
         to: emailNorm,
         toName: user.prenom || user.pseudo || emailNorm,
         verifyUrl
       });
+      console.log('[AUTH] ✅ Verification email sent successfully:', result?.messageId || 'no messageId');
     } catch (mailErr) {
       await User.deleteOne({ _id: user._id });
-      console.error('MAIL_ERROR register:', mailErr);
-      return res.status(502).json({ message: "Impossible d'envoyer l'email de vérification." });
+      console.error('[AUTH] ❌ MAIL_ERROR register:', mailErr.message);
+      console.error('[AUTH] Mail error code:', mailErr.code);
+      console.error('[AUTH] Full mail error:', mailErr);
+      return res.status(502).json({ message: "Impossible d'envoyer l'email de vérification. Vérifie ton adresse email." });
     }
 
     return res.status(201).json({ message: 'Compte créé. Vérifie ta boîte mail ✉️' });
