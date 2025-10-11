@@ -140,6 +140,7 @@ export default function TopBar() {
           </div>
         </div>
       </div>
+      <div className={styles.topBarSpacer} aria-hidden="true" />
       <PopupUser
         open={isPopupOpen}
         view={popupView}
