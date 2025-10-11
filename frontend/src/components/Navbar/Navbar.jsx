@@ -1,6 +1,6 @@
 // src/components/Navbar/Navbar.jsx
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import styles from "./Navbar.module.css";
@@ -9,6 +9,7 @@ import NavLinks from "./Navlinks.jsx";
 export default function Navbar() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -33,6 +34,26 @@ export default function Navbar() {
     }
   };
 
+  const getStoredToken = () => {
+    if (typeof window === 'undefined') return null;
+    try {
+      return localStorage.getItem('token') || sessionStorage.getItem('token');
+    } catch (error) {
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const updateLoginState = () => {
+      setIsLoggedIn(Boolean(getStoredToken()));
+    };
+
+    updateLoginState();
+    window.addEventListener('storage', updateLoginState);
+
+    return () => window.removeEventListener('storage', updateLoginState);
+  }, []);
+
   const coreLinks = [
     {
       label: t('nav.tools'),
@@ -46,6 +67,12 @@ export default function Navbar() {
       path: "/contact",
       onClick: () => handleScroll("/contact", "contact-form")
     },
+    ...(isLoggedIn ? [{
+      label: 'Dashboard',
+      path: "/dashboard",
+      auth: true,
+      onClick: () => navigate('/dashboard')
+    }] : [])
   ];
 
   const links = path === "/"
