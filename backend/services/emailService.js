@@ -173,6 +173,7 @@ const sendNewsletterToAll = async (newsletter) => {
 
     let successCount = 0;
     let failedCount = 0;
+    const failedRecipients = [];
 
     // Envoyer à chaque abonné
     for (const subscriber of subscribers) {
@@ -187,16 +188,30 @@ const sendNewsletterToAll = async (newsletter) => {
         successCount++;
       } else {
         failedCount++;
+        failedRecipients.push({
+          email: subscriber.email,
+          error: result.error || 'Unknown error'
+        });
       }
       // Délai pour éviter d'être bloqué par le serveur SMTP (500ms)
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
+    const overallSuccess = failedCount === 0;
+
+    if (!overallSuccess) {
+      console.error('[EMAIL_SERVICE] Newsletter delivery issues detected:', {
+        failedCount,
+        sample: failedRecipients.slice(0, 5)
+      });
+    }
+
     return {
-      success: true,
+      success: overallSuccess,
       successCount,
       failedCount,
-      totalRecipients: subscribers.length
+      totalRecipients: subscribers.length,
+      failedRecipients
     };
   } catch (error) {
     console.error('Erreur lors de l\'envoi de la newsletter:', error);
