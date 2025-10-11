@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./ProfileUser.module.css";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
+import ProfilePhoto from "../HistoryUser/ProfilePhoto/ProfilePhoto.jsx";
 
 const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "";
 
@@ -156,9 +157,12 @@ export default function ProfileUser({ onClose, onLogout }) {
 
   return (
     <div className={styles.body}>
-      {/* Header avec gradient */}
+      {/* Header avec gradient et photo */}
       <div className={styles.header}>
         <h3 className={styles.title}>Mon Profil</h3>
+        <div className={styles.photoWrapper}>
+          <ProfilePhoto user={user} />
+        </div>
       </div>
 
       {/* Content */}
