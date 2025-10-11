@@ -8,11 +8,20 @@ router.post('/subscribe', verifyCaptcha, async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Validation
+    // Validation - Email requis
     if (!email) {
       return res.status(400).json({
         success: false,
         message: 'L\'email est requis'
+      });
+    }
+
+    // Validation - Format d'email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Format d\'email invalide. Vérifie ton adresse email.'
       });
     }
 
@@ -86,6 +95,15 @@ router.post('/unsubscribe', async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'L\'email est requis'
+      });
+    }
+
+    // Validation - Format d'email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Format d\'email invalide.'
       });
     }
 
