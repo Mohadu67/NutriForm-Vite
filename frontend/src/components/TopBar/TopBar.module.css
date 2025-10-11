@@ -2,9 +2,18 @@
   background: linear-gradient(135deg, #222325, #3a3d40);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding: 8px 0;
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 1000;
+  left: 0;
+  right: 0;
+  z-index: 1100;
+  width: 100%;
+  min-height: 52px;
+  backdrop-filter: blur(6px);
+}
+
+.topBarSpacer {
+  height: 52px;
 }
 
 .container {
@@ -102,6 +111,7 @@
 @media (max-width: 768px) {
   .topBar {
     padding: 6px 0;
+    min-height: 44px;
   }
 
   .langBtn {
@@ -122,5 +132,9 @@
   .iconBtn {
     width: 32px;
     height: 32px;
+  }
+
+  .topBarSpacer {
+    height: 44px;
   }
 }

@@ -1106,7 +1106,7 @@
         "banc-incline"
       ],
       "images": [
-        "/images/Exo/CurlInclineeHalteres.gif"
+        "/images/Exo/CurlInclineHalteres.gif"
       ],
       "explanation": "Assis sur banc incliné, bras relâchés, fléchis les coudes sans bouger les épaules, contrôle la descente. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
     },
@@ -1127,7 +1127,7 @@
         "halteres",
         "banc-plat"
       ],
-      "images": ["/images/Exo/ConcentrationCurlHaltère.gif"],
+      "images": ["/images/Exo/CurlConcentreHaltere"],
       "explanation": "Assis, coude appuyé contre la cuisse, monte l’haltère vers l’épaule, contraction du biceps, redescends lentement. Respiration : inspire durant la phase descendante et expire pendant l'effort. Points clés : conserve la colonne neutre, engage la sangle abdominale et choisis une charge qui permet une exécution contrôlée."
     },
     {
