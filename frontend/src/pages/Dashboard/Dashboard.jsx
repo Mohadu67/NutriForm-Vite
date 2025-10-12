@@ -9,6 +9,7 @@ import WeightChart from "../../components/Auth/HistoryUser/HistoryCharts/WeightC
 import SessionChart from "../../components/Auth/HistoryUser/HistoryCharts/SessionChart.jsx";
 import useHistoryData from "../../components/Auth/HistoryUser/UseHistoryData.js";
 import SuivieSeance from "../../components/Exercice/TableauBord/SuivieSeance.jsx";
+import { logout as sessionLogout } from "../../utils/sessionManager.js";
 
 export default function Dashboard() {
   usePageTitle("Dashboard");
@@ -165,8 +166,7 @@ export default function Dashboard() {
   }, [userSessions, parseDate]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    sessionStorage.removeItem("token");
+    sessionLogout();
     navigate("/");
   };
 

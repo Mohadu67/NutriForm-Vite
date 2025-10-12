@@ -712,6 +712,12 @@
   box-shadow: 0 6px 16px rgba(255, 179, 133, 0.4);
 }
 
+.btnPrimary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .btnSecondary {
   background: #f3f4f6;
   color: #6b7280;
@@ -882,6 +888,22 @@
 .newsletterActions {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+.newsletterActions > button {
+  flex: 1;
+  min-width: max-content;
+}
+
+@media (max-width: 768px) {
+  .newsletterActions {
+    flex-direction: column;
+  }
+
+  .newsletterActions > button {
+    width: 100%;
+  }
 }
 
 /* ===== LOADING & EMPTY STATES ===== */

@@ -5,7 +5,7 @@ import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import DeskLogo from "../../../assets/img/logo/Logo-complet.svg";
 import MobiLogo from "../../../assets/img/logo/domaine-logo.svg";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
@@ -25,11 +25,11 @@ export default function VerifyEmail() {
       }
       setStatus("loading");
       try {
-
-        let res = await fetch(`${API_URL}/api/verify-email?token=${encodeURIComponent(token)}`);
+        const endpoint = API_URL ? `${API_URL}/api/verify-email` : "/api/verify-email";
+        let res = await fetch(`${endpoint}?token=${encodeURIComponent(token)}`);
         if (res.status === 404) {
-
-          res = await fetch(`${API_URL}/verify-email?token=${encodeURIComponent(token)}`);
+          const fallbackEndpoint = API_URL ? `${API_URL}/verify-email` : "/verify-email";
+          res = await fetch(`${fallbackEndpoint}?token=${encodeURIComponent(token)}`);
         }
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));

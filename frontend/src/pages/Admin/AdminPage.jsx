@@ -277,6 +277,32 @@ export default function AdminPage() {
     }
   };
 
+  const handleSendNow = async (id, title) => {
+    if (!confirm(`Voulez-vous vraiment envoyer la newsletter "${title}" maintenant ?`)) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      setStatus("loading");
+      const response = await fetch(`${API_URL}/api/newsletter-admin/${id}/send-now`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        showMessage("success", `Newsletter envoyée avec succès à ${data.stats?.successCount || 0} abonnés !`);
+        fetchNewsletters();
+        fetchStats();
+      } else {
+        showMessage("error", data.message || "Erreur lors de l'envoi");
+      }
+    } catch (err) {
+      showMessage("error", "Erreur lors de l'envoi de la newsletter");
+    } finally {
+      setStatus("idle");
+    }
+  };
+
   const filteredReviews = getFilteredReviews();
 
   return (
@@ -615,12 +641,21 @@ export default function AdminPage() {
                         Modifier
                       </button>
                       {newsletter.status !== "sent" && (
-                        <button
-                          onClick={() => handleDeleteNewsletter(newsletter._id)}
-                          className={styles.btnDanger}
-                        >
-                          Supprimer
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleSendNow(newsletter._id, newsletter.title)}
+                            className={styles.btnPrimary}
+                            disabled={status === "loading"}
+                          >
+                            📤 Envoyer maintenant
+                          </button>
+                          <button
+                            onClick={() => handleDeleteNewsletter(newsletter._id)}
+                            className={styles.btnDanger}
+                          >
+                            Supprimer
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>

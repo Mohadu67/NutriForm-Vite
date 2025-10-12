@@ -59,12 +59,31 @@ export default function useLogin(onLoginSuccess, options = {}) {
       const { token, user } = data || {};
 
       try {
-        const storage = remember ? localStorage : sessionStorage;
-        const other = remember ? sessionStorage : localStorage;
-        if (token) storage.setItem("token", token);
-        if (user) storage.setItem("user", JSON.stringify(user));
-        try { other.removeItem("token"); } catch (_) {}
-        try { other.removeItem("user"); } catch (_) {}
+        // Toujours utiliser localStorage pour éviter les déconnexions intempestives
+        // La durée de session sera gérée par un timestamp d'activité
+        if (token) {
+          localStorage.setItem("token", token);
+          // Marquer avec un flag si "remember" est activé pour une durée illimitée
+          if (remember) {
+            localStorage.setItem("rememberMe", "true");
+            localStorage.removeItem("lastActivity"); // Pas de limite de temps si remember
+          } else {
+            localStorage.removeItem("rememberMe");
+            // Enregistrer le timestamp de dernière activité (24h de session par défaut)
+            localStorage.setItem("lastActivity", Date.now().toString());
+          }
+        }
+        if (user) {
+          localStorage.setItem("user", JSON.stringify(user));
+          // Stocker userId pour l'affichage des messages d'invitation
+          if (user.id || user._id) {
+            localStorage.setItem("userId", user.id || user._id);
+          }
+        }
+        // Nettoyer sessionStorage
+        try { sessionStorage.removeItem("token"); } catch (_) {}
+        try { sessionStorage.removeItem("user"); } catch (_) {}
+        try { sessionStorage.removeItem("userId"); } catch (_) {}
       } catch (_) {}
 
       const end = (typeof performance !== "undefined" ? performance.now() : Date.now());

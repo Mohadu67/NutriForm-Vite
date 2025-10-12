@@ -17,7 +17,8 @@ export default function useHistoryData() {
   const [points, setPoints] = useState(null);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
-  const [displayName, setDisplayName] = useState("");
+  // Initialiser avec le nom en cache pour affichage immédiat
+  const [displayName, setDisplayName] = useState(localStorage.getItem("cachedDisplayName") || "");
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -40,8 +41,11 @@ export default function useHistoryData() {
           data?.pseudo ||
           data?.displayName ||
           (data?.email ? data.email.split("@")[0] : "");
-        setDisplayName(name || "Utilisateur");
+        const finalName = name || "Utilisateur";
+        setDisplayName(finalName);
         setUser(data);
+        // Mettre en cache le nom pour les prochains chargements
+        localStorage.setItem("cachedDisplayName", finalName);
       })
       .catch(() => {});
 
