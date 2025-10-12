@@ -259,4 +259,74 @@ router.post('/force-send', async (req, res) => {
   }
 });
 
+// POST /api/newsletter-admin/:id/send-now - Envoyer une newsletter spécifique immédiatement
+router.post('/:id/send-now', async (req, res) => {
+  try {
+    const newsletter = await Newsletter.findById(req.params.id);
+
+    if (!newsletter) {
+      return res.status(404).json({
+        success: false,
+        message: 'Newsletter non trouvée'
+      });
+    }
+
+    // Vérifier que la newsletter n'a pas déjà été envoyée
+    if (newsletter.status === 'sent') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cette newsletter a déjà été envoyée'
+      });
+    }
+
+    console.log(`📨 Envoi immédiat de la newsletter: ${newsletter.title}`);
+
+    const { sendNewsletterToAll } = require('../services/emailService');
+    const result = await sendNewsletterToAll(newsletter);
+
+    newsletter.recipientCount = result.totalRecipients ?? 0;
+    newsletter.successCount = result.successCount ?? 0;
+    newsletter.failedCount = result.failedCount ?? 0;
+
+    if (result.success) {
+      newsletter.status = 'sent';
+      newsletter.sentAt = new Date();
+      await newsletter.save();
+
+      console.log(`✅ Newsletter "${newsletter.title}" envoyée avec succès`);
+      console.log(`   📊 Succès: ${result.successCount}, Échecs: ${result.failedCount}`);
+
+      res.status(200).json({
+        success: true,
+        message: `Newsletter envoyée avec succès à ${result.successCount} abonnés`,
+        stats: {
+          successCount: result.successCount,
+          failedCount: result.failedCount,
+          totalRecipients: result.totalRecipients
+        }
+      });
+    } else {
+      newsletter.status = 'failed';
+      await newsletter.save();
+
+      console.error(`❌ Échec de l'envoi de la newsletter "${newsletter.title}"`);
+
+      res.status(500).json({
+        success: false,
+        message: 'Erreur lors de l\'envoi de la newsletter',
+        stats: {
+          successCount: result.successCount ?? 0,
+          failedCount: result.failedCount ?? 0
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Send now error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de l\'envoi immédiat'
+    });
+  }
+});
+
 module.exports = router;

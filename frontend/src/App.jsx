@@ -17,11 +17,20 @@ import AdminPage from "./pages/Admin/AdminPage.jsx";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
+import { initActivityListeners, checkSession, logout } from "./utils/sessionManager.js";
 import './i18n/config';
 
 export default function App() {
   useEffect(() => {
     Clarity.init("thd0hih6t5");
+
+    // Initialiser le gestionnaire de session
+    initActivityListeners();
+
+    // Vérifier la session au chargement
+    if (!checkSession()) {
+      logout();
+    }
   }, []);
 
   return (

@@ -114,6 +114,16 @@
   z-index: 0;
 }
 
+/* Chart Header with Filters */
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  z-index: 1;
+}
+
 .chartCard h4 {
   margin: 0;
   font-size: 1.1rem;
@@ -123,6 +133,53 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Filter Buttons */
+.filterButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  background: var(--nf-surface, #f5f5f5);
+  color: var(--nf-muted, #666);
+  border: 1px solid var(--nf-surface-border, rgba(0, 0, 0, 0.1));
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterBtn:hover {
+  background: var(--nf-surface-hover, #e8e8e8);
+  border-color: rgba(247, 177, 134, 0.3);
+}
+
+.filterBtnActive {
+  background: linear-gradient(135deg, #FFB385, #f49b69);
+  color: white;
+  border-color: transparent;
+}
+
+:global(.dark) .filterBtn {
+  background: var(--nf-surface, #2a2a2a);
+  color: var(--nf-muted, #aaa);
+  border-color: var(--nf-surface-border, rgba(255, 255, 255, 0.1));
+}
+
+:global(.dark) .filterBtn:hover {
+  background: var(--nf-surface-hover, #333);
+  border-color: rgba(247, 177, 134, 0.4);
+}
+
+:global(.dark) .filterBtnActive {
+  background: linear-gradient(135deg, #FFB385, #f49b69);
+  color: white;
+  border-color: transparent;
 }
 
 .chartNote {
