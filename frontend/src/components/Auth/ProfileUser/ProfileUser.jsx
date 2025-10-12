@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "./ProfileUser.module.css";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import ProfilePhoto from "../HistoryUser/ProfilePhoto/ProfilePhoto.jsx";
+import { logout as sessionLogout } from "../../../utils/sessionManager.js";
 
 const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "";
 
@@ -132,8 +133,7 @@ export default function ProfileUser({ onClose, onLogout }) {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    sessionStorage.removeItem("token");
+    sessionLogout();
     window.dispatchEvent(new Event("storage"));
     onLogout?.();
     onClose?.();
