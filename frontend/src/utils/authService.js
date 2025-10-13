@@ -12,9 +12,14 @@ function log(message, data = null) {
 async function apiCall(endpoint, options = {}) {
   const url = `${API_URL}${endpoint}`;
 
+  // Ne pas définir Content-Type si c'est un FormData (le navigateur le fera automatiquement)
+  const isFormData = options.body instanceof FormData;
+
   const defaultOptions = {
     credentials: 'include', // IMPORTANT : Envoie les cookies
-    headers: {
+    headers: isFormData ? {
+      ...options.headers,
+    } : {
       'Content-Type': 'application/json',
       ...options.headers,
     },
