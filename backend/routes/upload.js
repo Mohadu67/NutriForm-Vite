@@ -6,12 +6,12 @@ const fs = require('fs');
 const User = require('../models/User');
 const auth = require('../middlewares/auth.middleware');
 
-// Configuration du stockage
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(__dirname, '../../frontend/public/uploads/profiles');
 
-    // Créer le dossier s'il n'existe pas
+    
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -19,14 +19,14 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    // Générer un nom unique : userId-timestamp.extension
+    
     const ext = path.extname(file.originalname);
     const filename = `${req.userId}-${Date.now()}${ext}`;
     cb(null, filename);
   }
 });
 
-// Filtrer les types de fichiers acceptés
+
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|gif|webp/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -43,11 +43,11 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB max
+    fileSize: 5 * 1024 * 1024 
   }
 });
 
-// POST - Upload de photo de profil
+
 router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => {
   try {
     if (!req.file) {
@@ -57,11 +57,11 @@ router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => 
       });
     }
 
-    // Récupérer l'utilisateur
+    
     const user = await User.findById(req.userId);
 
     if (!user) {
-      // Supprimer le fichier uploadé si l'utilisateur n'existe pas
+      
       fs.unlinkSync(req.file.path);
       return res.status(404).json({
         success: false,
@@ -69,7 +69,7 @@ router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => 
       });
     }
 
-    // Supprimer l'ancienne photo si elle existe
+    
     if (user.photo) {
       const oldPhotoPath = path.join(__dirname, '../../frontend/public', user.photo);
       if (fs.existsSync(oldPhotoPath)) {
@@ -77,12 +77,12 @@ router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => 
       }
     }
 
-    // Mettre à jour le chemin de la photo dans la base de données
+    
     const photoUrl = `/uploads/profiles/${req.file.filename}`;
     user.photo = photoUrl;
     await user.save();
 
-    // Retourner l'URL complète pour que le frontend puisse afficher l'image
+    
     const fullUrl = `${process.env.BACKEND_BASE_URL || 'http://localhost:3000'}${photoUrl}`;
 
     res.status(200).json({
@@ -93,7 +93,7 @@ router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => 
   } catch (error) {
     console.error('Erreur upload photo:', error);
 
-    // Supprimer le fichier en cas d'erreur
+    
     if (req.file) {
       fs.unlinkSync(req.file.path);
     }
@@ -105,7 +105,7 @@ router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => 
   }
 });
 
-// DELETE - Supprimer la photo de profil
+
 router.delete('/profile-photo', auth, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
@@ -124,13 +124,13 @@ router.delete('/profile-photo', auth, async (req, res) => {
       });
     }
 
-    // Supprimer le fichier physique
+    
     const photoPath = path.join(__dirname, '../../frontend/public', user.photo);
     if (fs.existsSync(photoPath)) {
       fs.unlinkSync(photoPath);
     }
 
-    // Mettre à jour la base de données
+    
     user.photo = null;
     await user.save();
 
@@ -147,7 +147,7 @@ router.delete('/profile-photo', auth, async (req, res) => {
   }
 });
 
-// Gestion des erreurs multer
+
 router.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {

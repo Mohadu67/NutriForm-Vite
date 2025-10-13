@@ -34,7 +34,7 @@ const newsletterSubscriberSchema = new mongoose.Schema(
   }
 );
 
-// Index pour améliorer les performances de recherche
+
 newsletterSubscriberSchema.index({ email: 1 });
 newsletterSubscriberSchema.index({ subscribedAt: -1 });
 

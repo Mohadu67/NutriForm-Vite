@@ -9,21 +9,21 @@ function frontBase() {
   return base.replace(/\/$/, '');
 }
 
-// Génère un access token (courte durée)
+
 function generateAccessToken(userId, email, role) {
   return jwt.sign(
     { id: userId, email, role },
     process.env.JWT_SECRET || 'secret',
-    { expiresIn: '15m' } // 15 minutes
+    { expiresIn: '15m' } 
   );
 }
 
-// Génère un refresh token (longue durée)
+
 function generateRefreshToken(userId) {
   return jwt.sign(
     { id: userId, type: 'refresh' },
     process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'refresh_secret',
-    { expiresIn: '7d' } // 7 jours
+    { expiresIn: '7d' } 
   );
 }
 
@@ -70,20 +70,20 @@ exports.login = async (req, res) => {
 
     if (!ok) return res.status(401).json({ message: 'Identifiants invalides.' });
 
-    // Générer les tokens
+    
     const accessToken = generateAccessToken(user._id, user.email, user.role);
     const refreshToken = generateRefreshToken(user._id);
 
     const displayName = user.pseudo || user.prenom || user.email.split('@')[0];
 
-    // Convertir l'URL de la photo en URL complète si elle existe
+    
     let photoUrl = user.photo || null;
     if (photoUrl && !photoUrl.startsWith('http')) {
       const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
       photoUrl = `${backendBase}${photoUrl}`;
     }
 
-    // Définir les cookies HTTP-only sécurisés
+    
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -91,16 +91,16 @@ exports.login = async (req, res) => {
       path: '/',
     };
 
-    // Access token : 15 minutes
+    
     res.cookie('accessToken', accessToken, {
       ...cookieOptions,
-      maxAge: 1000 * 60 * 15, // 15 minutes
+      maxAge: 1000 * 60 * 15, 
     });
 
-    // Refresh token : 7 jours
+    
     res.cookie('refreshToken', refreshToken, {
       ...cookieOptions,
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
+      maxAge: 1000 * 60 * 60 * 24 * 7, 
     });
 
     console.log('[AUTH] Login successful - tokens set in HTTP-only cookies');
@@ -193,7 +193,7 @@ exports.me = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'Utilisateur introuvable.' });
     const displayName = user.prenom || user.pseudo || (user.email ? user.email.split('@')[0] : '');
 
-    // Convertir l'URL de la photo en URL complète si elle existe
+    
     let photoUrl = user.photo || null;
     if (photoUrl && !photoUrl.startsWith('http')) {
       const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
@@ -221,7 +221,7 @@ exports.updateProfile = async (req, res) => {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: 'Utilisateur introuvable.' });
 
-    // Vérifier si l'email est déjà utilisé par un autre utilisateur
+    
     if (email && email !== user.email) {
       const emailNorm = String(email).toLowerCase().trim();
       const exists = await User.findOne({ email: emailNorm, _id: { $ne: req.userId } }).lean();
@@ -229,7 +229,7 @@ exports.updateProfile = async (req, res) => {
       user.email = emailNorm;
     }
 
-    // Vérifier si le pseudo est déjà utilisé par un autre utilisateur
+    
     if (pseudo && pseudo !== user.pseudo) {
       const pseudoNorm = String(pseudo).toLowerCase().trim();
       const bad = !/^[a-z0-9._-]{3,30}$/.test(pseudoNorm);
@@ -239,14 +239,14 @@ exports.updateProfile = async (req, res) => {
       user.pseudo = pseudoNorm;
     }
 
-    // Mettre à jour le prénom
+    
     if (prenom !== undefined) {
       user.prenom = String(prenom).trim() || undefined;
     }
 
     await user.save();
 
-    // Convertir l'URL de la photo en URL complète si elle existe
+    
     let photoUrl = user.photo || null;
     if (photoUrl && !photoUrl.startsWith('http')) {
       const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
@@ -286,13 +286,13 @@ exports.changePassword = async (req, res) => {
     const user = await User.findById(req.userId).select('+motdepasse');
     if (!user) return res.status(404).json({ message: 'Utilisateur introuvable.' });
 
-    // Vérifier le mot de passe actuel
+    
     const isValid = await bcrypt.compare(currentPassword, user.motdepasse);
     if (!isValid) {
       return res.status(401).json({ message: 'Mot de passe actuel incorrect.' });
     }
 
-    // Mettre à jour le mot de passe (le hash sera fait automatiquement par le pre-save hook)
+    
     user.motdepasse = newPassword;
     await user.save();
 
@@ -303,7 +303,7 @@ exports.changePassword = async (req, res) => {
   }
 };
 
-// Refresh token - Renouvelle l'access token avec le refresh token
+
 exports.refresh = async (req, res) => {
   try {
     const refreshToken = req.cookies?.refreshToken;
@@ -313,7 +313,7 @@ exports.refresh = async (req, res) => {
       return res.status(401).json({ message: 'Refresh token manquant.' });
     }
 
-    // Vérifier le refresh token
+    
     let decoded;
     try {
       decoded = jwt.verify(
@@ -330,23 +330,23 @@ exports.refresh = async (req, res) => {
       return res.status(401).json({ message: 'Token invalide.' });
     }
 
-    // Récupérer l'utilisateur
+    
     const user = await User.findById(decoded.id).lean();
     if (!user) {
       console.log('[AUTH] Refresh failed - user not found');
       return res.status(404).json({ message: 'Utilisateur introuvable.' });
     }
 
-    // Générer un nouveau access token
+    
     const newAccessToken = generateAccessToken(user._id, user.email, user.role);
 
-    // Mettre à jour le cookie
+    
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
-      maxAge: 1000 * 60 * 15, // 15 minutes
+      maxAge: 1000 * 60 * 15, 
     });
 
     console.log('[AUTH] Access token refreshed successfully');
@@ -365,10 +365,10 @@ exports.refresh = async (req, res) => {
   }
 };
 
-// Logout - Supprime les cookies
+
 exports.logout = async (req, res) => {
   try {
-    // Supprimer les cookies
+    
     res.clearCookie('accessToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -383,7 +383,7 @@ exports.logout = async (req, res) => {
       path: '/',
     });
 
-    // Supprimer l'ancien cookie "token" si présent
+    
     res.clearCookie('token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

@@ -17,7 +17,7 @@ export default function ProfilePhoto({ user }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validation de la taille
+    
     if (file.size > 5 * 1024 * 1024) {
       setMessage({ type: "error", text: "La photo ne doit pas dépasser 5MB" });
       return;

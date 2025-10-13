@@ -11,7 +11,7 @@ async function testEmail() {
   console.log('Pass:', process.env.SMTP_PASS ? '***' + process.env.SMTP_PASS.slice(-4) : 'NON DÉFINI');
   console.log('SendGrid:', process.env.SENDGRID_API_KEY ? '✅ Configuré' : '❌ Non configuré');
 
-  // Test SendGrid si disponible
+  
   if (process.env.SENDGRID_API_KEY) {
     console.log('\n📨 Test avec SendGrid...');
     try {
@@ -34,7 +34,7 @@ async function testEmail() {
     }
   }
 
-  // Test SMTP
+  
   console.log('\n📨 Test avec SMTP...');
   try {
     const secure = process.env.SMTP_SECURE === 'true';
@@ -51,16 +51,16 @@ async function testEmail() {
       }
     });
 
-    // Vérifier la connexion
+    
     console.log('\n🔍 Test de connexion SMTP...');
     await transporter.verify();
     console.log('✅ Connexion SMTP réussie !');
 
-    // Envoyer un email de test
+    
     console.log('\n📨 Envoi d\'un email de test...');
     const info = await transporter.sendMail({
       from: `"Test Harmonith" <${process.env.SMTP_USER}>`,
-      to: process.env.SMTP_USER, // Envoyer à soi-même pour tester
+      to: process.env.SMTP_USER, 
       subject: 'Test Newsletter Harmonith',
       html: '<h1>Test email</h1><p>Si tu reçois ceci, l\'envoi fonctionne !</p>'
     });

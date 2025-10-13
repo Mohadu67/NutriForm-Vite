@@ -54,7 +54,7 @@ const newsletterSchema = new mongoose.Schema(
   }
 );
 
-// Index pour améliorer les performances
+
 newsletterSchema.index({ scheduledDate: 1, status: 1 });
 newsletterSchema.index({ status: 1 });
 newsletterSchema.index({ createdAt: -1 });

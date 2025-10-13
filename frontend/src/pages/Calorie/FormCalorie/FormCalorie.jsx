@@ -28,7 +28,7 @@ export default function FormCalorie({ onResult, onCalculate }) {
   const update = (name, value) => {
     setForm((prev) => ({ ...prev, [name]: value }));
 
-    // Sauvegarder poids et taille dans localStorage
+    
     if (name === 'poids' && value) {
       localStorage.setItem('userPoids', value);
     }
@@ -37,7 +37,7 @@ export default function FormCalorie({ onResult, onCalculate }) {
     }
   };
 
-  // Écouter les changements depuis l'autre formulaire (IMC)
+  
   useEffect(() => {
     const handleStorageChange = () => {
       const savedPoids = localStorage.getItem('userPoids');
@@ -86,13 +86,13 @@ export default function FormCalorie({ onResult, onCalculate }) {
       const masseMaigre = payload.poids * (1 - payload.masseGrasse / 100);
       tmb = 370 + 21.6 * masseMaigre;
     } else if (payload.formule === "mifflin") {
-      // Mifflin-St Jeor (plus précise)
+      
       tmb =
         payload.sexe === "homme"
           ? 10 * payload.poids + 6.25 * payload.taille - 5 * payload.age + 5
           : 10 * payload.poids + 6.25 * payload.taille - 5 * payload.age - 161;
     } else {
-      // Harris-Benedict (standard)
+      
       tmb =
         payload.sexe === "homme"
           ? 88.362 + 13.397 * payload.poids + 4.799 * payload.taille - 5.677 * payload.age
