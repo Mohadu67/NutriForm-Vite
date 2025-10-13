@@ -34,7 +34,7 @@ const checkAndSendNewsletters = async () => {
         console.log(`✅ Newsletter "${newsletter.title}" envoyée avec succès`);
         console.log(`   📊 Succès: ${result.successCount}, Échecs: ${result.failedCount}`);
       } else {
-        // Marquer comme échouée
+        
         newsletter.status = 'failed';
         newsletter.sentAt = undefined;
 
@@ -51,10 +51,10 @@ const checkAndSendNewsletters = async () => {
   }
 };
 
-// Planifier le cron job - tous les jours à 9h
+
 const startNewsletterCron = () => {
-  // Format: minute heure jour mois jour_semaine
-  // '0 9 * * *' = tous les jours à 9h00
+  
+  
   cron.schedule('0 9 * * *', async () => {
     console.log('🔄 Vérification quotidienne des newsletters programmées...');
     await checkAndSendNewsletters();
@@ -63,7 +63,7 @@ const startNewsletterCron = () => {
   console.log('✅ Cron job newsletter démarré (tous les jours à 9h00)');
 };
 
-// Fonction pour tester manuellement
+
 const testNewsletterCron = async () => {
   console.log('🧪 Test manuel du cron newsletter...');
   await checkAndSendNewsletters();

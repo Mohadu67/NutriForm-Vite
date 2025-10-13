@@ -18,7 +18,7 @@ export default function useLogin(onLoginSuccess, options = {}) {
         throw new Error("Identifiant et mot de passe sont requis.");
       }
 
-      // Utiliser le service d'authentification sécurisé
+      
       const result = await secureLogin(identifier, password, remember);
 
       if (!result.success) {
@@ -27,7 +27,7 @@ export default function useLogin(onLoginSuccess, options = {}) {
 
       const { user } = result;
 
-      // Vérifier s'il y a une redirection après login
+      
       const redirectPath = sessionStorage.getItem("redirectAfterLogin");
       if (redirectPath) {
         sessionStorage.removeItem("redirectAfterLogin");

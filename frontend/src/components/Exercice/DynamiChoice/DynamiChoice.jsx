@@ -64,7 +64,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   useEffect(() => {
     if (typeof onStepChange === "function") onStepChange(step);
 
-    // Scroll to top of container when step changes
+    
     if (containerRef.current) {
       containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -147,23 +147,23 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
     setEquipIds((prev) => prev.filter((id) => allowedEquipIds.includes(id)));
   }, [allowedEquipIds]);
 
-  // Auto-sélection pour natation, méditation et yoga
+  
   useEffect(() => {
     if (!typeId) return;
 
-    // Natation : auto-sélection équipement + tous les muscles
+    
     if (typeId === "natation") {
       setEquipIds(["poids-du-corps"]);
       setMuscleIds(MUSCLE_CARDS.map(c => c.id));
     }
 
-    // Yoga : auto-sélection équipement + tous les muscles
+    
     if (typeId === "yoga") {
       setEquipIds(["poids-du-corps"]);
       setMuscleIds(MUSCLE_CARDS.map(c => c.id));
     }
 
-    // Méditation : auto-sélection équipement sans muscles
+    
     if (typeId === "meditation") {
       setEquipIds(["poids-du-corps"]);
       setMuscleIds([]);
@@ -212,7 +212,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   function onNext() {
     if (step < 3) {
-      // Si on est à l'étape 0 et que c'est natation, yoga ou méditation, sauter directement à l'étape 3
+      
       if (step === 0 && (typeId === "natation" || typeId === "yoga" || typeId === "meditation")) {
         setStep(3);
       } else {
@@ -231,7 +231,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   function onPrev() {
     if (step > 0) {
-      // Si on est à l'étape 3 et que c'est natation, yoga ou méditation, revenir directement à l'étape 0
+      
       if (step === 3 && (typeId === "natation" || typeId === "yoga" || typeId === "meditation")) {
         setStep(0);
       } else {

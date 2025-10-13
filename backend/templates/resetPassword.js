@@ -9,7 +9,7 @@ const brand = {
 };
 
 module.exports = function resetPasswordTemplate({ toName = 'utilisateur', resetUrl }) {
-  const safeResetUrl = /^https?:\/\//i.test(resetUrl)
+  const safeResetUrl = /^https?:\/\
     ? resetUrl
     : `${brand.url.replace(/\/$/, '')}${resetUrl.startsWith('/') ? '' : '/'}${resetUrl}`;
   const subject = `Réinitialise ton mot de passe • ${brand.name}`;
