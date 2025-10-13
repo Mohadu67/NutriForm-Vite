@@ -3,10 +3,10 @@ const router = express.Router();
 const Review = require('../models/Review');
 const adminMiddleware = require('../middlewares/admin.middleware');
 
-// Middleware optionnel d'authentification
+
 const optionalAuth = (req, res, next) => {
-  // Si un token est présent, on peut récupérer l'userId
-  // Sinon on continue sans bloquer
+  
+  
   const token = req.headers.authorization?.split(' ')[1];
   if (token) {
     try {
@@ -14,22 +14,22 @@ const optionalAuth = (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.userId = decoded.id;
     } catch (err) {
-      // Token invalide mais on continue quand même
+      
     }
   }
   next();
 };
 
-// GET - Récupérer tous les avis approuvés
+
 router.get('/users', async (req, res) => {
   try {
     const reviews = await Review.find({ isApproved: true })
       .sort({ createdAt: -1 })
-      .limit(50) // Limite à 50 avis
-      .populate('userId', 'photo pseudo') // Récupérer la photo et le pseudo de l'utilisateur
-      .select('-isReported -__v'); // Exclure certains champs
+      .limit(50) 
+      .populate('userId', 'photo pseudo') 
+      .select('-isReported -__v'); 
 
-    // Ajouter la photo de l'utilisateur dans chaque avis
+    
     const reviewsWithPhotos = reviews.map(review => ({
       ...review.toObject(),
       photo: review.userId?.photo || review.photo || null
@@ -49,12 +49,12 @@ router.get('/users', async (req, res) => {
   }
 });
 
-// POST - Créer un nouvel avis
+
 router.post('/users', optionalAuth, async (req, res) => {
   try {
     const { name, rating, comment } = req.body;
 
-    // Validation
+    
     if (!name || !rating || !comment) {
       return res.status(400).json({
         success: false,
@@ -76,13 +76,13 @@ router.post('/users', optionalAuth, async (req, res) => {
       });
     }
 
-    // Créer l'avis
+    
     const review = await Review.create({
       userId: req.userId || null,
       name,
       rating,
       comment,
-      isApproved: true // TODO: Mettre à false en production pour modération
+      isApproved: true 
     });
 
     res.status(201).json({
@@ -114,7 +114,7 @@ router.post('/users', optionalAuth, async (req, res) => {
   }
 });
 
-// PUT - Approuver un avis (admin seulement)
+
 router.put('/users/:id/approve', adminMiddleware, async (req, res) => {
   try {
     const review = await Review.findByIdAndUpdate(
@@ -146,7 +146,7 @@ router.put('/users/:id/approve', adminMiddleware, async (req, res) => {
   }
 });
 
-// DELETE - Supprimer un avis (admin seulement)
+
 router.delete('/users/:id', adminMiddleware, async (req, res) => {
   try {
     const review = await Review.findByIdAndDelete(req.params.id);
@@ -173,10 +173,10 @@ router.delete('/users/:id', adminMiddleware, async (req, res) => {
   }
 });
 
-// GET - Récupérer les avis en attente de modération (admin)
+
 router.get('/users/pending', async (req, res) => {
   try {
-    // TODO: Ajouter middleware admin
+    
     const reviews = await Review.find({ isApproved: false })
       .sort({ createdAt: -1 });
 
@@ -194,7 +194,7 @@ router.get('/users/pending', async (req, res) => {
   }
 });
 
-// GET - Récupérer TOUS les avis (approuvés et non approuvés) - ADMIN ONLY
+
 router.get('/users/all', adminMiddleware, async (req, res) => {
   try {
     const reviews = await Review.find({})

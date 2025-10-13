@@ -1,4 +1,3 @@
-// Service d'authentification sécurisé avec refresh token automatique
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const DEBUG_MODE = import.meta.env.DEV;
 
@@ -8,15 +7,13 @@ function log(message, data = null) {
   }
 }
 
-// Appel API avec credentials pour envoyer les cookies
 async function apiCall(endpoint, options = {}) {
   const url = `${API_URL}${endpoint}`;
 
-  // Ne pas définir Content-Type si c'est un FormData (le navigateur le fera automatiquement)
   const isFormData = options.body instanceof FormData;
 
   const defaultOptions = {
-    credentials: 'include', // IMPORTANT : Envoie les cookies
+    credentials: 'include',
     headers: isFormData ? {
       ...options.headers,
     } : {
@@ -29,7 +26,6 @@ async function apiCall(endpoint, options = {}) {
   return response;
 }
 
-// Refresh le token automatiquement
 export async function refreshAccessToken() {
   try {
     log("Attempting to refresh access token...");
@@ -43,12 +39,10 @@ export async function refreshAccessToken() {
     if (response.ok && data.user) {
       log("Access token refreshed successfully");
 
-      // Mettre à jour les données utilisateur en localStorage
       const existingUser = localStorage.getItem("user");
       if (existingUser) {
         try {
           const userData = JSON.parse(existingUser);
-          // Fusionner les données
           const updatedUser = { ...userData, ...data.user };
           localStorage.setItem("user", JSON.stringify(updatedUser));
         } catch (e) {
@@ -67,12 +61,10 @@ export async function refreshAccessToken() {
   }
 }
 
-// Appel API avec gestion automatique du refresh
 export async function secureApiCall(endpoint, options = {}) {
   try {
     let response = await apiCall(endpoint, options);
 
-    // Si 401 et besoin de refresh, essayer le refresh
     if (response.status === 401) {
       const data = await response.json().catch(() => ({}));
 
@@ -82,11 +74,9 @@ export async function secureApiCall(endpoint, options = {}) {
         const refreshSuccess = await refreshAccessToken();
 
         if (refreshSuccess) {
-          // Réessayer la requête originale
           log("Retrying original request after refresh");
           response = await apiCall(endpoint, options);
         } else {
-          // Refresh échoué -> déconnexion
           log("Refresh failed - logging out");
           await logout();
           window.location.href = '/';
@@ -102,7 +92,6 @@ export async function secureApiCall(endpoint, options = {}) {
   }
 }
 
-// Connexion
 export async function login(identifier, password, remember = false) {
   log("Login attempt", { identifier, remember });
 
@@ -114,11 +103,9 @@ export async function login(identifier, password, remember = false) {
   const data = await response.json();
 
   if (response.ok && data.user) {
-    // Stocker uniquement les données utilisateur (pas de token !)
     localStorage.setItem("user", JSON.stringify(data.user));
     localStorage.setItem("userId", data.user.id);
 
-    // Gérer "remember me"
     if (remember) {
       localStorage.setItem("rememberMe", "true");
       localStorage.removeItem("lastActivity");
@@ -137,18 +124,15 @@ export async function login(identifier, password, remember = false) {
   }
 }
 
-// Déconnexion
 export async function logout() {
   log("Logout initiated");
 
   try {
-    // Appeler l'API pour supprimer les cookies
     await apiCall('/api/logout', { method: 'POST' });
   } catch (error) {
     log("Logout API call failed:", error.message);
   }
 
-  // Nettoyer localStorage
   localStorage.removeItem("user");
   localStorage.removeItem("userId");
   localStorage.removeItem("lastActivity");
@@ -161,15 +145,10 @@ export async function logout() {
   log("Logout completed - all data cleared");
 }
 
-// Vérifier si l'utilisateur est connecté
 export function isAuthenticated() {
-  // On ne peut pas vérifier le cookie côté client (httpOnly)
-  // Donc on vérifie uniquement si on a des données user
-  const user = localStorage.getItem("user");
   return Boolean(user);
 }
 
-// Obtenir l'utilisateur actuel
 export function getCurrentUser() {
   const userStr = localStorage.getItem("user");
   if (!userStr) return null;

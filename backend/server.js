@@ -45,21 +45,21 @@ mongoose
     process.exit(1);
   });
 
-// Helmet pour sécuriser les headers HTTP
+
 app.use(helmet({
-  contentSecurityPolicy: false, // Désactivé pour ne pas bloquer les ressources
+  contentSecurityPolicy: false, 
   crossOriginEmbedderPolicy: false
 }));
 
-// Rate limiting global - plus permissif en développement et production
+
 const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'production' ? 2000 : 5000, // 5000 en dev, 2000 en prod
+  windowMs: 15 * 60 * 1000, 
+  max: process.env.NODE_ENV === 'production' ? 2000 : 5000, 
   message: 'Trop de requêtes depuis cette IP, réessayez plus tard.',
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    // Skip rate limiting pour les routes publiques
+    
     const publicRoutes = ['/api/health', '/uploads'];
     return publicRoutes.some(route => req.path.startsWith(route));
   }
@@ -74,7 +74,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(globalLimiter);
 
-// Servir les fichiers uploadés (photos de profil) avec CORS
+
 const path = require('path');
 app.use('/uploads', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -104,6 +104,6 @@ app.get('/', (req, res) => {
 app.listen(config.port, () => {
   console.info(`🚀 Serveur en ligne sur http://localhost:${config.port}`);
 
-  // Démarrer le cron job pour les newsletters
+  
   startNewsletterCron();
 });

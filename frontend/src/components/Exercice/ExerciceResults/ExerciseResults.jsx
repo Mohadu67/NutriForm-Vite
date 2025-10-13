@@ -128,7 +128,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     setDismissed(new Set());
     setHasTouched(false);
 
-    // Toujours réinitialiser avec les nouveaux résultats quand les filtres changent
+    
     setOrdered(Array.isArray(results) && results.length > 0 ? results.slice() : []);
   }, [filterKey, results]);
 
@@ -224,7 +224,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
         }
       }
 
-      // Ne fusionner que si initialSelected contient des exercices valides pour les filtres actuels
+      
       if (!incoming.length) {
         return working;
       }

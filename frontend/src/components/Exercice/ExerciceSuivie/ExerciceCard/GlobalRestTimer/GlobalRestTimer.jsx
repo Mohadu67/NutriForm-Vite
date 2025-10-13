@@ -35,18 +35,18 @@ export default function GlobalRestTimer() {
   }, [isActive, timeLeft]);
 
   function triggerEndAlert() {
-    // Flash visuel
+    
     document.body.classList.add(styles.flashAlert);
     setTimeout(() => {
       document.body.classList.remove(styles.flashAlert);
     }, 1500);
 
-    // Vibration si disponible
+    
     if (navigator.vibrate) {
       navigator.vibrate([200, 100, 200, 100, 200]);
     }
 
-    // Notification si permission accordée
+    
     if ("Notification" in window && Notification.permission === "granted") {
       new Notification("Repos terminé !", {
         body: "C'est reparti pour la prochaine série !",
@@ -83,7 +83,7 @@ export default function GlobalRestTimer() {
 
   const quickTimes = [30, 45, 60, 90, 120];
 
-  // Si le chrono est actif
+  
   if (isActive || timeLeft > 0) {
     const progress = selectedTime > 0 ? ((selectedTime - timeLeft) / selectedTime) * 100 : 0;
 
@@ -135,7 +135,7 @@ export default function GlobalRestTimer() {
     );
   }
 
-  // Bouton pour ouvrir la modal
+  
   return (
     <>
       <div className={styles.timerBar}>

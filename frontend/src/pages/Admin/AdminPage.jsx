@@ -280,7 +280,7 @@ export default function AdminPage() {
 
   return (
     <div className={styles.adminLayout}>
-      {/* Sidebar */}
+      {}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
           <h1 className={styles.sidebarTitle}>🛡️ Admin</h1>
@@ -320,9 +320,9 @@ export default function AdminPage() {
         </div>
       </aside>
 
-      {/* Main Content */}
+      {}
       <main className={styles.mainContent}>
-        {/* Header */}
+        {}
         <header className={styles.contentHeader}>
           <div>
             <h2 className={styles.contentTitle}>
@@ -338,14 +338,14 @@ export default function AdminPage() {
           </div>
         </header>
 
-        {/* Messages */}
+        {}
         {message.text && (
           <div className={`${styles.alert} ${styles[`alert${message.type.charAt(0).toUpperCase() + message.type.slice(1)}`]}`}>
             {message.type === "success" ? "✓" : "⚠"} {message.text}
           </div>
         )}
 
-        {/* Dashboard Tab */}
+        {}
         {activeTab === "dashboard" && (
           <div className={styles.dashboard}>
             <div className={styles.statsGrid}>
@@ -416,10 +416,10 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Reviews Tab */}
+        {}
         {activeTab === "reviews" && (
           <div className={styles.reviewsSection}>
-            {/* Filters & Bulk Actions */}
+            {}
             <div className={styles.toolbar}>
               <div className={styles.filters}>
                 <button
@@ -455,7 +455,7 @@ export default function AdminPage() {
               )}
             </div>
 
-            {/* Reviews List */}
+            {}
             {loading ? (
               <div className={styles.loadingState}>
                 <div className={styles.spinner}></div>

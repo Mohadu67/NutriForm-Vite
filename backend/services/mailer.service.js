@@ -5,7 +5,7 @@ const config = require('../config');
 const makeVerifyEmail = require('../templates/verifyEmail');
 const makeResetPassword = require('../templates/resetPassword');
 
-// Vérifier si SendGrid est configuré
+
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const USE_SENDGRID = !!SENDGRID_API_KEY;
 
@@ -46,7 +46,7 @@ async function sendMail({ to, subject, html, text, replyTo }) {
 
   try {
     if (USE_SENDGRID) {
-      // Utiliser SendGrid
+      
       const msg = {
         to,
         from,
@@ -59,7 +59,7 @@ async function sendMail({ to, subject, html, text, replyTo }) {
       console.log('[MAILER] Email sent successfully via SendGrid:', { statusCode: result[0]?.statusCode });
       return { messageId: result[0]?.headers['x-message-id'], accepted: [to] };
     } else {
-      // Utiliser SMTP (nodemailer)
+      
       const t = getTransporter();
       const info = await t.sendMail({ from, to, subject, html, text, replyTo: replyTo || undefined });
       console.log('[MAILER] Email sent successfully via SMTP:', { messageId: info.messageId, accepted: info.accepted });
