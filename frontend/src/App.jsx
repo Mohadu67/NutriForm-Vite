@@ -17,7 +17,7 @@ import AdminPage from "./pages/Admin/AdminPage.jsx";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
-import { initActivityListeners, checkSession, logout } from "./utils/sessionManager.js";
+import { initActivityListeners, checkSession, logoutAndRedirect } from "./utils/sessionManager.js";
 import './i18n/config';
 
 export default function App() {
@@ -29,7 +29,7 @@ export default function App() {
 
     // Vérifier la session au chargement
     if (!checkSession()) {
-      logout();
+      logoutAndRedirect("session_expired_init");
     }
   }, []);
 

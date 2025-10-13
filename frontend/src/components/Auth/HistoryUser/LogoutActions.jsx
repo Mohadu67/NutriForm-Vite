@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import style from "./HistoryUser.module.css";
-
-const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+import { secureApiCall } from "../../../utils/authService";
 
 export default function LogoutActions({ onLogout }) {
   const navigate = useNavigate();
@@ -14,15 +13,8 @@ export default function LogoutActions({ onLogout }) {
   }, []);
 
   const checkAdmin = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
     try {
-      const response = await fetch(`${API_URL}/api/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await secureApiCall('/api/me');
 
       if (response.ok) {
         const data = await response.json();

@@ -2,9 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "./ProfileUser.module.css";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import ProfilePhoto from "../HistoryUser/ProfilePhoto/ProfilePhoto.jsx";
-import { logout as sessionLogout } from "../../../utils/sessionManager.js";
-
-const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "";
+import { secureApiCall } from "../../../utils/authService.js";
 
 export default function ProfileUser({ onClose, onLogout }) {
   const [user, setUser] = useState(null);
@@ -29,18 +27,7 @@ export default function ProfileUser({ onClose, onLogout }) {
 
   const fetchUserData = async () => {
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      if (!token) {
-        setError("Non connecté");
-        setLoading(false);
-        return;
-      }
-
-      const url = `${API_BASE}/api/me`;
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include"
-      });
+      const res = await secureApiCall('/api/me');
 
       if (!res.ok) throw new Error("Erreur de récupération des données");
 
@@ -62,16 +49,8 @@ export default function ProfileUser({ onClose, onLogout }) {
     setError("");
 
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      const url = `${API_BASE}/api/update-profile`;
-
-      const res = await fetch(url, {
+      const res = await secureApiCall('/api/update-profile', {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        credentials: "include",
         body: JSON.stringify({ prenom, pseudo, email })
       });
 
@@ -104,16 +83,8 @@ export default function ProfileUser({ onClose, onLogout }) {
     }
 
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      const url = `${API_BASE}/api/change-password`;
-
-      const res = await fetch(url, {
+      const res = await secureApiCall('/api/change-password', {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        credentials: "include",
         body: JSON.stringify({ currentPassword, newPassword })
       });
 

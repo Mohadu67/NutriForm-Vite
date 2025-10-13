@@ -3,9 +3,7 @@ import styles from "./SuivieSeance.module.css";
 import Stat from "./stats/Stat.jsx";
 import { computeSessionStats } from "./stats/computeSessionStats";
 import { loadExercises } from "../../../utils/exercisesLoader";
-
-
-const API_BASE = (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
+import { secureApiCall } from "../../../utils/authService.js";
 
 function pickRichestItemsFromSession(s) {
   if (!s) return [];
@@ -29,10 +27,7 @@ export default function SuivieSeance({ user, lastSession: propLastSession, sessi
     let cancelled = false;
     (async () => {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const summaryUrl = API_BASE ? `${API_BASE}/api/history/summary` : "/api/history/summary";
-        const res = await fetch(summaryUrl, { credentials: "include", headers });
+        const res = await secureApiCall('/api/history/summary');
         if (!res.ok) throw new Error("bad status");
         const json = await res.json();
         if (!cancelled) setServerData(json);
