@@ -4,8 +4,7 @@ import { toast } from 'sonner';
 import styles from "./FormImc.module.css";
 import ConnectReminder from "../../../components/MessageAlerte/ConnectReminder/ConnectReminder.jsx";
 import LabelField from "../../../components/LabelField/LabelField.jsx";
-
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+import { secureApiCall } from "../../../utils/authService.js";
 
 function normalizeNumber(value) {
   if (typeof value === "string") {
@@ -96,47 +95,32 @@ export default function FormImc({ onCalculate }) {
     onCalculate?.(imc, categorie, description, conseil);
 
     try {
-      const token =
-        localStorage.getItem('token') ||
-        sessionStorage.getItem('token') ||
-        localStorage.getItem('jwt') ||
-        localStorage.getItem('accessToken');
-      if (!token) {
-        console.warn('[IMC] Aucun token trouvé: la route /api/history refusera (401/400).');
-      }
-      if (token) {
-        const url = `${API_URL ? API_URL : ''}/api/history`;
-        fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      secureApiCall('/api/history', {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'IMC_CALC',
+          meta: {
+            poids: p,
+            taille: t,
+            imc,
+            categorie,
+            date: new Date().toISOString(),
           },
-          body: JSON.stringify({
-            action: 'IMC_CALC',
-            meta: {
-              poids: p,
-              taille: t,
-              imc,
-              categorie,
-              date: new Date().toISOString(),
-            },
-          }),
-        })
-          .then(async (res) => {
-            if (!res.ok) {
-              if (res.status === 401) setShowReminder(true);
+        }),
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            if (res.status === 401) setShowReminder(true);
 
-              if (import.meta.env.DEV) {
-                const txt = await res.text().catch(() => '');
-                console.warn('[IMC] /api/history non OK:', res.status, txt);
-              }
+            if (import.meta.env.DEV) {
+              const txt = await res.text().catch(() => '');
+              console.warn('[IMC] /api/history non OK:', res.status, txt);
             }
-          })
-          .catch((e) => {
-            if (import.meta.env.DEV) console.warn('[IMC] /api/history erreur:', e);
-          });
-      }
+          }
+        })
+        .catch((e) => {
+          if (import.meta.env.DEV) console.warn('[IMC] /api/history erreur:', e);
+        });
     } catch (_) {}
 
     if (userId && window.sauvegarderDonnees) {

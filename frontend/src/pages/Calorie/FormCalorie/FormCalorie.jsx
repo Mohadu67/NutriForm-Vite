@@ -1,4 +1,3 @@
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 import { useState, useEffect } from "react";
 import { toast } from 'sonner';
 import styles from "./FormCalorie.module.css";
@@ -6,13 +5,7 @@ import ConnectReminder from "../../../components/MessageAlerte/ConnectReminder/C
 import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
 import BoutonSelection from "../../../components/BoutonSelection/BoutonSelection.jsx";
 import LabelField from "../../../components/LabelField/LabelField.jsx";
-
-
-const getToken = () =>
-  localStorage.getItem('token') ||
-  sessionStorage.getItem('token') ||
-  localStorage.getItem('jwt') ||
-  localStorage.getItem('accessToken');
+import { secureApiCall } from "../../../utils/authService.js";
 
 
 export default function FormCalorie({ onResult, onCalculate }) {
@@ -125,12 +118,6 @@ export default function FormCalorie({ onResult, onCalculate }) {
       onCalculate({ ...payload, calories });
     }
     try {
-      const token = getToken();
-      if (!token) {
-
-        setShowReminder(true);
-      }
-      const url = `${API_URL ? API_URL : ''}/api/history`;
       const body = {
         action: 'CALORIES_CALC',
         meta: {
@@ -139,12 +126,8 @@ export default function FormCalorie({ onResult, onCalculate }) {
           date: new Date().toISOString(),
         },
       };
-      fetch(url, {
+      secureApiCall('/api/history', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
         body: JSON.stringify(body),
       })
         .then(async (res) => {

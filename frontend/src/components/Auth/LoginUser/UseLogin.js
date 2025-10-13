@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from 'sonner';
+import { login as secureLogin } from '../../../utils/authService';
 
 export default function useLogin(onLoginSuccess, options = {}) {
   const { minDurationMs = 2500 } = options;
@@ -17,92 +18,41 @@ export default function useLogin(onLoginSuccess, options = {}) {
         throw new Error("Identifiant et mot de passe sont requis.");
       }
 
-      const apiBase = import.meta.env.VITE_API_URL;
-      if (!apiBase) {
-        throw new Error("VITE_API_URL n'est pas défini côté frontend.");
+      // Utiliser le service d'authentification sécurisé
+      const result = await secureLogin(identifier, password, remember);
+
+      if (!result.success) {
+        throw new Error(result.message || "Échec de connexion");
       }
 
-      const endpoint = `${apiBase}/api/login`;
+      const { user } = result;
 
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ identifier, password, remember }),
-      });
-
-      let data = null;
-      let raw = "";
-      const contentType = res.headers.get("content-type") || "";
-      if (contentType.includes("application/json")) {
-        try {
-          data = await res.json();
-        } catch (_) {
-          data = null;
-        }
-      } else {
-        try {
-          raw = await res.text();
-        } catch (_) {
-          raw = "";
-        }
+      // Vérifier s'il y a une redirection après login
+      const redirectPath = sessionStorage.getItem("redirectAfterLogin");
+      if (redirectPath) {
+        sessionStorage.removeItem("redirectAfterLogin");
+        setTimeout(() => {
+          window.location.href = redirectPath;
+        }, 1000);
       }
-
-      if (!res.ok) {
-        const message =
-          (data && (data.message || data.error || data.msg)) ||
-          raw ||
-          `Échec de connexion (HTTP ${res.status})`;
-        throw new Error(message);
-      }
-
-      const { token, user } = data || {};
-
-      try {
-        // Toujours utiliser localStorage pour éviter les déconnexions intempestives
-        // La durée de session sera gérée par un timestamp d'activité
-        if (token) {
-          localStorage.setItem("token", token);
-          // Marquer avec un flag si "remember" est activé pour une durée illimitée
-          if (remember) {
-            localStorage.setItem("rememberMe", "true");
-            localStorage.removeItem("lastActivity"); // Pas de limite de temps si remember
-          } else {
-            localStorage.removeItem("rememberMe");
-            // Enregistrer le timestamp de dernière activité (24h de session par défaut)
-            localStorage.setItem("lastActivity", Date.now().toString());
-          }
-        }
-        if (user) {
-          localStorage.setItem("user", JSON.stringify(user));
-          // Stocker userId pour l'affichage des messages d'invitation
-          if (user.id || user._id) {
-            localStorage.setItem("userId", user.id || user._id);
-          }
-        }
-        // Nettoyer sessionStorage
-        try { sessionStorage.removeItem("token"); } catch (_) {}
-        try { sessionStorage.removeItem("user"); } catch (_) {}
-        try { sessionStorage.removeItem("userId"); } catch (_) {}
-      } catch (_) {}
 
       const end = (typeof performance !== "undefined" ? performance.now() : Date.now());
       const elapsed = end - start;
       if (elapsed < minDurationMs) {
         await sleep(minDurationMs - elapsed);
       }
+
       setStatus("success");
       toast.success("Connexion réussie !");
       if (onLoginSuccess && user) onLoginSuccess(user);
-      return { token, user };
+      return { user };
     } catch (e) {
-      {
-        const end = (typeof performance !== "undefined" ? performance.now() : Date.now());
-        const elapsed = end - start;
-        if (elapsed < minDurationMs) {
-          await sleep(minDurationMs - elapsed);
-        }
+      const end = (typeof performance !== "undefined" ? performance.now() : Date.now());
+      const elapsed = end - start;
+      if (elapsed < minDurationMs) {
+        await sleep(minDurationMs - elapsed);
       }
+
       setStatus("error");
       const message = e instanceof Error ? e.message : "Erreur lors de la connexion";
       setErrorMsg(message);

@@ -1,15 +1,5 @@
 import { useEffect, useState } from "react";
-
-const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
-
-function getToken() {
-  return (
-    localStorage.getItem("token") ||
-    sessionStorage.getItem("token") ||
-    localStorage.getItem("jwt") ||
-    localStorage.getItem("accessToken")
-  );
-}
+import { secureApiCall } from "../../../utils/authService";
 
 export default function useHistoryData() {
   const [records, setRecords] = useState([]);
@@ -22,18 +12,10 @@ export default function useHistoryData() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      setError("Non connecté. Connecte-toi d'abord.");
-      return;
-    }
-
     setStatus("loading");
 
     // Récupère le user
-    fetch(`${API_URL}/api/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    secureApiCall('/api/me')
       .then((res) => res.json())
       .then((data) => {
         const name =
@@ -47,11 +29,11 @@ export default function useHistoryData() {
         // Mettre en cache le nom pour les prochains chargements
         localStorage.setItem("cachedDisplayName", finalName);
       })
-      .catch(() => {});
+      .catch((err) => {
+        setError("Non connecté. Connecte-toi d'abord.");
+      });
 
-    fetch(`${API_URL}/api/history`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    secureApiCall('/api/history')
       .then((res) => res.json())
       .then((data) => {
         const src = Array.isArray(data)
@@ -100,9 +82,7 @@ export default function useHistoryData() {
         setStatus("error");
       });
 
-    fetch(`${API_URL}/api/workouts/sessions`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    secureApiCall('/api/workouts/sessions')
       .then((res) => res.json())
       .then((data) => {
         const src = Array.isArray(data)
@@ -152,13 +132,11 @@ export default function useHistoryData() {
   }, []);
 
   const handleDelete = async (id) => {
-    const token = getToken();
-    if (!token || !id) return;
+    if (!id) return;
     if (!window.confirm("Supprimer cette mesure ?")) return;
     try {
-      const res = await fetch(`${API_URL}/api/history/${id}`, {
+      const res = await secureApiCall(`/api/history/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         setRecords((prev) => prev.filter((r) => r.id !== id));
