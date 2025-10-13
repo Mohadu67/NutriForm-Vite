@@ -18,8 +18,8 @@ export function updateActivity() {
     return;
   }
 
-  const token = localStorage.getItem("token");
-  if (token) {
+  const user = localStorage.getItem("user");
+  if (user) {
     const now = Date.now();
     localStorage.setItem("lastActivity", now.toString());
     log("Activity updated", new Date(now).toLocaleString());
@@ -28,9 +28,10 @@ export function updateActivity() {
 
 // Vérifie si la session est encore valide
 export function checkSession() {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    log("No token found - session invalid");
+  // Vérifier si l'utilisateur est connecté via les données user (pas le token qui est en cookie)
+  const user = localStorage.getItem("user");
+  if (!user) {
+    log("No user data found - session invalid");
     return false;
   }
 
