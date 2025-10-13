@@ -7,14 +7,14 @@ export default function useHistoryData() {
   const [points, setPoints] = useState(null);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
-  // Initialiser avec le nom en cache pour affichage immédiat
+  
   const [displayName, setDisplayName] = useState(localStorage.getItem("cachedDisplayName") || "");
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     setStatus("loading");
 
-    // Récupère le user
+    
     secureApiCall('/api/me')
       .then((res) => res.json())
       .then((data) => {
@@ -26,7 +26,7 @@ export default function useHistoryData() {
         const finalName = name || "Utilisateur";
         setDisplayName(finalName);
         setUser(data);
-        // Mettre en cache le nom pour les prochains chargements
+        
         localStorage.setItem("cachedDisplayName", finalName);
       })
       .catch((err) => {

@@ -1,4 +1,4 @@
-// src/pages/Accueil/Main/Main.jsx
+
 import { useTranslation } from "react-i18next";
 import IntroOutils from "./IntrOutils";
 import OutilsCards from "./OutilsCards";

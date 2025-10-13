@@ -197,7 +197,7 @@ async function getUserSummary(req, res) {
             lastSessionSummary = s0.clientSummary;
           }
           let dur0 = s0?.durationMinutes ?? s0?.duration ?? (s0?.endedAt && s0?.startedAt ? Math.round((new Date(s0.endedAt) - new Date(s0.startedAt)) / 60000) : null);
-          if (typeof dur0 === 'number' && dur0 < 0) dur0 = null; // clamp valeurs négatives
+          if (typeof dur0 === 'number' && dur0 < 0) dur0 = null; 
           if (lastWorkoutDuration == null && dur0 != null) {
             lastWorkoutDuration = typeof dur0 === 'number' ? `${dur0} min` : String(dur0);
           }

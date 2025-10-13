@@ -4,7 +4,7 @@ const reviewSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: false // Optionnel si non connecté
+    required: false 
   },
   name: {
     type: String,
@@ -31,17 +31,17 @@ const reviewSchema = new mongoose.Schema({
   },
   isApproved: {
     type: Boolean,
-    default: false // Les avis doivent être approuvés avant d'être affichés
+    default: false 
   },
   isReported: {
     type: Boolean,
     default: false
   }
 }, {
-  timestamps: true // Ajoute automatiquement createdAt et updatedAt
+  timestamps: true 
 });
 
-// Index pour les requêtes fréquentes
+
 reviewSchema.index({ isApproved: 1, createdAt: -1 });
 reviewSchema.index({ userId: 1 });
 

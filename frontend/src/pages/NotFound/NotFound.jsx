@@ -8,7 +8,7 @@ export default function NotFound() {
     <main className={styles.container} aria-labelledby="nf-title">
       <div className={styles.card}>
         <div className={styles.illustration} aria-hidden="true">
-          {/* Mascotte: 3 galets pastel (ton logo) + loupe qui bouge */}
+          {}
           <svg viewBox="0 0 200 160" className={styles.svg}>
             <defs>
               <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -16,19 +16,19 @@ export default function NotFound() {
               </filter>
             </defs>
 
-            {/* Galets */}
+            {}
             <ellipse cx="100" cy="120" rx="60" ry="18" fill="#000" opacity="0.08" />
             <ellipse cx="100" cy="100" rx="55" ry="20" fill="#F7F6F2" filter="url(#shadow)" />
             <ellipse cx="100" cy="85" rx="40" ry="16" fill="#FFB385" />
             <ellipse cx="100" cy="70" rx="28" ry="12" fill="#B5EAD7" />
 
-            {/* Loupe animée */}
+            {}
             <g className={styles.magnifier}>
               <circle cx="145" cy="55" r="12" fill="none" stroke="#2B2B2B" strokeWidth="3" />
               <line x1="153" y1="63" x2="165" y2="75" stroke="#2B2B2B" strokeWidth="3" strokeLinecap="round" />
             </g>
 
-            {/* 404 */}
+            {}
             <g className={styles.digits}>
               <text x="20" y="42" fontSize="32" fontFamily="Merriweather, serif" fill="#2B2B2B">4</text>
               <text x="90" y="38" fontSize="28" fontFamily="Merriweather, serif" fill="#2B2B2B">0</text>

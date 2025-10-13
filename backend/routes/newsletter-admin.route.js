@@ -3,10 +3,10 @@ const router = express.Router();
 const Newsletter = require('../models/Newsletter');
 const adminMiddleware = require('../middlewares/admin.middleware');
 
-// Appliquer le middleware admin à toutes les routes
+
 router.use(adminMiddleware);
 
-// GET /api/newsletter-admin - Liste toutes les newsletters
+
 router.get('/', async (req, res) => {
   try {
     const { status } = req.query;
@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/newsletter-admin/:id - Récupérer une newsletter
+
 router.get('/:id', async (req, res) => {
   try {
     const newsletter = await Newsletter.findById(req.params.id);
@@ -59,12 +59,12 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/newsletter-admin - Créer une newsletter
+
 router.post('/', async (req, res) => {
   try {
     const { title, subject, content, scheduledDate, status } = req.body;
 
-    // Validation
+    
     if (!title || !subject || !content || !scheduledDate) {
       return res.status(400).json({
         success: false,
@@ -72,7 +72,7 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Récupérer le prénom de l'admin connecté
+    
     const createdByName = req.user?.prenom || req.user?.pseudo || 'L\'équipe Harmonith';
 
     const newsletter = new Newsletter({
@@ -109,7 +109,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/newsletter-admin/:id - Mettre à jour une newsletter
+
 router.put('/:id', async (req, res) => {
   try {
     const { title, subject, content, scheduledDate, status } = req.body;
@@ -123,7 +123,7 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    // Ne pas permettre la modification d'une newsletter déjà envoyée
+    
     if (newsletter.status === 'sent') {
       return res.status(400).json({
         success: false,
@@ -131,7 +131,7 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    // Mise à jour
+    
     if (title) newsletter.title = title;
     if (subject) newsletter.subject = subject;
     if (content) newsletter.content = content;
@@ -154,7 +154,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/newsletter-admin/:id - Supprimer une newsletter
+
 router.delete('/:id', async (req, res) => {
   try {
     const newsletter = await Newsletter.findById(req.params.id);
@@ -166,7 +166,7 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
-    // Ne pas permettre la suppression d'une newsletter envoyée
+    
     if (newsletter.status === 'sent') {
       return res.status(400).json({
         success: false,
@@ -189,7 +189,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// POST /api/newsletter-admin/:id/test - Envoyer un email de test
+
 router.post('/:id/test', async (req, res) => {
   try {
     const { testEmail } = req.body;
@@ -210,7 +210,7 @@ router.post('/:id/test', async (req, res) => {
       });
     }
 
-    // Envoyer l'email de test
+    
     const { sendNewsletterEmail } = require('../services/emailService');
     const result = await sendNewsletterEmail(
       testEmail,
@@ -238,7 +238,7 @@ router.post('/:id/test', async (req, res) => {
   }
 });
 
-// POST /api/newsletter-admin/force-send - Forcer l'envoi immédiat des newsletters programmées
+
 router.post('/force-send', async (req, res) => {
   try {
     const { checkAndSendNewsletters } = require('../cron/newsletterCron');
@@ -259,7 +259,7 @@ router.post('/force-send', async (req, res) => {
   }
 });
 
-// POST /api/newsletter-admin/:id/send-now - Envoyer une newsletter spécifique immédiatement
+
 router.post('/:id/send-now', async (req, res) => {
   try {
     const newsletter = await Newsletter.findById(req.params.id);
@@ -271,7 +271,7 @@ router.post('/:id/send-now', async (req, res) => {
       });
     }
 
-    // Vérifier que la newsletter n'a pas déjà été envoyée
+    
     if (newsletter.status === 'sent') {
       return res.status(400).json({
         success: false,
