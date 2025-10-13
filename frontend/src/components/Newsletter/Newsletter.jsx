@@ -10,9 +10,12 @@ export default function Newsletter() {
   const { t } = useTranslation();
   const { executeRecaptcha } = useGoogleReCaptcha();
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("idle"); 
+  const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("");
   const [captchaReady, setCaptchaReady] = useState(false);
+  const [isHidden, setIsHidden] = useState(() => {
+    return localStorage.getItem("hideNewsletter") === "true";
+  });
 
   useEffect(() => {
     if (executeRecaptcha) {
@@ -60,12 +63,13 @@ export default function Newsletter() {
         setStatus("success");
         setMessage(t('newsletter.successMessage'));
         setEmail("");
+        localStorage.setItem("hideNewsletter", "true");
 
-        
         setTimeout(() => {
           setStatus("idle");
           setMessage("");
-        }, 5000);
+          setIsHidden(true);
+        }, 2000);
       } else {
         setStatus("error");
         setMessage(data.message || t('newsletter.errorGeneric'));
@@ -75,6 +79,8 @@ export default function Newsletter() {
       setMessage(t('newsletter.errorNetwork'));
     }
   };
+
+  if (isHidden) return null;
 
   return (
     <section className={styles.newsletter}>
