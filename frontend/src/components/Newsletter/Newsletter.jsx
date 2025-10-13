@@ -10,7 +10,7 @@ export default function Newsletter() {
   const { t } = useTranslation();
   const { executeRecaptcha } = useGoogleReCaptcha();
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("idle"); // idle, loading, success, error
+  const [status, setStatus] = useState("idle"); 
   const [message, setMessage] = useState("");
   const [captchaReady, setCaptchaReady] = useState(false);
 
@@ -23,7 +23,7 @@ export default function Newsletter() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation de l'email
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
       setStatus("error");
@@ -40,7 +40,7 @@ export default function Newsletter() {
     setStatus("loading");
 
     try {
-      // Obtenir le token reCAPTCHA
+      
       const captchaToken = RECAPTCHA_ENABLED && executeRecaptcha
         ? await executeRecaptcha('newsletter_subscribe')
         : null;
@@ -61,7 +61,7 @@ export default function Newsletter() {
         setMessage(t('newsletter.successMessage'));
         setEmail("");
 
-        // Reset après 5 secondes
+        
         setTimeout(() => {
           setStatus("idle");
           setMessage("");

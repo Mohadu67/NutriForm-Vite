@@ -1,4 +1,4 @@
-// src/pages/Accueil/Main/OutilsCards.jsx
+
 import { useTranslation } from "react-i18next";
 import styles from "./Main.module.css";
 

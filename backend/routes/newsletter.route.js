@@ -3,12 +3,12 @@ const router = express.Router();
 const NewsletterSubscriber = require('../models/NewsletterSubscriber');
 const verifyCaptcha = require('../middlewares/recaptcha.middleware');
 
-// POST /api/newsletter/subscribe - S'inscrire à la newsletter
+
 router.post('/subscribe', verifyCaptcha, async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Validation - Email requis
+    
     if (!email) {
       return res.status(400).json({
         success: false,
@@ -16,7 +16,7 @@ router.post('/subscribe', verifyCaptcha, async (req, res) => {
       });
     }
 
-    // Validation - Format d'email
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -25,7 +25,7 @@ router.post('/subscribe', verifyCaptcha, async (req, res) => {
       });
     }
 
-    // Vérifier si déjà inscrit
+    
     const existing = await NewsletterSubscriber.findOne({ email: email.toLowerCase() });
 
     if (existing) {
@@ -35,7 +35,7 @@ router.post('/subscribe', verifyCaptcha, async (req, res) => {
           message: 'Cet email est déjà inscrit à notre newsletter'
         });
       } else {
-        // Réactiver l'abonnement
+        
         existing.isActive = true;
         existing.subscribedAt = new Date();
         await existing.save();
@@ -47,7 +47,7 @@ router.post('/subscribe', verifyCaptcha, async (req, res) => {
       }
     }
 
-    // Créer un nouvel abonné
+    
     const subscriber = new NewsletterSubscriber({
       email: email.toLowerCase(),
       source: 'website'
@@ -63,7 +63,7 @@ router.post('/subscribe', verifyCaptcha, async (req, res) => {
   } catch (error) {
     console.error('Newsletter subscription error:', error);
 
-    // Gérer les erreurs de validation Mongoose
+    
     if (error.name === 'ValidationError') {
       return res.status(400).json({
         success: false,
@@ -71,7 +71,7 @@ router.post('/subscribe', verifyCaptcha, async (req, res) => {
       });
     }
 
-    // Gérer les erreurs de duplication (au cas où)
+    
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
@@ -86,7 +86,7 @@ router.post('/subscribe', verifyCaptcha, async (req, res) => {
   }
 });
 
-// POST /api/newsletter/unsubscribe - Se désinscrire de la newsletter
+
 router.post('/unsubscribe', async (req, res) => {
   try {
     const { email } = req.body;
@@ -98,7 +98,7 @@ router.post('/unsubscribe', async (req, res) => {
       });
     }
 
-    // Validation - Format d'email
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -133,7 +133,7 @@ router.post('/unsubscribe', async (req, res) => {
   }
 });
 
-// GET /api/newsletter/subscribers - Récupérer tous les abonnés (admin seulement)
+
 router.get('/subscribers', async (req, res) => {
   try {
     const { active } = req.query;
@@ -162,14 +162,14 @@ router.get('/subscribers', async (req, res) => {
   }
 });
 
-// GET /api/newsletter/stats - Statistiques de la newsletter
+
 router.get('/stats', async (req, res) => {
   try {
     const totalSubscribers = await NewsletterSubscriber.countDocuments({ isActive: true });
     const totalUnsubscribed = await NewsletterSubscriber.countDocuments({ isActive: false });
     const totalAll = await NewsletterSubscriber.countDocuments();
 
-    // Abonnés des 30 derniers jours
+    
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const recentSubscribers = await NewsletterSubscriber.countDocuments({

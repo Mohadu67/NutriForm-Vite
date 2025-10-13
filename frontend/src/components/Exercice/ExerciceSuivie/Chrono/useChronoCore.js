@@ -55,7 +55,7 @@ export default function useChronoCore(startedAt, { resume = true } = {}) {
     };
   }, [running, startTs]);
 
-  // Prefill display from startedAt without auto-start
+  
   useEffect(() => {
     if (!resume) return;
     if (startedAt) {
@@ -66,7 +66,7 @@ export default function useChronoCore(startedAt, { resume = true } = {}) {
     }
   }, [startedAt, resume]);
 
-  // Hard reset when parent clears startedAt or resume is disabled
+  
   useEffect(() => {
     if (!resume || !startedAt) {
       stopAndReset(true);

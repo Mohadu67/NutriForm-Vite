@@ -19,11 +19,11 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
     const groups = new Set();
 
     safe.forEach(it => {
-      // Détecter le type d'activité
+      
       const typeRaw = String(it?.mode ?? it?.type ?? '').toLowerCase();
       const nameRaw = String(it?.name ?? '').toLowerCase();
 
-      // Activités douces (sans échauffement physique)
+      
       if (typeRaw.includes('meditation') || nameRaw.includes('meditation') || nameRaw.includes('méditation')) {
         groups.add('meditation');
         return;
@@ -37,20 +37,20 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
         return;
       }
 
-      // Cardio
+      
       if (typeRaw.includes('cardio')) {
         groups.add('cardio');
         return;
       }
 
-      // Analyser les muscles ciblés
+      
       const muscles = it?.muscles || [];
       const muscleArray = Array.isArray(muscles) ? muscles : [muscles];
 
       muscleArray.forEach(muscle => {
         const muscleStr = String(muscle).toLowerCase();
 
-        // Mapper les muscles vers les groupes principaux
+        
         if (muscleStr.includes('pec') || muscleStr.includes('chest') || muscleStr.includes('poitrine')) {
           groups.add('pectoraux');
         }
