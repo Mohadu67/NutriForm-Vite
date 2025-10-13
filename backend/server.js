@@ -51,13 +51,18 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 
-// Rate limiting global - plus permissif en développement
+// Rate limiting global - plus permissif en développement et production
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'production' ? 500 : 1000, // 1000 en dev, 500 en prod
+  max: process.env.NODE_ENV === 'production' ? 2000 : 5000, // 5000 en dev, 2000 en prod
   message: 'Trop de requêtes depuis cette IP, réessayez plus tard.',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting pour les routes publiques
+    const publicRoutes = ['/api/health', '/uploads'];
+    return publicRoutes.some(route => req.path.startsWith(route));
+  }
 });
 
 app.use(cors({
