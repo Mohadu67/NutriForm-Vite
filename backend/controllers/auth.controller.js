@@ -9,6 +9,24 @@ function frontBase() {
   return base.replace(/\/$/, '');
 }
 
+// Génère un access token (courte durée)
+function generateAccessToken(userId, email, role) {
+  return jwt.sign(
+    { id: userId, email, role },
+    process.env.JWT_SECRET || 'secret',
+    { expiresIn: '15m' } // 15 minutes
+  );
+}
+
+// Génère un refresh token (longue durée)
+function generateRefreshToken(userId) {
+  return jwt.sign(
+    { id: userId, type: 'refresh' },
+    process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'refresh_secret',
+    { expiresIn: '7d' } // 7 jours
+  );
+}
+
 exports.login = async (req, res) => {
   try {
     const { identifier, email, pseudo, motdepasse, password } = req.body || {};
@@ -52,11 +70,9 @@ exports.login = async (req, res) => {
 
     if (!ok) return res.status(401).json({ message: 'Identifiants invalides.' });
 
-    const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: '7d' }
-    );
+    // Générer les tokens
+    const accessToken = generateAccessToken(user._id, user.email, user.role);
+    const refreshToken = generateRefreshToken(user._id);
 
     const displayName = user.pseudo || user.prenom || user.email.split('@')[0];
 
@@ -67,17 +83,30 @@ exports.login = async (req, res) => {
       photoUrl = `${backendBase}${photoUrl}`;
     }
 
-    res.cookie('token', token, {
+    // Définir les cookies HTTP-only sécurisés
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 7,
+    };
+
+    // Access token : 15 minutes
+    res.cookie('accessToken', accessToken, {
+      ...cookieOptions,
+      maxAge: 1000 * 60 * 15, // 15 minutes
     });
+
+    // Refresh token : 7 jours
+    res.cookie('refreshToken', refreshToken, {
+      ...cookieOptions,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
+    });
+
+    console.log('[AUTH] Login successful - tokens set in HTTP-only cookies');
 
     return res.json({
       message: 'Connexion réussie.',
-      token,
       displayName,
       user: {
         id: user._id,
@@ -270,6 +299,103 @@ exports.changePassword = async (req, res) => {
     return res.json({ message: 'Mot de passe modifié avec succès.' });
   } catch (err) {
     console.error('PUT /change-password', err);
+    return res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
+
+// Refresh token - Renouvelle l'access token avec le refresh token
+exports.refresh = async (req, res) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (!refreshToken) {
+      console.log('[AUTH] Refresh failed - no refresh token in cookies');
+      return res.status(401).json({ message: 'Refresh token manquant.' });
+    }
+
+    // Vérifier le refresh token
+    let decoded;
+    try {
+      decoded = jwt.verify(
+        refreshToken,
+        process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'refresh_secret'
+      );
+    } catch (err) {
+      console.log('[AUTH] Refresh failed - invalid token:', err.message);
+      return res.status(401).json({ message: 'Refresh token invalide.' });
+    }
+
+    if (decoded.type !== 'refresh') {
+      console.log('[AUTH] Refresh failed - wrong token type');
+      return res.status(401).json({ message: 'Token invalide.' });
+    }
+
+    // Récupérer l'utilisateur
+    const user = await User.findById(decoded.id).lean();
+    if (!user) {
+      console.log('[AUTH] Refresh failed - user not found');
+      return res.status(404).json({ message: 'Utilisateur introuvable.' });
+    }
+
+    // Générer un nouveau access token
+    const newAccessToken = generateAccessToken(user._id, user.email, user.role);
+
+    // Mettre à jour le cookie
+    res.cookie('accessToken', newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+      maxAge: 1000 * 60 * 15, // 15 minutes
+    });
+
+    console.log('[AUTH] Access token refreshed successfully');
+
+    return res.json({
+      message: 'Token rafraîchi avec succès.',
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (err) {
+    console.error('POST /refresh', err);
+    return res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
+
+// Logout - Supprime les cookies
+exports.logout = async (req, res) => {
+  try {
+    // Supprimer les cookies
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+    });
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+    });
+
+    // Supprimer l'ancien cookie "token" si présent
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+    });
+
+    console.log('[AUTH] Logout successful - cookies cleared');
+
+    return res.json({ message: 'Déconnexion réussie.' });
+  } catch (err) {
+    console.error('POST /logout', err);
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
