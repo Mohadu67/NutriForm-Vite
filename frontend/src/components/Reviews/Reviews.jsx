@@ -16,7 +16,7 @@ export default function Reviews() {
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const userCarouselRef = useRef(null);
 
-  // Charger les avis pros depuis le JSON
+  
   useEffect(() => {
     fetch("/data/reviews.json")
       .then((res) => res.json())
@@ -30,7 +30,7 @@ export default function Reviews() {
       });
   }, []);
 
-  // Charger les avis utilisateurs depuis l'API
+  
   useEffect(() => {
     fetch(`${API_URL}/api/reviews/users`)
       .then((res) => res.json())
@@ -103,7 +103,7 @@ export default function Reviews() {
           </button>
         </div>
 
-        {/* Avis des professionnels */}
+        {}
         {proReviews.length > 0 && (
           <div className={styles.section}>
             <h3 className={styles.sectionTitle}>💼 Avis des professionnels</h3>
@@ -141,7 +141,7 @@ export default function Reviews() {
           </div>
         )}
 
-        {/* Avis des utilisateurs - Carrousel */}
+        {}
         {userReviews.length > 0 && (
           <div className={styles.section}>
             <h3 className={styles.sectionTitle}>👥 Avis de la communauté</h3>
@@ -200,7 +200,7 @@ export default function Reviews() {
               </button>
             </div>
 
-            {/* Indicateurs */}
+            {}
             {userReviews.length > 1 && (
               <div className={styles.carouselDots}>
                 {userReviews.map((_, index) => (
@@ -215,7 +215,7 @@ export default function Reviews() {
           </div>
         )}
 
-        {/* Modal d'ajout d'avis */}
+        {}
         {showReviewModal && (
           <div className={styles.modalOverlay} onClick={() => setShowReviewModal(false)}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>

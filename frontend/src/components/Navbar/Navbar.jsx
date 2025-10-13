@@ -1,4 +1,4 @@
-// src/components/Navbar/Navbar.jsx
+
 
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -17,13 +17,13 @@ export default function Navbar() {
 
   const handleScroll = (targetPath, sectionId) => {
     if (path === targetPath) {
-      // Déjà sur la page, scroll direct
+      
       const element = document.getElementById(sectionId);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     } else {
-      // Navigation puis scroll
+      
       navigate(targetPath);
       setTimeout(() => {
         const element = document.getElementById(sectionId);

@@ -4,7 +4,7 @@ import LineChartSVG from "./LineChartSVG.jsx";
 
 export default function WeightChart({ points }) {
   const [showTooltip, setShowTooltip] = useState(true);
-  const [timeFilter, setTimeFilter] = useState("all"); // "week", "month", "year", "all"
+  const [timeFilter, setTimeFilter] = useState("all"); 
   const containerRef = useRef(null);
 
   useEffect(() => {

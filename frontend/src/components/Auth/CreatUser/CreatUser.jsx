@@ -102,7 +102,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
         throw new Error(msg);
       }
 
-      // Si l'utilisateur a coché la newsletter, on l'inscrit
+      
       if (newsletter) {
         try {
           const newsletterCaptchaToken = RECAPTCHA_ENABLED && executeRecaptcha
@@ -113,7 +113,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: emailNorm, captchaToken: newsletterCaptchaToken })
           });
-          // Silently fail - l'inscription au compte est plus importante
+          
         } catch (newsletterErr) {
           console.warn("Newsletter subscription failed:", newsletterErr);
         }

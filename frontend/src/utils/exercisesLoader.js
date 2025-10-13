@@ -1,8 +1,4 @@
-/**
- * Charge les exercices depuis les fichiers JSON séparés par type
- * @param {string|string[]} types - Type(s) d'exercice à charger (muscu, cardio, yoga, meditation, natation, etirement, hiit)
- * @returns {Promise<Array>} Liste des exercices
- */
+
 export async function loadExercises(types = 'all') {
   const fileMap = {
     muscu: '/data/exo/muscu.json',
@@ -14,15 +10,15 @@ export async function loadExercises(types = 'all') {
     hiit: '/data/exo/hiit.json',
   };
 
-  // Si 'all', charger tous les types
+  
   if (types === 'all') {
     types = Object.keys(fileMap);
   }
 
-  // Convertir en tableau si c'est une string unique
+  
   const typeArray = Array.isArray(types) ? types : [types];
 
-  // Charger tous les fichiers en parallèle
+  
   const promises = typeArray.map(async (type) => {
     const url = fileMap[type];
     if (!url) {
@@ -43,15 +39,11 @@ export async function loadExercises(types = 'all') {
 
   const results = await Promise.all(promises);
 
-  // Fusionner tous les résultats
+  
   return results.flat();
 }
 
-/**
- * Charge un fichier de données spécifique (pour IMC, articles, etc.)
- * @param {string} dataKey - Clé des données à charger (contenuIMC, contenueArticlesIMC, etc.)
- * @returns {Promise<any>} Les données demandées
- */
+
 export async function loadData(dataKey) {
   try {
     const res = await fetch('/data/db.json');

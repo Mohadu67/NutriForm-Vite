@@ -23,7 +23,7 @@ exports.requestPasswordReset = async (req, res) => {
     }
 
     const token = crypto.randomBytes(32).toString('hex');
-    const expires = Date.now() + 1000 * 60 * 60; // 1 hour
+    const expires = Date.now() + 1000 * 60 * 60; 
 
     user.resetPasswordToken = token;
     user.resetPasswordExpires = expires;
