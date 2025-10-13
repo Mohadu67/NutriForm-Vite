@@ -9,7 +9,7 @@ const { login, register, me, updateProfile, changePassword, refresh, logout } = 
 // Rate limiting spécifique pour l'authentification
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Max 5 tentatives
+  max: process.env.NODE_ENV === 'production' ? 10 : 50, // 50 en dev, 10 en prod
   message: 'Trop de tentatives de connexion, réessayez dans 15 minutes.',
   skipSuccessfulRequests: true,
 });
