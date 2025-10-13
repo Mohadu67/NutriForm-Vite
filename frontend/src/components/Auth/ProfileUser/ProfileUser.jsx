@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "./ProfileUser.module.css";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import ProfilePhoto from "../HistoryUser/ProfilePhoto/ProfilePhoto.jsx";
-import { secureApiCall } from "../../../utils/authService.js";
+import { secureApiCall, logout } from "../../../utils/authService.js";
 
 export default function ProfileUser({ onClose, onLogout }) {
   const [user, setUser] = useState(null);
@@ -103,8 +103,8 @@ export default function ProfileUser({ onClose, onLogout }) {
     }
   };
 
-  const handleLogout = () => {
-    sessionLogout();
+  const handleLogout = async () => {
+    await logout();
     window.dispatchEvent(new Event("storage"));
     onLogout?.();
     onClose?.();
