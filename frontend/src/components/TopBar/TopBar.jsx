@@ -11,10 +11,10 @@ const PersonCircle = ({ size = 22 }) => (
   </svg>
 );
 
-const getStoredToken = () => {
+const getStoredUser = () => {
   if (typeof window === 'undefined') return null;
   try {
-    return localStorage.getItem('token');
+    return localStorage.getItem('user');
   } catch (error) {
     console.warn('[TopBar] Unable to access localStorage:', error);
     return null;
@@ -28,7 +28,7 @@ export default function TopBar() {
   const [darkMode, setDarkMode] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState('login');
-  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(getStoredToken()));
+  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(getStoredUser()));
 
   const setDocumentTheme = useCallback((isDark) => {
     if (typeof document === 'undefined' || typeof window === 'undefined') return;
@@ -60,7 +60,7 @@ export default function TopBar() {
 
   useEffect(() => {
     const handleStorage = () => {
-      setIsLoggedIn(Boolean(getStoredToken()));
+      setIsLoggedIn(Boolean(getStoredUser()));
     };
 
     window.addEventListener('storage', handleStorage);

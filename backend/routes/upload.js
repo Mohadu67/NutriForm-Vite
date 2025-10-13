@@ -3,8 +3,8 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const auth = require('../middlewares/auth.middleware');
 
 // Configuration du stockage
 const storage = multer.diskStorage({
@@ -46,29 +46,6 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024 // 5MB max
   }
 });
-
-// Middleware d'authentification
-const auth = (req, res, next) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Token manquant'
-      });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id;
-    next();
-  } catch (err) {
-    return res.status(401).json({
-      success: false,
-      message: 'Token invalide'
-    });
-  }
-};
 
 // POST - Upload de photo de profil
 router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => {

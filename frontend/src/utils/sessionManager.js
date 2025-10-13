@@ -18,8 +18,8 @@ export function updateActivity() {
     return;
   }
 
-  const token = localStorage.getItem("token");
-  if (token) {
+  const user = localStorage.getItem("user");
+  if (user) {
     const now = Date.now();
     localStorage.setItem("lastActivity", now.toString());
     log("Activity updated", new Date(now).toLocaleString());
@@ -28,9 +28,10 @@ export function updateActivity() {
 
 // Vérifie si la session est encore valide
 export function checkSession() {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    log("No token found - session invalid");
+  // Vérifier si l'utilisateur est connecté via les données user (pas le token qui est en cookie)
+  const user = localStorage.getItem("user");
+  if (!user) {
+    log("No user data found - session invalid");
     return false;
   }
 
@@ -144,19 +145,20 @@ export function initActivityListeners() {
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
       log("Tab became visible - checking session");
-      if (!checkSession()) {
-        logoutAndRedirect("session_expired_visibility");
-      }
+      // Désactivé temporairement pour éviter les appels répétés
+      // if (!checkSession()) {
+      //   logoutAndRedirect("session_expired_visibility");
+      // }
     }
   });
 
-  // Vérification périodique toutes les 5 minutes
-  setInterval(() => {
-    log("Periodic session check (5min interval)");
-    if (!checkSession()) {
-      logoutAndRedirect("session_expired_periodic");
-    }
-  }, 5 * 60 * 1000);
+  // Vérification périodique toutes les 5 minutes - DÉSACTIVÉE
+  // setInterval(() => {
+  //   log("Periodic session check (5min interval)");
+  //   if (!checkSession()) {
+  //     logoutAndRedirect("session_expired_periodic");
+  //   }
+  // }, 5 * 60 * 1000);
 
   log("Session manager fully initialized");
 }
