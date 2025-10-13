@@ -35,6 +35,10 @@ export default function ProfilePhoto({ user }) {
         body: formData
       });
 
+      if (!response.ok) {
+        throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+      }
+
       const data = await response.json();
 
       if (data.success) {
@@ -62,6 +66,10 @@ export default function ProfilePhoto({ user }) {
       const response = await secureApiCall('/api/upload/profile-photo', {
         method: "DELETE"
       });
+
+      if (!response.ok) {
+        throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+      }
 
       const data = await response.json();
 
