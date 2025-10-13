@@ -36,7 +36,7 @@ export default function CaloriePage() {
         lipides: Math.round((cals * 0.30) / 9),
       };
     } else {
-      // stabiliser
+      
       return {
         glucides: Math.round((cals * 0.45) / 4),
         proteines: Math.round((cals * 0.25) / 4),

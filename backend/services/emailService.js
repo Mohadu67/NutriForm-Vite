@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 const sgMail = require('@sendgrid/mail');
 const config = require('../config');
 
-// Vérifier si SendGrid est configuré pour la newsletter aussi
+
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const USE_SENDGRID = !!SENDGRID_API_KEY;
 
@@ -13,7 +13,7 @@ if (USE_SENDGRID) {
   console.log('[EMAIL_SERVICE] Using SMTP for newsletter delivery');
 }
 
-// Créer UN SEUL transporter réutilisable avec pool
+
 let transporter = null;
 
 const getTransporter = () => {
@@ -29,7 +29,7 @@ const getTransporter = () => {
     transporter = nodemailer.createTransport({
       host: config.smtp.host,
       port: config.smtp.port,
-      secure: config.smtp.secure, // Utiliser la config au lieu de hardcoder false
+      secure: config.smtp.secure, 
       auth: config.smtp.user && config.smtp.pass ? {
         user: config.smtp.user,
         pass: config.smtp.pass
@@ -123,7 +123,7 @@ const sendNewsletterEmail = async (to, subject, content, senderName = 'L\'équip
     console.log(`[EMAIL_SERVICE] Sending newsletter to ${to}...`);
 
     if (USE_SENDGRID) {
-      // Utiliser SendGrid pour la newsletter
+      
       const msg = {
         to,
         from,
@@ -134,7 +134,7 @@ const sendNewsletterEmail = async (to, subject, content, senderName = 'L\'équip
       console.log(`[EMAIL_SERVICE] ✅ Newsletter sent to ${to} via SendGrid: ${result[0]?.headers['x-message-id']}`);
       return { success: true, messageId: result[0]?.headers['x-message-id'] };
     } else {
-      // Utiliser SMTP pour la newsletter
+      
       const transporter = getTransporter();
       const info = await transporter.sendMail({
         from: `"${senderName} - Harmonith" <${from}>`,
@@ -154,12 +154,12 @@ const sendNewsletterEmail = async (to, subject, content, senderName = 'L\'équip
   }
 };
 
-// Envoyer la newsletter à tous les abonnés
+
 const sendNewsletterToAll = async (newsletter) => {
   const NewsletterSubscriber = require('../models/NewsletterSubscriber');
 
   try {
-    // Récupérer tous les abonnés actifs
+    
     const subscribers = await NewsletterSubscriber.find({ isActive: true });
 
     if (subscribers.length === 0) {
@@ -175,13 +175,13 @@ const sendNewsletterToAll = async (newsletter) => {
     let failedCount = 0;
     const failedRecipients = [];
 
-    // Envoyer à chaque abonné
+    
     for (const subscriber of subscribers) {
       const result = await sendNewsletterEmail(
         subscriber.email,
         newsletter.subject,
         newsletter.content,
-        newsletter.createdByName // Passer le nom de l'auteur
+        newsletter.createdByName 
       );
 
       if (result.success) {
@@ -193,7 +193,7 @@ const sendNewsletterToAll = async (newsletter) => {
           error: result.error || 'Unknown error'
         });
       }
-      // Délai pour éviter d'être bloqué par le serveur SMTP (500ms)
+      
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 

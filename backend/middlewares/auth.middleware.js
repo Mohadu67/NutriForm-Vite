@@ -5,13 +5,13 @@ async function authMiddleware(req, res, next) {
   const authHeader = req.headers['authorization'] || '';
   let token = null;
 
-  // Priority: accessToken cookie > bearer token > old token cookie (rétrocompatibilité)
+  
   if (req.cookies && req.cookies.accessToken) {
     token = req.cookies.accessToken;
   } else if (authHeader.toLowerCase().startsWith('bearer ')) {
     token = authHeader.slice(7).trim();
   } else if (req.cookies && req.cookies.token) {
-    token = req.cookies.token; // Rétrocompatibilité
+    token = req.cookies.token; 
   }
 
   if (!token) {
@@ -39,7 +39,7 @@ async function authMiddleware(req, res, next) {
     req.user = user;
     next();
   } catch (err) {
-    // Si le token est expiré, suggérer le refresh
+    
     if (err.name === 'TokenExpiredError') {
       return res.status(401).json({ message: 'Token expiré.', needsRefresh: true });
     }

@@ -39,18 +39,18 @@ export default function RestTimer({ value = "", onChange, serieNumber }) {
   }, [isActive, timeLeft]);
 
   function triggerEndAlert() {
-    // Flash visuel
+    
     document.body.classList.add(styles.flashAlert);
     setTimeout(() => {
       document.body.classList.remove(styles.flashAlert);
     }, 1500);
 
-    // Vibration si disponible
+    
     if (navigator.vibrate) {
       navigator.vibrate([200, 100, 200]);
     }
 
-    // Notification si permission accordée
+    
     if ("Notification" in window && Notification.permission === "granted") {
       new Notification("Repos terminé !", {
         body: `Série ${serieNumber} - C'est reparti !`,
@@ -88,7 +88,7 @@ export default function RestTimer({ value = "", onChange, serieNumber }) {
 
   const quickTimes = [30, 45, 60, 90, 120];
 
-  // Si le chrono est actif
+  
   if (isActive || timeLeft > 0) {
     const progress = selectedTime > 0 ? ((selectedTime - timeLeft) / selectedTime) * 100 : 0;
 
@@ -134,7 +134,7 @@ export default function RestTimer({ value = "", onChange, serieNumber }) {
     );
   }
 
-  // Bouton pour ouvrir la modal
+  
   return (
     <>
       <button

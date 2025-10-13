@@ -41,7 +41,7 @@ export default function ResetPassword() {
         console.error('[reset-password] status', res.status, data);
       }
       const elapsed = Date.now() - start;
-      const MIN_DELAY = 6000; // 6s pour laisser tourner l'anim si besoin
+      const MIN_DELAY = 6000; 
       if (elapsed < MIN_DELAY) {
         await new Promise(r => setTimeout(r, MIN_DELAY - elapsed));
       }

@@ -1,4 +1,4 @@
-// src/components/Logo/Logo.jsx
+
 
 import { useState, useEffect } from "react";
 import LogoAnimated from "./mascotte.jsx";

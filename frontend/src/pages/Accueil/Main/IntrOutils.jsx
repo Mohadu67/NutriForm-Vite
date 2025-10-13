@@ -1,4 +1,4 @@
-// src/pages/Accueil/Main/IntrOutils.jsx
+
 import styles from "./Main.module.css";
 
 export default function IntroOutils({ title, text, children }) {
