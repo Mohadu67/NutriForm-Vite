@@ -34,10 +34,10 @@ export default function Navbar() {
     }
   };
 
-  const getStoredToken = () => {
+  const getStoredUser = () => {
     if (typeof window === 'undefined') return null;
     try {
-      return localStorage.getItem('token') || sessionStorage.getItem('token');
+      return localStorage.getItem('user');
     } catch (error) {
       return null;
     }
@@ -45,7 +45,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const updateLoginState = () => {
-      setIsLoggedIn(Boolean(getStoredToken()));
+      setIsLoggedIn(Boolean(getStoredUser()));
     };
 
     updateLoginState();
