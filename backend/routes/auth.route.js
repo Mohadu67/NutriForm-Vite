@@ -4,7 +4,7 @@ const rateLimit = require('express-rate-limit');
 
 const auth = require('../middlewares/auth.middleware');
 const verifyCaptcha = require('../middlewares/recaptcha.middleware');
-const { login, register, me, updateProfile, changePassword } = require('../controllers/auth.controller.js');
+const { login, register, me, updateProfile, changePassword, refresh, logout } = require('../controllers/auth.controller.js');
 
 // Rate limiting spécifique pour l'authentification
 const authLimiter = rateLimit({
@@ -16,6 +16,8 @@ const authLimiter = rateLimit({
 
 router.post('/login', authLimiter, login);
 router.post('/register', authLimiter, verifyCaptcha, register);
+router.post('/refresh', refresh); // Pas de rate limit strict pour le refresh
+router.post('/logout', logout);
 router.get('/me', auth, me);
 router.put('/update-profile', auth, updateProfile);
 router.put('/change-password', auth, changePassword);
