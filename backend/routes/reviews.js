@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Review = require('../models/Review');
+const adminMiddleware = require('../middlewares/admin.middleware');
 
 // Middleware optionnel d'authentification
 const optionalAuth = (req, res, next) => {
@@ -114,9 +115,8 @@ router.post('/users', optionalAuth, async (req, res) => {
 });
 
 // PUT - Approuver un avis (admin seulement)
-router.put('/users/:id/approve', async (req, res) => {
+router.put('/users/:id/approve', adminMiddleware, async (req, res) => {
   try {
-    // TODO: Ajouter middleware admin
     const review = await Review.findByIdAndUpdate(
       req.params.id,
       { isApproved: true },
@@ -129,6 +129,8 @@ router.put('/users/:id/approve', async (req, res) => {
         message: 'Avis non trouvé'
       });
     }
+
+    console.log(`[ADMIN] Review approved by ${req.user?.email || 'unknown'}: ${req.params.id}`);
 
     res.status(200).json({
       success: true,
@@ -145,9 +147,8 @@ router.put('/users/:id/approve', async (req, res) => {
 });
 
 // DELETE - Supprimer un avis (admin seulement)
-router.delete('/users/:id', async (req, res) => {
+router.delete('/users/:id', adminMiddleware, async (req, res) => {
   try {
-    // TODO: Ajouter middleware admin
     const review = await Review.findByIdAndDelete(req.params.id);
 
     if (!review) {
@@ -156,6 +157,8 @@ router.delete('/users/:id', async (req, res) => {
         message: 'Avis non trouvé'
       });
     }
+
+    console.log(`[ADMIN] Review deleted by ${req.user?.email || 'unknown'}: ${req.params.id}`);
 
     res.status(200).json({
       success: true,
@@ -191,12 +194,14 @@ router.get('/users/pending', async (req, res) => {
   }
 });
 
-// GET - Récupérer TOUS les avis (approuvés et non approuvés) - DEV ONLY
-router.get('/users/all', async (req, res) => {
+// GET - Récupérer TOUS les avis (approuvés et non approuvés) - ADMIN ONLY
+router.get('/users/all', adminMiddleware, async (req, res) => {
   try {
     const reviews = await Review.find({})
       .sort({ createdAt: -1 })
       .select('-isReported -__v');
+
+    console.log(`[ADMIN] All reviews requested by ${req.user?.email || 'unknown'}`);
 
     res.status(200).json({
       success: true,
