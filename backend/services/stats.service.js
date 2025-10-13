@@ -88,7 +88,7 @@ function deriveFromHistory(history = [], sinceDate = null) {
   let sumKcal = 0, cKcal = 0;
 
   const weekStart = sinceDate ? new Date(sinceDate) : new Date(Date.now() - 7 * 864e5);
-  const intakeByDay = new Map(); // yyyy-mm-dd -> last intake value for that day
+  const intakeByDay = new Map(); 
 
   for (let i = history.length - 1; i >= 0; i--) {
     const m = history[i]?.meta || {};
@@ -132,12 +132,12 @@ function deriveFromHistory(history = [], sinceDate = null) {
     const meta = h?.meta || {};
     const created = h?.createdAt ? new Date(h.createdAt) : (h?.date ? new Date(h.date) : null);
 
-    // Collect daily calorie intake for last 7 days regardless of workout
+    
     if (created && created >= weekStart) {
       const dc = pickDailyCalories(meta);
       if (dc != null) {
         const key = created.toISOString().slice(0, 10);
-        if (!intakeByDay.has(key)) intakeByDay.set(key, dc); // first seen assumed most recent that day
+        if (!intakeByDay.has(key)) intakeByDay.set(key, dc); 
       }
     }
 
@@ -157,7 +157,7 @@ function deriveFromHistory(history = [], sinceDate = null) {
     if (kcal != null) {
       sumKcal += kcal; cKcal++;
       if (res.lastCaloriesBurnedDerived == null) res.lastCaloriesBurnedDerived = kcal;
-      if (res.lastCaloriesBurned == null) res.lastCaloriesBurned = kcal; // first seen is latest
+      if (res.lastCaloriesBurned == null) res.lastCaloriesBurned = kcal; 
     }
 
     if (created && created >= weekStart) {

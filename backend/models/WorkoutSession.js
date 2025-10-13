@@ -28,9 +28,9 @@ const EntrySchema = new Schema({
   type: { type: String, enum: ["muscu", "cardio", "poids_du_corps"], required: true },
   order: { type: Number },
   notes: { type: String },
-  // Optional muscle metadata for stats
+  
   muscleGroup: { type: String },
-  muscle: { type: String }, // legacy/alias
+  muscle: { type: String }, 
   muscles: { type: [String], default: [] },
   sets: {
     type: [Schema.Types.Mixed],
@@ -38,7 +38,7 @@ const EntrySchema = new Schema({
   }
 }, { _id: false });
 
-// Heuristic mapper: very small, can be expanded later
+
 function guessMuscleGroup(name = "", type = "") {
   const n = String(name).toLowerCase();
   const t = String(type).toLowerCase();
@@ -77,7 +77,7 @@ const WorkoutSessionSchema = new Schema({
   }
 }, { timestamps: true });
 
-// Auto-populate muscle metadata on save when missing
+
 WorkoutSessionSchema.pre('save', function(next) {
   try {
     if (!Array.isArray(this.entries)) return next();

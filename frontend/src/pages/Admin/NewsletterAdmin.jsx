@@ -24,7 +24,7 @@ export default function NewsletterAdmin() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
 
-  // Form state
+  
   const [formData, setFormData] = useState({
     title: "",
     subject: "",
@@ -33,14 +33,14 @@ export default function NewsletterAdmin() {
     status: "draft"
   });
 
-  // Vérifier l'authentification et le rôle admin
+  
   useEffect(() => {
     checkAdminAccess();
   }, []);
 
   const checkAdminAccess = () => {
     try {
-      // Récupérer l'utilisateur depuis localStorage ou sessionStorage
+      
       const userFromLocal = localStorage.getItem('user');
       const userFromSession = sessionStorage.getItem('user');
       const userStr = userFromLocal || userFromSession;

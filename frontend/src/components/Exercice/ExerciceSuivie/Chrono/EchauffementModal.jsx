@@ -11,7 +11,7 @@ const getWarmupData = (muscleGroups, warmupDatabase) => {
       needsTimer: true
     };
   }
-  // Vérifier si c'est une activité douce
+  
   const softActivities = ['meditation', 'yoga', 'etirement'];
   const hasSoftActivity = muscleGroups.some(group => softActivities.includes(group));
 
@@ -30,7 +30,7 @@ const getWarmupData = (muscleGroups, warmupDatabase) => {
     }
   }
 
-  // Pour les activités physiques
+  
   if (!muscleGroups || muscleGroups.length === 0) {
     const defaultData = warmupDatabase.default;
     return {
@@ -42,7 +42,7 @@ const getWarmupData = (muscleGroups, warmupDatabase) => {
     };
   }
 
-  // Si cardio uniquement
+  
   if (muscleGroups.includes("cardio")) {
     const cardioData = warmupDatabase.muscleGroups?.cardio;
     return {
@@ -54,7 +54,7 @@ const getWarmupData = (muscleGroups, warmupDatabase) => {
     };
   }
 
-  // Combiner les échauffements pour plusieurs groupes musculaires
+  
   const warmupSet = new Set();
   let combinedTitle = [];
 
@@ -76,7 +76,7 @@ const getWarmupData = (muscleGroups, warmupDatabase) => {
     };
   }
 
-  // Fallback vers échauffement par défaut
+  
   const defaultData = warmupDatabase.default;
   return {
     type: 'warmup',
@@ -89,11 +89,11 @@ const getWarmupData = (muscleGroups, warmupDatabase) => {
 
 export default function EchauffementModal({ onStart, onSkip, muscleGroups = [] }) {
   const [warmupDatabase, setWarmupDatabase] = useState(null);
-  const [warmupTime, setWarmupTime] = useState(300); // 5 minutes
+  const [warmupTime, setWarmupTime] = useState(300); 
   const [isWarmingUp, setIsWarmingUp] = useState(false);
   const [timerInterval, setTimerInterval] = useState(null);
 
-  // Charger les données d'échauffement depuis le JSON
+  
   useEffect(() => {
     fetch('/data/warmups.json')
       .then(res => res.json())

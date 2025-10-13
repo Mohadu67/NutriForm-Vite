@@ -135,7 +135,7 @@ export default function ProfileUser({ onClose, onLogout }) {
 
   return (
     <div className={styles.body}>
-      {/* Header avec gradient et photo */}
+      {}
       <div className={styles.header}>
         <h3 className={styles.title}>Mon Profil</h3>
         <div className={styles.photoWrapper}>
@@ -143,7 +143,7 @@ export default function ProfileUser({ onClose, onLogout }) {
         </div>
       </div>
 
-      {/* Content */}
+      {}
       <div className={styles.content}>
         {message && <p className={styles.success}>{message}</p>}
         {error && <p className={styles.error}>{error}</p>}

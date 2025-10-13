@@ -29,11 +29,11 @@ const MentionsLegales = () => {
             <strong>Contact :</strong> contact.harmonith@gmail.com<br />
             <strong>Hébergeur BackEnd :</strong> Render<br />
             <a href="https://render.com/" target="_blank" rel="noopener noreferrer">
-              https://render.com
+              https:
             </a> <br />
             <strong>Hébergeur FronEnd :</strong> Netilfy <br />
             <a href="https://app.netlify.com/" target="_blank" rel="noopener noreferrer">
-              https://app.netlify.com
+              https:
             </a> <br />
             <strong>Téléphone :</strong> 0783330694<br />
             <strong>Github :</strong>{"https://github.com/Mohadu67/nutriform-vite"}<br />

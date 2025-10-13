@@ -41,7 +41,7 @@ export default function Dashboard() {
   const { records, sessions, points, status, error, displayName, handleDelete } = useHistoryData();
 
   const [userSessions, setUserSessions] = useState([]);
-  const [weeklyGoal, setWeeklyGoal] = useState(3); // Objectif par défaut
+  const [weeklyGoal, setWeeklyGoal] = useState(3); 
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [tempGoal, setTempGoal] = useState(3);
 
@@ -68,7 +68,7 @@ export default function Dashboard() {
     setUserSessions(list.map(normalize));
   }, [sessions]);
 
-  // Charger l'objectif hebdomadaire depuis localStorage
+  
   React.useEffect(() => {
     const savedGoal = localStorage.getItem('weeklyGoal');
     if (savedGoal) {
@@ -80,7 +80,7 @@ export default function Dashboard() {
     }
   }, []);
 
-  // Sauvegarder l'objectif dans localStorage
+  
   const handleSaveGoal = () => {
     if (tempGoal > 0 && tempGoal <= 14) {
       setWeeklyGoal(tempGoal);
@@ -199,7 +199,7 @@ export default function Dashboard() {
     navigate("/");
   };
 
-  // Calcul des statistiques
+  
   const stats = useMemo(() => {
     const totalSessions = userSessions.length;
     const last7Days = userSessions.filter(s => {
@@ -218,7 +218,7 @@ export default function Dashboard() {
       return date >= monthAgo;
     }).length;
 
-    // Période précédente pour comparaison
+    
     const prev30Days = userSessions.filter(s => {
       const date = parseDate(s?.date || s?.createdAt || s?.endedAt);
       if (!date) return false;
@@ -229,7 +229,7 @@ export default function Dashboard() {
       return date >= twoMonthsAgo && date < oneMonthAgo;
     }).length;
 
-    // Calculer la série (streak)
+    
     let streak = 0;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -257,7 +257,7 @@ export default function Dashboard() {
       }
     }
 
-    // Calculer le temps total d'entraînement (estimation)
+    
     const totalMinutes = userSessions.reduce((acc, s) => {
       const mins = s?.durationMinutes ?? s?.minutes ?? 0;
       return acc + mins;
@@ -265,7 +265,7 @@ export default function Dashboard() {
 
     const totalHours = Math.floor(totalMinutes / 60);
 
-    // Tendance
+    
     const trend = prev30Days > 0 ? ((last30Days - prev30Days) / prev30Days) * 100 : 0;
 
     return {
@@ -279,7 +279,7 @@ export default function Dashboard() {
     };
   }, [userSessions, parseDate]);
 
-  // Message motivant
+  
   const motivationMessage = useMemo(() => {
     if (stats.streak >= 7) return "🔥 Série de feu ! Tu es sur une lancée incroyable !";
     if (stats.streak >= 3) return "💪 Continue comme ça, tu es sur la bonne voie !";
@@ -289,7 +289,7 @@ export default function Dashboard() {
     return "🚀 Commence ton aventure fitness maintenant !";
   }, [stats]);
 
-  // Badges débloqués
+  
   const badges = useMemo(() => {
     const earned = [];
     if (stats.totalSessions >= 1) earned.push({ icon: "🎯", name: "Première séance", desc: "Tu as commencé !" });
@@ -306,10 +306,10 @@ export default function Dashboard() {
     return earned;
   }, [stats, weightPoints]);
 
-  // Objectifs hebdomadaires (utilise le state weeklyGoal)
+  
   const weeklyProgress = Math.min((stats.last7Days / weeklyGoal) * 100, 100);
 
-  // Heatmap des 12 dernières semaines
+  
   const activityHeatmap = useMemo(() => {
     const weeks = 12;
     const heatmap = [];
@@ -538,7 +538,7 @@ export default function Dashboard() {
 
         </div>
 
-        {/* Modal pour modifier l'objectif */}
+        {}
         {showGoalModal && (
           <div className={style.modalOverlay} onClick={() => setShowGoalModal(false)}>
             <div className={style.modalContent} onClick={(e) => e.stopPropagation()}>

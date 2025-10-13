@@ -19,7 +19,7 @@ export default function SafeGoogleReCaptchaProvider({
   const fallbackValue = useMemo(() => {
     const executeRecaptcha = async () => {
       if (RECAPTCHA_ENABLED && typeof window !== 'undefined' && !import.meta.env.PROD) {
-        // eslint-disable-next-line no-console
+        
         console.warn('[SafeGoogleReCaptchaProvider] Aucun reCAPTCHA key détecté. Le fallback renvoie un token vide.');
       }
       return null;

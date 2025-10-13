@@ -9,7 +9,6 @@ async function checkSubscribers() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✅ Connecté à MongoDB\n');
 
-    // Compter les abonnés
     const activeCount = await NewsletterSubscriber.countDocuments({ isActive: true });
     const totalCount = await NewsletterSubscriber.countDocuments();
 
@@ -18,7 +17,6 @@ async function checkSubscribers() {
     console.log(`   Actifs: ${activeCount}`);
     console.log(`   Inactifs: ${totalCount - activeCount}\n`);
 
-    // Lister les abonnés actifs
     const subscribers = await NewsletterSubscriber.find({ isActive: true })
       .select('email subscribedAt source')
       .sort({ subscribedAt: -1 })
