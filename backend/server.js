@@ -54,7 +54,7 @@ app.use(helmet({
 // Rate limiting global - plus permissif en développement
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // 1000 en dev, 100 en prod
+  max: process.env.NODE_ENV === 'production' ? 500 : 1000, // 1000 en dev, 500 en prod
   message: 'Trop de requêtes depuis cette IP, réessayez plus tard.',
   standardHeaders: true,
   legacyHeaders: false,
