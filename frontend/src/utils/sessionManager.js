@@ -145,19 +145,20 @@ export function initActivityListeners() {
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
       log("Tab became visible - checking session");
-      if (!checkSession()) {
-        logoutAndRedirect("session_expired_visibility");
-      }
+      // Désactivé temporairement pour éviter les appels répétés
+      // if (!checkSession()) {
+      //   logoutAndRedirect("session_expired_visibility");
+      // }
     }
   });
 
-  // Vérification périodique toutes les 5 minutes
-  setInterval(() => {
-    log("Periodic session check (5min interval)");
-    if (!checkSession()) {
-      logoutAndRedirect("session_expired_periodic");
-    }
-  }, 5 * 60 * 1000);
+  // Vérification périodique toutes les 5 minutes - DÉSACTIVÉE
+  // setInterval(() => {
+  //   log("Periodic session check (5min interval)");
+  //   if (!checkSession()) {
+  //     logoutAndRedirect("session_expired_periodic");
+  //   }
+  // }, 5 * 60 * 1000);
 
   log("Session manager fully initialized");
 }
