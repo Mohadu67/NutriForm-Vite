@@ -1,9 +1,4 @@
-import { API_BASE_URL } from '../../../shared/config/api.js';
-
-const DEFAULT_DEV_API = (typeof window !== 'undefined' && window.location && window.location.port === '5173')
-  ? 'http://localhost:3000'
-  : '';
-const API_BASE = API_BASE_URL || DEFAULT_DEV_API;
+import { secureApiCall } from '../../../utils/authService.js';
 
 function safeStringify(obj) {
   try {
@@ -22,56 +17,15 @@ function safeStringify(obj) {
   }
 }
 
-function getToken() {
-  try {
-    return (
-      localStorage.getItem('token') ||
-      localStorage.getItem('authToken') ||
-      sessionStorage.getItem('token') ||
-      sessionStorage.getItem('authToken') ||
-      null
-    );
-  } catch {
-    return null;
-  }
-}
-
-function buildAuthHeaders() {
-  const token = getToken();
-  if (!token) return {};
-  const bearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-  return {
-    Authorization: bearer,
-    'x-auth-token': token.replace(/^Bearer\s+/i, ''),
-    'x-access-token': token.replace(/^Bearer\s+/i, ''),
-  };
-}
-
 async function request(path, options = {}) {
-  const authHeaders = buildAuthHeaders();
-  if (!authHeaders.Authorization && (typeof window !== 'undefined') && !import.meta.env.PROD) {
-    console.warn('[sessionApi] No Authorization header. Using cookies only. API_BASE=', API_BASE);
-  }
-  const headers = {
-    Accept: 'application/json',
-    'X-Requested-With': 'XMLHttpRequest',
-    ...authHeaders,
-    ...(options.headers || {}),
-  };
-  if (options.body && !headers['Content-Type'] && !(options.body instanceof FormData)) {
-    headers['Content-Type'] = 'application/json; charset=utf-8';
-  }
-
   let body = options.body;
   if (body != null && !(body instanceof FormData)) {
     body = typeof body === 'string' ? body : safeStringify(body);
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    credentials: 'include',
+  const res = await secureApiCall(path, {
     ...options,
     body,
-    headers
   });
 
   let data = null;
@@ -81,7 +35,7 @@ async function request(path, options = {}) {
     const err = new Error(msg);
     err.status = res.status;
     err.data = data;
-    err.url = `${API_BASE}${path}`;
+    err.url = path;
     err.method = (options.method || 'GET').toUpperCase();
     throw err;
   }
@@ -224,7 +178,6 @@ function getLastSession() {
 
 export {
   request,
-  getToken,
   fetchHistorySummary,
   mapItemsToEntries,
   saveSession,

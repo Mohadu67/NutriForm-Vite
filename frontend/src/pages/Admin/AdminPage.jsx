@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./AdminPage.module.css";
-
-const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+import { secureApiCall } from "../../utils/authService";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -27,16 +26,8 @@ export default function AdminPage() {
   };
 
   const checkAdmin = useCallback(async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/");
-      return false;
-    }
-
     try {
-      const response = await fetch(`${API_URL}/api/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await secureApiCall('/api/me');
 
       if (response.ok) {
         const data = await response.json();
@@ -58,14 +49,9 @@ export default function AdminPage() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
       const [reviewsRes, newsletterStatsRes] = await Promise.all([
-        fetch(`${API_URL}/api/reviews/users/all`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(`${API_URL}/api/newsletter/stats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        secureApiCall('/api/reviews/users/all'),
+        secureApiCall('/api/newsletter/stats'),
       ]);
 
       const reviewsData = await reviewsRes.json();
@@ -91,10 +77,7 @@ export default function AdminPage() {
   const fetchReviews = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/api/reviews/users/all`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await secureApiCall('/api/reviews/users/all');
 
       const data = await response.json();
       if (data.success) {
@@ -110,10 +93,7 @@ export default function AdminPage() {
   const fetchNewsletters = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/api/newsletter-admin`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await secureApiCall('/api/newsletter-admin');
 
       const data = await response.json();
       if (data.success) {
@@ -138,10 +118,8 @@ export default function AdminPage() {
 
   const handleApprove = async (id) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/api/reviews/users/${id}/approve`, {
+      const response = await secureApiCall(`/api/reviews/users/${id}/approve`, {
         method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await response.json();
@@ -163,10 +141,8 @@ export default function AdminPage() {
     if (!confirm("Voulez-vous vraiment supprimer cet avis ?")) return;
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/api/reviews/users/${id}`, {
+      const response = await secureApiCall(`/api/reviews/users/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await response.json();
@@ -186,12 +162,10 @@ export default function AdminPage() {
     if (selectedReviews.length === 0) return;
 
     try {
-      const token = localStorage.getItem("token");
       await Promise.all(
         selectedReviews.map((id) =>
-          fetch(`${API_URL}/api/reviews/users/${id}/approve`, {
+          secureApiCall(`/api/reviews/users/${id}/approve`, {
             method: "PUT",
-            headers: { Authorization: `Bearer ${token}` },
           })
         )
       );
@@ -210,12 +184,10 @@ export default function AdminPage() {
     if (!confirm(`Supprimer ${selectedReviews.length} avis ?`)) return;
 
     try {
-      const token = localStorage.getItem("token");
       await Promise.all(
         selectedReviews.map((id) =>
-          fetch(`${API_URL}/api/reviews/users/${id}`, {
+          secureApiCall(`/api/reviews/users/${id}`, {
             method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
           })
         )
       );
@@ -259,10 +231,8 @@ export default function AdminPage() {
     if (!confirm("Voulez-vous vraiment supprimer cette newsletter ?")) return;
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/api/newsletter-admin/${id}`, {
+      const response = await secureApiCall(`/api/newsletter-admin/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await response.json();

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "./ProfilePhoto.module.css";
-
-const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+import { secureApiCall } from "../../../../utils/authService.js";
 
 export default function ProfilePhoto({ user }) {
   const [photo, setPhoto] = useState(user?.photo || null);
@@ -31,13 +30,8 @@ export default function ProfilePhoto({ user }) {
       const formData = new FormData();
       formData.append('photo', file);
 
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
-      const response = await fetch(`${API_URL}/api/upload/profile-photo`, {
+      const response = await secureApiCall('/api/upload/profile-photo', {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        },
         body: formData
       });
 
@@ -65,12 +59,8 @@ export default function ProfilePhoto({ user }) {
     setMessage({ type: "", text: "" });
 
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/upload/profile-photo`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
+      const response = await secureApiCall('/api/upload/profile-photo', {
+        method: "DELETE"
       });
 
       const data = await response.json();

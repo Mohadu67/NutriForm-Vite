@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import styles from "./UserReviews.module.css";
+import { secureApiCall } from "../../utils/authService.js";
 
 export default function UserReviews() {
   const [reviews, setReviews] = useState([]);
@@ -16,18 +17,8 @@ export default function UserReviews() {
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const checkAuth = useCallback(async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setIsLoggedIn(false);
-      return;
-    }
-
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await secureApiCall('/api/me');
 
       if (response.ok) {
         const data = await response.json();
@@ -71,17 +62,8 @@ export default function UserReviews() {
     setMessage({ type: "", text: "" });
 
     try {
-      const token = localStorage.getItem("token");
-      const headers = {
-        "Content-Type": "application/json",
-      };
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/reviews/users`, {
+      const response = await secureApiCall('/api/reviews/users', {
         method: "POST",
-        headers,
         body: JSON.stringify(formData),
       });
 
