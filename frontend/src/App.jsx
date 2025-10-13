@@ -27,8 +27,10 @@ export default function App() {
     // Initialiser le gestionnaire de session
     initActivityListeners();
 
-    // Vérifier la session au chargement
-    if (!checkSession()) {
+    // Vérifier la session au chargement (uniquement si on a des données user)
+    const user = localStorage.getItem("user");
+    if (user && !checkSession()) {
+      // Seulement rediriger si on avait une session mais qu'elle est expirée
       logoutAndRedirect("session_expired_init");
     }
   }, []);

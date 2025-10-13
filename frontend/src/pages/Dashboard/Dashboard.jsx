@@ -16,8 +16,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-    if (!token) {
+    const user = localStorage.getItem("user");
+    if (!user) {
       navigate("/");
     }
   }, [navigate]);
