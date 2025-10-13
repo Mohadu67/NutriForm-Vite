@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./NewsletterAdmin.module.css";
-
-const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+import { secureApiCall } from "../../utils/authService.js";
 
 const toDateTimeLocalValue = (value) => {
   if (!value) return "";
@@ -73,20 +72,9 @@ export default function NewsletterAdmin() {
     }
   }, [isAdmin]);
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : ''
-    };
-  };
-
   const fetchNewsletters = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/newsletter-admin`, {
-        headers: getAuthHeaders(),
-        credentials: 'include'
-      });
+      const res = await secureApiCall('/api/newsletter-admin');
 
       if (res.status === 401 || res.status === 403) {
         alert('Session expirée ou accès refusé');
@@ -110,8 +98,8 @@ export default function NewsletterAdmin() {
 
     try {
       const url = editingId
-        ? `${API_URL}/api/newsletter-admin/${editingId}`
-        : `${API_URL}/api/newsletter-admin`;
+        ? `/api/newsletter-admin/${editingId}`
+        : `/api/newsletter-admin`;
 
       const method = editingId ? "PUT" : "POST";
 
@@ -122,10 +110,8 @@ export default function NewsletterAdmin() {
           : null
       };
 
-      const res = await fetch(url, {
+      const res = await secureApiCall(url, {
         method,
-        headers: getAuthHeaders(),
-        credentials: 'include',
         body: JSON.stringify(payload)
       });
 
@@ -160,10 +146,8 @@ export default function NewsletterAdmin() {
     if (!confirm("Supprimer cette newsletter ?")) return;
 
     try {
-      const res = await fetch(`${API_URL}/api/newsletter-admin/${id}`, {
-        method: "DELETE",
-        headers: getAuthHeaders(),
-        credentials: 'include'
+      const res = await secureApiCall(`/api/newsletter-admin/${id}`, {
+        method: "DELETE"
       });
 
       const data = await res.json();

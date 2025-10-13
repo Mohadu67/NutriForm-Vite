@@ -1,16 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
-
-function getToken() {
-  return (
-    localStorage.getItem("token") ||
-    sessionStorage.getItem("token") ||
-    localStorage.getItem("jwt") ||
-    localStorage.getItem("accessToken")
-  );
-}
+import { secureApiCall } from "../../../utils/authService.js";
 
 export default function Salutation({ className = "", seedKey = "static" }) {
   const { t } = useTranslation();
@@ -18,7 +8,6 @@ export default function Salutation({ className = "", seedKey = "static" }) {
   const phraseRef = useRef("");
 
   useEffect(() => {
-
     try {
       const cached = JSON.parse(localStorage.getItem("user") || "null");
       const cachedName =
@@ -29,12 +18,7 @@ export default function Salutation({ className = "", seedKey = "static" }) {
       if (cachedName) setDisplayName(cachedName);
     } catch (_) {}
 
-    const token = getToken();
-    if (!token) return;
-
-    fetch(`${API_URL}/api/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    secureApiCall('/api/me')
       .then((res) =>
         res
           .json()
