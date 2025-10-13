@@ -282,13 +282,15 @@ export default function AdminPage() {
 
     try {
       const token = localStorage.getItem("token");
-      setStatus("loading");
+      setLoading(true);
       const response = await fetch(`${API_URL}/api/newsletter-admin/${id}/send-now`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await response.json();
+      console.log("Response:", response.status, data);
+
       if (data.success) {
         showMessage("success", `Newsletter envoyée avec succès à ${data.stats?.successCount || 0} abonnés !`);
         fetchNewsletters();
@@ -297,9 +299,10 @@ export default function AdminPage() {
         showMessage("error", data.message || "Erreur lors de l'envoi");
       }
     } catch (err) {
+      console.error("Erreur lors de l'envoi:", err);
       showMessage("error", "Erreur lors de l'envoi de la newsletter");
     } finally {
-      setStatus("idle");
+      setLoading(false);
     }
   };
 
@@ -645,7 +648,7 @@ export default function AdminPage() {
                           <button
                             onClick={() => handleSendNow(newsletter._id, newsletter.title)}
                             className={styles.btnPrimary}
-                            disabled={status === "loading"}
+                            disabled={loading}
                           >
                             📤 Envoyer maintenant
                           </button>
