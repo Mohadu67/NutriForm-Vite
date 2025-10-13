@@ -9,12 +9,10 @@ const brand = {
 };
 
 module.exports = function verifyEmailTemplate({ toName = 'utilisateur', verifyUrl }) {
-  
-  const safeVerifyUrl = /^https?:\/\
+  const safeVerifyUrl = /^https?:\/\//.test(verifyUrl)
     ? verifyUrl
     : `${brand.url.replace(/\/$/, '')}${verifyUrl.startsWith('/') ? '' : '/'}${verifyUrl}`;
 
-  
   console.log('[VERIFY_EMAIL_TEMPLATE] Generated verification URL:', safeVerifyUrl);
 
   const subject = `Confirme ton email • ${brand.name}`;
