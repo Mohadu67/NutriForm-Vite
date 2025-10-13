@@ -20,7 +20,7 @@ export default function Footer() {
     if (typeof window === "undefined") {
       return false;
     }
-    return !!localStorage.getItem("token");
+    return !!localStorage.getItem("user");
   });
   const location = useLocation();
 
@@ -31,7 +31,7 @@ export default function Footer() {
   ];
 
   useEffect(() => {
-    const onStorage = () => setIsLoggedIn(!!localStorage.getItem("token"));
+    const onStorage = () => setIsLoggedIn(!!localStorage.getItem("user"));
     window.addEventListener("storage", onStorage);
 
     onStorage();
