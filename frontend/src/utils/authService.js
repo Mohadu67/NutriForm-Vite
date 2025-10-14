@@ -132,7 +132,30 @@ export async function login(identifier, password, remember = false) {
       log("Session started with 24h limit");
     }
 
-    log("Login successful");
+    log("Login successful - verifying cookies...");
+
+    try {
+      const verifyResponse = await apiCall('/api/me');
+      if (!verifyResponse.ok) {
+        log("Cookie verification failed - cookies may be blocked");
+        localStorage.removeItem("user");
+        localStorage.removeItem("userId");
+        return {
+          success: false,
+          message: "Erreur: Les cookies sont bloqués. Active les cookies pour te connecter."
+        };
+      }
+      log("Cookies verified successfully");
+    } catch (err) {
+      log("Cookie verification error:", err.message);
+      localStorage.removeItem("user");
+      localStorage.removeItem("userId");
+      return {
+        success: false,
+        message: "Erreur de connexion. Vérifie ta connexion internet."
+      };
+    }
+
     return { success: true, user: data.user };
   } else {
     log("Login failed:", data.message);
