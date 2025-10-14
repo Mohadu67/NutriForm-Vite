@@ -253,11 +253,9 @@ export default function AdminPage() {
     if (!confirm(`Voulez-vous vraiment envoyer la newsletter "${title}" maintenant ?`)) return;
 
     try {
-      const token = localStorage.getItem("token");
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/newsletter-admin/${id}/send-now`, {
+      const response = await secureApiCall(`/api/newsletter-admin/${id}/send-now`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await response.json();
