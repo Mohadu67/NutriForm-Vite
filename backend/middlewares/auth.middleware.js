@@ -4,21 +4,11 @@ const User = require('../models/User');
 async function authMiddleware(req, res, next) {
   const authHeader = req.headers['authorization'] || '';
   let token = null;
-
-
-  if (req.cookies && req.cookies.accessToken) {
-    token = req.cookies.accessToken;
-    console.log('[AUTH] Token found in accessToken cookie');
-  } else if (authHeader.toLowerCase().startsWith('bearer ')) {
+  if (authHeader.toLowerCase().startsWith('bearer ')) {
     token = authHeader.slice(7).trim();
-    console.log('[AUTH] Token found in Bearer header');
   } else if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
-    console.log('[AUTH] Token found in legacy token cookie');
-  } else {
-    console.log('[AUTH] No token found - cookies:', Object.keys(req.cookies || {}), '- headers:', req.headers['authorization'] || 'none');
   }
-
   if (!token) {
     return res.status(401).json({ message: 'Token requis.' });
   }
@@ -41,14 +31,10 @@ async function authMiddleware(req, res, next) {
     }
 
     req.userId = user.id;
-    req.user = user;
+    req.user = user; 
     next();
   } catch (err) {
-    
-    if (err.name === 'TokenExpiredError') {
-      return res.status(401).json({ message: 'Token expiré.', needsRefresh: true });
-    }
-    return res.status(401).json({ message: 'Token invalide.' });
+    return res.status(401).json({ message: 'Token invalide ou expiré.' });
   }
 }
 
