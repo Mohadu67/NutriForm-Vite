@@ -62,12 +62,13 @@ export async function refreshAccessToken() {
 }
 
 export async function secureApiCall(endpoint, options = {}) {
-  try {
-    const user = localStorage.getItem("user");
-    if (!user) {
-      throw new Error('Not authenticated');
-    }
+  const user = localStorage.getItem("user");
+  if (!user) {
+    log("Not authenticated - no user in localStorage");
+    throw new Error('Not authenticated');
+  }
 
+  try {
     let response = await apiCall(endpoint, options);
 
     if (response.status === 401) {
@@ -98,7 +99,11 @@ export async function secureApiCall(endpoint, options = {}) {
 
     return response;
   } catch (error) {
-    log("Secure API call error:", error.message);
+    if (error.message === 'Not authenticated') {
+      log("User not authenticated");
+    } else {
+      log("Secure API call error:", error.message);
+    }
     throw error;
   }
 }
