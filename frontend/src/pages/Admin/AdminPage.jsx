@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import styles from "./AdminPage.module.css";
 import { secureApiCall } from "../../utils/authService";
 
+const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+
 export default function AdminPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
