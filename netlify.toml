@@ -1,11 +1,10 @@
+[build]
+  base = "frontend"
+  publish = "dist"
+  command = "npm run build"
+
 [[redirects]]
   from = "/api/*"
   to = "https://nutriform-vite.onrender.com/api/:splat"
   status = 200
   force = true
-  headers = {X-From = "Netlify"}
-
-[build]
-  base = "frontend"
-  publish = "dist"
-  command = "npm run build"
