@@ -14,7 +14,6 @@ export default function useHistoryData() {
   useEffect(() => {
     setStatus("loading");
 
-    
     secureApiCall('/api/me')
       .then((res) => res.json())
       .then((data) => {
@@ -26,11 +25,29 @@ export default function useHistoryData() {
         const finalName = name || "Utilisateur";
         setDisplayName(finalName);
         setUser(data);
-        
         localStorage.setItem("cachedDisplayName", finalName);
       })
       .catch((err) => {
-        setError("Non connecté. Connecte-toi d'abord.");
+        console.error('[UseHistoryData] Auth error:', err);
+
+        const weeklyGoal = localStorage.getItem('weeklyGoal');
+        const dynamiPrefs = {
+          dynamiStep: localStorage.getItem('dynamiStep'),
+          dynamiType: localStorage.getItem('dynamiType'),
+          dynamiEquip: localStorage.getItem('dynamiEquip'),
+          dynamiMuscle: localStorage.getItem('dynamiMuscle'),
+        };
+
+        localStorage.clear();
+        sessionStorage.clear();
+
+        if (weeklyGoal) localStorage.setItem('weeklyGoal', weeklyGoal);
+        Object.entries(dynamiPrefs).forEach(([key, value]) => {
+          if (value) localStorage.setItem(key, value);
+        });
+
+        setError("Session expirée. Reconnecte-toi.");
+        setStatus("error");
       });
 
     secureApiCall('/api/history')
