@@ -17,6 +17,7 @@ import AdminPage from "./pages/Admin/AdminPage.jsx";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
+import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
 import { initActivityListeners, checkSession, logout } from "./utils/sessionManager.js";
 import './i18n/config';
 
@@ -35,6 +36,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
+      <UpdatePrompt />
       <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/imc" element={<ImcPage />} />
