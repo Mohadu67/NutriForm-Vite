@@ -9,103 +9,24 @@ function log(message, data = null) {
 
 async function apiCall(endpoint, options = {}) {
   const url = `${API_URL}${endpoint}`;
+  const token = localStorage.getItem("token");
 
   const isFormData = options.body instanceof FormData;
 
   const defaultOptions = {
     credentials: 'include',
     headers: isFormData ? {
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...options.headers,
     } : {
       'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...options.headers,
     },
   };
 
   const response = await fetch(url, { ...defaultOptions, ...options });
   return response;
-}
-
-export async function refreshAccessToken() {
-  try {
-    log("Attempting to refresh access token...");
-
-    const response = await apiCall('/api/refresh', {
-      method: 'POST',
-    });
-
-    const data = await response.json();
-
-    if (response.ok && data.user) {
-      log("Access token refreshed successfully");
-
-      const existingUser = localStorage.getItem("user");
-      if (existingUser) {
-        try {
-          const userData = JSON.parse(existingUser);
-          const updatedUser = { ...userData, ...data.user };
-          localStorage.setItem("user", JSON.stringify(updatedUser));
-        } catch (e) {
-          localStorage.setItem("user", JSON.stringify(data.user));
-        }
-      }
-
-      return true;
-    } else {
-      log("Refresh failed:", data.message);
-      return false;
-    }
-  } catch (error) {
-    log("Refresh error:", error.message);
-    return false;
-  }
-}
-
-export async function secureApiCall(endpoint, options = {}) {
-  const user = localStorage.getItem("user");
-  if (!user) {
-    log("Not authenticated - no user in localStorage");
-    throw new Error('Not authenticated');
-  }
-
-  try {
-    let response = await apiCall(endpoint, options);
-
-    if (response.status === 401) {
-      const data = await response.json().catch(() => ({}));
-
-      if (data.needsRefresh) {
-        log("Token expired - attempting refresh");
-
-        const refreshSuccess = await refreshAccessToken();
-
-        if (refreshSuccess) {
-          log("Retrying original request after refresh");
-          response = await apiCall(endpoint, options);
-
-          if (response.status === 401) {
-            log("Still unauthorized after refresh - invalid session");
-            throw new Error('Invalid session');
-          }
-        } else {
-          log("Refresh failed - session expired");
-          throw new Error('Session expired');
-        }
-      } else {
-        log("Unauthorized - invalid or missing token");
-        throw new Error('Not authenticated');
-      }
-    }
-
-    return response;
-  } catch (error) {
-    if (error.message === 'Not authenticated') {
-      log("User not authenticated");
-    } else {
-      log("Secure API call error:", error.message);
-    }
-    throw error;
-  }
 }
 
 export async function login(identifier, password, remember = false) {
@@ -118,7 +39,8 @@ export async function login(identifier, password, remember = false) {
 
   const data = await response.json();
 
-  if (response.ok && data.user) {
+  if (response.ok && data.token) {
+    localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
     localStorage.setItem("userId", data.user.id);
 
@@ -140,6 +62,28 @@ export async function login(identifier, password, remember = false) {
   }
 }
 
+export async function secureApiCall(endpoint, options = {}) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    log("Not authenticated - no token in localStorage");
+    throw new Error('Not authenticated');
+  }
+
+  try {
+    const response = await apiCall(endpoint, options);
+
+    if (response.status === 401) {
+      log("Unauthorized - token invalid or expired");
+      throw new Error('Not authenticated');
+    }
+
+    return response;
+  } catch (error) {
+    log("Secure API call error:", error.message);
+    throw error;
+  }
+}
+
 export async function logout() {
   log("Logout initiated");
 
@@ -149,6 +93,7 @@ export async function logout() {
     log("Logout API call failed:", error.message);
   }
 
+  localStorage.removeItem("token");
   localStorage.removeItem("user");
   localStorage.removeItem("userId");
   localStorage.removeItem("lastActivity");
@@ -162,7 +107,8 @@ export async function logout() {
 }
 
 export function isAuthenticated() {
-  return Boolean(user);
+  const token = localStorage.getItem("token");
+  return Boolean(token);
 }
 
 export function getCurrentUser() {
