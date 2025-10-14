@@ -43,6 +43,18 @@ export default function ProfilePhoto({ user }) {
 
       if (data.success) {
         setPhoto(data.photo);
+
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          try {
+            const userData = JSON.parse(userStr);
+            userData.photo = data.photo;
+            localStorage.setItem("user", JSON.stringify(userData));
+          } catch (e) {
+            console.error("Failed to update user photo in localStorage:", e);
+          }
+        }
+
         setMessage({ type: "success", text: "Photo mise à jour avec succès" });
         setTimeout(() => setMessage({ type: "", text: "" }), 3000);
       } else {
@@ -75,6 +87,18 @@ export default function ProfilePhoto({ user }) {
 
       if (data.success) {
         setPhoto(null);
+
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          try {
+            const userData = JSON.parse(userStr);
+            userData.photo = null;
+            localStorage.setItem("user", JSON.stringify(userData));
+          } catch (e) {
+            console.error("Failed to update user photo in localStorage:", e);
+          }
+        }
+
         setMessage({ type: "success", text: "Photo supprimée avec succès" });
         setTimeout(() => setMessage({ type: "", text: "" }), 3000);
       } else {

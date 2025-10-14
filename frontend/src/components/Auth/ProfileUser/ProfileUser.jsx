@@ -39,9 +39,24 @@ export default function ProfileUser({ onClose, onLogout }) {
       setLoading(false);
     } catch (err) {
       console.error('[ProfileUser] Error fetching user data:', err);
+
+      const weeklyGoal = localStorage.getItem('weeklyGoal');
+      const dynamiPrefs = {
+        dynamiStep: localStorage.getItem('dynamiStep'),
+        dynamiType: localStorage.getItem('dynamiType'),
+        dynamiEquip: localStorage.getItem('dynamiEquip'),
+        dynamiMuscle: localStorage.getItem('dynamiMuscle'),
+      };
+
       await logout();
       localStorage.clear();
       sessionStorage.clear();
+
+      if (weeklyGoal) localStorage.setItem('weeklyGoal', weeklyGoal);
+      Object.entries(dynamiPrefs).forEach(([key, value]) => {
+        if (value) localStorage.setItem(key, value);
+      });
+
       if (onLogout) onLogout();
       if (onClose) onClose();
       window.location.href = '/';
