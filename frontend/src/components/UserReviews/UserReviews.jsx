@@ -32,7 +32,6 @@ export default function UserReviews() {
         setIsLoggedIn(false);
       }
     } catch (err) {
-      console.error("Erreur vérification auth:", err);
       setIsLoggedIn(false);
     }
   }, []);
