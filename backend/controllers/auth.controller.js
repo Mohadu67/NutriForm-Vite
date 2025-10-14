@@ -87,7 +87,7 @@ exports.login = async (req, res) => {
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      sameSite: 'lax',
       path: '/',
       domain: process.env.NODE_ENV === 'production' ? undefined : undefined,
     };
@@ -341,13 +341,13 @@ exports.refresh = async (req, res) => {
     
     const newAccessToken = generateAccessToken(user._id, user.email, user.role);
 
-    
+
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      sameSite: 'lax',
       path: '/',
-      maxAge: 1000 * 60 * 15, 
+      maxAge: 1000 * 60 * 15,
     });
 
     console.log('[AUTH] Access token refreshed successfully');
@@ -369,28 +369,16 @@ exports.refresh = async (req, res) => {
 
 exports.logout = async (req, res) => {
   try {
-    
-    res.clearCookie('accessToken', {
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      sameSite: 'lax',
       path: '/',
-    });
+    };
 
-    res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      path: '/',
-    });
-
-    
-    res.clearCookie('token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      path: '/',
-    });
+    res.clearCookie('accessToken', cookieOptions);
+    res.clearCookie('refreshToken', cookieOptions);
+    res.clearCookie('token', cookieOptions);
 
     console.log('[AUTH] Logout successful - cookies cleared');
 
