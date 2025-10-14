@@ -38,8 +38,13 @@ export default function ProfileUser({ onClose, onLogout }) {
       setEmail(data.email || "");
       setLoading(false);
     } catch (err) {
-      setError("Impossible de charger les données");
-      setLoading(false);
+      console.error('[ProfileUser] Error fetching user data:', err);
+      await logout();
+      localStorage.clear();
+      sessionStorage.clear();
+      if (onLogout) onLogout();
+      if (onClose) onClose();
+      window.location.href = '/';
     }
   };
 
