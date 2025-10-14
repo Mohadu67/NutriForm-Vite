@@ -198,6 +198,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
           localStorage.setItem("formSelectedExercises", s);
           localStorage.setItem("dynamiHasTouched", "1");
         } catch {}
+        window.dispatchEvent(new CustomEvent('dynami:selected:replace', { detail: { items: merged } }));
         return merged;
       });
     });
