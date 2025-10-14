@@ -26,9 +26,29 @@ export default function useHistoryData() {
         setDisplayName(finalName);
         setUser(data);
         localStorage.setItem("cachedDisplayName", finalName);
+
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          try {
+            const userData = JSON.parse(userStr);
+            const updatedUser = { ...userData, ...data };
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+          } catch (e) {
+            localStorage.setItem("user", JSON.stringify(data));
+          }
+        } else {
+          localStorage.setItem("user", JSON.stringify(data));
+        }
       })
       .catch((err) => {
         console.error('[UseHistoryData] Auth error:', err);
+
+        const errorMsg = err?.message || '';
+        if (errorMsg === 'Not authenticated') {
+          setError("Non connecté. Connecte-toi pour voir tes données.");
+          setStatus("error");
+          return;
+        }
 
         const weeklyGoal = localStorage.getItem('weeklyGoal');
         const dynamiPrefs = {
