@@ -5,13 +5,18 @@ async function authMiddleware(req, res, next) {
   const authHeader = req.headers['authorization'] || '';
   let token = null;
 
-  
+
   if (req.cookies && req.cookies.accessToken) {
     token = req.cookies.accessToken;
+    console.log('[AUTH] Token found in accessToken cookie');
   } else if (authHeader.toLowerCase().startsWith('bearer ')) {
     token = authHeader.slice(7).trim();
+    console.log('[AUTH] Token found in Bearer header');
   } else if (req.cookies && req.cookies.token) {
-    token = req.cookies.token; 
+    token = req.cookies.token;
+    console.log('[AUTH] Token found in legacy token cookie');
+  } else {
+    console.log('[AUTH] No token found - cookies:', Object.keys(req.cookies || {}), '- headers:', req.headers['authorization'] || 'none');
   }
 
   if (!token) {
