@@ -14,7 +14,6 @@ export default function useHistoryData() {
   useEffect(() => {
     setStatus("loading");
 
-    
     secureApiCall('/api/me')
       .then((res) => res.json())
       .then((data) => {
@@ -26,11 +25,14 @@ export default function useHistoryData() {
         const finalName = name || "Utilisateur";
         setDisplayName(finalName);
         setUser(data);
-        
         localStorage.setItem("cachedDisplayName", finalName);
       })
       .catch((err) => {
-        setError("Non connecté. Connecte-toi d'abord.");
+        console.error('[UseHistoryData] Auth error:', err);
+        localStorage.clear();
+        sessionStorage.clear();
+        setError("Session expirée. Reconnecte-toi.");
+        setStatus("error");
       });
 
     secureApiCall('/api/history')
