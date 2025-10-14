@@ -63,6 +63,11 @@ export async function refreshAccessToken() {
 
 export async function secureApiCall(endpoint, options = {}) {
   try {
+    const user = localStorage.getItem("user");
+    if (!user) {
+      throw new Error('Not authenticated');
+    }
+
     let response = await apiCall(endpoint, options);
 
     if (response.status === 401) {
@@ -76,12 +81,18 @@ export async function secureApiCall(endpoint, options = {}) {
         if (refreshSuccess) {
           log("Retrying original request after refresh");
           response = await apiCall(endpoint, options);
+
+          if (response.status === 401) {
+            log("Still unauthorized after refresh - invalid session");
+            throw new Error('Invalid session');
+          }
         } else {
-          log("Refresh failed - logging out");
-          await logout();
-          window.location.href = '/';
+          log("Refresh failed - session expired");
           throw new Error('Session expired');
         }
+      } else {
+        log("Unauthorized - invalid or missing token");
+        throw new Error('Not authenticated');
       }
     }
 
