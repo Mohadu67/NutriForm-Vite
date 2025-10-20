@@ -188,7 +188,7 @@ export default function ProfileUser({ onClose, onLogout }) {
             <div className={styles.actions}>
               {isAdmin && (
                 <BoutonAction type="button" onClick={handleAdminClick} variant="admin">
-                  🛡️ Mon Fratéé
+                  🛡️ Administrateur
                 </BoutonAction>
               )}
               <BoutonAction type="button" onClick={() => setEditing(true)} variant="secondary">
