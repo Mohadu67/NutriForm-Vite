@@ -71,15 +71,19 @@ const primaryTools = [
     accent: "#FFB385",
     accentSoft: "#FD6F9F",
   },
+  {
+    id: "rm",
+    href: "/outils",
+    titleKey: "homeTools.rm.title",
+    descriptionKey: "homeTools.rm.description",
+    ctaKey: "homeTools.rm.cta",
+    icon: <IconRM />,
+    accent: "#9E8CFF",
+    accentSoft: "#5F5BFF",
+  },
 ];
 
 const upcomingTools = [
-  {
-    id: "rm",
-    titleKey: "homeTools.rm.title",
-    descriptionKey: "homeTools.rm.description",
-    icon: <IconRM />,
-  },
   {
     id: "fc",
     titleKey: "homeTools.heart.title",
