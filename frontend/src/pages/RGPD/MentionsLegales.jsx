@@ -31,7 +31,7 @@ const MentionsLegales = () => {
             <a href="https://render.com/" target="_blank" rel="noopener noreferrer">
               https:
             </a> <br />
-            <strong>Hébergeur FronEnd :</strong> Netilfy <br />
+            <strong>Hébergeur Frontend :</strong> Netlify <br />
             <a href="https://app.netlify.com/" target="_blank" rel="noopener noreferrer">
               https:
             </a> <br />
