@@ -11,7 +11,7 @@ Disallow: /admin/
 Disallow: /api/
 
 # Sitemap
-Sitemap: https://incandescent-dolphin-d90e0a.netlify.app/sitemap.xml
+Sitemap: https://harmonith.fr/sitemap.xml
 
 # Crawl-delay pour éviter surcharge
 Crawl-delay: 1
