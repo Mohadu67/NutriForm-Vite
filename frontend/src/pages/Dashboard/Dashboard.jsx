@@ -202,12 +202,23 @@ export default function Dashboard() {
   // Calcul des statistiques
   const stats = useMemo(() => {
     const totalSessions = userSessions.length;
+
+    // Calculer le début de la semaine en cours (lundi)
+    const getWeekStart = () => {
+      const now = new Date();
+      const day = now.getDay();
+      const diff = day === 0 ? -6 : 1 - day; // Si dimanche (0), revenir à lundi, sinon calculer depuis lundi
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + diff);
+      monday.setHours(0, 0, 0, 0);
+      return monday;
+    };
+
     const last7Days = userSessions.filter(s => {
       const date = parseDate(s?.date || s?.createdAt || s?.endedAt);
       if (!date) return false;
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      return date >= weekAgo;
+      const weekStart = getWeekStart();
+      return date >= weekStart;
     }).length;
 
     const last30Days = userSessions.filter(s => {
@@ -309,13 +320,14 @@ export default function Dashboard() {
   // Objectifs hebdomadaires (utilise le state weeklyGoal)
   const weeklyProgress = Math.min((stats.last7Days / weeklyGoal) * 100, 100);
 
-  // Heatmap des 12 dernières semaines
+  // Heatmap des 12 dernières semaines (du plus récent au plus ancien)
   const activityHeatmap = useMemo(() => {
     const weeks = 12;
     const heatmap = [];
     const today = new Date();
+    const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
 
-    for (let i = weeks - 1; i >= 0; i--) {
+    for (let i = 0; i < weeks; i++) {
       const weekStart = new Date(today);
       weekStart.setDate(today.getDate() - (i * 7) - today.getDay());
       weekStart.setHours(0, 0, 0, 0);
@@ -330,15 +342,29 @@ export default function Dashboard() {
         return date >= weekStart && date <= weekEnd;
       }).length;
 
+      // Formater les dates
+      const startDay = weekStart.getDate();
+      const endDay = weekEnd.getDate();
+      const month = monthNames[weekStart.getMonth()];
+      const isCurrentWeek = i === 0;
+
       heatmap.push({
-        week: weeks - i,
+        week: i + 1,
         count: sessionsInWeek,
-        intensity: sessionsInWeek === 0 ? 0 : sessionsInWeek <= 1 ? 1 : sessionsInWeek <= 3 ? 2 : 3
+        intensity: sessionsInWeek === 0 ? 0 : sessionsInWeek <= 2 ? 1 : sessionsInWeek <= 4 ? 2 : 3,
+        label: `${startDay}-${endDay} ${month}`,
+        isCurrentWeek
       });
     }
 
     return heatmap;
   }, [userSessions, parseDate]);
+
+  // Capitaliser la première lettre du nom
+  const capitalizedName = useMemo(() => {
+    if (!displayName) return "Utilisateur";
+    return displayName.charAt(0).toUpperCase() + displayName.slice(1);
+  }, [displayName]);
 
   return (
     <>
@@ -346,7 +372,7 @@ export default function Dashboard() {
       <main className={style.dashboard}>
         <div className={style.container}>
           <div className={style.welcomeSection}>
-            <h1 className={style.welcomeTitle}>Salut {displayName || "Utilisateur"} 👋</h1>
+            <h1 className={style.welcomeTitle}>Salut {capitalizedName} 👋</h1>
             <p className={style.welcomeSubtitle}>Voici ton tableau de bord, ton QG pour écraser tes objectifs</p>
             <p className={style.motivationMessage}>{motivationMessage}</p>
           </div>
@@ -472,42 +498,50 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Heatmap d'activité */}
+          {/* Activité des 12 dernières semaines */}
           {stats.totalSessions > 0 && (
-            <div className={style.heatmapSection}>
-              <h3 className={style.sectionTitle}>📊 Activité des 12 dernières semaines</h3>
-              <div className={style.heatmapContainer}>
+            <div className={style.activitySection}>
+              <div className={style.activityHeader}>
+                <h3 className={style.sectionTitle}>📊 Activité des 12 dernières semaines</h3>
+                <div className={style.activityLegend}>
+                  <span className={style.legendLabel}>Moins</span>
+                  <div className={style.legendDots}>
+                    <div className={style.legendDot} style={{background: '#e5e7eb'}}></div>
+                    <div className={style.legendDot} style={{background: '#fcd4bc'}}></div>
+                    <div className={style.legendDot} style={{background: '#fbb896'}}></div>
+                    <div className={style.legendDot} style={{background: '#FFB385'}}></div>
+                  </div>
+                  <span className={style.legendLabel}>Plus</span>
+                </div>
+              </div>
+              <div className={style.activityGrid}>
                 {activityHeatmap.map((week, i) => (
-                  <div
-                    key={i}
-                    className={style.heatmapBar}
-                    data-tooltip={`Semaine ${week.week}: ${week.count} séance${week.count > 1 ? 's' : ''}`}
-                    style={{
-                      height: `${Math.max(week.count * 20, 5)}%`,
-                      background: week.intensity === 0
-                        ? '#e5e7eb'
-                        : week.intensity === 1
-                        ? '#fcd4bc'
-                        : week.intensity === 2
-                        ? '#fbb896'
-                        : '#FFB385'
-                    }}
-                  >
-                    <span className={style.heatmapTooltip}>
-                      Sem. {week.week}<br/>{week.count} séance{week.count > 1 ? 's' : ''}
-                    </span>
+                  <div key={i} className={style.weekCard}>
+                    <div className={style.weekHeader}>
+                      <span className={style.weekLabel}>{week.label}</span>
+                      {week.isCurrentWeek && <span className={style.currentBadge}>En cours</span>}
+                    </div>
+                    <div className={style.weekStats}>
+                      <div className={style.sessionCount}>
+                        <span className={style.countNumber}>{week.count}</span>
+                        <span className={style.countLabel}>séance{week.count > 1 ? 's' : ''}</span>
+                      </div>
+                      <div
+                        className={style.intensityDot}
+                        style={{
+                          background: week.intensity === 0
+                            ? '#e5e7eb'
+                            : week.intensity === 1
+                            ? '#fcd4bc'
+                            : week.intensity === 2
+                            ? '#fbb896'
+                            : '#FFB385',
+                          boxShadow: week.intensity > 0 ? '0 2px 8px rgba(255, 179, 133, 0.3)' : 'none'
+                        }}
+                      ></div>
+                    </div>
                   </div>
                 ))}
-              </div>
-              <div className={style.heatmapLegend}>
-                <span>Moins</span>
-                <div className={style.legendColors}>
-                  <div className={style.legendBox} style={{background: '#e5e7eb'}}></div>
-                  <div className={style.legendBox} style={{background: '#fcd4bc'}}></div>
-                  <div className={style.legendBox} style={{background: '#fbb896'}}></div>
-                  <div className={style.legendBox} style={{background: '#FFB385'}}></div>
-                </div>
-                <span>Plus</span>
               </div>
             </div>
           )}
