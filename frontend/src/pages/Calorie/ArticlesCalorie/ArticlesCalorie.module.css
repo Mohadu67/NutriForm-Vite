@@ -11,7 +11,7 @@
   --shadow-l: 0 4px 20px rgba(0,0,0,0.18);
 }
 
-:root.dark {
+:global(.dark) {
   --ink: #e9ecf1;
   --card-bg: #12151b;
   --shadow-s: 0 2px 8px rgba(0,0,0,0.35);
@@ -56,6 +56,10 @@
   transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
   outline: none;
 }
+:global(.dark) .card {
+  background: linear-gradient(135deg, rgba(26, 29, 36, 0.95) 0%, rgba(39, 44, 54, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
 .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-m); filter: saturate(1.04); }
 .card:active { transform: translateY(-1px) scale(0.992); box-shadow: var(--shadow-s); }
 .card:focus-visible { outline: 2px solid color-mix(in srgb, var(--ink) 18%, transparent); outline-offset: 2px; }
@@ -74,6 +78,9 @@
   text-align: center;
   padding: 10px 10px 12px;
   color: var(--ink);
+}
+:global(.dark) {
+  color: var(--couleur-bouton-action);
 }
 
 .modalOverlay {
@@ -152,6 +159,9 @@
   margin-bottom: 12px;
   color: var(--ink);
   text-align: center;
+}
+:global(.dark) {
+  color: var(--couleur-bouton-action);
 }
 
 .modalText {
