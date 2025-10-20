@@ -20,13 +20,64 @@ export default function RMPage() {
     }
   }, [rmData]);
 
+  // Fonction pour sauvegarder le test RM
+  const handleSaveTest = async () => {
+    if (!rmData) return;
+
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+    if (!token) {
+      alert("Connecte-toi pour sauvegarder tes tests de 1RM et suivre ta progression !");
+      return;
+    }
+
+    const testData = {
+      type: "rm",
+      exercice: rmData.exercice,
+      poids: rmData.poids,
+      reps: rmData.reps,
+      rm: rmData.rm,
+      date: new Date().toISOString(),
+      formulas: {
+        epley: rmData.epley,
+        brzycki: rmData.brzycki,
+        lander: rmData.lander,
+        lombardi: rmData.lombardi,
+        mayhew: rmData.mayhew,
+        oconner: rmData.oconner,
+        wathan: rmData.wathan
+      }
+    };
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/history`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(testData),
+      });
+
+      if (response.ok) {
+        alert("Test de 1RM sauvegardé avec succès ! 💪");
+      } else {
+        const error = await response.json();
+        alert(error.message || "Erreur lors de la sauvegarde");
+      }
+    } catch (error) {
+      console.error("Erreur:", error);
+      alert("Erreur de connexion au serveur");
+    }
+  };
+
   return (
     <>
       <main>
         <FormRM onResult={(data) => setRmData(data)} />
         {rmData && (
           <>
-            <ResultatsRM data={rmData} />
+            <ResultatsRM data={rmData} onSave={handleSaveTest} />
             <TableauCharges rm={rmData.rm} />
           </>
         )}
