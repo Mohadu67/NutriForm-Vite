@@ -49,14 +49,22 @@ export default function RMPage() {
       }
     };
 
+    const payload = {
+      action: "CUSTOM",
+      meta: {
+        ...testData,
+        label: `Test 1RM - ${rmData.exercice}`,
+      },
+    };
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/history`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/history`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(testData),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {

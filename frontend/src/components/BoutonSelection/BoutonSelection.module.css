@@ -12,19 +12,36 @@
   display: inline-block;
   padding: 0.6rem 1rem;
   border-radius: 10px;
-  border: 2px solid #B5EAD7;
+  border: 2px solid var(--accent-form-light, #B5EAD7);
   font-weight: 600;
   user-select: none;
   cursor: pointer;
   text-align: center;
   transition: all 0.2s ease-in-out;
+  color: inherit;
+  background: color-mix(in srgb, var(--paper, #fff) 92%, transparent);
 }
 
 .hiddenCheckbox:checked + .pill {
-  background-color: #B5EAD7;
+  background-color: var(--accent-form-light, #B5EAD7);
+  color: #222325;
 }
 
 .hiddenCheckbox + .pill:focus-visible {
   outline: 3px solid rgba(181, 234, 215, 0.9);
   outline-offset: 2px;
+}
+
+:global(body.dark) .hiddenCheckbox + .pill,
+:global(html.dark) .hiddenCheckbox + .pill {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(15, 17, 23, 0.9);
+  color: rgba(233, 236, 241, 0.9);
+}
+
+:global(body.dark) .hiddenCheckbox:checked + .pill,
+:global(html.dark) .hiddenCheckbox:checked + .pill {
+  background: color-mix(in srgb, var(--accent-form) 75%, transparent);
+  color: #ffffff;
+  border-color: color-mix(in srgb, var(--accent-form) 85%, transparent);
 }
