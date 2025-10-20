@@ -90,8 +90,17 @@ export default function SessionChart({ points }) {
   if (!normalized || normalized.length === 0) {
     return (
       <div className={`${style.chartCard} ${style.chartContainer}`} ref={containerRef}>
-        <h4>Exercices par jour</h4>
-        <p className={style.muted}>Aucune donnée disponible.</p>
+        <h4>🏋️ Exercices par jour</h4>
+        <div className={style.emptyState}>
+          <div className={style.emptyIcon}>📈</div>
+          <p className={style.emptyText}>Aucune séance enregistrée</p>
+          <p className={style.emptyHint}>
+            Commence à enregistrer tes séances pour voir ta fréquence d'entraînement par jour de la semaine !
+          </p>
+          <a href="/exo" className={style.emptyButton}>
+            Nouvelle séance
+          </a>
+        </div>
       </div>
     );
   }

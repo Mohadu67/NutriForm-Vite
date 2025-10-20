@@ -14,7 +14,7 @@
         "more": "N'oublie pas que la santé passe aussi par une activité physique adaptée, comme la musculation légère, pour développer ta masse musculaire tout en prenant du poids."
       },
       {
-        "intro": "Pour prendre du poids de manière saine, concentre toi sur des aliments riches en nutriments mais caloriques, comme les avocats, les noix, les graines, les produits laitiers entiers et les protéines maigres",
+        "intro": "Pour prendre du poids de manière saine, concentre-toi sur des aliments riches en nutriments mais caloriques, comme les avocats, les noix, les graines, les produits laitiers entiers et les protéines maigres",
         "more": "Essaye de fractionner tes repas en plusieurs petites portions tout au long de la journée pour faciliter l'absorption des calories. Utilise notre Outil de calcul de Calories pour déterminer tes besoins journaliers et ajuster ton alimentation en conséquence.",
         "link": "/calorie"
       }
@@ -22,7 +22,7 @@
     "normal": [
       {
         "intro": "L'IMC (Indice de Masse Corporelle) est une mesure utilisée pour évaluer la corpulence d'une personne en fonction de son poids et de sa taille.",
-        "more": "ton IMC indique que tu es en situation <strong>Normal</strong>, qui correspond a un IMC entre <strong>18,5 et 24,9</strong>."
+        "more": "ton IMC indique que tu es en situation <strong>Normal</strong>, qui correspond à un IMC entre <strong>18,5 et 24,9</strong>."
       },
       {
         "intro": "L'IMC est basé uniquement sur la taille et le poids, et il ne tient pas compte de la composition corporelle tel que la proportion de muscle, de graisse, d'eau etc...",
@@ -30,7 +30,7 @@
       },
       {
         "intro": "Maintenir un poids santé est essentiel pour prévenir les maladies chroniques et améliorer ta qualité de vie.",
-        "more": "Reste actif en intégrant des activités physiques que tu aime, comme la marche, le yoga ou le vélo, et surveille régulièrement ton poids pour rester sur la bonne voie."
+        "more": "Reste actif en intégrant des activités physiques que tu aimes, comme la marche, le yoga ou le vélo, et surveille régulièrement ton poids pour rester sur la bonne voie."
       },
       {
         "intro": "Pour maintenir ton poids santé, continue à adopter une alimentation variée et équilibrée, en privilégiant les fruits, les légumes, les protéines maigres et les céréales complètes. ",
@@ -80,7 +80,7 @@
   "contenueArticlesIMC": [
     {
       "titre": "L'IMC, un point de départ pour mieux te connaître",
-      "description": "L'IMC est un indicateur global, utile pour donner une première estimation de votre corpulence, mais il ne reflète pas toute la complexité de ton corps. Pour mieux comprendre ton état de santé, il est intéressant d'utiliser d'autres outils complémentaires.",
+      "description": "L'IMC est un indicateur global, utile pour donner une première estimation de ta corpulence, mais il ne reflète pas toute la complexité de ton corps. Pour mieux comprendre ton état de santé, il est intéressant d'utiliser d'autres outils complémentaires.",
       "excedent": "Par exemple, une analyse de la composition corporelle peut mesurer précisément la proportion de masse musculaire, de graisse et d'eau dans ton corps. Ces données te donnent une vision plus complète et nuancée de ta santé.",
       "fullContent": "<h3>Les limites de l'IMC</h3><p>L'IMC ne différencie pas la masse musculaire de la masse grasse. Un athlète très musclé peut avoir un IMC élevé, alors qu'il est en excellente santé. À l'inverse, une personne avec peu de masse musculaire peut avoir un IMC normal tout en ayant un taux de graisse élevé.</p><h3>Les outils complémentaires</h3><ul><li><strong>Impédancemètre</strong> : mesure la composition corporelle (masse grasse, masse musculaire, eau)</li><li><strong>Tour de taille</strong> : indicateur de graisse abdominale, facteur de risque cardiovasculaire</li><li><strong>Mesure des plis cutanés</strong> : évaluation du pourcentage de graisse corporelle</li><li><strong>Scanner DEXA</strong> : analyse précise de la densité osseuse et de la composition corporelle</li></ul><h3>Comment utiliser ces outils ?</h3><p>Combine plusieurs mesures pour obtenir une image complète de ta santé. Par exemple, un IMC normal avec un tour de taille élevé peut signaler un risque accru de maladies cardiovasculaires. N'hésite pas à consulter un professionnel de santé pour interpréter ces données et établir un plan personnalisé.</p>",
       "image": "time-for-a-change-897441_1280.jpg",
@@ -103,8 +103,8 @@
       "alt": "Image d'une personne qui monte un escalier"
     },
     {
-      "titre": "Adopter une vision positive de votre parcours santé",
-      "description": "Lorsque tu tengage à améliorer ta santé, il est important de garder une vision positive et réaliste de ton parcours...",
+      "titre": "Adopter une vision positive de ton parcours santé",
+      "description": "Lorsque tu t'engages à améliorer ta santé, il est important de garder une vision positive et réaliste de ton parcours...",
       "excedent": "L'idée est de célébrer les petites réussites quotidiennes, de te concentrer sur ce que tu peux améliorer et de ne jamais te décourager face aux obstacles...",
       "fullContent": "<h3>Le pouvoir de la pensée positive</h3><p>Ton état d'esprit influence directement ta capacité à maintenir de bonnes habitudes. Une approche bienveillante envers toi-même augmente ta motivation et ta résilience face aux défis. À l'inverse, l'autocritique excessive génère stress et abandon.</p><h3>Stratégies pour cultiver une attitude positive</h3><ul><li><strong>Célèbre les victoires</strong> : note chaque progrès, même minime (une séance accomplie, un repas équilibré)</li><li><strong>Reformule l'échec</strong> : un écart n'est pas un échec mais une opportunité d'apprentissage</li><li><strong>Fixe des objectifs réalistes</strong> : préfère \"marcher 20 minutes par jour\" à \"perdre 10 kg en un mois\"</li><li><strong>Entoure-toi bien</strong> : rejoins des communautés positives qui partagent tes valeurs</li><li><strong>Pratique la gratitude</strong> : note chaque jour 3 choses positives liées à ta santé</li></ul><h3>Gérer les moments difficiles</h3><p>Les plateaux et les rechutes font partie du processus. Quand tu traverses une phase difficile, rappelle-toi pourquoi tu as commencé, revois tes progrès passés et ajuste tes attentes. La persévérance et la bienveillance envers toi-même sont plus importantes que la perfection.</p>",
       "image": "Positif.jpg",
@@ -114,7 +114,7 @@
   "contenueArticlesCalorie": [
     {
       "titre": "Comment tes besoins caloriques sont-ils calculés ?",
-      "description": "Tes besoin calorique quotidien repose sur deux éléments principaux : le métabolisme de base (MB) et les calories brûlées par vos activités physiques.",
+      "description": "Tes besoins caloriques quotidiens reposent sur deux éléments principaux : le métabolisme de base (MB) et les calories brûlées par tes activités physiques.",
       "excedent": "Le MB correspond à l'énergie minimale dont ton corps a besoin pour fonctionner au repos (respiration, circulation sanguine, digestion, etc.). Les activités, quant à elles, incluent tout ce que tu fais au cours de la journée...",
       "fullContent": "<h3>Le métabolisme de base (MB)</h3><p>Le MB représente 60-75% de tes dépenses énergétiques totales. Il correspond aux calories nécessaires pour maintenir les fonctions vitales : battements cardiaques, respiration, régulation de la température corporelle, renouvellement cellulaire.</p><h3>Formules de calcul courantes</h3><ul><li><strong>Harris-Benedict</strong> : prend en compte le sexe, l'âge, le poids et la taille</li><li><strong>Mifflin-St Jeor</strong> : plus précise pour les populations modernes</li><li><strong>Katch-McArdle</strong> : basée sur la masse maigre, idéale pour les sportifs</li></ul><h3>L'activité physique</h3><p>Multiplie ton MB par un coefficient d'activité (1.2 pour sédentaire, 1.9 pour très actif) pour obtenir ta dépense énergétique journalière totale (TDEE). Ce chiffre représente le nombre de calories à consommer pour maintenir ton poids actuel.</p>",
       "image": "formule.jpg",
@@ -130,13 +130,13 @@
     {
       "titre": "Ajuster son alimentation en fonction de ses objectifs",
       "description": "Pour atteindre tes objectifs (perte de poids, prise de masse ou maintien), il est important de faire de petits ajustements sur ta consommation calorique.",
-      "excedent": "Par exemple, une réduction modérée de 500 kcal par jour entraîne une perte de poids progressive et saine, sans affecter ton énergie. À l'inverse, si tu cherche à prendre du poids, mise sur des aliments riches en calories...",
+      "excedent": "Par exemple, une réduction modérée de 500 kcal par jour entraîne une perte de poids progressive et saine, sans affecter ton énergie. À l'inverse, si tu cherches à prendre du poids, mise sur des aliments riches en calories...",
       "image": "selon-objectif.jpg",
       "alt": "Image d'une personne qui monte un escalier"
     },
     {
       "titre": "La qualité des calories compte autant que leur quantité ?",
-      "description": "Toutes les calories ne se valent pas : consommer 2000 kcal à base d'aliments ultra-transformés n'a pas le même effet sur votre santé que 2000 kcal provenant d'aliments complets et équilibrés.",
+      "description": "Toutes les calories ne se valent pas : consommer 2000 kcal à base d'aliments ultra-transformés n'a pas le même effet sur ta santé que 2000 kcal provenant d'aliments complets et équilibrés.",
       "excedent": "Une alimentation riche en légumes, fruits, protéines maigres et graisses saines améliore ton niveau d'énergie, renforce ton système immunitaire et prévient les maladies chroniques...",
       "image": "food-3226311_1280.png",
       "alt": "Image d'une personne s'étirant les bras afin d'exprimer une attitude positive"

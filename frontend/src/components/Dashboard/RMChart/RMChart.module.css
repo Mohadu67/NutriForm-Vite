@@ -1,0 +1,161 @@
+.container {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+}
+
+:global(body.dark) .container,
+:global(html.dark) .container {
+  background: #1a1d24;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+:global(body.dark) .title,
+:global(html.dark) .title {
+  color: #e5e7eb;
+}
+
+.select {
+  padding: 8px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fafafa;
+  color: #333;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+:global(body.dark) .select,
+:global(html.dark) .select {
+  background: #0f1117;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #9E8CFF;
+}
+
+.chart {
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+:global(body.dark) .chart,
+:global(html.dark) .chart {
+  background: #0f1117;
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+  color: #333;
+}
+
+:global(body.dark) .svg,
+:global(html.dark) .svg {
+  color: #e5e7eb;
+}
+
+.notEnough {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.notEnoughText {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0;
+}
+
+:global(body.dark) .notEnoughText,
+:global(html.dark) .notEnoughText {
+  color: #9ca3af;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+:global(body.dark) .stat,
+:global(html.dark) .stat {
+  background: #0f1117;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  text-align: center;
+}
+
+:global(body.dark) .statLabel,
+:global(html.dark) .statLabel {
+  color: #9ca3af;
+}
+
+.statValue {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #333;
+}
+
+:global(body.dark) .statValue,
+:global(html.dark) .statValue {
+  color: #e5e7eb;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 24px;
+  }
+
+  .title {
+    font-size: 1.3rem;
+  }
+
+  .stats {
+    gap: 16px;
+  }
+
+  .stat {
+    padding: 16px;
+  }
+}

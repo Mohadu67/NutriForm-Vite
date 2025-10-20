@@ -202,7 +202,8 @@
     },
     "rm": {
       "title": "Calculateur de 1RM",
-      "description": "Estime ta répétition maximale (1RM) pour programmer des cycles de progression précis et sécurisés."
+      "description": "Estime ta répétition maximale (1RM) pour programmer des cycles de progression précis et sécurisés.",
+      "cta": "Calculer mon RM"
     },
     "heart": {
       "title": "Zones de fréquence cardiaque",

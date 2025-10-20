@@ -9,6 +9,7 @@ import WeightChart from "../../components/Auth/HistoryUser/HistoryCharts/WeightC
 import SessionChart from "../../components/Auth/HistoryUser/HistoryCharts/SessionChart.jsx";
 import useHistoryData from "../../components/Auth/HistoryUser/UseHistoryData.js";
 import SuivieSeance from "../../components/Exercice/TableauBord/SuivieSeance.jsx";
+import RMHistory from "../../components/Dashboard/RMHistory/RMHistory.jsx";
 import { logout as sessionLogout } from "../../utils/sessionManager.js";
 
 export default function Dashboard() {
@@ -101,6 +102,22 @@ export default function Dashboard() {
       .filter(p => Number.isFinite(p.value) && p.date)
       .sort((a, b) => a.date - b.date)
   , [imcPoints]);
+
+  // Tests de 1RM
+  const rmTests = useMemo(() => {
+    return records
+      .filter(r => r.type === 'rm')
+      .map(r => ({
+        id: r._id || r.id,
+        exercice: r.exercice,
+        poids: r.poids,
+        reps: r.reps,
+        rm: r.rm,
+        date: r.date,
+        formulas: r.formulas || {}
+      }))
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [records]);
 
   const sessionPoints = useMemo(() => {
     if (Array.isArray(points) && points.length) {
@@ -550,6 +567,9 @@ export default function Dashboard() {
             <WeightChart points={weightPoints} />
             <SessionChart points={sessionPoints} />
           </div>
+
+          {/* Historique RM */}
+          <RMHistory rmTests={rmTests} />
 
           <div className={style.recapGrid}>
             <ImcRecapCard
