@@ -438,9 +438,30 @@
 }
 
 .badgesGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  display: flex;
   gap: var(--space-4);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.badgesGrid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.badgesGrid::-webkit-scrollbar-track {
+  background: var(--nf-surface-border);
+  border-radius: 4px;
+}
+
+.badgesGrid::-webkit-scrollbar-thumb {
+  background: #FFB385;
+  border-radius: 4px;
+}
+
+.badgesGrid::-webkit-scrollbar-thumb:hover {
+  background: #f49b69;
 }
 
 .badge {
@@ -451,6 +472,9 @@
   text-align: center;
   transition: all 0.3s ease;
   animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  min-width: 140px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
 }
 
 @keyframes scaleIn {
@@ -502,86 +526,158 @@
   margin: 0;
 }
 
-/* Heatmap Section */
-.heatmapSection {
+/* Activity Section - Nouvelle version */
+.activitySection {
   margin-bottom: var(--space-6);
   animation: fadeInUp 0.6s ease-out 0.7s both;
 }
 
-.heatmapContainer {
-  background: var(--nf-surface);
-  border-radius: 16px;
-  padding: 32px;
+.activityHeader {
   display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  height: 200px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  margin-bottom: var(--space-3);
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-:global(body.dark) .heatmapContainer,
-:global(html.dark) .heatmapContainer {
-  background: #1a1d24;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-
-.heatmapBar {
-  flex: 1;
-  border-radius: 6px 6px 0 0;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  position: relative;
-  min-height: 10px;
-}
-
-.heatmapBar:hover {
-  opacity: 0.8;
-  transform: translateY(-4px);
-}
-
-.heatmapBar:hover .heatmapTooltip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(-8px);
-}
-
-.heatmapTooltip {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1a1d24;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-  pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  z-index: 10;
-}
-
-.heatmapLegend {
+.activityLegend {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  font-size: 0.85rem;
+  gap: 8px;
+  font-size: 0.8rem;
   color: var(--nf-muted);
 }
 
-.legendColors {
+.legendLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.legendDots {
   display: flex;
   gap: 4px;
 }
 
-.legendBox {
-  width: 16px;
-  height: 16px;
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.activityGrid {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.activityGrid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.activityGrid::-webkit-scrollbar-track {
+  background: var(--nf-surface-border);
+  border-radius: 4px;
+}
+
+.activityGrid::-webkit-scrollbar-thumb {
+  background: #FFB385;
+  border-radius: 4px;
+}
+
+.activityGrid::-webkit-scrollbar-thumb:hover {
+  background: #f49b69;
+}
+
+.weekCard {
+  background: var(--nf-surface);
+  border: 1px solid var(--nf-surface-border);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  cursor: default;
+  min-width: 160px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+.weekCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+:global(body.dark) .weekCard,
+:global(html.dark) .weekCard {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+:global(body.dark) .weekCard:hover,
+:global(html.dark) .weekCard:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.weekHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.weekLabel {
+  font-size: 0.75rem;
+  color: var(--nf-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.currentBadge {
+  background: linear-gradient(135deg, #FFB385, #f49b69);
+  color: white;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.weekStats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sessionCount {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.countNumber {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+  line-height: 1;
+}
+
+.countLabel {
+  font-size: 0.7rem;
+  color: var(--nf-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.intensityDot {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
   border-radius: 4px;
 }
 
@@ -615,14 +711,13 @@
     gap: var(--space-4);
   }
 
-  .badgesGrid {
-    grid-template-columns: repeat(2, 1fr);
+  .activityHeader {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .heatmapContainer {
-    padding: 20px;
-    height: 160px;
-    gap: 4px;
+  .weekCard {
+    min-width: 140px;
   }
 }
 
@@ -645,10 +740,6 @@
 
   .statValue {
     font-size: 1.4rem;
-  }
-
-  .badgesGrid {
-    grid-template-columns: 1fr;
   }
 
   .heatmapContainer {
