@@ -59,38 +59,79 @@ export default function useHistoryData() {
           : Array.isArray(data?.history)
           ? data.history
           : [];
-        const list = src
-          .map((r) => {
-            const m = r?.meta || {};
-            const date = r?.createdAt
-              ? new Date(r.createdAt)
-              : m?.date
-              ? new Date(m.date)
-              : new Date();
-            if (r?.action === "IMC_CALC") {
-              const value = Number(m?.imc);
-              return Number.isFinite(value)
-                ? {
-                    id: r?._id,
-                    type: "imc",
-                    value,
-                    date,
-                    poids: typeof m?.poids === "number" ? m.poids : undefined,
-                    categorie:
-                      typeof m?.categorie === "string" ? m.categorie : undefined,
-                  }
-                : null;
+
+        const parseDateSafe = (value) => {
+          if (!value) return null;
+          if (value instanceof Date) {
+            return Number.isNaN(value.getTime()) ? null : value;
+          }
+          const d = new Date(value);
+          return Number.isNaN(d.getTime()) ? null : d;
+        };
+
+        const toFiniteNumber = (value) => {
+          const n = Number(value);
+          return Number.isFinite(n) ? n : null;
+        };
+
+        const list = [];
+
+        src.forEach((r) => {
+          const m = r?.meta || {};
+          const createdAt = parseDateSafe(r?.createdAt);
+          const metaDate = parseDateSafe(m?.date);
+          const date = createdAt || metaDate || new Date();
+
+          if (r?.action === "IMC_CALC" || m?.type === "imc") {
+            const value = toFiniteNumber(m?.imc);
+            if (value != null) {
+              list.push({
+                id: r?._id,
+                type: "imc",
+                value,
+                date,
+                poids: toFiniteNumber(m?.poids) ?? undefined,
+                categorie:
+                  typeof m?.categorie === "string" ? m.categorie : undefined,
+              });
             }
-            if (r?.action === "CALORIES_CALC") {
-              const value = Number(m?.calories ?? m?.kcal);
-              return Number.isFinite(value)
-                ? { id: r?._id, type: "calories", value, date }
-                : null;
+            return;
+          }
+
+          if (r?.action === "CALORIES_CALC" || m?.type === "calories") {
+            const value = toFiniteNumber(
+              m?.calories ?? m?.kcal ?? m?.caloriesDaily ?? m?.dailyCalories
+            );
+            if (value != null) {
+              list.push({ id: r?._id, type: "calories", value, date });
             }
-            return null;
-          })
-          .filter(Boolean)
-          .sort((a, b) => a.date - b.date);
+            return;
+          }
+
+          if (m?.type === "rm") {
+            const rm = toFiniteNumber(m?.rm);
+            const poids = toFiniteNumber(m?.poids ?? m?.weight ?? m?.weightKg);
+            const reps = toFiniteNumber(m?.reps);
+
+            if (rm != null) {
+              list.push({
+                id: r?._id,
+                type: "rm",
+                date,
+                exercice: m?.exercice || m?.exercise || m?.label || "Exercice",
+                poids: poids ?? undefined,
+                reps: reps ?? undefined,
+                rm,
+                formulas:
+                  m?.formulas && typeof m.formulas === "object"
+                    ? m.formulas
+                    : {},
+              });
+            }
+          }
+        });
+
+        list.sort((a, b) => a.date - b.date);
 
         setRecords(list);
         setStatus("idle");
