@@ -163,21 +163,103 @@ export default function FormCalorie({ onResult, onCalculate }) {
   };
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit} aria-label="Formulaire de calcul calorique">
-      <fieldset className={styles.fieldset}>
-        <legend>Vos informations</legend>
+    <section className={styles.container}>
+      <div className={styles.hero}>
+        <h1 className={styles.title}>Calculateur calorique</h1>
+        <p className={styles.subtitle}>
+          Détermine tes besoins énergétiques journaliers pour ajuster ton alimentation en fonction de tes objectifs.
+        </p>
+      </div>
 
-        <LabelField label="Formule" htmlFor="formule">
-          <select
-            id="formule"
-            value={form.formule}
-            onChange={(e) => update("formule", e.target.value)}
-          >
-            <option value="standard">Harris-Benedict (Standard)</option>
-            <option value="mifflin">Mifflin-St Jeor (Recommandée)</option>
-            <option value="katch">Katch-McArdle (Avancée)</option>
-          </select>
-        </LabelField>
+      <form className={styles.form} onSubmit={handleSubmit} aria-label="Formulaire de calcul calorique">
+        <div className={styles.formGrid}>
+          <div className={`${styles.inlineGroup} ${styles.fullWidth}`}>
+            <p className={styles.groupLabel}>Sexe</p>
+            <BoutonSelection
+              className={styles.sexeGroup}
+              name="sexe"
+              value={form.sexe}
+              options={[
+                { value: "homme", label: "Homme" },
+                { value: "femme", label: "Femme" },
+              ]}
+              onChange={(val) => update("sexe", val)}
+            />
+          </div>
+
+          <LabelField label="Formule" htmlFor="formule">
+            <select
+              id="formule"
+              value={form.formule}
+              onChange={(e) => update("formule", e.target.value)}
+            >
+              <option value="standard">Harris-Benedict (Standard)</option>
+              <option value="mifflin">Mifflin-St Jeor (Recommandée)</option>
+              <option value="katch">Katch-McArdle (Avancée)</option>
+            </select>
+          </LabelField>
+
+          <LabelField label="Taille (cm)" htmlFor="taille" required>
+            <input
+              id="taille"
+              type="number"
+              inputMode="numeric"
+              min="100"
+              max="300"
+              step="0.5"
+              value={form.taille}
+              onChange={(e) => update("taille", e.target.value)}
+              placeholder="ex: 180"
+              required
+            />
+          </LabelField>
+
+          <LabelField label="Poids (kg)" htmlFor="poids" required>
+            <input
+              id="poids"
+              type="number"
+              inputMode="decimal"
+              min="50"
+              max="500"
+              step="0.1"
+              value={form.poids}
+              onChange={(e) => update("poids", e.target.value)}
+              placeholder="ex: 75"
+              required
+            />
+          </LabelField>
+
+          <LabelField label="Âge (années)" htmlFor="age" required>
+            <input
+              id="age"
+              type="number"
+              inputMode="numeric"
+              min="12"
+              step="1"
+              value={form.age}
+              onChange={(e) => update("age", e.target.value)}
+              placeholder="ex: 25"
+              required
+            />
+          </LabelField>
+
+          {form.formule === "katch" && (
+            <LabelField label="Masse grasse (%)" htmlFor="masseGrasse">
+              <input
+                id="masseGrasse"
+                type="number"
+                inputMode="decimal"
+                min="8"
+                max="70"
+                step="0.1"
+                value={form.masseGrasse}
+                onChange={(e) => update("masseGrasse", e.target.value)}
+                placeholder="ex: 18"
+                required
+              />
+            </LabelField>
+          )}
+        </div>
 
         {form.formule === "katch" && (
           <div className={styles.infoBox}>
@@ -185,91 +267,21 @@ export default function FormCalorie({ onResult, onCalculate }) {
           </div>
         )}
 
-        <h4>Sexe</h4>
-        <BoutonSelection
-          className={styles.sexeGroup}
-          name="sexe"
-          value={form.sexe}
-          options={[
-            { value: "homme", label: "Homme" },
-            { value: "femme", label: "Femme" },
-          ]}
-          onChange={(val) => update("sexe", val)}
-        />
-
-        <LabelField label="Taille (cm)" htmlFor="taille" required>
-          <input
-            id="taille"
-            type="number"
-            inputMode="numeric"
-            min="100"
-            max="300"
-            step="0.5"
-            value={form.taille}
-            onChange={(e) => update("taille", e.target.value)}
-            placeholder="ex: 180"
-            required
+        <div className={`${styles.section} ${styles.inlineGroup}`}>
+          <h4 className={styles.sectionTitle}>Niveau d'activité</h4>
+          <BoutonSelection
+            className={styles.activiteGroup}
+            name="activite"
+            value={form.activite}
+            options={[
+              { value: "faible", label: "Peu actif" },
+              { value: "moyen", label: "Moyen" },
+              { value: "actif", label: "Actif" },
+              { value: "tresactif", label: "Très actif" },
+            ]}
+            onChange={(val) => update("activite", val)}
           />
-        </LabelField>
-
-        <LabelField label="Poids (kg)" htmlFor="poids" required>
-          <input
-            id="poids"
-            type="number"
-            inputMode="decimal"
-            min="50"
-            max="500"
-            step="0.1"
-            value={form.poids}
-            onChange={(e) => update("poids", e.target.value)}
-            placeholder="ex: 75"
-            required
-          />
-        </LabelField>
-
-        <LabelField label="Âge (années)" htmlFor="age" required>
-          <input
-            id="age"
-            type="number"
-            inputMode="numeric"
-            min="12"
-            step="1"
-            value={form.age}
-            onChange={(e) => update("age", e.target.value)}
-            placeholder="ex: 25"
-            required
-          />
-        </LabelField>
-
-        {form.formule === "katch" && (
-          <LabelField label="Masse grasse (%)" htmlFor="masseGrasse" >
-            <input
-              id="masseGrasse"
-              type="number"
-              inputMode="decimal"
-              min="8"
-              max="70"
-              step="0.1"
-              value={form.masseGrasse}
-              onChange={(e) => update("masseGrasse", e.target.value)}
-              placeholder="ex: 18"
-              required
-            />
-          </LabelField>
-        )}
-        <h4>Niveau d'activité</h4>
-        <BoutonSelection
-          className={styles.activiteGroup}
-          name="activite"
-          value={form.activite}
-          options={[
-            { value: "faible", label: "Peu actif" },
-            { value: "moyen", label: "Moyen" },
-            { value: "actif", label: "Actif" },
-            { value: "tresactif", label: "Très actif" },
-          ]}
-          onChange={(val) => update("activite", val)}
-        />
+        </div>
 
         <BoutonAction type="submit">
           Calculer
@@ -280,8 +292,7 @@ export default function FormCalorie({ onResult, onCalculate }) {
           message="Connecte-toi pour enregistrer tes calculs et retrouver ton historique."
           cta="Se connecter"
         />
-        
-      </fieldset>
-    </form>
+      </form>
+    </section>
   );
 }

@@ -154,54 +154,61 @@ export default function FormImc({ onCalculate }) {
   };
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
-      <h1 className={styles.h1} > L'indice de masse corporelle</h1>
-      <LabelField label="Taille (cm)" htmlFor="taille" required>
-        <input
-          className={styles.input}
-          id="taille"
-          type="number"
-          inputMode="decimal"
-          step="0.1"
-          min="50"
-          max="300"
-          placeholder="ex: 180"
-          value={taille}
-          onKeyDown={blockNonNumeric}
-          onChange={(e) => {
-            setTaille(e.target.value);
-            if (e.target.value) localStorage.setItem('userTaille', e.target.value);
-          }}
-          required
-        />
-      </LabelField>
+    <section className={styles.container}>
+      <div className={styles.hero}>
+        <h1 className={styles.title}>Calculateur IMC</h1>
+        <p className={styles.subtitle}>
+          Renseigne ta taille et ton poids pour connaître ton indice de masse corporelle et mieux suivre ta forme.
+        </p>
+      </div>
 
-      <LabelField label="Poids (kg)" htmlFor="poids" required>
-        <input
-          className={styles.input}
-          id="poids"
-          type="number"
-          inputMode="decimal"
-          step="0.1"
-          min="50"
-          max="500"
-          placeholder="ex: 75"
-          value={poids}
-          onKeyDown={blockNonNumeric}
-          onChange={(e) => {
-            setPoids(e.target.value);
-            if (e.target.value) localStorage.setItem('userPoids', e.target.value);
-          }}
-          required
-        />
-      </LabelField>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <LabelField label="Taille (cm)" htmlFor="taille" required>
+          <input
+            className={styles.input}
+            id="taille"
+            type="number"
+            inputMode="decimal"
+            step="0.1"
+            min="50"
+            max="300"
+            placeholder="ex: 180"
+            value={taille}
+            onKeyDown={blockNonNumeric}
+            onChange={(e) => {
+              setTaille(e.target.value);
+              if (e.target.value) localStorage.setItem('userTaille', e.target.value);
+            }}
+            required
+          />
+        </LabelField>
 
-      {/* <button className={styles.button} type="submit">Calculer</button> */}
-      <BoutonAction type="submit">
-        Calculer
-      </BoutonAction>
+        <LabelField label="Poids (kg)" htmlFor="poids" required>
+          <input
+            className={styles.input}
+            id="poids"
+            type="number"
+            inputMode="decimal"
+            step="0.1"
+            min="50"
+            max="500"
+            placeholder="ex: 75"
+            value={poids}
+            onKeyDown={blockNonNumeric}
+            onChange={(e) => {
+              setPoids(e.target.value);
+              if (e.target.value) localStorage.setItem('userPoids', e.target.value);
+            }}
+            required
+          />
+        </LabelField>
 
-      <ConnectReminder show={showReminder} />
-    </form>
+        <BoutonAction type="submit">
+          Calculer
+        </BoutonAction>
+
+        <ConnectReminder show={showReminder} />
+      </form>
+    </section>
   );
 }
