@@ -7,6 +7,7 @@ Application web de fitness et nutrition complète pour suivre ses exercices, cal
 ### ✅ Actuellement disponibles
 - **Calculateur de calories** - Calcul du métabolisme de base avec 3 formules (Harris-Benedict, Mifflin-St Jeor, Katch-McArdle)
 - **Calculateur IMC** - Calcul de l'Indice de Masse Corporelle avec catégorisation détaillée et conseils personnalisés
+- **Calculateur 1RM** - Calcul du 1 Rep Max avec 7 formules scientifiques (Epley, Brzycki, Lander, Lombardi, Mayhew, O'Conner, Wathan), tableau de charges (50-100%), historique de progression avec graphiques dans le dashboard
 - **Bibliothèque d'exercices** - Plus de 300 exercices disponibles
   - Musculation (poids du corps, haltères, barres, machines, kettlebells, poulies)
   - Cardio (course, vélo, rameur, elliptique, corde à sauter, etc.)
@@ -15,15 +16,24 @@ Application web de fitness et nutrition complète pour suivre ses exercices, cal
   - Étirement et renforcement
 - **Moteur de recherche d'exercices intelligent** - Filtrage avancé par type, équipement, groupes musculaires
 - **Programmes personnalisés** - Création illimitée de programmes d'entraînement avec drag-and-drop
-- **Suivi de progression avec graphiques** - Visualisation de vos performances et évolution
-- **Historique des séances d'entraînement** - Consultation de toutes vos séances passées
+- **Dashboard complet** - Tableau de bord personnalisé avec :
+  - Statistiques clés (total séances, streak, temps d'entraînement)
+  - Objectif hebdomadaire paramétrable
+  - Badges de progression (10 badges débloquables)
+  - Heatmap d'activité (12 dernières semaines)
+  - Graphique d'évolution du poids avec filtres
+  - Graphique d'exercices par jour de la semaine
+  - Historique 1RM avec progression par exercice
+  - Recap IMC avec historique des pesées
+- **Historique des séances d'entraînement** - Consultation de toutes vos séances passées avec détails complets
 - **Newsletter** - Inscription à la newsletter pour rester informé
 - **Système d'authentification** - Connexion sécurisée avec email/password et JWT
 - **Mode sombre/clair** - Interface adaptative avec support du mode sombre manuel et automatique
 - **Multilingue** - Support de 4 langues (FR, EN, DE, ES) avec traductions complètes
 - **Sécurité renforcée** - Helmet.js et rate limiting pour protéger l'API
 - **SEO optimisé** - Schema.org, sitemap, robots.txt, meta tags complets
-- **Interface mobile optimisée** - Touch gestures, drag-and-drop mobile friendly
+- **Interface mobile optimisée** - Touch gestures, drag-and-drop mobile friendly, design mobile-first responsive
+- **Empty states engageants** - States vides avec icônes, textes explicatifs et boutons CTA orange pour guider l'utilisateur
 
 ### 🔄 En développement
 - **Authentification Google OAuth** - Connexion simplifiée avec compte Google (en cours ⚡)
@@ -83,6 +93,23 @@ npm install
 # Démarrer le projet (depuis la racine)
 npm run dev
 ```
+
+## 📚 Documentation complète
+
+Pour une documentation exhaustive incluant :
+- Architecture technique détaillée
+- Description complète de toutes les fonctionnalités
+- Guide d'installation complet
+- Roadmap détaillée avec priorités
+- Charte graphique et design system
+- Statistiques du projet
+
+👉 **Consultez le [README principal](/README.md) à la racine du projet**
+
+Pour la roadmap détaillée avec estimations de temps et phases de développement :
+👉 **Consultez [ROADMAP.md](ROADMAP.md)**
+
+---
 
 ## 📋 TODO - Prochaines tâches
 

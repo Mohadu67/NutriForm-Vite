@@ -1,0 +1,382 @@
+.container {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+}
+
+:global(body.dark) .container,
+:global(html.dark) .container {
+  background: #1a1d24;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+:global(body.dark) .title,
+:global(html.dark) .title {
+  color: #e5e7eb;
+}
+
+.totalTests {
+  font-size: 0.85rem;
+  color: #666;
+  background: #f3f4f6;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+:global(body.dark) .totalTests,
+:global(html.dark) .totalTests {
+  color: #9ca3af;
+  background: #0f1117;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+:global(body.dark) .emptyText,
+:global(html.dark) .emptyText {
+  color: #e5e7eb;
+}
+
+.emptyHint {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+:global(body.dark) .emptyHint,
+:global(html.dark) .emptyHint {
+  color: #9ca3af;
+}
+
+.emptyButton {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #FFB385 0%, #f49b69 100%);
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+}
+
+.emptyButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 179, 133, 0.4);
+}
+
+/* Quick Stats */
+.quickStats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 640px) {
+  .quickStats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fafafa;
+  padding: 16px;
+  border-radius: 10px;
+  border-left: 3px solid #9E8CFF;
+}
+
+:global(body.dark) .statCard,
+:global(html.dark) .statCard {
+  background: #0f1117;
+}
+
+.statIcon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.statContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: #666;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+:global(body.dark) .statLabel,
+:global(html.dark) .statLabel {
+  color: #9ca3af;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #333;
+  margin: 0;
+  line-height: 1.2;
+}
+
+:global(body.dark) .statValue,
+:global(html.dark) .statValue {
+  color: #e5e7eb;
+}
+
+.statDetail {
+  font-size: 0.8rem;
+  color: #999;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:global(body.dark) .statDetail,
+:global(html.dark) .statDetail {
+  color: #6b7280;
+}
+
+/* Tests List */
+.testsList {
+  margin-top: 24px;
+}
+
+.testsHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.testsTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+:global(body.dark) .testsTitle,
+:global(html.dark) .testsTitle {
+  color: #e5e7eb;
+}
+
+.testsCount {
+  font-size: 0.85rem;
+  color: #999;
+}
+
+:global(body.dark) .testsCount,
+:global(html.dark) .testsCount {
+  color: #6b7280;
+}
+
+.tests {
+  display: grid;
+  gap: 12px;
+}
+
+.testCard {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 12px;
+  border-left: 3px solid #9E8CFF;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+:global(body.dark) .testCard,
+:global(html.dark) .testCard {
+  background: #0f1117;
+}
+
+.testCard:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(158, 140, 255, 0.15);
+}
+
+.testHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.testInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.testExercise {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:global(body.dark) .testExercise,
+:global(html.dark) .testExercise {
+  color: #e5e7eb;
+}
+
+.testDate {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+:global(body.dark) .testDate,
+:global(html.dark) .testDate {
+  color: #6b7280;
+}
+
+.testRM {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.rmValue {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #9E8CFF;
+  line-height: 1;
+}
+
+.rmUnit {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #9E8CFF;
+}
+
+.testDetails {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.testDetail {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+:global(body.dark) .testDetail,
+:global(html.dark) .testDetail {
+  color: #9ca3af;
+}
+
+.evolution {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.evolutionUp {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.evolutionDown {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.firstTest {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #9E8CFF;
+  background: rgba(158, 140, 255, 0.1);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.showMoreBtn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  color: #333;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+:global(body.dark) .showMoreBtn,
+:global(html.dark) .showMoreBtn {
+  background: #0f1117;
+  color: #e5e7eb;
+}
+
+.showMoreBtn:hover {
+  background: #e5e7eb;
+}
+
+:global(body.dark) .showMoreBtn:hover,
+:global(html.dark) .showMoreBtn:hover {
+  background: #1a1d24;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 24px;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .testCard {
+    padding: 16px;
+  }
+}

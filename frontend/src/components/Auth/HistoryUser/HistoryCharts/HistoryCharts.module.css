@@ -216,3 +216,58 @@
     transform: translateY(0) scale(1);
   }
 }
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--nf-ink, #2B2B2B);
+  margin: 0 0 8px 0;
+}
+
+:global(.dark) .emptyText {
+  color: #e5e7eb;
+}
+
+.emptyHint {
+  font-size: 0.9rem;
+  color: var(--nf-muted, #666);
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+:global(.dark) .emptyHint {
+  color: #9ca3af;
+}
+
+.emptyButton {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #FFB385 0%, #f49b69 100%);
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+}
+
+.emptyButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 179, 133, 0.4);
+}

@@ -9,7 +9,7 @@ export default function Home() {
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', "Calcule ton IMC, tes besoins caloriques et crée ton programme d'entraînement personnalisé avec Harmonith, progressé ca devient façile.");
+      metaDescription.setAttribute('content', "Calcule ton IMC, tes besoins caloriques et crée ton programme d'entraînement personnalisé avec Harmonith, progresser, ça devient facile.");
     }
   }, []);
 
