@@ -43,9 +43,26 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>6. Contact</h2>
+          <h2 className={styles.h2}>6. Publicité (Google AdSense)</h2>
           <p className={styles.p}>
-            Si vous avez des questions concernant notre politique de confidentialité, vous pouvez nous contacter à tout moment via la page de contact.
+            Notre site affiche des publicités via Google AdSense. Google et ses partenaires utilisent des cookies pour personnaliser les annonces en fonction de vos visites sur notre site et d'autres sites web.
+          </p>
+          <p className={styles.p}>
+            Vous pouvez gérer vos préférences publicitaires de plusieurs façons :
+          </p>
+          <ul className={styles.list}>
+            <li>Via le gestionnaire de cookies de notre site (accessible en bas de page)</li>
+            <li>Via les paramètres Google Ads : <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">adssettings.google.com</a></li>
+          </ul>
+          <p className={styles.p}>
+            Pour plus d'informations sur les pratiques publicitaires de Google, consultez : <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">Google Ads Policy</a>
+          </p>
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.h2}>7. Contact</h2>
+          <p className={styles.p}>
+            Si vous avez des questions concernant notre politique de confidentialité, vous pouvez nous contacter à tout moment via la page de contact ou à l'adresse : <a href="mailto:contact.harmonith@gmail.com">contact.harmonith@gmail.com</a>
           </p>
         </section>
       </article>
