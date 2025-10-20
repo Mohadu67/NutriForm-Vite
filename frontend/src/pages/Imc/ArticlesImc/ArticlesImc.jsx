@@ -32,7 +32,7 @@ export default function ArticlesImc() {
 
       return (
         <>
-        <h2 className={styles.titleh2}>Apprendre l'ssentiel sur l'IMC</h2>
+        <h2 className={styles.titleh2}>Apprendre l'essentiel sur l'IMC</h2>
 
 
           <section className={styles.grid}>
