@@ -50,9 +50,18 @@ export default function WeightChart({ points }) {
     return (
       <div className={`${style.chartCard} ${style.chartContainer}`}>
         <div className={style.chartHeader}>
-          <h4>Évolution du poids</h4>
+          <h4>⚖️ Évolution du poids</h4>
         </div>
-        <p className={style.muted}>Aucune donnée disponible.</p>
+        <div className={style.emptyState}>
+          <div className={style.emptyIcon}>📊</div>
+          <p className={style.emptyText}>Aucune pesée enregistrée</p>
+          <p className={style.emptyHint}>
+            Utilise le calculateur IMC pour suivre l'évolution de ton poids au fil du temps !
+          </p>
+          <a href="/outils" className={style.emptyButton}>
+            Calculer mon IMC
+          </a>
+        </div>
       </div>
     );
   }

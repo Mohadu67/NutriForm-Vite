@@ -21,7 +21,7 @@ export default function ResultatPopup({ titre, calories, macros, onClose }) {
         )}
 
           <BoutonAction to="/not-found">
-            Voir des recette adaptées
+            Voir des recettes adaptées
           </BoutonAction>
       </div>
     </div>
