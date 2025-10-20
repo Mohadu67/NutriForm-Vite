@@ -34,6 +34,18 @@ export default defineConfig({
         display: 'standalone',
         icons: [
           {
+            src: '/favicon.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/favicon.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
             src: '/assets/icons/apple-touch-icon.png',
             sizes: '180x180',
             type: 'image/png'
