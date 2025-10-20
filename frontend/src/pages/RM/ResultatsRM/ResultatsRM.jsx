@@ -1,6 +1,6 @@
 import styles from "./ResultatsRM.module.css";
 
-export default function ResultatsRM({ data }) {
+export default function ResultatsRM({ data, onSave }) {
   const { rm, exercice, poids, reps } = data;
 
   return (
@@ -32,6 +32,12 @@ export default function ResultatsRM({ data }) {
             <div className={styles.comparisonPercent}>Marge de progression</div>
           </div>
         </div>
+
+        {onSave && (
+          <button onClick={onSave} className={styles.saveBtn}>
+            💾 Sauvegarder ce test
+          </button>
+        )}
       </div>
 
       <div className={styles.methodsCard}>
