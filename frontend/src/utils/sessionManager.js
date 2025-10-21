@@ -16,7 +16,8 @@ export function updateActivity() {
 // Vérifie si la session est encore valide
 export function checkSession() {
   const token = localStorage.getItem("token");
-  if (!token) return false;
+  // Sans jeton, on considère la session comme "neutre" pour éviter les redirections intempestives
+  if (!token) return true;
 
   const rememberMe = localStorage.getItem("rememberMe");
   // Si "remember me" est activé, la session est toujours valide
