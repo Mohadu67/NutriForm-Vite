@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { mapItemsToEntries } from "../../TableauBord/sessionApi";
 import styles from "./Chrono.module.css";
 import useSaveSession from "../ExerciceCard/hooks/useSaveSession";
@@ -307,9 +308,9 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
           {doneExercises} sur {totalExercises} exercices terminés
         </p>
       </div>
-      {showConfirm && (
-        <div className={styles.confirmOverlay} style={{ position: "fixed", inset: 0, zIndex: 99999 }} data-testid="confirm-overlay">
-          <div className={styles.confirmBox} style={{ background: "white", padding: 16, borderRadius: 12, boxShadow: "0 8px 30px rgba(0,0,0,.25)" }}>
+      {showConfirm && createPortal(
+        <div className={styles.confirmOverlay} data-testid="confirm-overlay">
+          <div className={styles.confirmBox}>
             <h3>Terminer la séance ?</h3>
             <p>Êtes-vous sûr de vouloir terminer votre séance d'entraînement ? Vos progrès seront sauvegardés.</p>
             <div className={styles.confirmActions}>
@@ -317,7 +318,8 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
               <button className={styles.finishBtn} onClick={handleConfirmFinish} disabled={saving} aria-busy={saving}>Terminer</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
