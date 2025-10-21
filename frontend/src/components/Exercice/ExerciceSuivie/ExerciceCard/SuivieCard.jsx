@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import styles from "./SuivieCard.module.css";
 
 import useExerciceForm from "./hooks/useExerciceForm";
@@ -116,46 +117,30 @@ export default function SuivieCard({ exo, value, onChange }) {
 
   useEffect(() => {
     if (open) {
-      const scrollY = window.scrollY;
       document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
+      document.body.style.paddingRight = window.innerWidth - document.documentElement.clientWidth + 'px';
     } else {
-      const scrollY = document.body.style.top;
       document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
-      }
+      document.body.style.paddingRight = '';
     }
     return () => {
-      const scrollY = document.body.style.top;
       document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
-      }
+      document.body.style.paddingRight = '';
     };
   }, [open]);
 
   return (
-    <div className={styles.card}>
-      <button type="button" className={styles.row} onClick={() => setOpen(true)}>
-        <div className={styles.thumb} aria-hidden>
-          {imgSrc ? <img src={imgSrc} alt="" /> : <div className={styles.initial}>{initialLetter}</div>}
-        </div>
-        <div className={styles.title}>{exo?.name || "Exercice"}</div>
-      </button>
+    <>
+      <div className={styles.card}>
+        <button type="button" className={styles.row} onClick={() => setOpen(true)}>
+          <div className={styles.thumb} aria-hidden>
+            {imgSrc ? <img src={imgSrc} alt="" /> : <div className={styles.initial}>{initialLetter}</div>}
+          </div>
+          <div className={styles.title}>{exo?.name || "Exercice"}</div>
+        </button>
+      </div>
 
-      {open && (
+      {open && createPortal(
         <div
           className={`${styles.overlay} ${open ? styles.isOpen : ''}`}
           role="dialog"
@@ -223,8 +208,9 @@ export default function SuivieCard({ exo, value, onChange }) {
               </button>
             </footer>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }
