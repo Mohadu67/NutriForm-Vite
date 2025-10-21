@@ -116,8 +116,9 @@
 .overlay {
   position: fixed;
   inset: 0;
-  display: grid;
-  place-items: end;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
   background: radial-gradient(1200px 600px at 50% 110%, rgba(0,0,0,.22), rgba(0,0,0,.32));
   backdrop-filter: blur(14px) saturate(120%);
   -webkit-backdrop-filter: blur(14px) saturate(120%);
@@ -126,8 +127,7 @@
   pointer-events: none;
   transition: opacity 0.22s ease, visibility 0.22s ease;
   z-index: 10000;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  overflow: hidden;
 }
 
 .overlay.isOpen {
@@ -140,7 +140,7 @@
 .popup {
   width: 100%;
   max-width: 100%;
-  max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 40px);
+  max-height: 92vh;
   border: 1px solid transparent;
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
@@ -152,7 +152,6 @@
   overflow: hidden;
   transform: translateY(100%);
   transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.24, 1);
-  margin: auto;
 }
 
 .overlay.isOpen .popup {
@@ -281,12 +280,12 @@
 /* ==================== RESPONSIVE DESKTOP ==================== */
 @media (min-width: 640px) {
   .overlay {
-    place-items: center;
+    align-items: center;
   }
 
   .popup {
     width: min(92%, 600px);
-    max-height: calc(88vh - 60px);
+    max-height: 90vh;
     border-radius: 24px;
     transform: translateY(14px) scale(.985);
     opacity: .98;
