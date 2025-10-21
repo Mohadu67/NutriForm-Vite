@@ -19,8 +19,14 @@ function PdcTable({ sets = [], onAdd, onRemove, onPatch }) {
             <input
               type="number"
               inputMode="numeric"
+              min="0"
               value={s?.reps ?? ""}
-              onChange={(e) => onPatch && onPatch(idx, { reps: e.target.value === "" ? "" : Number(e.target.value) })}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "" || Number(val) >= 0) {
+                  onPatch && onPatch(idx, { reps: val === "" ? "" : Number(val) });
+                }
+              }}
               aria-label={`Répétitions série ${idx + 1}`}
             />
           </div>

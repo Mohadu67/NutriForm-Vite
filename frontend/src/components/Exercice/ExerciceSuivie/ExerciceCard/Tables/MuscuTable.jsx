@@ -20,8 +20,14 @@ function MuscuTable({ sets = [], onAdd, onRemove, onPatch }) {
             <input
               type="number"
               inputMode="decimal"
+              min="0"
               value={s?.weight ?? ""}
-              onChange={(e) => onPatch && onPatch(idx, { weight: e.target.value === "" ? "" : Number(e.target.value) })}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "" || Number(val) >= 0) {
+                  onPatch && onPatch(idx, { weight: val === "" ? "" : Number(val) });
+                }
+              }}
               aria-label={`Poids kg série ${idx + 1}`}
             />
           </div>
@@ -29,8 +35,14 @@ function MuscuTable({ sets = [], onAdd, onRemove, onPatch }) {
             <input
               type="number"
               inputMode="numeric"
+              min="0"
               value={s?.reps ?? ""}
-              onChange={(e) => onPatch && onPatch(idx, { reps: e.target.value === "" ? "" : Number(e.target.value) })}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "" || Number(val) >= 0) {
+                  onPatch && onPatch(idx, { reps: val === "" ? "" : Number(val) });
+                }
+              }}
               aria-label={`Répétitions série ${idx + 1}`}
             />
           </div>
