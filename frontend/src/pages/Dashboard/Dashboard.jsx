@@ -9,7 +9,6 @@ import WeightChart from "../../components/Auth/HistoryUser/HistoryCharts/WeightC
 import useHistoryData from "../../components/Auth/HistoryUser/UseHistoryData.js";
 import SuivieSeance from "../../components/Exercice/TableauBord/SuivieSeance.jsx";
 import RMHistory from "../../components/Dashboard/RMHistory/RMHistory.jsx";
-import { logout as sessionLogout } from "../../utils/sessionManager.js";
 
 export default function Dashboard() {
   usePageTitle("Dashboard");
@@ -118,71 +117,6 @@ export default function Dashboard() {
       .sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [records]);
 
-  const sessionPoints = useMemo(() => {
-    if (Array.isArray(points) && points.length) {
-      const norm = points
-        .map(p => ({ ...p, date: parseDate(p.date) }))
-        .filter(p => p.date)
-        .sort((a, b) => a.date - b.date);
-      return norm;
-    }
-
-    const safeDate = (raw) => parseDate(
-      raw?.date || raw?.createdAt || raw?.day || raw?.performedAt || raw?.startedAt || raw?.endedAt || raw
-    );
-
-    const pts = [];
-
-    for (const s of (userSessions || [])) {
-      const date = safeDate(s);
-      if (!date) continue;
-
-      const sessionName = s?.title || s?.name || s?.sessionName || s?.seanceName || null;
-      const base = {
-        date,
-        value: 1,
-        sessionName,
-        type: s?.type || s?.category || s?.kind || s?.mode || s?.sport,
-        minutes: s?.durationMinutes ?? s?.minutes,
-        seconds: s?.durationSeconds ?? s?.seconds,
-        distance: s?.distance ?? s?.km ?? s?.meters,
-        pace: s?.pace ?? s?.allure,
-        weight: s?.weight ?? s?.poids ?? s?.kg ?? s?.load,
-        sets: s?.sets ?? s?.series ?? s?.séries,
-        reps: s?.reps ?? s?.repetitions ?? s?.répétitions,
-      };
-
-      const exs = Array.isArray(s?.entries) ? s.entries
-        : Array.isArray(s?.exercises) ? s.exercises
-        : Array.isArray(s?.items) ? s.items
-        : [];
-
-      if (exs.length > 0) {
-        for (const ex of exs) {
-          const exName = ex?.name || ex?.label || ex?.exerciseName || ex?.exoName || null;
-          pts.push({
-            ...base,
-            exerciseName: exName,
-            type: (ex?.type || base.type),
-            minutes: ex?.durationMinutes ?? ex?.minutes ?? base.minutes,
-            seconds: ex?.durationSeconds ?? ex?.seconds ?? base.seconds,
-            distance: ex?.distance ?? ex?.km ?? ex?.meters ?? base.distance,
-            pace: ex?.pace ?? ex?.allure ?? base.pace,
-            weight: ex?.weight ?? ex?.poids ?? ex?.kg ?? ex?.load ?? base.weight,
-            sets: ex?.sets ?? ex?.series ?? ex?.séries ?? base.sets,
-            reps: ex?.reps ?? ex?.repetitions ?? ex?.répétitions ?? base.reps,
-          });
-        }
-      } else {
-        const exerciseName = s?.exerciseName || s?.exoName || s?.lastExercise?.name || null;
-        pts.push({ ...base, exerciseName });
-      }
-    }
-
-    pts.sort((a, b) => a.date - b.date);
-    return pts;
-  }, [points, userSessions, parseDate]);
-
   const lastCompletedSession = useMemo(() => {
     const list = Array.isArray(userSessions) ? userSessions : [];
     if (list.length === 0) return null;
@@ -210,12 +144,6 @@ export default function Dashboard() {
     return candidates.length ? candidates[0].s : null;
   }, [userSessions, parseDate]);
 
-  const handleLogout = () => {
-    sessionLogout();
-    navigate("/");
-  };
-
-  
   const stats = useMemo(() => {
     const totalSessions = userSessions.length;
 
