@@ -112,53 +112,54 @@
   flex: 1;
 }
 
-/* ==================== OVERLAY ==================== */
+/* ==================== OVERLAY (Mobile First) ==================== */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: end;
+  background: radial-gradient(1200px 600px at 50% 110%, rgba(0,0,0,.22), rgba(0,0,0,.32));
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.25s ease, visibility 0.25s ease;
-  z-index: 9999;
-  overflow: hidden;
-  touch-action: none;
+  pointer-events: none;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
+  z-index: 10000;
 }
 
 .overlay.isOpen {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
-/* ==================== POPUP ==================== */
+/* ==================== POPUP (Mobile First) ==================== */
 .popup {
   width: 100%;
   max-width: 100%;
-  height: 88vh;
-  max-height: 88vh;
-  background: var(--suivie-surface);
-  border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-height: 92vh;
+  border: 1px solid transparent;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  background: linear-gradient(var(--suivie-surface), var(--suivie-surface)) padding-box,
+              linear-gradient(180deg, rgba(255,255,255,.25), rgba(255,255,255,0) 40%, rgba(0,0,0,.10)) border-box;
+  box-shadow: 0 30px 80px rgba(0,0,0,.25);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  touch-action: auto;
-  opacity: 1;
-  transform: scale(1);
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.24, 1);
 }
 
 .overlay.isOpen .popup {
-  opacity: 1;
-  transform: scale(1);
+  transform: translateY(0);
 }
 
 /* ==================== HEADER ==================== */
 .popupHeader {
+  position: sticky;
+  top: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -167,6 +168,7 @@
   border-bottom: 1.5px solid var(--suivie-border);
   background: var(--suivie-surface);
   flex-shrink: 0;
+  z-index: 10;
 }
 
 .popupTitle {
@@ -273,15 +275,27 @@
   box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
 }
 
-/* ==================== RESPONSIVE ==================== */
+/* ==================== RESPONSIVE DESKTOP ==================== */
 @media (min-width: 640px) {
+  .overlay {
+    place-items: center;
+  }
+
   .popup {
-    max-width: 600px;
-    height: 90vh;
+    width: min(92%, 600px);
     max-height: 90vh;
+    border-radius: 24px;
+    transform: translateY(14px) scale(.985);
+    opacity: .98;
+  }
+
+  .overlay.isOpen .popup {
+    transform: translateY(0) scale(1);
+    opacity: 1;
   }
 }
 
+/* ==================== RESPONSIVE SMALL ==================== */
 @media (max-width: 380px) {
   .popupTitle {
     font-size: 18px;
