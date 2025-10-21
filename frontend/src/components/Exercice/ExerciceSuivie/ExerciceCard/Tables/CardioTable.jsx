@@ -21,8 +21,14 @@ function CardioTable({ cardioSets = [], onAdd, onRemove, onPatch }) {
             <input
               type="number"
               inputMode="numeric"
+              min="0"
               value={s?.durationMin ?? ""}
-              onChange={(e) => onPatch && onPatch(idx, { durationMin: e.target.value === "" ? "" : Number(e.target.value) })}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "" || Number(val) >= 0) {
+                  onPatch && onPatch(idx, { durationMin: val === "" ? "" : Number(val) });
+                }
+              }}
               aria-label={`Durée minutes série ${idx + 1}`}
             />
           </div>
@@ -30,8 +36,15 @@ function CardioTable({ cardioSets = [], onAdd, onRemove, onPatch }) {
             <input
               type="number"
               inputMode="numeric"
+              min="0"
+              max="59"
               value={s?.durationSec ?? ""}
-              onChange={(e) => onPatch && onPatch(idx, { durationSec: e.target.value === "" ? "" : Number(e.target.value) })}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "" || (Number(val) >= 0 && Number(val) <= 59)) {
+                  onPatch && onPatch(idx, { durationSec: val === "" ? "" : Number(val) });
+                }
+              }}
               aria-label={`Durée secondes série ${idx + 1}`}
             />
           </div>
@@ -39,10 +52,15 @@ function CardioTable({ cardioSets = [], onAdd, onRemove, onPatch }) {
             <input
               type="number"
               inputMode="numeric"
-              min={1}
-              max={10}
+              min="1"
+              max="10"
               value={s?.intensity ?? ""}
-              onChange={(e) => onPatch && onPatch(idx, { intensity: e.target.value === "" ? "" : Number(e.target.value) })}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "" || (Number(val) >= 1 && Number(val) <= 10)) {
+                  onPatch && onPatch(idx, { intensity: val === "" ? "" : Number(val) });
+                }
+              }}
               aria-label={`Intensité série ${idx + 1}`}
             />
           </div>
