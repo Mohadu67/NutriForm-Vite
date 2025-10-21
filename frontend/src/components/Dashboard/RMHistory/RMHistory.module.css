@@ -121,7 +121,7 @@
   background: #fafafa;
   padding: 16px;
   border-radius: 10px;
-  border-left: 3px solid #9E8CFF;
+  border-left: 3px solid #FFB385;
 }
 
 :global(body.dark) .statCard,
@@ -223,7 +223,7 @@
   background: #fafafa;
   border-radius: 8px;
   padding: 12px;
-  border-left: 3px solid #9E8CFF;
+  border-left: 3px solid #FFB385;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -234,7 +234,7 @@
 
 .testCard:hover {
   transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(158, 140, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.15);
 }
 
 .testHeader {
@@ -283,14 +283,14 @@
 .rmValue {
   font-size: 1.8rem;
   font-weight: 900;
-  color: #9E8CFF;
+  color: #FFB385;
   line-height: 1;
 }
 
 .rmUnit {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #9E8CFF;
+  color: #FFB385;
 }
 
 .testDetails {
@@ -332,8 +332,8 @@
 .firstTest {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #9E8CFF;
-  background: rgba(158, 140, 255, 0.1);
+  color: #FFB385;
+  background: rgba(255, 179, 133, 0.1);
   padding: 3px 8px;
   border-radius: 6px;
 }
