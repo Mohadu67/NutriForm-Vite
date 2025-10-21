@@ -4,21 +4,15 @@ import styles from "./ModeBar.module.css";
 const modes = [
   {
     value: "muscu",
-    label: "Muscu",
-    icon: "💪",
-    description: "Avec charges"
+    label: "Avec charge"
   },
   {
     value: "pdc",
-    label: "Poids du corps",
-    icon: "🤸",
-    description: "Sans charges"
+    label: "Sans charge"
   },
   {
     value: "cardio",
-    label: "Cardio",
-    icon: "🏃",
-    description: "Endurance"
+    label: "Endurance"
   }
 ];
 
@@ -28,7 +22,7 @@ function ModeBar({ mode = "muscu", onChange, classes = {} }) {
   return (
     <div className={`${styles.modernModeBar} ${modeBar}`}>
       <div className={styles.modeGrid}>
-        {modes.map(({ value, label, icon, description }) => (
+        {modes.map(({ value, label }) => (
           <button
             key={value}
             type="button"
@@ -37,9 +31,7 @@ function ModeBar({ mode = "muscu", onChange, classes = {} }) {
             aria-label={label}
             aria-pressed={mode === value}
           >
-            <span className={styles.modeIcon} aria-hidden="true">{icon}</span>
-            <span className={styles.modeLabel}>{label}</span>
-            <span className={styles.modeDescription}>{description}</span>
+            {label}
           </button>
         ))}
       </div>

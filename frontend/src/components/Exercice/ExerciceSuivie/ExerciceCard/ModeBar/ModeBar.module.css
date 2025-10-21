@@ -12,137 +12,44 @@
 
 .modeButton {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 16px 12px;
+  padding: 12px 16px;
   border: 1.5px solid var(--line);
-  border-radius: 16px;
+  border-radius: 12px;
   background: var(--paper);
   color: var(--ink);
   cursor: pointer;
   transition: all .25s cubic-bezier(.4, 0, .2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.modeButton::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  opacity: 0;
-  transition: opacity .25s ease;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .modeButton:hover {
-  transform: translateY(-3px);
   border-color: var(--accent);
-  box-shadow: 0 8px 24px rgba(247, 143, 92, 0.2);
+  transform: translateY(-1px);
 }
 
 .modeButton:active {
-  transform: translateY(-1px);
+  transform: translateY(0);
 }
 
 .modeButtonActive {
   border-color: transparent;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   color: white;
-  box-shadow: 0 6px 20px rgba(247, 143, 92, 0.4);
-  transform: translateY(-2px);
-}
-
-.modeButtonActive::before {
-  opacity: 1;
-}
-
-.modeIcon {
-  font-size: 32px;
-  position: relative;
-  z-index: 1;
-  transition: transform .25s ease;
-}
-
-.modeButton:hover .modeIcon {
-  transform: scale(1.15);
-}
-
-.modeButtonActive .modeIcon {
-  filter: drop-shadow(0 3px 6px rgba(0,0,0,.25));
-  transform: scale(1.05);
-}
-
-.modeLabel {
-  font-weight: 700;
-  font-size: 15px;
-  position: relative;
-  z-index: 1;
-  letter-spacing: -0.2px;
-}
-
-.modeDescription {
-  font-size: 12px;
-  opacity: 0.7;
-  position: relative;
-  z-index: 1;
-  font-weight: 500;
-}
-
-.modeButtonActive .modeDescription {
-  opacity: 0.9;
+  box-shadow: 0 4px 12px rgba(247, 143, 92, 0.3);
 }
 
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .modeGrid {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 8px;
   }
 
   .modeButton {
-    flex-direction: row;
-    justify-content: flex-start;
-    padding: 14px 16px;
-    gap: 14px;
-  }
-
-  .modeIcon {
-    font-size: 28px;
-  }
-
-  .modeLabel {
-    flex: 1;
-    text-align: left;
-    font-size: 16px;
-  }
-
-  .modeDescription {
+    padding: 10px 12px;
     font-size: 13px;
-  }
-}
-
-@media (min-width: 481px) and (max-width: 640px) {
-  .modeGrid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-
-  .modeButton {
-    padding: 14px 10px;
-  }
-
-  .modeIcon {
-    font-size: 28px;
-  }
-
-  .modeLabel {
-    font-size: 14px;
-  }
-
-  .modeDescription {
-    font-size: 11px;
   }
 }
 
