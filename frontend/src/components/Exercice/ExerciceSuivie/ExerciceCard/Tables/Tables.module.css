@@ -1,171 +1,180 @@
-/* Mobile‑first, dark‑mode aware table styling for exercise inputs */
-
+/* ==================== TABLE CONTAINER ==================== */
 .table {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 4px;
+  width: 100%;
 }
 
-/* Sticky header with subtle translucency */
-.rowHead,
-.rowSet {
+/* ==================== HEADER ==================== */
+.rowHead {
   display: grid;
+  grid-template-columns: 50px 1fr 1fr 40px;
   align-items: center;
   gap: 10px;
-}
-
-.rowHead {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  grid-template-columns: 50px 1fr 1fr 40px;
-  font-weight: 700;
+  padding: 10px 12px;
+  background: var(--suivie-bg, #f5f5f5);
+  border-radius: 10px;
   font-size: 13px;
-  color: var(--muted-ink);
-  background: var(--bg);
-  padding: 12px;
-  border-radius: 12px;
-  margin-bottom: 4px;
+  font-weight: 700;
+  color: var(--suivie-muted, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-/* Rows */
+/* ==================== ROWS ==================== */
 .rowSet {
+  display: grid;
   grid-template-columns: 50px 1fr 1fr 40px;
-  border: 1.5px solid var(--line);
-  border-radius: 14px;
-  background: var(--paper);
-  box-shadow: 0 2px 8px rgba(0,0,0,.04);
-  padding: 12px;
-  transition: all .2s ease;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: var(--suivie-surface, #fff);
+  border: 1.5px solid var(--suivie-border, rgba(0,0,0,0.08));
+  border-radius: 12px;
+  transition: all 0.2s ease;
 }
 
 .rowSet:hover {
-  border-color: var(--line-strong);
-  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  border-color: var(--suivie-border-strong, rgba(0,0,0,0.12));
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-/* Inputs */
+/* Numéro de série */
+.rowSet > div:first-child {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--suivie-accent, #F7B186);
+  text-align: center;
+}
+
+/* ==================== INPUTS ==================== */
 .rowSet input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid var(--suivie-border, rgba(0,0,0,0.08));
+  border-radius: 8px;
+  background: var(--suivie-bg, #f5f5f5);
+  color: var(--suivie-ink, #222);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.2s ease;
   -webkit-appearance: none;
   appearance: none;
-  width: 100%;
-  border: 1.5px solid var(--line);
-  border-radius: 10px;
-  background: var(--bg);
-  color: var(--ink);
-  padding: 12px;
-  font-size: 16px;
-  line-height: 1.2;
-  text-align: center;
-  font-weight: 600;
-  transition: all .2s ease;
 }
 
-.rowSet input::placeholder { color: var(--muted-ink); opacity: 0.5; }
-
-/* Remove number arrows, keep centered numeric fields */
-.rowSet input[type="number"]::-webkit-outer-spin-button,
-.rowSet input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.rowSet input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+.rowSet input::placeholder {
+  color: var(--suivie-muted, #999);
+  opacity: 0.6;
+}
 
 .rowSet input:focus {
   outline: none;
-  border-color: var(--accent);
-  background: var(--paper);
-  box-shadow: 0 0 0 3px rgba(247, 177, 134, .15);
+  border-color: var(--suivie-accent, #F7B186);
+  background: var(--suivie-surface, #fff);
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.15);
 }
 
+/* Remove spinner for number inputs */
+.rowSet input[type="number"]::-webkit-outer-spin-button,
+.rowSet input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.rowSet input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* ==================== DELETE BUTTON ==================== */
 .iconBtn {
-    border: none;
-    color: var(--muted-ink);
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--line);
-    transition: all .2s ease;
-    cursor: pointer;
-    font-size: 20px;
-    font-weight: 300;
-}
-.iconBtn:hover {
-    background: var(--line-strong);
-    color: var(--ink);
-    transform: scale(1.1);
-  }
-.iconBtn:active { transform: scale(0.95); }
-
-/* Actions */
-.actions { margin-top: 12px; display: flex; justify-content: center; gap: 8px; }
-.actions > button {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #fff;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
-  border-radius: 14px;
-  padding: 14px 20px;
-  font-weight: 700;
-  font-size: 15px;
+  border-radius: 50%;
+  background: var(--suivie-border, rgba(0,0,0,0.08));
+  color: var(--suivie-muted, #666);
+  font-size: 20px;
+  font-weight: 300;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(247, 143, 92, 0.3);
-  transition: all .2s ease;
+  transition: all 0.2s ease;
 }
+
+.iconBtn:hover {
+  background: #fee;
+  color: #e53e3e;
+  transform: scale(1.1);
+}
+
+.iconBtn:active {
+  transform: scale(0.95);
+}
+
+/* ==================== ADD BUTTON ==================== */
+.actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.actions > button {
+  padding: 12px 20px;
+  border: 1.5px dashed var(--suivie-border-strong, rgba(0,0,0,0.12));
+  border-radius: 12px;
+  background: transparent;
+  color: var(--suivie-accent, #F7B186);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
 .actions > button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(247, 143, 92, 0.4);
+  border-style: solid;
+  border-color: var(--suivie-accent, #F7B186);
+  background: rgba(247, 177, 134, 0.1);
+  transform: translateY(-1px);
 }
+
 .actions > button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(247, 143, 92, 0.3);
 }
 
-/* Medium screens */
+/* ==================== PDC TABLE (3 columns) ==================== */
+.tablePdc .rowHead,
+.tablePdc .rowSet {
+  grid-template-columns: 50px 1fr 40px;
+}
+
+/* ==================== RESPONSIVE ==================== */
 @media (min-width: 480px) {
   .rowHead,
   .rowSet {
     grid-template-columns: 55px 1fr 1fr 44px;
     gap: 12px;
   }
-  .rowHead { font-size: 15px; }
-}
 
-/* Larger screens */
-@media (min-width: 768px) {
-  .table { gap: 12px; }
-  .rowHead { font-size: 16px; }
-  .rowSet input { padding: 12px; font-size: 17px; }
-  .rowHead,
-  .rowSet {
-    grid-template-columns: 60px 1fr 1fr 50px;
-  }
-}
-
-/* Small screens */
-@media (max-width: 380px) {
-  .rowHead,
-  .rowSet {
-    grid-template-columns: 40px 1fr 1fr 35px;
-    gap: 8px;
-  }
-}
-
-/* PDC Table - 3 columns layout (no weight column) */
-.tablePdc .rowHead,
-.tablePdc .rowSet {
-  grid-template-columns: 50px 1fr 40px;
-}
-
-@media (min-width: 480px) {
   .tablePdc .rowHead,
   .tablePdc .rowSet {
     grid-template-columns: 55px 1fr 44px;
   }
+
+  .rowHead {
+    font-size: 14px;
+  }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
+  .rowHead,
+  .rowSet {
+    grid-template-columns: 60px 1fr 1fr 50px;
+  }
+
   .tablePdc .rowHead,
   .tablePdc .rowSet {
     grid-template-columns: 60px 1fr 50px;
@@ -173,8 +182,19 @@
 }
 
 @media (max-width: 380px) {
+  .rowHead,
+  .rowSet {
+    grid-template-columns: 40px 1fr 1fr 35px;
+    gap: 8px;
+  }
+
   .tablePdc .rowHead,
   .tablePdc .rowSet {
     grid-template-columns: 40px 1fr 35px;
+  }
+
+  .rowSet input {
+    padding: 6px 8px;
+    font-size: 13px;
   }
 }
