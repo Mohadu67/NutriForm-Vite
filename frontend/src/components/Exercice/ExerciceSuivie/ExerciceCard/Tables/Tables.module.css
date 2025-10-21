@@ -1,62 +1,61 @@
-/* ==================== TABLE CONTAINER ==================== */
+/* ==================== TABLE CONTAINER (Mobile First) ==================== */
 .table {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
 }
 
-/* ==================== HEADER ==================== */
+/* ==================== HEADER (Mobile First) ==================== */
 .rowHead {
   display: grid;
-  grid-template-columns: 50px 1fr 1fr 40px;
+  grid-template-columns: 40px 60px 60px 36px;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   background: var(--suivie-bg, #f5f5f5);
-  border-radius: 10px;
-  font-size: 13px;
+  border-radius: 8px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--suivie-muted, #666);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
-/* ==================== ROWS ==================== */
+/* ==================== ROWS (Mobile First) ==================== */
 .rowSet {
   display: grid;
-  grid-template-columns: 50px 1fr 1fr 40px;
+  grid-template-columns: 40px 1fr 1fr 1fr 40px;
   align-items: center;
   gap: 10px;
-  padding: 10px;
+  padding: 8px;
   background: var(--suivie-surface, #fff);
   border: 1.5px solid var(--suivie-border, rgba(0,0,0,0.08));
-  border-radius: 12px;
+  border-radius: 10px;
   transition: all 0.2s ease;
 }
 
 .rowSet:hover {
   border-color: var(--suivie-border-strong, rgba(0,0,0,0.12));
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 /* Numéro de série */
 .rowSet > div:first-child {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--suivie-accent, #F7B186);
   text-align: center;
 }
 
-/* ==================== INPUTS ==================== */
+/* ==================== INPUTS (Mobile First) ==================== */
 .rowSet input {
   width: 100%;
-  padding: 8px 10px;
+  padding: 10px 8px;
   border: 1.5px solid var(--suivie-border, rgba(0,0,0,0.08));
   border-radius: 8px;
   background: var(--suivie-bg, #f5f5f5);
   color: var(--suivie-ink, #222);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   text-align: center;
   transition: all 0.2s ease;
@@ -66,7 +65,7 @@
 
 .rowSet input::placeholder {
   color: var(--suivie-muted, #999);
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .rowSet input:focus {
@@ -88,10 +87,10 @@
   appearance: textfield;
 }
 
-/* ==================== DELETE BUTTON ==================== */
+/* ==================== DELETE BUTTON (Mobile First) ==================== */
 .iconBtn {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -99,19 +98,16 @@
   border-radius: 50%;
   background: var(--suivie-border, rgba(0,0,0,0.08));
   color: var(--suivie-muted, #666);
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 300;
   cursor: pointer;
   transition: all 0.2s ease;
-}
-
-.iconBtn:hover {
-  background: #fee;
-  color: #e53e3e;
-  transform: scale(1.1);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .iconBtn:active {
+  background: #fee;
+  color: #e53e3e;
   transform: scale(0.95);
 }
 
@@ -125,7 +121,7 @@
 .actions > button {
   padding: 12px 20px;
   border: 1.5px dashed var(--suivie-border-strong, rgba(0,0,0,0.12));
-  border-radius: 12px;
+  border-radius: 10px;
   background: transparent;
   color: var(--suivie-accent, #F7B186);
   font-size: 14px;
@@ -134,67 +130,88 @@
   transition: all 0.2s ease;
 }
 
-.actions > button:hover {
+.actions > button:active {
   border-style: solid;
   border-color: var(--suivie-accent, #F7B186);
   background: rgba(247, 177, 134, 0.1);
-  transform: translateY(-1px);
-}
-
-.actions > button:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 /* ==================== PDC TABLE (3 columns) ==================== */
 .tablePdc .rowHead,
 .tablePdc .rowSet {
-  grid-template-columns: 50px 1fr 40px;
+  grid-template-columns: 40px 60px 36px;
 }
 
-/* ==================== RESPONSIVE ==================== */
+/* ==================== RESPONSIVE TABLET ==================== */
 @media (min-width: 480px) {
+  .table {
+    gap: 10px;
+  }
+
   .rowHead,
   .rowSet {
-    grid-template-columns: 55px 1fr 1fr 44px;
-    gap: 12px;
+    grid-template-columns: 45px 1fr 1fr 40px;
+    gap: 8px;
+    padding: 10px;
   }
 
   .tablePdc .rowHead,
   .tablePdc .rowSet {
-    grid-template-columns: 55px 1fr 44px;
+    grid-template-columns: 45px 1fr 40px;
   }
 
   .rowHead {
-    font-size: 14px;
+    font-size: 12px;
+  }
+
+  .rowSet > div:first-child {
+    font-size: 15px;
+  }
+
+  .iconBtn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .iconBtn:hover {
+    background: #fee;
+    color: #e53e3e;
+    transform: scale(1.05);
+  }
+
+  .actions > button:hover {
+    border-style: solid;
+    border-color: var(--suivie-accent, #F7B186);
+    background: rgba(247, 177, 134, 0.1);
+    transform: translateY(-1px);
   }
 }
 
+/* ==================== RESPONSIVE DESKTOP ==================== */
 @media (min-width: 640px) {
+  .table {
+    gap: 12px;
+  }
+
   .rowHead,
   .rowSet {
-    grid-template-columns: 60px 1fr 1fr 50px;
+    grid-template-columns: 40px 1fr 1fr 1fr 40px;
+    gap: 10px;
+    padding: 12px;
   }
 
   .tablePdc .rowHead,
   .tablePdc .rowSet {
-    grid-template-columns: 60px 1fr 50px;
-  }
-}
-
-@media (max-width: 380px) {
-  .rowHead,
-  .rowSet {
-    grid-template-columns: 40px 1fr 1fr 35px;
-    gap: 8px;
+    grid-template-columns: 50px 1fr 40px;
   }
 
-  .tablePdc .rowHead,
-  .tablePdc .rowSet {
-    grid-template-columns: 40px 1fr 35px;
+  .rowHead {
+    font-size: 13px;
+    padding: 10px 12px;
   }
 
   .rowSet input {
-    padding: 6px 8px;
-    font-size: 13px;
+    font-size: 15px;
   }
 }

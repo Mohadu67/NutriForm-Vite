@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import styles from "./SuivieCard.module.css";
 
 import useExerciceForm from "./hooks/useExerciceForm";
@@ -129,15 +130,17 @@ export default function SuivieCard({ exo, value, onChange }) {
   }, [open]);
 
   return (
-    <div className={styles.card}>
-      <button type="button" className={styles.row} onClick={() => setOpen(true)}>
-        <div className={styles.thumb} aria-hidden>
-          {imgSrc ? <img src={imgSrc} alt="" /> : <div className={styles.initial}>{initialLetter}</div>}
-        </div>
-        <div className={styles.title}>{exo?.name || "Exercice"}</div>
-      </button>
+    <>
+      <div className={styles.card}>
+        <button type="button" className={styles.row} onClick={() => setOpen(true)}>
+          <div className={styles.thumb} aria-hidden>
+            {imgSrc ? <img src={imgSrc} alt="" /> : <div className={styles.initial}>{initialLetter}</div>}
+          </div>
+          <div className={styles.title}>{exo?.name || "Exercice"}</div>
+        </button>
+      </div>
 
-      {open && (
+      {open && createPortal(
         <div
           className={`${styles.overlay} ${open ? styles.isOpen : ''}`}
           role="dialog"
@@ -205,8 +208,9 @@ export default function SuivieCard({ exo, value, onChange }) {
               </button>
             </footer>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }
