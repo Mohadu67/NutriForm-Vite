@@ -6,7 +6,6 @@ import Footer from "../../components/Footer/Footer.jsx";
 import style from "./Dashboard.module.css";
 import ImcRecapCard from "../../components/Auth/HistoryUser/Recap/ImcRecapCard.jsx";
 import WeightChart from "../../components/Auth/HistoryUser/HistoryCharts/WeightChart.jsx";
-import SessionChart from "../../components/Auth/HistoryUser/HistoryCharts/SessionChart.jsx";
 import useHistoryData from "../../components/Auth/HistoryUser/UseHistoryData.js";
 import SuivieSeance from "../../components/Exercice/TableauBord/SuivieSeance.jsx";
 import RMHistory from "../../components/Dashboard/RMHistory/RMHistory.jsx";
@@ -565,7 +564,6 @@ export default function Dashboard() {
 
           <div className={style.chartsGrid}>
             <WeightChart points={weightPoints} />
-            <SessionChart points={sessionPoints} />
           </div>
 
           {/* Historique RM */}
