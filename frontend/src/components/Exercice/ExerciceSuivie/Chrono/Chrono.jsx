@@ -71,10 +71,26 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
           groups.add('jambes');
         }
       });
-    });
+  });
 
-    return Array.from(groups);
-  }, [items]);
+  return Array.from(groups);
+}, [items]);
+
+  const hasSwimData = (swim) => {
+    if (!swim || typeof swim !== "object") return false;
+    const pool = Number(swim.poolLength ?? swim.length ?? 0);
+    const laps = Number(swim.lapCount ?? swim.laps ?? 0);
+    const distance = Number(swim.totalDistance ?? 0);
+    return (pool > 0 && laps > 0) || distance > 0;
+  };
+
+  const hasYogaData = (yoga) => {
+    if (!yoga || typeof yoga !== "object") return false;
+    const duration = Number(yoga.durationMin ?? yoga.duration ?? 0);
+    const style = typeof yoga.style === "string" ? yoga.style.trim() : "";
+    const focus = typeof yoga.focus === "string" ? yoga.focus.trim() : "";
+    return duration > 0 || style.length > 0 || focus.length > 0;
+  };
 
   const { totalExercises, doneExercises, calories } = useMemo(() => {
     const safe = Array.isArray(items) ? items : [];
@@ -92,6 +108,8 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
           return dur > 0 || dist > 0 || cals > 0;
         });
       }
+      if (hasSwimData(d.swim)) return true;
+      if (hasYogaData(d.yoga)) return true;
 
       const sets = Array.isArray(d.sets) ? d.sets : (Array.isArray(d.series) ? d.series : []);
       return sets.some(s => {
@@ -107,12 +125,17 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
     const nameOf = (it) => String(it?.name || it?.label || it?.exoName || '').toLowerCase();
     const guessType = (it, d) => {
       const raw = String(it?.mode ?? it?.type ?? '').toLowerCase();
+      if (raw.includes('swim')) return 'swim';
+      if (raw.includes('yoga')) return 'yoga';
       if (raw.includes('cardio')) return 'cardio';
       if (raw.includes('muscu')) return 'muscu';
+      if (hasSwimData(d.swim)) return 'swim';
+      if (hasYogaData(d.yoga)) return 'yoga';
       if (Array.isArray(d.cardioSets)) return 'cardio';
       return 'muscu';
     };
     const perMinKcal = (label) => {
+      if (label.includes('nata') || label.includes('swim') || label.includes('piscine')) return 9;
       if (label.includes('course') || label.includes('run')) return 11;
       if (label.includes('velo') || label.includes('cycle') || label.includes('bike')) return 8;
       if (label.includes('rameur') || label.includes('row')) return 7;
@@ -125,14 +148,31 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
     for (const it of safe) {
       const d = it?.data || {};
       const t = guessType(it, d);
-      if (t === 'cardio') {
+      if (t === 'cardio' || t === 'swim') {
         const sets = Array.isArray(d.cardioSets) ? d.cardioSets : [];
         const rate = perMinKcal(nameOf(it));
+        let added = false;
         for (const s of sets) {
           const min = Number(s.durationMin ?? s.minutes ?? 0) || 0;
           const sec = Number(s.durationSec ?? 0) || 0;
           const durMin = (min + sec / 60) || 5 / 60; 
           kcal += durMin * rate;
+          added = true;
+        }
+        if (!added && hasSwimData(d.swim)) {
+          const swim = d.swim;
+          const pool = Number(swim.poolLength ?? swim.length ?? 0);
+          const laps = Number(swim.lapCount ?? swim.laps ?? 0);
+          const distance = Number(swim.totalDistance ?? 0) || (pool > 0 && laps > 0 ? pool * laps * 2 : 0);
+          const estDur = distance > 0 ? Math.max(10, distance / 50) : 10;
+          kcal += estDur * rate;
+        }
+      } else if (t === 'yoga') {
+        const yoga = d.yoga;
+        if (yoga) {
+          const duration = Number(yoga.durationMin ?? yoga.duration ?? 0) || 15;
+          const rate = 4;
+          kcal += duration * rate;
         }
       } else {
         const sets = Array.isArray(d.sets) ? d.sets : (Array.isArray(d.series) ? d.series : []);
