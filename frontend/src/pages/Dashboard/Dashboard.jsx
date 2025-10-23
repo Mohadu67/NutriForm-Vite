@@ -4,11 +4,209 @@ import usePageTitle from "../../hooks/usePageTitle.js";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import style from "./Dashboard.module.css";
-import ImcRecapCard from "../../components/Auth/HistoryUser/Recap/ImcRecapCard.jsx";
-import WeightChart from "../../components/Auth/HistoryUser/HistoryCharts/WeightChart.jsx";
-import useHistoryData from "../../components/Auth/HistoryUser/UseHistoryData.js";
-import SuivieSeance from "../../components/Exercice/TableauBord/SuivieSeance.jsx";
-import RMHistory from "../../components/Dashboard/RMHistory/RMHistory.jsx";
+import ImcRecapCard from "../../components/History/HistoryUser/Recap/ImcRecapCard.jsx";
+import WeightChart from "../../components/History/HistoryUser/HistoryCharts/WeightChart.jsx";
+import useHistoryData from "../../components/History/HistoryUser/UseHistoryData.js";
+import SuivieSeance from "../../components/History/SessionTracking/SuivieSeance.jsx";
+import RMHistory from "../../components/History/RM/RMHistory/RMHistory.jsx";
+import SwimDistanceCard from "../../components/History/DashboardCards/SwimDistanceCard.jsx";
+import RunDistanceCard from "../../components/History/DashboardCards/RunDistanceCard.jsx";
+import ActivityHeatmapPanel from "../../components/History/DashboardCards/ActivityHeatmapPanel.jsx";
+import WeeklyGoalCard from "../../components/History/DashboardCards/WeeklyGoalCard.jsx";
+import WeeklyGoalModal from "../../components/History/DashboardCards/WeeklyGoalModal.jsx";
+import BadgesPanel from "../../components/History/DashboardCards/BadgesPanel.jsx";
+
+function DashboardOverview({
+  navigate,
+  status,
+  error,
+  records,
+  capitalizedName,
+  motivationMessage,
+  stats,
+  weeklyGoal,
+  weeklyProgress,
+  onOpenGoalModal,
+  swimStats,
+  runStats,
+  formatKmValue,
+  shortDateFormatter,
+  badges,
+  activityHeatmap,
+  weightPoints,
+  weightSummary,
+  calorieSummary,
+  rmTests,
+  imcPoints,
+  userSessions,
+  lastCompletedSession,
+  onDelete,
+  onDeleteSuccess,
+  showGoalModal,
+  tempGoal,
+  setTempGoal,
+  onCloseGoalModal,
+  onSaveGoal,
+}) {
+  const showInsights = badges.length > 0 || stats.totalSessions > 0;
+  const weightStats = weightSummary ?? {
+    value: "--",
+    meta: "Aucune mesure disponible",
+    delta: null,
+    deltaTone: null,
+  };
+  const calorieStats = calorieSummary ?? {
+    value: "--",
+    meta: "Enregistre tes apports pour suivre tes calories",
+    delta: null,
+    deltaTone: null,
+  };
+  const deltaClassName = (tone) => {
+    if (tone === "up") return `${style.statCardDelta} ${style.statCardDeltaPositive}`;
+    if (tone === "down") return `${style.statCardDelta} ${style.statCardDeltaNegative}`;
+    if (tone === "neutral") return `${style.statCardDelta} ${style.statCardDeltaNeutral}`;
+    return style.statCardDelta;
+  };
+
+  return (
+    <>
+      <section className={style.welcomeSection}>
+        <h1 className={style.welcomeTitle}>Salut {capitalizedName} 👋</h1>
+        <p className={style.welcomeSubtitle}>Voici ton tableau de bord, ton QG pour écraser tes objectifs</p>
+        <p className={style.motivationMessage}>{motivationMessage}</p>
+      </section>
+
+      {status === "loading" && <p className={style.loading}>Chargement…</p>}
+      {status === "error" && <p className={style.error}>{error}</p>}
+
+      {records.length === 0 && status === "idle" && (
+        <p className={style.emptyState}>
+          Aucune donnée pour l'instant. Enregistre un IMC, des calories ou une séance pour voir les courbes.
+        </p>
+      )}
+
+      <section className={style.topRow}>
+        <div className={style.quickActions}>
+          <button onClick={() => navigate('/exo')} className={style.quickAction}>
+            <span className={style.quickActionIcon}>🏋️</span>
+            <span className={style.quickActionLabel}>Nouvelle séance</span>
+          </button>
+          <button onClick={() => navigate('/outils')} className={style.quickAction}>
+            <span className={style.quickActionIcon}>🛠️</span>
+            <span className={style.quickActionLabel}>Outils</span>
+          </button>
+        </div>
+
+        {stats.totalSessions > 0 && (
+          <WeeklyGoalCard
+            weeklyGoal={weeklyGoal}
+            completedSessions={stats.last7Days}
+            weeklyProgress={weeklyProgress}
+            onEditGoal={onOpenGoalModal}
+          />
+        )}
+      </section>
+
+      {showInsights && (
+        <section className={style.insightsGrid}>
+          {stats.totalSessions > 0 && (
+            <ActivityHeatmapPanel weeks={activityHeatmap} />
+          )}
+
+          {badges.length > 0 && <BadgesPanel badges={badges} />}
+        </section>
+      )}
+
+      <section className={style.themeSection}>
+        <header className={style.themeHeader}>
+          <h2 className={style.themeTitle}>Poids &amp; IMC</h2>
+          <p className={style.themeSubtitle}>
+            Visualise l&apos;impact de tes habitudes sur ton poids et ton énergie.
+          </p>
+        </header>
+
+        <div className={style.themeGrid}>
+          <div className={`${style.themeTile} ${style.chartCard}`}>
+            <WeightChart points={weightPoints} />
+          </div>
+
+          <div className={style.themeSide}>
+            <div className={style.statCard}>
+              <h3 className={style.statCardTitle}>Suivi du poids</h3>
+              <p className={style.statCardValue}>{weightStats.value}</p>
+              {weightStats.delta && (
+                <p className={deltaClassName(weightStats.deltaTone)}>
+                  {weightStats.delta}
+                </p>
+              )}
+              {weightStats.meta && <p className={style.statCardMeta}>{weightStats.meta}</p>}
+            </div>
+
+            <div className={style.statCard}>
+              <h3 className={style.statCardTitle}>Calories journalières</h3>
+              <p className={style.statCardValue}>{calorieStats.value}</p>
+              {calorieStats.delta && (
+                <p className={deltaClassName(calorieStats.deltaTone)}>
+                  {calorieStats.delta}
+                </p>
+              )}
+              {calorieStats.meta && <p className={style.statCardMeta}>{calorieStats.meta}</p>}
+            </div>
+
+            <div className={`${style.themeTile} ${style.recapCard}`}>
+              <ImcRecapCard
+                imcPoints={imcPoints}
+                sessions={userSessions}
+                lastSession={lastCompletedSession}
+                onDelete={onDelete}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className={style.metricsSection}>
+        <SwimDistanceCard
+          stats={swimStats}
+          formatKmValue={formatKmValue}
+          shortDateFormatter={shortDateFormatter}
+        />
+        <RunDistanceCard
+          stats={runStats}
+          formatKmValue={formatKmValue}
+          shortDateFormatter={shortDateFormatter}
+        />
+      </section>
+
+
+
+      <div className={style.analyticsGrid}>
+        <div className={style.analyticsItem}>
+          <RMHistory rmTests={rmTests} />
+        </div>
+      </div>
+
+      <div className={style.detailGrid}>
+        <div className={style.detailItem}>
+          <SuivieSeance
+            sessions={userSessions}
+            lastSession={lastCompletedSession}
+            onDeleteSuccess={onDeleteSuccess}
+            showSummaryCards={false}
+          />
+        </div>
+      </div>
+
+      <WeeklyGoalModal
+        isOpen={showGoalModal}
+        tempGoal={tempGoal}
+        onChange={setTempGoal}
+        onClose={onCloseGoalModal}
+        onSave={onSaveGoal}
+      />
+    </>
+  );
+}
 
 export default function Dashboard() {
   usePageTitle("Dashboard");
@@ -24,11 +222,11 @@ export default function Dashboard() {
   const parseDate = useCallback((raw) => {
     if (!raw) return null;
     if (raw instanceof Date) return isNaN(raw) ? null : raw;
-    if (typeof raw === 'number') {
+    if (typeof raw === "number") {
       const d = new Date(raw);
       return isNaN(d) ? null : d;
     }
-    if (typeof raw === 'string') {
+    if (typeof raw === "string") {
       const m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
       const iso = m ? `${m[3]}-${m[2]}-${m[1]}` : raw;
       const d = new Date(iso);
@@ -37,28 +235,31 @@ export default function Dashboard() {
     return null;
   }, []);
 
-  const { records, sessions, points, status, error, displayName, handleDelete } = useHistoryData();
+  const { records, sessions, status, error, displayName, handleDelete } = useHistoryData();
 
   const [userSessions, setUserSessions] = useState([]);
-  const [weeklyGoal, setWeeklyGoal] = useState(3); 
+  const [weeklyGoal, setWeeklyGoal] = useState(3);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [tempGoal, setTempGoal] = useState(3);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const list = Array.isArray(sessions) ? sessions : [];
 
     const normalize = (s) => {
-      const raw = Array.isArray(s?.entries) ? s.entries
-        : Array.isArray(s?.items) ? s.items
-        : Array.isArray(s?.exercises) ? s.exercises
+      const raw = Array.isArray(s?.entries)
+        ? s.entries
+        : Array.isArray(s?.items)
+        ? s.items
+        : Array.isArray(s?.exercises)
+        ? s.exercises
         : [];
 
       const entries = raw.map((e) => {
-        if (e && typeof e === 'object') {
-          const name = e.name || e.label || e.exerciseName || e.exoName || e.title || 'Exercice';
+        if (e && typeof e === "object") {
+          const name = e.name || e.label || e.exerciseName || e.exoName || e.title || "Exercice";
           return { ...e, name };
         }
-        return { name: String(e ?? 'Exercice') };
+        return { name: String(e ?? "Exercice") };
       });
 
       return { ...s, entries, items: entries, exercises: entries };
@@ -67,9 +268,8 @@ export default function Dashboard() {
     setUserSessions(list.map(normalize));
   }, [sessions]);
 
-  
-  React.useEffect(() => {
-    const savedGoal = localStorage.getItem('weeklyGoal');
+  useEffect(() => {
+    const savedGoal = localStorage.getItem("weeklyGoal");
     if (savedGoal) {
       const goal = parseInt(savedGoal, 10);
       if (goal > 0 && goal <= 14) {
@@ -79,40 +279,174 @@ export default function Dashboard() {
     }
   }, []);
 
-  
-  const handleSaveGoal = () => {
+  const handleSaveGoal = useCallback(() => {
     if (tempGoal > 0 && tempGoal <= 14) {
       setWeeklyGoal(tempGoal);
-      localStorage.setItem('weeklyGoal', tempGoal.toString());
+      localStorage.setItem("weeklyGoal", tempGoal.toString());
       setShowGoalModal(false);
     }
-  };
+  }, [tempGoal]);
 
-  const handleOpenGoalModal = () => {
+  const handleOpenGoalModal = useCallback(() => {
     setTempGoal(weeklyGoal);
     setShowGoalModal(true);
-  };
+  }, [weeklyGoal]);
 
-  const imcPoints = useMemo(() => records.filter(r => r.type === 'imc'), [records]);
-  const weightPoints = useMemo(() =>
-    imcPoints
-      .map(r => ({ value: Number(r.poids), date: parseDate(r.date) }))
-      .filter(p => Number.isFinite(p.value) && p.date)
-      .sort((a, b) => a.date - b.date)
-  , [imcPoints]);
+  const imcPoints = useMemo(() => records.filter((r) => r.type === "imc"), [records]);
+  const weightPoints = useMemo(
+    () =>
+      imcPoints
+        .map((r) => ({ value: Number(r.poids), date: parseDate(r.date) }))
+        .filter((p) => Number.isFinite(p.value) && p.date)
+        .sort((a, b) => a.date - b.date),
+    [imcPoints, parseDate]
+  );
 
-  // Tests de 1RM
+  const fullDateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
+    []
+  );
+
+  const numberFormatter = useMemo(() => new Intl.NumberFormat("fr-FR"), []);
+
+  const weightSummary = useMemo(() => {
+    if (!weightPoints.length) {
+      return {
+        value: "--",
+        meta: "Aucune mesure de poids enregistrée",
+        delta: null,
+        deltaTone: null,
+      };
+    }
+
+    const latestEntry = weightPoints[weightPoints.length - 1];
+    const latestValue = Number(latestEntry.value);
+    const previousEntry =
+      weightPoints.length > 1 ? weightPoints[weightPoints.length - 2] : null;
+    const previousValue = previousEntry ? Number(previousEntry.value) : null;
+
+    const value = Number.isFinite(latestValue)
+      ? `${latestValue.toFixed(1)} kg`
+      : "--";
+
+    const meta =
+      latestEntry.date instanceof Date
+        ? `Mesure du ${fullDateFormatter.format(latestEntry.date)}`
+        : "Dernière mesure disponible";
+
+    let delta = null;
+    let deltaTone = null;
+    if (
+      previousEntry &&
+      Number.isFinite(previousValue) &&
+      Number.isFinite(latestValue)
+    ) {
+      const diff = Number((latestValue - previousValue).toFixed(1));
+      if (Math.abs(diff) < 0.1) {
+        delta = "Stable vs précédente mesure";
+        deltaTone = "neutral";
+      } else {
+        const sign = diff > 0 ? "+" : "−";
+        delta = `${sign}${Math.abs(diff).toFixed(1)} kg vs précédente mesure`;
+        deltaTone = diff > 0 ? "up" : "down";
+      }
+    }
+
+    return { value, meta, delta, deltaTone };
+  }, [weightPoints, fullDateFormatter]);
+
+  const calorieSummary = useMemo(() => {
+    const extractValue = (record) => {
+      if (!record || typeof record !== "object") return null;
+      const fields = ["calories", "calorie", "kcal", "totalCalories", "caloriesTotales", "caloriesTotal"];
+      for (const field of fields) {
+        const raw = record[field];
+        const num = Number(raw);
+        if (Number.isFinite(num)) return num;
+      }
+      return null;
+    };
+
+    const isCalorieRecord = (record) => {
+      const type = String(record?.type || record?.category || "").toLowerCase();
+      return (
+        type.includes("calorie") ||
+        type.includes("nutrition") ||
+        type.includes("aliment")
+      );
+    };
+
+    const entries = records
+      .map((record) => {
+        const value = extractValue(record);
+        if (!isCalorieRecord(record) && value === null) return null;
+        const dateValue =
+          parseDate(record?.date) ||
+          parseDate(record?.createdAt) ||
+          parseDate(record?.updatedAt);
+        if (value === null) return null;
+        return { value, date: dateValue };
+      })
+      .filter(Boolean);
+
+    if (!entries.length) {
+      return {
+        value: "--",
+        meta: "Enregistre tes repas pour suivre tes calories",
+        delta: null,
+        deltaTone: null,
+      };
+    }
+
+    entries.sort((a, b) => {
+      const timeA = a.date instanceof Date ? a.date.getTime() : 0;
+      const timeB = b.date instanceof Date ? b.date.getTime() : 0;
+      return timeA - timeB;
+    });
+
+    const latest = entries[entries.length - 1];
+    const previous = entries.length > 1 ? entries[entries.length - 2] : null;
+    const formattedValue = `${numberFormatter.format(
+      Math.round(latest.value)
+    )} kcal`;
+    const meta =
+      latest.date instanceof Date
+        ? `Enregistrement du ${fullDateFormatter.format(latest.date)}`
+        : "Dernier enregistrement";
+
+    let delta = null;
+    let deltaTone = null;
+    if (previous) {
+      const diff = Math.round(latest.value - previous.value);
+      if (Math.abs(diff) < 5) {
+        delta = "Stable vs précédent enregistrement";
+        deltaTone = "neutral";
+      } else {
+        const sign = diff > 0 ? "+" : "−";
+        delta = `${sign}${Math.abs(diff)} kcal vs précédent`;
+        deltaTone = diff > 0 ? "up" : "down";
+      }
+    }
+
+    return { value: formattedValue, meta, delta, deltaTone };
+  }, [records, parseDate, numberFormatter, fullDateFormatter]);
+
   const rmTests = useMemo(() => {
     return records
-      .filter(r => r.type === 'rm')
-      .map(r => ({
+      .filter((r) => r.type === "rm")
+      .map((r) => ({
         id: r._id || r.id,
         exercice: r.exercice,
         poids: r.poids,
         reps: r.reps,
         rm: r.rm,
         date: r.date,
-        formulas: r.formulas || {}
+        formulas: r.formulas || {},
       }))
       .sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [records]);
@@ -121,17 +455,18 @@ export default function Dashboard() {
     const list = Array.isArray(userSessions) ? userSessions : [];
     if (list.length === 0) return null;
 
-    const toDate = (s) => parseDate(
-      s?.endedAt || s?.date || s?.createdAt || s?.performedAt || s?.startedAt || s?.day
-    );
+    const toDate = (s) =>
+      parseDate(s?.endedAt || s?.date || s?.createdAt || s?.performedAt || s?.startedAt || s?.day);
+
     const isDone = (s) => {
-      const status = String(s?.status || "").toLowerCase();
+      const statusValue = String(s?.status || "").toLowerCase();
       return (
         Boolean(s?.endedAt) ||
         Boolean(s?.finishedAt) ||
         s?.isFinished === true ||
-        s?.percent === 100 || s?.progress === 100 ||
-        ["done", "completed", "finished", "terminee", "terminée"].includes(status)
+        s?.percent === 100 ||
+        s?.progress === 100 ||
+        ["done", "completed", "finished", "terminee", "terminée"].includes(statusValue)
       );
     };
 
@@ -147,25 +482,24 @@ export default function Dashboard() {
   const stats = useMemo(() => {
     const totalSessions = userSessions.length;
 
-    // Calculer le début de la semaine en cours (lundi)
     const getWeekStart = () => {
       const now = new Date();
       const day = now.getDay();
-      const diff = day === 0 ? -6 : 1 - day; // Si dimanche (0), revenir à lundi, sinon calculer depuis lundi
+      const diff = day === 0 ? -6 : 1 - day;
       const monday = new Date(now);
       monday.setDate(now.getDate() + diff);
       monday.setHours(0, 0, 0, 0);
       return monday;
     };
 
-    const last7Days = userSessions.filter(s => {
+    const last7Days = userSessions.filter((s) => {
       const date = parseDate(s?.date || s?.createdAt || s?.endedAt);
       if (!date) return false;
       const weekStart = getWeekStart();
       return date >= weekStart;
     }).length;
 
-    const last30Days = userSessions.filter(s => {
+    const last30Days = userSessions.filter((s) => {
       const date = parseDate(s?.date || s?.createdAt || s?.endedAt);
       if (!date) return false;
       const monthAgo = new Date();
@@ -173,8 +507,7 @@ export default function Dashboard() {
       return date >= monthAgo;
     }).length;
 
-    
-    const prev30Days = userSessions.filter(s => {
+    const prev30Days = userSessions.filter((s) => {
       const date = parseDate(s?.date || s?.createdAt || s?.endedAt);
       if (!date) return false;
       const twoMonthsAgo = new Date();
@@ -184,13 +517,12 @@ export default function Dashboard() {
       return date >= twoMonthsAgo && date < oneMonthAgo;
     }).length;
 
-    
     let streak = 0;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const sortedDates = userSessions
-      .map(s => {
+      .map((s) => {
         const d = parseDate(s?.date || s?.createdAt || s?.endedAt);
         if (!d) return null;
         d.setHours(0, 0, 0, 0);
@@ -199,7 +531,7 @@ export default function Dashboard() {
       .filter(Boolean)
       .sort((a, b) => b - a);
 
-    const uniqueDates = [...new Set(sortedDates.map(d => d.getTime()))].map(t => new Date(t));
+    const uniqueDates = [...new Set(sortedDates.map((d) => d.getTime()))].map((t) => new Date(t));
 
     for (let i = 0; i < uniqueDates.length; i++) {
       const expectedDate = new Date(today);
@@ -212,7 +544,6 @@ export default function Dashboard() {
       }
     }
 
-    
     const totalMinutes = userSessions.reduce((acc, s) => {
       const mins = s?.durationMinutes ?? s?.minutes ?? 0;
       return acc + mins;
@@ -220,7 +551,6 @@ export default function Dashboard() {
 
     const totalHours = Math.floor(totalMinutes / 60);
 
-    
     const trend = prev30Days > 0 ? ((last30Days - prev30Days) / prev30Days) * 100 : 0;
 
     return {
@@ -230,11 +560,10 @@ export default function Dashboard() {
       streak,
       totalHours,
       totalMinutes,
-      trend
+      trend,
     };
   }, [userSessions, parseDate]);
 
-  
   const motivationMessage = useMemo(() => {
     if (stats.streak >= 7) return "🔥 Série de feu ! Tu es sur une lancée incroyable !";
     if (stats.streak >= 3) return "💪 Continue comme ça, tu es sur la bonne voie !";
@@ -244,7 +573,6 @@ export default function Dashboard() {
     return "🚀 Commence ton aventure fitness maintenant !";
   }, [stats]);
 
-  
   const badges = useMemo(() => {
     const earned = [];
     if (stats.totalSessions >= 1) earned.push({ icon: "🎯", name: "Première séance", desc: "Tu as commencé !" });
@@ -261,18 +589,25 @@ export default function Dashboard() {
     return earned;
   }, [stats, weightPoints]);
 
-  
   const weeklyProgress = Math.min((stats.last7Days / weeklyGoal) * 100, 100);
 
-  const kmFormatter = useMemo(() => new Intl.NumberFormat('fr-FR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }), []);
+  const kmFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat('fr-FR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+    []
+  );
 
-  const shortDateFormatter = useMemo(() => new Intl.DateTimeFormat('fr-FR', {
-    day: '2-digit',
-    month: 'short'
-  }), []);
+  const shortDateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat('fr-FR', {
+        day: '2-digit',
+        month: 'short',
+      }),
+    []
+  );
 
   const formatKmValue = useCallback((value) => kmFormatter.format(Number.isFinite(value) ? value : 0), [kmFormatter]);
 
@@ -293,9 +628,7 @@ export default function Dashboard() {
     }
 
     if (distanceKm === 0 && String(entry?.subType || '').toLowerCase() === 'swim') {
-      const laps = Number(
-        (Array.isArray(entry.sets) ? entry.sets[0]?.laps : undefined) ?? entry.laps ?? 0
-      );
+      const laps = Number((Array.isArray(entry.sets) ? entry.sets[0]?.laps : undefined) ?? entry.laps ?? 0);
       const poolLength = Number(
         (Array.isArray(entry.sets) ? entry.sets[0]?.poolLength : undefined) ?? entry.poolLength ?? 0
       );
@@ -307,63 +640,66 @@ export default function Dashboard() {
     return distanceKm;
   }, []);
 
-  const computeDistanceHistory = useCallback((predicate) => {
-    const totals = new Map();
-    let totalKm = 0;
+  const computeDistanceHistory = useCallback(
+    (predicate) => {
+      const totals = new Map();
+      let totalKm = 0;
 
-    (userSessions || []).forEach((session) => {
-      const entries = Array.isArray(session?.entries)
-        ? session.entries
-        : Array.isArray(session?.items)
-        ? session.items
-        : Array.isArray(session?.exercises)
-        ? session.exercises
-        : [];
+      (userSessions || []).forEach((session) => {
+        const entries = Array.isArray(session?.entries)
+          ? session.entries
+          : Array.isArray(session?.items)
+          ? session.items
+          : Array.isArray(session?.exercises)
+          ? session.exercises
+          : [];
 
-      if (!entries.length) return;
+        if (!entries.length) return;
 
-      const sessionDate = parseDate(
-        session?.endedAt || session?.date || session?.createdAt || session?.startedAt || session?.performedAt
-      );
+        const sessionDate = parseDate(
+          session?.endedAt || session?.date || session?.createdAt || session?.startedAt || session?.performedAt
+        );
 
-      if (!sessionDate) return;
+        if (!sessionDate) return;
 
-      let sessionKm = 0;
-      for (const entry of entries) {
-        if (!predicate(entry)) continue;
-        const entryKm = getEntryDistanceKm(entry);
-        if (entryKm > 0) {
-          sessionKm += entryKm;
+        let sessionKm = 0;
+        for (const entry of entries) {
+          if (!predicate(entry)) continue;
+          const entryKm = getEntryDistanceKm(entry);
+          if (entryKm > 0) {
+            sessionKm += entryKm;
+          }
         }
-      }
 
-      if (sessionKm > 0) {
-        const key = sessionDate.toISOString().slice(0, 10);
-        totals.set(key, (totals.get(key) || 0) + sessionKm);
-        totalKm += sessionKm;
-      }
-    });
+        if (sessionKm > 0) {
+          const key = sessionDate.toISOString().slice(0, 10);
+          totals.set(key, (totals.get(key) || 0) + sessionKm);
+          totalKm += sessionKm;
+        }
+      });
 
-    const history = Array.from(totals.entries())
-      .map(([dateKey, distanceKm]) => ({
-        dateKey,
-        distanceKm,
-        date: new Date(`${dateKey}T00:00:00`)
-      }))
-      .sort((a, b) => b.date - a.date);
+      const history = Array.from(totals.entries())
+        .map(([dateKey, distanceKm]) => ({
+          dateKey,
+          distanceKm,
+          date: new Date(`${dateKey}T00:00:00`),
+        }))
+        .sort((a, b) => b.date - a.date);
 
-    const totalSessions = history.length;
-    const avgKm = totalSessions ? totalKm / totalSessions : 0;
-    const bestKm = history.reduce((max, item) => Math.max(max, item.distanceKm), 0);
+      const totalSessions = history.length;
+      const avgKm = totalSessions ? totalKm / totalSessions : 0;
+      const bestKm = history.reduce((max, item) => Math.max(max, item.distanceKm), 0);
 
-    return {
-      totalKm,
-      totalSessions,
-      avgKm,
-      bestKm,
-      history
-    };
-  }, [userSessions, parseDate, getEntryDistanceKm]);
+      return {
+        totalKm,
+        totalSessions,
+        avgKm,
+        bestKm,
+        history,
+      };
+    },
+    [userSessions, parseDate, getEntryDistanceKm]
+  );
 
   const swimStats = useMemo(() => {
     const swimPredicate = (entry) => {
@@ -386,7 +722,6 @@ export default function Dashboard() {
     return computeDistanceHistory(runPredicate);
   }, [computeDistanceHistory]);
 
-  // Heatmap des 12 dernières semaines (du plus récent au plus ancien)
   const activityHeatmap = useMemo(() => {
     const weeks = 12;
     const heatmap = [];
@@ -395,20 +730,19 @@ export default function Dashboard() {
 
     for (let i = 0; i < weeks; i++) {
       const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - (i * 7) - today.getDay());
+      weekStart.setDate(today.getDate() - i * 7 - today.getDay());
       weekStart.setHours(0, 0, 0, 0);
 
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 6);
       weekEnd.setHours(23, 59, 59, 999);
 
-      const sessionsInWeek = userSessions.filter(s => {
+      const sessionsInWeek = userSessions.filter((s) => {
         const date = parseDate(s?.date || s?.createdAt || s?.endedAt);
         if (!date) return false;
         return date >= weekStart && date <= weekEnd;
       }).length;
 
-      // Formater les dates
       const startDay = weekStart.getDate();
       const endDay = weekEnd.getDate();
       const month = monthNames[weekStart.getMonth()];
@@ -417,299 +751,63 @@ export default function Dashboard() {
       heatmap.push({
         week: i + 1,
         count: sessionsInWeek,
-        intensity: sessionsInWeek === 0 ? 0 : sessionsInWeek <= 2 ? 1 : sessionsInWeek <= 4 ? 2 : 3,
+        intensity:
+          sessionsInWeek === 0 ? 0 : sessionsInWeek <= 2 ? 1 : sessionsInWeek <= 4 ? 2 : 3,
         label: `${startDay}-${endDay} ${month}`,
-        isCurrentWeek
+        isCurrentWeek,
       });
     }
 
     return heatmap;
   }, [userSessions, parseDate]);
 
-  // Capitaliser la première lettre du nom
   const capitalizedName = useMemo(() => {
     if (!displayName) return "Utilisateur";
     return displayName.charAt(0).toUpperCase() + displayName.slice(1);
   }, [displayName]);
+
+  const handleSessionDelete = useCallback((id) => {
+    setUserSessions((prev) => prev.filter((s) => s.id !== id));
+  }, []);
 
   return (
     <>
       <Header />
       <main className={style.dashboard}>
         <div className={style.container}>
-          <div className={style.welcomeSection}>
-            <h1 className={style.welcomeTitle}>Salut {capitalizedName} 👋</h1>
-            <p className={style.welcomeSubtitle}>Voici ton tableau de bord, ton QG pour écraser tes objectifs</p>
-            <p className={style.motivationMessage}>{motivationMessage}</p>
-          </div>
-
-          {status === "loading" && <p className={style.loading}>Chargement…</p>}
-          {status === "error" && <p className={style.error}>{error}</p>}
-
-          {records.length === 0 && status === "idle" && (
-            <p className={style.emptyState}>
-              Aucune donnée pour l'instant. Enregistre un IMC, des calories ou une séance pour voir les courbes.
-            </p>
-          )}
-
-          {/* Activités détaillées */}
-          <section className={style.metricsSection}>
-            <div className={style.metricCard}>
-              <div className={style.metricHeader}>
-                <span className={style.metricIcon} aria-hidden="true">🏊</span>
-                <div>
-                  <h2 className={style.metricTitle}>Natation</h2>
-                  <p className={style.metricSubtitle}>Distance cumulée</p>
-                </div>
-              </div>
-
-              <div className={style.metricSummary}>
-                <div className={style.metricSummaryItem}>
-                  <span className={style.metricSummaryLabel}>Total</span>
-                  <span className={style.metricSummaryValue}>{formatKmValue(swimStats.totalKm)} km</span>
-                </div>
-                <div className={style.metricSummaryItem}>
-                  <span className={style.metricSummaryLabel}>Séances</span>
-                  <span className={style.metricSummaryValue}>{swimStats.totalSessions}</span>
-                </div>
-                <div className={style.metricSummaryItem}>
-                  <span className={style.metricSummaryLabel}>Moyenne</span>
-                  <span className={style.metricSummaryValue}>{formatKmValue(swimStats.avgKm)} km</span>
-                </div>
-              </div>
-
-              <div className={style.metricHistory}>
-                <h4 className={style.metricHistoryTitle}>Historique récent</h4>
-                {swimStats.history.length ? (
-                  <ul className={style.metricHistoryList}>
-                    {swimStats.history.slice(0, 6).map((item) => (
-                      <li key={item.dateKey} className={style.metricHistoryItem}>
-                        <span className={style.metricHistoryDate}>{shortDateFormatter.format(item.date)}</span>
-                        <span className={style.metricHistoryDistance}>{formatKmValue(item.distanceKm)} km</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className={style.metricHistoryEmpty}>Pas encore de séance de natation enregistrée.</p>
-                )}
-              </div>
-            </div>
-
-            <div className={style.metricCard}>
-              <div className={style.metricHeader}>
-                <span className={style.metricIcon} aria-hidden="true">🚶</span>
-                <div>
-                  <h2 className={style.metricTitle}>Marche / Course</h2>
-                  <p className={style.metricSubtitle}>Kilométrage cumulé</p>
-                </div>
-              </div>
-
-              <div className={style.metricSummary}>
-                <div className={style.metricSummaryItem}>
-                  <span className={style.metricSummaryLabel}>Total</span>
-                  <span className={style.metricSummaryValue}>{formatKmValue(runStats.totalKm)} km</span>
-                </div>
-                <div className={style.metricSummaryItem}>
-                  <span className={style.metricSummaryLabel}>Séances</span>
-                  <span className={style.metricSummaryValue}>{runStats.totalSessions}</span>
-                </div>
-                <div className={style.metricSummaryItem}>
-                  <span className={style.metricSummaryLabel}>Meilleure sortie</span>
-                  <span className={style.metricSummaryValue}>{formatKmValue(runStats.bestKm)} km</span>
-                </div>
-              </div>
-
-              <div className={style.metricHistory}>
-                <h4 className={style.metricHistoryTitle}>Historique récent</h4>
-                {runStats.history.length ? (
-                  <ul className={style.metricHistoryList}>
-                    {runStats.history.slice(0, 6).map((item) => (
-                      <li key={item.dateKey} className={style.metricHistoryItem}>
-                        <span className={style.metricHistoryDate}>{shortDateFormatter.format(item.date)}</span>
-                        <span className={style.metricHistoryDistance}>{formatKmValue(item.distanceKm)} km</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className={style.metricHistoryEmpty}>Pas encore de marche ou course enregistrée.</p>
-                )}
-              </div>
-            </div>
-          </section>
-
-          {/* Raccourcis */}
-          <div className={style.quickActions}>
-            <button onClick={() => navigate('/exo')} className={style.quickAction}>
-              <span className={style.quickActionIcon}>🏋️</span>
-              <span className={style.quickActionLabel}>Nouvelle séance</span>
-            </button>
-            <button onClick={() => navigate('/outils')} className={style.quickAction}>
-              <span className={style.quickActionIcon}>🛠️</span>
-              <span className={style.quickActionLabel}>Outils</span>
-            </button>
-          </div>
-
-          {/* Objectif hebdomadaire */}
-          {stats.totalSessions > 0 && (
-            <div className={style.weeklyGoalCard}>
-              <div className={style.goalHeader}>
-                <h3 className={style.goalTitle}>🎯 Objectif hebdomadaire</h3>
-                <div className={style.goalHeaderRight}>
-                  <span className={style.goalProgress}>{stats.last7Days}/{weeklyGoal} séances</span>
-                  <button onClick={handleOpenGoalModal} className={style.editGoalBtn} title="Modifier l'objectif">
-                    ⚙️
-                  </button>
-                </div>
-              </div>
-              <div className={style.progressBarContainer}>
-                <div className={style.progressBar} style={{width: `${weeklyProgress}%`}}></div>
-              </div>
-              <p className={style.goalMessage}>
-                {weeklyProgress >= 100
-                  ? "🎉 Objectif atteint ! Tu es incroyable !"
-                  : weeklyProgress >= 66
-                  ? "💪 Plus qu'un petit effort !"
-                  : "🚀 Continue comme ça !"}
-              </p>
-            </div>
-          )}
-
-          {/* Badges */}
-          {badges.length > 0 && (
-            <div className={style.badgesSection}>
-              <h3 className={style.sectionTitle}>🏆 Tes badges ({badges.length})</h3>
-              <div className={style.badgesGrid}>
-                {badges.slice(-6).reverse().map((badge, i) => (
-                  <div key={i} className={style.badge}>
-                    <span className={style.badgeIcon}>{badge.icon}</span>
-                    <h4 className={style.badgeName}>{badge.name}</h4>
-                    <p className={style.badgeDesc}>{badge.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Activité des 12 dernières semaines */}
-          {stats.totalSessions > 0 && (
-            <div className={style.activitySection}>
-              <div className={style.activityHeader}>
-                <h3 className={style.sectionTitle}>📊 Activité des 12 dernières semaines</h3>
-                <div className={style.activityLegend}>
-                  <span className={style.legendLabel}>Moins</span>
-                  <div className={style.legendDots}>
-                    <div className={style.legendDot} style={{background: '#e5e7eb'}}></div>
-                    <div className={style.legendDot} style={{background: '#fcd4bc'}}></div>
-                    <div className={style.legendDot} style={{background: '#fbb896'}}></div>
-                    <div className={style.legendDot} style={{background: '#FFB385'}}></div>
-                  </div>
-                  <span className={style.legendLabel}>Plus</span>
-                </div>
-              </div>
-              <div className={style.activityGrid}>
-                {activityHeatmap.map((week, i) => (
-                  <div key={i} className={style.weekCard}>
-                    <div className={style.weekHeader}>
-                      <span className={style.weekLabel}>{week.label}</span>
-                      {week.isCurrentWeek && <span className={style.currentBadge}>En cours</span>}
-                    </div>
-                    <div className={style.weekStats}>
-                      <div className={style.sessionCount}>
-                        <span className={style.countNumber}>{week.count}</span>
-                        <span className={style.countLabel}>séance{week.count > 1 ? 's' : ''}</span>
-                      </div>
-                      <div
-                        className={style.intensityDot}
-                        style={{
-                          background: week.intensity === 0
-                            ? '#e5e7eb'
-                            : week.intensity === 1
-                            ? '#fcd4bc'
-                            : week.intensity === 2
-                            ? '#fbb896'
-                            : '#FFB385',
-                          boxShadow: week.intensity > 0 ? '0 2px 8px rgba(255, 179, 133, 0.3)' : 'none'
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className={style.chartsGrid}>
-            <WeightChart points={weightPoints} />
-          </div>
-
-          {/* Historique RM */}
-          <RMHistory rmTests={rmTests} />
-
-          <div className={style.recapGrid}>
-            <ImcRecapCard
-              imcPoints={imcPoints}
-              sessions={userSessions}
-              lastSession={lastCompletedSession}
-              onDelete={handleDelete}
-            />
-          </div>
-
-          <div className={style.statsSection}>
-            <SuivieSeance
-              sessions={userSessions}
-              lastSession={lastCompletedSession}
-              onDeleteSuccess={(id) => {
-                setUserSessions((prev) => prev.filter(s => s.id !== id));
-              }}
-            />
-          </div>
-
+          <DashboardOverview
+            navigate={navigate}
+            status={status}
+            error={error}
+            records={records}
+            capitalizedName={capitalizedName}
+            motivationMessage={motivationMessage}
+            stats={stats}
+            weeklyGoal={weeklyGoal}
+            weeklyProgress={weeklyProgress}
+            onOpenGoalModal={handleOpenGoalModal}
+            swimStats={swimStats}
+            runStats={runStats}
+            formatKmValue={formatKmValue}
+            shortDateFormatter={shortDateFormatter}
+            badges={badges}
+            activityHeatmap={activityHeatmap}
+            weightPoints={weightPoints}
+            weightSummary={weightSummary}
+            calorieSummary={calorieSummary}
+            rmTests={rmTests}
+            imcPoints={imcPoints}
+            userSessions={userSessions}
+            lastCompletedSession={lastCompletedSession}
+            onDelete={handleDelete}
+            onDeleteSuccess={handleSessionDelete}
+            showGoalModal={showGoalModal}
+            tempGoal={tempGoal}
+            setTempGoal={setTempGoal}
+            onCloseGoalModal={() => setShowGoalModal(false)}
+            onSaveGoal={handleSaveGoal}
+          />
         </div>
-
-        {}
-        {showGoalModal && (
-          <div className={style.modalOverlay} onClick={() => setShowGoalModal(false)}>
-            <div className={style.modalContent} onClick={(e) => e.stopPropagation()}>
-              <h3 className={style.modalTitle}>🎯 Modifier ton objectif hebdomadaire</h3>
-              <p className={style.modalDesc}>Combien de séances souhaites-tu faire par semaine ?</p>
-
-              <div className={style.goalInput}>
-                <button
-                  onClick={() => setTempGoal(Math.max(1, tempGoal - 1))}
-                  className={style.goalBtn}
-                >
-                  −
-                </button>
-                <input
-                  type="number"
-                  min="1"
-                  max="14"
-                  value={tempGoal}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value, 10);
-                    if (val > 0 && val <= 14) setTempGoal(val);
-                  }}
-                  className={style.goalInputField}
-                />
-                <button
-                  onClick={() => setTempGoal(Math.min(14, tempGoal + 1))}
-                  className={style.goalBtn}
-                >
-                  +
-                </button>
-              </div>
-
-              <div className={style.modalActions}>
-                <button onClick={() => setShowGoalModal(false)} className={style.btnCancel}>
-                  Annuler
-                </button>
-                <button onClick={handleSaveGoal} className={style.btnSave}>
-                  Enregistrer
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
       <Footer />
     </>
