@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import Header from "../../components/Header/Header.jsx";
@@ -21,7 +21,7 @@ export default function Dashboard() {
     }
   }, [navigate]);
 
-  const parseDate = (raw) => {
+  const parseDate = useCallback((raw) => {
     if (!raw) return null;
     if (raw instanceof Date) return isNaN(raw) ? null : raw;
     if (typeof raw === 'number') {
@@ -35,7 +35,7 @@ export default function Dashboard() {
       return isNaN(d) ? null : d;
     }
     return null;
-  };
+  }, []);
 
   const { records, sessions, points, status, error, displayName, handleDelete } = useHistoryData();
 
@@ -264,6 +264,128 @@ export default function Dashboard() {
   
   const weeklyProgress = Math.min((stats.last7Days / weeklyGoal) * 100, 100);
 
+  const kmFormatter = useMemo(() => new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }), []);
+
+  const shortDateFormatter = useMemo(() => new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: 'short'
+  }), []);
+
+  const formatKmValue = useCallback((value) => kmFormatter.format(Number.isFinite(value) ? value : 0), [kmFormatter]);
+
+  const getEntryDistanceKm = useCallback((entry) => {
+    if (!entry || typeof entry !== 'object') return 0;
+    const sets = Array.isArray(entry.sets) ? entry.sets : [];
+    let distanceKm = 0;
+
+    for (const set of sets) {
+      if (!set) continue;
+      if (set.distanceKm != null && set.distanceKm !== '') {
+        distanceKm += Number(set.distanceKm) || 0;
+      } else if (set.km != null && set.km !== '') {
+        distanceKm += Number(set.km) || 0;
+      } else if (set.meters != null && set.meters !== '') {
+        distanceKm += (Number(set.meters) || 0) / 1000;
+      }
+    }
+
+    if (distanceKm === 0 && String(entry?.subType || '').toLowerCase() === 'swim') {
+      const laps = Number(
+        (Array.isArray(entry.sets) ? entry.sets[0]?.laps : undefined) ?? entry.laps ?? 0
+      );
+      const poolLength = Number(
+        (Array.isArray(entry.sets) ? entry.sets[0]?.poolLength : undefined) ?? entry.poolLength ?? 0
+      );
+      if (laps > 0 && poolLength > 0) {
+        distanceKm = (laps * poolLength) / 1000;
+      }
+    }
+
+    return distanceKm;
+  }, []);
+
+  const computeDistanceHistory = useCallback((predicate) => {
+    const totals = new Map();
+    let totalKm = 0;
+
+    (userSessions || []).forEach((session) => {
+      const entries = Array.isArray(session?.entries)
+        ? session.entries
+        : Array.isArray(session?.items)
+        ? session.items
+        : Array.isArray(session?.exercises)
+        ? session.exercises
+        : [];
+
+      if (!entries.length) return;
+
+      const sessionDate = parseDate(
+        session?.endedAt || session?.date || session?.createdAt || session?.startedAt || session?.performedAt
+      );
+
+      if (!sessionDate) return;
+
+      let sessionKm = 0;
+      for (const entry of entries) {
+        if (!predicate(entry)) continue;
+        const entryKm = getEntryDistanceKm(entry);
+        if (entryKm > 0) {
+          sessionKm += entryKm;
+        }
+      }
+
+      if (sessionKm > 0) {
+        const key = sessionDate.toISOString().slice(0, 10);
+        totals.set(key, (totals.get(key) || 0) + sessionKm);
+        totalKm += sessionKm;
+      }
+    });
+
+    const history = Array.from(totals.entries())
+      .map(([dateKey, distanceKm]) => ({
+        dateKey,
+        distanceKm,
+        date: new Date(`${dateKey}T00:00:00`)
+      }))
+      .sort((a, b) => b.date - a.date);
+
+    const totalSessions = history.length;
+    const avgKm = totalSessions ? totalKm / totalSessions : 0;
+    const bestKm = history.reduce((max, item) => Math.max(max, item.distanceKm), 0);
+
+    return {
+      totalKm,
+      totalSessions,
+      avgKm,
+      bestKm,
+      history
+    };
+  }, [userSessions, parseDate, getEntryDistanceKm]);
+
+  const swimStats = useMemo(() => {
+    const swimPredicate = (entry) => {
+      const subType = String(entry?.subType || '').toLowerCase();
+      if (subType === 'swim') return true;
+      const name = String(entry?.name || entry?.label || entry?.exerciseName || '').toLowerCase();
+      return /(natation|swim|piscine|crawl|brasse|dos)/.test(name);
+    };
+    return computeDistanceHistory(swimPredicate);
+  }, [computeDistanceHistory]);
+
+  const runStats = useMemo(() => {
+    const keywords = /(course|running|run|footing|trail|jog|marche|walk|tapis)/i;
+    const runPredicate = (entry) => {
+      const subType = String(entry?.subType || '').toLowerCase();
+      if (subType === 'swim' || subType === 'yoga' || subType === 'stretch') return false;
+      const name = String(entry?.name || entry?.label || entry?.exerciseName || '').toLowerCase();
+      return keywords.test(name);
+    };
+    return computeDistanceHistory(runPredicate);
+  }, [computeDistanceHistory]);
+
   // Heatmap des 12 dernières semaines (du plus récent au plus ancien)
   const activityHeatmap = useMemo(() => {
     const weeks = 12;
@@ -330,7 +452,92 @@ export default function Dashboard() {
             </p>
           )}
 
-          {/* Quick Actions */}
+          {/* Activités détaillées */}
+          <section className={style.metricsSection}>
+            <div className={style.metricCard}>
+              <div className={style.metricHeader}>
+                <span className={style.metricIcon} aria-hidden="true">🏊</span>
+                <div>
+                  <h2 className={style.metricTitle}>Natation</h2>
+                  <p className={style.metricSubtitle}>Distance cumulée</p>
+                </div>
+              </div>
+
+              <div className={style.metricSummary}>
+                <div className={style.metricSummaryItem}>
+                  <span className={style.metricSummaryLabel}>Total</span>
+                  <span className={style.metricSummaryValue}>{formatKmValue(swimStats.totalKm)} km</span>
+                </div>
+                <div className={style.metricSummaryItem}>
+                  <span className={style.metricSummaryLabel}>Séances</span>
+                  <span className={style.metricSummaryValue}>{swimStats.totalSessions}</span>
+                </div>
+                <div className={style.metricSummaryItem}>
+                  <span className={style.metricSummaryLabel}>Moyenne</span>
+                  <span className={style.metricSummaryValue}>{formatKmValue(swimStats.avgKm)} km</span>
+                </div>
+              </div>
+
+              <div className={style.metricHistory}>
+                <h4 className={style.metricHistoryTitle}>Historique récent</h4>
+                {swimStats.history.length ? (
+                  <ul className={style.metricHistoryList}>
+                    {swimStats.history.slice(0, 6).map((item) => (
+                      <li key={item.dateKey} className={style.metricHistoryItem}>
+                        <span className={style.metricHistoryDate}>{shortDateFormatter.format(item.date)}</span>
+                        <span className={style.metricHistoryDistance}>{formatKmValue(item.distanceKm)} km</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className={style.metricHistoryEmpty}>Pas encore de séance de natation enregistrée.</p>
+                )}
+              </div>
+            </div>
+
+            <div className={style.metricCard}>
+              <div className={style.metricHeader}>
+                <span className={style.metricIcon} aria-hidden="true">🚶</span>
+                <div>
+                  <h2 className={style.metricTitle}>Marche / Course</h2>
+                  <p className={style.metricSubtitle}>Kilométrage cumulé</p>
+                </div>
+              </div>
+
+              <div className={style.metricSummary}>
+                <div className={style.metricSummaryItem}>
+                  <span className={style.metricSummaryLabel}>Total</span>
+                  <span className={style.metricSummaryValue}>{formatKmValue(runStats.totalKm)} km</span>
+                </div>
+                <div className={style.metricSummaryItem}>
+                  <span className={style.metricSummaryLabel}>Séances</span>
+                  <span className={style.metricSummaryValue}>{runStats.totalSessions}</span>
+                </div>
+                <div className={style.metricSummaryItem}>
+                  <span className={style.metricSummaryLabel}>Meilleure sortie</span>
+                  <span className={style.metricSummaryValue}>{formatKmValue(runStats.bestKm)} km</span>
+                </div>
+              </div>
+
+              <div className={style.metricHistory}>
+                <h4 className={style.metricHistoryTitle}>Historique récent</h4>
+                {runStats.history.length ? (
+                  <ul className={style.metricHistoryList}>
+                    {runStats.history.slice(0, 6).map((item) => (
+                      <li key={item.dateKey} className={style.metricHistoryItem}>
+                        <span className={style.metricHistoryDate}>{shortDateFormatter.format(item.date)}</span>
+                        <span className={style.metricHistoryDistance}>{formatKmValue(item.distanceKm)} km</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className={style.metricHistoryEmpty}>Pas encore de marche ou course enregistrée.</p>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Raccourcis */}
           <div className={style.quickActions}>
             <button onClick={() => navigate('/exo')} className={style.quickAction}>
               <span className={style.quickActionIcon}>🏋️</span>
@@ -340,65 +547,6 @@ export default function Dashboard() {
               <span className={style.quickActionIcon}>🛠️</span>
               <span className={style.quickActionLabel}>Outils</span>
             </button>
-          </div>
-
-          {/* Statistiques clés */}
-          <div className={style.statsCards}>
-            <div className={style.statCard}>
-              <div className={style.statIcon} style={{background: 'linear-gradient(135deg, #FFB385 0%, #f49b69 100%)'}}>
-                🏋️
-              </div>
-              <div className={style.statContent}>
-                <p className={style.statLabel}>Total séances</p>
-                <h3 className={style.statValue}>{stats.totalSessions}</h3>
-              </div>
-            </div>
-
-            <div className={style.statCard}>
-              <div className={style.statIcon} style={{background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)'}}>
-                📅
-              </div>
-              <div className={style.statContent}>
-                <p className={style.statLabel}>Cette semaine</p>
-                <h3 className={style.statValue}>{stats.last7Days}</h3>
-              </div>
-            </div>
-
-            <div className={style.statCard}>
-              <div className={style.statIcon} style={{background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)'}}>
-                📆
-              </div>
-              <div className={style.statContent}>
-                <p className={style.statLabel}>Ce mois</p>
-                <h3 className={style.statValue}>{stats.last30Days}</h3>
-                {stats.trend !== 0 && (
-                  <p className={style.statTrend} style={{color: stats.trend > 0 ? '#10b981' : '#ef4444'}}>
-                    {stats.trend > 0 ? '↗' : '↘'} {Math.abs(stats.trend).toFixed(0)}% vs mois dernier
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className={style.statCard}>
-              <div className={style.statIcon} style={{background: 'linear-gradient(135deg, #fecaca 0%, #fca5a5 100%)'}}>
-                🔥
-              </div>
-              <div className={style.statContent}>
-                <p className={style.statLabel}>Série</p>
-                <h3 className={style.statValue}>{stats.streak} {stats.streak > 1 ? 'jours' : 'jour'}</h3>
-              </div>
-            </div>
-
-            <div className={style.statCard}>
-              <div className={style.statIcon} style={{background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)'}}>
-                ⏱️
-              </div>
-              <div className={style.statContent}>
-                <p className={style.statLabel}>Temps total</p>
-                <h3 className={style.statValue}>{stats.totalHours}h</h3>
-                <p className={style.statTrend}>{stats.totalMinutes % 60} min</p>
-              </div>
-            </div>
           </div>
 
           {/* Objectif hebdomadaire */}
