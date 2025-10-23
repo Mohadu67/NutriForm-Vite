@@ -12,6 +12,7 @@ import GlobalRestTimer from "./GlobalRestTimer/GlobalRestTimer";
 import CardioTable from "./Tables/CardioTable";
 import MuscuTable from "./Tables/MuscuTable";
 import PdcTable from "./Tables/PdcTable";
+import SwimForm from "./SwimForm";
 
 import NotesSection from "./Notes/NotesSection";
 import notesStyles from "./Notes/NotesSaction.module.css";
@@ -49,12 +50,14 @@ export default function SuivieCard({ exo, value, onChange }) {
     isCardio,
     isPdc,
     isMuscu,
+    isSwim,
     addSet,
     removeSet,
     patchSet,
     addCardioSet,
     removeCardioSet,
     patchCardioSet,
+    patchSwim,
   } = useExerciceForm(exo, value, onChange);
 
 
@@ -66,6 +69,13 @@ export default function SuivieCard({ exo, value, onChange }) {
 
   function isExerciseDone(nextData) {
     if (!nextData) return false;
+    if (nextData.swim) {
+      const pool = Number(nextData.swim.poolLength ?? 0);
+      const laps = Number(nextData.swim.lapCount ?? 0);
+      const distance = Number(nextData.swim.totalDistance ?? 0);
+      if (pool > 0 && laps > 0) return true;
+      if (distance > 0) return true;
+    }
     if (Array.isArray(nextData.cardioSets) && nextData.cardioSets.length > 0) {
       return nextData.cardioSets.some(cs => {
         const dur = Number(cs?.durationSec ?? cs?.duration ?? 0);
@@ -157,22 +167,26 @@ export default function SuivieCard({ exo, value, onChange }) {
             </header>
 
             <div className={styles.popupBody}>
-              <ModeBar
-                mode={mode}
-                onChange={(m) => {
-                  setMode(m);
-                  const next = { ...data, mode: m };
-                  const enriched = { ...next, done: isExerciseDone(next) };
-                  if (typeof emit === 'function') {
-                    emit(enriched);
-                  }
-                }}
-                classes={{ modeBar: modeStyles.modeBar, selectControl: modeStyles.selectControl }}
-              />
+              {!isSwim && (
+                <ModeBar
+                  mode={mode}
+                  onChange={(m) => {
+                    setMode(m);
+                    const next = { ...data, mode: m };
+                    const enriched = { ...next, done: isExerciseDone(next) };
+                    if (typeof emit === 'function') {
+                      emit(enriched);
+                    }
+                  }}
+                  classes={{ modeBar: modeStyles.modeBar, selectControl: modeStyles.selectControl }}
+                />
+              )}
 
-              {!isCardio && <GlobalRestTimer />}
+              {!isCardio && !isSwim && <GlobalRestTimer />}
 
-              {isCardio ? (
+              {isSwim ? (
+                <SwimForm swim={data?.swim} onPatch={patchSwim} />
+              ) : isCardio ? (
                 <CardioTable
                   cardioSets={cardioSets}
                   onAdd={addCardioSet}
