@@ -275,6 +275,97 @@
   box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
 }
 
+.swimForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 18px 20px;
+  border: 1px solid var(--suivie-border);
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(247, 246, 242, 0.6), rgba(255, 255, 255, 0.9));
+  box-shadow: var(--suivie-shadow-sm);
+}
+
+.swimFormHeader h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--suivie-ink);
+}
+
+.swimFormHeader p {
+  margin: 4px 0 0;
+  color: var(--suivie-muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.swimInputsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.swimField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--suivie-ink);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.swimField span {
+  color: var(--suivie-muted);
+  font-weight: 500;
+}
+
+.swimField input {
+  height: 48px;
+  border-radius: 12px;
+  border: 1.5px solid var(--suivie-border);
+  padding: 0 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--suivie-ink);
+  background: var(--suivie-surface);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.swimField input:focus {
+  border-color: var(--suivie-accent);
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.25);
+}
+
+.swimSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.swimSummaryLabel {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--suivie-muted);
+}
+
+.swimSummaryValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--suivie-ink);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.swimSummarySub {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--suivie-muted);
+}
+
 
 /* ==================== RESPONSIVE SMALL ==================== */
 @media (max-width: 380px) {
@@ -285,6 +376,14 @@
   .popupBody {
     padding: 16px;
     gap: 16px;
+  }
+
+  .swimForm {
+    padding: 16px;
+  }
+
+  .swimInputsRow {
+    grid-template-columns: 1fr;
   }
 
   .footer {
