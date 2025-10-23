@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { saveSession as apiSaveSession, mapItemsToEntries } from "../../../TableauBord/sessionApi";
+import { saveSession as apiSaveSession, mapItemsToEntries } from "../../../../History/SessionTracking/sessionApi.js";
 
 export default function useSaveSession() {
   const [saving, setSaving] = useState(false);
