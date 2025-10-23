@@ -38,6 +38,11 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
         return;
       }
 
+      if (typeRaw.includes('swim') || typeRaw.includes('natation') || nameRaw.includes('swim') || nameRaw.includes('natation')) {
+        groups.add('swim');
+        return;
+      }
+
       
       if (typeRaw.includes('cardio')) {
         groups.add('cardio');
@@ -92,6 +97,12 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
     return duration > 0 || style.length > 0 || focus.length > 0;
   };
 
+  const hasStretchData = (stretch) => {
+    if (!stretch || typeof stretch !== "object") return false;
+    const durationSec = Number(stretch.durationSec ?? stretch.duration ?? 0);
+    return durationSec > 0;
+  };
+
   const { totalExercises, doneExercises, calories } = useMemo(() => {
     const safe = Array.isArray(items) ? items : [];
     const total = safe.length;
@@ -110,6 +121,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
       }
       if (hasSwimData(d.swim)) return true;
       if (hasYogaData(d.yoga)) return true;
+      if (hasStretchData(d.stretch)) return true;
 
       const sets = Array.isArray(d.sets) ? d.sets : (Array.isArray(d.series) ? d.series : []);
       return sets.some(s => {
@@ -136,11 +148,13 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
     };
     const perMinKcal = (label) => {
       if (label.includes('nata') || label.includes('swim') || label.includes('piscine')) return 9;
+      if (label.includes('yoga')) return 4;
+      if (label.includes('etir') || label.includes('étir') || label.includes('stretch') || label.includes('mobility') || label.includes('souplesse')) return 3;
       if (label.includes('course') || label.includes('run')) return 11;
       if (label.includes('velo') || label.includes('cycle') || label.includes('bike')) return 8;
       if (label.includes('rameur') || label.includes('row')) return 7;
       if (label.includes('marche') || label.includes('walk')) return 5;
-      if (label.includes('corde') || label.includes('saut')) return 10; 
+      if (label.includes('corde') || label.includes('saut')) return 10;
       return 7;
     };
 
@@ -174,6 +188,15 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
           const rate = 4;
           kcal += duration * rate;
         }
+      } else if (t === 'stretch') {
+        const stretch = d.stretch;
+        if (stretch) {
+          const durationSec = Number(stretch.durationSec ?? stretch.duration ?? 0);
+          const durationMin = durationSec > 0 ? durationSec / 60 : 0;
+          const rate = 3;
+          const effectiveDuration = durationMin > 0 ? durationMin : 0.5;
+          kcal += effectiveDuration * rate;
+        }
       } else {
         const sets = Array.isArray(d.sets) ? d.sets : (Array.isArray(d.series) ? d.series : []);
         for (const s of sets) {
@@ -196,18 +219,118 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
 
     if (!Array.isArray(entries) || entries.length === 0) {
       const fallback = safe
-        .filter(it => it && (it.done || (it.data && (Array.isArray(it.data.sets) ? it.data.sets.length : 0) > 0)))
-        .map(it => {
+        .filter(it => {
+          if (!it) return false;
+          if (it.done) return true;
           const d = it?.data || {};
-          const sets = Array.isArray(d.sets) && d.sets.length > 0
-            ? d.sets
-            : [{ reps: Number(d.reps ?? 0) || 1, weightKg: Number(d.weightKg ?? d.weight ?? 0) || 0 }];
+          if (Array.isArray(d.cardioSets) && d.cardioSets.some(cs => {
+            const dur = Number(cs?.durationSec ?? cs?.duration ?? 0);
+            const dist = Number(cs?.distance ?? 0);
+            const cals = Number(cs?.calories ?? 0);
+            return dur > 0 || dist > 0 || cals > 0;
+          })) return true;
+          if (hasSwimData(d.swim) || hasYogaData(d.yoga) || hasStretchData(d.stretch)) return true;
+          const sets = Array.isArray(d.sets) ? d.sets : (Array.isArray(d.series) ? d.series : []);
+          return sets.length > 0;
+        })
+        .map(it => {
+          if (!it) return null;
+          const d = it?.data || {};
           const id = it?.id || it?.slug || it?._id || String(it?.name || 'exo').toLowerCase();
           const name = String(it?.name || it?.label || 'Exercice');
-          const typeRaw = String(it?.mode ?? (Array.isArray(it?.type) ? it.type.join(',') : it?.type) ?? '').toLowerCase();
-          const type = typeRaw.includes('cardio') ? 'cardio' : 'muscu';
-          return { exerciseId: id, name, type, sets };
-        });
+          const baseNotes = typeof d?.notes === "string" && d.notes.trim() ? d.notes.trim() : "";
+          const appendNotes = (extra) => {
+            if (!extra) return baseNotes;
+            return baseNotes ? `${baseNotes} • ${extra}` : extra;
+          };
+
+          if (Array.isArray(d.cardioSets) && d.cardioSets.length > 0) {
+            const sets = d.cardioSets.map(cs => {
+              const durationSec = Number(cs.durationSec ?? 0) || (Number(cs.durationMin ?? cs.minutes ?? 0) * 60);
+              const distanceKm = cs.distanceKm != null ? Number(cs.distanceKm) : undefined;
+              const calories = cs.calories != null ? Number(cs.calories) : undefined;
+              return {
+                durationSec: durationSec || undefined,
+                distanceKm: distanceKm || undefined,
+                calories: calories || undefined,
+              };
+            }).filter(s => s.durationSec || s.distanceKm || s.calories);
+            if (sets.length) {
+              return { exerciseId: id, name, type: 'cardio', sets, notes: baseNotes || undefined };
+            }
+          }
+
+          if (hasSwimData(d.swim)) {
+            const swim = d.swim;
+            const pool = Number(swim.poolLength ?? swim.length ?? 0);
+            const laps = Number(swim.lapCount ?? swim.laps ?? 0);
+            let totalDistance = Number(swim.totalDistance ?? 0);
+            if (!totalDistance && pool > 0 && laps > 0) {
+              totalDistance = pool * laps * 2;
+            }
+            const distanceKm = totalDistance > 0 ? totalDistance / 1000 : undefined;
+            const swimSet = {
+              distanceKm,
+              laps: laps || undefined,
+              poolLength: pool || undefined,
+            };
+            return {
+              exerciseId: id,
+              name,
+              type: 'cardio',
+              subType: 'swim',
+              notes: appendNotes('Natation'),
+              sets: [swimSet],
+            };
+          }
+
+          const muscuSets = Array.isArray(d.sets) ? d.sets : (Array.isArray(d.series) ? d.series : []);
+          if (muscuSets.length > 0) {
+            const sets = muscuSets.map(ms => ({
+              reps: Number(ms.reps ?? ms.rep ?? 0) || undefined,
+              weightKg: Number(ms.weightKg ?? ms.weight ?? 0) || undefined,
+              durationSec: Number(ms.durationSec ?? ms.timeSec ?? 0) || undefined,
+            })).filter(s => s.reps || s.weightKg || s.durationSec);
+            if (sets.length) {
+              return { exerciseId: id, name, type: 'muscu', sets, notes: baseNotes || undefined };
+            }
+          }
+
+          if (hasYogaData(d.yoga)) {
+            const yoga = d.yoga;
+            const durationMin = Number(yoga.durationMin ?? yoga.duration ?? 0);
+            const durationSec = durationMin > 0 ? durationMin * 60 : 900;
+            const style = typeof yoga.style === "string" ? yoga.style.trim() : "";
+            const focus = typeof yoga.focus === "string" ? yoga.focus.trim() : "";
+            const extra = [style, focus].filter(Boolean).join(' • ');
+            return {
+              exerciseId: id,
+              name,
+              type: 'cardio',
+              subType: 'yoga',
+              notes: appendNotes(extra || 'Yoga'),
+              sets: [{ durationSec }],
+            };
+          }
+
+          if (hasStretchData(d.stretch)) {
+            const stretch = d.stretch;
+            const durationSec = Number(stretch.durationSec ?? stretch.duration ?? 0) || 240;
+            return {
+              exerciseId: id,
+              name,
+              type: 'cardio',
+              subType: 'stretch',
+              notes: appendNotes('Étirements'),
+              sets: [{
+                durationSec,
+              }],
+            };
+          }
+
+          return null;
+        })
+        .filter(Boolean);
 
       if (fallback.length > 0) {
         entries = fallback;
@@ -232,7 +355,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
         const hasMuscu = muscuSets.length > 0;
         return {
           exerciseName: String(it?.name || it?.label || it?.exoName || 'Exercice'),
-          done: Boolean(it?.done || hasCardio || hasMuscu),
+          done: Boolean(it?.done || hasCardio || hasMuscu || hasSwimData(d.swim) || hasYogaData(d.yoga) || hasStretchData(d.stretch)),
           note: typeof d?.notes === 'string' && d.notes.trim() ? d.notes.trim() : undefined,
         };
       });

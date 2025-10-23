@@ -12,7 +12,7 @@ const getWarmupData = (muscleGroups, warmupDatabase) => {
     };
   }
   
-  const softActivities = ['meditation', 'yoga', 'etirement'];
+  const softActivities = ['meditation', 'yoga', 'etirement', 'swim'];
   const hasSoftActivity = muscleGroups.some(group => softActivities.includes(group));
 
   if (hasSoftActivity) {

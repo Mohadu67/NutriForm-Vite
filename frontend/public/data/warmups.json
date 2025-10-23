@@ -80,6 +80,33 @@
           "gif": ""
         }
       ]
+    },
+    "swim": {
+      "title": "Préparez votre séance de natation",
+      "icon": "🏊",
+      "needsTimer": false,
+      "recommendations": [
+        {
+          "text": "Vérifiez le matériel : lunettes, bonnet, maillot",
+          "gif": ""
+        },
+        {
+          "text": "Hydratez-vous avant d’entrer dans l’eau",
+          "gif": ""
+        },
+        {
+          "text": "Réchauffez vos épaules avec quelques rotations",
+          "gif": ""
+        },
+        {
+          "text": "Respirez profondément pour vous mettre dans le rythme",
+          "gif": ""
+        },
+        {
+          "text": "Prévoyez une première longueur tranquille pour vous mettre dans l’eau",
+          "gif": ""
+        }
+      ]
     }
   },
   "muscleGroups": {
