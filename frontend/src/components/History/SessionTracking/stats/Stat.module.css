@@ -1,0 +1,305 @@
+.card {
+  background: var(--nf-surface);
+  border: 1px solid var(--nf-surface-border);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: var(--nf-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sessionName {
+  margin: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--nf-muted);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+  line-height: 1.3;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--nf-muted);
+}
+
+.percentChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(255, 179, 133, 0.18), rgba(255, 179, 133, 0.35));
+  border: 1px solid rgba(255, 179, 133, 0.35);
+  border-radius: 999px;
+  padding: 6px 14px;
+  color: #7c3413;
+  font-weight: 600;
+}
+
+.percentValue {
+  font-size: 1.1rem;
+}
+
+.percentLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.metricGrid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--nf-surface-strong, #f5f6f8);
+  border-radius: 16px;
+  padding: 18px;
+  min-height: 0;
+}
+
+.metricIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 1.35rem;
+  background: linear-gradient(135deg, rgba(255, 179, 133, 0.18), rgba(255, 179, 133, 0.35));
+  color: #7c3413;
+}
+
+.metricValue {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+}
+
+.metricLabel {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nf-muted);
+}
+
+.splits {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.splitCard {
+  background: var(--nf-surface-strong, #f5f6f8);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.splitHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: var(--nf-ink);
+}
+
+.splitValue {
+  font-size: 1.1rem;
+}
+
+.splitBar {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.splitFill {
+  position: absolute;
+  inset: 0;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #ffb385, #f49b69);
+  transition: width 180ms ease-out;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+}
+
+.notesList {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.noteItem {
+  background: var(--nf-surface-strong, #f5f6f8);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.noteTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--nf-ink);
+}
+
+.noteText {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--nf-muted);
+  line-height: 1.4;
+}
+
+.deltaList {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.deltaItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  background: var(--nf-surface-strong, #f5f6f8);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.deltaLabel {
+  font-size: 0.85rem;
+  color: var(--nf-muted);
+}
+
+.deltaValue {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.trendUp {
+  color: #1a8e4f;
+}
+
+.trendDown {
+  color: #c23b3b;
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 20px;
+  }
+
+  .metricGrid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+}
+
+@media (max-width: 540px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .percentChip {
+    align-self: flex-start;
+  }
+
+  .metricGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .splits {
+    grid-template-columns: 1fr;
+  }
+
+  .metricCard,
+  .splitCard,
+  .noteItem,
+  .deltaItem {
+    padding: 14px 16px;
+  }
+}
+
+:global(body.dark) .card,
+:global(html.dark) .card {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+:global(body.dark) .metricCard,
+:global(html.dark) .metricCard,
+:global(body.dark) .splitCard,
+:global(html.dark) .splitCard,
+:global(body.dark) .noteItem,
+:global(html.dark) .noteItem,
+:global(body.dark) .deltaItem,
+:global(html.dark) .deltaItem {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+:global(body.dark) .percentChip,
+:global(html.dark) .percentChip {
+  color: #fef3ed;
+  border-color: rgba(255, 179, 133, 0.45);
+}
+
+:global(body.dark) .metricLabel,
+:global(html.dark) .metricLabel,
+:global(body.dark) .subtitle,
+:global(html.dark) .subtitle,
+:global(body.dark) .noteText,
+:global(html.dark) .noteText,
+:global(body.dark) .deltaLabel,
+:global(html.dark) .deltaLabel {
+  color: rgba(255, 255, 255, 0.65);
+}

@@ -6,9 +6,9 @@ import Progress from "../BarreDetape/Etapes.jsx";
 import Salutation from "./salutation.jsx";
 import SuivieExo from "../ExerciceSuivie/SuivieExo.jsx";
 import ChercherExo from "../ExerciceSuivie/MoteurRechercheUser/ChercherExo.jsx";
-import SuivieSeance from "../TableauBord/SuivieSeance.jsx";
-import Stat from "../TableauBord/stats/Stat.jsx";
-import { saveSession } from "../TableauBord/sessionApi.js";
+import SuivieSeance from "../../History/SessionTracking/SuivieSeance.jsx";
+import Stat from "../../History/SessionTracking/stats/Stat.jsx";
+import { saveSession } from "../../History/SessionTracking/sessionApi.js";
 import ConseilJour from "./ConseilJour.jsx";
 import { idOf } from "../Shared/idOf.js";
 
