@@ -151,7 +151,6 @@ export default function RMHistory({ rmTests = [] }) {
         </div>
       </div>
 
-      {/* Liste des tests récents */}
       <div className={styles.testsList}>
         <div className={styles.testsHeader}>
           <h4 className={styles.testsTitle}>Tests récents</h4>

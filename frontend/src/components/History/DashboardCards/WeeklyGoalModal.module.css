@@ -1,0 +1,201 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.content {
+  background: var(--nf-surface);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+:global(body.dark) .content,
+:global(html.dark) .content {
+  background: #1a1d24;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+.description {
+  font-size: 0.95rem;
+  color: var(--nf-muted);
+  margin: 0 0 var(--space-5) 0;
+  text-align: center;
+}
+
+.goalInput {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: var(--space-5);
+}
+
+.goalButton {
+  background: linear-gradient(135deg, #FFB385, #f49b69);
+  border: none;
+  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 179, 133, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.goalButton:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.5);
+}
+
+.goalButton:active {
+  transform: scale(0.95);
+}
+
+.goalInputField {
+  width: 80px;
+  height: 56px;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+  background: var(--nf-surface);
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.goalInputField:focus {
+  border-color: #FFB385;
+  box-shadow: 0 0 0 4px rgba(255, 179, 133, 0.2);
+}
+
+:global(body.dark) .goalInputField,
+:global(html.dark) .goalInputField {
+  background: #0c0e12;
+  border-color: #2d3139;
+  color: #f5f7fa;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.cancelButton,
+.saveButton {
+  flex: 1;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancelButton {
+  background: #e5e7eb;
+  color: #4b5563;
+}
+
+.cancelButton:hover {
+  background: #d1d5db;
+  transform: translateY(-2px);
+}
+
+:global(body.dark) .cancelButton,
+:global(html.dark) .cancelButton {
+  background: #2d3139;
+  color: #9ca3af;
+}
+
+:global(body.dark) .cancelButton:hover,
+:global(html.dark) .cancelButton:hover {
+  background: #374151;
+}
+
+.saveButton {
+  background: linear-gradient(135deg, #FFB385, #f49b69);
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 179, 133, 0.3);
+}
+
+.saveButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(255, 179, 133, 0.5);
+}
+
+.saveButton:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 24px;
+  }
+
+  .title {
+    font-size: 1.3rem;
+  }
+
+  .goalInputField {
+    width: 70px;
+    height: 48px;
+    font-size: 1.6rem;
+  }
+
+  .goalButton {
+    width: 40px;
+    height: 40px;
+    font-size: 1.3rem;
+  }
+}

@@ -1,15 +1,18 @@
-.container {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  margin-bottom: 24px;
-}
-
 :global(body.dark) .container,
 :global(html.dark) .container {
   background: #1a1d24;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.container {
+  background: var(--nf-surface);
+  border: 1px solid var(--nf-surface-border);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: var(--nf-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 .header {
@@ -217,6 +220,46 @@
 .tests {
   display: grid;
   gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .quickStats {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+
+  .container {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 520px) {
+  .container {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .quickStats {
+    grid-template-columns: 1fr;
+  }
+
+  .statCard {
+    padding: 14px;
+  }
+
+  .testCard {
+    padding: 12px;
+  }
+
+  .testDetails {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .testCard {

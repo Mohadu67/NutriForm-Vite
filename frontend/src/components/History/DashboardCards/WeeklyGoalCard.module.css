@@ -1,0 +1,112 @@
+.card {
+  background: var(--nf-surface);
+  border-radius: 16px;
+  padding: 24px;
+  margin: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+:global(body.dark) .card,
+:global(html.dark) .card {
+  background: #1a1d24;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progressInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progressValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #FFB385;
+}
+
+.editButton {
+  background: linear-gradient(135deg, #FFB385, #f49b69);
+  border: none;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(255, 179, 133, 0.3);
+}
+
+.editButton:hover {
+  transform: scale(1.1) rotate(10deg);
+  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.5);
+}
+
+.editButton:active {
+  transform: scale(0.95) rotate(0deg);
+}
+
+.progressBarContainer {
+  height: 12px;
+  background: #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+:global(body.dark) .progressBarContainer,
+:global(html.dark) .progressBarContainer {
+  background: #2d3139;
+}
+
+.progressBar {
+  height: 100%;
+  background: linear-gradient(90deg, #FFB385, #f49b69);
+  border-radius: 12px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(255, 179, 133, 0.4);
+}
+
+.message {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--nf-muted);
+  margin: 0;
+  text-align: center;
+}
+
+@media (max-width: 767px) {
+  .card {
+    padding: 18px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .progressInfo {
+    align-self: flex-start;
+  }
+}
