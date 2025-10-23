@@ -58,12 +58,15 @@ function mapItemsToEntries(items = []) {
     .map((it) => {
       if (!it) return null;
       const d = (it && typeof it.data === 'object' && it.data) ? it.data : {};
+      const swim = (d && typeof d.swim === 'object') ? d.swim : null;
 
       const rawType = (it.mode ?? it.type ?? '').toString().toLowerCase();
+      const isSwim = rawType.includes('swim') || (!!swim && !rawType.includes('muscu'));
       let type = rawType.includes('cardio') ? 'cardio' : rawType.includes('muscu') ? 'muscu' : '';
       const cardioSetsRaw = Array.isArray(d.cardioSets) ? d.cardioSets : [];
       const muscuSetsRaw = Array.isArray(d.sets) ? d.sets : (Array.isArray(d.series) ? d.series : []);
       if (!type) type = cardioSetsRaw.length ? 'cardio' : (muscuSetsRaw.length ? 'muscu' : '');
+      if (!type && isSwim) type = 'cardio';
 
       if (type === 'cardio') {
         let sets = cardioSetsRaw.map((cs) => {
@@ -73,11 +76,30 @@ function mapItemsToEntries(items = []) {
           return { durationSec: durationSec || undefined, distanceKm: distanceKm || undefined, calories: calories || undefined };
         }).filter(s => (s.durationSec || s.distanceKm || s.calories));
 
+        if (sets.length === 0 && swim) {
+          const poolLength = num(swim.poolLength, 0);
+          const lapCount = num(swim.lapCount, 0);
+          let totalDistance = num(swim.totalDistance, 0);
+          if (!totalDistance && poolLength > 0 && lapCount > 0) {
+            totalDistance = poolLength * lapCount * 2;
+          }
+          const distanceKm = totalDistance ? totalDistance / 1000 : 0;
+          const swimSet = {
+            distanceKm: distanceKm || undefined,
+            laps: lapCount || undefined,
+            poolLength: poolLength || undefined,
+          };
+          if (swimSet.distanceKm || swimSet.laps) {
+            sets = [swimSet];
+          }
+        }
+
         if (sets.length === 0) return null;
         return {
           exerciseId: it.id || it._id || it.slug || String(it.name || it.label || 'exo').toLowerCase(),
           name: String(it.name || it.label || it.exoName || 'Exercice'),
           type: 'cardio',
+          subType: isSwim ? 'swim' : undefined,
           notes: typeof d?.notes === 'string' && d.notes.trim() ? d.notes.trim() : undefined,
           sets,
         };
