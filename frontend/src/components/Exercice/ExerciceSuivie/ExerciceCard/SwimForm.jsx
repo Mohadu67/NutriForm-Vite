@@ -29,14 +29,14 @@ export default function SwimForm({ swim = {}, onPatch }) {
   };
 
   return (
-    <section className={styles.swimForm}>
-      <div className={styles.swimFormHeader}>
+    <section className={`${styles.focusForm} ${styles.swimForm}`}>
+      <div className={styles.focusFormHeader}>
         <h4>Suivi piscine</h4>
         <p>Indique la longueur du bassin et le nombre d&apos;aller-retours réalisés.</p>
       </div>
 
-      <div className={styles.swimInputsRow}>
-        <label className={styles.swimField}>
+      <div className={styles.focusInputsRow}>
+        <label className={styles.focusField}>
           <span>Longueur du bassin (m)</span>
           <input
             type="number"
@@ -49,7 +49,7 @@ export default function SwimForm({ swim = {}, onPatch }) {
           />
         </label>
 
-        <label className={styles.swimField}>
+        <label className={styles.focusField}>
           <span>Aller-retours effectués</span>
           <input
             type="number"

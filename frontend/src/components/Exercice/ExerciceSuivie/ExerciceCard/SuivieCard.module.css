@@ -275,7 +275,7 @@
   box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
 }
 
-.swimForm {
+.focusForm {
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -286,27 +286,31 @@
   box-shadow: var(--suivie-shadow-sm);
 }
 
-.swimFormHeader h4 {
+.swimForm {
+  background: linear-gradient(160deg, rgba(247, 246, 242, 0.7), rgba(255, 255, 255, 0.95));
+}
+
+.focusFormHeader h4 {
   margin: 0;
   font-size: 18px;
   font-weight: 700;
   color: var(--suivie-ink);
 }
 
-.swimFormHeader p {
+.focusFormHeader p {
   margin: 4px 0 0;
   color: var(--suivie-muted);
   font-size: 14px;
   line-height: 1.4;
 }
 
-.swimInputsRow {
+.focusInputsRow {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
 }
 
-.swimField {
+.focusField {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -315,12 +319,14 @@
   font-size: 14px;
 }
 
-.swimField span {
+.focusField span {
   color: var(--suivie-muted);
   font-weight: 500;
 }
 
-.swimField input {
+.focusField input,
+.focusField select,
+.focusField textarea {
   height: 48px;
   border-radius: 12px;
   border: 1.5px solid var(--suivie-border);
@@ -333,9 +339,28 @@
   outline: none;
 }
 
-.swimField input:focus {
+.focusField textarea {
+  height: auto;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  min-height: 110px;
+  resize: vertical;
+}
+
+.focusField input:focus,
+.focusField select:focus,
+.focusField textarea:focus {
   border-color: var(--suivie-accent);
   box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.25);
+}
+
+.yogaForm {
+  background: linear-gradient(145deg, rgba(236, 239, 244, 0.7), rgba(255, 255, 255, 0.95));
+}
+
+.yogaTextareaField textarea {
+  font-weight: 500;
+  line-height: 1.5;
 }
 
 .swimSummary {
@@ -378,11 +403,11 @@
     gap: 16px;
   }
 
-  .swimForm {
+  .focusForm {
     padding: 16px;
   }
 
-  .swimInputsRow {
+  .focusInputsRow {
     grid-template-columns: 1fr;
   }
 

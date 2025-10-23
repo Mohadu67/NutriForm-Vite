@@ -32,7 +32,7 @@
 
 /* Rows */
 .rowSet {
-  grid-template-columns: 50px 1fr 1fr 40px;
+  grid-template-columns: 50px 1fr 1fr 1fr 40px;
   border: 1.5px solid var(--line);
   border-radius: 14px;
   background: var(--paper);
@@ -133,7 +133,7 @@
 
   .rowHead,
   .rowSet {
-    grid-template-columns: 55px 1fr 1fr 44px;
+    grid-template-columns: 55px 1fr 1fr 1fr 44px;
     gap: 12px;
   }
   .rowHead { font-size: 15px; }
@@ -146,7 +146,7 @@
   .rowSet input { padding: 12px; font-size: 17px; }
   .rowHead,
   .rowSet {
-    grid-template-columns: 60px 1fr 1fr 50px;
+    grid-template-columns: 60px 1fr 1fr 1fr 50px;
   }
 }
 
@@ -154,7 +154,7 @@
 @media (max-width: 380px) {
   .rowHead,
   .rowSet {
-    grid-template-columns: 40px 1fr 1fr 35px;
+    grid-template-columns: 40px 1fr 1fr 1fr 35px;
     gap: 8px;
   }
 }
