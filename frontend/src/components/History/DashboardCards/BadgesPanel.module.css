@@ -1,0 +1,129 @@
+.card {
+  background: var(--nf-surface);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: var(--nf-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+:global(body.dark) .card,
+:global(html.dark) .card {
+  background: #1a1d24;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.grid {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap;
+  overscroll-behavior-inline: contain;
+  touch-action: pan-x;
+  scrollbar-width: thin;
+  scrollbar-color: #ffb385 transparent;
+}
+
+.grid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.grid::-webkit-scrollbar-track {
+  background: var(--nf-surface-border);
+  border-radius: 4px;
+}
+
+.grid::-webkit-scrollbar-thumb {
+  background: #FFB385;
+  border-radius: 4px;
+}
+
+.grid::-webkit-scrollbar-thumb:hover {
+  background: #f49b69;
+}
+
+.badgeCard {
+  background: var(--nf-surface);
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+  animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  min-width: min(70vw, 160px);
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.badgeCard:hover {
+  transform: translateY(-2px);
+  border-color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+:global(body.dark) .badgeCard,
+:global(html.dark) .badgeCard {
+  background: #1a1d24;
+  border-color: #2d3139;
+}
+
+:global(body.dark) .badgeCard:hover,
+:global(html.dark) .badgeCard:hover {
+  border-color: #374151;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.badgeIcon {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.badgeName {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+  margin: 0 0 4px 0;
+}
+
+.badgeDesc {
+  font-size: 0.75rem;
+  color: var(--nf-muted);
+  margin: 0;
+}
+
+@media (max-width: 540px) {
+  .card {
+    padding: 20px;
+  }
+
+  .grid {
+    gap: var(--space-3);
+  }
+
+  .badgeCard {
+    padding: 16px;
+  }
+}

@@ -1,0 +1,254 @@
+.card {
+  background: var(--nf-surface);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: var(--nf-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+  height: 100%;
+}
+
+:global(body.dark) .card,
+:global(html.dark) .card {
+  background: #1a1d24;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--nf-muted);
+}
+
+.legendLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.legendDots {
+  display: flex;
+  gap: 4px;
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.legendDotZero {
+  background: #e5e7eb;
+}
+
+.legendDotLow {
+  background: #fcd4bc;
+}
+
+.legendDotMedium {
+  background: #fbb896;
+}
+
+.legendDotHigh {
+  background: #FFB385;
+}
+
+.grid {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.grid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.grid::-webkit-scrollbar-track {
+  background: var(--nf-surface-border);
+  border-radius: 4px;
+}
+
+.grid::-webkit-scrollbar-thumb {
+  background: #FFB385;
+  border-radius: 4px;
+}
+
+.grid::-webkit-scrollbar-thumb:hover {
+  background: #f49b69;
+}
+
+.weekCard {
+  background: var(--nf-surface);
+  border: 1px solid var(--nf-surface-border);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  cursor: default;
+  min-width: 160px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+.weekCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+:global(body.dark) .weekCard,
+:global(html.dark) .weekCard {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+:global(body.dark) .weekCard:hover,
+:global(html.dark) .weekCard:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.weekHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.weekLabel {
+  font-size: 0.75rem;
+  color: var(--nf-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.currentBadge {
+  background: linear-gradient(135deg, #FFB385, #f49b69);
+  color: white;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.weekStats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sessionCount {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.countNumber {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+}
+
+:global(body.dark) .countNumber,
+:global(html.dark) .countNumber {
+  color: #f5f7fa;
+}
+
+.countLabel {
+  font-size: 0.8rem;
+  color: var(--nf-muted);
+}
+
+.intensityDot {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.intensity0 {
+  background: #e5e7eb;
+}
+
+.intensity1 {
+  background: #fcd4bc;
+  box-shadow: 0 2px 8px rgba(252, 212, 188, 0.3);
+}
+
+.intensity2 {
+  background: #fbb896;
+  box-shadow: 0 2px 8px rgba(251, 184, 150, 0.3);
+}
+
+.intensity3 {
+  background: #FFB385;
+  box-shadow: 0 2px 8px rgba(255, 179, 133, 0.3);
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 24px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .grid {
+    gap: 10px;
+  }
+
+  .weekCard {
+    min-width: 140px;
+    padding: 14px;
+  }
+
+  .countNumber {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 540px) {
+  .card {
+    padding: 20px;
+  }
+
+  .legend {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .grid {
+    gap: 8px;
+  }
+
+  .weekCard {
+    min-width: 120px;
+  }
+
+  .sessionCount {
+    gap: 0;
+  }
+}

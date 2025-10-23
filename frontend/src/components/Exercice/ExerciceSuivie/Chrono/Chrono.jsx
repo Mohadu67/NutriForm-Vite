@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { mapItemsToEntries } from "../../TableauBord/sessionApi";
+import { mapItemsToEntries } from "../../../History/SessionTracking/sessionApi";
 import styles from "./Chrono.module.css";
 import useSaveSession from "../ExerciceCard/hooks/useSaveSession";
 import useChronoCore from "./useChronoCore";

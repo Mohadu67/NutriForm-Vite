@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./ProfileUser.module.css";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
-import ProfilePhoto from "../HistoryUser/ProfilePhoto/ProfilePhoto.jsx";
+import ProfilePhoto from "./ProfilePhoto/ProfilePhoto.jsx";
 import { secureApiCall, logout } from "../../../utils/authService.js";
 
 export default function ProfileUser({ onClose, onLogout }) {

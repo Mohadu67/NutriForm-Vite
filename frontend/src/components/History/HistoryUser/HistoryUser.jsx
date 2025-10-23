@@ -6,7 +6,7 @@ import ImcRecapCard from "./Recap/ImcRecapCard.jsx";
 import WeightChart from "./HistoryCharts/WeightChart.jsx";
 import SessionChart from "./HistoryCharts/SessionChart.jsx";
 import useHistoryData from "./UseHistoryData.js";
-import SuivieSeance from "../../Exercice/TableauBord/SuivieSeance.jsx";
+import SuivieSeance from "../SessionTracking/SuivieSeance.jsx";
 import ProfilePhoto from "./ProfilePhoto/ProfilePhoto.jsx";
 
 const API_BASE = (import.meta.env?.VITE_API_URL || import.meta.env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
