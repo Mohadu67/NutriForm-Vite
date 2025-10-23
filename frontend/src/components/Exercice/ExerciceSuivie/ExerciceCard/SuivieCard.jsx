@@ -14,6 +14,7 @@ import MuscuTable from "./Tables/MuscuTable";
 import PdcTable from "./Tables/PdcTable";
 import SwimForm from "./SwimForm";
 import YogaForm from "./YogaForm";
+import StretchForm from "./StretchForm";
 
 import NotesSection from "./Notes/NotesSection";
 import notesStyles from "./Notes/NotesSaction.module.css";
@@ -53,6 +54,7 @@ export default function SuivieCard({ exo, value, onChange }) {
     isMuscu,
     isSwim,
     isYoga,
+    isStretch,
     addSet,
     removeSet,
     patchSet,
@@ -61,6 +63,7 @@ export default function SuivieCard({ exo, value, onChange }) {
     patchCardioSet,
     patchSwim,
     patchYoga,
+    patchStretch,
   } = useExerciceForm(exo, value, onChange);
 
 
@@ -84,6 +87,10 @@ export default function SuivieCard({ exo, value, onChange }) {
       const style = String(nextData.yoga.style ?? "").trim();
       const focus = String(nextData.yoga.focus ?? "").trim();
       if (duration > 0 || style || focus) return true;
+    }
+    if (nextData.stretch) {
+      const duration = Number(nextData.stretch.durationSec ?? nextData.stretch.duration ?? 0);
+      if (duration > 0) return true;
     }
     if (Array.isArray(nextData.cardioSets) && nextData.cardioSets.length > 0) {
       return nextData.cardioSets.some(cs => {
@@ -176,7 +183,7 @@ export default function SuivieCard({ exo, value, onChange }) {
             </header>
 
             <div className={styles.popupBody}>
-              {!isSwim && !isYoga && (
+              {!isSwim && !isYoga && !isStretch && (
                 <ModeBar
                   mode={mode}
                   onChange={(m) => {
@@ -191,12 +198,14 @@ export default function SuivieCard({ exo, value, onChange }) {
                 />
               )}
 
-              {!isCardio && !isSwim && !isYoga && <GlobalRestTimer />}
+              {!isCardio && !isSwim && !isYoga && !isStretch && <GlobalRestTimer />}
 
               {isSwim ? (
                 <SwimForm swim={data?.swim} onPatch={patchSwim} />
               ) : isYoga ? (
                 <YogaForm yoga={data?.yoga} onPatch={patchYoga} />
+              ) : isStretch ? (
+                <StretchForm stretch={data?.stretch} onPatch={patchStretch} />
               ) : isCardio ? (
                 <CardioTable
                   cardioSets={cardioSets}
