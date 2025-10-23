@@ -8,6 +8,21 @@ export function isCardioExo(exo) {
   return /(rameur|rower|rowing|tapis|course|elliptique|vélo|velo|bike|cycling|airdyne|skierg|ski-erg)/.test(name);
 }
 
+export function isSwimExo(exo) {
+  const rawTypes = exo?.type;
+  const types = Array.isArray(rawTypes) ? rawTypes : typeof rawTypes === "string" ? [rawTypes] : [];
+  const normalizedTypes = types.map((t) => String(t || "").toLowerCase());
+  if (normalizedTypes.some((t) => /(natation|piscine|swim|swimming)/.test(t))) {
+    return true;
+  }
+  const category = String(exo?.category ?? "").toLowerCase();
+  if (/(natation|piscine|swim|swimming)/.test(category)) {
+    return true;
+  }
+  const name = String(exo?.name ?? "").toLowerCase();
+  return /(natation|piscine|swim|swimming|crawl|brasse|dos crawlé|papillon)/.test(name);
+}
+
 function isDeepEqual(a, b) {
   try {
     return JSON.stringify(a) === JSON.stringify(b);
@@ -21,18 +36,42 @@ export default function useExerciceForm(exo, value, onChange) {
     () => String(exo?.id ?? exo?._id ?? exo?.slug ?? exo?.name ?? ""),
     [exo]
   );
-  const detected = isCardioExo(exo) ? "cardio" : "muscu";
-  const [mode, setMode] = useState(value?.mode ?? detected);
+  const detectedMode = useMemo(() => {
+    if (isSwimExo(exo)) return "swim";
+    return isCardioExo(exo) ? "cardio" : "muscu";
+  }, [exo, exoId]);
+  const [mode, setMode] = useState(value?.mode ?? detectedMode);
 
   useEffect(() => {
-    const wanted = value?.mode || (isCardioExo(exo) ? "cardio" : "muscu");
+    const wanted = isSwimExo(exo) ? "swim" : (value?.mode || detectedMode);
     if (wanted && wanted !== mode) {
       setMode(wanted);
     }
-  }, [exoId, value?.mode]);
+  }, [exo, exoId, value?.mode, detectedMode, mode]);
+
+  function normalizeSwim(swim = {}) {
+    const poolLength = swim.poolLength ?? swim.length ?? "";
+    const lapCount = swim.lapCount ?? swim.laps ?? "";
+    const nbLengthPerLap = 2; // aller + retour
+    const distance =
+      Number(poolLength) > 0 && Number(lapCount) > 0
+        ? Number(poolLength) * Number(lapCount) * nbLengthPerLap
+        : "";
+    return {
+      poolLength: poolLength === 0 ? "" : poolLength,
+      lapCount: lapCount === 0 ? "" : lapCount,
+      totalDistance: distance,
+    };
+  }
 
   const initial = useMemo(() => {
     const base = value || {};
+    if (mode === "swim") {
+      return {
+        swim: normalizeSwim(base.swim),
+        notes: base.notes || "",
+      };
+    }
     if (mode === "cardio") {
       const fromSingle = base.cardio
         ? [
@@ -69,6 +108,7 @@ export default function useExerciceForm(exo, value, onChange) {
   const isCardio = mode === "cardio";
   const isPdc = mode === "pdc";
   const isMuscu = mode === "muscu";
+  const isSwim = mode === "swim";
 
   useEffect(() => {
     if (isCardio) return;
@@ -83,6 +123,13 @@ export default function useExerciceForm(exo, value, onChange) {
       setData((prev) => ({ ...prev, cardioSets: [{ durationMin: "", durationSec: "", intensity: "" }] }));
     }
   }, [isCardio]);
+
+  useEffect(() => {
+    if (!isSwim) return;
+    if (!data.swim) {
+      setData((prev) => ({ ...prev, swim: normalizeSwim(prev?.swim) }));
+    }
+  }, [isSwim, data.swim]);
 
   const lastSentRef = useRef(null);
 
@@ -134,6 +181,21 @@ export default function useExerciceForm(exo, value, onChange) {
     emit({ ...data, cardioSets: arr });
   }
 
+  function patchSwim(patch) {
+    const current = normalizeSwim(data?.swim);
+    const merged = { ...current, ...patch };
+    const poolLength = Number(merged.poolLength);
+    const lapCount = Number(merged.lapCount);
+    const nbLengthPerLap = 2;
+    const totalDistance =
+      poolLength > 0 && lapCount > 0 ? poolLength * lapCount * nbLengthPerLap : "";
+    const nextSwim = {
+      ...merged,
+      totalDistance,
+    };
+    emit({ ...data, swim: nextSwim });
+  }
+
   return {
     mode,
     setMode,
@@ -143,11 +205,13 @@ export default function useExerciceForm(exo, value, onChange) {
     isCardio,
     isPdc,
     isMuscu,
+    isSwim,
     addSet,
     removeSet,
     patchSet,
     addCardioSet,
     removeCardioSet,
     patchCardioSet,
+    patchSwim,
   };
 }
