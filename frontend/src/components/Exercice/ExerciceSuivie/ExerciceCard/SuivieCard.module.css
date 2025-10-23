@@ -363,6 +363,10 @@
   line-height: 1.5;
 }
 
+.stretchForm {
+  background: linear-gradient(150deg, rgba(219, 241, 235, 0.75), rgba(255, 255, 255, 0.95));
+}
+
 .swimSummary {
   display: flex;
   flex-direction: column;

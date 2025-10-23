@@ -38,6 +38,21 @@ export function isYogaExo(exo) {
   return /(yoga|salutation|sun salutation|chien tête en bas|asana|pranayama)/.test(name);
 }
 
+export function isStretchExo(exo) {
+  const rawTypes = exo?.type;
+  const types = Array.isArray(rawTypes) ? rawTypes : typeof rawTypes === "string" ? [rawTypes] : [];
+  const normalizedTypes = types.map((t) => String(t || "").toLowerCase());
+  if (normalizedTypes.some((t) => /(etirement|étirement|stretch|stretching|mobilité|souplesse|flexibilité)/.test(t))) {
+    return true;
+  }
+  const category = String(exo?.category ?? "").toLowerCase();
+  if (/(etirement|étirement|stretch|stretching|mobilité|souplesse|flexibilité)/.test(category)) {
+    return true;
+  }
+  const name = String(exo?.name ?? "").toLowerCase();
+  return /(etirement|étirement|stretch|stretching|mobilité|souplesse|flexibilité)/.test(name);
+}
+
 function isDeepEqual(a, b) {
   try {
     return JSON.stringify(a) === JSON.stringify(b);
@@ -54,6 +69,7 @@ export default function useExerciceForm(exo, value, onChange) {
   const forcedMode = useMemo(() => {
     if (isSwimExo(exo)) return "swim";
     if (isYogaExo(exo)) return "yoga";
+    if (isStretchExo(exo)) return "stretch";
     return null;
   }, [exo, exoId]);
   const detectedMode = useMemo(() => {
@@ -123,6 +139,13 @@ export default function useExerciceForm(exo, value, onChange) {
     };
   }
 
+  function normalizeStretch(stretch = {}) {
+    const durationSec = stretch.durationSec ?? stretch.duration ?? "";
+    return {
+      durationSec: durationSec === 0 ? "" : durationSec,
+    };
+  }
+
   const initial = useMemo(() => {
     const base = value || {};
     if (mode === "swim") {
@@ -134,6 +157,12 @@ export default function useExerciceForm(exo, value, onChange) {
     if (mode === "yoga") {
       return {
         yoga: normalizeYoga(base.yoga),
+        notes: base.notes || "",
+      };
+    }
+    if (mode === "stretch") {
+      return {
+        stretch: normalizeStretch(base.stretch),
         notes: base.notes || "",
       };
     }
@@ -175,6 +204,7 @@ export default function useExerciceForm(exo, value, onChange) {
   const isMuscu = mode === "muscu";
   const isSwim = mode === "swim";
   const isYoga = mode === "yoga";
+  const isStretch = mode === "stretch";
 
   useEffect(() => {
     if (isCardio) return;
@@ -203,6 +233,13 @@ export default function useExerciceForm(exo, value, onChange) {
       setData((prev) => ({ ...prev, yoga: normalizeYoga(prev?.yoga) }));
     }
   }, [isYoga, data.yoga]);
+
+  useEffect(() => {
+    if (!isStretch) return;
+    if (!data.stretch) {
+      setData((prev) => ({ ...prev, stretch: normalizeStretch(prev?.stretch) }));
+    }
+  }, [isStretch, data.stretch]);
 
   const lastSentRef = useRef(null);
 
@@ -283,6 +320,23 @@ export default function useExerciceForm(exo, value, onChange) {
     emit({ ...data, yoga: nextYoga });
   }
 
+  function patchStretch(patch) {
+    const current = normalizeStretch(data?.stretch);
+    const merged = { ...current, ...patch };
+    const rawDuration = merged.durationSec;
+    let durationSec;
+    if (rawDuration === "" || rawDuration === null || rawDuration === undefined) {
+      durationSec = "";
+    } else {
+      const parsed = Number(rawDuration);
+      durationSec = Number.isFinite(parsed) && parsed >= 0 ? parsed : "";
+    }
+    const nextStretch = {
+      durationSec,
+    };
+    emit({ ...data, stretch: nextStretch });
+  }
+
   return {
     mode,
     setMode,
@@ -294,6 +348,7 @@ export default function useExerciceForm(exo, value, onChange) {
     isMuscu,
     isSwim,
     isYoga,
+    isStretch,
     addSet,
     removeSet,
     patchSet,
@@ -302,5 +357,6 @@ export default function useExerciceForm(exo, value, onChange) {
     patchCardioSet,
     patchSwim,
     patchYoga,
+    patchStretch,
   };
 }
