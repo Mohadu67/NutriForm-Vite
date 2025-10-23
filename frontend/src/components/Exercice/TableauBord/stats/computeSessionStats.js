@@ -20,8 +20,15 @@ export function computeSessionStats(lastSession = null, items = [], options = {}
       const d = it?.data || {};
       const cardioSets = Array.isArray(d.cardioSets) ? d.cardioSets : [];
       const muscuSets = Array.isArray(d.sets) ? d.sets : [];
+      const stretch = d && typeof d.stretch === 'object' ? d.stretch : null;
       const type = inferTypeFromData(d, null, it?.mode);
-      const sets = cardioSets.length ? cardioSets : muscuSets;
+      let sets = cardioSets.length ? cardioSets : muscuSets;
+      if ((!sets || sets.length === 0) && stretch) {
+        const durSec = toNumber(stretch.durationSec ?? stretch.duration, 0);
+        if (durSec > 0) {
+          sets = [{ durationSec: durSec }];
+        }
+      }
       return { type, sets };
     });
   }
@@ -197,6 +204,10 @@ function inferTypeFromData(data, sets, fallbackMode) {
   const d = data || {};
   const cardioSets = Array.isArray(d.cardioSets) ? d.cardioSets : (Array.isArray(sets) ? sets : []);
   const muscuSets = Array.isArray(d.sets) ? d.sets : [];
+  if (d && typeof d.stretch === 'object') {
+    const dur = toNumber(d.stretch.durationSec ?? d.stretch.duration, 0);
+    if (dur > 0) return 'cardio';
+  }
   if (cardioSets.length) return 'cardio';
   if (muscuSets.length) {
     const anyWeight = muscuSets.some(s => String(s.weight ?? s.weightKg ?? '').trim() !== '');

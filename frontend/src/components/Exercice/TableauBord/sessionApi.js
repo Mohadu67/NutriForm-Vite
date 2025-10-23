@@ -59,14 +59,18 @@ function mapItemsToEntries(items = []) {
       if (!it) return null;
       const d = (it && typeof it.data === 'object' && it.data) ? it.data : {};
       const swim = (d && typeof d.swim === 'object') ? d.swim : null;
+      const yoga = (d && typeof d.yoga === 'object') ? d.yoga : null;
+      const stretch = (d && typeof d.stretch === 'object') ? d.stretch : null;
 
       const rawType = (it.mode ?? it.type ?? '').toString().toLowerCase();
       const isSwim = rawType.includes('swim') || (!!swim && !rawType.includes('muscu'));
+      const isYoga = rawType.includes('yoga') || (!!yoga && !rawType.includes('muscu'));
+      const isStretch = rawType.includes('etir') || rawType.includes('stretch') || (!!stretch && !rawType.includes('muscu'));
       let type = rawType.includes('cardio') ? 'cardio' : rawType.includes('muscu') ? 'muscu' : '';
       const cardioSetsRaw = Array.isArray(d.cardioSets) ? d.cardioSets : [];
       const muscuSetsRaw = Array.isArray(d.sets) ? d.sets : (Array.isArray(d.series) ? d.series : []);
       if (!type) type = cardioSetsRaw.length ? 'cardio' : (muscuSetsRaw.length ? 'muscu' : '');
-      if (!type && isSwim) type = 'cardio';
+      if (!type && (isSwim || isYoga || isStretch)) type = 'cardio';
 
       if (type === 'cardio') {
         let sets = cardioSetsRaw.map((cs) => {
@@ -94,12 +98,33 @@ function mapItemsToEntries(items = []) {
           }
         }
 
+        if (sets.length === 0 && yoga) {
+          const durationMin = num(yoga.durationMin ?? yoga.duration, 0);
+          const durationSec = durationMin > 0 ? durationMin * 60 : 0;
+          const style = typeof yoga.style === 'string' ? yoga.style.trim() : '';
+          const focus = typeof yoga.focus === 'string' ? yoga.focus.trim() : '';
+          const set = {
+            durationSec: durationSec || 600,
+            style: style || undefined,
+            focus: focus || undefined,
+          };
+          sets = [set];
+        }
+
+        if (sets.length === 0 && stretch) {
+          const durationSec = num(stretch.durationSec ?? stretch.duration, 0);
+          if (durationSec > 0) {
+            sets = [{ durationSec }];
+          }
+        }
+
         if (sets.length === 0) return null;
+        const subType = isSwim ? 'swim' : (isYoga ? 'yoga' : (isStretch ? 'stretch' : undefined));
         return {
           exerciseId: it.id || it._id || it.slug || String(it.name || it.label || 'exo').toLowerCase(),
           name: String(it.name || it.label || it.exoName || 'Exercice'),
           type: 'cardio',
-          subType: isSwim ? 'swim' : undefined,
+          subType,
           notes: typeof d?.notes === 'string' && d.notes.trim() ? d.notes.trim() : undefined,
           sets,
         };
