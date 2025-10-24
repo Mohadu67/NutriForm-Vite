@@ -242,7 +242,6 @@
 .bodyMetricsSection {
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr);
   align-items: stretch;
 }
 
@@ -252,11 +251,36 @@
   gap: var(--space-4);
 }
 
-.recapPanel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  align-self: stretch;
+
+.imcInfoCard {
+  gap: var(--space-3);
+}
+
+.imcInfoTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+}
+
+.imcInfoValue {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--nf-ink);
+}
+
+.imcInfoTag {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--nf-muted);
+}
+
+.imcInfoMeta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--nf-muted);
 }
 
 .statCard {
@@ -319,6 +343,20 @@
   background: #1a1d24;
   border-color: rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+:global(body.dark) .imcInfoValue,
+:global(html.dark) .imcInfoValue {
+  color: #f5f7fa;
+}
+
+:global(body.dark) .imcInfoTitle,
+:global(html.dark) .imcInfoTitle,
+:global(body.dark) .imcInfoTag,
+:global(html.dark) .imcInfoTag,
+:global(body.dark) .imcInfoMeta,
+:global(html.dark) .imcInfoMeta {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 :global(body.dark) .statCardDeltaPositive,
