@@ -73,7 +73,7 @@ const computeMinMax = (entries) => {
   };
 };
 
-export default function WeightChart({ points = [] }) {
+export default function WeightChart({ points = [], imcSummary = null }) {
   const [showTooltip, setShowTooltip] = useState(true);
   const [timeFilter, setTimeFilter] = useState("all");
   const containerRef = useRef(null);
@@ -158,6 +158,7 @@ export default function WeightChart({ points = [] }) {
   }, [sanitizedPoints, timeFilter]);
 
   if (!sanitizedPoints.length) {
+    const showImc = imcValue != null;
     return (
       <div className={`${style.chartCard} ${style.weightCard} ${style.chartContainer}`}>
         <div className={style.weightSummary}>
@@ -166,12 +167,22 @@ export default function WeightChart({ points = [] }) {
             <h4 className={style.weightValue}>--</h4>
             <p className={style.weightMeta}>Ajoute une première mesure pour visualiser ton évolution.</p>
           </div>
+          {showImc && (
+            <div className={style.weightImcInfo}>
+              <span className={style.weightImcBadge}>IMC {imcValue}</span>
+              {imcInterpretation && <p className={style.weightImcMeta}>{imcInterpretation}</p>}
+              {imcWeight && <p className={style.weightImcMeta}>{`Poids associé : ${imcWeight}`}</p>}
+              {imcDateLabel && <p className={style.weightImcMeta}>{imcDateLabel}</p>}
+            </div>
+          )}
         </div>
         <div className={style.emptyState}>
           <div className={style.emptyIcon}>📊</div>
           <p className={style.emptyText}>Aucune pesée enregistrée</p>
           <p className={style.emptyHint}>
-            Utilise le calculateur IMC pour suivre l'évolution de ton poids au fil du temps !
+            {showImc
+              ? "Continue de suivre ton IMC pour enrichir ce graphique."
+              : "Utilise le calculateur IMC pour suivre l'évolution de ton poids au fil du temps !"}
           </p>
           <a href="/outils" className={style.emptyButton}>
             Calculer mon IMC
@@ -190,6 +201,11 @@ export default function WeightChart({ points = [] }) {
     latestMeasurement?.date instanceof Date ? dateFormatter.format(latestMeasurement.date) : null;
 
   const lastDelta = computeDeltaInfo(latestWeight, previousWeight, "vs dernière pesée");
+
+  const imcValue = imcSummary?.value ?? null;
+  const imcInterpretation = imcSummary?.interpretation ?? null;
+  const imcWeight = imcSummary?.weight ?? null;
+  const imcDateLabel = imcSummary?.dateLabel ?? null;
 
   const rangeLabel = FILTER_LABELS[timeFilter] || "Période active";
   const periodDelta = computeRangeDelta(filteredPoints);
@@ -270,7 +286,14 @@ export default function WeightChart({ points = [] }) {
         </div>
       </div>
 
-      <div className={style.weightRangeMeta}>{periodRangeLabel}</div>
+      <div className={style.weightRangeMeta}>
+        <span>{periodRangeLabel}</span>
+        {imcValue && (
+          <span className={style.weightImcBadge} title="Dernier IMC enregistré">
+            IMC {imcValue}
+          </span>
+        )}
+      </div>
 
       <div className={style.weightChartArea} onClick={handleChartClick}>
         <LineChartSVG points={filteredPoints} tooltipClass={style.chartTooltip} tooltipClassName={style.chartTooltip} showTooltip={showTooltip} />
@@ -308,6 +331,15 @@ export default function WeightChart({ points = [] }) {
           <span className={style.weightStatLabel}>Plus haut</span>
           <span className={style.weightStatValue}>{formatWeight(maxValue)}</span>
         </div>
+        {imcValue && (
+          <div className={style.weightStat}>
+            <span className={style.weightStatLabel}>Dernier IMC</span>
+            <span className={style.weightStatValue}>{imcValue}</span>
+            {imcInterpretation && <span className={style.weightStatMeta}>{imcInterpretation}</span>}
+            {imcWeight && <span className={style.weightStatMeta}>{`Poids associé : ${imcWeight}`}</span>}
+            {imcDateLabel && <span className={style.weightStatMeta}>{imcDateLabel}</span>}
+          </div>
+        )}
       </div>
     </div>
   );
