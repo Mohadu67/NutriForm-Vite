@@ -3,7 +3,7 @@
     "title": "Qui sommes-nous ?",
     "subtitle": "Notre mission : rendre le fitness simple et accessible à tous",
     "description": "Harmonith est une application pensée pour rendre le fitness simple, fun et accessible. Elle permet de choisir ses exercices, d’ajuster la charge, le nombre de répétitions ou le temps de cardio, et de suivre facilement sa progression.",
-    "teamTitle": "Notre équipe",
+    "teamTitle": "Une équipe qui transpire pour votre expérience",
     "team": [
       {
         "id": "1",
@@ -22,7 +22,7 @@
         "name": "Nono",
         "role": "Rédactrice du site",
         "bio": "Passionnée d’écriture et accro au sport, j’apporte ma touche pour rendre Harmonith clair, motivant et inspirant. Mon but : transformer les infos en textes simples et motivants, pour que chacun trouve la force d’aller plus loin.",
-        "photo": "images/teams/nono.JPG",
+        "photo": "images/teams/Nono.PNG",
         "socials": {
           "linkedin": "https://www.linkedin.com/in/nolwenn-le-rohellec-1720a2218",
           "twitter": "",
