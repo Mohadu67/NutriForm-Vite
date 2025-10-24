@@ -78,6 +78,11 @@ export default function WeightChart({ points = [], imcSummary = null }) {
   const [timeFilter, setTimeFilter] = useState("all");
   const containerRef = useRef(null);
 
+  const imcValue = imcSummary?.value ?? null;
+  const imcInterpretation = imcSummary?.interpretation ?? null;
+  const imcWeight = imcSummary?.weight ?? null;
+  const imcDateLabel = imcSummary?.dateLabel ?? null;
+
   const dateFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat("fr-FR", {
@@ -202,10 +207,6 @@ export default function WeightChart({ points = [], imcSummary = null }) {
 
   const lastDelta = computeDeltaInfo(latestWeight, previousWeight, "vs dernière pesée");
 
-  const imcValue = imcSummary?.value ?? null;
-  const imcInterpretation = imcSummary?.interpretation ?? null;
-  const imcWeight = imcSummary?.weight ?? null;
-  const imcDateLabel = imcSummary?.dateLabel ?? null;
 
   const rangeLabel = FILTER_LABELS[timeFilter] || "Période active";
   const periodDelta = computeRangeDelta(filteredPoints);
