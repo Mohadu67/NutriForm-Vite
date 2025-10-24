@@ -114,6 +114,513 @@
   z-index: 0;
 }
 
+/* Weight chart specific layout */
+
+.metricCard {
+  gap: 24px;
+  overflow: hidden;
+}
+
+.weightCard {
+  gap: 20px;
+  overflow: hidden;
+}
+
+.weightSummary {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.weightPrimary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.weightLabel {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--nf-muted, #747980);
+}
+
+.weightValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.weightValue {
+  margin: 0;
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: var(--nf-ink, #2B2B2B);
+  line-height: 1.1;
+}
+
+.deltaBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--nf-muted, #666);
+}
+
+.deltaBadgePositive {
+  background: rgba(26, 142, 79, 0.12);
+  color: #1a8e4f;
+}
+
+.deltaBadgeNegative {
+  background: rgba(194, 59, 59, 0.12);
+  color: #c23b3b;
+}
+
+.deltaBadgeNeutral {
+  background: rgba(116, 121, 128, 0.12);
+  color: var(--nf-muted, #666);
+}
+
+.weightMeta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--nf-muted, #757b85);
+}
+
+.weightControls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  flex: 1 1 auto;
+  min-width: 240px;
+}
+
+.rangeLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--nf-muted, #757b85);
+}
+
+.weightRangeMeta {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--nf-muted, #757b85);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.weightChartArea {
+  padding: 4px 0 0;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.weightStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.weightStat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.weightStatLabel {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nf-muted, #757b85);
+}
+
+.weightStatValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--nf-ink, #2B2B2B);
+}
+
+.trendPositive {
+  color: #1a8e4f;
+}
+
+.trendNegative {
+  color: #c23b3b;
+}
+
+.trendNeutral {
+  color: var(--nf-muted, #666);
+}
+
+@media (max-width: 768px) {
+  .weightSummary {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .weightControls {
+    align-items: flex-start;
+  }
+
+  .weightValueRow {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 520px) {
+  .weightStats {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+}
+
+:global(.dark) .weightValue {
+  color: #f5f7fa;
+}
+
+:global(.dark) .weightMeta,
+:global(.dark) .weightStatLabel,
+:global(.dark) .rangeLabel,
+:global(.dark) .weightRangeMeta {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+:global(.dark) .weightStatValue {
+  color: #f5f7fa;
+}
+
+:global(.dark) .deltaBadge {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+:global(.dark) .deltaBadgePositive {
+  background: rgba(26, 142, 79, 0.25);
+  color: #4ade80;
+}
+
+:global(.dark) .deltaBadgeNeutral {
+  background: rgba(116, 121, 128, 0.16);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+:global(.dark) .deltaBadgeNegative {
+  background: rgba(194, 59, 59, 0.25);
+  color: #f87171;
+}
+
+:global(.dark) .weightChartArea {
+  --line: rgba(255, 255, 255, 0.1);
+}
+
+/* Calorie chart */
+.calorieSummary {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.caloriePrimary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 240px;
+}
+
+.calorieLabel {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--nf-muted, #747980);
+}
+
+.calorieValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.calorieValue {
+  margin: 0;
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--nf-ink, #2B2B2B);
+  line-height: 1.15;
+}
+
+.calorieMeta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--nf-muted, #757b85);
+}
+
+.calorieTargets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.intakeForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 320px;
+}
+
+.intakeLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nf-muted, #6d7280);
+}
+
+.intakeField {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.intakeInput {
+  flex: 1;
+  min-width: 0;
+  border-radius: 10px;
+  border: 1px solid var(--nf-surface-border, rgba(0, 0, 0, 0.12));
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  background: var(--nf-surface, #ffffff);
+  color: var(--nf-ink, #2b2b2b);
+}
+
+.intakeInput:focus {
+  outline: 2px solid rgba(79, 70, 229, 0.25);
+  border-color: rgba(79, 70, 229, 0.35);
+}
+
+.intakeButton {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #ffb385, #fd6f9f);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.intakeButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(253, 111, 159, 0.25);
+}
+
+.intakeError {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #c23b3b;
+}
+
+.intakeFeedback {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.calorieTargetPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--nf-muted, #666);
+}
+
+.targetDeficit {
+  background: rgba(5, 150, 105, 0.12);
+  color: #047857;
+}
+
+.targetMaintenance {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+}
+
+.targetSurplus {
+  background: rgba(234, 88, 12, 0.12);
+  color: #c2410c;
+}
+
+.calorieControls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  min-width: 240px;
+}
+
+.calorieLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: var(--nf-muted, #757b85);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legendDotMaintenance {
+  background: #2563eb;
+}
+
+.legendDotDeficit {
+  background: #059669;
+}
+
+.legendDotSurplus {
+  background: #ea580c;
+}
+
+.legendDotBurned {
+  background: #ff7a59;
+}
+
+.calorieChartArea {
+  position: relative;
+  cursor: pointer;
+}
+
+.calorieStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+}
+
+.calorieStat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calorieStatLabel {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--nf-muted, #757b85);
+}
+
+.calorieStatValue {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--nf-ink, #2B2B2B);
+}
+
+.calorieStatMeta {
+  font-size: 0.75rem;
+  color: var(--nf-muted, #848a94);
+}
+
+:global(.dark) .calorieValue {
+  color: #f5f7fa;
+}
+
+:global(.dark) .calorieMeta,
+:global(.dark) .calorieLabel,
+:global(.dark) .calorieTargetPill,
+:global(.dark) .calorieStatLabel,
+:global(.dark) .calorieStatMeta,
+:global(.dark) .legendItem,
+:global(.dark) .intakeLabel,
+:global(.dark) .intakeFeedback {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+:global(.dark) .calorieTargetPill {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:global(.dark) .targetDeficit {
+  background: rgba(5, 150, 105, 0.25);
+  color: #34d399;
+}
+
+:global(.dark) .targetMaintenance {
+  background: rgba(37, 99, 235, 0.25);
+  color: #60a5fa;
+}
+
+:global(.dark) .targetSurplus {
+  background: rgba(234, 88, 12, 0.25);
+  color: #fb923c;
+}
+
+:global(.dark) .calorieStatValue {
+  color: #f5f7fa;
+}
+
+:global(.dark) .intakeInput {
+  background: rgba(26, 29, 36, 0.85);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f5f7fa;
+}
+
+:global(.dark) .intakeInput:focus {
+  outline-color: rgba(99, 102, 241, 0.35);
+  border-color: rgba(99, 102, 241, 0.45);
+}
+
+@media (max-width: 768px) {
+  .calorieSummary {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .calorieControls {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .calorieStats {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
 /* Chart Header with Filters */
 .chartHeader {
   display: flex;

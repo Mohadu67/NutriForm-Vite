@@ -1,5 +1,6 @@
 
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import styles from "./Main.module.css";
 
 const IconImc = () => (
@@ -53,7 +54,7 @@ const IconHeart = () => (
 const primaryTools = [
   {
     id: "imc",
-    href: "/outils",
+    href: "/outils?tool=imc",
     titleKey: "homeTools.imc.title",
     descriptionKey: "homeTools.imc.description",
     ctaKey: "homeTools.imc.cta",
@@ -63,7 +64,7 @@ const primaryTools = [
   },
   {
     id: "calories",
-    href: "/outils",
+    href: "/outils?tool=cal",
     titleKey: "homeTools.calories.title",
     descriptionKey: "homeTools.calories.description",
     ctaKey: "homeTools.calories.cta",
@@ -73,7 +74,7 @@ const primaryTools = [
   },
   {
     id: "rm",
-    href: "/outils",
+    href: "/outils?tool=rm",
     titleKey: "homeTools.rm.title",
     descriptionKey: "homeTools.rm.description",
     ctaKey: "homeTools.rm.cta",
@@ -99,9 +100,9 @@ export default function OutilsCards() {
     <div className={styles.toolsWrapper}>
       <div className={styles.primaryGrid}>
         {primaryTools.map((tool) => (
-          <a
+          <Link
             key={tool.id}
-            href={tool.href}
+            to={tool.href}
             className={styles.primaryCard}
             style={{
               "--card-accent": tool.accent,
@@ -113,7 +114,7 @@ export default function OutilsCards() {
             <h3 className={styles.cardTitle}>{t(tool.titleKey)}</h3>
             <p className={styles.cardDescription}>{t(tool.descriptionKey)}</p>
             <span className={styles.cardCta}>{t(tool.ctaKey)}</span>
-          </a>
+          </Link>
         ))}
       </div>
 
