@@ -4,7 +4,6 @@ import usePageTitle from "../../hooks/usePageTitle.js";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import style from "./Dashboard.module.css";
-import ImcRecapCard from "../../components/History/HistoryUser/Recap/ImcRecapCard.jsx";
 import WeightChart from "../../components/History/HistoryUser/HistoryCharts/WeightChart.jsx";
 import CalorieChart from "../../components/History/HistoryUser/HistoryCharts/CalorieChart.jsx";
 import useHistoryData from "../../components/History/HistoryUser/UseHistoryData.js";
@@ -35,12 +34,10 @@ function DashboardOverview({
   badges,
   activityHeatmap,
   weightPoints,
-  calorieSummary,
   rmTests,
-  imcPoints,
+  imcSummary,
   userSessions,
   lastCompletedSession,
-  onDelete,
   calorieTargets,
   calorieBurnPoints,
   onDeleteSuccess,
@@ -51,12 +48,6 @@ function DashboardOverview({
   onSaveGoal,
 }) {
   const showInsights = badges.length > 0 || stats.totalSessions > 0;
-  const calorieStats = calorieSummary ?? {
-    value: "--",
-    meta: "Enregistre tes apports pour suivre tes calories",
-    delta: null,
-    deltaTone: null,
-  };
 
   return (
     <>
@@ -117,17 +108,8 @@ function DashboardOverview({
 
         <div className={style.bodyMetricsSection}>
           <div className={style.weightPanel}>
-            <WeightChart points={weightPoints} />
-            <CalorieChart burnPoints={calorieBurnPoints} targets={calorieTargets} summary={calorieStats} />
-          </div>
-
-          <div className={style.recapPanel}>
-            <ImcRecapCard
-              imcPoints={imcPoints}
-              sessions={userSessions}
-              lastSession={lastCompletedSession}
-              onDelete={onDelete}
-            />
+            <WeightChart points={weightPoints} imcSummary={imcSummary} />
+            <CalorieChart burnPoints={calorieBurnPoints} targets={calorieTargets} />
           </div>
         </div>
       </section>
@@ -209,7 +191,7 @@ export default function Dashboard() {
     return null;
   }, []);
 
-  const { records, sessions, status, error, displayName, handleDelete } = useHistoryData();
+  const { records, sessions, status, error, displayName } = useHistoryData();
 
   const [userSessions, setUserSessions] = useState([]);
   const [weeklyGoal, setWeeklyGoal] = useState(3);
@@ -267,14 +249,6 @@ export default function Dashboard() {
   }, [weeklyGoal]);
 
   const imcPoints = useMemo(() => records.filter((r) => r.type === "imc"), [records]);
-  const weightPoints = useMemo(
-    () =>
-      imcPoints
-        .map((r) => ({ value: Number(r.poids), date: parseDate(r.date) }))
-        .filter((p) => Number.isFinite(p.value) && p.date)
-        .sort((a, b) => a.date - b.date),
-    [imcPoints, parseDate]
-  );
 
   const fullDateFormatter = useMemo(
     () =>
@@ -286,11 +260,62 @@ export default function Dashboard() {
     []
   );
 
+  const imcSummary = useMemo(() => {
+    if (!imcPoints.length) return null;
+    const latest = imcPoints[imcPoints.length - 1];
+    const rawValue = Number(latest.value);
+    const formattedValue = Number.isFinite(rawValue) ? rawValue.toFixed(1) : "--";
+
+    let interpretation = null;
+    if (Number.isFinite(rawValue)) {
+      if (rawValue < 18.5) interpretation = "Insuffisance pondérale";
+      else if (rawValue < 25) interpretation = "Corpulence normale";
+      else if (rawValue < 30) interpretation = "Surpoids";
+      else interpretation = "Obésité";
+    }
+
+    const weightValue = Number.isFinite(Number(latest.poids))
+      ? `${Number(latest.poids).toFixed(1)} kg`
+      : null;
+
+    let dateLabel = null;
+    if (latest.date instanceof Date) {
+      dateLabel = `Mesure du ${fullDateFormatter.format(latest.date)}`;
+    } else if (latest.date) {
+      const parsed = new Date(latest.date);
+      if (!Number.isNaN(parsed.getTime())) {
+        dateLabel = `Mesure du ${fullDateFormatter.format(parsed)}`;
+      }
+    }
+
+    return {
+      value: formattedValue,
+      interpretation,
+      weight: weightValue,
+      dateLabel,
+    };
+  }, [imcPoints, fullDateFormatter]);
+  const weightPoints = useMemo(
+    () =>
+      imcPoints
+        .map((r) => ({ value: Number(r.poids), date: parseDate(r.date) }))
+        .filter((p) => Number.isFinite(p.value) && p.date)
+        .sort((a, b) => a.date - b.date),
+    [imcPoints, parseDate]
+  );
+
   const numberFormatter = useMemo(() => new Intl.NumberFormat("fr-FR"), []);
 
   const calorieCalculations = useMemo(() => {
     const extractValue = (record) => {
       if (!record || typeof record !== "object") return null;
+      const directValue = Number(record.value);
+      if (Number.isFinite(directValue)) return directValue;
+      const metaValue =
+        record.meta && typeof record.meta === "object"
+          ? Number(record.meta.calories ?? record.meta.calorie ?? record.meta.kcal ?? record.meta.caloriesDaily ?? record.meta.dailyCalories)
+          : null;
+      if (Number.isFinite(metaValue)) return metaValue;
       const fields = [
         "calories",
         "calorie",
@@ -309,10 +334,12 @@ export default function Dashboard() {
 
     const isCalorieRecord = (record) => {
       const type = String(record?.type || record?.category || "").toLowerCase();
+      const action = String(record?.action || "").toLowerCase();
       return (
         type.includes("calorie") ||
         type.includes("nutrition") ||
-        type.includes("aliment")
+        type.includes("aliment") ||
+        action.includes("calories")
       );
     };
 
@@ -340,45 +367,6 @@ export default function Dashboard() {
 
     return entries;
   }, [records, parseDate]);
-
-  const calorieSummary = useMemo(() => {
-    if (!calorieCalculations.length) {
-      return {
-        value: "--",
-        meta: "Enregistre tes repas pour suivre tes calories",
-        delta: null,
-        deltaTone: null,
-      };
-    }
-
-    const latest = calorieCalculations[calorieCalculations.length - 1];
-    const previous =
-      calorieCalculations.length > 1 ? calorieCalculations[calorieCalculations.length - 2] : null;
-    const latestValue = Number(latest.value);
-    const formattedValue = Number.isFinite(latestValue)
-      ? `${numberFormatter.format(Math.round(latestValue))} kcal`
-      : "--";
-    const meta =
-      latest.date instanceof Date
-        ? `Enregistrement du ${fullDateFormatter.format(latest.date)}`
-        : "Dernier enregistrement";
-
-    let delta = null;
-    let deltaTone = null;
-    if (previous && Number.isFinite(previous.value) && Number.isFinite(latestValue)) {
-      const diff = Math.round(latestValue - previous.value);
-      if (Math.abs(diff) < 5) {
-        delta = "Stable vs précédent enregistrement";
-        deltaTone = "neutral";
-      } else {
-        const sign = diff > 0 ? "+" : "−";
-        delta = `${sign}${Math.abs(diff)} kcal vs précédent`;
-        deltaTone = diff > 0 ? "up" : "down";
-      }
-    }
-
-    return { value: formattedValue, meta, delta, deltaTone };
-  }, [calorieCalculations, numberFormatter, fullDateFormatter]);
 
   const calorieTargets = useMemo(() => {
     if (!calorieCalculations.length) {
@@ -869,14 +857,12 @@ export default function Dashboard() {
             badges={badges}
             activityHeatmap={activityHeatmap}
             weightPoints={weightPoints}
-            calorieSummary={calorieSummary}
+            imcSummary={imcSummary}
             calorieTargets={calorieTargets}
             calorieBurnPoints={calorieBurnPoints}
             rmTests={rmTests}
-            imcPoints={imcPoints}
             userSessions={userSessions}
             lastCompletedSession={lastCompletedSession}
-            onDelete={handleDelete}
             onDeleteSuccess={handleSessionDelete}
             showGoalModal={showGoalModal}
             tempGoal={tempGoal}

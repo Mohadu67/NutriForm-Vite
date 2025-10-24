@@ -21,7 +21,7 @@ const PADDING_RIGHT = 24;
 const PADDING_TOP = 16;
 const PADDING_BOTTOM = 36;
 
-export default function CalorieChart({ burnPoints = [], targets = {}, summary = {} }) {
+export default function CalorieChart({ burnPoints = [], targets = {} }) {
   const [timeFilter, setTimeFilter] = useState("month");
   const [consumedInput, setConsumedInput] = useState("");
   const [consumedCalories, setConsumedCalories] = useState(null);
@@ -211,15 +211,6 @@ export default function CalorieChart({ burnPoints = [], targets = {}, summary = 
   const showEmptyPeriodMessage = !filteredBurn.length && normalizedBurn.length > 0;
   const noBurnData = normalizedBurn.length === 0;
 
-  const summaryDeltaClass =
-    summary?.deltaTone === "up"
-      ? `${style.deltaBadge} ${style.deltaBadgePositive}`
-      : summary?.deltaTone === "down"
-      ? `${style.deltaBadge} ${style.deltaBadgeNegative}`
-      : summary?.delta
-      ? `${style.deltaBadge} ${style.deltaBadgeNeutral}`
-      : null;
-
   const legendItems = [
     maintenance != null && { label: "Maintien", className: style.legendDotMaintenance },
     deficit != null && { label: "Perte (déficit)", className: style.legendDotDeficit },
@@ -254,7 +245,7 @@ export default function CalorieChart({ burnPoints = [], targets = {}, summary = 
     consumptionDiff == null
       ? null
       : consumptionDiff === 0
-      ? "Identique au maintien"
+      ? "Identique à la cible maintien"
       : `${consumptionDiff > 0 ? "+" : "−"}${numberFormatter.format(Math.abs(consumptionDiff))} kcal vs maintien`;
 
   const consumptionTone =
@@ -277,60 +268,58 @@ export default function CalorieChart({ burnPoints = [], targets = {}, summary = 
     <div className={`${style.chartCard} ${style.metricCard} ${style.chartContainer}`}>
       <div className={style.calorieSummary}>
         <div className={style.caloriePrimary}>
-          <p className={style.calorieLabel}>Apport calorique recommandé</p>
-          <div className={style.calorieValueRow}>
-            <h4 className={style.calorieValue}>{summary?.value || "--"}</h4>
-            {summary?.delta && summaryDeltaClass && <span className={summaryDeltaClass}>{summary.delta}</span>}
-          </div>
-          <p className={style.calorieMeta}>
-            {summary?.meta || "Calcule ton besoin calorique pour personnaliser tes objectifs."}
-          </p>
-        <div className={style.calorieTargets}>
-          {deficit != null && (
-            <span className={`${style.calorieTargetPill} ${style.targetDeficit}`}>
-              Perte&nbsp;: {numberFormatter.format(deficit)} kcal
-            </span>
+          <p className={style.calorieLabel}>Cibles caloriques</p>
+          <div className={style.calorieTargets}>
+            {deficit != null && (
+              <span className={`${style.calorieTargetPill} ${style.targetDeficit}`}>
+                Perte&nbsp;: {numberFormatter.format(deficit)} kcal
+              </span>
             )}
             {maintenance != null && (
               <span className={`${style.calorieTargetPill} ${style.targetMaintenance}`}>
                 Maintien&nbsp;: {numberFormatter.format(maintenance)} kcal
               </span>
             )}
-          {surplus != null && (
-            <span className={`${style.calorieTargetPill} ${style.targetSurplus}`}>
-              Prise&nbsp;: {numberFormatter.format(surplus)} kcal
-            </span>
-          )}
-        </div>
-
-        <form className={style.intakeForm} onSubmit={handleConsumptionSubmit}>
-          <label htmlFor="calorie-consumed" className={style.intakeLabel}>
-            Calories consommées aujourd'hui
-          </label>
-          <div className={style.intakeField}>
-            <input
-              id="calorie-consumed"
-              type="number"
-              inputMode="numeric"
-              className={style.intakeInput}
-              placeholder="Ex : 2200"
-              value={consumedInput}
-              onChange={(event) => setConsumedInput(event.target.value)}
-              min="0"
-            />
-            <button type="submit" className={style.intakeButton}>
-              Ajouter
-            </button>
+            {surplus != null && (
+              <span className={`${style.calorieTargetPill} ${style.targetSurplus}`}>
+                Prise&nbsp;: {numberFormatter.format(surplus)} kcal
+              </span>
+            )}
+            {deficit == null && maintenance == null && surplus == null && (
+              <span className={style.calorieMeta}>
+                Calcule tes besoins pour afficher des objectifs personnalisés.
+              </span>
+            )}
           </div>
-          {inputError && <p className={style.intakeError}>{inputError}</p>}
-          {consumedCalories != null && (
-            <p className={`${style.intakeFeedback} ${consumptionToneClass}`}>
-              {`Apport enregistré : ${numberFormatter.format(consumedCalories)} kcal`}
-              {consumptionDiffLabel ? ` · ${consumptionDiffLabel}` : ""}
-            </p>
-          )}
-        </form>
-      </div>
+          <form className={style.intakeForm} onSubmit={handleConsumptionSubmit}>
+            <label htmlFor="calorie-consumed" className={style.intakeLabel}>
+              Calories consommées aujourd&apos;hui
+            </label>
+            <div className={style.intakeField}>
+              <input
+                id="calorie-consumed"
+                type="number"
+                inputMode="numeric"
+                className={style.intakeInput}
+                placeholder="Ex : 2200"
+                value={consumedInput}
+                onChange={(event) => setConsumedInput(event.target.value)}
+                min="0"
+              />
+              <button type="submit" className={style.intakeButton}>
+                Valider
+              </button>
+            </div>
+            {inputError && <p className={style.intakeError}>{inputError}</p>}
+            {consumedCalories != null && (
+              <p className={`${style.intakeFeedback} ${consumptionToneClass}`}>
+                {`Apport enregistré : ${numberFormatter.format(consumedCalories)} kcal${
+                  consumptionDiffLabel ? ` · ${consumptionDiffLabel}` : ""
+                }`}
+              </p>
+            )}
+          </form>
+        </div>
         <div className={style.calorieControls}>
           <span className={style.rangeLabel}>{periodLabel}</span>
           <div className={style.filterButtons}>
@@ -408,7 +397,7 @@ export default function CalorieChart({ burnPoints = [], targets = {}, summary = 
 
       <div className={style.calorieStats}>
         <div className={style.calorieStat}>
-          <span className={style.calorieStatLabel}>Écart vs maintien</span>
+          <span className={style.calorieStatLabel}>Balance vs maintien</span>
           <span
             className={`${style.calorieStatValue} ${
               diffTone === "positive"
