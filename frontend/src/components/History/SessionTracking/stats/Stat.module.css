@@ -7,7 +7,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  min-height: 0;
+  width: 100%;
 }
 
 .header {
@@ -232,6 +232,73 @@
   color: #c23b3b;
 }
 
+.carouselSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: relative;
+}
+
+.carouselHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.carouselList {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  padding: 8px calc(var(--space-2) + 4px) var(--space-2);
+  margin: 0 calc((var(--space-2) + 4px) * -1);
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  overscroll-behavior-inline: contain;
+  touch-action: pan-x pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: var(--nf-accent, #FFB385) transparent;
+}
+
+.carouselList::after {
+  content: "";
+  flex: 0 0 calc(var(--space-2) + 4px);
+}
+
+.carouselList::-webkit-scrollbar {
+  height: 6px;
+}
+
+.carouselList::-webkit-scrollbar-track {
+  background: var(--nf-surface-border);
+  border-radius: 999px;
+}
+
+.carouselList::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ffb385, #f49b69);
+  border-radius: 999px;
+}
+
+.carouselSlide {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  display: flex;
+  padding: 0 4px;
+  width: 100%;
+}
+
+.carouselSlide > :global(.card) {
+  flex: 1 1 auto;
+  height: 100%;
+}
+
+@media (max-width: 900px) {
+  .carouselSlide {
+    min-width: min(85vw, 320px);
+  }
+}
+
 @media (max-width: 640px) {
   .card {
     padding: 20px;
@@ -239,6 +306,18 @@
 
   .metricGrid {
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .carouselList {
+    gap: var(--space-2);
+    padding: 8px var(--space-2) var(--space-2);
+    margin: 0 calc(var(--space-2) * -1);
+  }
+
+  .carouselSlide {
+    min-width: min(88vw, 300px);
   }
 }
 

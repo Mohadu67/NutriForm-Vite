@@ -6,6 +6,7 @@ import Footer from "../../components/Footer/Footer.jsx";
 import style from "./Dashboard.module.css";
 import ImcRecapCard from "../../components/History/HistoryUser/Recap/ImcRecapCard.jsx";
 import WeightChart from "../../components/History/HistoryUser/HistoryCharts/WeightChart.jsx";
+import CalorieChart from "../../components/History/HistoryUser/HistoryCharts/CalorieChart.jsx";
 import useHistoryData from "../../components/History/HistoryUser/UseHistoryData.js";
 import SuivieSeance from "../../components/History/SessionTracking/SuivieSeance.jsx";
 import RMHistory from "../../components/History/RM/RMHistory/RMHistory.jsx";
@@ -34,13 +35,14 @@ function DashboardOverview({
   badges,
   activityHeatmap,
   weightPoints,
-  weightSummary,
   calorieSummary,
   rmTests,
   imcPoints,
   userSessions,
   lastCompletedSession,
   onDelete,
+  calorieTargets,
+  calorieBurnPoints,
   onDeleteSuccess,
   showGoalModal,
   tempGoal,
@@ -49,23 +51,11 @@ function DashboardOverview({
   onSaveGoal,
 }) {
   const showInsights = badges.length > 0 || stats.totalSessions > 0;
-  const weightStats = weightSummary ?? {
-    value: "--",
-    meta: "Aucune mesure disponible",
-    delta: null,
-    deltaTone: null,
-  };
   const calorieStats = calorieSummary ?? {
     value: "--",
     meta: "Enregistre tes apports pour suivre tes calories",
     delta: null,
     deltaTone: null,
-  };
-  const deltaClassName = (tone) => {
-    if (tone === "up") return `${style.statCardDelta} ${style.statCardDeltaPositive}`;
-    if (tone === "down") return `${style.statCardDelta} ${style.statCardDeltaNegative}`;
-    if (tone === "neutral") return `${style.statCardDelta} ${style.statCardDeltaNeutral}`;
-    return style.statCardDelta;
   };
 
   return (
@@ -119,53 +109,37 @@ function DashboardOverview({
 
       <section className={style.themeSection}>
         <header className={style.themeHeader}>
-          <h2 className={style.themeTitle}>Poids &amp; IMC</h2>
+          <h2 className={style.themeTitle}>Poids: IMC & Calorie</h2>
           <p className={style.themeSubtitle}>
             Visualise l&apos;impact de tes habitudes sur ton poids et ton énergie.
           </p>
         </header>
 
-        <div className={style.themeGrid}>
-          <div className={`${style.themeTile} ${style.chartCard}`}>
+        <div className={style.bodyMetricsSection}>
+          <div className={style.weightPanel}>
             <WeightChart points={weightPoints} />
+            <CalorieChart burnPoints={calorieBurnPoints} targets={calorieTargets} summary={calorieStats} />
           </div>
 
-          <div className={style.themeSide}>
-            <div className={style.statCard}>
-              <h3 className={style.statCardTitle}>Suivi du poids</h3>
-              <p className={style.statCardValue}>{weightStats.value}</p>
-              {weightStats.delta && (
-                <p className={deltaClassName(weightStats.deltaTone)}>
-                  {weightStats.delta}
-                </p>
-              )}
-              {weightStats.meta && <p className={style.statCardMeta}>{weightStats.meta}</p>}
-            </div>
-
-            <div className={style.statCard}>
-              <h3 className={style.statCardTitle}>Calories journalières</h3>
-              <p className={style.statCardValue}>{calorieStats.value}</p>
-              {calorieStats.delta && (
-                <p className={deltaClassName(calorieStats.deltaTone)}>
-                  {calorieStats.delta}
-                </p>
-              )}
-              {calorieStats.meta && <p className={style.statCardMeta}>{calorieStats.meta}</p>}
-            </div>
-
-            <div className={`${style.themeTile} ${style.recapCard}`}>
-              <ImcRecapCard
-                imcPoints={imcPoints}
-                sessions={userSessions}
-                lastSession={lastCompletedSession}
-                onDelete={onDelete}
-              />
-            </div>
+          <div className={style.recapPanel}>
+            <ImcRecapCard
+              imcPoints={imcPoints}
+              sessions={userSessions}
+              lastSession={lastCompletedSession}
+              onDelete={onDelete}
+            />
           </div>
         </div>
       </section>
 
+        <header className={style.themeHeader}>
+          <h2 className={style.themeTitle}>Exercice: </h2>
+          <p className={style.themeSubtitle}>
+            Visualise l'impact de ta rigueur sur ton poids et ton énergie.
+          </p>
+        </header>
       <section className={style.metricsSection}>
+
         <SwimDistanceCard
           stats={swimStats}
           formatKmValue={formatKmValue}
@@ -314,56 +288,17 @@ export default function Dashboard() {
 
   const numberFormatter = useMemo(() => new Intl.NumberFormat("fr-FR"), []);
 
-  const weightSummary = useMemo(() => {
-    if (!weightPoints.length) {
-      return {
-        value: "--",
-        meta: "Aucune mesure de poids enregistrée",
-        delta: null,
-        deltaTone: null,
-      };
-    }
-
-    const latestEntry = weightPoints[weightPoints.length - 1];
-    const latestValue = Number(latestEntry.value);
-    const previousEntry =
-      weightPoints.length > 1 ? weightPoints[weightPoints.length - 2] : null;
-    const previousValue = previousEntry ? Number(previousEntry.value) : null;
-
-    const value = Number.isFinite(latestValue)
-      ? `${latestValue.toFixed(1)} kg`
-      : "--";
-
-    const meta =
-      latestEntry.date instanceof Date
-        ? `Mesure du ${fullDateFormatter.format(latestEntry.date)}`
-        : "Dernière mesure disponible";
-
-    let delta = null;
-    let deltaTone = null;
-    if (
-      previousEntry &&
-      Number.isFinite(previousValue) &&
-      Number.isFinite(latestValue)
-    ) {
-      const diff = Number((latestValue - previousValue).toFixed(1));
-      if (Math.abs(diff) < 0.1) {
-        delta = "Stable vs précédente mesure";
-        deltaTone = "neutral";
-      } else {
-        const sign = diff > 0 ? "+" : "−";
-        delta = `${sign}${Math.abs(diff).toFixed(1)} kg vs précédente mesure`;
-        deltaTone = diff > 0 ? "up" : "down";
-      }
-    }
-
-    return { value, meta, delta, deltaTone };
-  }, [weightPoints, fullDateFormatter]);
-
-  const calorieSummary = useMemo(() => {
+  const calorieCalculations = useMemo(() => {
     const extractValue = (record) => {
       if (!record || typeof record !== "object") return null;
-      const fields = ["calories", "calorie", "kcal", "totalCalories", "caloriesTotales", "caloriesTotal"];
+      const fields = [
+        "calories",
+        "calorie",
+        "kcal",
+        "totalCalories",
+        "caloriesTotales",
+        "caloriesTotal",
+      ];
       for (const field of fields) {
         const raw = record[field];
         const num = Number(raw);
@@ -385,16 +320,29 @@ export default function Dashboard() {
       .map((record) => {
         const value = extractValue(record);
         if (!isCalorieRecord(record) && value === null) return null;
+        if (value === null) return null;
         const dateValue =
           parseDate(record?.date) ||
           parseDate(record?.createdAt) ||
-          parseDate(record?.updatedAt);
-        if (value === null) return null;
-        return { value, date: dateValue };
+          parseDate(record?.updatedAt) ||
+          null;
+        return {
+          value,
+          date: dateValue,
+        };
       })
-      .filter(Boolean);
+      .filter(Boolean)
+      .sort((a, b) => {
+        const timeA = a.date instanceof Date ? a.date.getTime() : 0;
+        const timeB = b.date instanceof Date ? b.date.getTime() : 0;
+        return timeA - timeB;
+      });
 
-    if (!entries.length) {
+    return entries;
+  }, [records, parseDate]);
+
+  const calorieSummary = useMemo(() => {
+    if (!calorieCalculations.length) {
       return {
         value: "--",
         meta: "Enregistre tes repas pour suivre tes calories",
@@ -403,17 +351,13 @@ export default function Dashboard() {
       };
     }
 
-    entries.sort((a, b) => {
-      const timeA = a.date instanceof Date ? a.date.getTime() : 0;
-      const timeB = b.date instanceof Date ? b.date.getTime() : 0;
-      return timeA - timeB;
-    });
-
-    const latest = entries[entries.length - 1];
-    const previous = entries.length > 1 ? entries[entries.length - 2] : null;
-    const formattedValue = `${numberFormatter.format(
-      Math.round(latest.value)
-    )} kcal`;
+    const latest = calorieCalculations[calorieCalculations.length - 1];
+    const previous =
+      calorieCalculations.length > 1 ? calorieCalculations[calorieCalculations.length - 2] : null;
+    const latestValue = Number(latest.value);
+    const formattedValue = Number.isFinite(latestValue)
+      ? `${numberFormatter.format(Math.round(latestValue))} kcal`
+      : "--";
     const meta =
       latest.date instanceof Date
         ? `Enregistrement du ${fullDateFormatter.format(latest.date)}`
@@ -421,8 +365,8 @@ export default function Dashboard() {
 
     let delta = null;
     let deltaTone = null;
-    if (previous) {
-      const diff = Math.round(latest.value - previous.value);
+    if (previous && Number.isFinite(previous.value) && Number.isFinite(latestValue)) {
+      const diff = Math.round(latestValue - previous.value);
       if (Math.abs(diff) < 5) {
         delta = "Stable vs précédent enregistrement";
         deltaTone = "neutral";
@@ -434,7 +378,139 @@ export default function Dashboard() {
     }
 
     return { value: formattedValue, meta, delta, deltaTone };
-  }, [records, parseDate, numberFormatter, fullDateFormatter]);
+  }, [calorieCalculations, numberFormatter, fullDateFormatter]);
+
+  const calorieTargets = useMemo(() => {
+    if (!calorieCalculations.length) {
+      return {
+        maintenance: null,
+        deficit: null,
+        surplus: null,
+        updatedAt: null,
+      };
+    }
+    const latest = calorieCalculations[calorieCalculations.length - 1];
+    const base = Number(latest.value);
+    if (!Number.isFinite(base) || base <= 0) {
+      return {
+        maintenance: null,
+        deficit: null,
+        surplus: null,
+        updatedAt: latest.date instanceof Date ? latest.date : null,
+      };
+    }
+
+    const maintenance = Math.round(base);
+    const deficit = Math.max(maintenance - 500, 0);
+    const surplus = maintenance + 500;
+
+    return {
+      maintenance,
+      deficit,
+      surplus,
+      updatedAt: latest.date instanceof Date ? latest.date : null,
+    };
+  }, [calorieCalculations]);
+
+  const extractSessionCalories = useCallback((session) => {
+    if (!session || typeof session !== "object") return null;
+
+    const inlineCandidates = [
+      session?.caloriesBurned,
+      session?.calories,
+      session?.stats?.caloriesBurned,
+      session?.stats?.calories,
+      session?.summary?.caloriesBurned,
+      session?.summary?.calories,
+      session?.metrics?.caloriesBurned,
+      session?.metrics?.calories,
+    ];
+
+    for (const value of inlineCandidates) {
+      const num = Number(value);
+      if (Number.isFinite(num) && num > 0) {
+        return num;
+      }
+    }
+
+    const entries = Array.isArray(session?.entries)
+      ? session.entries
+      : Array.isArray(session?.items)
+      ? session.items
+      : Array.isArray(session?.exercises)
+      ? session.exercises
+      : [];
+
+    let aggregate = 0;
+    let hasValue = false;
+
+    entries.forEach((entry) => {
+      if (!entry || typeof entry !== "object") return;
+      const entryCandidates = [entry?.caloriesBurned, entry?.calories, entry?.kcal];
+      entryCandidates.forEach((value) => {
+        const num = Number(value);
+        if (Number.isFinite(num) && num > 0) {
+          aggregate += num;
+          hasValue = true;
+        }
+      });
+
+      if (Array.isArray(entry?.sets)) {
+        entry.sets.forEach((set) => {
+          if (!set || typeof set !== "object") return;
+          const setCandidates = [set?.caloriesBurned, set?.calories, set?.kcal];
+          setCandidates.forEach((value) => {
+            const num = Number(value);
+            if (Number.isFinite(num) && num > 0) {
+              aggregate += num;
+              hasValue = true;
+            }
+          });
+        });
+      }
+    });
+
+    if (hasValue) {
+      return aggregate;
+    }
+
+    return null;
+  }, []);
+
+  const calorieBurnPoints = useMemo(() => {
+    const totals = new Map();
+
+    (userSessions || []).forEach((session) => {
+      const calories = extractSessionCalories(session);
+      if (!Number.isFinite(calories) || calories <= 0) return;
+
+      const rawDate =
+        parseDate(
+          session?.endedAt ||
+            session?.date ||
+            session?.createdAt ||
+            session?.startedAt ||
+            session?.performedAt ||
+            session?.day
+        ) || null;
+
+      if (!rawDate) return;
+
+      const normalized = new Date(rawDate);
+      normalized.setHours(0, 0, 0, 0);
+      const key = normalized.getTime();
+
+      const previous = totals.get(key) || 0;
+      totals.set(key, previous + Math.round(calories));
+    });
+
+    return Array.from(totals.entries())
+      .map(([timestamp, burned]) => ({
+        date: new Date(Number(timestamp)),
+        burned,
+      }))
+      .sort((a, b) => a.date - b.date);
+  }, [userSessions, parseDate, extractSessionCalories]);
 
   const rmTests = useMemo(() => {
     return records
@@ -793,8 +869,9 @@ export default function Dashboard() {
             badges={badges}
             activityHeatmap={activityHeatmap}
             weightPoints={weightPoints}
-            weightSummary={weightSummary}
             calorieSummary={calorieSummary}
+            calorieTargets={calorieTargets}
+            calorieBurnPoints={calorieBurnPoints}
             rmTests={rmTests}
             imcPoints={imcPoints}
             userSessions={userSessions}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./SuivieSeance.module.css";
+import statStyles from "./stats/Stat.module.css";
 import Stat from "./stats/Stat.jsx";
 import { computeSessionStats } from "./stats/computeSessionStats";
 import { loadExercises } from "../../../utils/exercisesLoader";
@@ -441,29 +442,6 @@ export default function SuivieSeance({
       .filter((card) => card.metrics.length > 0);
   }, [weightMetrics, calorieMetrics, sessionMetrics]);
 
-  const extraHighlights = useMemo(() => {
-    const highlights = [
-      {
-        label: "Durée moyenne des séances",
-        value: toDisplay(formatStat("avgWorkoutDurationMin")),
-      },
-      {
-        label: "Apport moyen (7 jours)",
-        value: toDisplay(formatStat("avgDailyCalories7d")),
-      },
-      {
-        label: "Calories moy./séance (7 jours)",
-        value: toDisplay(formatStat("avgCaloriesPerWorkout7d")),
-      },
-      // {
-      //   label: "Groupe musculaire favori",
-      //   value: toDisplay(formatStat("favoriteMuscleGroup")),
-      // },
-    ];
-
-    return highlights.filter((highlight) => highlight.value !== DEFAULT_EMPTY);
-  }, [formatStat, toDisplay]);
-
   const carouselSlides = useMemo(() => {
     const slides = [];
 
@@ -504,9 +482,8 @@ export default function SuivieSeance({
   }, [propLastSession, completedSessions]);
 
   const hasSummaryCards = showSummaryCards && summaryCards.length > 0;
-  const hasHighlights = extraHighlights.length > 0;
   const hasCarousel = carouselSlides.length > 0;
-  const hasAnyData = hasSummaryCards || hasHighlights || hasCarousel;
+  const hasAnyData = hasSummaryCards || hasCarousel;
   const showEmptyState = !loading && !error && !hasAnyData;
 
   return (
@@ -545,44 +522,28 @@ export default function SuivieSeance({
         </div>
       )}
 
-      {(hasHighlights || hasCarousel) && (
+      {hasCarousel && (
         <section className={styles.bottomSection}>
-          {hasHighlights && (
-            <div className={styles.extraSection}>
-              <h3 className={styles.sectionTitle}>Activité des dernières séances</h3>
-              <div className={styles.extraGrid}>
-                {extraHighlights.map((highlight) => (
-                  <div key={highlight.label} className={styles.extraCard}>
-                    <span className={styles.extraLabel}>{highlight.label}</span>
-                    <span className={styles.extraValue}>{highlight.value}</span>
+          <div className={statStyles.carouselSection}>
+            <div className={statStyles.carouselHeader}>
+              <h3 className={styles.sectionTitle}>Tes dernières séances</h3>
+            </div>
+            <div className={statStyles.carouselList} aria-label="Historique des séances">
+              {carouselSlides.map((slide) => {
+                const entries = pickRichestItemsFromSession(slide.session);
+                return (
+                  <div key={slide.key} className={statStyles.carouselSlide}>
+                    <Stat
+                      lastSession={slide.session}
+                      items={entries}
+                      titleOverride={slide.title}
+                      serverData={serverData}
+                    />
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-          )}
-
-          {hasCarousel && (
-            <div className={styles.carouselSection}>
-              <div className={styles.carouselHeader}>
-                <h3 className={styles.sectionTitle}>Tes dernières séances</h3>
-              </div>
-              <div className={styles.carouselList} aria-label="Historique des séances">
-                {carouselSlides.map((slide) => {
-                  const entries = pickRichestItemsFromSession(slide.session);
-                  return (
-                    <div key={slide.key} className={styles.carouselSlide}>
-                      <Stat
-                        lastSession={slide.session}
-                        items={entries}
-                        titleOverride={slide.title}
-                        serverData={serverData}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          </div>
         </section>
       )}
 
