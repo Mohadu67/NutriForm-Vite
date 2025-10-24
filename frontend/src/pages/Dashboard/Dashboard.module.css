@@ -239,22 +239,24 @@
   color: var(--nf-muted);
 }
 
-.themeGrid {
+.bodyMetricsSection {
   display: grid;
   gap: var(--space-4);
   grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr);
   align-items: stretch;
 }
 
-.chartCard {
+.weightPanel {
   display: flex;
   flex-direction: column;
+  gap: var(--space-4);
 }
 
-.themeSide {
-  display: grid;
+.recapPanel {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-4);
-  align-content: start;
+  align-self: stretch;
 }
 
 .statCard {
@@ -306,31 +308,12 @@
   color: var(--nf-muted);
 }
 
-.recapCard {
-  padding: 0;
-  border: none;
-  box-shadow: none;
-  background: transparent;
-}
-
 @media (max-width: 1024px) {
-  .themeGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .themeSide {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  }
-}
-
-@media (max-width: 640px) {
-  .themeSide {
+  .bodyMetricsSection {
     grid-template-columns: 1fr;
   }
 }
 
-:global(body.dark) .themeTile,
-:global(html.dark) .themeTile,
 :global(body.dark) .statCard,
 :global(html.dark) .statCard {
   background: #1a1d24;
