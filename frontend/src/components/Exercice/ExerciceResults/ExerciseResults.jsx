@@ -124,13 +124,19 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   const prevFilterKeyRef = useRef(filterKey);
   useEffect(() => {
     if (prevFilterKeyRef.current === filterKey) return;
+
+    // Ne réinitialiser que si l'utilisateur n'a pas touché à la sélection
+    if (hasTouched) {
+      prevFilterKeyRef.current = filterKey;
+      return;
+    }
     prevFilterKeyRef.current = filterKey;
     setDismissed(new Set());
     setHasTouched(false);
 
-    
+
     setOrdered(Array.isArray(results) && results.length > 0 ? results.slice() : []);
-  }, [filterKey, results]);
+  }, [filterKey, results, hasTouched]);
 
   useEffect(() => {
     if (Array.isArray(results) && results.length > 0 && Array.isArray(ordered) && ordered.length === 0 && !hasTouched) {
@@ -138,41 +144,43 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     }
   }, [results, ordered, hasTouched]);
 
-  useEffect(() => {
-    if (!Array.isArray(results)) return;
+  // Commenté: Ce useEffect supprimait les exercices ajoutés manuellement
+  // qui ne correspondaient pas aux filtres actuels
+  // useEffect(() => {
+  //   if (!Array.isArray(results)) return;
 
-    if (results.length === 0) {
-      setOrdered((prev) => {
-        if (!Array.isArray(prev) || prev.length === 0) return prev;
-        return [];
-      });
-      setDismissed((prev) => {
-        if (!(prev instanceof Set) || prev.size === 0) return prev;
-        return new Set();
-      });
-      return;
-    }
+  //   if (results.length === 0) {
+  //     setOrdered((prev) => {
+  //       if (!Array.isArray(prev) || prev.length === 0) return prev;
+  //       return [];
+  //     });
+  //     setDismissed((prev) => {
+  //       if (!(prev instanceof Set) || prev.size === 0) return prev;
+  //       return new Set();
+  //     });
+  //     return;
+  //   }
 
-    const allowedIds = new Set(results.map((ex) => idOf(ex)));
+  //   const allowedIds = new Set(results.map((ex) => idOf(ex)));
 
-    setOrdered((prev) => {
-      if (!Array.isArray(prev) || prev.length === 0) return prev;
-      const filtered = prev.filter((item) => allowedIds.has(idOf(item)));
-      if (sameIds(prev, filtered)) return prev;
-      return filtered;
-    });
+  //   setOrdered((prev) => {
+  //     if (!Array.isArray(prev) || prev.length === 0) return prev;
+  //     const filtered = prev.filter((item) => allowedIds.has(idOf(item)));
+  //     if (sameIds(prev, filtered)) return prev;
+  //     return filtered;
+  //   });
 
-    setDismissed((prev) => {
-      if (!(prev instanceof Set) || prev.size === 0) return prev;
-      let changed = false;
-      const next = new Set();
-      prev.forEach((id) => {
-        if (allowedIds.has(id)) next.add(id);
-        else changed = true;
-      });
-      return changed ? next : prev;
-    });
-  }, [results]);
+  //   setDismissed((prev) => {
+  //     if (!(prev instanceof Set) || prev.size === 0) return prev;
+  //     let changed = false;
+  //     const next = new Set();
+  //     prev.forEach((id) => {
+  //       if (allowedIds.has(id)) next.add(id);
+  //       else changed = true;
+  //     });
+  //     return changed ? next : prev;
+  //   });
+  // }, [results]);
 
   const proposed = useMemo(() => {
     if (!results.length) return [];
@@ -211,41 +219,33 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   useEffect(() => {
     if (!initialSelected) return;
     const incoming = Array.isArray(initialSelected) ? initialSelected : [];
-    const allowed = Array.isArray(results) && results.length ? new Set(results.map((ex) => idOf(ex))) : null;
 
     if (incoming.length) setHasTouched(true);
 
     setOrdered((prev) => {
+      // Ne plus filtrer prev - garder tous les exercices ajoutés manuellement
       let working = Array.isArray(prev) ? prev : [];
-      if (allowed) {
-        const filteredPrev = working.filter((item) => allowed.has(idOf(item)));
-        if (!sameIds(working, filteredPrev)) {
-          working = filteredPrev;
-        }
-      }
 
-      
       if (!incoming.length) {
         return working;
       }
 
-      const validIncoming = incoming.filter((item) => !allowed || allowed.has(idOf(item)));
-      if (!validIncoming.length) {
-        return working;
-      }
+      // Ne plus filtrer validIncoming - accepter tous les exercices
+      const validIncoming = incoming;
 
       const merged = mergeById(working, validIncoming);
       if (sameIds(working, merged)) return working;
       return merged;
     });
-  }, [initialSelected, results]);
+  }, [initialSelected]);
 
   useEffect(() => {
     function handleReplace(e) {
       const items = Array.isArray(e?.detail?.items) ? e.detail.items : [];
       if (!items || items.length === 0) return;
       setHasTouched(true);
-      setDismissed(new Set());
+      // NE PAS réinitialiser dismissed - garder les exercices supprimés par l'utilisateur
+      // setDismissed(new Set());
       setOrdered((prev) => {
         const merged = mergeById(prev, items);
         if (sameIds(prev, merged)) return prev;
