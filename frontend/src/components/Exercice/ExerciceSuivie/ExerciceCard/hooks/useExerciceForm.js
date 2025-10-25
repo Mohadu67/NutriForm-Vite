@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+export function isSimpleCardioExo(exo) {
+  const name = String(exo?.name ?? "").toLowerCase();
+  return /(marche plein air|course plein air|plein air)/.test(name);
+}
+
 export function isCardioExo(exo) {
   const cat = String(exo?.category ?? exo?.type ?? "").toLowerCase();
   if (["cardio", "endurance"].includes(cat)) return true;
   if (["muscu", "musculation", "renforcement", "force", "pdc", "poids du corps", "poids_du_corps"].includes(cat)) return false;
   const name = String(exo?.name ?? "").toLowerCase();
-  return /(rameur|rower|rowing|tapis|course|elliptique|vélo|velo|bike|cycling|airdyne|skierg|ski-erg)/.test(name);
+  return /(rameur|rower|rowing|tapis|course|marche|elliptique|vélo|velo|bike|cycling|airdyne|skierg|ski-erg)/.test(name);
 }
 
 export function isSwimExo(exo) {
@@ -70,6 +75,7 @@ export default function useExerciceForm(exo, value, onChange) {
     if (isSwimExo(exo)) return "swim";
     if (isYogaExo(exo)) return "yoga";
     if (isStretchExo(exo)) return "stretch";
+    if (isSimpleCardioExo(exo)) return "walk_run";
     return null;
   }, [exo, exoId]);
   const detectedMode = useMemo(() => {
@@ -146,6 +152,17 @@ export default function useExerciceForm(exo, value, onChange) {
     };
   }
 
+  function normalizeWalkRun(walkRun = {}) {
+    const durationMin = walkRun.durationMin ?? walkRun.duration ?? "";
+    const pauseMin = walkRun.pauseMin ?? "";
+    const distanceKm = walkRun.distanceKm ?? walkRun.distance ?? "";
+    return {
+      durationMin: durationMin === 0 ? "" : durationMin,
+      pauseMin: pauseMin === 0 ? "" : pauseMin,
+      distanceKm: distanceKm === 0 ? "" : distanceKm,
+    };
+  }
+
   const initial = useMemo(() => {
     const base = value || {};
     if (mode === "swim") {
@@ -163,6 +180,12 @@ export default function useExerciceForm(exo, value, onChange) {
     if (mode === "stretch") {
       return {
         stretch: normalizeStretch(base.stretch),
+        notes: base.notes || "",
+      };
+    }
+    if (mode === "walk_run") {
+      return {
+        walkRun: normalizeWalkRun(base.walkRun),
         notes: base.notes || "",
       };
     }
@@ -205,6 +228,7 @@ export default function useExerciceForm(exo, value, onChange) {
   const isSwim = mode === "swim";
   const isYoga = mode === "yoga";
   const isStretch = mode === "stretch";
+  const isWalkRun = mode === "walk_run";
 
   useEffect(() => {
     if (isCardio) return;
@@ -240,6 +264,13 @@ export default function useExerciceForm(exo, value, onChange) {
       setData((prev) => ({ ...prev, stretch: normalizeStretch(prev?.stretch) }));
     }
   }, [isStretch, data.stretch]);
+
+  useEffect(() => {
+    if (!isWalkRun) return;
+    if (!data.walkRun) {
+      setData((prev) => ({ ...prev, walkRun: normalizeWalkRun(prev?.walkRun) }));
+    }
+  }, [isWalkRun, data.walkRun]);
 
   const lastSentRef = useRef(null);
 
@@ -337,6 +368,24 @@ export default function useExerciceForm(exo, value, onChange) {
     emit({ ...data, stretch: nextStretch });
   }
 
+  function patchWalkRun(patch) {
+    const current = normalizeWalkRun(data?.walkRun);
+    const merged = { ...current, ...patch };
+
+    const parseSafe = (val) => {
+      if (val === "" || val === null || val === undefined) return "";
+      const parsed = Number(val);
+      return Number.isFinite(parsed) && parsed >= 0 ? parsed : "";
+    };
+
+    const nextWalkRun = {
+      durationMin: parseSafe(merged.durationMin),
+      pauseMin: parseSafe(merged.pauseMin),
+      distanceKm: parseSafe(merged.distanceKm),
+    };
+    emit({ ...data, walkRun: nextWalkRun });
+  }
+
   return {
     mode,
     setMode,
@@ -349,6 +398,7 @@ export default function useExerciceForm(exo, value, onChange) {
     isSwim,
     isYoga,
     isStretch,
+    isWalkRun,
     addSet,
     removeSet,
     patchSet,
@@ -358,5 +408,6 @@ export default function useExerciceForm(exo, value, onChange) {
     patchSwim,
     patchYoga,
     patchStretch,
+    patchWalkRun,
   };
 }
