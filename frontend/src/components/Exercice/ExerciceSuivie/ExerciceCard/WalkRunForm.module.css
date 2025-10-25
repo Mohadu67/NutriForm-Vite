@@ -1,0 +1,196 @@
+/* Walk/Run Form styling - respecte la charte graphique */
+.walkRunForm {
+  background: linear-gradient(155deg, rgba(255, 244, 230, 0.7), rgba(255, 255, 255, 0.95));
+}
+
+:global(html.dark) .walkRunForm,
+:global(body.dark) .walkRunForm {
+  background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not(.light)) .walkRunForm {
+    background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+  }
+}
+
+/* Input avec unité */
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputWrapper input {
+  flex: 1;
+  padding-right: 48px;
+}
+
+.inputWrapper input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.unit {
+  position: absolute;
+  right: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--suivie-muted);
+  pointer-events: none;
+}
+
+/* Carte allure moyenne */
+.paceCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.12), rgba(247, 177, 134, 0.05));
+  border: 1.5px solid rgba(247, 177, 134, 0.3);
+  border-radius: 14px;
+  margin-top: 4px;
+}
+
+.paceLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--suivie-muted);
+}
+
+.paceValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--suivie-accent);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.paceUnit {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--suivie-muted);
+}
+
+/* Section pause */
+.pauseSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(247, 246, 242, 0.5);
+  border: 1px solid var(--suivie-border);
+  border-radius: 14px;
+  margin-top: 4px;
+}
+
+:global(html.dark) .pauseSection,
+:global(body.dark) .pauseSection {
+  background: rgba(26, 29, 36, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not(.light)) .pauseSection {
+    background: rgba(26, 29, 36, 0.4);
+  }
+}
+
+.pauseTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.pauseLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--suivie-ink);
+}
+
+.timerDisplay {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+  color: var(--suivie-accent);
+  letter-spacing: 0.05em;
+  padding: 4px 12px;
+  background: var(--suivie-surface);
+  border-radius: 8px;
+  border: 1.5px solid var(--suivie-border);
+  box-shadow: var(--suivie-shadow-sm);
+}
+
+.pauseControls {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.pauseControls .inputWrapper {
+  flex: 1;
+}
+
+.timerButton {
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--suivie-accent), var(--suivie-accent-hover));
+  color: white;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.25);
+}
+
+.timerButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(247, 177, 134, 0.35);
+}
+
+.timerButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.25);
+}
+
+.timerButton[data-running="true"] {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+.timerButton[data-running="true"]:hover {
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+}
+
+/* Responsive */
+@media (min-width: 480px) {
+  .pauseControls {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .timerButton {
+    min-width: 140px;
+  }
+}
+
+@media (max-width: 380px) {
+  .paceCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .pauseSection {
+    padding: 14px;
+  }
+
+  .timerButton {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
