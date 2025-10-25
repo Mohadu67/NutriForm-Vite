@@ -48,6 +48,7 @@ export default function SuivieCard({ exo, value, onChange }) {
   const {
     mode,
     setMode,
+    availableModes,
     data,
     emit,
     isCardio,
@@ -202,9 +203,10 @@ export default function SuivieCard({ exo, value, onChange }) {
             </header>
 
             <div className={styles.popupBody}>
-              {!isSwim && !isYoga && !isStretch && !isWalkRun && (
+              {!isSwim && !isYoga && !isStretch && !isWalkRun && availableModes.length > 1 && (
                 <ModeBar
                   mode={mode}
+                  availableModes={availableModes}
                   onChange={(m) => {
                     setMode(m);
                     const next = { ...data, mode: m };
