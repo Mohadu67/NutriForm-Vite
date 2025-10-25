@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./SuivieCard.module.css";
+import styles from "../SuivieCard.module.css";
 
 export default function StretchForm({ stretch = {}, onPatch }) {
   const durationSec = stretch.durationSec ?? "";
