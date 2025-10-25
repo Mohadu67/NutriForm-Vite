@@ -15,6 +15,7 @@ import PdcTable from "./Tables/PdcTable";
 import SwimForm from "./SwimForm";
 import YogaForm from "./YogaForm";
 import StretchForm from "./StretchForm";
+import WalkRunForm from "./WalkRunForm";
 
 import NotesSection from "./Notes/NotesSection";
 import notesStyles from "./Notes/NotesSaction.module.css";
@@ -55,6 +56,7 @@ export default function SuivieCard({ exo, value, onChange }) {
     isSwim,
     isYoga,
     isStretch,
+    isWalkRun,
     addSet,
     removeSet,
     patchSet,
@@ -64,6 +66,7 @@ export default function SuivieCard({ exo, value, onChange }) {
     patchSwim,
     patchYoga,
     patchStretch,
+    patchWalkRun,
   } = useExerciceForm(exo, value, onChange);
 
 
@@ -91,6 +94,11 @@ export default function SuivieCard({ exo, value, onChange }) {
     if (nextData.stretch) {
       const duration = Number(nextData.stretch.durationSec ?? nextData.stretch.duration ?? 0);
       if (duration > 0) return true;
+    }
+    if (nextData.walkRun) {
+      const duration = Number(nextData.walkRun.durationMin ?? 0);
+      const distance = Number(nextData.walkRun.distanceKm ?? 0);
+      if (duration > 0 || distance > 0) return true;
     }
     if (Array.isArray(nextData.cardioSets) && nextData.cardioSets.length > 0) {
       return nextData.cardioSets.some(cs => {
@@ -155,6 +163,17 @@ export default function SuivieCard({ exo, value, onChange }) {
     };
   }, [open]);
 
+  // Auto-save data to localStorage when it changes
+  useEffect(() => {
+    if (!hydratedOnMountRef.current) return;
+    const payload = { ...data, mode };
+    const done = isExerciseDone(payload);
+    const enriched = { ...payload, done };
+    try {
+      localStorage.setItem(storageKeyFromExo(exo), JSON.stringify(enriched));
+    } catch {}
+  }, [data, mode]);
+
   return (
     <>
       <div className={styles.card}>
@@ -183,7 +202,7 @@ export default function SuivieCard({ exo, value, onChange }) {
             </header>
 
             <div className={styles.popupBody}>
-              {!isSwim && !isYoga && !isStretch && (
+              {!isSwim && !isYoga && !isStretch && !isWalkRun && (
                 <ModeBar
                   mode={mode}
                   onChange={(m) => {
@@ -198,7 +217,7 @@ export default function SuivieCard({ exo, value, onChange }) {
                 />
               )}
 
-              {!isCardio && !isSwim && !isYoga && !isStretch && <GlobalRestTimer />}
+              {!isCardio && !isSwim && !isYoga && !isStretch && !isWalkRun && <GlobalRestTimer />}
 
               {isSwim ? (
                 <SwimForm swim={data?.swim} onPatch={patchSwim} />
@@ -206,6 +225,8 @@ export default function SuivieCard({ exo, value, onChange }) {
                 <YogaForm yoga={data?.yoga} onPatch={patchYoga} />
               ) : isStretch ? (
                 <StretchForm stretch={data?.stretch} onPatch={patchStretch} />
+              ) : isWalkRun ? (
+                <WalkRunForm data={data} patchWalkRun={patchWalkRun} />
               ) : isCardio ? (
                 <CardioTable
                   cardioSets={cardioSets}
