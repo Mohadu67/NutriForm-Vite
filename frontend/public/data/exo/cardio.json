@@ -225,6 +225,58 @@
         "/images/Exo/AssaultBike.gif"
       ],
       "explanation": "Pousse et tire avec bras et jambes, cadence fluide, épaules relâchées, respiration rythmée, garde le buste stable. Respiration : synchronise tes inspirations sur les phases de récupération et expire en puissance pendant l'effort. Points clés : garde un rythme explosif maîtrisé et planifie des pauses actives pour préserver la technique."
+    },
+    {
+      "id": "exo-113",
+      "name": "Marche plein air",
+      "type": [
+        "cardio"
+      ],
+      "mode": "cardio",
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "fessiers",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "poids-du-corps"
+      ],
+      "images": [
+        "/images/Exo/MarchePleinAir.gif"
+      ],
+      "explanation": "Marche avec une posture droite, bras actifs, déroule bien le pied du talon vers la pointe, profite de l'air frais et du terrain naturel. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde les épaules détendues et adapte ton rythme au terrain."
+    },
+    {
+      "id": "exo-114",
+      "name": "Course plein air",
+      "type": [
+        "cardio"
+      ],
+      "mode": "cardio",
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "abdos-centre",
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "poids-du-corps"
+      ],
+      "images": [
+        "/images/Exo/CoursePleinAir.gif"
+      ],
+      "explanation": "Cours à une allure où tu peux parler sans t'essouffler, foulée légère, regarde loin, épaules détendues, adapte ton rythme au relief. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde une foulée naturelle et profite du terrain extérieur."
     }
   ]
 }
