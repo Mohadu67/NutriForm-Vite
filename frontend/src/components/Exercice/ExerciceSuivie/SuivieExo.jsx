@@ -105,6 +105,32 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
   function isExerciseDone(nextData) {
     if (!nextData) return false;
 
+    if (nextData.swim) {
+      const pool = Number(nextData.swim.poolLength ?? 0);
+      const laps = Number(nextData.swim.lapCount ?? 0);
+      const distance = Number(nextData.swim.totalDistance ?? 0);
+      if (pool > 0 && laps > 0) return true;
+      if (distance > 0) return true;
+    }
+
+    if (nextData.yoga) {
+      const duration = Number(nextData.yoga.durationMin ?? 0);
+      const style = String(nextData.yoga.style ?? "").trim();
+      const focus = String(nextData.yoga.focus ?? "").trim();
+      if (duration > 0 || style || focus) return true;
+    }
+
+    if (nextData.stretch) {
+      const duration = Number(nextData.stretch.durationSec ?? nextData.stretch.duration ?? 0);
+      if (duration > 0) return true;
+    }
+
+    if (nextData.walkRun) {
+      const duration = Number(nextData.walkRun.durationMin ?? 0);
+      const distance = Number(nextData.walkRun.distanceKm ?? 0);
+      if (duration > 0 || distance > 0) return true;
+    }
+
     if (Array.isArray(nextData.cardioSets) && nextData.cardioSets.length > 0) {
       return nextData.cardioSets.some(cs => {
         const dur = Number(cs?.durationSec ?? cs?.duration ?? 0);
@@ -177,7 +203,7 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
 
       {Array.isArray(items) && items.length > 0 && (
         <div className={styles.cards}>
-          {items.map((exo, idx) => (
+          {items.map((exo) => (
             <SuivieCard
               key={idOf(exo)}
               exo={exo}
