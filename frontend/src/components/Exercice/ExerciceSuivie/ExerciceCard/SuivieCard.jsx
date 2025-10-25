@@ -9,13 +9,13 @@ import modeStyles from "./ModeBar/ModeBar.module.css";
 
 import GlobalRestTimer from "./GlobalRestTimer/GlobalRestTimer";
 
-import CardioTable from "./Tables/CardioTable";
-import MuscuTable from "./Tables/MuscuTable";
-import PdcTable from "./Tables/PdcTable";
-import SwimForm from "./SwimForm";
-import YogaForm from "./YogaForm";
-import StretchForm from "./StretchForm";
-import WalkRunForm from "./WalkRunForm";
+import SwimForm from "./Forms/SwimForm";
+import YogaForm from "./Forms/YogaForm";
+import StretchForm from "./Forms/StretchForm";
+import WalkRunForm from "./Forms/WalkRunForm";
+import MuscuForm from "./Forms/MuscuForm";
+import PdcForm from "./Forms/PdcForm";
+import CardioForm from "./Forms/CardioForm";
 
 import NotesSection from "./Notes/NotesSection";
 import notesStyles from "./Notes/NotesSaction.module.css";
@@ -228,21 +228,21 @@ export default function SuivieCard({ exo, value, onChange }) {
               ) : isWalkRun ? (
                 <WalkRunForm data={data} patchWalkRun={patchWalkRun} />
               ) : isCardio ? (
-                <CardioTable
+                <CardioForm
                   cardioSets={cardioSets}
                   onAdd={addCardioSet}
                   onRemove={removeCardioSet}
                   onPatch={patchCardioSet}
                 />
               ) : isPdc ? (
-                <PdcTable
+                <PdcForm
                   sets={sets}
                   onAdd={addSet}
                   onRemove={removeSet}
                   onPatch={patchSet}
                 />
               ) : (
-                <MuscuTable
+                <MuscuForm
                   sets={sets}
                   onAdd={addSet}
                   onRemove={removeSet}
