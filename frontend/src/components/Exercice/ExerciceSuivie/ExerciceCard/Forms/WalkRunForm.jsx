@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import styles from "./SuivieCard.module.css";
+import styles from "../SuivieCard.module.css";
 import walkStyles from "./WalkRunForm.module.css";
 
 export default function WalkRunForm({ data, patchWalkRun }) {

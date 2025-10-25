@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./SuivieCard.module.css";
+import styles from "../SuivieCard.module.css";
 
 const STYLE_OPTIONS = [
   { value: "", label: "Sélectionner..." },
