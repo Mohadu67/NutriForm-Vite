@@ -372,6 +372,15 @@ export default function FormExo({ user }) {
               setSearchCb(null);
             }
             setMode("builder");
+
+            // Dispatcher l'événement APRÈS que le composant ExerciseResults soit remonté
+            setTimeout(() => {
+              try {
+                window.dispatchEvent(new CustomEvent('dynami:selected:replace', { detail: { items: merged } }));
+              } catch (e) {
+                console.error('FormExo - Error dispatching event:', e);
+              }
+            }, 100);
           }}
         />
       )}
