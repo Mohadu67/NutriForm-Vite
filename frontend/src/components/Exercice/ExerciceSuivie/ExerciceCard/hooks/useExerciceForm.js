@@ -5,6 +5,79 @@ export function isSimpleCardioExo(exo) {
   return /(marche plein air|course plein air|plein air)/.test(name);
 }
 
+export function detectAvailableModes(exo) {
+  // Modes forcés spécifiques (pas de choix)
+  if (isSwimExo(exo)) return ["swim"];
+  if (isYogaExo(exo)) return ["yoga"];
+  if (isStretchExo(exo)) return ["stretch"];
+  if (isSimpleCardioExo(exo)) return ["walk_run"];
+
+  // Analyse du nom pour cas spéciaux
+  const name = String(exo?.name ?? "").toLowerCase();
+
+  // Rameur = cardio uniquement
+  if (/(rameur|rower|rowing)/.test(name)) {
+    return ["cardio"];
+  }
+
+  // Tractions/Pull-ups = pdc + muscu (gilet lesté possible)
+  if (/(traction|pull-up|pull up|chin-up|chin up)/.test(name)) {
+    return ["pdc", "muscu"];
+  }
+
+  // Analyse de l'équipement
+  const equipment = Array.isArray(exo?.equipment)
+    ? exo.equipment.map(e => String(e).toLowerCase())
+    : [];
+
+  const hasWeightEquipment = equipment.some(eq =>
+    /(barre|haltère|haltere|machine|poulie|kettlebell|disque|charge)/.test(eq)
+  );
+
+  const hasBodyweightOnly = equipment.some(eq =>
+    /(poids-du-corps|poids_du_corps|aucun)/.test(eq)
+  ) && !hasWeightEquipment;
+
+  // Analyse du type
+  const types = Array.isArray(exo?.type)
+    ? exo.type.map(t => String(t).toLowerCase())
+    : typeof exo?.type === "string"
+    ? [String(exo.type).toLowerCase()]
+    : [];
+
+  const hasCardioType = types.some(t => /(cardio|endurance)/.test(t));
+  const hasMuscuType = types.some(t => /(muscu|musculation|force)/.test(t));
+  const hasPdcType = types.some(t => /(poids-du-corps|poids_du_corps|pdc)/.test(t));
+
+  // Cas cardio pur (vélo, elliptique, etc.)
+  if (hasCardioType && !hasMuscuType && !hasPdcType) {
+    return ["cardio"];
+  }
+
+  // Cas muscu avec équipement → uniquement muscu
+  if (hasWeightEquipment) {
+    return ["muscu"];
+  }
+
+  // Cas poids du corps uniquement → uniquement pdc
+  if (hasBodyweightOnly && hasPdcType && !hasMuscuType) {
+    return ["pdc"];
+  }
+
+  // Cas exercice mixte (ex: pompes, squats, dips) → choix pdc/muscu
+  if ((hasPdcType || hasBodyweightOnly) && (hasMuscuType || types.includes("muscu"))) {
+    return ["pdc", "muscu"];
+  }
+
+  // Par défaut selon isCardioExo
+  if (isCardioExo(exo)) {
+    return ["cardio"];
+  }
+
+  // Par défaut muscu
+  return ["muscu"];
+}
+
 export function isCardioExo(exo) {
   const cat = String(exo?.category ?? exo?.type ?? "").toLowerCase();
   if (["cardio", "endurance"].includes(cat)) return true;
@@ -71,6 +144,9 @@ export default function useExerciceForm(exo, value, onChange) {
     () => String(exo?.id ?? exo?._id ?? exo?.slug ?? exo?.name ?? ""),
     [exo]
   );
+
+  const availableModes = useMemo(() => detectAvailableModes(exo), [exo, exoId]);
+
   const forcedMode = useMemo(() => {
     if (isSwimExo(exo)) return "swim";
     if (isYogaExo(exo)) return "yoga";
@@ -78,10 +154,13 @@ export default function useExerciceForm(exo, value, onChange) {
     if (isSimpleCardioExo(exo)) return "walk_run";
     return null;
   }, [exo, exoId]);
+
   const detectedMode = useMemo(() => {
     if (forcedMode) return forcedMode;
-    return isCardioExo(exo) ? "cardio" : "muscu";
-  }, [forcedMode, exo, exoId]);
+    // Retourner le premier mode disponible
+    return availableModes[0] || "muscu";
+  }, [forcedMode, availableModes, exo, exoId]);
+
   const [mode, setMode] = useState(value?.mode ?? detectedMode);
   const prevExoIdRef = useRef(exoId);
   const prevExternalModeRef = useRef(value?.mode ?? forcedMode ?? detectedMode);
@@ -389,6 +468,7 @@ export default function useExerciceForm(exo, value, onChange) {
   return {
     mode,
     setMode,
+    availableModes,
     data,
     setData,
     emit,
