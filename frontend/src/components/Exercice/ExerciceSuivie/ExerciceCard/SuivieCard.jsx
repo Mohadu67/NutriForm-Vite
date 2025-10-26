@@ -138,11 +138,13 @@ export default function SuivieCard({ exo, value, onChange }) {
     if (hydratedOnMountRef.current) return;
     const saved = loadSavedDraft(exo);
     if (saved) {
-      if (saved.mode && saved.mode !== mode) {
+      // Ne pas restaurer le mode sauvegardé si c'est un exercice avec mode forcé
+      const hasForcedMode = isSwim || isYoga || isStretch || isWalkRun;
+      if (saved.mode && saved.mode !== mode && !hasForcedMode) {
         setMode(saved.mode);
       }
       const done = isExerciseDone(saved);
-      const enriched = { ...saved, mode: saved.mode || mode, done };
+      const enriched = { ...saved, mode: hasForcedMode ? mode : (saved.mode || mode), done };
       if (typeof emit === "function") {
         emit(enriched);
       }
