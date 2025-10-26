@@ -161,7 +161,9 @@ export default function useExerciceForm(exo, value, onChange) {
     return availableModes[0] || "muscu";
   }, [forcedMode, availableModes, exo, exoId]);
 
-  const [mode, setMode] = useState(value?.mode ?? detectedMode);
+  // Si forcedMode existe, TOUJOURS l'utiliser, sinon utiliser value?.mode ou detectedMode
+  const initialMode = forcedMode || value?.mode || detectedMode;
+  const [mode, setMode] = useState(initialMode);
   const prevExoIdRef = useRef(exoId);
   const prevExternalModeRef = useRef(value?.mode ?? forcedMode ?? detectedMode);
 

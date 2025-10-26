@@ -677,6 +677,26 @@ export default function Dashboard() {
 
   const getEntryDistanceKm = useCallback((entry) => {
     if (!entry || typeof entry !== 'object') return 0;
+
+    // Check for walkRun data first
+    if (entry.walkRun && entry.walkRun.distanceKm != null && entry.walkRun.distanceKm !== '') {
+      return Number(entry.walkRun.distanceKm) || 0;
+    }
+
+    // Check for swim data
+    if (entry.swim) {
+      const poolLength = Number(entry.swim.poolLength || 0);
+      const lapCount = Number(entry.swim.lapCount || 0);
+      if (poolLength > 0 && lapCount > 0) {
+        // lapCount is aller-retours (2 lengths per lap)
+        return (poolLength * lapCount * 2) / 1000;
+      }
+      const totalDistance = Number(entry.swim.totalDistance || 0);
+      if (totalDistance > 0) {
+        return totalDistance / 1000;
+      }
+    }
+
     const sets = Array.isArray(entry.sets) ? entry.sets : [];
     let distanceKm = 0;
 
@@ -776,10 +796,18 @@ export default function Dashboard() {
   }, [computeDistanceHistory]);
 
   const runStats = useMemo(() => {
-    const keywords = /(course|running|run|footing|trail|jog|marche|walk|tapis)/i;
+    const keywords = /(course|running|run|footing|trail|jog|marche|walk|tapis|plein air)/i;
     const runPredicate = (entry) => {
+      // Check subType first (from saved sessions)
       const subType = String(entry?.subType || '').toLowerCase();
+      if (subType === 'walk_run') return true;
       if (subType === 'swim' || subType === 'yoga' || subType === 'stretch') return false;
+
+      // Check mode (from localStorage)
+      const mode = String(entry?.mode || '').toLowerCase();
+      if (mode === 'walk_run') return true;
+
+      // Check name pattern
       const name = String(entry?.name || entry?.label || entry?.exerciseName || '').toLowerCase();
       return keywords.test(name);
     };
