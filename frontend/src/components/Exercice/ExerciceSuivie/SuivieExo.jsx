@@ -94,6 +94,12 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
   }, [exercises, touched]);
 
   function inferModeFromData(data) {
+    // Vérifier les modes forcés d'abord
+    if (data?.swim) return "swim";
+    if (data?.yoga) return "yoga";
+    if (data?.stretch) return "stretch";
+    if (data?.walkRun) return "walk_run";
+
     const hasCardio = Array.isArray(data?.cardioSets) && data.cardioSets.length > 0;
     if (hasCardio) return "cardio";
     const sets = Array.isArray(data?.sets) ? data.sets : [];
@@ -155,7 +161,7 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
       const copy = Array.isArray(prev) ? [...prev] : [];
       const idx = copy.findIndex(x => String(idOf(x)) === String(id));
       if (idx === -1) return copy;
-      const nextMode = inferModeFromData(nextData) ?? copy[idx]?.mode;
+      const nextMode = nextData?.mode ?? inferModeFromData(nextData) ?? copy[idx]?.mode;
       const done = isExerciseDone(nextData);
       copy[idx] = { ...copy[idx], data: nextData, mode: nextMode, done };
       try {
@@ -182,12 +188,15 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
           onFinish={(payload) => {
             const now = new Date().toISOString();
             const snapshot = Array.isArray(items)
-              ? items.map(it => ({
-                id: it?.id ?? it?._id ?? it?.name,
-                name: it?.name ?? it?.label ?? it?.exoName ?? undefined,
-                mode: it?.mode,
-                data: it?.data,
-              }))
+              ? items.map(it => {
+                const finalMode = it?.data?.mode ?? it?.mode;
+                return {
+                  id: it?.id ?? it?._id ?? it?.name,
+                  name: it?.name ?? it?.label ?? it?.exoName ?? undefined,
+                  mode: finalMode,
+                  data: it?.data,
+                };
+              })
               : [];
             const enriched = {
               ...payload,
