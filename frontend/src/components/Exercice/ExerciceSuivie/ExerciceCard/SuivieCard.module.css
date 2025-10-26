@@ -125,7 +125,7 @@
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.22s ease, visibility 0.22s ease;
-  z-index: 10000;
+  z-index: 99999;
 }
 
 .overlay.isOpen {
@@ -136,6 +136,7 @@
 
 /* ==================== POPUP (Mobile First) ==================== */
 .popup {
+  position: relative;
   width: min(92%, 600px);
   max-height: 90vh;
   border: 1px solid transparent;
@@ -149,6 +150,7 @@
   transform: scale(0.95);
   opacity: 0;
   transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.24, 1), opacity 0.22s ease;
+  z-index: 100000;
 }
 
 .overlay.isOpen .popup {
@@ -168,7 +170,7 @@
   border-bottom: 1.5px solid var(--suivie-border);
   background: var(--suivie-surface);
   flex-shrink: 0;
-  z-index: 10;
+  z-index: 100001;
 }
 
 .popupTitle {
@@ -283,7 +285,18 @@
   border: 1px solid var(--suivie-border);
   border-radius: 18px;
   box-shadow: var(--suivie-shadow-sm);
-  background: linear-gradient(150deg, rgba(255, 181, 129, 0.06), rgba(26, 29, 36, 0.6));
+  background: linear-gradient(155deg, rgba(255, 181, 129, 0.12), rgba(255, 255, 255, 0.8));
+}
+
+:global(html.dark) .focusForm,
+:global(body.dark) .focusForm {
+  background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not(.light)) .focusForm {
+    background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+  }
 }
 
 .focusFormHeader h4 {
@@ -351,7 +364,18 @@
 }
 
 .yogaForm {
-  background: linear-gradient(145deg, rgba(236, 239, 244, 0.7), rgba(255, 255, 255, 0.95));
+  background: linear-gradient(155deg, rgba(255, 181, 129, 0.12), rgba(255, 255, 255, 0.8));
+}
+
+:global(html.dark) .yogaForm,
+:global(body.dark) .yogaForm {
+  background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not(.light)) .yogaForm {
+    background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+  }
 }
 
 .yogaTextareaField textarea {
@@ -360,7 +384,18 @@
 }
 
 .stretchForm {
-  background: linear-gradient(150deg, rgba(219, 241, 235, 0.75), rgba(255, 255, 255, 0.95));
+  background: linear-gradient(155deg, rgba(255, 181, 129, 0.12), rgba(255, 255, 255, 0.8));
+}
+
+:global(html.dark) .stretchForm,
+:global(body.dark) .stretchForm {
+  background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not(.light)) .stretchForm {
+    background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+  }
 }
 
 .muscuForm {
