@@ -61,16 +61,20 @@ function mapItemsToEntries(items = []) {
       const swim = (d && typeof d.swim === 'object') ? d.swim : null;
       const yoga = (d && typeof d.yoga === 'object') ? d.yoga : null;
       const stretch = (d && typeof d.stretch === 'object') ? d.stretch : null;
+      const walkRun = (d && typeof d.walkRun === 'object') ? d.walkRun : null;
 
-      const rawType = (it.mode ?? it.type ?? '').toString().toLowerCase();
+      const actualMode = d?.mode ?? it?.mode ?? it?.type ?? '';
+
+      const rawType = actualMode.toString().toLowerCase();
       const isSwim = rawType.includes('swim') || (!!swim && !rawType.includes('muscu'));
       const isYoga = rawType.includes('yoga') || (!!yoga && !rawType.includes('muscu'));
       const isStretch = rawType.includes('etir') || rawType.includes('stretch') || (!!stretch && !rawType.includes('muscu'));
+      const isWalkRun = rawType.includes('walk_run') || !!walkRun;
       let type = rawType.includes('cardio') ? 'cardio' : rawType.includes('muscu') ? 'muscu' : '';
       const cardioSetsRaw = Array.isArray(d.cardioSets) ? d.cardioSets : [];
       const muscuSetsRaw = Array.isArray(d.sets) ? d.sets : (Array.isArray(d.series) ? d.series : []);
       if (!type) type = cardioSetsRaw.length ? 'cardio' : (muscuSetsRaw.length ? 'muscu' : '');
-      if (!type && (isSwim || isYoga || isStretch)) type = 'cardio';
+      if (!type && (isSwim || isYoga || isStretch || isWalkRun)) type = 'cardio';
 
       if (type === 'cardio') {
         let sets = cardioSetsRaw.map((cs) => {
@@ -118,9 +122,21 @@ function mapItemsToEntries(items = []) {
           }
         }
 
+        if (sets.length === 0 && walkRun) {
+          const distanceKm = num(walkRun.distanceKm, 0);
+          const durationMin = num(walkRun.durationMin, 0);
+          const durationSec = durationMin > 0 ? durationMin * 60 : 0;
+          if (distanceKm > 0 || durationSec > 0) {
+            sets = [{
+              distanceKm: distanceKm || undefined,
+              durationSec: durationSec || undefined
+            }];
+          }
+        }
+
         if (sets.length === 0) return null;
-        const subType = isSwim ? 'swim' : (isYoga ? 'yoga' : (isStretch ? 'stretch' : undefined));
-        return {
+        const subType = isSwim ? 'swim' : (isYoga ? 'yoga' : (isStretch ? 'stretch' : (isWalkRun ? 'walk_run' : undefined)));
+        const entry = {
           exerciseId: it.id || it._id || it.slug || String(it.name || it.label || 'exo').toLowerCase(),
           name: String(it.name || it.label || it.exoName || 'Exercice'),
           type: 'cardio',
@@ -128,6 +144,7 @@ function mapItemsToEntries(items = []) {
           notes: typeof d?.notes === 'string' && d.notes.trim() ? d.notes.trim() : undefined,
           sets,
         };
+        return entry;
       }
 
       let msets = muscuSetsRaw.map((ms) => {
