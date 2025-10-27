@@ -346,6 +346,38 @@ export default function FormExo({ user }) {
               setLastItems(items);
               setLastSummary(summaryForSave);
               setShowSummary(true);
+
+              // Nettoyer le localStorage après avoir terminé la séance
+              try {
+                const KEYS = [
+                  "dynamiSelected",
+                  "dynamiHasTouched",
+                  "dynamiStep",
+                  "dynamiType",
+                  "dynamiEquip",
+                  "dynamiMuscle",
+                  "dynamiLastResults",
+                  "formSelectedExercises",
+                  "formCurrentStep",
+                  "formMode",
+                  "formSessionName",
+                  "suivieStartedAt",
+                  "SuivieExoDraft",
+                  "suivie_exo_draft",
+                ];
+                KEYS.forEach(k => localStorage.removeItem(k));
+
+                // Nettoyer les inputs de chaque exercice
+                const NS = "suivie_exo_inputs:";
+                const toDelete = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                  const k = localStorage.key(i);
+                  if (k && k.startsWith(NS)) toDelete.push(k);
+                }
+                toDelete.forEach(k => localStorage.removeItem(k));
+              } catch (e) {
+                console.warn("Failed to clean localStorage:", e);
+              }
             }}
           />
         </>

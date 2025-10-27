@@ -28,11 +28,14 @@
 
 .auth-input {
   width: 100%;
-  padding: 12px 12px;
-  border-radius: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
   border: 1px solid var(--nf-border);
   outline: none;
+  font-size: 0.95rem;
 }
+
+
 .auth-input:focus-visible { box-shadow: var(--nf-focus); }
 
 .auth-error {

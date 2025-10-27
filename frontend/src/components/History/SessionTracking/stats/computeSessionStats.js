@@ -221,21 +221,27 @@ function inferTypeFromData(data, sets, fallbackMode) {
 function intensityToMET(intensity) {
   const val = String(intensity || '').toLowerCase();
   if (!val) return 7.5;
+
+  // Support for text-based intensity
   if (/(low|faible|lent|easy|light|marche)/.test(val)) return 4.5;
   if (/(high|élevé|eleve|hard|intense|vigorous|sprint|hiit)/.test(val)) return 12.0;
   if (/(moder|moyen|tempo|steady)/.test(val)) return 8.5;
+
+  // Support for numeric intensity (1-20 scale)
   const num = parseFloat(val);
   if (!isNaN(num)) {
-    if (num <= 3) return 4.5;
-    if (num >= 8) return 12.0;
-    if (num >= 6) return 9.5;
-    return 7.0;
+    // Map 1-20 scale to MET values (4.5 to 12.0)
+    if (num <= 1) return 4.5;
+    if (num >= 20) return 12.0;
+    // Linear interpolation: MET = 4.5 + (num - 1) * (12.0 - 4.5) / 19
+    return 4.5 + ((num - 1) * 7.5 / 19);
   }
+
   return 7.5;
 }
 
 function strengthSetMET(type, intensity, volumePerSet, bodyMassKg) {
-  const base = type === 'poids_du_corps' ? 4.8 : 4.0;
+  const base = type === 'poids_du_corps' ? 4.5 : 3.5;
   const intensityAdj = strengthIntensityMultiplier(intensity);
 
   const relativeVolume = bodyMassKg > 0 ? volumePerSet / bodyMassKg : 0;
@@ -243,20 +249,20 @@ function strengthSetMET(type, intensity, volumePerSet, bodyMassKg) {
 
   if (relativeVolume > 0) {
     if (relativeVolume < 5) {
-      volumeAdj = 0.3;
+      volumeAdj = 0.2;
     } else if (relativeVolume < 10) {
-      volumeAdj = 0.8;
+      volumeAdj = 0.5;
     } else if (relativeVolume < 15) {
-      volumeAdj = 1.2;
+      volumeAdj = 0.8;
     } else if (relativeVolume < 20) {
-      volumeAdj = 1.6;
+      volumeAdj = 1.0;
     } else {
-      volumeAdj = 2.0;
+      volumeAdj = 1.2;
     }
   }
 
   const met = (base * intensityAdj) + volumeAdj;
-  return clamp(met, 3.0, 9.5);
+  return clamp(met, 3.0, 8.0);
 }
 
 function inferSetLoadKg(set, type, bodyMassKg) {
