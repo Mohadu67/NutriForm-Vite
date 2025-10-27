@@ -12,10 +12,10 @@
 }
 
 .input {
-  padding: 0.9rem 1rem;
-  border: 2px solid #2B2B2B;
-  border-radius: 12px;
-  font-size: 1rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #2B2B2B;
+  border-radius: 8px;
+  font-size: 0.95rem;
   transition: border-color .2s, box-shadow .2s;
   width: 100%;
 }

@@ -346,6 +346,7 @@
   background: var(--suivie-surface);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   outline: none;
+  width: 100%;
 }
 
 .focusField textarea {

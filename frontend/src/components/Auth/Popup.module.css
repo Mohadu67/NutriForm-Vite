@@ -117,7 +117,7 @@
   overscroll-behavior: contain;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center; 
   padding: 1rem;
   animation: overlayDingue 260ms ease-out;
   color: var(--nf-ink);
