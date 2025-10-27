@@ -212,6 +212,8 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
   }, [items, time]);
 
   async function handleConfirmFinish() {
+    setShowConfirm(false);
+
     const finalSec = freezeClock(time, startTs);
 
     const safe = Array.isArray(items) ? items : [];
@@ -342,7 +344,6 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
       if (typeof onFinish === 'function') {
         onFinish({ durationSec: finalSec, savedCount: 0, calories, doneExercises, totalExercises });
       }
-      setShowConfirm(false);
       stopAndReset();
       return;
     }
@@ -374,14 +375,12 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
       if (typeof onFinish === 'function') {
         onFinish({ durationSec: finalSec, savedCount, calories, doneExercises, totalExercises, summary });
       }
-      setShowConfirm(false);
       stopAndReset();
     } catch (err) {
       console.error('[Chrono] save failed', err);
       if (typeof onFinish === 'function') {
         onFinish({ durationSec: finalSec, savedCount: 0, calories, doneExercises, totalExercises, summary });
       }
-      setShowConfirm(false);
       stopAndReset();
     }
   }
