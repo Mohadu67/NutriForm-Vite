@@ -78,13 +78,13 @@ export default function CardioForm({ cardioSets = [], onAdd, onRemove, onPatch }
             </div>
 
             <label className={styles.focusField}>
-              <span>🔥 Intensité (1-10)</span>
+              <span>🔥 Intensité (1-20)</span>
               <input
                 type="range"
                 min="1"
-                max="10"
+                max="20"
                 step="1"
-                value={s?.intensity ?? 5}
+                value={s?.intensity ?? 10}
                 onChange={(e) => {
                   onPatch && onPatch(idx, { intensity: Number(e.target.value) });
                 }}
@@ -92,7 +92,7 @@ export default function CardioForm({ cardioSets = [], onAdd, onRemove, onPatch }
                 aria-label={`Intensité série ${idx + 1}`}
               />
               <div className={styles.intensityValue}>
-                {s?.intensity || 5}/10
+                {s?.intensity || 10}/20
               </div>
             </label>
           </div>

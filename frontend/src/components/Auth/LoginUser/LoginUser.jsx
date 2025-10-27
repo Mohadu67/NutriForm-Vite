@@ -96,16 +96,16 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
 
         <div className={lstyle.links}>
           <button type="button" className={lstyle.linkBtn} onClick={toForgot}>Mot de passe oublié ?</button>
-          <button type="button" className={lstyle.linkBtn} onClick={toSignup}>Créer un compte</button>
-        </div>
 
-        <BoutonAction
-          type="submit"
-          disabled={status === "loading" || !identifier.trim() || !password.trim()}
-          onClick={onSubmit}
-        >
-          {status === "loading" ? "Connexion…" : "Se connecter"}
-        </BoutonAction>
+          <BoutonAction
+            type="submit"
+            disabled={status === "loading" || !identifier.trim() || !password.trim()}
+            onClick={onSubmit}
+            >
+            {status === "loading" ? "Connexion…" : "Se connecter"}
+          </BoutonAction>
+          <button type="button" className={lstyle.linkBtn} onClick={toSignup}> Pas encore inscrit ? <span>Crée un compte !</span></button>
+        </div>
 
         {status === "error" && (
           <p className={lstyle.error}>{errorMsg || "Erreur de connexion. Réessaie."}</p>
