@@ -15,8 +15,8 @@ export function detectAvailableModes(exo) {
   // Analyse du nom pour cas spéciaux
   const name = String(exo?.name ?? "").toLowerCase();
 
-  // Rameur = cardio uniquement
-  if (/(rameur|rower|rowing)/.test(name)) {
+  // Rameur machine = cardio uniquement (pas rowing barre/haltère)
+  if (/(rameur|rower\s*machine|rowing\s*machine)/.test(name)) {
     return ["cardio"];
   }
 
@@ -83,7 +83,7 @@ export function isCardioExo(exo) {
   if (["cardio", "endurance"].includes(cat)) return true;
   if (["muscu", "musculation", "renforcement", "force", "pdc", "poids du corps", "poids_du_corps"].includes(cat)) return false;
   const name = String(exo?.name ?? "").toLowerCase();
-  return /(rameur|rower|rowing|tapis|course|marche|elliptique|vélo|velo|bike|cycling|airdyne|skierg|ski-erg)/.test(name);
+  return /(rameur|rower\s*machine|rowing\s*machine|tapis|course|marche|elliptique|vélo|velo|bike|cycling|airdyne|skierg|ski-erg)/.test(name);
 }
 
 export function isSwimExo(exo) {
