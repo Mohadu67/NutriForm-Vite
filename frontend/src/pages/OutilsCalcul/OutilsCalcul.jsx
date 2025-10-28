@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ImcPage from "../Imc/ImcPage.jsx";
 import CaloriePage from "../Calorie/CaloriePage.jsx";
@@ -10,6 +10,7 @@ const VALID_TABS = ["imc", "cal", "rm"];
 export default function OutilsCalcul() {
   const location = useLocation();
   const navigate = useNavigate();
+  const panelRef = useRef(null);
 
   const searchTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -35,6 +36,32 @@ export default function OutilsCalcul() {
       navigate(`${location.pathname}${nextSearch}`, { replace: false });
     }
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+
+    const scrollTarget =
+      panel.querySelector("form") ||
+      panel.querySelector("[data-scroll-anchor='true']") ||
+      panel;
+
+    if (typeof scrollTarget.scrollIntoView !== "function") return;
+
+    // defer to next frame to ensure layout is settled before scrolling
+    const frame = window.requestAnimationFrame(() => {
+      scrollTarget.scrollIntoView({
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+        block: "center",
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [tab]);
 
   return (
     <main id="outils" className={styles.container}>
@@ -72,7 +99,7 @@ export default function OutilsCalcul() {
         </button>
       </div>
 
-      <section className={styles.panel}>
+      <section ref={panelRef} className={styles.panel}>
         {tab === "imc" ? (
           <ImcPage />
         ) : tab === "cal" ? (
