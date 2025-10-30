@@ -5,6 +5,7 @@ const config = require('../config');
 
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const USE_SENDGRID = !!SENDGRID_API_KEY;
+const FROM_NAME = process.env.FROM_NAME || config.smtp.fromName || undefined;
 
 if (USE_SENDGRID) {
   sgMail.setApiKey(SENDGRID_API_KEY);
@@ -116,6 +117,7 @@ const sendNewsletterEmail = async (to, subject, content, senderName = 'L\'équip
       .replace('{{email}}', encodeURIComponent(to));
 
     const from = config.smtp.from || config.smtp.user;
+    const fromName = FROM_NAME;
     if (!from) {
       throw new Error('CONFIG: smtp.from manquant pour newsletter');
     }
@@ -126,7 +128,7 @@ const sendNewsletterEmail = async (to, subject, content, senderName = 'L\'équip
       
       const msg = {
         to,
-        from,
+        from: fromName ? { email: from, name: fromName } : { email: from },
         subject,
         html: htmlContent,
       };
@@ -137,7 +139,7 @@ const sendNewsletterEmail = async (to, subject, content, senderName = 'L\'équip
       
       const transporter = getTransporter();
       const info = await transporter.sendMail({
-        from: `"${senderName} - Harmonith" <${from}>`,
+        from: fromName ? `${fromName} <${from}>` : from,
         to,
         subject,
         html: htmlContent
