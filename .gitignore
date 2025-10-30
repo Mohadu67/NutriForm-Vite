@@ -29,3 +29,8 @@ frontend/.env
 .env
 backend/.env.local
 
+# files
+
+AgentClaude.md
+package-lock.json
+package.json
