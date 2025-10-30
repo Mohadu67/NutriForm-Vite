@@ -39,6 +39,7 @@ function getTransporter() {
 async function sendMail({ to, subject, html, text, replyTo }) {
   console.log('[MAILER] sendMail called with:', { to, subject, from: config.smtp.from || config.smtp.user, usingSendGrid: USE_SENDGRID });
   const from = config.smtp.from || config.smtp.user;
+  const fromName = process.env.FROM_NAME || config.smtp.fromName || undefined;
   if (!from) throw new Error('CONFIG: smtp.from manquant (CONTACT_EMAIL ou SMTP_USER).');
   if (!to || !subject || (!html && !text)) throw new Error('sendMail: paramètres manquants');
 
@@ -49,7 +50,7 @@ async function sendMail({ to, subject, html, text, replyTo }) {
       
       const msg = {
         to,
-        from,
+        from: fromName ? { email: from, name: fromName } : { email: from },
         subject,
         text: text || '',
         html: html || text || '',
@@ -61,7 +62,14 @@ async function sendMail({ to, subject, html, text, replyTo }) {
     } else {
       
       const t = getTransporter();
-      const info = await t.sendMail({ from, to, subject, html, text, replyTo: replyTo || undefined });
+      const info = await t.sendMail({
+        from: fromName ? `${fromName} <${from}>` : from,
+        to,
+        subject,
+        html,
+        text,
+        replyTo: replyTo || undefined
+      });
       console.log('[MAILER] Email sent successfully via SMTP:', { messageId: info.messageId, accepted: info.accepted });
       return info;
     }
