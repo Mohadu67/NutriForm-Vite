@@ -49,36 +49,135 @@
 .mapContainer {
   position: relative;
   width: 100%;
-  height: 300px;
-  border-radius: 12px;
+  height: 400px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.1);
 }
 
-.pauseOverlay {
+/* Badges minimalistes sur la carte */
+.mapStats {
   position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 16px;
+  right: 16px;
   z-index: 1000;
-  padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  animation: slideIn 0.4s ease;
+}
+
+.pauseBadge {
   background: rgba(255, 152, 0, 0.95);
   color: white;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.3s ease;
 }
 
-@keyframes fadeIn {
+.statIcon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.statText {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.pauseBadge .statText {
+  color: white;
+}
+
+@keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(-10px);
+    transform: translateX(20px);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateX(0);
+  }
+}
+
+/* Contrôles de la carte */
+.mapControls {
+  position: absolute;
+  bottom: 20px;
+  right: 16px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.controlButton {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.controlButton:hover {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.controlButton:active {
+  transform: translateY(0);
+}
+
+/* Animation du point actuel */
+.currentPositionPulse {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.currentPositionDot {
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+  animation: pulseRing 2s infinite;
+}
+
+@keyframes pulseRing {
+  0% {
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
   }
 }
 
@@ -86,6 +185,25 @@
   width: 100%;
   height: 100%;
   z-index: 1;
+}
+
+/* Custom styles pour la carte Leaflet */
+:global(.leaflet-container) {
+  font-family: inherit;
+  background: #f7f9fc !important;
+}
+
+:global(.leaflet-control-attribution) {
+  font-size: 8px;
+  opacity: 0.5;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 6px;
+  padding: 3px 8px;
+  margin: 0 !important;
+}
+
+:global(.leaflet-tile-pane) {
+  filter: brightness(1.02) contrast(0.98);
 }
 
 .error {

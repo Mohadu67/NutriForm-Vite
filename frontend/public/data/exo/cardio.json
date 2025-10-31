@@ -277,6 +277,32 @@
         "/images/Exo/CoursePleinAir.gif"
       ],
       "explanation": "Cours à une allure où tu peux parler sans t'essouffler, foulée légère, regarde loin, épaules détendues, adapte ton rythme au relief. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde une foulée naturelle et profite du terrain extérieur."
+    },
+    {
+      "id": "exo-115",
+      "name": "Vélo plein air",
+      "type": [
+        "cardio"
+      ],
+      "mode": "cardio",
+      "objectives": [
+        "endurance"
+      ],
+      "muscles": [
+        "cuisses-externes",
+        "cuisses-internes",
+        "fessiers",
+        "ischios",
+        "mollets",
+        "quadriceps"
+      ],
+      "equipment": [
+        "poids-du-corps"
+      ],
+      "images": [
+        "/images/Exo/veloPleinAir.gif"
+      ],
+      "explanation": "Pédale avec une cadence fluide, garde le dos droit, épaules relâchées, ajuste la vitesse selon le terrain, profite du grand air. Respiration : maintiens un rythme régulier en inspirant par le nez et en expirant par la bouche. Points clés : stabilise le buste, garde une cadence constante et adapte-toi au dénivelé."
     }
   ]
 }
