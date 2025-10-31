@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import Home from "./pages/Accueil/Home.jsx";
 import ImcPage from "./pages/Imc/ImcPage.jsx"
@@ -18,6 +18,7 @@ import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
+import CanonicalLink from "./components/CanonicalLink/CanonicalLink.jsx";
 import { initActivityListeners, checkSession, logout } from "./utils/sessionManager.js";
 import './i18n/config';
 
@@ -35,11 +36,12 @@ export default function App() {
   return (
     <ErrorBoundary>
       <UpdatePrompt />
+      <CanonicalLink />
       <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/imc" element={<ImcPage />} />
       <Route path="/calorie" element={<CaloriePage />} />
-      <Route path="/calories" element={<CaloriePage />} />
+      <Route path="/calories" element={<Navigate to="/calorie" replace />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
