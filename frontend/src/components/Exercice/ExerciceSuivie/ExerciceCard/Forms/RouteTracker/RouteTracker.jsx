@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Polyline, Marker, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Polyline, Marker, useMap, Circle } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import styles from "./RouteTracker.module.css";
@@ -12,13 +12,35 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
+// Composant pour contrôles personnalisés
+function MapControls({ onRecenter }) {
+  const map = useMap();
+
+  const zoomIn = () => map.zoomIn();
+  const zoomOut = () => map.zoomOut();
+
+  return (
+    <div className={styles.mapControls}>
+      <button onClick={zoomIn} className={styles.controlButton} title="Zoomer">
+        +
+      </button>
+      <button onClick={zoomOut} className={styles.controlButton} title="Dézoomer">
+        −
+      </button>
+      <button onClick={onRecenter} className={styles.controlButton} title="Me centrer">
+        📍
+      </button>
+    </div>
+  );
+}
+
 function MapUpdater({ center, route }) {
   const map = useMap();
 
   useEffect(() => {
     if (route.length > 0) {
       const bounds = L.latLngBounds(route.map(p => [p.lat, p.lng]));
-      map.fitBounds(bounds, { padding: [50, 50] });
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
     } else if (center) {
       map.setView(center, 15);
     }
@@ -40,9 +62,17 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
   const lastPositionRef = useRef(null);
   const lastMoveTimeRef = useRef(null);
   const pauseStartRef = useRef(null);
+  const mapRef = useRef(null);
 
   const PAUSE_THRESHOLD = 10; // Secondes sans mouvement = pause
   const MIN_MOVEMENT = 0.005; // km minimum pour considérer un mouvement
+
+  const recenterMap = () => {
+    if (route.length > 0 && mapRef.current) {
+      const bounds = L.latLngBounds(route.map(p => [p.lat, p.lng]));
+      mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+    }
+  };
 
   // Calcul de distance entre deux points GPS (formule Haversine)
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -245,70 +275,105 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
               center={center}
               zoom={15}
               className={styles.map}
-              style={{ height: "350px", width: "100%", borderRadius: "16px" }}
+              style={{ height: "400px", width: "100%", borderRadius: "20px" }}
               zoomControl={false}
+              ref={mapRef}
             >
-              {/* Style Carto Dark pour un look moderne */}
+              {/* Style Carto Voyager - moderne et épuré */}
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                attribution='&copy; OpenStreetMap &copy; CARTO'
                 url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                 maxZoom={20}
               />
+
               {route.length > 0 && (
                 <>
-                  {/* Ombre du tracé pour effet de profondeur */}
+                  {/* Point de départ */}
+                  <Marker
+                    position={[route[0].lat, route[0].lng]}
+                    icon={L.divIcon({
+                      className: 'start-marker',
+                      html: `<div style="
+                        width: 32px;
+                        height: 32px;
+                        background: linear-gradient(135deg, #4CAF50, #45a049);
+                        border: 3px solid white;
+                        border-radius: 50%;
+                        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.6);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 16px;
+                        color: white;
+                      ">🏁</div>`,
+                      iconSize: [32, 32],
+                      iconAnchor: [16, 16]
+                    })}
+                  />
+
+                  {/* Ombre du tracé */}
                   <Polyline
                     positions={route.map(p => [p.lat, p.lng])}
                     color="#000000"
-                    weight={8}
-                    opacity={0.15}
+                    weight={9}
+                    opacity={0.08}
                   />
-                  {/* Tracé principal avec gradient effet */}
+
+                  {/* Tracé principal - design épuré */}
                   <Polyline
                     positions={route.map(p => [p.lat, p.lng])}
                     pathOptions={{
-                      color: '#FF6B35',
-                      weight: 5,
-                      opacity: 0.9,
+                      color: '#667eea',
+                      weight: 6,
+                      opacity: 1,
                       lineJoin: 'round',
                       lineCap: 'round'
                     }}
                   />
-                  {/* Marker de position actuelle customisé */}
+
+                  {/* Point actuel avec animation pulse */}
+                  <Circle
+                    center={[route[route.length - 1].lat, route[route.length - 1].lng]}
+                    radius={3}
+                    pathOptions={{
+                      color: '#667eea',
+                      fillColor: '#667eea',
+                      fillOpacity: 0.3,
+                      weight: 0
+                    }}
+                  />
+
                   <Marker
                     position={[route[route.length - 1].lat, route[route.length - 1].lng]}
                     icon={L.divIcon({
-                      className: 'custom-marker',
-                      html: `<div style="
-                        width: 20px;
-                        height: 20px;
-                        background: #FF6B35;
-                        border: 3px solid white;
-                        border-radius: 50%;
-                        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.5);
-                      "></div>`,
-                      iconSize: [20, 20],
-                      iconAnchor: [10, 10]
+                      className: 'current-position-marker',
+                      html: `<div class="${styles.currentPositionPulse}">
+                        <div class="${styles.currentPositionDot}"></div>
+                      </div>`,
+                      iconSize: [24, 24],
+                      iconAnchor: [12, 12]
                     })}
                   />
                 </>
               )}
+
               <MapUpdater center={center} route={route} />
+              <MapControls onRecenter={recenterMap} />
             </MapContainer>
 
-            {/* Badge de distance sur la carte */}
-            {stats.distance > 0 && (
-              <div className={styles.mapBadge}>
-                {stats.distance.toFixed(2)} km
+            {/* Badge minimaliste */}
+            <div className={styles.mapStats}>
+              <div className={styles.statBadge}>
+                <span className={styles.statIcon}>📍</span>
+                <span className={styles.statText}>{stats.distance.toFixed(2)} km</span>
               </div>
-            )}
-
-            {/* Indicateur pause sur la carte */}
-            {!stats.moving && (
-              <div className={styles.pauseOverlay}>
-                ⏸️ Pause détectée
-              </div>
-            )}
+              {!stats.moving && (
+                <div className={`${styles.statBadge} ${styles.pauseBadge}`}>
+                  <span className={styles.statIcon}>⏸</span>
+                  <span className={styles.statText}>Pause</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {error && (
