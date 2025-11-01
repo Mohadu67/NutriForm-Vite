@@ -1,14 +1,18 @@
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { FaShare } from "react-icons/fa";
 import styles from "./FinSeance.module.css";
 import useSaveSession from "../ExerciceCard/hooks/useSaveSession";
+import ShareModal from "../../../Share/ShareModal";
 
-export default function FinSeance({ items = [], onFinish }) {
+export default function FinSeance({ items = [], onFinish, sessionData }) {
   const { t } = useTranslation();
   const { saving, error, save } = useSaveSession();
   const [done, setDone] = useState(false);
   const [progress, setProgress] = useState({ total: 0, current: 0 });
   const [errors, setErrors] = useState([]);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [savedSession, setSavedSession] = useState(null);
 
   const hasItems = Array.isArray(items) && items.length > 0;
 
@@ -29,6 +33,7 @@ export default function FinSeance({ items = [], onFinish }) {
     setErrors([]);
     if (!hasItems) {
       setDone(true);
+      if (sessionData) setSavedSession(sessionData);
       if (onFinish) onFinish({ ok: true, okCount: 0, failCount: 0, errors: [] });
       return;
     }
@@ -39,12 +44,15 @@ export default function FinSeance({ items = [], onFinish }) {
     let okCount = 0;
     let failCount = 0;
     const errs = [];
+    let lastSavedSession = null;
 
     for (let i = 0; i < total; i++) {
       const it = items[i];
       const res = await save({ exo: it.exo, data: it.data, mode: it.mode });
-      if (res?.ok) okCount++;
-      else {
+      if (res?.ok) {
+        okCount++;
+        if (res?.session) lastSavedSession = res.session;
+      } else {
         failCount++;
         if (error) errs.push(error);
       }
@@ -53,8 +61,13 @@ export default function FinSeance({ items = [], onFinish }) {
 
     setDone(true);
     setErrors(errs);
+    if (lastSavedSession || sessionData) {
+      setSavedSession(lastSavedSession || sessionData);
+    }
     if (onFinish) onFinish({ ok: failCount === 0, okCount, failCount, errors: errs });
   }
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   if (done) {
     return (
@@ -65,6 +78,25 @@ export default function FinSeance({ items = [], onFinish }) {
             ? t("exercise.finish.successMessage")
             : t("exercise.finish.errorMessage", { count: errors.length })}
         </p>
+
+        {savedSession && errors.length === 0 && (
+          <button
+            className={styles.shareBtn}
+            onClick={() => setShowShareModal(true)}
+          >
+            <FaShare className={styles.shareIcon} />
+            Partager ma séance
+          </button>
+        )}
+
+        {savedSession && (
+          <ShareModal
+            show={showShareModal}
+            onHide={() => setShowShareModal(false)}
+            session={savedSession}
+            user={user}
+          />
+        )}
       </div>
     );
   }
