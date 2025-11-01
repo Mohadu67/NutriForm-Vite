@@ -64,8 +64,8 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
   const pauseStartRef = useRef(null);
   const mapRef = useRef(null);
 
-  const PAUSE_THRESHOLD = 10; // Secondes sans mouvement = pause
-  const MIN_MOVEMENT = 0.005; // km minimum pour considérer un mouvement
+  const PAUSE_THRESHOLD = 30; // Secondes sans mouvement = pause (augmenté pour éviter fausses pauses)
+  const MIN_MOVEMENT = 0.015; // km minimum (15m) pour considérer un mouvement (filtrage GPS)
 
   const recenterMap = () => {
     if (route.length > 0 && mapRef.current) {
@@ -179,8 +179,8 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
               setStats(prev => ({
                 ...prev,
                 distance: prev.distance + segmentDistance,
-                moving: true,
-                pauseTime: 0
+                moving: true
+                // pauseTime conservé (ne pas réinitialiser)
               }));
             }
           }
