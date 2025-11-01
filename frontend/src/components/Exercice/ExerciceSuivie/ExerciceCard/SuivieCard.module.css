@@ -539,8 +539,11 @@
 }
 
 .inputWrapper input {
-  flex: 1;
-  padding-right: 48px;
+    flex: 1;
+    height: 48px;
+    border-radius: 12px;
+    padding: 10px;
+    border: 1px solid;
 }
 
 .unit {
