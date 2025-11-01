@@ -111,15 +111,9 @@ export default function FormImc({ onCalculate }) {
         .then(async (res) => {
           if (!res.ok) {
             if (res.status === 401) setShowReminder(true);
-
-            if (import.meta.env.DEV) {
-              const txt = await res.text().catch(() => '');
-              console.warn('[IMC] /api/history non OK:', res.status, txt);
-            }
           }
         })
         .catch((e) => {
-          if (import.meta.env.DEV) console.warn('[IMC] /api/history erreur:', e);
         });
     } catch (_) {}
 

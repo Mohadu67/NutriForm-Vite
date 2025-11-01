@@ -44,7 +44,6 @@ export default function UserReviews() {
         setReviews(data.reviews);
       }
     } catch (err) {
-      console.error("Erreur chargement avis:", err);
     } finally {
       setLoading(false);
     }

@@ -20,10 +20,10 @@ export default function RunDistanceCard({
     <article className={cx(styles.card, className)}>
       <header className={styles.header}>
         <span className={styles.icon} aria-hidden="true">
-          🚶
+          🏃
         </span>
         <div>
-          <h2 className={styles.title}>Marche / Course</h2>
+          <h2 className={styles.title}>Course</h2>
           <p className={styles.subtitle}>Kilométrage cumulé</p>
         </div>
       </header>
@@ -64,7 +64,7 @@ export default function RunDistanceCard({
           </ul>
         ) : (
           <p className={styles.historyEmpty}>
-            Pas encore de marche ou course enregistrée.
+            Pas encore de course enregistrée.
           </p>
         )}
       </div>

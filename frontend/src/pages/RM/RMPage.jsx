@@ -74,7 +74,6 @@ export default function RMPage() {
         alert(error.message || "Erreur lors de la sauvegarde");
       }
     } catch (error) {
-      console.error("Erreur:", error);
       alert("Erreur de connexion au serveur");
     }
   };

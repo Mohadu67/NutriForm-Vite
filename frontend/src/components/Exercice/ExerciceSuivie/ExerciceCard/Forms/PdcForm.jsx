@@ -1,7 +1,14 @@
 import React from "react";
 import styles from "../SuivieCard.module.css";
+import { calculateDifference } from "../helpers/progressionHelper.js";
 
-export default function PdcForm({ sets = [], onAdd, onRemove, onPatch }) {
+export default function PdcForm({ sets = [], onAdd, onRemove, onPatch, progression, lastExerciseData }) {
+  // Vérifie si on a des séries remplies (avec reps)
+  const hasFilledSets = sets.some(s => {
+    const reps = Number(s?.reps || 0);
+    return reps > 0;
+  });
+
   return (
     <section className={`${styles.focusForm} ${styles.pdcForm}`}>
       <div className={styles.focusFormHeader}>
@@ -9,20 +16,45 @@ export default function PdcForm({ sets = [], onAdd, onRemove, onPatch }) {
         <p>Enregistre tes séries avec le nombre de répétitions effectuées.</p>
       </div>
 
+      {progression?.message && !hasFilledSets && (
+        <div className={styles.progressionHint}>
+          <span className={styles.progressionIcon}>💡</span>
+          <div className={styles.progressionContent}>
+            <p className={styles.progressionMessage}>{progression.message}</p>
+          </div>
+        </div>
+      )}
+
       <div className={styles.seriesList}>
-        {sets.map((s, idx) => (
-          <div key={idx} className={styles.serieCard}>
-            <div className={styles.serieHeader}>
-              <span className={styles.serieNumber}>Série {idx + 1}</span>
-              <button
-                type="button"
-                className={styles.deleteSerieBtn}
-                onClick={() => onRemove && onRemove(idx)}
-                aria-label={`Supprimer la série ${idx + 1}`}
-              >
-                ×
-              </button>
-            </div>
+        {sets.map((s, idx) => {
+          const diff = calculateDifference(s, lastExerciseData);
+          const isRecord = diff?.repsDiff > 0;
+
+          return (
+            <div key={idx} className={styles.serieCard}>
+              <div className={styles.serieHeader}>
+                <div className={styles.serieHeaderLeft}>
+                  <span className={styles.serieNumber}>Série {idx + 1}</span>
+                  {isRecord && (
+                    <span className={styles.recordBadge}>
+                      🔥 +{diff.repsDiff} reps
+                    </span>
+                  )}
+                  {!isRecord && diff?.hasChange && diff.repsDiff < 0 && (
+                    <span className={styles.diffBadge}>
+                      {diff.repsDiff} reps
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className={styles.deleteSerieBtn}
+                  onClick={() => onRemove && onRemove(idx)}
+                  aria-label={`Supprimer la série ${idx + 1}`}
+                >
+                  ×
+                </button>
+              </div>
 
             <label className={styles.focusField}>
               <span>🔁 Répétitions</span>
@@ -42,8 +74,9 @@ export default function PdcForm({ sets = [], onAdd, onRemove, onPatch }) {
                 aria-label={`Répétitions série ${idx + 1}`}
               />
             </label>
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
 
       <button type="button" className={styles.addSerieBtn} onClick={onAdd}>

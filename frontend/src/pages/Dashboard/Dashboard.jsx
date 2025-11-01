@@ -11,6 +11,8 @@ import SuivieSeance from "../../components/History/SessionTracking/SuivieSeance.
 import RMHistory from "../../components/History/RM/RMHistory/RMHistory.jsx";
 import SwimDistanceCard from "../../components/History/DashboardCards/SwimDistanceCard.jsx";
 import RunDistanceCard from "../../components/History/DashboardCards/RunDistanceCard.jsx";
+import WalkDistanceCard from "../../components/History/DashboardCards/WalkDistanceCard.jsx";
+import BikeDistanceCard from "../../components/History/DashboardCards/BikeDistanceCard.jsx";
 import ActivityHeatmapPanel from "../../components/History/DashboardCards/ActivityHeatmapPanel.jsx";
 import WeeklyGoalCard from "../../components/History/DashboardCards/WeeklyGoalCard.jsx";
 import WeeklyGoalModal from "../../components/History/DashboardCards/WeeklyGoalModal.jsx";
@@ -29,6 +31,8 @@ function DashboardOverview({
   onOpenGoalModal,
   swimStats,
   runStats,
+  walkStats,
+  bikeStats,
   formatKmValue,
   shortDateFormatter,
   badges,
@@ -47,111 +51,182 @@ function DashboardOverview({
   onCloseGoalModal,
   onSaveGoal,
 }) {
-  const showInsights = badges.length > 0 || stats.totalSessions > 0;
+  const showTrainingSection = stats.totalSessions > 0;
+  const showBodySection = weightPoints.length > 0 || calorieTargets.maintenance;
+  const showCardioSection = swimStats.totalKm > 0 || runStats.totalKm > 0 || walkStats.totalKm > 0 || bikeStats.totalKm > 0;
+  const showForceSection = rmTests.length > 0;
 
   return (
     <>
+      {/* Welcome Section */}
       <section className={style.welcomeSection}>
         <h1 className={style.welcomeTitle}>Salut {capitalizedName} 👋</h1>
-        <p className={style.welcomeSubtitle}>Voici ton tableau de bord, ton QG pour écraser tes objectifs</p>
+        <p className={style.welcomeSubtitle}>Voici ton tableau de bord</p>
         <p className={style.motivationMessage}>{motivationMessage}</p>
       </section>
 
       {status === "loading" && <p className={style.loading}>Chargement…</p>}
       {status === "error" && <p className={style.error}>{error}</p>}
 
-      {records.length === 0 && status === "idle" && (
-        <p className={style.emptyState}>
-          Aucune donnée pour l'instant. Enregistre un IMC, des calories ou une séance pour voir les courbes.
-        </p>
-      )}
-
-      <section className={style.topRow}>
-        <div className={style.quickActions}>
-          <button onClick={() => navigate('/exo')} className={style.quickAction}>
-            <span className={style.quickActionIcon}>🏋️</span>
-            <span className={style.quickActionLabel}>Nouvelle séance</span>
-          </button>
-          <button onClick={() => navigate('/outils')} className={style.quickAction}>
-            <span className={style.quickActionIcon}>🛠️</span>
-            <span className={style.quickActionLabel}>Outils</span>
-          </button>
-        </div>
-
-        {stats.totalSessions > 0 && (
-          <WeeklyGoalCard
-            weeklyGoal={weeklyGoal}
-            completedSessions={stats.last7Days}
-            weeklyProgress={weeklyProgress}
-            onEditGoal={onOpenGoalModal}
-          />
-        )}
+      {/* Quick Actions */}
+      <section className={style.quickActionsRow}>
+        <button onClick={() => navigate('/exo')} className={style.quickAction}>
+          <span className={style.quickActionIcon}>🏋️</span>
+          <span className={style.quickActionLabel}>Nouvelle séance</span>
+        </button>
+        <button onClick={() => navigate('/outils')} className={style.quickAction}>
+          <span className={style.quickActionIcon}>🛠️</span>
+          <span className={style.quickActionLabel}>Outils</span>
+        </button>
       </section>
 
-      {showInsights && (
-        <section className={style.insightsGrid}>
-          {stats.totalSessions > 0 && (
-            <ActivityHeatmapPanel weeks={activityHeatmap} />
-          )}
+      {/* Weekly Goal */}
+      {stats.totalSessions > 0 && (
+        <WeeklyGoalCard
+          weeklyGoal={weeklyGoal}
+          completedSessions={stats.last7Days}
+          weeklyProgress={weeklyProgress}
+          onEditGoal={onOpenGoalModal}
+        />
+      )}
 
-          {badges.length > 0 && <BadgesPanel badges={badges} />}
+      {/* SECTION 1: ENTRAÎNEMENT */}
+      {showTrainingSection && (
+        <section className={style.dashboardSection} data-theme="training">
+          <header className={style.sectionHeader}>
+            <span className={style.sectionIcon}>🏋️</span>
+            <h2 className={style.sectionTitle}>Entraînement</h2>
+          </header>
+          <div className={style.sectionContent}>
+            <SuivieSeance
+              sessions={userSessions.slice(0, 5)}
+              lastSession={lastCompletedSession}
+              onDeleteSuccess={onDeleteSuccess}
+              showSummaryCards={false}
+            />
+            <ActivityHeatmapPanel weeks={activityHeatmap} />
+            {badges.length > 0 && <BadgesPanel badges={badges} />}
+          </div>
         </section>
       )}
 
-      <section className={style.themeSection}>
-        <header className={style.themeHeader}>
-          <h2 className={style.themeTitle}>Poids: IMC & Calorie</h2>
-          <p className={style.themeSubtitle}>
-            Visualise l&apos;impact de tes habitudes sur ton poids et ton énergie.
-          </p>
-        </header>
+      {/* Empty state if no training */}
+      {!showTrainingSection && (
+        <section className={style.emptyStateCard}>
+          <div className={style.emptyStateIcon}>🏋️</div>
+          <h3 className={style.emptyStateTitle}>Démarre ta première séance</h3>
+          <p className={style.emptyStateText}>Commence à suivre tes entraînements pour voir tes progrès</p>
+          <button onClick={() => navigate('/exo')} className={style.ctaButton}>
+            Nouvelle séance
+          </button>
+        </section>
+      )}
 
-        <div className={style.bodyMetricsSection}>
-          <div className={style.weightPanel}>
+      {/* SECTION 2: CORPS & NUTRITION */}
+      {showBodySection && (
+        <section className={style.dashboardSection} data-theme="body">
+          <header className={style.sectionHeader}>
+            <span className={style.sectionIcon}>⚖️</span>
+            <h2 className={style.sectionTitle}>Corps & Nutrition</h2>
+          </header>
+          <div className={style.sectionContent}>
             <WeightChart points={weightPoints} imcSummary={imcSummary} />
-            <CalorieChart burnPoints={calorieBurnPoints} targets={calorieTargets} />
+            {calorieTargets.maintenance && (
+              <div className={style.calorieSummaryCard}>
+                <h3 className={style.calorieSummaryTitle}>💡 Dernier calcul calorique</h3>
+                <div className={style.calorieSummaryContent}>
+                  <div className={style.calorieMainValue}>
+                    <span className={style.calorieValue}>{calorieTargets.maintenance}</span>
+                    <span className={style.calorieUnit}>kcal/jour</span>
+                  </div>
+                  <div className={style.calorieTargets}>
+                    <div className={style.calorieTarget}>
+                      <span className={style.calorieLabel}>Perte :</span>
+                      <span className={style.calorieAmount}>{calorieTargets.deficit} kcal</span>
+                    </div>
+                    <div className={style.calorieTarget}>
+                      <span className={style.calorieLabel}>Prise :</span>
+                      <span className={style.calorieAmount}>{calorieTargets.surplus} kcal</span>
+                    </div>
+                  </div>
+                  {calorieTargets.updatedAt && (
+                    <p className={style.calorieDate}>
+                      Calculé le {new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(calorieTargets.updatedAt)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-        <header className={style.themeHeader}>
-          <h2 className={style.themeTitle}>Exercice: </h2>
-          <p className={style.themeSubtitle}>
-            Visualise l'impact de ta rigueur sur ton poids et ton énergie.
-          </p>
-        </header>
-      <section className={style.metricsSection}>
+      {/* Empty state if no body data */}
+      {!showBodySection && (
+        <section className={style.emptyStateCard}>
+          <div className={style.emptyStateIcon}>⚖️</div>
+          <h3 className={style.emptyStateTitle}>Calcule ton IMC</h3>
+          <p className={style.emptyStateText}>Suis l'évolution de ton poids et tes besoins caloriques</p>
+          <button onClick={() => navigate('/outils')} className={style.ctaButton}>
+            Calculer mon IMC
+          </button>
+        </section>
+      )}
 
-        <SwimDistanceCard
-          stats={swimStats}
-          formatKmValue={formatKmValue}
-          shortDateFormatter={shortDateFormatter}
-        />
-        <RunDistanceCard
-          stats={runStats}
-          formatKmValue={formatKmValue}
-          shortDateFormatter={shortDateFormatter}
-        />
-      </section>
+      {/* SECTION 3: CARDIO */}
+      {showCardioSection && (
+        <section className={style.dashboardSection} data-theme="cardio">
+          <header className={style.sectionHeader}>
+            <span className={style.sectionIcon}>🏃</span>
+            <h2 className={style.sectionTitle}>Cardio</h2>
+          </header>
+          <div className={style.sectionContent}>
+            <div className={style.cardioGrid}>
+              {walkStats.totalKm > 0 && (
+                <WalkDistanceCard
+                  stats={walkStats}
+                  formatKmValue={formatKmValue}
+                  shortDateFormatter={shortDateFormatter}
+                />
+              )}
+              {runStats.totalKm > 0 && (
+                <RunDistanceCard
+                  stats={runStats}
+                  formatKmValue={formatKmValue}
+                  shortDateFormatter={shortDateFormatter}
+                />
+              )}
+              {bikeStats.totalKm > 0 && (
+                <BikeDistanceCard
+                  stats={bikeStats}
+                  formatKmValue={formatKmValue}
+                  shortDateFormatter={shortDateFormatter}
+                />
+              )}
+              {swimStats.totalKm > 0 && (
+                <SwimDistanceCard
+                  stats={swimStats}
+                  formatKmValue={formatKmValue}
+                  shortDateFormatter={shortDateFormatter}
+                />
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
-
-
-      <div className={style.analyticsGrid}>
-        <div className={style.analyticsItem}>
-          <RMHistory rmTests={rmTests} />
-        </div>
-      </div>
-
-      <div className={style.detailGrid}>
-        <div className={style.detailItem}>
-          <SuivieSeance
-            sessions={userSessions}
-            lastSession={lastCompletedSession}
-            onDeleteSuccess={onDeleteSuccess}
-            showSummaryCards={false}
-          />
-        </div>
-      </div>
+      {/* SECTION 4: FORCE (1RM) */}
+      {showForceSection && (
+        <section className={style.dashboardSection} data-theme="force">
+          <header className={style.sectionHeader}>
+            <span className={style.sectionIcon}>💪</span>
+            <h2 className={style.sectionTitle}>Force (1RM)</h2>
+          </header>
+          <div className={style.sectionContent}>
+            <RMHistory rmTests={rmTests} />
+          </div>
+        </section>
+      )}
 
       <WeeklyGoalModal
         isOpen={showGoalModal}
@@ -795,27 +870,56 @@ export default function Dashboard() {
     return computeDistanceHistory(swimPredicate);
   }, [computeDistanceHistory]);
 
-  const runStats = useMemo(() => {
-    const keywords = /(course|running|run|footing|trail|jog|marche|walk|tapis|plein air)/i;
-    const runPredicate = (entry) => {
-      // Check subType first (from saved sessions)
+  const walkStats = useMemo(() => {
+    const walkPredicate = (entry) => {
       const subType = String(entry?.subType || '').toLowerCase();
-      if (subType === 'walk_run') return true;
-      if (subType === 'swim' || subType === 'yoga' || subType === 'stretch') return false;
+      if (subType === 'walk') return true;
+      if (subType === 'run' || subType === 'bike' || subType === 'swim') return false;
 
-      // Check mode (from localStorage)
       const mode = String(entry?.mode || '').toLowerCase();
-      if (mode === 'walk_run') return true;
+      if (mode === 'walk') return true;
+      if (mode === 'run' || mode === 'bike') return false;
 
-      // Check name pattern
       const name = String(entry?.name || entry?.label || entry?.exerciseName || '').toLowerCase();
-      return keywords.test(name);
+      return /(marche|walk|randonnée|rando)/.test(name);
+    };
+    return computeDistanceHistory(walkPredicate);
+  }, [computeDistanceHistory]);
+
+  const runStats = useMemo(() => {
+    const runPredicate = (entry) => {
+      const subType = String(entry?.subType || '').toLowerCase();
+      if (subType === 'run') return true;
+      if (subType === 'walk' || subType === 'bike' || subType === 'swim') return false;
+
+      const mode = String(entry?.mode || '').toLowerCase();
+      if (mode === 'run') return true;
+      if (mode === 'walk' || mode === 'bike') return false;
+
+      const name = String(entry?.name || entry?.label || entry?.exerciseName || '').toLowerCase();
+      return /(course|running|run|footing|trail|jog|tapis|plein air)/.test(name) && !/(marche|walk|vélo|velo|bike)/.test(name);
     };
     return computeDistanceHistory(runPredicate);
   }, [computeDistanceHistory]);
 
+  const bikeStats = useMemo(() => {
+    const bikePredicate = (entry) => {
+      const subType = String(entry?.subType || '').toLowerCase();
+      if (subType === 'bike') return true;
+      if (subType === 'walk' || subType === 'run' || subType === 'swim') return false;
+
+      const mode = String(entry?.mode || '').toLowerCase();
+      if (mode === 'bike') return true;
+      if (mode === 'walk' || mode === 'run') return false;
+
+      const name = String(entry?.name || entry?.label || entry?.exerciseName || '').toLowerCase();
+      return /(vélo|velo|bike|cyclisme|cycling|vtt)/.test(name);
+    };
+    return computeDistanceHistory(bikePredicate);
+  }, [computeDistanceHistory]);
+
   const activityHeatmap = useMemo(() => {
-    const weeks = 12;
+    const weeks = 8;
     const heatmap = [];
     const today = new Date();
     const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
@@ -880,6 +984,8 @@ export default function Dashboard() {
             onOpenGoalModal={handleOpenGoalModal}
             swimStats={swimStats}
             runStats={runStats}
+            walkStats={walkStats}
+            bikeStats={bikeStats}
             formatKmValue={formatKmValue}
             shortDateFormatter={shortDateFormatter}
             badges={badges}
