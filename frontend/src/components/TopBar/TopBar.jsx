@@ -16,7 +16,6 @@ const getStoredUser = () => {
   try {
     return localStorage.getItem('user');
   } catch (error) {
-    console.warn('[TopBar] Unable to access localStorage:', error);
     return null;
   }
 };

@@ -11,6 +11,8 @@ import SuivieSeance from "../../components/History/SessionTracking/SuivieSeance.
 import RMHistory from "../../components/History/RM/RMHistory/RMHistory.jsx";
 import SwimDistanceCard from "../../components/History/DashboardCards/SwimDistanceCard.jsx";
 import RunDistanceCard from "../../components/History/DashboardCards/RunDistanceCard.jsx";
+import WalkDistanceCard from "../../components/History/DashboardCards/WalkDistanceCard.jsx";
+import BikeDistanceCard from "../../components/History/DashboardCards/BikeDistanceCard.jsx";
 import ActivityHeatmapPanel from "../../components/History/DashboardCards/ActivityHeatmapPanel.jsx";
 import WeeklyGoalCard from "../../components/History/DashboardCards/WeeklyGoalCard.jsx";
 import WeeklyGoalModal from "../../components/History/DashboardCards/WeeklyGoalModal.jsx";
@@ -29,6 +31,8 @@ function DashboardOverview({
   onOpenGoalModal,
   swimStats,
   runStats,
+  walkStats,
+  bikeStats,
   formatKmValue,
   shortDateFormatter,
   badges,
@@ -49,7 +53,7 @@ function DashboardOverview({
 }) {
   const showTrainingSection = stats.totalSessions > 0;
   const showBodySection = weightPoints.length > 0 || calorieTargets.maintenance;
-  const showCardioSection = swimStats.totalKm > 0 || runStats.totalKm > 0;
+  const showCardioSection = swimStats.totalKm > 0 || runStats.totalKm > 0 || walkStats.totalKm > 0 || bikeStats.totalKm > 0;
   const showForceSection = rmTests.length > 0;
 
   return (
@@ -178,9 +182,23 @@ function DashboardOverview({
           </header>
           <div className={style.sectionContent}>
             <div className={style.cardioGrid}>
+              {walkStats.totalKm > 0 && (
+                <WalkDistanceCard
+                  stats={walkStats}
+                  formatKmValue={formatKmValue}
+                  shortDateFormatter={shortDateFormatter}
+                />
+              )}
               {runStats.totalKm > 0 && (
                 <RunDistanceCard
                   stats={runStats}
+                  formatKmValue={formatKmValue}
+                  shortDateFormatter={shortDateFormatter}
+                />
+              )}
+              {bikeStats.totalKm > 0 && (
+                <BikeDistanceCard
+                  stats={bikeStats}
                   formatKmValue={formatKmValue}
                   shortDateFormatter={shortDateFormatter}
                 />
@@ -852,23 +870,52 @@ export default function Dashboard() {
     return computeDistanceHistory(swimPredicate);
   }, [computeDistanceHistory]);
 
-  const runStats = useMemo(() => {
-    const keywords = /(course|running|run|footing|trail|jog|marche|walk|tapis|plein air)/i;
-    const runPredicate = (entry) => {
-      // Check subType first (from saved sessions)
+  const walkStats = useMemo(() => {
+    const walkPredicate = (entry) => {
       const subType = String(entry?.subType || '').toLowerCase();
-      if (subType === 'walk_run') return true;
-      if (subType === 'swim' || subType === 'yoga' || subType === 'stretch') return false;
+      if (subType === 'walk') return true;
+      if (subType === 'run' || subType === 'bike' || subType === 'swim') return false;
 
-      // Check mode (from localStorage)
       const mode = String(entry?.mode || '').toLowerCase();
-      if (mode === 'walk_run') return true;
+      if (mode === 'walk') return true;
+      if (mode === 'run' || mode === 'bike') return false;
 
-      // Check name pattern
       const name = String(entry?.name || entry?.label || entry?.exerciseName || '').toLowerCase();
-      return keywords.test(name);
+      return /(marche|walk|randonnée|rando)/.test(name);
+    };
+    return computeDistanceHistory(walkPredicate);
+  }, [computeDistanceHistory]);
+
+  const runStats = useMemo(() => {
+    const runPredicate = (entry) => {
+      const subType = String(entry?.subType || '').toLowerCase();
+      if (subType === 'run') return true;
+      if (subType === 'walk' || subType === 'bike' || subType === 'swim') return false;
+
+      const mode = String(entry?.mode || '').toLowerCase();
+      if (mode === 'run') return true;
+      if (mode === 'walk' || mode === 'bike') return false;
+
+      const name = String(entry?.name || entry?.label || entry?.exerciseName || '').toLowerCase();
+      return /(course|running|run|footing|trail|jog|tapis|plein air)/.test(name) && !/(marche|walk|vélo|velo|bike)/.test(name);
     };
     return computeDistanceHistory(runPredicate);
+  }, [computeDistanceHistory]);
+
+  const bikeStats = useMemo(() => {
+    const bikePredicate = (entry) => {
+      const subType = String(entry?.subType || '').toLowerCase();
+      if (subType === 'bike') return true;
+      if (subType === 'walk' || subType === 'run' || subType === 'swim') return false;
+
+      const mode = String(entry?.mode || '').toLowerCase();
+      if (mode === 'bike') return true;
+      if (mode === 'walk' || mode === 'run') return false;
+
+      const name = String(entry?.name || entry?.label || entry?.exerciseName || '').toLowerCase();
+      return /(vélo|velo|bike|cyclisme|cycling|vtt)/.test(name);
+    };
+    return computeDistanceHistory(bikePredicate);
   }, [computeDistanceHistory]);
 
   const activityHeatmap = useMemo(() => {
@@ -937,6 +984,8 @@ export default function Dashboard() {
             onOpenGoalModal={handleOpenGoalModal}
             swimStats={swimStats}
             runStats={runStats}
+            walkStats={walkStats}
+            bikeStats={bikeStats}
             formatKmValue={formatKmValue}
             shortDateFormatter={shortDateFormatter}
             badges={badges}

@@ -2,7 +2,7 @@
   background: var(--nf-surface);
   border-radius: 16px;
   padding: 24px;
-  margin: 0;
+  margin-bottom: 100px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;

@@ -21,7 +21,6 @@ export default function LogoutActions({ onLogout }) {
         setIsAdmin(data.role === "admin");
       }
     } catch (err) {
-      console.error("Erreur vérification admin:", err);
     }
   };
 
