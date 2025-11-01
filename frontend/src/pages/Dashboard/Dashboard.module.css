@@ -138,29 +138,12 @@
 }
 
 /* Quick Actions */
-.topRow {
-  display: grid;
-  gap: var(--space-4);
-  align-items: stretch;
-  margin-bottom: var(--space-6);
-  animation: fadeInUp 0.6s ease-out 0.1s both;
-}
-
-.quickActions {
+.quickActionsRow {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
-  align-items: stretch;
-  background: var(--nf-surface);
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: var(--nf-shadow);
-}
-
-:global(body.dark) .quickActions,
-:global(html.dark) .quickActions {
-  background: #1a1d24;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  margin-bottom: var(--space-5);
+  animation: fadeInUp 0.6s ease-out 0.1s both;
 }
 
 .quickAction {
@@ -197,6 +180,7 @@
 :global(body.dark) .quickAction:hover,
 :global(html.dark) .quickAction:hover {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: #FFB385;
 }
 
 .quickActionIcon {
@@ -533,15 +517,296 @@
     gap: var(--space-3);
   }
 
-  .topRow {
+  .quickActionsRow {
     gap: var(--space-3);
   }
 
   .quickAction {
     padding: 16px;
   }
+}
 
-  .quickActions {
-    padding: 16px;
+/* ========================================
+   NOUVELLE STRUCTURE: SECTIONS THÉMATIQUES
+   ======================================== */
+
+/* Dashboard Section */
+.dashboardSection {
+  background: var(--nf-surface);
+  border-radius: 20px;
+  box-shadow: var(--nf-shadow);
+  margin-bottom: var(--space-5);
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+:global(body.dark) .dashboardSection,
+:global(html.dark) .dashboardSection {
+  background: #1a1d24;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+/* Bordure gauche colorée par thème */
+.dashboardSection[data-theme="training"] {
+  border-left: 4px solid #FFB385;
+}
+
+.dashboardSection[data-theme="body"] {
+  border-left: 4px solid #B5EAD7;
+}
+
+.dashboardSection[data-theme="cardio"] {
+  border-left: 4px solid #87CEEB;
+}
+
+.dashboardSection[data-theme="force"] {
+  border-left: 4px solid #9E8CFF;
+}
+
+/* Section Header */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--nf-surface-border);
+  background: linear-gradient(135deg, rgba(255, 179, 133, 0.02) 0%, transparent 100%);
+}
+
+:global(body.dark) .sectionHeader,
+:global(html.dark) .sectionHeader {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+  background: linear-gradient(135deg, rgba(255, 179, 133, 0.01) 0%, transparent 100%);
+}
+
+.dashboardSection[data-theme="body"] .sectionHeader {
+  background: linear-gradient(135deg, rgba(181, 234, 215, 0.02) 0%, transparent 100%);
+}
+
+.dashboardSection[data-theme="cardio"] .sectionHeader {
+  background: linear-gradient(135deg, rgba(135, 206, 235, 0.02) 0%, transparent 100%);
+}
+
+.dashboardSection[data-theme="force"] .sectionHeader {
+  background: linear-gradient(135deg, rgba(158, 140, 255, 0.02) 0%, transparent 100%);
+}
+
+.sectionIcon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Section Content */
+.sectionContent {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Cardio Grid */
+.cardioGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .cardioGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Empty State Card */
+.emptyStateCard {
+  background: var(--nf-surface);
+  border-radius: 20px;
+  box-shadow: var(--nf-shadow);
+  padding: var(--space-6);
+  text-align: center;
+  margin-bottom: var(--space-5);
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+:global(body.dark) .emptyStateCard,
+:global(html.dark) .emptyStateCard {
+  background: #1a1d24;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+.emptyStateIcon {
+  font-size: 4rem;
+  line-height: 1;
+  margin-bottom: var(--space-4);
+}
+
+.emptyStateTitle {
+  margin: 0 0 var(--space-3);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+}
+
+.emptyStateText {
+  margin: 0 0 var(--space-5);
+  font-size: 1rem;
+  color: var(--nf-muted);
+}
+
+.ctaButton {
+  background: linear-gradient(135deg, #FFB385 0%, #f49b69 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 32px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+}
+
+.ctaButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 179, 133, 0.4);
+}
+
+.ctaButton:active {
+  transform: translateY(0);
+}
+
+/* Calorie Summary Card */
+.calorieSummaryCard {
+  background: linear-gradient(135deg, rgba(181, 234, 215, 0.08) 0%, rgba(181, 234, 215, 0.02) 100%);
+  border: 1px solid rgba(181, 234, 215, 0.3);
+  border-radius: 16px;
+  padding: var(--space-5);
+}
+
+:global(body.dark) .calorieSummaryCard,
+:global(html.dark) .calorieSummaryCard {
+  background: linear-gradient(135deg, rgba(181, 234, 215, 0.05) 0%, rgba(181, 234, 215, 0.01) 100%);
+  border-color: rgba(181, 234, 215, 0.15);
+}
+
+.calorieSummaryTitle {
+  margin: 0 0 var(--space-4);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+}
+
+.calorieSummaryContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.calorieMainValue {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.calorieValue {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #B5EAD7;
+}
+
+:global(body.dark) .calorieValue,
+:global(html.dark) .calorieValue {
+  color: #9fd6c2;
+}
+
+.calorieUnit {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--nf-muted);
+}
+
+.calorieTargets {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.calorieTarget {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: var(--nf-surface);
+  border-radius: 10px;
+  border: 1px solid var(--nf-surface-border);
+}
+
+:global(body.dark) .calorieTarget,
+:global(html.dark) .calorieTarget {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.calorieLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--nf-muted);
+}
+
+.calorieAmount {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+}
+
+.calorieDate {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--nf-muted);
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .sectionHeader {
+    padding: 16px 20px;
+  }
+
+  .sectionContent {
+    padding: 20px;
+  }
+
+  .sectionTitle {
+    font-size: 1rem;
+  }
+
+  .emptyStateCard {
+    padding: var(--space-5);
+  }
+
+  .emptyStateIcon {
+    font-size: 3rem;
+  }
+
+  .emptyStateTitle {
+    font-size: 1.2rem;
+  }
+
+  .calorieValue {
+    font-size: 2rem;
+  }
+
+  .calorieTargets {
+    grid-template-columns: 1fr;
   }
 }
