@@ -1,17 +1,77 @@
 .card {
-  background: var(--nf-surface);
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: var(--nf-shadow);
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
 }
 
-:global(body.dark) .card,
-:global(html.dark) .card {
-  background: #1a1d24;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+/* Badges Toggle Button */
+.badgesToggle {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(255, 179, 133, 0.08) 0%, rgba(255, 179, 133, 0.02) 100%);
+  border: 1px solid rgba(255, 179, 133, 0.3);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.badgesToggle:hover {
+  background: linear-gradient(135deg, rgba(255, 179, 133, 0.12) 0%, rgba(255, 179, 133, 0.04) 100%);
+  border-color: rgba(255, 179, 133, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.15);
+}
+
+.badgesToggle:active {
+  transform: translateY(0);
+}
+
+:global(body.dark) .badgesToggle,
+:global(html.dark) .badgesToggle {
+  background: linear-gradient(135deg, rgba(255, 179, 133, 0.05) 0%, rgba(255, 179, 133, 0.01) 100%);
+  border-color: rgba(255, 179, 133, 0.2);
+}
+
+:global(body.dark) .badgesToggle:hover,
+:global(html.dark) .badgesToggle:hover {
+  background: linear-gradient(135deg, rgba(255, 179, 133, 0.08) 0%, rgba(255, 179, 133, 0.02) 100%);
+  border-color: rgba(255, 179, 133, 0.35);
+}
+
+.badgesToggleContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.badgesToggleIcon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.badgesToggleText {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--nf-ink);
+}
+
+.badgesToggleArrow {
+  font-size: 0.75rem;
+  color: var(--nf-muted);
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+.badgesToggleArrowExpanded {
+  transform: rotate(180deg);
 }
 
 .title {
@@ -32,6 +92,21 @@
   touch-action: pan-x pan-y;
   scrollbar-width: thin;
   scrollbar-color: #ffb385 transparent;
+  animation: slideDown 0.3s ease-out;
+  margin-top: var(--space-3);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 500px;
+  }
 }
 
 .grid::-webkit-scrollbar {

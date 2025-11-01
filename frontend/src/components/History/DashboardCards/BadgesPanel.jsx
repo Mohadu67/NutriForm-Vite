@@ -1,3 +1,4 @@
+import { useState } from "react";
 import styles from "./BadgesPanel.module.css";
 
 function formatBadgeLabel(badge) {
@@ -9,6 +10,8 @@ function formatBadgeLabel(badge) {
 }
 
 export default function BadgesPanel({ badges = [], className }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   if (!Array.isArray(badges) || badges.length === 0) {
     return null;
   }
@@ -17,24 +20,41 @@ export default function BadgesPanel({ badges = [], className }) {
 
   return (
     <article className={`${styles.card} ${className || ""}`.trim()}>
-      <h3 className={styles.title}>🏆 Tes badges ({badges.length})</h3>
-      <div className={styles.grid}>
-        {latestBadges.map((badge, index) => {
-          const label = formatBadgeLabel(badge);
-          return (
-            <div key={index} className={styles.badgeCard}>
-              <span
-                className={styles.badgeIcon}
-                aria-label={label || undefined}
-              >
-                {badge.icon}
-              </span>
-              <h4 className={styles.badgeName}>{badge.name}</h4>
-              <p className={styles.badgeDesc}>{badge.desc}</p>
-            </div>
-          );
-        })}
-      </div>
+      <button
+        className={styles.badgesToggle}
+        onClick={() => setIsExpanded(!isExpanded)}
+        aria-expanded={isExpanded}
+      >
+        <span className={styles.badgesToggleContent}>
+          <span className={styles.badgesToggleIcon}>🏆</span>
+          <span className={styles.badgesToggleText}>
+            {badges.length} badge{badges.length > 1 ? 's' : ''} débloqué{badges.length > 1 ? 's' : ''}
+          </span>
+        </span>
+        <span className={`${styles.badgesToggleArrow} ${isExpanded ? styles.badgesToggleArrowExpanded : ''}`}>
+          ▼
+        </span>
+      </button>
+
+      {isExpanded && (
+        <div className={styles.grid}>
+          {latestBadges.map((badge, index) => {
+            const label = formatBadgeLabel(badge);
+            return (
+              <div key={index} className={styles.badgeCard}>
+                <span
+                  className={styles.badgeIcon}
+                  aria-label={label || undefined}
+                >
+                  {badge.icon}
+                </span>
+                <h4 className={styles.badgeName}>{badge.name}</h4>
+                <p className={styles.badgeDesc}>{badge.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </article>
   );
 }
