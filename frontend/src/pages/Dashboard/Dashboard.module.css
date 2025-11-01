@@ -615,14 +615,50 @@
 
 /* Cardio Grid */
 .cardioGrid {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
   gap: var(--space-4);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #FFB385 transparent;
+}
+
+.cardioGrid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.cardioGrid::-webkit-scrollbar-track {
+  background: var(--nf-surface-border);
+  border-radius: 4px;
+}
+
+.cardioGrid::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #FFB385, #f49b69);
+  border-radius: 4px;
+}
+
+.cardioGrid::-webkit-scrollbar-thumb:hover {
+  background: #f49b69;
+}
+
+.cardioGrid > * {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  min-width: min(85vw, 380px);
 }
 
 @media (min-width: 768px) {
   .cardioGrid {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+
+  .cardioGrid > * {
+    min-width: auto;
   }
 }
 

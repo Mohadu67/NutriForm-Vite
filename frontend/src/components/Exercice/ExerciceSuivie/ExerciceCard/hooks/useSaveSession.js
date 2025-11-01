@@ -36,7 +36,6 @@ export default function useSaveSession() {
     }
 
     if (!entries || entries.length === 0) {
-      console.info("[useSaveSession] Skip save: NO_VALID_ENTRIES");
       setSaving(false);
       return { ok: true, skipped: true, reason: "NO_VALID_ENTRIES" };
     }

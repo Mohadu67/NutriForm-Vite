@@ -38,8 +38,6 @@ export default function ProfileUser({ onClose, onLogout }) {
       setEmail(data.email || "");
       setLoading(false);
     } catch (err) {
-      console.error('[ProfileUser] Error fetching user data:', err);
-
       const weeklyGoal = localStorage.getItem('weeklyGoal');
       const dynamiPrefs = {
         dynamiStep: localStorage.getItem('dynamiStep'),
