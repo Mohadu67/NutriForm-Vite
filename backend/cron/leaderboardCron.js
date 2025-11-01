@@ -1,5 +1,6 @@
 const cron = require('node-cron');
 const LeaderboardEntry = require('../models/LeaderboardEntry');
+const User = require('../models/User');
 const { calculateUserStats } = require('../controllers/leaderboard.controller');
 
 /**
@@ -21,8 +22,16 @@ function startLeaderboardCron() {
         try {
           const stats = await calculateUserStats(entry.userId);
 
+          // Récupérer les infos utilisateur pour mettre à jour l'avatar
+          const user = await User.findById(entry.userId);
+          const avatarUrl = user?.photo
+            ? `${process.env.BACKEND_BASE_URL || 'http://localhost:3000'}${user.photo}`
+            : null;
+
           await LeaderboardEntry.findByIdAndUpdate(entry._id, {
             stats,
+            avatarUrl,
+            displayName: user?.pseudo || user?.prenom || 'Anonyme',
             lastUpdated: new Date(),
           });
 
