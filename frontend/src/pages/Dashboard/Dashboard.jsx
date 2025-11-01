@@ -47,111 +47,168 @@ function DashboardOverview({
   onCloseGoalModal,
   onSaveGoal,
 }) {
-  const showInsights = badges.length > 0 || stats.totalSessions > 0;
+  const showTrainingSection = stats.totalSessions > 0;
+  const showBodySection = weightPoints.length > 0 || calorieTargets.maintenance;
+  const showCardioSection = swimStats.totalKm > 0 || runStats.totalKm > 0;
+  const showForceSection = rmTests.length > 0;
 
   return (
     <>
+      {/* Welcome Section */}
       <section className={style.welcomeSection}>
         <h1 className={style.welcomeTitle}>Salut {capitalizedName} 👋</h1>
-        <p className={style.welcomeSubtitle}>Voici ton tableau de bord, ton QG pour écraser tes objectifs</p>
+        <p className={style.welcomeSubtitle}>Voici ton tableau de bord</p>
         <p className={style.motivationMessage}>{motivationMessage}</p>
       </section>
 
       {status === "loading" && <p className={style.loading}>Chargement…</p>}
       {status === "error" && <p className={style.error}>{error}</p>}
 
-      {records.length === 0 && status === "idle" && (
-        <p className={style.emptyState}>
-          Aucune donnée pour l'instant. Enregistre un IMC, des calories ou une séance pour voir les courbes.
-        </p>
-      )}
-
-      <section className={style.topRow}>
-        <div className={style.quickActions}>
-          <button onClick={() => navigate('/exo')} className={style.quickAction}>
-            <span className={style.quickActionIcon}>🏋️</span>
-            <span className={style.quickActionLabel}>Nouvelle séance</span>
-          </button>
-          <button onClick={() => navigate('/outils')} className={style.quickAction}>
-            <span className={style.quickActionIcon}>🛠️</span>
-            <span className={style.quickActionLabel}>Outils</span>
-          </button>
-        </div>
-
-        {stats.totalSessions > 0 && (
-          <WeeklyGoalCard
-            weeklyGoal={weeklyGoal}
-            completedSessions={stats.last7Days}
-            weeklyProgress={weeklyProgress}
-            onEditGoal={onOpenGoalModal}
-          />
-        )}
+      {/* Quick Actions */}
+      <section className={style.quickActionsRow}>
+        <button onClick={() => navigate('/exo')} className={style.quickAction}>
+          <span className={style.quickActionIcon}>🏋️</span>
+          <span className={style.quickActionLabel}>Nouvelle séance</span>
+        </button>
+        <button onClick={() => navigate('/outils')} className={style.quickAction}>
+          <span className={style.quickActionIcon}>🛠️</span>
+          <span className={style.quickActionLabel}>Outils</span>
+        </button>
       </section>
 
-      {showInsights && (
-        <section className={style.insightsGrid}>
-          {stats.totalSessions > 0 && (
-            <ActivityHeatmapPanel weeks={activityHeatmap} />
-          )}
+      {/* Weekly Goal */}
+      {stats.totalSessions > 0 && (
+        <WeeklyGoalCard
+          weeklyGoal={weeklyGoal}
+          completedSessions={stats.last7Days}
+          weeklyProgress={weeklyProgress}
+          onEditGoal={onOpenGoalModal}
+        />
+      )}
 
-          {badges.length > 0 && <BadgesPanel badges={badges} />}
+      {/* SECTION 1: ENTRAÎNEMENT */}
+      {showTrainingSection && (
+        <section className={style.dashboardSection} data-theme="training">
+          <header className={style.sectionHeader}>
+            <span className={style.sectionIcon}>🏋️</span>
+            <h2 className={style.sectionTitle}>Entraînement</h2>
+          </header>
+          <div className={style.sectionContent}>
+            <SuivieSeance
+              sessions={userSessions.slice(0, 5)}
+              lastSession={lastCompletedSession}
+              onDeleteSuccess={onDeleteSuccess}
+              showSummaryCards={false}
+            />
+            <ActivityHeatmapPanel weeks={activityHeatmap} />
+            {badges.length > 0 && <BadgesPanel badges={badges} />}
+          </div>
         </section>
       )}
 
-      <section className={style.themeSection}>
-        <header className={style.themeHeader}>
-          <h2 className={style.themeTitle}>Poids: IMC & Calorie</h2>
-          <p className={style.themeSubtitle}>
-            Visualise l&apos;impact de tes habitudes sur ton poids et ton énergie.
-          </p>
-        </header>
+      {/* Empty state if no training */}
+      {!showTrainingSection && (
+        <section className={style.emptyStateCard}>
+          <div className={style.emptyStateIcon}>🏋️</div>
+          <h3 className={style.emptyStateTitle}>Démarre ta première séance</h3>
+          <p className={style.emptyStateText}>Commence à suivre tes entraînements pour voir tes progrès</p>
+          <button onClick={() => navigate('/exo')} className={style.ctaButton}>
+            Nouvelle séance
+          </button>
+        </section>
+      )}
 
-        <div className={style.bodyMetricsSection}>
-          <div className={style.weightPanel}>
+      {/* SECTION 2: CORPS & NUTRITION */}
+      {showBodySection && (
+        <section className={style.dashboardSection} data-theme="body">
+          <header className={style.sectionHeader}>
+            <span className={style.sectionIcon}>⚖️</span>
+            <h2 className={style.sectionTitle}>Corps & Nutrition</h2>
+          </header>
+          <div className={style.sectionContent}>
             <WeightChart points={weightPoints} imcSummary={imcSummary} />
-            <CalorieChart burnPoints={calorieBurnPoints} targets={calorieTargets} />
+            {calorieTargets.maintenance && (
+              <div className={style.calorieSummaryCard}>
+                <h3 className={style.calorieSummaryTitle}>💡 Dernier calcul calorique</h3>
+                <div className={style.calorieSummaryContent}>
+                  <div className={style.calorieMainValue}>
+                    <span className={style.calorieValue}>{calorieTargets.maintenance}</span>
+                    <span className={style.calorieUnit}>kcal/jour</span>
+                  </div>
+                  <div className={style.calorieTargets}>
+                    <div className={style.calorieTarget}>
+                      <span className={style.calorieLabel}>Perte :</span>
+                      <span className={style.calorieAmount}>{calorieTargets.deficit} kcal</span>
+                    </div>
+                    <div className={style.calorieTarget}>
+                      <span className={style.calorieLabel}>Prise :</span>
+                      <span className={style.calorieAmount}>{calorieTargets.surplus} kcal</span>
+                    </div>
+                  </div>
+                  {calorieTargets.updatedAt && (
+                    <p className={style.calorieDate}>
+                      Calculé le {new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(calorieTargets.updatedAt)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-        <header className={style.themeHeader}>
-          <h2 className={style.themeTitle}>Exercice: </h2>
-          <p className={style.themeSubtitle}>
-            Visualise l'impact de ta rigueur sur ton poids et ton énergie.
-          </p>
-        </header>
-      <section className={style.metricsSection}>
+      {/* Empty state if no body data */}
+      {!showBodySection && (
+        <section className={style.emptyStateCard}>
+          <div className={style.emptyStateIcon}>⚖️</div>
+          <h3 className={style.emptyStateTitle}>Calcule ton IMC</h3>
+          <p className={style.emptyStateText}>Suis l'évolution de ton poids et tes besoins caloriques</p>
+          <button onClick={() => navigate('/outils')} className={style.ctaButton}>
+            Calculer mon IMC
+          </button>
+        </section>
+      )}
 
-        <SwimDistanceCard
-          stats={swimStats}
-          formatKmValue={formatKmValue}
-          shortDateFormatter={shortDateFormatter}
-        />
-        <RunDistanceCard
-          stats={runStats}
-          formatKmValue={formatKmValue}
-          shortDateFormatter={shortDateFormatter}
-        />
-      </section>
+      {/* SECTION 3: CARDIO */}
+      {showCardioSection && (
+        <section className={style.dashboardSection} data-theme="cardio">
+          <header className={style.sectionHeader}>
+            <span className={style.sectionIcon}>🏃</span>
+            <h2 className={style.sectionTitle}>Cardio</h2>
+          </header>
+          <div className={style.sectionContent}>
+            <div className={style.cardioGrid}>
+              {runStats.totalKm > 0 && (
+                <RunDistanceCard
+                  stats={runStats}
+                  formatKmValue={formatKmValue}
+                  shortDateFormatter={shortDateFormatter}
+                />
+              )}
+              {swimStats.totalKm > 0 && (
+                <SwimDistanceCard
+                  stats={swimStats}
+                  formatKmValue={formatKmValue}
+                  shortDateFormatter={shortDateFormatter}
+                />
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
-
-
-      <div className={style.analyticsGrid}>
-        <div className={style.analyticsItem}>
-          <RMHistory rmTests={rmTests} />
-        </div>
-      </div>
-
-      <div className={style.detailGrid}>
-        <div className={style.detailItem}>
-          <SuivieSeance
-            sessions={userSessions}
-            lastSession={lastCompletedSession}
-            onDeleteSuccess={onDeleteSuccess}
-            showSummaryCards={false}
-          />
-        </div>
-      </div>
+      {/* SECTION 4: FORCE (1RM) */}
+      {showForceSection && (
+        <section className={style.dashboardSection} data-theme="force">
+          <header className={style.sectionHeader}>
+            <span className={style.sectionIcon}>💪</span>
+            <h2 className={style.sectionTitle}>Force (1RM)</h2>
+          </header>
+          <div className={style.sectionContent}>
+            <RMHistory rmTests={rmTests} />
+          </div>
+        </section>
+      )}
 
       <WeeklyGoalModal
         isOpen={showGoalModal}
@@ -815,7 +872,7 @@ export default function Dashboard() {
   }, [computeDistanceHistory]);
 
   const activityHeatmap = useMemo(() => {
-    const weeks = 12;
+    const weeks = 8;
     const heatmap = [];
     const today = new Date();
     const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
