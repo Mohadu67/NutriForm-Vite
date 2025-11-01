@@ -25,7 +25,7 @@ export default function ArticlesImc() {
         fetch("/data/db.json")
             .then((res) => res.json())
             .then((data) => setArticles(data.contenueArticlesIMC || []))
-            .catch((err) => console.error("Erreur de chargement des articles :", err));
+            .catch((err) => {});
     }, []);
 
   const resolveImage = (img) => (img ? `./images/${img}` : "");

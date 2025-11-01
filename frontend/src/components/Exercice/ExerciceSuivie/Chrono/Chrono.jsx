@@ -340,7 +340,6 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
     }
 
     if (!Array.isArray(entries) || entries.length === 0) {
-      console.info('[Chrono] Session not saved: NO_VALID_ENTRIES');
       if (typeof onFinish === 'function') {
         onFinish({ durationSec: finalSec, savedCount: 0, calories, doneExercises, totalExercises });
       }

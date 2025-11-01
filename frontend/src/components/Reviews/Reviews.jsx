@@ -25,7 +25,6 @@ export default function Reviews() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Erreur chargement avis pros:", err);
         setLoading(false);
       });
   }, []);
@@ -38,7 +37,6 @@ export default function Reviews() {
         setUserReviews(data.reviews || []);
       })
       .catch((err) => {
-        console.error("Erreur chargement avis users:", err);
       });
   }, []);
 
@@ -63,7 +61,6 @@ export default function Reviews() {
         alert("Merci pour votre avis ! ✅");
       }
     } catch (err) {
-      console.error("Erreur soumission avis:", err);
       alert("Erreur lors de l'envoi de votre avis");
     }
   };

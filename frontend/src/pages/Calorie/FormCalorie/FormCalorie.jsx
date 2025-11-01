@@ -131,16 +131,11 @@ export default function FormCalorie({ onResult, onCalculate }) {
         body: JSON.stringify(body),
       })
         .then(async (res) => {
-          if (!res.ok && import.meta.env.DEV) {
-            const txt = await res.text().catch(() => '');
-            console.warn('[CALORIES] /api/history non OK:', res.status, txt);
-          }
           if (res.status === 401) {
             setShowReminder(true);
           }
         })
         .catch((e) => {
-          if (import.meta.env.DEV) console.warn('[CALORIES] /api/history erreur:', e);
         });
     } catch (_) {}
   };
