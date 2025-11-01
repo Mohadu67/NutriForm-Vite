@@ -22,7 +22,6 @@ export async function loadExercises(types = 'all') {
   const promises = typeArray.map(async (type) => {
     const url = fileMap[type];
     if (!url) {
-      console.warn(`Type d'exercice inconnu: ${type}`);
       return [];
     }
 
@@ -32,7 +31,6 @@ export async function loadExercises(types = 'all') {
       const data = await res.json();
       return data.exercises || [];
     } catch (error) {
-      console.error(`Erreur lors du chargement de ${url}:`, error);
       return [];
     }
   });
@@ -51,7 +49,6 @@ export async function loadData(dataKey) {
     const data = await res.json();
     return data[dataKey] || null;
   } catch (error) {
-    console.error(`Erreur lors du chargement de ${dataKey}:`, error);
     return null;
   }
 }

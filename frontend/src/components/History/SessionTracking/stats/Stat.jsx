@@ -58,7 +58,6 @@ export default function Stat({
     () => collectNotes(lastSession, items, serverData),
     [lastSession, items, serverData]
   );
-  const deltaRows = useMemo(() => buildDeltaRows(stats.delta), [stats.delta]);
 
   return (
     <article className={styles.card}>
@@ -89,13 +88,13 @@ export default function Stat({
       </div>
 
       <div className={styles.splits}>
-        <SplitStat label="Cardio" value={cardioPct} />
-        <SplitStat label="Musculation" value={muscuPct} />
+        <SplitStat label="Cardio" value={cardioPct} type="cardio" />
+        <SplitStat label="Musculation" value={muscuPct} type="muscu" />
       </div>
 
       {notes.length > 0 && (
         <section className={styles.section}>
-          <h4 className={styles.sectionTitle}>Notes</h4>
+          <h4 className={styles.sectionTitle}>📝 Notes</h4>
           <ul className={styles.notesList}>
             {notes.map((note) => (
               <li key={note.key} className={styles.noteItem}>
@@ -106,31 +105,11 @@ export default function Stat({
           </ul>
         </section>
       )}
-
-      {deltaRows.length > 0 && (
-        <section className={styles.section}>
-          <h4 className={styles.sectionTitle}>Comparaison avec la séance précédente</h4>
-          <ul className={styles.deltaList}>
-            {deltaRows.map((row) => (
-              <li key={row.label} className={styles.deltaItem}>
-                <span className={styles.deltaLabel}>{row.label}</span>
-                <span
-                  className={`${styles.deltaValue} ${
-                    row.trend === "up" ? styles.trendUp : styles.trendDown
-                  }`}
-                >
-                  {row.value}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </article>
   );
 }
 
-function SplitStat({ label, value }) {
+function SplitStat({ label, value, type }) {
   return (
     <div className={styles.splitCard}>
       <div className={styles.splitHeader}>
@@ -138,7 +117,10 @@ function SplitStat({ label, value }) {
         <span className={styles.splitValue}>{value}%</span>
       </div>
       <div className={styles.splitBar}>
-        <span className={styles.splitFill} style={{ width: `${value}%` }} />
+        <span
+          className={`${styles.splitFill} ${type === 'cardio' ? styles.splitFillCardio : styles.splitFillMuscu}`}
+          style={{ width: `${value}%` }}
+        />
       </div>
     </div>
   );
@@ -235,31 +217,6 @@ function collectNotes(lastSession, items, serverData) {
   return Array.from(collected.values()).slice(0, 4);
 }
 
-function buildDeltaRows(delta) {
-  if (!delta || typeof delta !== "object") return [];
-  const rows = [];
-
-  if (Number.isFinite(delta.durationSec) && delta.durationSec !== 0) {
-    const trend = delta.durationSec >= 0 ? "up" : "down";
-    rows.push({
-      label: "Durée",
-      trend,
-      value: formatDeltaDuration(delta.durationSec),
-    });
-  }
-
-  if (Number.isFinite(delta.volumeKg) && delta.volumeKg !== 0) {
-    const trend = delta.volumeKg >= 0 ? "up" : "down";
-    rows.push({
-      label: "Volume",
-      trend,
-      value: formatDeltaNumber(delta.volumeKg, "kg"),
-    });
-  }
-
-  return rows;
-}
-
 function buildSessionTitle(session, overrideTitle) {
   if (overrideTitle && overrideTitle.trim()) {
     return { title: overrideTitle.trim(), subtitle: null };
@@ -314,22 +271,6 @@ function formatNumber(value, unit) {
   const safe = Math.max(0, Math.round(number));
   const formatted = new Intl.NumberFormat("fr-FR").format(safe);
   return unit ? `${formatted} ${unit}` : formatted;
-}
-
-function formatDeltaDuration(seconds) {
-  const minutes = Math.round(Math.abs(seconds) / 60);
-  const prefix = seconds >= 0 ? "+" : "−";
-  if (minutes < 60) return `${prefix}${minutes} min`;
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  const value = rest ? `${hours} h ${rest} min` : `${hours} h`;
-  return `${prefix}${value}`;
-}
-
-function formatDeltaNumber(value, unit) {
-  const rounded = Math.round(Math.abs(value));
-  const prefix = value >= 0 ? "+" : "−";
-  return `${prefix}${rounded} ${unit}`;
 }
 
 function clampPercent(value) {
