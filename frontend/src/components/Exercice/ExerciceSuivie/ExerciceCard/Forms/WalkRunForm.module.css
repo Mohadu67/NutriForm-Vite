@@ -166,6 +166,35 @@
   box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
 }
 
+/* GPS Toggle Section */
+.gpsToggle {
+  margin-top: 8px;
+}
+
+.gpsToggleButton {
+  width: 100%;
+  padding: 14px 20px;
+  border: 2px solid var(--suivie-accent);
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--suivie-accent);
+  transition: all 0.3s ease;
+}
+
+.gpsToggleButton:hover {
+  background: var(--suivie-accent);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+}
+
+.gpsToggleButton:active {
+  transform: translateY(0);
+}
+
 /* Responsive */
 @media (min-width: 480px) {
   .pauseControls {
@@ -192,5 +221,10 @@
   .timerButton {
     padding: 12px 16px;
     font-size: 14px;
+  }
+
+  .gpsToggleButton {
+    font-size: 14px;
+    padding: 12px 16px;
   }
 }

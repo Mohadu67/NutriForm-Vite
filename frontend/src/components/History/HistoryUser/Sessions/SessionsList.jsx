@@ -82,7 +82,6 @@ export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
       if (typeof onDeleteSuccess === 'function') onDeleteSuccess(id);
       if (typeof onData === 'function') onData(localRows.filter(r => r.id !== id));
     } catch (e) {
-      console.error('[SessionsList] delete error', e);
       alert(e.message || 'Erreur lors de la suppression');
     } finally {
       setDeletingId(null);
