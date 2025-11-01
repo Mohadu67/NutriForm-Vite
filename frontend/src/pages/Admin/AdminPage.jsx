@@ -259,7 +259,6 @@ export default function AdminPage() {
       });
 
       const data = await response.json();
-      console.log("Response:", response.status, data);
 
       if (data.success) {
         showMessage("success", `Newsletter envoyée avec succès à ${data.stats?.successCount || 0} abonnés !`);

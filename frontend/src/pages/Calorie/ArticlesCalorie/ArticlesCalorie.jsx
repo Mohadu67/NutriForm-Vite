@@ -31,7 +31,7 @@ export default function ArticlesCalorie() {
         const list = data.contenueArticlesCALORIE || data.contenueArticlesCalorie || [];
         setArticles(list);
       })
-      .catch((err) => console.error("Erreur de chargement des articles (calorie):", err));
+      .catch((err) => {});
   }, []);
 
   const resolveImage = (img) => (img ? `./images/${img}` : "");

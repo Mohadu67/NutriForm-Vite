@@ -98,7 +98,7 @@ export default function EchauffementModal({ onStart, onSkip, muscleGroups = [] }
     fetch('/data/warmups.json')
       .then(res => res.json())
       .then(data => setWarmupDatabase(data))
-      .catch(err => console.error('Erreur chargement warmups:', err));
+      .catch(err => {});
   }, []);
 
   const warmupData = getWarmupData(muscleGroups, warmupDatabase);

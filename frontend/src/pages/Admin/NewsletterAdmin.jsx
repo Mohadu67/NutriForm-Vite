@@ -61,7 +61,6 @@ export default function NewsletterAdmin() {
       setIsAdmin(true);
       setCheckingAuth(false);
     } catch (error) {
-      console.error('Erreur vérification admin:', error);
       navigate('/');
     }
   };
@@ -87,7 +86,6 @@ export default function NewsletterAdmin() {
         setNewsletters(data.newsletters);
       }
     } catch (error) {
-      console.error("Erreur fetch newsletters:", error);
     } finally {
       setLoading(false);
     }
@@ -125,7 +123,6 @@ export default function NewsletterAdmin() {
         alert(data.message || "Erreur lors de la sauvegarde");
       }
     } catch (error) {
-      console.error("Erreur:", error);
       alert("Erreur lors de la sauvegarde");
     }
   };
@@ -159,7 +156,6 @@ export default function NewsletterAdmin() {
         alert(data.message);
       }
     } catch (error) {
-      console.error("Erreur:", error);
       alert("Erreur lors de la suppression");
     }
   };

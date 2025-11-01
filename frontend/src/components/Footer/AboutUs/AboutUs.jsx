@@ -36,7 +36,6 @@ export default function AboutUs() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Failed to load about data:", err);
         if (isMounted) {
           setRawData(null);
           setLoading(false);
