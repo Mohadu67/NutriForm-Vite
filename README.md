@@ -62,6 +62,17 @@ Application web complète pour suivre sa progression fitness, calculer ses besoi
 - [x] Enregistrement des sets/reps/poids
 - [x] Suivi des séances terminées
 - [x] Historique dans le dashboard
+- [x] **Système de progression intelligente** :
+  - Détection automatique de l'objectif d'entraînement (Force / Hypertrophie / Endurance)
+  - Suggestions de progression basées sur les 2 dernières séances
+  - Pré-remplissage automatique des champs avec les données de la dernière séance
+  - Badges de records personnels (🔥 +Xkg, +Xreps)
+  - Messages de coaching contextuels selon l'objectif détecté
+  - Messages de motivation en cas de fatigue normale entre séries
+  - Recommandations adaptées :
+    - **Hypertrophie** : pousse jusqu'à 12 reps puis suggère +poids
+    - **Endurance** : suggère toujours plus de reps
+    - **Force** : priorité à l'augmentation de charge (3-5 reps)
 
 ### ✅ Dashboard (`/dashboard`)
 
