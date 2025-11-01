@@ -67,12 +67,14 @@ export default function Navbar() {
       path: "/contact",
       onClick: () => handleScroll("/contact", "contact-form")
     },
-    ...(isLoggedIn ? [{
-      label: 'Dashboard',
-      path: "/dashboard",
-      auth: true,
-      onClick: () => navigate('/dashboard')
-    }] : [])
+    ...(isLoggedIn ? [
+      {
+        label: 'Dashboard',
+        path: "/dashboard",
+        auth: true,
+        onClick: () => navigate('/dashboard')
+      }
+    ] : [])
   ];
 
   const links = path === "/"

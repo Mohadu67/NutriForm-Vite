@@ -15,6 +15,7 @@ import PageOutils from "./pages/OutilsCalcul/PageOutils.jsx";
 import NewsletterAdmin from "./pages/Admin/NewsletterAdmin.jsx";
 import AdminPage from "./pages/Admin/AdminPage.jsx";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
+import Leaderboard from "./pages/Leaderboard/Leaderboard.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
@@ -44,6 +45,7 @@ export default function App() {
       <Route path="/calories" element={<Navigate to="/calorie" replace />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/leaderboard" element={<Leaderboard />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/cookies" element={<CookiesPolicy />} />
