@@ -37,9 +37,6 @@ export default function ResetPassword() {
         body: JSON.stringify({ token, password: cleanPwd }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        console.error('[reset-password] status', res.status, data);
-      }
       const elapsed = Date.now() - start;
       const MIN_DELAY = 6000; 
       if (elapsed < MIN_DELAY) {

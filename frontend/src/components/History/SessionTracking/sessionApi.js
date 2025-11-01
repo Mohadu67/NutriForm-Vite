@@ -240,6 +240,59 @@ function getLastSession() {
   });
 }
 
+function normalizeString(str) {
+  return String(str || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Supprime les accents
+    .replace(/[^a-z0-9]/g, '') // Garde seulement lettres et chiffres
+    .trim();
+}
+
+function getLastExerciseData(exerciseId) {
+  return getSessions({ limit: 30 }).then((res) => {
+    const sessions = Array.isArray(res) ? res : (res?.items || []);
+    const foundSessions = [];
+
+    // Normalise l'ID de recherche
+    const normalizedTargetId = normalizeString(exerciseId);
+
+    for (const session of sessions) {
+      if (!session?.entries) continue;
+
+      const entry = session.entries.find(e => {
+        if (!e) return false;
+
+        // Compare les noms normalisés (l'API utilise 'exerciseName', pas 'exerciseId')
+        const eId = normalizeString(e?.exerciseId || e?.id || '');
+        const eName = normalizeString(e?.exerciseName || e?.name || '');
+
+        return eId === normalizedTargetId || eName === normalizedTargetId;
+      });
+
+      if (entry && entry.sets && entry.sets.length > 0) {
+        foundSessions.push({
+          lastSet: entry.sets[entry.sets.length - 1],
+          allSets: entry.sets,
+          type: entry.type,
+          sessionDate: session.startedAt || session.createdAt
+        });
+
+        if (foundSessions.length >= 2) break;
+      }
+    }
+
+    if (foundSessions.length === 0) {
+      return null;
+    }
+
+    return {
+      last: foundSessions[0],
+      previous: foundSessions[1] || null
+    };
+  }).catch(() => null);
+}
+
 export {
   request,
   fetchHistorySummary,
@@ -252,4 +305,5 @@ export {
   getDailySummary,
   buildSessionFromEntry,
   getLastSession,
+  getLastExerciseData,
 };

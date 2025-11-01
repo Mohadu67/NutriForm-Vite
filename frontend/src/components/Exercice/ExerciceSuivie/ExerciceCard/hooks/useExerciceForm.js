@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getLastExerciseData } from "../../../../History/SessionTracking/sessionApi.js";
+import { calculateProgression } from "../helpers/progressionHelper.js";
 
 export function isSimpleCardioExo(exo) {
   const name = String(exo?.name ?? "").toLowerCase();
@@ -144,6 +146,26 @@ export default function useExerciceForm(exo, value, onChange) {
     () => String(exo?.id ?? exo?._id ?? exo?.slug ?? exo?.name ?? ""),
     [exo]
   );
+
+  // Utilise le nom de l'exercice pour matcher avec l'API (qui stocke 'exerciseName')
+  const exoName = useMemo(
+    () => String(exo?.name ?? exo?.title ?? ""),
+    [exo]
+  );
+
+  const [lastExerciseData, setLastExerciseData] = useState(null);
+
+  useEffect(() => {
+    // Cherche d'abord par nom (priorité), puis par ID en fallback
+    const searchKey = exoName || exoId;
+    if (searchKey) {
+      getLastExerciseData(searchKey).then(data => {
+        if (data) {
+          setLastExerciseData(data);
+        }
+      });
+    }
+  }, [exoId, exoName]);
 
   const availableModes = useMemo(() => detectAvailableModes(exo), [exo, exoId]);
 
@@ -291,10 +313,18 @@ export default function useExerciceForm(exo, value, onChange) {
       };
     }
     if (mode === "pdc") {
-      return { sets: base.sets || [{ reps: "", restSec: "" }], notes: base.notes || "" };
+      // Ne créer aucune série par défaut, laisser l'utilisateur cliquer sur "Ajouter"
+      return {
+        sets: (Array.isArray(base.sets) && base.sets.length > 0) ? base.sets : [],
+        notes: base.notes || ""
+      };
     }
-    return { sets: base.sets || [{ weight: "", reps: "", restSec: "" }], notes: base.notes || "" };
-  }, [value, mode]);
+    // Muscu : Ne créer aucune série par défaut
+    return {
+      sets: (Array.isArray(base.sets) && base.sets.length > 0) ? base.sets : [],
+      notes: base.notes || ""
+    };
+  }, [value, mode, lastExerciseData]);
 
   const [data, setData] = useState(initial);
   useEffect(() => {
@@ -314,14 +344,14 @@ export default function useExerciceForm(exo, value, onChange) {
   useEffect(() => {
     if (isCardio) return;
     if (!Array.isArray(data.sets)) {
-      setData((prev) => ({ ...prev, sets: [isPdc ? { reps: "", restSec: "" } : { weight: "", reps: "", restSec: "" }] }));
+      setData((prev) => ({ ...prev, sets: [] }));
     }
   }, [isCardio, isPdc]);
 
   useEffect(() => {
     if (!isCardio) return;
     if (!Array.isArray(data.cardioSets)) {
-      setData((prev) => ({ ...prev, cardioSets: [{ durationMin: "", durationSec: "", intensity: "" }] }));
+      setData((prev) => ({ ...prev, cardioSets: [] }));
     }
   }, [isCardio]);
 
@@ -370,8 +400,25 @@ export default function useExerciceForm(exo, value, onChange) {
   }
 
   function addSet() {
-    const tpl = isPdc ? { reps: "", restSec: "" } : { weight: "", reps: "", restSec: "" };
-    emit({ ...data, sets: [...(data.sets || []), tpl] });
+    let tpl;
+
+    const currentSets = data.sets || [];
+
+    if (currentSets.length > 0) {
+      const lastCurrentSet = currentSets[currentSets.length - 1];
+      tpl = isPdc
+        ? { reps: lastCurrentSet.reps || "", restSec: lastCurrentSet.restSec || "" }
+        : { weight: lastCurrentSet.weight || "", reps: lastCurrentSet.reps || "", restSec: lastCurrentSet.restSec || "" };
+    } else if (lastExerciseData?.last) {
+      const lastSet = lastExerciseData.last.lastSet;
+      tpl = isPdc
+        ? { reps: lastSet.reps || "", restSec: "" }
+        : { weight: lastSet.weightKg || "", reps: lastSet.reps || "", restSec: "" };
+    } else {
+      tpl = isPdc ? { reps: "", restSec: "" } : { weight: "", reps: "", restSec: "" };
+    }
+
+    emit({ ...data, sets: [...currentSets, tpl] });
   }
 
   function removeSet(index) {
@@ -387,8 +434,32 @@ export default function useExerciceForm(exo, value, onChange) {
   }
 
   function addCardioSet() {
-    const tpl = { durationMin: "", durationSec: "", intensity: "" };
-    emit({ ...data, cardioSets: [...(data.cardioSets || []), tpl] });
+    let tpl;
+
+    const currentCardioSets = data.cardioSets || [];
+
+    if (currentCardioSets.length > 0) {
+      const lastCurrentSet = currentCardioSets[currentCardioSets.length - 1];
+      tpl = {
+        durationMin: lastCurrentSet.durationMin || "",
+        durationSec: lastCurrentSet.durationSec || "",
+        intensity: lastCurrentSet.intensity || ""
+      };
+    } else if (lastExerciseData && lastExerciseData.type === 'cardio') {
+      const lastSet = lastExerciseData.lastSet;
+      const durationSec = lastSet.durationSec || 0;
+      const durationMin = Math.floor(durationSec / 60);
+      const remainingSec = durationSec % 60;
+      tpl = {
+        durationMin: durationMin || "",
+        durationSec: remainingSec || "",
+        intensity: ""
+      };
+    } else {
+      tpl = { durationMin: "", durationSec: "", intensity: "" };
+    }
+
+    emit({ ...data, cardioSets: [...currentCardioSets, tpl] });
   }
 
   function removeCardioSet(index) {
@@ -467,6 +538,10 @@ export default function useExerciceForm(exo, value, onChange) {
     emit({ ...data, walkRun: nextWalkRun });
   }
 
+  const progression = useMemo(() => {
+    return calculateProgression(lastExerciseData, isPdc);
+  }, [lastExerciseData, isPdc]);
+
   return {
     mode,
     setMode,
@@ -491,5 +566,7 @@ export default function useExerciceForm(exo, value, onChange) {
     patchYoga,
     patchStretch,
     patchWalkRun,
+    lastExerciseData,
+    progression,
   };
 }

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { toast } from 'sonner';
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
@@ -113,9 +113,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: emailNorm, captchaToken: newsletterCaptchaToken })
           });
-          
         } catch (newsletterErr) {
-          console.warn("Newsletter subscription failed:", newsletterErr);
         }
       }
 

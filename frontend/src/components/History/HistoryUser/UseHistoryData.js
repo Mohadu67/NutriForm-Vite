@@ -41,8 +41,6 @@ export default function useHistoryData() {
         }
       })
       .catch((err) => {
-        console.error('[UseHistoryData] Auth error:', err);
-
         const errorMsg = err?.message || '';
         if (errorMsg === 'Not authenticated') {
           setError("Non connecté. Connecte-toi pour voir tes données.");
