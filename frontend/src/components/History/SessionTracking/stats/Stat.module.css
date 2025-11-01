@@ -421,8 +421,7 @@
 
 @media (max-width: 540px) {
   .header {
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
   }
 
@@ -431,7 +430,7 @@
   }
 
   .metricGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
   .splits {
