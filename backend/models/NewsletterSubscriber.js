@@ -34,8 +34,6 @@ const newsletterSubscriberSchema = new mongoose.Schema(
   }
 );
 
-
-newsletterSubscriberSchema.index({ email: 1 });
 newsletterSubscriberSchema.index({ subscribedAt: -1 });
 
 module.exports = mongoose.model('NewsletterSubscriber', newsletterSubscriberSchema);
