@@ -410,7 +410,6 @@ export default function FormExo({ user }) {
               try {
                 window.dispatchEvent(new CustomEvent('dynami:selected:replace', { detail: { items: merged } }));
               } catch (e) {
-                console.error('FormExo - Error dispatching event:', e);
               }
             }, 100);
           }}

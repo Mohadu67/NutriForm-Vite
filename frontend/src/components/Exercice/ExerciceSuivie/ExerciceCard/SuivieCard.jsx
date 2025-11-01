@@ -68,6 +68,8 @@ export default function SuivieCard({ exo, value, onChange }) {
     patchYoga,
     patchStretch,
     patchWalkRun,
+    lastExerciseData,
+    progression,
   } = useExerciceForm(exo, value, onChange);
 
 
@@ -244,6 +246,8 @@ export default function SuivieCard({ exo, value, onChange }) {
                   onAdd={addSet}
                   onRemove={removeSet}
                   onPatch={patchSet}
+                  progression={progression}
+                  lastExerciseData={lastExerciseData}
                 />
               ) : (
                 <MuscuForm
@@ -251,6 +255,8 @@ export default function SuivieCard({ exo, value, onChange }) {
                   onAdd={addSet}
                   onRemove={removeSet}
                   onPatch={patchSet}
+                  progression={progression}
+                  lastExerciseData={lastExerciseData}
                 />
               )}
 
