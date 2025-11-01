@@ -672,3 +672,195 @@
     font-size: 15px;
   }
 }
+
+/* ==================== PROGRESSION & BADGES ==================== */
+
+.progressionHint {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.1) 0%, rgba(247, 177, 134, 0.05) 100%);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.progressionIcon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.progressionContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.progressionMessage {
+  margin: 0;
+  color: var(--suivie-ink);
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.applySuggestionBtn {
+  align-self: flex-start;
+  padding: 8px 14px;
+  background: var(--suivie-accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(247, 177, 134, 0.2);
+}
+
+.applySuggestionBtn:hover {
+  background: var(--suivie-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+}
+
+.applySuggestionBtn:active {
+  transform: translateY(0);
+}
+
+.serieHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.recordBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+  color: white;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(255, 107, 53, 0.5);
+  }
+}
+
+.diffBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  background: var(--suivie-surface);
+  border: 1px solid var(--suivie-border-strong);
+  color: var(--suivie-muted);
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+:global(html.dark) .diffBadge,
+:global(body.dark) .diffBadge {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .diffBadge {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* ==================== REPS CHALLENGE HINT ==================== */
+
+.repsChallengeHint {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(66, 153, 225, 0.1) 0%, rgba(72, 187, 120, 0.1) 100%);
+  border-left: 3px solid #4299e1;
+  border-radius: 6px;
+  animation: slide-in-fade 0.3s ease-out;
+}
+
+@keyframes slide-in-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.repsChallengeText {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--suivie-ink);
+  line-height: 1.4;
+}
+
+:global(html.dark) .repsChallengeHint,
+:global(body.dark) .repsChallengeHint {
+  background: linear-gradient(135deg, rgba(66, 153, 225, 0.15) 0%, rgba(72, 187, 120, 0.15) 100%);
+  border-left-color: #63b3ed;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .repsChallengeHint {
+    background: linear-gradient(135deg, rgba(66, 153, 225, 0.15) 0%, rgba(72, 187, 120, 0.15) 100%);
+    border-left-color: #63b3ed;
+  }
+}
+
+/* ==================== FATIGUE HINT (rassurant) ==================== */
+
+.fatigueHint {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(168, 162, 255, 0.1) 0%, rgba(209, 196, 233, 0.08) 100%);
+  border-left: 3px solid #9F7AEA;
+  border-radius: 6px;
+  animation: gentle-fade-in 0.4s ease-out;
+}
+
+@keyframes gentle-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+:global(html.dark) .fatigueHint,
+:global(body.dark) .fatigueHint {
+  background: linear-gradient(135deg, rgba(168, 162, 255, 0.12) 0%, rgba(209, 196, 233, 0.1) 100%);
+  border-left-color: #B794F4;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .fatigueHint {
+    background: linear-gradient(135deg, rgba(168, 162, 255, 0.12) 0%, rgba(209, 196, 233, 0.1) 100%);
+    border-left-color: #B794F4;
+  }
+}

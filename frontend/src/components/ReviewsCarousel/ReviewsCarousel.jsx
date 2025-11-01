@@ -16,7 +16,6 @@ export default function ReviewsCarousel() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Erreur chargement avis:", err);
         setLoading(false);
       });
   }, []);
