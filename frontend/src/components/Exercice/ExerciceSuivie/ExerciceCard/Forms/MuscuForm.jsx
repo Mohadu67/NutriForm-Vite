@@ -1,7 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from "../SuivieCard.module.css";
+import { isNewRecord, calculateDifference, suggestRepsChallenge } from "../helpers/progressionHelper.js";
 
-export default function MuscuForm({ sets = [], onAdd, onRemove, onPatch }) {
+export default function MuscuForm({ sets = [], onAdd, onRemove, onPatch, progression, lastExerciseData }) {
+  const [appliedSuggestion, setAppliedSuggestion] = useState(false);
+
+  // Vérifie si on a des séries remplies (avec poids ET reps)
+  const hasFilledSets = sets.some(s => {
+    const weight = Number(s?.weight || 0);
+    const reps = Number(s?.reps || 0);
+    return weight > 0 && reps > 0;
+  });
+
+  const handleApplySuggestion = () => {
+    if (!progression || sets.length > 0) return;
+
+    onPatch && onPatch(0, {
+      weight: progression.weight || "",
+      reps: progression.reps || ""
+    });
+    setAppliedSuggestion(true);
+  };
+
   return (
     <section className={`${styles.focusForm} ${styles.muscuForm}`}>
       <div className={styles.focusFormHeader}>
@@ -9,22 +29,67 @@ export default function MuscuForm({ sets = [], onAdd, onRemove, onPatch }) {
         <p>Enregistre tes séries avec le poids utilisé et le nombre de répétitions.</p>
       </div>
 
-      <div className={styles.seriesList}>
-        {sets.map((s, idx) => (
-          <div key={idx} className={styles.serieCard}>
-            <div className={styles.serieHeader}>
-              <span className={styles.serieNumber}>Série {idx + 1}</span>
+      {progression?.message && !hasFilledSets && (
+        <div className={styles.progressionHint}>
+          <span className={styles.progressionIcon}>💡</span>
+          <div className={styles.progressionContent}>
+            <p className={styles.progressionMessage}>{progression.message}</p>
+            {progression.isProgression && !appliedSuggestion && (
               <button
                 type="button"
-                className={styles.deleteSerieBtn}
-                onClick={() => onRemove && onRemove(idx)}
-                aria-label={`Supprimer la série ${idx + 1}`}
+                className={styles.applySuggestionBtn}
+                onClick={handleApplySuggestion}
               >
-                ×
+                Appliquer: {progression.weight}kg × {progression.reps} reps
               </button>
-            </div>
+            )}
+          </div>
+        </div>
+      )}
 
-            <div className={styles.focusInputsRow}>
+      <div className={styles.seriesList}>
+        {sets.map((s, idx) => {
+          const record = isNewRecord(s, lastExerciseData);
+          const diff = calculateDifference(s, lastExerciseData);
+          const repsChallenge = suggestRepsChallenge(s, lastExerciseData, idx, sets);
+
+          return (
+            <div key={idx} className={styles.serieCard}>
+              <div className={styles.serieHeader}>
+                <div className={styles.serieHeaderLeft}>
+                  <span className={styles.serieNumber}>Série {idx + 1}</span>
+                  {record && (
+                    <span className={styles.recordBadge}>
+                      🔥 {record.type === 'weight' ? `+${record.diff}kg` :
+                          record.type === 'reps' ? `+${record.diff} reps` : 'Record!'}
+                    </span>
+                  )}
+                  {!record && diff?.hasChange && (
+                    <span className={styles.diffBadge}>
+                      {diff.weightDiff > 0 && `+${diff.weightDiff}kg `}
+                      {diff.weightDiff < 0 && `${diff.weightDiff}kg `}
+                      {diff.repsDiff > 0 && `+${diff.repsDiff} reps`}
+                      {diff.repsDiff < 0 && `${diff.repsDiff} reps`}
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className={styles.deleteSerieBtn}
+                  onClick={() => onRemove && onRemove(idx)}
+                  aria-label={`Supprimer la série ${idx + 1}`}
+                >
+                  ×
+                </button>
+              </div>
+
+              {repsChallenge && (
+                <div className={repsChallenge.isFatigueMessage ? styles.fatigueHint : styles.repsChallengeHint}>
+                  <span className={styles.repsChallengeText}>{repsChallenge.message}</span>
+                </div>
+              )}
+
+              <div className={styles.focusInputsRow}>
               <label className={styles.focusField}>
                 <span>💪 Poids</span>
                 <div className={styles.inputWrapper}>
@@ -66,8 +131,9 @@ export default function MuscuForm({ sets = [], onAdd, onRemove, onPatch }) {
                 />
               </label>
             </div>
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
 
       <button type="button" className={styles.addSerieBtn} onClick={onAdd}>
