@@ -7,37 +7,50 @@ import Footer from '../../components/Footer/Footer';
 import styles from './Leaderboard.module.css';
 
 const Leaderboard = () => {
-  const [leaderboard, setLeaderboard] = useState([]);
+  const [leaderboards, setLeaderboards] = useState({
+    all: [],
+    cardio: [],
+    muscu: [],
+    poids_corps: []
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [period, setPeriod] = useState('alltime');
-  const [type, setType] = useState('all');
   const [isOptedIn, setIsOptedIn] = useState(false);
   const [userEntry, setUserEntry] = useState(null);
   const [optInLoading, setOptInLoading] = useState(false);
 
   useEffect(() => {
-    fetchLeaderboard();
+    fetchLeaderboards();
     checkOptInStatus();
-  }, [period, type]);
+  }, [period]);
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboards = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await secureApiCall(
-        `/api/leaderboard?period=${period}&type=${type}&limit=50`,
-        { method: 'GET' }
+      // Fetch all 4 leaderboards in parallel
+      const types = ['all', 'cardio', 'muscu', 'poids_corps'];
+      const promises = types.map(type =>
+        secureApiCall(
+          `/api/leaderboard?period=${period}&type=${type}&limit=3`,
+          { method: 'GET' }
+        ).then(res => res.json())
       );
 
-      const data = await response.json();
+      const results = await Promise.all(promises);
 
-      if (data.success) {
-        setLeaderboard(data.data);
-      } else {
-        setError('Impossible de charger le classement');
-      }
+      const newLeaderboards = {};
+      types.forEach((type, index) => {
+        if (results[index].success) {
+          newLeaderboards[type] = results[index].data;
+        } else {
+          newLeaderboards[type] = [];
+        }
+      });
+
+      setLeaderboards(newLeaderboards);
     } catch (err) {
       console.error('Erreur lors du chargement du leaderboard:', err);
       setError('Erreur lors du chargement du classement');
@@ -70,7 +83,7 @@ const Leaderboard = () => {
       if (data.success) {
         setIsOptedIn(true);
         setUserEntry(data.data);
-        fetchLeaderboard();
+        fetchLeaderboards();
       }
     } catch (err) {
       console.error('Erreur lors de l\'inscription:', err);
@@ -89,7 +102,7 @@ const Leaderboard = () => {
 
       if (data.success) {
         setIsOptedIn(false);
-        fetchLeaderboard();
+        fetchLeaderboards();
       }
     } catch (err) {
       console.error('Erreur lors de la désinscription:', err);
@@ -100,13 +113,18 @@ const Leaderboard = () => {
   };
 
   const getRankIcon = (rank) => {
-    if (rank === 1) return <FaTrophy className="text-warning" size={24} />;
-    if (rank === 2) return <FaMedal className="text-secondary" size={24} />;
-    if (rank === 3) return <FaMedal className="text-danger" size={20} />;
-    return <span className={styles.rankNumber}>#{rank}</span>;
+    if (rank === 1) return <FaTrophy style={{ color: '#FFD700' }} size={32} />;
+    if (rank === 2) return <FaMedal style={{ color: '#C0C0C0' }} size={28} />;
+    if (rank === 3) return <FaMedal style={{ color: '#CD7F32' }} size={24} />;
+    return null;
   };
 
-  const getStatValue = (entry) => {
+  const capitalizeFirstLetter = (name) => {
+    if (!name) return 'Anonyme';
+    return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+  };
+
+  const getStatValue = (entry, type) => {
     if (type === 'muscu') return entry.stats.muscuSessions;
     if (type === 'cardio') return entry.stats.cardioSessions;
     if (type === 'poids_corps') return entry.stats.poidsCorpsSessions;
@@ -117,15 +135,18 @@ const Leaderboard = () => {
     return entry.stats.totalSessions;
   };
 
-  const getStatLabel = () => {
-    if (type === 'muscu') return 'Séances Musculation';
-    if (type === 'cardio') return 'Séances Cardio';
-    if (type === 'poids_corps') return 'Séances Poids du Corps';
+  const getStatLabel = (type) => {
+    if (period === 'week') return 'séances cette semaine';
+    if (period === 'month') return 'séances ce mois-ci';
+    return 'séances totales';
+  };
 
-    if (period === 'week') return 'Cette semaine';
-    if (period === 'month') return 'Ce mois-ci';
-
-    return 'Total';
+  const getPodiumTitle = (type) => {
+    if (type === 'all') return 'Classement Général';
+    if (type === 'cardio') return 'Classement Cardio';
+    if (type === 'muscu') return 'Classement Musculation';
+    if (type === 'poids_corps') return 'Classement Poids du Corps';
+    return '';
   };
 
   return (
@@ -170,78 +191,80 @@ const Leaderboard = () => {
         </div>
       )}
 
-      <div className={styles.filters}>
-        <div className={styles.filterGroup}>
-          <label className={styles.filterLabel}>Période</label>
-          <select
-            className={styles.filterSelect}
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-          >
-            <option value="week">Cette semaine</option>
-            <option value="month">Ce mois-ci</option>
-            <option value="alltime">Depuis toujours</option>
-          </select>
-        </div>
-        <div className={styles.filterGroup}>
-          <label className={styles.filterLabel}>Type d'exercice</label>
-          <select
-            className={styles.filterSelect}
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-          >
-            <option value="all">Tous</option>
-            <option value="muscu">Musculation</option>
-            <option value="cardio">Cardio</option>
-            <option value="poids_corps">Poids du Corps</option>
-          </select>
-        </div>
+      <div className={styles.periodButtons}>
+        <button
+          className={`${styles.periodBtn} ${period === 'week' ? styles.active : ''}`}
+          onClick={() => setPeriod('week')}
+        >
+          Cette semaine
+        </button>
+        <button
+          className={`${styles.periodBtn} ${period === 'month' ? styles.active : ''}`}
+          onClick={() => setPeriod('month')}
+        >
+          Ce mois-ci
+        </button>
+        <button
+          className={`${styles.periodBtn} ${period === 'alltime' ? styles.active : ''}`}
+          onClick={() => setPeriod('alltime')}
+        >
+          Depuis toujours
+        </button>
       </div>
 
       {loading ? (
         <div className={styles.loading}>Chargement...</div>
       ) : error ? (
         <div className={styles.error}>{error}</div>
-      ) : leaderboard.length === 0 ? (
-        <div className={styles.empty}>
-          Aucun utilisateur dans le classement pour le moment.
-        </div>
       ) : (
-        <div className={styles.list}>
-          {leaderboard.map((entry, index) => (
-            <div
-              key={entry._id}
-              className={`${styles.leaderboardCard} ${index < 3 ? styles.top3 : ''}`}
-            >
-              <div className={styles.cardContent}>
-                <div className={styles.rankContainer}>
-                  {getRankIcon(entry.rank)}
-                </div>
-                <div className={styles.userInfo}>
-                  {entry.avatarUrl && (
-                    <img
-                      src={entry.avatarUrl}
-                      alt={entry.displayName}
-                      className={styles.avatar}
-                    />
-                  )}
-                  <div className={styles.userDetails}>
-                    <div className={styles.userName}>{entry.displayName}</div>
-                    {entry.stats.currentStreak > 0 && (
-                      <div className={styles.userStreak}>
-                        <FaFire style={{ color: '#E63946' }} />
-                        {entry.stats.currentStreak} jours
+        <div className={styles.podiumsContainer}>
+          {['all', 'cardio', 'muscu', 'poids_corps'].map(type => {
+            const podiumData = leaderboards[type] || [];
+            if (podiumData.length === 0) return null;
+
+            return (
+              <div key={type} className={styles.podiumSection}>
+                <h2 className={styles.podiumTitle}>
+                  <FaTrophy size={20} />
+                  {getPodiumTitle(type)}
+                </h2>
+                <div className={styles.podium}>
+                  {podiumData.map((entry) => (
+                    <div
+                      key={entry._id}
+                      className={`${styles.podiumCard} ${styles[`rank${entry.rank}`]}`}
+                    >
+                      <div className={styles.rankIconContainer}>
+                        {getRankIcon(entry.rank)}
                       </div>
-                    )}
-                  </div>
-                </div>
-                <div className={styles.statsContainer}>
-                  <div className={styles.statValue}>{getStatValue(entry)}</div>
-                  <div className={styles.statLabel}>{getStatLabel()}</div>
+                      {entry.avatarUrl && (
+                        <img
+                          src={entry.avatarUrl}
+                          alt={entry.displayName}
+                          className={styles.podiumAvatar}
+                        />
+                      )}
+                      <div className={styles.podiumName}>
+                        {capitalizeFirstLetter(entry.displayName)}
+                      </div>
+                      {entry.stats.currentStreak > 0 && (
+                        <div className={styles.podiumStreak}>
+                          <FaFire style={{ color: '#E63946' }} size={14} />
+                          {entry.stats.currentStreak}j
+                        </div>
+                      )}
+                      <div className={styles.podiumStatValue}>
+                        {getStatValue(entry, type)}
+                      </div>
+                      <div className={styles.podiumStatLabel}>
+                        {getStatLabel(type)}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
       </div>
