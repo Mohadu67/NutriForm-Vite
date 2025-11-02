@@ -117,8 +117,11 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   const allowedEquipIds = useMemo(() => {
     if (!typeId) return EQUIP_CARDS.map((c) => c.id);
-    if (["natation", "meditation", "yoga"].includes(typeId)) return ["poids-du-corps"];
+    if (["natation", "yoga"].includes(typeId)) return ["poids-du-corps"];
+    if (typeId === "hiit") return ["poids-du-corps", "halteres", "kettlebell", "disques", "elastiques", "step"];
     if (typeId === "etirement") return ["poids-du-corps"];
+    // Pour muscu, cardio et autres: tout sauf les équipements spécifiques au HIIT
+    if (["muscu", "cardio"].includes(typeId)) return ["poids-du-corps", "halteres", "barre", "machine", "kettlebell", "poulie"];
     return EQUIP_CARDS.map((c) => c.id);
   }, [typeId]);
 
@@ -147,27 +150,24 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
     setEquipIds((prev) => prev.filter((id) => allowedEquipIds.includes(id)));
   }, [allowedEquipIds]);
 
-  
+
   useEffect(() => {
     if (!typeId) return;
 
-    
+
     if (typeId === "natation") {
       setEquipIds(["poids-du-corps"]);
       setMuscleIds(MUSCLE_CARDS.map(c => c.id));
     }
 
-    
+
     if (typeId === "yoga") {
       setEquipIds(["poids-du-corps"]);
       setMuscleIds(MUSCLE_CARDS.map(c => c.id));
     }
 
-    
-    if (typeId === "meditation") {
-      setEquipIds(["poids-du-corps"]);
-      setMuscleIds([]);
-    }
+    // Pour HIIT, on ne pré-remplit pas les équipements
+    // L'utilisateur doit choisir
   }, [typeId]);
 
   const handleResultsChange = useCallback((next) => {
@@ -213,8 +213,18 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   function onNext() {
     if (step < 3) {
-      
-      if (step === 0 && (typeId === "natation" || typeId === "yoga" || typeId === "meditation")) {
+
+      if (step === 1 && typeId === "hiit") {
+        // Après la sélection d'équipement, rediriger vers les programmes HIIT
+        // Stocker les équipements sélectionnés pour filtrage futur
+        try {
+          localStorage.setItem("hiitEquipment", JSON.stringify(equipIds));
+        } catch {}
+        window.location.href = '/hiit';
+        return;
+      }
+
+      if (step === 0 && (typeId === "natation" || typeId === "yoga")) {
         setStep(3);
       } else {
         setStep(step + 1);
@@ -232,8 +242,8 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   function onPrev() {
     if (step > 0) {
-      
-      if (step === 3 && (typeId === "natation" || typeId === "yoga" || typeId === "meditation")) {
+
+      if (step === 3 && (typeId === "natation" || typeId === "yoga" || typeId === "hiit")) {
         setStep(0);
       } else {
         setStep(step - 1);

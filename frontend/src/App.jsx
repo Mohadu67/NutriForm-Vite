@@ -16,6 +16,9 @@ import NewsletterAdmin from "./pages/Admin/NewsletterAdmin.jsx";
 import AdminPage from "./pages/Admin/AdminPage.jsx";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import Leaderboard from "./pages/Leaderboard/Leaderboard.jsx";
+import HIITProgramList from "./pages/HIIT/HIITProgramList.jsx";
+import HIITProgramPreview from "./pages/HIIT/HIITProgramPreview.jsx";
+import HIITWorkout from "./pages/HIIT/HIITWorkout.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
@@ -46,6 +49,9 @@ export default function App() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
+      <Route path="/hiit" element={<HIITProgramList />} />
+      <Route path="/hiit/program/:programId" element={<HIITProgramPreview />} />
+      <Route path="/hiit/workout/:programId" element={<HIITWorkout />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/cookies" element={<CookiesPolicy />} />
