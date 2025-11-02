@@ -27,6 +27,7 @@ const newsletterAdminRoutes = require('./routes/newsletter-admin.route.js');
 const reviewsRoutes = require('./routes/reviews.js');
 const uploadRoutes = require('./routes/upload.js');
 const leaderboardRoutes = require('./routes/leaderboard.route.js');
+const hiitRoutes = require('./routes/hiit.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 
@@ -38,7 +39,6 @@ if (!config.mongoUri) {
 
 mongoose
   .connect(config.mongoUri, {
-    dbName: 'nutriform',
     authSource: 'admin',
   })
   .then(() => console.info('🟢 Connecté à MongoDB'))
@@ -99,6 +99,7 @@ app.use('/api/newsletter-admin', newsletterAdminRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/hiit', hiitRoutes);
 
 app.get('/', (req, res) => {
   res.send('Bienvenue sur le backend de NutriForm 🚀');

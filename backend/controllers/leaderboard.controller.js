@@ -1,6 +1,7 @@
 const LeaderboardEntry = require('../models/LeaderboardEntry');
 const WorkoutSession = require('../models/WorkoutSession');
 const User = require('../models/User');
+const { buildBaseUrl } = require('../utils/urls');
 
 /**
  * Obtenir le classement global
@@ -128,8 +129,9 @@ exports.optIn = async (req, res) => {
     const stats = await calculateUserStats(userId);
 
     // Construire l'URL complète de l'avatar si existe
+    const baseUrl = buildBaseUrl(req);
     const avatarUrl = user.photo
-      ? `${process.env.BACKEND_BASE_URL || 'http://localhost:3000'}${user.photo}`
+      ? `${baseUrl}${user.photo}`
       : null;
 
     // Créer ou mettre à jour l'entrée leaderboard
