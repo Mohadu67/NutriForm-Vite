@@ -25,42 +25,36 @@
   font-size: 0.95rem;
 }
 
-.filters {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.filterGroup {
+.periodButtons {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
 }
 
-.filterLabel {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.filterSelect {
-  padding: 0.6rem;
-  border-radius: 8px;
-  border: 1px solid var(--line);
+.periodBtn {
+  padding: 0.7rem 1.5rem;
+  border-radius: 25px;
+  border: 2px solid var(--line);
   background: var(--paper);
   color: var(--ink);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: all 0.3s ease;
 }
 
-.filterSelect:focus {
-  outline: none;
+.periodBtn:hover {
+  transform: translateY(-2px);
   border-color: var(--couleur-bouton-action);
+}
+
+.periodBtn.active {
+  background: var(--couleur-bouton-action);
+  color: white;
+  border-color: var(--couleur-bouton-action);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
 }
 
 .optInBanner {
@@ -100,100 +94,116 @@
   cursor: not-allowed;
 }
 
-.list {
+.podiumsContainer {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 3rem;
 }
 
-.leaderboardCard {
+.podiumSection {
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 1rem;
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
-}
-
-.leaderboardCard:hover {
-  transform: translateY(-2px);
+  border-radius: 16px;
+  padding: 2rem;
   box-shadow: var(--shadow-sm);
 }
 
-.leaderboardCard.top3 {
-  border-left: 4px solid var(--couleur-bouton-action);
-  background: linear-gradient(to right, rgba(247, 177, 134, 0.05), transparent);
-}
-
-.cardContent {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 1rem;
-  align-items: center;
-}
-
-.rankContainer {
+.podiumTitle {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1.5rem;
+  color: var(--ink);
+  margin-bottom: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 40px;
+  gap: 0.5rem;
 }
 
-.rankNumber {
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--ink);
+.podium {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
 }
 
-.userInfo {
+.podiumCard {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.05), rgba(181, 234, 215, 0.05));
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 0.75rem;
 }
 
-.avatar {
-  width: 45px;
-  height: 45px;
+.podiumCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.podiumCard.rank1 {
+  border-color: #FFD700;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+}
+
+.podiumCard.rank2 {
+  border-color: #C0C0C0;
+  background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), rgba(192, 192, 192, 0.05));
+  box-shadow: 0 4px 15px rgba(192, 192, 192, 0.2);
+}
+
+.podiumCard.rank3 {
+  border-color: #CD7F32;
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.1), rgba(205, 127, 50, 0.05));
+  box-shadow: 0 4px 15px rgba(205, 127, 50, 0.2);
+}
+
+.rankIconContainer {
+  margin-bottom: 0.5rem;
+}
+
+.podiumAvatar {
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--line);
+  border: 3px solid var(--couleur-bouton-action);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-.userDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.userName {
-  font-weight: 600;
+.podiumName {
+  font-weight: 700;
+  font-size: 1.1rem;
   color: var(--ink);
-  font-size: 1rem;
+  margin-top: 0.5rem;
 }
 
-.userStreak {
+.podiumStreak {
   font-size: 0.85rem;
   color: var(--muted);
   display: flex;
   align-items: center;
   gap: 0.3rem;
+  background: rgba(230, 57, 70, 0.1);
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
 }
 
-.statsContainer {
-  text-align: right;
-}
-
-.statValue {
-  font-size: 1.5rem;
-  font-weight: 700;
+.podiumStatValue {
+  font-size: 2rem;
+  font-weight: 800;
   color: var(--couleur-bouton-action);
   line-height: 1;
+  margin-top: 0.5rem;
 }
 
-.statLabel {
-  font-size: 0.8rem;
+.podiumStatLabel {
+  font-size: 0.75rem;
   color: var(--muted);
-  margin-top: 0.2rem;
+  text-transform: lowercase;
 }
 
 .loading {
@@ -223,27 +233,34 @@
     font-size: 1.5rem;
   }
 
-  .filters {
+  .periodButtons {
+    gap: 0.5rem;
+  }
+
+  .periodBtn {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .podium {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
-  .cardContent {
-    grid-template-columns: auto 1fr;
-    gap: 0.75rem;
+  .podiumSection {
+    padding: 1.5rem;
   }
 
-  .statsContainer {
-    grid-column: 2;
-    text-align: left;
-    margin-top: 0.5rem;
-  }
-
-  .statValue {
+  .podiumTitle {
     font-size: 1.2rem;
   }
 
-  .avatar {
-    width: 40px;
-    height: 40px;
+  .podiumAvatar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .podiumStatValue {
+    font-size: 1.5rem;
   }
 }
