@@ -41,6 +41,7 @@ export default function FormExo({ user: userProp }) {
   const [showRepeatModal, setShowRepeatModal] = useState(false);
   const [lastWeekSession, setLastWeekSession] = useState(null);
   const [hasCheckedLastWeek, setHasCheckedLastWeek] = useState(false);
+  const [dynamiKey, setDynamiKey] = useState(0);
   useEffect(() => { try { localStorage.setItem("formSessionName", JSON.stringify(sessionName)); } catch {} }, [sessionName]);
   useEffect(() => { try { localStorage.setItem("formCurrentStep", String(currentStep)); } catch {} }, [currentStep]);
   useEffect(() => { try { localStorage.setItem("formMode", mode); } catch {} }, [mode]);
@@ -316,6 +317,7 @@ export default function FormExo({ user: userProp }) {
       setCurrentStep(3);
       setShowRepeatModal(false);
       setSessionName(lastWeekSession.name || "");
+      setDynamiKey(prev => prev + 1); // Force le remontage de DynamiChoice
 
       try {
         localStorage.setItem("formSelectedExercises", JSON.stringify(exercises));
@@ -362,6 +364,7 @@ export default function FormExo({ user: userProp }) {
       setCurrentStep(3);
       setShowRepeatModal(false);
       setSessionName(lastWeekSession.name || "");
+      setDynamiKey(prev => prev + 1); // Force le remontage de DynamiChoice
 
       try {
         localStorage.setItem("formSelectedExercises", JSON.stringify(exercises));
@@ -414,6 +417,7 @@ export default function FormExo({ user: userProp }) {
           <Progress steps={steps} currentStep={currentStep} onStepChange={setCurrentStep} />
 
           <DynamiChoice
+            key={dynamiKey}
             requestedStep={currentStep}
             onStepChange={setCurrentStep}
             onResultsChange={(arr) => {
