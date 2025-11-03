@@ -224,75 +224,70 @@ export default function FormExo({ user: userProp }) {
       // Charger tous les exercices disponibles depuis les JSONs
       const allExercises = await loadExercises('all');
 
-      // Fonction pour normaliser un nom d'exercice
-      const normalizeName = (name) => {
-        return (name || '')
-          .toLowerCase()
-          .trim()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "") // Enlever accents
-          .replace(/[^\w\s]/g, '') // Enlever ponctuation
-          .replace(/\s+/g, ' '); // Normaliser espaces
-      };
-
-      // Créer plusieurs maps pour différentes stratégies de matching
-      const byNormalizedName = new Map();
-      const bySlug = new Map();
-
+      // Créer une map par ID pour matching rapide
+      const byId = new Map();
       allExercises.forEach(ex => {
-        // Map par nom normalisé
-        const normalizedName = normalizeName(ex.name || ex.title);
-        if (normalizedName) {
-          byNormalizedName.set(normalizedName, ex);
-        }
-
-        // Map par slug
-        if (ex.slug) {
-          bySlug.set(ex.slug.toLowerCase(), ex);
+        if (ex.id) {
+          byId.set(ex.id, ex);
         }
       });
 
-      console.log('📋 Exercices de la séance passée:', lastWeekSession.entries.map(e => e.exerciseName));
+      console.log('📋 Exercices de la séance passée:', lastWeekSession.entries.map(e => ({
+        name: e.exerciseName,
+        id: e.exerciseId
+      })));
 
       // Convertir les entries en exercices complets depuis le JSON
       const exercises = lastWeekSession.entries.map((entry, index) => {
-        const entryName = entry.exerciseName || '';
-        const normalizedEntryName = normalizeName(entryName);
+        let matchedExercise = null;
 
-        // Stratégie 1 : Match par slug (si la BDD stocke le slug)
-        let matchedExercise = entry.slug ? bySlug.get(entry.slug.toLowerCase()) : null;
-
-        // Stratégie 2 : Match par nom normalisé
-        if (!matchedExercise) {
-          matchedExercise = byNormalizedName.get(normalizedEntryName);
+        // Stratégie 1 : Match par ID (le plus fiable)
+        if (entry.exerciseId) {
+          matchedExercise = byId.get(entry.exerciseId);
+          if (matchedExercise) {
+            console.log(`✅ Match par ID pour "${entry.exerciseName}" (${entry.exerciseId}):`, matchedExercise.name);
+          }
         }
 
-        // Stratégie 3 : Recherche floue (si le nom contient ou est contenu)
+        // Stratégie 2 : Fallback sur nom exact (insensible à la casse)
         if (!matchedExercise) {
+          const entryNameLower = (entry.exerciseName || '').toLowerCase().trim();
+          matchedExercise = allExercises.find(ex =>
+            (ex.name || '').toLowerCase().trim() === entryNameLower
+          );
+          if (matchedExercise) {
+            console.log(`✅ Match par nom exact pour "${entry.exerciseName}":`, matchedExercise.name);
+          }
+        }
+
+        // Stratégie 3 : Recherche floue
+        if (!matchedExercise) {
+          const entryNameLower = (entry.exerciseName || '').toLowerCase().trim();
           matchedExercise = allExercises.find(ex => {
-            const exName = normalizeName(ex.name || ex.title);
-            return exName.includes(normalizedEntryName) || normalizedEntryName.includes(exName);
+            const exNameLower = (ex.name || '').toLowerCase().trim();
+            return exNameLower.includes(entryNameLower) || entryNameLower.includes(exNameLower);
           });
+          if (matchedExercise) {
+            console.log(`⚠️ Match floue pour "${entry.exerciseName}":`, matchedExercise.name);
+          }
         }
 
         if (matchedExercise) {
-          console.log(`✅ Match trouvé pour "${entryName}":`, matchedExercise.name);
           // Retourner l'exercice complet du JSON
           return {
             ...matchedExercise,
             order: entry.order ?? index,
           };
         } else {
-          console.warn(`❌ Aucun match trouvé pour: "${entryName}"`);
-          // Fallback : utiliser un exercice minimal (pas idéal)
+          console.warn(`❌ Aucun match trouvé pour: "${entry.exerciseName}" (ID: ${entry.exerciseId || 'N/A'})`);
+          // Fallback : utiliser un exercice minimal
           return {
-            id: entry._id || `repeat-${index}`,
+            id: entry.exerciseId || `repeat-${index}`,
             name: entry.exerciseName || "Exercice",
             type: entry.type || "muscu",
             muscleGroup: entry.muscleGroup,
             muscles: entry.muscles || [],
             order: entry.order ?? index,
-            // Marquer comme incomplet
             _incomplete: true,
           };
         }
