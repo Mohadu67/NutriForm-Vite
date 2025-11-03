@@ -76,6 +76,51 @@
   font-size: 0.95rem;
 }
 
+.showProposedBtn {
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.showProposedBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.showProposedBtn:active {
+  transform: translateY(0);
+}
+
+.hideProposedBtn {
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.hideProposedBtn:hover {
+  background: #e5e7eb;
+  color: #4b5563;
+}
+
+.hideProposedBtn:active {
+  transform: scale(0.98);
+}
+
 
 @media (min-width: 640px) {
   .container { gap: 16px; padding: 12px; margin: 10px auto; }
