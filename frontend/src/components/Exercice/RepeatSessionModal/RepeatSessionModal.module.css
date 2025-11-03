@@ -24,11 +24,11 @@
 }
 
 .modal {
-  background: white;
+  background: var(--paper);
   border-radius: 16px;
   max-width: 480px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
   animation: slideUp 0.3s ease-out;
   position: relative;
 }
@@ -46,7 +46,7 @@
 
 .header {
   padding: 1.5rem 1.5rem 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -55,7 +55,7 @@
 .title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--ink);
   margin: 0;
 }
 
@@ -63,7 +63,7 @@
   background: none;
   border: none;
   font-size: 2rem;
-  color: #6b7280;
+  color: var(--muted);
   cursor: pointer;
   padding: 0;
   width: 32px;
@@ -76,8 +76,8 @@
 }
 
 .closeBtn:hover {
-  background: #f3f4f6;
-  color: #111827;
+  background: color-mix(in srgb, var(--line) 80%, transparent);
+  color: var(--ink);
 }
 
 .content {
@@ -86,7 +86,7 @@
 
 .message {
   font-size: 1rem;
-  color: #374151;
+  color: var(--ink);
   margin: 0 0 1.25rem;
   line-height: 1.6;
 }
@@ -97,7 +97,8 @@
   flex-wrap: wrap;
   margin-bottom: 1.25rem;
   padding: 1rem;
-  background: #f9fafb;
+  background: color-mix(in srgb, var(--couleur-bouton-selection, #B5EAD7) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--couleur-bouton-selection, #B5EAD7) 30%, transparent);
   border-radius: 12px;
 }
 
@@ -113,24 +114,25 @@
 
 .label {
   font-size: 0.95rem;
-  color: #374151;
+  color: var(--ink);
   font-weight: 500;
 }
 
 .sessionName {
   font-size: 1.05rem;
-  color: #6366f1;
+  color: var(--couleur-bouton-action, #F7B186);
   font-weight: 600;
   margin: 0 0 1.25rem;
   text-align: center;
   padding: 0.75rem;
-  background: #eef2ff;
+  background: color-mix(in srgb, var(--couleur-bouton-action, #F7B186) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--couleur-bouton-action, #F7B186) 25%, transparent);
   border-radius: 8px;
 }
 
 .question {
   font-size: 1.05rem;
-  color: #111827;
+  color: var(--ink);
   font-weight: 600;
   margin: 0;
   text-align: center;
@@ -155,24 +157,26 @@
 }
 
 .declineBtn {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: color-mix(in srgb, var(--paper) 92%, var(--muted) 8%);
+  color: var(--ink);
+  border: 1px solid var(--line);
 }
 
 .declineBtn:hover {
-  background: #e5e7eb;
-  color: #374151;
+  background: color-mix(in srgb, var(--paper) 85%, var(--muted) 15%);
+  transform: translateY(-1px);
 }
 
 .acceptBtn {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: var(--couleur-bouton-action, #F7B186);
   color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--couleur-bouton-action, #F7B186) 35%, transparent);
 }
 
 .acceptBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+  background: color-mix(in oklab, var(--couleur-bouton-action, #F7B186) 85%, #e37935);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--couleur-bouton-action, #F7B186) 45%, transparent);
 }
 
 .acceptBtn:active {
