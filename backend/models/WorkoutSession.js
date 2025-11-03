@@ -24,13 +24,14 @@ const PoidsDuCorpsSetSchema = new Schema({
 }, { _id: false });
 
 const EntrySchema = new Schema({
+  exerciseId: { type: String }, // ID de l'exercice du JSON
   exerciseName: { type: String, required: true },
   type: { type: String, enum: ["muscu", "cardio", "poids_du_corps"], required: true },
   order: { type: Number },
   notes: { type: String },
-  
+
   muscleGroup: { type: String },
-  muscle: { type: String }, 
+  muscle: { type: String },
   muscles: { type: [String], default: [] },
   sets: {
     type: [Schema.Types.Mixed],
