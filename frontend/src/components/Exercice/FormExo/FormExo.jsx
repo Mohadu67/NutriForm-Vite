@@ -11,8 +11,11 @@ import Stat from "../../History/SessionTracking/stats/Stat.jsx";
 import { saveSession } from "../../History/SessionTracking/sessionApi.js";
 import ConseilJour from "./ConseilJour.jsx";
 import { idOf } from "../Shared/idOf.js";
+import RepeatSessionModal from "../RepeatSessionModal/RepeatSessionModal.jsx";
+import { secureApiCall, getCurrentUser } from "../../../utils/authService.js";
 
-export default function FormExo({ user }) {
+export default function FormExo({ user: userProp }) {
+  const user = userProp || getCurrentUser();
   const { t, i18n } = useTranslation();
   const [sessionName, setSessionName] = useState(() => {
     try { return JSON.parse(localStorage.getItem("formSessionName")) || ""; } catch { return ""; }
@@ -34,12 +37,40 @@ export default function FormExo({ user }) {
   const [lastItems, setLastItems] = useState([]);
   const [lastSummary, setLastSummary] = useState(null);
   const [searchCb, setSearchCb] = useState(null);
+  const [showRepeatModal, setShowRepeatModal] = useState(false);
+  const [lastWeekSession, setLastWeekSession] = useState(null);
+  const [hasCheckedLastWeek, setHasCheckedLastWeek] = useState(false);
   useEffect(() => { try { localStorage.setItem("formSessionName", JSON.stringify(sessionName)); } catch {} }, [sessionName]);
   useEffect(() => { try { localStorage.setItem("formCurrentStep", String(currentStep)); } catch {} }, [currentStep]);
   useEffect(() => { try { localStorage.setItem("formMode", mode); } catch {} }, [mode]);
   useEffect(() => { try { localStorage.setItem("formSelectedExercises", JSON.stringify(selectedExercises)); } catch {} }, [selectedExercises]);
   useEffect(() => {
-  }, [user]);
+    const checkLastWeekSession = async () => {
+      if (hasCheckedLastWeek) return;
+      if (!user || !(user.id || user._id)) return;
+      if (mode !== "builder" || currentStep !== 0) return;
+
+      try {
+        const response = await secureApiCall("/api/workouts/last-week-session");
+        if (!response.ok) {
+          setHasCheckedLastWeek(true);
+          return;
+        }
+
+        const data = await response.json();
+        if (data.session && Array.isArray(data.session.entries) && data.session.entries.length > 0) {
+          setLastWeekSession(data.session);
+          setShowRepeatModal(true);
+        }
+        setHasCheckedLastWeek(true);
+      } catch (error) {
+        console.error("Erreur lors de la récupération de la séance:", error);
+        setHasCheckedLastWeek(true);
+      }
+    };
+
+    checkLastWeekSession();
+  }, [user, mode, currentStep, hasCheckedLastWeek]);
 
   const defaultExerciseName = useMemo(() => t("exercise.form.defaultExerciseName"), [t]);
 
@@ -185,8 +216,46 @@ export default function FormExo({ user }) {
     }
   })();
 
+  const handleAcceptRepeat = () => {
+    if (!lastWeekSession || !Array.isArray(lastWeekSession.entries)) return;
+
+    // Convertir les entries de la séance en exercices
+    const exercises = lastWeekSession.entries.map((entry, index) => ({
+      id: entry._id || `repeat-${index}`,
+      name: entry.exerciseName || "Exercice",
+      type: entry.type || "muscu",
+      muscleGroup: entry.muscleGroup,
+      muscles: entry.muscles,
+      order: entry.order ?? index,
+    }));
+
+    setSelectedExercises(exercises);
+    setCurrentStep(3);
+    setShowRepeatModal(false);
+    setSessionName(lastWeekSession.name || "");
+
+    try {
+      localStorage.setItem("formSelectedExercises", JSON.stringify(exercises));
+      localStorage.setItem("dynamiSelected", JSON.stringify(exercises));
+      localStorage.setItem("formSessionName", JSON.stringify(lastWeekSession.name || ""));
+      localStorage.setItem("formCurrentStep", "3");
+    } catch {}
+  };
+
+  const handleDeclineRepeat = () => {
+    setShowRepeatModal(false);
+  };
+
   return (
     <div className={styles.form}>
+      {showRepeatModal && lastWeekSession && (
+        <RepeatSessionModal
+          session={lastWeekSession}
+          onAccept={handleAcceptRepeat}
+          onDecline={handleDeclineRepeat}
+        />
+      )}
+
       {mode === "builder" ? (
         <Salutation className={styles.title} />
       ) : (
