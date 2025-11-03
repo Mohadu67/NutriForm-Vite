@@ -1818,6 +1818,70 @@
       ],
       "images": ["/images/Exo/crunchInverse.gif"],
       "explanation": "Allongé sur le dos, jambes pliées, ramène les genoux vers la poitrine en décollant les hanches du sol. Respiration : expire en montant, inspire en descendant. Points clés : contrôle le mouvement, engage le bas des abdos et évite l'élan."
+    },
+    {
+      "id": "exo-113",
+      "name": "Développé incliné haltères",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "pectoraux"
+      ],
+      "equipment": [
+        "halteres",
+        "banc"
+      ],
+      "images": ["/images/Exo/developpeInclineHaltere.gif"],
+      "explanation": "Allongé sur un banc incliné à 30-45°, haltères au niveau de la poitrine, pousse les haltères vers le haut en suivant une trajectoire légèrement convergente. Respiration : expire en poussant, inspire en descendant. Points clés : garde les épaules en arrière, contrôle la descente et pousse fort dans la montée.",
+      "slug": "developpe-incline-halteres",
+      "primaryMuscle": "pectoraux"
+    },
+    {
+      "id": "exo-114",
+      "name": "Curl biceps machine",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "biceps"
+      ],
+      "equipment": [
+        "machine"
+      ],
+      "images": ["/images/Exo/armCurl.gif"],
+      "explanation": "Assis sur la machine, coudes stabilisés sur le pad, fléchis les avant-bras en contractant les biceps jusqu'à la position haute. Respiration : expire en montant, inspire en descendant. Points clés : garde les coudes immobiles, contrôle la phase excentrique et évite de balancer.",
+      "slug": "curl-biceps-machine",
+      "primaryMuscle": "biceps"
+    },
+    {
+      "id": "exo-115",
+      "name": "Extension triceps machine assis",
+      "type": [
+        "muscu"
+      ],
+      "objectives": [
+        "force",
+        "hypertrophie"
+      ],
+      "muscles": [
+        "triceps"
+      ],
+      "equipment": [
+        "machine"
+      ],
+      "images": ["/images/Exo/seatedTricpePress.gif"],
+      "explanation": "Assis sur la machine, coudes fléchis, pousse les poignées vers le bas en étendant complètement les bras. Respiration : expire en poussant, inspire en revenant. Points clés : garde les coudes près du corps, contrôle le retour et engage bien les triceps.",
+      "slug": "extension-triceps-machine-assis",
+      "primaryMuscle": "triceps"
     }
   ]
 }
