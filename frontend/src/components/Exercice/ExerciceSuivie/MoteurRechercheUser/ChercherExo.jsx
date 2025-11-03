@@ -32,7 +32,16 @@ export default function ChercherExo({
       try {
         setLoading(true);
         const exercises = await loadExercises('all');
-        if (alive) setAll(exercises);
+        // Dédupliquer par ID pour éviter les clés en double dans React
+        const seen = new Map();
+        exercises.forEach(ex => {
+          const key = idOf(ex);
+          if (!seen.has(key)) {
+            seen.set(key, ex);
+          }
+        });
+        const uniqueExercises = Array.from(seen.values());
+        if (alive) setAll(uniqueExercises);
       } catch (e) {
         if (alive) setError(e?.message || "Impossible de charger les exercices");
       } finally {
