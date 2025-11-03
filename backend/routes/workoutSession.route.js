@@ -5,7 +5,8 @@ const {
   getSessionById,
   updateSession,
   deleteSession,
-  getDailySummary
+  getDailySummary,
+  getLastWeekSession
 } = require("../controllers/workoutSession.controller");
 
 const router = express.Router();
@@ -21,5 +22,6 @@ router.patch("/sessions/:id", enrichMuscles, updateSession);
 router.delete("/sessions/:id", deleteSession);
 
 router.get("/summary/daily", getDailySummary);
+router.get("/last-week-session", getLastWeekSession);
 
 module.exports = router;

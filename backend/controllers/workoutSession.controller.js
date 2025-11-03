@@ -500,11 +500,69 @@ async function getDailySummary(req, res) {
   }
 }
 
+/**
+ * Récupère la séance de la semaine passée pour le même jour de la semaine
+ */
+async function getLastWeekSession(req, res) {
+  try {
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(400).json({ error: "userId manquant" });
+    }
+
+    // Obtenir la date d'aujourd'hui
+    const now = new Date();
+
+    // Calculer la date du même jour la semaine dernière
+    const lastWeekDate = new Date(now);
+    lastWeekDate.setDate(lastWeekDate.getDate() - 7);
+
+    // Début et fin de la journée de la semaine dernière
+    const startOfDay = new Date(lastWeekDate);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(lastWeekDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Chercher une séance de ce jour-là
+    const session = await WorkoutSession.findOne({
+      userId: new mongoose.Types.ObjectId(userId),
+      startedAt: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      },
+      status: "finished"
+    })
+    .sort({ startedAt: -1 }) // La plus récente si plusieurs
+    .lean();
+
+    if (!session) {
+      return res.json({ session: null });
+    }
+
+    // Retourner la séance avec les exercices
+    return res.json({
+      session: {
+        _id: session._id,
+        name: session.name,
+        entries: session.entries || [],
+        startedAt: session.startedAt,
+        durationSec: session.durationSec,
+        calories: session.calories
+      }
+    });
+  } catch (err) {
+    console.error("getLastWeekSession error:", err);
+    return res.status(500).json({ error: "server_error" });
+  }
+}
+
 module.exports = {
   createSession,
   getSessions,
   getSessionById,
   updateSession,
   deleteSession,
-  getDailySummary
+  getDailySummary,
+  getLastWeekSession
 };
