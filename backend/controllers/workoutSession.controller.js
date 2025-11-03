@@ -18,6 +18,12 @@ function dayRangeUtc(yyyyMmDd) {
 
 function normalizeEntry(e = {}) {
   const out = { ...e };
+
+  // Préserver l'exerciseId si disponible
+  if (e.id || e.exerciseId) {
+    out.exerciseId = e.id || e.exerciseId;
+  }
+
   const raw = String(out.type || out.exerciseName || '').toLowerCase();
   let t = out.type;
   if (!t) t = raw;
@@ -540,12 +546,19 @@ async function getLastWeekSession(req, res) {
       return res.json({ session: null });
     }
 
-    // Retourner la séance avec les exercices
+    // Retourner la séance avec les exercices (y compris exerciseId si disponible)
     return res.json({
       session: {
         _id: session._id,
         name: session.name,
-        entries: session.entries || [],
+        entries: (session.entries || []).map(entry => ({
+          exerciseId: entry.exerciseId || null,
+          exerciseName: entry.exerciseName,
+          type: entry.type,
+          muscleGroup: entry.muscleGroup,
+          muscles: entry.muscles,
+          order: entry.order
+        })),
         startedAt: session.startedAt,
         durationSec: session.durationSec,
         calories: session.calories
