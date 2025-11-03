@@ -51,6 +51,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
       return false;
     }
   });
+  const [showProposed, setShowProposed] = useState(false);
   const listRef = useRef(null);
 
   const sensors = useSensors(
@@ -366,7 +367,19 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
                 })}
               </SortableContext>
 
-              {proposed.map((exo) => {
+              {ordered.length > 0 && proposed.length > 0 && !showProposed && (
+                <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                  <Button
+                    type="button"
+                    onClick={() => setShowProposed(true)}
+                    className={styles.showProposedBtn}
+                  >
+                    Voir d'autres exercices ({proposed.length})
+                  </Button>
+                </div>
+              )}
+
+              {showProposed && proposed.map((exo) => {
                 const key = idOf(exo);
                 return (
                   <ExerciceCard
@@ -385,6 +398,18 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
                   />
                 );
               })}
+
+              {showProposed && proposed.length > 0 && (
+                <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                  <Button
+                    type="button"
+                    onClick={() => setShowProposed(false)}
+                    className={styles.hideProposedBtn}
+                  >
+                    Masquer les suggestions
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </div>
