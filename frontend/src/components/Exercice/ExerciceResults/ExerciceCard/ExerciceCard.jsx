@@ -151,19 +151,19 @@ export default function ExerciceCard({
               <div className={styles.metaGrid}>
                 <div>
                   <strong >Type</strong>
-                  <div >{(exo.type || []).join(", ") || "—"}</div>
+                  <div >{Array.isArray(exo.type) ? exo.type.join(", ") : (exo.type || "—")}</div>
                 </div>
                 <div>
                   <strong>Objectifs</strong>
-                  <div >{(exo.objectives || []).join(", ") || "—"}</div>
+                  <div >{Array.isArray(exo.objectives) ? exo.objectives.join(", ") : (exo.objectives || "—")}</div>
                 </div>
                 <div>
                   <strong>Muscles</strong>
-                  <div >{(exo.muscles || []).join(", ") || "—"}</div>
+                  <div >{Array.isArray(exo.muscles) ? exo.muscles.join(", ") : (exo.muscles || "—")}</div>
                 </div>
                 <div>
                   <strong>Équipement</strong>
-                  <div >{(exo.equipment || []).join(", ") || "—"}</div>
+                  <div >{Array.isArray(exo.equipment) ? exo.equipment.join(", ") : (exo.equipment || "—")}</div>
                 </div>
               </div>
 
