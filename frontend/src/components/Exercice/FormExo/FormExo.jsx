@@ -293,6 +293,25 @@ export default function FormExo({ user: userProp }) {
         }
       });
 
+      // Extraire les muscles travaillés pour proposer des exercices similaires
+      const musclesSet = new Set();
+      exercises.forEach(ex => {
+        if (Array.isArray(ex.muscles)) {
+          ex.muscles.forEach(m => {
+            const normalized = String(m || '').toLowerCase();
+            // Mapper vers les IDs de MUSCLE_CARDS de DynamiChoice
+            if (normalized.includes('pector')) musclesSet.add('pectoraux');
+            else if (normalized.includes('dos') || normalized.includes('back')) musclesSet.add('dos');
+            else if (normalized.includes('epaule') || normalized.includes('shoulder')) musclesSet.add('epaules');
+            else if (normalized.includes('biceps') || normalized.includes('triceps') || normalized.includes('bras')) musclesSet.add('bras');
+            else if (normalized.includes('jambe') || normalized.includes('quadri') || normalized.includes('fessier') || normalized.includes('mollet')) musclesSet.add('jambes');
+            else if (normalized.includes('abdo') || normalized.includes('core') || normalized.includes('gainage')) musclesSet.add('core');
+          });
+        }
+      });
+      const muscleIds = Array.from(musclesSet);
+      console.log('🎯 Muscles détectés pour propositions:', muscleIds);
+
       setSelectedExercises(exercises);
       setCurrentStep(3);
       setShowRepeatModal(false);
@@ -303,6 +322,12 @@ export default function FormExo({ user: userProp }) {
         localStorage.setItem("dynamiSelected", JSON.stringify(exercises));
         localStorage.setItem("formSessionName", JSON.stringify(lastWeekSession.name || ""));
         localStorage.setItem("formCurrentStep", "3");
+        // Sauvegarder les muscles pour filtrer les exercices proposés
+        if (muscleIds.length > 0) {
+          localStorage.setItem("dynamiMuscle", JSON.stringify(muscleIds));
+          localStorage.setItem("dynamiType", JSON.stringify("muscu"));
+          localStorage.setItem("dynamiStep", "3");
+        }
       } catch {}
     } catch (error) {
       console.error("Erreur lors du chargement des exercices:", error);
@@ -316,6 +341,23 @@ export default function FormExo({ user: userProp }) {
         order: entry.order ?? index,
       }));
 
+      // Extraire les muscles même en cas d'erreur
+      const musclesSet = new Set();
+      exercises.forEach(ex => {
+        if (Array.isArray(ex.muscles)) {
+          ex.muscles.forEach(m => {
+            const normalized = String(m || '').toLowerCase();
+            if (normalized.includes('pector')) musclesSet.add('pectoraux');
+            else if (normalized.includes('dos') || normalized.includes('back')) musclesSet.add('dos');
+            else if (normalized.includes('epaule') || normalized.includes('shoulder')) musclesSet.add('epaules');
+            else if (normalized.includes('biceps') || normalized.includes('triceps') || normalized.includes('bras')) musclesSet.add('bras');
+            else if (normalized.includes('jambe') || normalized.includes('quadri') || normalized.includes('fessier') || normalized.includes('mollet')) musclesSet.add('jambes');
+            else if (normalized.includes('abdo') || normalized.includes('core') || normalized.includes('gainage')) musclesSet.add('core');
+          });
+        }
+      });
+      const muscleIds = Array.from(musclesSet);
+
       setSelectedExercises(exercises);
       setCurrentStep(3);
       setShowRepeatModal(false);
@@ -326,6 +368,11 @@ export default function FormExo({ user: userProp }) {
         localStorage.setItem("dynamiSelected", JSON.stringify(exercises));
         localStorage.setItem("formSessionName", JSON.stringify(lastWeekSession.name || ""));
         localStorage.setItem("formCurrentStep", "3");
+        if (muscleIds.length > 0) {
+          localStorage.setItem("dynamiMuscle", JSON.stringify(muscleIds));
+          localStorage.setItem("dynamiType", JSON.stringify("muscu"));
+          localStorage.setItem("dynamiStep", "3");
+        }
       } catch {}
     }
   };
