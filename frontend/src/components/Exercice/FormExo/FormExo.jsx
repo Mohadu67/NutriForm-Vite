@@ -13,6 +13,7 @@ import ConseilJour from "./ConseilJour.jsx";
 import { idOf } from "../Shared/idOf.js";
 import RepeatSessionModal from "../RepeatSessionModal/RepeatSessionModal.jsx";
 import { secureApiCall, getCurrentUser } from "../../../utils/authService.js";
+import { loadExercises } from "../../../utils/exercisesLoader.js";
 
 export default function FormExo({ user: userProp }) {
   const user = userProp || getCurrentUser();
@@ -216,30 +217,81 @@ export default function FormExo({ user: userProp }) {
     }
   })();
 
-  const handleAcceptRepeat = () => {
+  const handleAcceptRepeat = async () => {
     if (!lastWeekSession || !Array.isArray(lastWeekSession.entries)) return;
 
-    // Convertir les entries de la séance en exercices
-    const exercises = lastWeekSession.entries.map((entry, index) => ({
-      id: entry._id || `repeat-${index}`,
-      name: entry.exerciseName || "Exercice",
-      type: entry.type || "muscu",
-      muscleGroup: entry.muscleGroup,
-      muscles: entry.muscles,
-      order: entry.order ?? index,
-    }));
-
-    setSelectedExercises(exercises);
-    setCurrentStep(3);
-    setShowRepeatModal(false);
-    setSessionName(lastWeekSession.name || "");
-
     try {
-      localStorage.setItem("formSelectedExercises", JSON.stringify(exercises));
-      localStorage.setItem("dynamiSelected", JSON.stringify(exercises));
-      localStorage.setItem("formSessionName", JSON.stringify(lastWeekSession.name || ""));
-      localStorage.setItem("formCurrentStep", "3");
-    } catch {}
+      // Charger tous les exercices disponibles
+      const allExercises = await loadExercises('all');
+
+      // Créer une map pour recherche rapide par nom (insensible à la casse)
+      const exerciseMap = new Map();
+      allExercises.forEach(ex => {
+        const normalizedName = (ex.name || ex.title || '').toLowerCase().trim();
+        if (normalizedName) {
+          exerciseMap.set(normalizedName, ex);
+        }
+      });
+
+      // Convertir les entries en exercices complets
+      const exercises = lastWeekSession.entries.map((entry, index) => {
+        const entryName = (entry.exerciseName || '').toLowerCase().trim();
+        const matchedExercise = exerciseMap.get(entryName);
+
+        if (matchedExercise) {
+          // Utiliser l'exercice complet du JSON
+          return {
+            ...matchedExercise,
+            order: entry.order ?? index,
+          };
+        } else {
+          // Fallback : créer un exercice basique avec les données de l'entry
+          return {
+            id: entry._id || `repeat-${index}`,
+            name: entry.exerciseName || "Exercice",
+            type: entry.type || "muscu",
+            muscleGroup: entry.muscleGroup,
+            muscles: entry.muscles,
+            order: entry.order ?? index,
+          };
+        }
+      });
+
+      setSelectedExercises(exercises);
+      setCurrentStep(3);
+      setShowRepeatModal(false);
+      setSessionName(lastWeekSession.name || "");
+
+      try {
+        localStorage.setItem("formSelectedExercises", JSON.stringify(exercises));
+        localStorage.setItem("dynamiSelected", JSON.stringify(exercises));
+        localStorage.setItem("formSessionName", JSON.stringify(lastWeekSession.name || ""));
+        localStorage.setItem("formCurrentStep", "3");
+      } catch {}
+    } catch (error) {
+      console.error("Erreur lors du chargement des exercices:", error);
+      // En cas d'erreur, utiliser quand même les données basiques
+      const exercises = lastWeekSession.entries.map((entry, index) => ({
+        id: entry._id || `repeat-${index}`,
+        name: entry.exerciseName || "Exercice",
+        type: entry.type || "muscu",
+        muscleGroup: entry.muscleGroup,
+        muscles: entry.muscles,
+        order: entry.order ?? index,
+      }));
+
+      setSelectedExercises(exercises);
+      setCurrentStep(3);
+      setShowRepeatModal(false);
+      setSessionName(lastWeekSession.name || "");
+
+      try {
+        localStorage.setItem("formSelectedExercises", JSON.stringify(exercises));
+        localStorage.setItem("dynamiSelected", JSON.stringify(exercises));
+        localStorage.setItem("formSessionName", JSON.stringify(lastWeekSession.name || ""));
+        localStorage.setItem("formCurrentStep", "3");
+      } catch {}
+    }
   };
 
   const handleDeclineRepeat = () => {
