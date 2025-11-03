@@ -221,38 +221,79 @@ export default function FormExo({ user: userProp }) {
     if (!lastWeekSession || !Array.isArray(lastWeekSession.entries)) return;
 
     try {
-      // Charger tous les exercices disponibles
+      // Charger tous les exercices disponibles depuis les JSONs
       const allExercises = await loadExercises('all');
 
-      // Créer une map pour recherche rapide par nom (insensible à la casse)
-      const exerciseMap = new Map();
+      // Fonction pour normaliser un nom d'exercice
+      const normalizeName = (name) => {
+        return (name || '')
+          .toLowerCase()
+          .trim()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "") // Enlever accents
+          .replace(/[^\w\s]/g, '') // Enlever ponctuation
+          .replace(/\s+/g, ' '); // Normaliser espaces
+      };
+
+      // Créer plusieurs maps pour différentes stratégies de matching
+      const byNormalizedName = new Map();
+      const bySlug = new Map();
+
       allExercises.forEach(ex => {
-        const normalizedName = (ex.name || ex.title || '').toLowerCase().trim();
+        // Map par nom normalisé
+        const normalizedName = normalizeName(ex.name || ex.title);
         if (normalizedName) {
-          exerciseMap.set(normalizedName, ex);
+          byNormalizedName.set(normalizedName, ex);
+        }
+
+        // Map par slug
+        if (ex.slug) {
+          bySlug.set(ex.slug.toLowerCase(), ex);
         }
       });
 
-      // Convertir les entries en exercices complets
+      console.log('📋 Exercices de la séance passée:', lastWeekSession.entries.map(e => e.exerciseName));
+
+      // Convertir les entries en exercices complets depuis le JSON
       const exercises = lastWeekSession.entries.map((entry, index) => {
-        const entryName = (entry.exerciseName || '').toLowerCase().trim();
-        const matchedExercise = exerciseMap.get(entryName);
+        const entryName = entry.exerciseName || '';
+        const normalizedEntryName = normalizeName(entryName);
+
+        // Stratégie 1 : Match par slug (si la BDD stocke le slug)
+        let matchedExercise = entry.slug ? bySlug.get(entry.slug.toLowerCase()) : null;
+
+        // Stratégie 2 : Match par nom normalisé
+        if (!matchedExercise) {
+          matchedExercise = byNormalizedName.get(normalizedEntryName);
+        }
+
+        // Stratégie 3 : Recherche floue (si le nom contient ou est contenu)
+        if (!matchedExercise) {
+          matchedExercise = allExercises.find(ex => {
+            const exName = normalizeName(ex.name || ex.title);
+            return exName.includes(normalizedEntryName) || normalizedEntryName.includes(exName);
+          });
+        }
 
         if (matchedExercise) {
-          // Utiliser l'exercice complet du JSON
+          console.log(`✅ Match trouvé pour "${entryName}":`, matchedExercise.name);
+          // Retourner l'exercice complet du JSON
           return {
             ...matchedExercise,
             order: entry.order ?? index,
           };
         } else {
-          // Fallback : créer un exercice basique avec les données de l'entry
+          console.warn(`❌ Aucun match trouvé pour: "${entryName}"`);
+          // Fallback : utiliser un exercice minimal (pas idéal)
           return {
             id: entry._id || `repeat-${index}`,
             name: entry.exerciseName || "Exercice",
             type: entry.type || "muscu",
             muscleGroup: entry.muscleGroup,
-            muscles: entry.muscles,
+            muscles: entry.muscles || [],
             order: entry.order ?? index,
+            // Marquer comme incomplet
+            _incomplete: true,
           };
         }
       });
