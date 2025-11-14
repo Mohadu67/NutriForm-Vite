@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { FaTrophy, FaMedal, FaFire } from 'react-icons/fa';
 import { secureApiCall } from '../../utils/authService';
 import { API_BASE_URL } from '../../shared/config/api';
-import TopBar from '../../components/TopBar/TopBar';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import styles from './Leaderboard.module.css';
@@ -291,7 +290,6 @@ const Leaderboard = () => {
 
   return (
     <>
-      <TopBar />
       <Header />
       <div className={styles.container}>
         <div className={styles.header}>
