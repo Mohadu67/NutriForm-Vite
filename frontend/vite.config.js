@@ -3,11 +3,12 @@ import react from '@vitejs/plugin-react'
 import svgr from "vite-plugin-svgr";
 import { VitePWA } from 'vite-plugin-pwa'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     svgr(),
-    VitePWA({
+    // Désactiver PWA en mode dev pour améliorer les performances
+    ...(mode === 'production' ? [VitePWA({
       registerType: 'prompt',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}'],
@@ -58,11 +59,29 @@ export default defineConfig({
           }
         ]
       }
-    })
+    })] : [])
   ],
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'axios',
+      'leaflet',
+      'react-leaflet',
+      'i18next',
+      'react-i18next',
+      'dompurify',
+      '@dnd-kit/core',
+      '@dnd-kit/sortable'
+    ]
+  },
   server: {
     proxy: {
       '/api': 'http://localhost:3000',
+    },
+    warmup: {
+      clientFiles: ['./src/main.jsx', './src/App.jsx']
     }
   }
-})
+}))
