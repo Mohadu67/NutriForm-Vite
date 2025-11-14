@@ -28,12 +28,20 @@
   color: var(--ink);
 }
 
-.grid {
+/* Mobile : grid de cards cliquables */
+.gridMobile {
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px;
   width: 90%;
   margin: 70px auto;
+}
+
+/* Desktop : masquer la grid mobile */
+@media (min-width: 769px) {
+  .gridMobile {
+    display: none;
+  }
 }
 
 .card {
@@ -213,4 +221,106 @@
 
 .reduceButton:hover {
   box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+}
+
+/* Desktop : articles affichés directement */
+.articlesDesktop {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .articlesDesktop {
+    display: block;
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 0 2rem;
+  }
+}
+
+.articleBlock {
+  margin-bottom: 4rem;
+  padding: 2.5rem;
+  background: var(--paper);
+  border-radius: 12px;
+  box-shadow: var(--shadow-s);
+  border-left: 4px solid var(--couleur-bouton-action);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.articleBlock:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-m);
+}
+
+.articleBlock:last-child {
+  margin-bottom: 0;
+}
+
+.articleImage {
+  width: 100%;
+  max-width: 700px;
+  height: auto;
+  border-radius: 10px;
+  margin: 0 auto 2rem;
+  display: block;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.articleTitle {
+  font-family: var(--font-titre);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 1.5rem;
+  line-height: 1.3;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--couleur-bouton-selection);
+  display: inline-block;
+}
+
+.articleText {
+  font-family: var(--font-paragraphe);
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+  text-align: justify;
+}
+
+.articleText:last-child {
+  margin-bottom: 0;
+}
+
+.articleText strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.articleText a {
+  color: var(--couleur-bouton-action);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.articleText a:hover {
+  border-bottom-color: var(--couleur-bouton-action);
+}
+
+.articleText ul,
+.articleText ol {
+  margin: 1rem 0 1rem 1.5rem;
+  line-height: 1.8;
+}
+
+.articleText li {
+  margin-bottom: 0.5rem;
+}
+
+.articleText h4 {
+  font-family: var(--font-titre);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 1.5rem 0 1rem;
 }

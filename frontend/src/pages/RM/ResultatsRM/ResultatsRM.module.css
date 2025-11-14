@@ -5,7 +5,7 @@
 }
 
 .mainCard {
-  background: linear-gradient(135deg, #FFB385 0%, #f49b69 100%);
+  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
   border-radius: 16px;
   padding: 16px 12px;
   color: white;
@@ -161,7 +161,7 @@
   padding: 10px 12px;
   background: #fafafa;
   border-radius: 8px;
-  border-left: 3px solid #FFB385;
+  border-left: 3px solid #f7b186;
 }
 
 :global(body.dark) .methodItem,

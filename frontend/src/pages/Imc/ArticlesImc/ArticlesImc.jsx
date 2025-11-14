@@ -25,7 +25,7 @@ export default function ArticlesImc() {
         fetch("/data/db.json")
             .then((res) => res.json())
             .then((data) => setArticles(data.contenueArticlesIMC || []))
-            .catch((err) => {});
+            .catch(() => {});
     }, []);
 
   const resolveImage = (img) => (img ? `./images/${img}` : "");
@@ -34,9 +34,8 @@ export default function ArticlesImc() {
         <>
         <h2 className={styles.titleh2}>Apprendre l'essentiel sur l'IMC</h2>
 
-
-          <section className={styles.grid}>
-
+          {/* Version mobile : cards cliquables */}
+          <section className={styles.gridMobile}>
             {articles.map((article, index) => (
               <div
                 key={index}
@@ -58,6 +57,40 @@ export default function ArticlesImc() {
                 />
                 <h3 className={styles.title}>{article.titre}</h3>
               </div>
+            ))}
+          </section>
+
+          {/* Version desktop : articles affichés directement */}
+          <section className={styles.articlesDesktop}>
+            {articles.map((article, index) => (
+              <article key={index} className={styles.articleBlock}>
+                <img
+                  src={resolveImage(article.image)}
+                  alt={article.alt}
+                  loading="lazy"
+                  className={styles.articleImage}
+                />
+                <h3 className={styles.articleTitle}>{article.titre}</h3>
+                {article.description && (
+                  <p className={styles.articleText}>{article.description}</p>
+                )}
+                {article.excedent && typeof article.excedent === 'string' && article.excedent.includes('<') ? (
+                  <div
+                    className={styles.articleText}
+                    dangerouslySetInnerHTML={{ __html: article.excedent }}
+                  />
+                ) : (
+                  article.excedent && (
+                    <p className={styles.articleText}>{article.excedent}</p>
+                  )
+                )}
+                {article.fullContent && (
+                  <div
+                    className={styles.articleText}
+                    dangerouslySetInnerHTML={{ __html: article.fullContent }}
+                  />
+                )}
+              </article>
             ))}
           </section>
 

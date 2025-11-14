@@ -8,7 +8,7 @@
   border: 1px solid var(--line);
   border-radius: 12px;
   box-shadow: var(--shadow-sm);
-  --form-accent: var(--couleur-bouton-action, #FFB385);
+  --form-accent: var(--couleur-bouton-action, #f7b186);
 }
 
 .title {
