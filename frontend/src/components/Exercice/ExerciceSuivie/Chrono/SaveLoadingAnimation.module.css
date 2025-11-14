@@ -59,7 +59,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #F7B186;
+  color: #f7b186;
 }
 
 .logoSvg {
@@ -165,7 +165,7 @@
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #F7B186 0%, #f49b69 50%, #F7B186 100%);
+  background: linear-gradient(90deg, #f7b186 0%, #f49b69 50%, #f7b186 100%);
   background-size: 200% 100%;
   border-radius: 999px;
   animation: progressMove 1.5s ease-in-out infinite;

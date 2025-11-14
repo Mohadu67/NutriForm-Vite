@@ -2,8 +2,8 @@
   --card-bg: #ffffff;
   --card-text: #1a1a1a;
   --card-muted: #666;
-  --accent-primary: var(--couleur-bouton-action, #FFB385);
-  --accent-secondary: var(--couleur-bouton-selection, #B5EAD7);
+  --accent-primary: var(--couleur-bouton-action, #f7b186);
+  --accent-secondary: var(--couleur-bouton-selection, #b8ddd1);
   --card-border: #e5e7eb;
 }
 

@@ -88,7 +88,7 @@
 .emptyButton {
   display: inline-block;
   padding: 10px 20px;
-  background: linear-gradient(135deg, #FFB385 0%, #f49b69 100%);
+  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
   color: white;
   border-radius: 8px;
   text-decoration: none;
@@ -124,7 +124,7 @@
   background: #fafafa;
   padding: 16px;
   border-radius: 10px;
-  border-left: 3px solid #FFB385;
+  border-left: 3px solid #f7b186;
 }
 
 :global(body.dark) .statCard,
@@ -266,7 +266,7 @@
   background: #fafafa;
   border-radius: 8px;
   padding: 12px;
-  border-left: 3px solid #FFB385;
+  border-left: 3px solid #f7b186;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -326,14 +326,14 @@
 .rmValue {
   font-size: 1.8rem;
   font-weight: 900;
-  color: #FFB385;
+  color: #f7b186;
   line-height: 1;
 }
 
 .rmUnit {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #FFB385;
+  color: #f7b186;
 }
 
 .testDetails {
@@ -375,7 +375,7 @@
 .firstTest {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #FFB385;
+  color: #f7b186;
   background: rgba(255, 179, 133, 0.1);
   padding: 3px 8px;
   border-radius: 6px;

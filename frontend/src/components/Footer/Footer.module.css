@@ -104,8 +104,8 @@
 .linkList li a:hover,
 .linkList li a:focus-visible {
   transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--accent, #F7B186) 55%, transparent);
-  background: color-mix(in srgb, var(--accent, #F7B186) 15%, var(--footer-bg, #f1f4f8));
+  border-color: color-mix(in srgb, var(--accent, #f7b186) 55%, transparent);
+  background: color-mix(in srgb, var(--accent, #f7b186) 15%, var(--footer-bg, #f1f4f8));
   box-shadow: 0 14px 28px rgba(15, 23, 42, 0.22);
   outline: none;
 }
@@ -113,7 +113,7 @@
 
 .linkList li[class*="authLink"] a {
   background: transparent;
-  color: var(--accent, #F7B186);
+  color: var(--accent, #f7b186);
   border-color: rgba(247, 177, 134, 0.55);
   box-shadow: inset 0 0 0 1px rgba(247, 177, 134, 0.25);
 }
