@@ -1,17 +1,86 @@
+/* ============================================================================
+   HEADER COMPONENT - Optimized & Mobile-First
+   ============================================================================ */
+
+/* CSS Variables
+   -------------------------------------------------------------------------- */
 .header {
-  text-align: center;
-  margin-bottom: 40px;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
+  --header-padding-mobile: 0.9375rem 1.25rem; /* 15px 20px */
+  --header-padding-desktop: 1.25rem 2rem; /* 20px 32px */
+  --header-gap-mobile: 1rem;
+  --header-gap-desktop: 2rem;
+  --header-margin-bottom-mobile: 1.5rem; /* 24px */
+  --header-margin-bottom-desktop: 2.5rem; /* 40px */
+  --header-bg: #fff;
+  --header-bg-dark: #1a1a1a;
+  --header-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --header-transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Logo Link
+   -------------------------------------------------------------------------- */
+.header a {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  /* Touch target minimum 44x44px - mobile */
+  min-height: 44px;
+  min-width: 44px;
+}
 
+.header a:hover {
+  transform: scale(1.05);
+}
 
-.welcome {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-top: 28px;
-  color: #333;
+.header a:active {
+  transform: scale(0.98);
+}
+
+/* Focus States - Accessibility
+   -------------------------------------------------------------------------- */
+.header a:focus-visible {
+  outline: 2px solid #ff6b35;
+  outline-offset: 4px;
+  border-radius: 0.5rem;
+}
+
+/* Dark Mode Support
+   -------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  .header {
+    --header-bg: var(--header-bg-dark);
+    --header-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+:global(.dark) .header {
+  background-color: var(--header-bg-dark);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Reduced Motion - Accessibility
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .header a {
+    transition: none;
+  }
+}
+
+/* Desktop Styles (≥ 768px)
+   -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+  .header {
+    padding: var(--header-padding-desktop);
+    margin-bottom: var(--header-margin-bottom-desktop);
+    gap: var(--header-gap-desktop);
+  }
+
+  .header a {
+    /* Desktop touch target can be smaller */
+    min-height: auto;
+    min-width: auto;
+  }
 }
