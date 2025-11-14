@@ -1,7 +1,7 @@
 /* Newsletter Section - Modern & Eye-catching */
 
 :root {
-  --newsletter-bg: linear-gradient(135deg, #F7B186 0%, #f49b69 100%);
+  --newsletter-bg: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
   --newsletter-text: #ffffff;
   --newsletter-text-muted: rgba(255, 255, 255, 0.9);
   --newsletter-input-bg: rgba(255, 255, 255, 0.95);

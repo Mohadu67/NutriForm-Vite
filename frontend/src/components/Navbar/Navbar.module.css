@@ -7,7 +7,7 @@
   --muted: #6b7280;
   --line: rgba(0,0,0,.10);
   --line-strong: rgba(0,0,0,.16);
-  --accent: var(--couleur-bouton-action, #F7B186);
+  --accent: var(--couleur-bouton-action, #f7b186);
   --accent-ink: #111;
   --shadow-sm: 0 6px 16px rgba(0,0,0,.08);
   --shadow-md: 0 12px 30px rgba(0,0,0,.14);
@@ -180,7 +180,7 @@
   opacity: 0 !important;
   transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
   cursor: pointer;
-  color: #F7B186 !important;
+  color: #f7b186 !important;
   text-decoration: none;
   font-weight: 700 !important; 
 }

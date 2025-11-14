@@ -30,7 +30,7 @@
 .card:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(181,234,215,.55);
-  border-color: #B5EAD7;
+  border-color: #b8ddd1;
 }
 
 .card::before {

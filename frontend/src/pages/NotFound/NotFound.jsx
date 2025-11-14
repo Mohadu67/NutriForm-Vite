@@ -19,8 +19,8 @@ export default function NotFound() {
             {}
             <ellipse cx="100" cy="120" rx="60" ry="18" fill="#000" opacity="0.08" />
             <ellipse cx="100" cy="100" rx="55" ry="20" fill="#F7F6F2" filter="url(#shadow)" />
-            <ellipse cx="100" cy="85" rx="40" ry="16" fill="#FFB385" />
-            <ellipse cx="100" cy="70" rx="28" ry="12" fill="#B5EAD7" />
+            <ellipse cx="100" cy="85" rx="40" ry="16" fill="#f7b186" />
+            <ellipse cx="100" cy="70" rx="28" ry="12" fill="#b8ddd1" />
 
             {}
             <g className={styles.magnifier}>

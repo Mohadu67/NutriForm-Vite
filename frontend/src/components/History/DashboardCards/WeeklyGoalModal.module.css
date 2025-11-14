@@ -74,7 +74,7 @@
 }
 
 .goalButton {
-  background: linear-gradient(135deg, #FFB385, #f49b69);
+  background: linear-gradient(135deg, #f7b186, #f49b69);
   border: none;
   border-radius: 12px;
   width: 48px;
@@ -114,7 +114,7 @@
 }
 
 .goalInputField:focus {
-  border-color: #FFB385;
+  border-color: #f7b186;
   box-shadow: 0 0 0 4px rgba(255, 179, 133, 0.2);
 }
 
@@ -164,7 +164,7 @@
 }
 
 .saveButton {
-  background: linear-gradient(135deg, #FFB385, #f49b69);
+  background: linear-gradient(135deg, #f7b186, #f49b69);
   color: white;
   box-shadow: 0 2px 8px rgba(255, 179, 133, 0.3);
 }
