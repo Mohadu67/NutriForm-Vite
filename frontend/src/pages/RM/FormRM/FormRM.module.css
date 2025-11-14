@@ -12,7 +12,7 @@
 .title {
   font-size: 1.75rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #FFB385 0%, #f49b69 100%);
+  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -87,7 +87,7 @@
 .input:focus,
 .select:focus {
   outline: none;
-  border-color: #FFB385;
+  border-color: #f7b186;
   background: #fff;
   box-shadow: 0 0 0 4px rgba(255, 179, 133, 0.1);
 }
@@ -108,7 +108,7 @@
 .submitBtn {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #FFB385 0%, #f49b69 100%);
+  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
   color: white;
   border: none;
   border-radius: 12px;

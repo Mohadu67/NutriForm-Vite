@@ -46,7 +46,7 @@
 
 /* Buttons */
 .btnPrimary {
-  background: linear-gradient(135deg, #F7B186, #f49b69);
+  background: linear-gradient(135deg, #f7b186, #f49b69);
   color: white;
   border: none;
   border-radius: 12px;
@@ -164,7 +164,7 @@
 .formGroup textarea:focus,
 .formGroup select:focus {
   outline: none;
-  border-color: #F7B186;
+  border-color: #f7b186;
   box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.2);
 }
 
