@@ -91,7 +91,7 @@
 .percentValue {
   font-size: 1.3rem;
   font-weight: 800;
-  color: #FFB385;
+  color: #f7b186;
   line-height: 1;
 }
 
@@ -257,7 +257,7 @@
 }
 
 .splitFillMuscu {
-  background: linear-gradient(135deg, #FFB385 0%, #f49b69 100%);
+  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
   box-shadow: 0 0 8px rgba(255, 179, 133, 0.4);
 }
 
@@ -356,7 +356,7 @@
   overscroll-behavior-inline: contain;
   touch-action: pan-x pan-y;
   scrollbar-width: thin;
-  scrollbar-color: var(--nf-accent, #FFB385) transparent;
+  scrollbar-color: var(--nf-accent, #f7b186) transparent;
 }
 
 .carouselList::after {

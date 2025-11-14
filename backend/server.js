@@ -36,15 +36,22 @@ if (!config.mongoUri) {
   process.exit(1);
 }
 
+// Connexion MongoDB en arrière-plan (non bloquante)
+console.log('🔄 Tentative de connexion à MongoDB...');
+console.log('📍 URI:', config.mongoUri.replace(/\/\/.*@/, '//*****@')); // Masquer le mot de passe
+
 mongoose
   .connect(config.mongoUri, {
     dbName: 'nutriform',
     authSource: 'admin',
+    serverSelectionTimeoutMS: 10000, // Timeout après 10 secondes
+    socketTimeoutMS: 45000,
   })
   .then(() => console.info('🟢 Connecté à MongoDB'))
   .catch(err => {
-    console.error('Erreur MongoDB :', err.message || err);
-    process.exit(1);
+    console.error('❌ Erreur MongoDB :', err.message || err);
+    console.error('💡 Vérifiez que MongoDB est accessible et que vos identifiants sont corrects');
+    console.error('⚠️  Le serveur continue de tourner mais certaines fonctionnalités ne seront pas disponibles');
   });
 
 
@@ -104,10 +111,24 @@ app.get('/', (req, res) => {
   res.send('Bienvenue sur le backend de NutriForm 🚀');
 });
 
+// Démarrer le serveur sans attendre MongoDB
 app.listen(config.port, () => {
   console.info(`🚀 Serveur en ligne sur http://localhost:${config.port}`);
+  console.info(`📋 Environnement: ${config.env}`);
+  console.info(`🌐 Frontend URL: ${config.frontUrl}`);
 
-
-  startNewsletterCron();
-  startLeaderboardCron();
+  // Démarrer les crons uniquement si MongoDB est connecté
+  if (mongoose.connection.readyState === 1) {
+    console.log('⏰ Démarrage des tâches planifiées...');
+    startNewsletterCron();
+    startLeaderboardCron();
+  } else {
+    console.warn('⚠️  Tâches planifiées désactivées - MongoDB non connecté');
+    // Réessayer après connexion
+    mongoose.connection.once('open', () => {
+      console.log('⏰ Démarrage des tâches planifiées (après connexion MongoDB)...');
+      startNewsletterCron();
+      startLeaderboardCron();
+    });
+  }
 });

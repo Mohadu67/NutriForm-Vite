@@ -2,6 +2,7 @@
 import { useTranslation } from "react-i18next";
 import IntroOutils from "./IntrOutils";
 import OutilsCards from "./OutilsCards";
+import InfoSection from "./InfoSection";
 import styles from "./Main.module.css";
 
 export default function Main() {
@@ -19,6 +20,8 @@ export default function Main() {
       >
         <OutilsCards />
       </IntroOutils>
+
+      <InfoSection />
     </main>
   );
 }

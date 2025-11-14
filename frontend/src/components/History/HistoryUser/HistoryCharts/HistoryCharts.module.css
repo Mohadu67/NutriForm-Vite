@@ -680,7 +680,7 @@
 }
 
 .filterBtnActive {
-  background: linear-gradient(135deg, #FFB385, #f49b69);
+  background: linear-gradient(135deg, #f7b186, #f49b69);
   color: white;
   border-color: transparent;
 }
@@ -697,7 +697,7 @@
 }
 
 :global(.dark) .filterBtnActive {
-  background: linear-gradient(135deg, #FFB385, #f49b69);
+  background: linear-gradient(135deg, #f7b186, #f49b69);
   color: white;
   border-color: transparent;
 }
@@ -777,7 +777,7 @@
 .emptyButton {
   display: inline-block;
   padding: 10px 20px;
-  background: linear-gradient(135deg, #FFB385 0%, #f49b69 100%);
+  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
   color: white;
   border-radius: 8px;
   text-decoration: none;
