@@ -3,8 +3,8 @@
 :global(body.light) {
   color-scheme: light;
   --couleur-principale: #F7F6F2;
-  --couleur-bouton-action: #F7B186;
-  --couleur-bouton-selection: #B5EAD7;
+  --couleur-bouton-action: #f7b186;
+  --couleur-bouton-selection: #b8ddd1;
   --couleur-text-noir: #222325;
   --font-titre: 'Merriweather', serif;
   --font-p: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;

@@ -1,44 +1,48 @@
-
-
+import { memo } from "react";
 import styles from "./Navbar.module.css";
 
-export default function NavLinks({ links }) {
+function NavLinks({ links, currentPath, navItemsRefs, onHover }) {
   return (
     <>
-      {links.map((link) => (
-        <li
-          key={link.id || link.path || (typeof link.label === 'string' ? link.label : Math.random())}
-          className={
-            link.isIcon ? styles.iconLink : link.auth ? styles.authLink : link.special ? styles.org : ""
-          }
-        >
-          {typeof link.onClick === "function" ? (
-            <a
-              className={
-                link.isIcon ? styles.iconButton : link.auth ? styles.authLink : link.special ? styles.orange : ""
+      {links.map((link, index) => {
+        const isActive = currentPath === link.path;
+        const linkKey = link.id || link.path || `nav-link-${index}`;
+
+        return (
+          <li
+            key={linkKey}
+            ref={(el) => {
+              if (navItemsRefs?.current) {
+                navItemsRefs.current[index] = el;
               }
-              onClick={e => {
-                e.preventDefault();
-                e.stopPropagation();
-                link.onClick();
-              }}
-              title={link.title}
-            >
-              {link.label}
-            </a>
-          ) : (
+            }}
+            className={`
+              ${link.auth ? styles.authLink : ''}
+              ${isActive ? styles.active : ''}
+            `.trim()}
+            onMouseEnter={() => onHover?.(index)}
+            onMouseLeave={() => onHover?.(null)}
+          >
             <a
-              className={
-                link.isIcon ? styles.iconButton : link.auth ? styles.authLink : link.special ? styles.orange : ""
-              }
+              className={`${styles.navLink} ${link.auth ? styles.authLinkText : ''}`}
               href={link.path}
-              title={link.title}
+              onClick={(e) => {
+                if (typeof link.onClick === "function") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  link.onClick();
+                }
+              }}
+              title={link.title || link.label}
+              aria-current={isActive ? 'page' : undefined}
             >
               {link.label}
             </a>
-          )}
-        </li>
-      ))}
+          </li>
+        );
+      })}
     </>
   );
 }
+
+export default memo(NavLinks);

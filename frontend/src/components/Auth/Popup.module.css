@@ -1,7 +1,7 @@
 :root {
   --nf-bg: #F7F6F2;
-  --nf-green: #B5EAD7;
-  --nf-peach: #FFB385;
+  --nf-green: #b8ddd1;
+  --nf-peach: #f7b186;
   --nf-ink: #2B2B2B;
   --nf-shadow: 0 20px 50px rgba(0,0,0,.20), 0 4px 14px rgba(0,0,0,.10);
   --nf-card-bg: rgba(255,255,255,.9);
@@ -17,8 +17,8 @@
 
 :global(.light) {
   --nf-bg: #F7F6F2;
-  --nf-green: #B5EAD7;
-  --nf-peach: #FFB385;
+  --nf-green: #b8ddd1;
+  --nf-peach: #f7b186;
   --nf-ink: #2B2B2B;
   --nf-shadow: 0 20px 50px rgba(0,0,0,.20), 0 4px 14px rgba(0,0,0,.10);
   --nf-card-bg: rgba(255,255,255,.9);
@@ -35,7 +35,7 @@
 :global(.dark) {
   --nf-bg: #0c0e12;
   --nf-green: #7bc4a8;
-  --nf-peach: #FFB385;
+  --nf-peach: #f7b186;
   --nf-ink: #e9ecf1;
   --nf-shadow: 0 20px 50px rgba(0,0,0,.60), 0 4px 14px rgba(0,0,0,.40);
   --nf-card-bg: rgba(18,21,27,.95);
@@ -53,7 +53,7 @@
   :root:not(.light) {
     --nf-bg: #0c0e12;
     --nf-green: #7bc4a8;
-    --nf-peach: #FFB385;
+    --nf-peach: #f7b186;
     --nf-ink: #e9ecf1;
     --nf-shadow: 0 20px 50px rgba(0,0,0,.60), 0 4px 14px rgba(0,0,0,.40);
     --nf-card-bg: rgba(18,21,27,.95);
@@ -70,8 +70,8 @@
 
 .themeLight {
   --nf-bg: #F7F6F2;
-  --nf-green: #B5EAD7;
-  --nf-peach: #FFB385;
+  --nf-green: #b8ddd1;
+  --nf-peach: #f7b186;
   --nf-ink: #2B2B2B;
   --nf-shadow: 0 20px 50px rgba(0,0,0,.20), 0 4px 14px rgba(0,0,0,.10);
   --nf-card-bg: rgba(255,255,255,.9);
@@ -89,7 +89,7 @@
 .themeDark {
   --nf-bg: #0c0e12;
   --nf-green: #7bc4a8;
-  --nf-peach: #FFB385;
+  --nf-peach: #f7b186;
   --nf-ink: #e9ecf1;
   --nf-shadow: 0 20px 50px rgba(0,0,0,.60), 0 4px 14px rgba(0,0,0,.40);
   --nf-card-bg: rgba(18,21,27,.95);

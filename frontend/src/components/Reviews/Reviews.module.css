@@ -28,7 +28,7 @@
 }
 
 .addReviewBtn {
-  background: linear-gradient(135deg, #FFB385, #f49b69);
+  background: linear-gradient(135deg, #f7b186, #f49b69);
   color: #fff;
   border: none;
   padding: 12px 24px;
@@ -81,7 +81,7 @@
 }
 
 .proCard {
-  border: 2px solid #FFB385;
+  border: 2px solid #f7b186;
   position: relative;
 }
 
@@ -111,7 +111,7 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #FFB385, #f49b69);
+  background: linear-gradient(135deg, #f7b186, #f49b69);
   display: grid;
   place-items: center;
   font-size: 20px;
@@ -133,7 +133,7 @@
 
 .authorProfession {
   font-size: 13px;
-  color: #FFB385;
+  color: #f7b186;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -141,7 +141,7 @@
 }
 
 .proBadge {
-  background: linear-gradient(135deg, #FFB385, #f49b69);
+  background: linear-gradient(135deg, #f7b186, #f49b69);
   color: #fff;
   padding: 4px 12px;
   border-radius: 8px;
@@ -273,7 +273,7 @@
 .formGroup input:focus,
 .formGroup textarea:focus {
   outline: none;
-  border-color: #FFB385;
+  border-color: #f7b186;
   box-shadow: 0 0 0 3px rgba(255, 179, 133, 0.1);
 }
 
@@ -296,7 +296,7 @@
 }
 
 .submitBtn {
-  background: linear-gradient(135deg, #FFB385, #f49b69);
+  background: linear-gradient(135deg, #f7b186, #f49b69);
   color: #fff;
   border: none;
   padding: 14px 24px;
@@ -347,7 +347,7 @@
   display: grid;
   place-items: center;
   font-size: 32px;
-  color: #FFB385;
+  color: #f7b186;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
@@ -357,7 +357,7 @@
 .carouselBtn:hover:not(:disabled) {
   transform: scale(1.1);
   box-shadow: 0 6px 16px rgba(255, 179, 133, 0.3);
-  border-color: #FFB385;
+  border-color: #f7b186;
 }
 
 .carouselBtn:disabled {
@@ -388,7 +388,7 @@
 }
 
 .dotActive {
-  background: #FFB385;
+  background: #f7b186;
   transform: scale(1.3);
 }
 
