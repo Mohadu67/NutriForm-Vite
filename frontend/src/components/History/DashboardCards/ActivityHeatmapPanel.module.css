@@ -67,7 +67,7 @@
 }
 
 .legendDotHigh {
-  background: #FFB385;
+  background: #f7b186;
 }
 
 .grid {
@@ -89,7 +89,7 @@
 }
 
 .grid::-webkit-scrollbar-thumb {
-  background: #FFB385;
+  background: #f7b186;
   border-radius: 4px;
 }
 
@@ -141,7 +141,7 @@
 }
 
 .currentBadge {
-  background: linear-gradient(135deg, #FFB385, #f49b69);
+  background: linear-gradient(135deg, #f7b186, #f49b69);
   color: white;
   font-size: 0.65rem;
   padding: 2px 6px;
@@ -201,7 +201,7 @@
 }
 
 .intensity3 {
-  background: #FFB385;
+  background: #f7b186;
   box-shadow: 0 2px 8px rgba(255, 179, 133, 0.3);
 }
 

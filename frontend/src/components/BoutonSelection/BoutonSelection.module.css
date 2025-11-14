@@ -12,7 +12,7 @@
   display: inline-block;
   padding: 0.6rem 1rem;
   border-radius: 10px;
-  border: 2px solid var(--accent-form-light, #B5EAD7);
+  border: 2px solid var(--accent-form-light, #b8ddd1);
   font-weight: 600;
   user-select: none;
   cursor: pointer;
@@ -23,7 +23,7 @@
 }
 
 .hiddenCheckbox:checked + .pill {
-  background-color: var(--accent-form-light, #B5EAD7);
+  background-color: var(--accent-form-light, #b8ddd1);
   color: #222325;
 }
 

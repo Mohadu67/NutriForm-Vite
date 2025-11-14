@@ -7,7 +7,7 @@
   --muted: #6b7280;
   --line: rgba(0,0,0,.08);
   --line-strong: rgba(0,0,0,.12);
-  --accent: var(--couleur-bouton-action, #F7B186);
+  --accent: var(--couleur-bouton-action, #f7b186);
   --accent-ink: #0f172a;
   --surface: var(--couleur-principale, #F7F6F2);
   --shadow-sm: 0 6px 16px rgba(0,0,0,.08);
