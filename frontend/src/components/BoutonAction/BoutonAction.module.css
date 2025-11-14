@@ -1,7 +1,7 @@
 .btn {
   display: block;
   padding: .95rem 1.25rem;
-  background: linear-gradient(135deg, #FFB385 0%, #F7B186 45%, #E07A47 100%);
+  background: linear-gradient(135deg, #f7b186 0%, #f7b186 45%, #E07A47 100%);
   color: #111;
   font-weight: 800;
   border: none;

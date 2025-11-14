@@ -1,0 +1,114 @@
+.infoSection {
+  max-width: 800px;
+  margin: 4rem auto 2rem;
+  padding: 0 1.5rem;
+}
+
+.contentBlock {
+  margin-bottom: 3rem;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.contentBlock:last-child {
+  border-bottom: none;
+}
+
+.contentBlock h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 1.25rem;
+  line-height: 1.3;
+}
+
+.contentBlock p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.contentBlock p:last-child {
+  margin-bottom: 0;
+}
+
+.list {
+  margin: 1.5rem 0;
+  padding-left: 1.5rem;
+  list-style: none;
+}
+
+.list li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.list li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--couleur-bouton-action);
+  font-weight: 700;
+}
+
+.list li strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.tipsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.tip {
+  padding: 1.25rem;
+  background: var(--paper);
+  border-left: 3px solid var(--couleur-bouton-selection);
+}
+
+.tip strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+
+.tip p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .infoSection {
+    margin-top: 3rem;
+    padding: 0 1rem;
+  }
+
+  .contentBlock {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .contentBlock h2 {
+    font-size: 1.5rem;
+  }
+
+  .tipsGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .tip {
+    padding: 1rem;
+  }
+}

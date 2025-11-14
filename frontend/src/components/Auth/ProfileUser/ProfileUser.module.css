@@ -13,7 +13,7 @@
 
 /* Header avec gradient */
 .header {
-  background: linear-gradient(135deg, #F7B186 0%, #f49b69 100%);
+  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
   padding: 32px 24px 40px;
   text-align: center;
   display: flex;
@@ -131,7 +131,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #F7B186, #f49b69);
+  background: linear-gradient(135deg, #f7b186, #f49b69);
   flex-shrink: 0;
 }
 
@@ -181,7 +181,7 @@
 
 .input:focus {
   outline: none;
-  border-color: #F7B186;
+  border-color: #f7b186;
   background: var(--profile-bg, #ffffff);
   box-shadow: 0 0 0 4px rgba(247, 177, 134, 0.12);
 }

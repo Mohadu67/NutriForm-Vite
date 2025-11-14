@@ -79,7 +79,7 @@
 .showProposedBtn {
   padding: 12px 20px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #FFB385 0%, #F7B186 45%, #E07A47 100%);
+  background: linear-gradient(135deg, #f7b186 0%, #f7b186 45%, #E07A47 100%);
   color: #111;
   border: none;
   cursor: pointer;

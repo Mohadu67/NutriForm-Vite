@@ -53,7 +53,7 @@
   grid-template-columns: 38px 65px 70px 1fr;
   gap: 4px;
   padding: 12px 10px;
-  background: linear-gradient(135deg, #FFB385 0%, #f49b69 100%);
+  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
   color: white;
   font-weight: 600;
   font-size: 0.65rem;
@@ -111,7 +111,7 @@
 .poids {
   font-weight: 800;
   font-size: 1.1rem;
-  color: #FFB385;
+  color: #f7b186;
 }
 
 .reps {
@@ -171,7 +171,7 @@
   background: #fafafa;
   border-radius: 10px;
   padding: 16px;
-  border-left: 3px solid #FFB385;
+  border-left: 3px solid #f7b186;
 }
 
 :global(body.dark) .tipCard,

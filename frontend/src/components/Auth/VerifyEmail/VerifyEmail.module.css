@@ -1,7 +1,7 @@
 :root {
   --v-canvas: var(--couleur-principale, #F7F6F2);
-  --v-accent: var(--couleur-bouton-selection, #B5EAD7);
-  --v-accent-2: var(--couleur-bouton-action, #F7B186);
+  --v-accent: var(--couleur-bouton-selection, #b8ddd1);
+  --v-accent-2: var(--couleur-bouton-action, #f7b186);
   --v-text: var(--couleur-text-noir, #333);
   --v-font-title: var(--font-titre, 'Merriweather', serif);
   --v-font-body: var(--font-p, 'Montserrat', sans-serif);

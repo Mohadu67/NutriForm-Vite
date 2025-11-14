@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { Helmet } from "@dr.pogodin/react-helmet";
 import styles from "./Faq.module.css";
 
 const DATA = [
@@ -33,38 +34,58 @@ export default function Faq() {
 
   const toggle = (idx) => setOpenIndex((prev) => (prev === idx ? null : idx));
 
-  return (
-    <section className={styles.faqSection} aria-labelledby="faq-title">
-      <h2>Foire Aux Questions</h2>
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": DATA.map((item) => ({
+      "@type": "Question",
+      "name": item.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.a
+      }
+    }))
+  };
 
-      {DATA.map((item) => (
-        <div
-          key={item.q}
-          className={styles.faqItem}
-          role="button"
-          tabIndex={0}
-          aria-expanded={openIndex === item.q}
-          aria-controls={`faq-panel-${item.q}`}
-          onClick={() => toggle(item.q)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              toggle(item.q);
-            }
-          }}
-        >
-          <h3>
-            <span>{item.q}</span>
-          </h3>
+  return (
+    <>
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(faqSchema)}
+        </script>
+      </Helmet>
+      <section className={styles.faqSection} aria-labelledby="faq-title">
+        <h2>Foire Aux Questions</h2>
+
+        {DATA.map((item) => (
           <div
-            id={`faq-panel-${item.q}`}
-            role="region"
-            hidden={openIndex !== item.q}
+            key={item.q}
+            className={styles.faqItem}
+            role="button"
+            tabIndex={0}
+            aria-expanded={openIndex === item.q}
+            aria-controls={`faq-panel-${item.q}`}
+            onClick={() => toggle(item.q)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                toggle(item.q);
+              }
+            }}
           >
-            <p className={styles.reponse}>{item.a}</p>
+            <h3>
+              <span>{item.q}</span>
+            </h3>
+            <div
+              id={`faq-panel-${item.q}`}
+              role="region"
+              hidden={openIndex !== item.q}
+            >
+              <p className={styles.reponse}>{item.a}</p>
+            </div>
           </div>
-        </div>
-      ))}
-    </section>
+        ))}
+      </section>
+    </>
   );
 }

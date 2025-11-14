@@ -4,6 +4,7 @@ import Home from "./pages/Accueil/Home.jsx";
 import ImcPage from "./pages/Imc/ImcPage.jsx"
 import CaloriePage from "./pages/Calorie/CaloriePage.jsx";
 import ContactPage from "./pages/Contact/ContactPage.jsx";
+import AboutPage from "./pages/About/AboutPage.jsx";
 import VerifyEmail from "./components/Auth/VerifyEmail/VerifyEmail.jsx";
 import ResetPassword from "./components/Auth/ResetPassword/ResetPassword.jsx";
 import MentionsLegales from "./pages/RGPD/MentionsLegales.jsx";
@@ -44,6 +45,7 @@ export default function App() {
       <Route path="/calorie" element={<CaloriePage />} />
       <Route path="/calories" element={<Navigate to="/calorie" replace />} />
       <Route path="/contact" element={<ContactPage />} />
+      <Route path="/about" element={<AboutPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
