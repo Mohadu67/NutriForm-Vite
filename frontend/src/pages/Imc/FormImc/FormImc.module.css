@@ -2,8 +2,8 @@
   --bg-form: rgba(255, 255, 255, 0.7);
   --fg-form: #1a1a1a;
   --line-form: #e5e7eb;
-  --accent-form: #FFB385;
-  --accent-form-light: #B5EAD7;
+  --accent-form: #f7b186;
+  --accent-form-light: #b8ddd1;
   --paper: transparent;
   --input-bg: #ffffff;
   --border-color: #d1d5db;
@@ -13,8 +13,8 @@
   --bg-form: #1a1d24;
   --fg-form: #e5e7eb;
   --line-form: rgba(255,255,255,0.12);
-  --accent-form: #F7B186;
-  --accent-form-light: #B5EAD7;
+  --accent-form: #f7b186;
+  --accent-form-light: #b8ddd1;
   --paper: transparent;
   --input-bg: #0f1117;
   --border-color: rgba(255,255,255,0.16);
@@ -25,8 +25,8 @@
   --bg-form: #1a1d24;
   --fg-form: #e5e7eb;
   --line-form: rgba(255,255,255,0.12);
-  --accent-form: #F7B186;
-  --accent-form-light: #B5EAD7;
+  --accent-form: #f7b186;
+  --accent-form-light: #b8ddd1;
   --paper: transparent;
   --input-bg: #0f1117;
   --border-color: rgba(255,255,255,0.16);
@@ -60,7 +60,7 @@
   font-size: 1.8rem;
   font-weight: 800;
   font-family: "Merriweather", serif;
-  background: linear-gradient(135deg, #FFB385 0%, #f49b69 100%);
+  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

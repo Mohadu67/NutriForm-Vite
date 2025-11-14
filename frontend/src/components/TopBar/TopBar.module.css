@@ -44,12 +44,12 @@
 }
 
 .langBtn:hover {
-  color: #FFB385;
+  color: #f7b186;
   background: rgba(255, 179, 133, 0.1);
 }
 
 .langBtn.active {
-  color: #FFB385;
+  color: #f7b186;
   background: rgba(255, 179, 133, 0.15);
 }
 

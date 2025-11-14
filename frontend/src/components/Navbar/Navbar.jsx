@@ -62,6 +62,7 @@ export default function Navbar() {
       onClick: () => handleScroll("/outils", "outils")
     },
     { label: t('nav.exercises'), path: "/exo", special: true },
+    { label: t('nav.about'), path: "/about" },
     {
       label: t('nav.contact'),
       path: "/contact",
