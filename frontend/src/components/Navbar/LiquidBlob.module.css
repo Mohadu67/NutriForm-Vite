@@ -1,0 +1,91 @@
+/* ========================================
+   LIQUID BLOB - Premium Morphing Effect
+   Mobile First - Hidden on mobile, visible on desktop
+   ======================================== */
+
+.liquidBlob {
+  /* Hidden by default on mobile for performance */
+  display: none;
+}
+
+/* ========================================
+   DESKTOP ONLY (min-width: 768px)
+   ======================================== */
+
+@media (min-width: 768px) {
+  .liquidBlob {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+    width: var(--blob-width, 100px);
+    transform: translateX(var(--blob-x, 0));
+    pointer-events: none;
+    z-index: 0;
+
+    /* Smooth transitions */
+    transition:
+      transform 0.7s cubic-bezier(0.23, 1, 0.32, 1),
+      width 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+
+    /* Performance optimizations */
+    will-change: transform, width;
+    backface-visibility: hidden;
+
+    /* Visual effect */
+    filter: drop-shadow(0 4px 12px rgba(247, 177, 134, 0.3));
+  }
+
+  .blobSvg {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: visible;
+  }
+
+  .blobPath {
+    animation: morphingSmooth 10s ease-in-out infinite;
+    transform-origin: center;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Organic morphing animation */
+  @keyframes morphingSmooth {
+    0% {
+      d: path("M 20,30 Q 20,10 40,10 L 160,10 Q 180,10 180,30 Q 180,50 160,50 L 40,50 Q 20,50 20,30 Z");
+    }
+    20% {
+      d: path("M 22,30 Q 18,12 42,8 L 158,8 Q 182,12 178,30 Q 182,48 158,52 L 42,52 Q 18,48 22,30 Z");
+    }
+    40% {
+      d: path("M 25,30 Q 20,8 45,12 L 155,12 Q 180,8 175,30 Q 180,52 155,48 L 45,48 Q 20,52 25,30 Z");
+    }
+    60% {
+      d: path("M 20,30 Q 22,15 40,15 L 160,15 Q 178,15 180,30 Q 178,45 160,45 L 40,45 Q 22,45 20,30 Z");
+    }
+    80% {
+      d: path("M 23,30 Q 23,9 43,11 L 157,11 Q 177,9 177,30 Q 177,51 157,49 L 43,49 Q 23,51 23,30 Z");
+    }
+    100% {
+      d: path("M 20,30 Q 20,10 40,10 L 160,10 Q 180,10 180,30 Q 180,50 160,50 L 40,50 Q 20,50 20,30 Z");
+    }
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+/* Disable animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .blobPath {
+    animation: none !important;
+  }
+
+  .liquidBlob {
+    transition: none !important;
+  }
+}
