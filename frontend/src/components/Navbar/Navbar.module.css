@@ -341,11 +341,12 @@
   display: flex;
   gap: var(--dock-gap);
   align-items: center;
+  width: 100%;
 }
 
 /* Dock items */
 .dockItem {
-  width: var(--dock-item-size);
+  width: 100%;
   height: var(--dock-item-size);
   min-width: 44px;
   min-height: 44px;
@@ -363,6 +364,7 @@
   position: relative;
   overflow: hidden;
   will-change: transform;
+  padding: 30px;
 }
 
 :global(.dark) .dockItem {
@@ -381,15 +383,13 @@
 }
 
 .dockIcon {
-  font-size: 24px;
+  font-size: 20px;
   position: relative;
-  z-index: 1;
   transition: transform 0.3s var(--transition-bounce);
-  filter: grayscale(0.3);
 }
 
 .dockLabel {
-  font-size: 9px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--ink-muted);
   position: relative;
@@ -506,7 +506,7 @@
 }
 
 .expandBtnOpen .expandIcon {
-  transform: rotate(135deg);
+  transform: rotate(90deg);
 }
 
 /* ========================================
@@ -543,74 +543,311 @@
    ======================================== */
 
 @media (min-width: 768px) {
+  /* Container principal - barre horizontale pleine largeur */
   .dock {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     bottom: auto;
-    top: 20px;
+    width: 100%;
+    max-width: 100%;
+    transform: none;
+
+    display: flex;
     flex-direction: row;
-    width: auto;
-    max-width: none;
-    padding: var(--dock-padding);
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 16px;
+
+    padding: 10px 28px;
+    margin: 0;
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+    background: var(--dock-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+
+    z-index: 1000;
+    overflow: visible;
   }
 
-  .dockExpanded {
-    flex-direction: column;
-    padding: 20px var(--dock-padding);
-    max-width: 420px;
+  :global(.dark) .dock {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
   }
 
+  /* Cacher éléments mobiles */
+  .dock::before {
+    display: none;
+  }
+
+  .dockLogo {
+    display: none !important;
+  }
+
+  .expandBtn {
+    display: none !important;
+  }
+
+  .overlay {
+    display: none !important;
+  }
+
+  /* ORDRE DES ÉLÉMENTS AVEC FLEXBOX ORDER */
+  /* 1. Main Nav (gauche) */
   .mainNav {
-    order: 999;
+    order: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    width: auto;
   }
 
+  /* 2. Separator */
   .separator {
+    order: 2;
     width: 1px;
-    height: 40px;
+    height: 32px;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.12) 50%,
+      transparent 100%
+    );
     margin: 0 8px;
+    flex-shrink: 0;
   }
 
-  .dockExpanded .separator {
-    width: 80%;
-    height: 1px;
-    margin: 4px 0;
+  :global(.dark) .separator {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.15) 50%,
+      transparent 100%
+    );
   }
 
-  .utilitiesExpanded {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .langGroup {
-    flex: 1;
-    min-width: 180px;
-  }
-
-  .iconsGroup {
-    flex: 1;
-    min-width: 140px;
-  }
-
+  /* 3. Secondary Nav (centre) */
   .secondaryNav {
+    order: 3;
+    display: flex !important;
     flex-direction: row;
-    flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
+    gap: 12px;
+    flex: 1;
+    animation: none;
+    width: auto;
   }
 
-  .secondaryNav .dockItem {
-    width: var(--dock-item-size);
-    height: var(--dock-item-size);
-    flex-direction: column;
+  /* 4. Utilities (droite) */
+  .utilitiesExpanded {
+    order: 4;
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
     padding: 0;
-    gap: 4px;
+    flex-shrink: 0;
+    animation: none;
+    visibility: visible;
+    opacity: 1;
+    width: auto;
+  }
+
+  /* ===== STYLES DES BOUTONS PRINCIPAUX ===== */
+  .mainNav .dockItem {
+    width: auto;
+    min-width: 95px;
+    height: 40px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: rgba(0, 0, 0, 0.04);
+
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+
+  :global(.dark) .mainNav .dockItem {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .mainNav .dockItem:hover {
+    background: rgba(247, 177, 134, 0.15);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .mainNav .dockItemActive {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(247, 177, 134, 0.35);
+  }
+
+  .mainNav .dockItemActive .dockLabel,
+  .mainNav .dockItemActive .dockIcon {
+    color: #111;
+    font-weight: 700;
+  }
+
+  .mainNav .dockIcon {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .mainNav .dockLabel {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ===== STYLES DES BOUTONS SECONDAIRES ===== */
+  .secondaryNav .dockItem {
+    width: 80px;
+    height: 72px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    padding: 10px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    background: rgba(0, 0, 0, 0.035);
+
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+
+  :global(.dark) .secondaryNav .dockItem {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .secondaryNav .dockItem:hover {
+    background: rgba(247, 177, 134, 0.15);
+    border-color: rgba(247, 177, 134, 0.3);
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  .secondaryNav .dockItemActive {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    border-color: var(--accent);
+    box-shadow: 0 6px 20px rgba(247, 177, 134, 0.4);
+  }
+
+  .secondaryNav .dockItemActive .dockLabel,
+  .secondaryNav .dockItemActive .dockIcon {
+    color: #111;
+    font-weight: 700;
   }
 
   .secondaryNav .dockIcon {
-    font-size: 24px;
+    font-size: 30px;
+    flex-shrink: 0;
   }
 
   .secondaryNav .dockLabel {
-    font-size: 9px;
+    font-size: 11px;
+    font-weight: 600;
     text-align: center;
+    line-height: 1.2;
+  }
+
+  /* ===== STYLES DES LANGUES ===== */
+  .langGroup {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  :global(.dark) .langGroup {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .langBtnDock {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 11px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+  }
+
+  .langBtnDock:hover {
+    background: rgba(247, 177, 134, 0.2);
+    transform: scale(1.05);
+  }
+
+  .langBtnDock.langActive {
+    background: var(--accent);
+    color: #111;
+    font-weight: 800;
+  }
+
+  /* ===== STYLES DES BOUTONS ICÔNES ===== */
+  .iconsGroup {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dockIconBtn {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(0, 0, 0, 0.04);
+
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+
+  :global(.dark) .dockIconBtn {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .dockIconBtn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #111;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(247, 177, 134, 0.35);
+  }
+
+  .dockIconBtn:active {
+    transform: translateY(0) scale(0.98);
   }
 }
 

@@ -1,20 +1,16 @@
 
-
-import styles from "./Header.module.css";
+import { memo } from "react";
+import { Link } from "react-router-dom";
 import Navbar from "../Navbar/Navbar.jsx";
 import Logo from "../Logo/Logo.jsx";
-import { Link } from "react-router-dom";
+import styles from "./Header.module.css";
 
-export default function Header() {
-
+function Header() {
   return (
-    <>
-      <header className={styles.header}>
-        <Link to="/" aria-label="Accueil Harmonith - Retour à l'accueil">
-          <Logo className={styles.logo} />
-        </Link>
-        <Navbar />
-      </header>
-    </>
+    <header className={styles.header}>
+      <Navbar />
+    </header>
   );
 }
+
+export default memo(Header);

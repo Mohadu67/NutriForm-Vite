@@ -4,17 +4,88 @@ import { useTranslation } from "react-i18next";
 import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
 
-// SVG Icons
-const PersonCircle = ({ size = 20 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="currentColor" viewBox="0 0 16 16">
-    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
-    <path fillRule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+// SVG Icons - Modern Design
+const ToolsIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+  </svg>
+);
+
+const DumbbellIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.4 14.4 9.6 9.6"/>
+    <path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/>
+    <path d="m21.5 21.5-1.4-1.4"/>
+    <path d="M3.9 3.9 2.5 2.5"/>
+    <path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>
+  </svg>
+);
+
+const MessageIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
+  </svg>
+);
+
+const HomeIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    <polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+);
+
+const InfoIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M12 16v-4"/>
+    <path d="M12 8h.01"/>
+  </svg>
+);
+
+const DashboardIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect width="7" height="9" x="3" y="3" rx="1"/>
+    <rect width="7" height="5" x="14" y="3" rx="1"/>
+    <rect width="7" height="9" x="14" y="12" rx="1"/>
+    <rect width="7" height="5" x="3" y="16" rx="1"/>
+  </svg>
+);
+
+const SunIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4"/>
+    <path d="M12 2v2"/>
+    <path d="M12 20v2"/>
+    <path d="m4.93 4.93 1.41 1.41"/>
+    <path d="m17.66 17.66 1.41 1.41"/>
+    <path d="M2 12h2"/>
+    <path d="M20 12h2"/>
+    <path d="m6.34 17.66-1.41 1.41"/>
+    <path d="m19.07 4.93-1.41 1.41"/>
+  </svg>
+);
+
+const MoonIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
   </svg>
 );
 
 const TrophyIcon = ({ size = 20 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="currentColor" viewBox="0 0 16 16">
-    <path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5q0 .807-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33 33 0 0 1 2.5.5m.099 2.54a2 2 0 0 0 .72 3.935c-.333-1.05-.588-2.346-.72-3.935m10.083 3.935a2 2 0 0 0 .72-3.935c-.133 1.59-.388 2.885-.72 3.935M3.504 1q.01.775.056 1.469c.13 2.028.457 3.546.87 4.667C5.294 9.48 6.484 10 7.5 10a.5.5 0 0 1 .5.5v2.61a1 1 0 0 1-.757.97l-1.426.356a.5.5 0 0 0-.179.085L4.5 15h7l-1.638-1.179a.5.5 0 0 0-.179-.085l-1.426-.356a1 1 0 0 1-.757-.97V10.5A.5.5 0 0 1 8 10c1.007 0 2.182-.52 3.054-1.864.413-1.12.74-2.64.87-4.667q.045-.694.056-1.469z"/>
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+    <path d="M4 22h16"/>
+    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+  </svg>
+);
+
+const UserIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
   </svg>
 );
 
@@ -28,8 +99,19 @@ export default function Navbar() {
   const [darkMode, setDarkMode] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState('login');
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
 
   const path = useMemo(() => (location.pathname || "/").toLowerCase(), [location.pathname]);
+
+  // Detect desktop mode
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Scroll to section or navigate
   const handleScroll = useCallback((targetPath, sectionId) => {
@@ -114,28 +196,28 @@ export default function Navbar() {
     {
       label: t('nav.tools'),
       path: "/outils",
-      icon: '🛠️',
+      icon: <ToolsIcon size={20} />,
       onClick: () => handleScroll("/outils", "outils")
     },
     {
       label: t('nav.exercises'),
       path: "/exo",
-      icon: '💪'
+      icon: <DumbbellIcon size={20} />
     },
     {
       label: t('nav.contact'),
       path: "/contact",
-      icon: '💬',
+      icon: <MessageIcon size={20} />,
       onClick: () => handleScroll("/contact", "contact-form")
     }
   ], [t, handleScroll]);
 
   // Secondary navigation links (in expanded menu)
   const secondaryLinks = useMemo(() => [
-    { label: t('nav.home'), path: "/", icon: '🏠' },
-    { label: t('nav.about'), path: "/about", icon: 'ℹ️' },
+    { label: t('nav.home'), path: "/", icon: <HomeIcon size={28} /> },
+    { label: t('nav.about'), path: "/about", icon: <InfoIcon size={28} /> },
     ...(isLoggedIn ? [
-      { label: 'Dashboard', path: "/dashboard", icon: '📊', onClick: () => navigate('/dashboard') }
+      { label: 'Dashboard', path: "/dashboard", icon: <DashboardIcon size={28} />, onClick: () => navigate('/dashboard') }
     ] : [])
   ], [t, isLoggedIn, navigate]);
 
@@ -168,16 +250,16 @@ export default function Navbar() {
 
       {/* Main Dock Navigation */}
       <nav className={`${styles.dock} ${open ? styles.dockExpanded : ''}`}>
-        {/* Logo - visible when expanded */}
-        {open && (
+        {/* Logo - visible when expanded (mobile only) */}
+        {open && !isDesktop && (
           <div className={styles.dockLogo}>
             <span className={styles.logoText}>Harmo</span>
             <span className={styles.logoAccent}>Nith</span>
           </div>
         )}
 
-        {/* Secondary links - visible when expanded */}
-        {open && (
+        {/* Secondary links - visible when expanded or desktop */}
+        {(open || isDesktop) && (
           <div className={styles.secondaryNav}>
             {secondaryLinks.map((link) => (
               <a
@@ -197,8 +279,8 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* Utilities - visible when expanded */}
-        {open && (
+        {/* Utilities - visible when expanded or desktop */}
+        {(open || isDesktop) && (
           <div className={styles.utilitiesExpanded}>
             {/* Language selector */}
             <div className={styles.langGroup}>
@@ -223,7 +305,7 @@ export default function Navbar() {
                 title={darkMode ? 'Light mode' : 'Dark mode'}
                 aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
-                {darkMode ? '☀️' : '🌙'}
+                {darkMode ? <SunIcon size={20} /> : <MoonIcon size={20} />}
               </button>
 
               {isLoggedIn && (
@@ -233,7 +315,7 @@ export default function Navbar() {
                   title="Classement"
                   aria-label="View leaderboard"
                 >
-                  <TrophyIcon size={18} />
+                  <TrophyIcon size={20} />
                 </button>
               )}
 
@@ -243,14 +325,14 @@ export default function Navbar() {
                 title={isLoggedIn ? 'Profil' : 'Connexion'}
                 aria-label={isLoggedIn ? 'View profile' : 'Sign in'}
               >
-                <PersonCircle size={18} />
+                <UserIcon size={20} />
               </button>
             </div>
           </div>
         )}
 
         {/* Separator */}
-        {open && <div className={styles.separator} />}
+        {(open || isDesktop) && <div className={styles.separator} />}
 
         {/* Main navigation - always visible */}
         <div className={styles.mainNav}>
