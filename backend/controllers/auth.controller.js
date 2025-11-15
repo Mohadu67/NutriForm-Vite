@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { sendVerifyEmail } = require('../services/mailer.service');
+const { buildBaseUrl } = require('../utils/urls');
 
 function frontBase() {
   const base = process.env.FRONTEND_BASE_URL || 'http://localhost:5173';
@@ -63,7 +64,7 @@ exports.login = async (req, res) => {
     // Convertir l'URL de la photo en URL complète si elle existe
     let photoUrl = user.photo || null;
     if (photoUrl && !photoUrl.startsWith('http')) {
-      const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+      const backendBase = buildBaseUrl(req);
       photoUrl = `${backendBase}${photoUrl}`;
     }
 
@@ -167,7 +168,7 @@ exports.me = async (req, res) => {
     // Convertir l'URL de la photo en URL complète si elle existe
     let photoUrl = user.photo || null;
     if (photoUrl && !photoUrl.startsWith('http')) {
-      const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+      const backendBase = buildBaseUrl(req);
       photoUrl = `${backendBase}${photoUrl}`;
     }
 
@@ -220,7 +221,7 @@ exports.updateProfile = async (req, res) => {
     // Convertir l'URL de la photo en URL complète si elle existe
     let photoUrl = user.photo || null;
     if (photoUrl && !photoUrl.startsWith('http')) {
-      const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+      const backendBase = buildBaseUrl(req);
       photoUrl = `${backendBase}${photoUrl}`;
     }
 
