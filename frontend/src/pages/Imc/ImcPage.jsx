@@ -44,28 +44,28 @@ export default function ImcPage() {
         "position": 1,
         "name": "Mesurez votre poids",
         "text": "Pesez-vous de préférence le matin à jeun, sans vêtements lourds. Notez votre poids en kilogrammes.",
-        "url": "https://harmonith.fr/imc#step1"
+        "url": "https://harmonith.fr/outils?tool=imc#step1"
       },
       {
         "@type": "HowToStep",
         "position": 2,
         "name": "Mesurez votre taille",
         "text": "Mesurez votre taille en vous tenant droit, pieds joints, contre un mur. Notez votre taille en centimètres ou mètres.",
-        "url": "https://harmonith.fr/imc#step2"
+        "url": "https://harmonith.fr/outils?tool=imc#step2"
       },
       {
         "@type": "HowToStep",
         "position": 3,
         "name": "Entrez vos données dans le calculateur",
         "text": "Renseignez votre poids en kg et votre taille en cm dans notre calculateur IMC gratuit.",
-        "url": "https://harmonith.fr/imc#step3"
+        "url": "https://harmonith.fr/outils?tool=imc#step3"
       },
       {
         "@type": "HowToStep",
         "position": 4,
         "name": "Consultez vos résultats",
         "text": "L'IMC est calculé automatiquement selon la formule : poids (kg) / taille (m)². Votre catégorie (maigreur, normal, surpoids, obésité) s'affiche avec des conseils personnalisés.",
-        "url": "https://harmonith.fr/imc#step4"
+        "url": "https://harmonith.fr/outils?tool=imc#step4"
       }
     ]
   };
@@ -77,7 +77,7 @@ export default function ImcPage() {
         <meta name="description" content="Calculateur IMC (Indice de Masse Corporelle) gratuit et fiable. Évaluez votre corpulence en quelques secondes et recevez des conseils personnalisés selon votre catégorie." />
         <meta property="og:title" content="Calculateur IMC Gratuit - Harmonith" />
         <meta property="og:description" content="Calculez votre IMC gratuitement et découvrez si votre poids est adapté à votre taille avec des conseils personnalisés." />
-        <meta property="og:url" content="https://harmonith.fr/imc" />
+        <meta property="og:url" content="https://harmonith.fr/outils?tool=imc" />
         <script type="application/ld+json">
           {JSON.stringify(howToSchema)}
         </script>
