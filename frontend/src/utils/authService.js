@@ -1,6 +1,6 @@
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
-export async function apiCall(endpoint, options = {}) {
+async function apiCall(endpoint, options = {}) {
   const url = `${API_URL}${endpoint}`;
   const token = localStorage.getItem("token");
 
