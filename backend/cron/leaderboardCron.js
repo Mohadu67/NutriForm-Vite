@@ -3,10 +3,6 @@ const LeaderboardEntry = require('../models/LeaderboardEntry');
 const User = require('../models/User');
 const { calculateUserStats } = require('../controllers/leaderboard.controller');
 
-function getBaseUrl() {
-  return process.env.BACKEND_BASE_URL || 'http://localhost:3000';
-}
-
 /**
  * Mise à jour automatique des stats du leaderboard
  * S'exécute tous les jours à 3h du matin
@@ -28,9 +24,8 @@ function startLeaderboardCron() {
 
           // Récupérer les infos utilisateur pour mettre à jour l'avatar
           const user = await User.findById(entry.userId);
-          const baseUrl = getBaseUrl();
           const avatarUrl = user?.photo
-            ? `${baseUrl}${user.photo}`
+            ? `${process.env.BACKEND_BASE_URL || 'http://localhost:3000'}${user.photo}`
             : null;
 
           await LeaderboardEntry.findByIdAndUpdate(entry._id, {
