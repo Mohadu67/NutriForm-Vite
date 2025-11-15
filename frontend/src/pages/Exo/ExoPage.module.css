@@ -1,29 +1,117 @@
+/* ========================================
+   INFO SECTION - Glassmorphism Design
+   Mobile First - Inspired by Dock
+   ======================================== */
+
 .infoSection {
-  max-width: 800px;
-  margin: 4rem auto 2rem;
-  padding: 0 1.5rem;
+  max-width: 900px;
+  margin: 3rem auto 2rem;
+  padding: 0 1rem;
+  position: relative;
 }
 
+/* Decorative gradient background */
+.infoSection::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 300px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(247, 177, 134, 0.15) 0%,
+    rgba(247, 177, 134, 0.05) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(60px);
+  animation: pulseGlow 8s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+  50% { opacity: 0.8; transform: translateX(-50%) scale(1.1); }
+}
+
+/* Content Block - Glassmorphism Card */
 .contentBlock {
-  margin-bottom: 3rem;
-  padding-bottom: 3rem;
-  border-bottom: 1px solid var(--line);
+  margin-bottom: 2rem;
+  padding: 1.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    0 2px 12px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-.contentBlock:last-child {
-  border-bottom: none;
+:global(.dark) .contentBlock {
+  background: rgba(18, 21, 27, 0.88);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 2px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.contentBlock::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #f7b186, #ff8c5a);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.contentBlock:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 12px 48px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-color: rgba(247, 177, 134, 0.3);
+}
+
+.contentBlock:hover::before {
+  opacity: 1;
 }
 
 .contentBlock h2 {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 800;
   color: var(--ink);
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
   line-height: 1.3;
+  letter-spacing: -0.5px;
+  position: relative;
+  display: inline-block;
+}
+
+.contentBlock h2::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, #f7b186, #ff8c5a);
+  border-radius: 2px;
 }
 
 .contentBlock p {
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1.7;
   color: var(--muted);
   margin-bottom: 1rem;
@@ -33,82 +121,172 @@
   margin-bottom: 0;
 }
 
+/* List - Modern Style */
 .list {
-  margin: 1.5rem 0;
-  padding-left: 1.5rem;
+  margin: 1.25rem 0;
+  padding-left: 0;
   list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
 }
 
 .list li {
   position: relative;
-  padding-left: 1.5rem;
-  margin-bottom: 1rem;
+  padding: 0.75rem 1rem 0.75rem 3rem;
   line-height: 1.6;
-  color: var(--muted);
+  color: var(--ink);
+  background: rgba(247, 177, 134, 0.06);
+  border-radius: 12px;
+  border-left: 3px solid #f7b186;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:global(.dark) .list li {
+  background: rgba(247, 177, 134, 0.08);
 }
 
 .list li::before {
   content: "→";
   position: absolute;
-  left: 0;
-  color: var(--couleur-bouton-action);
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #f7b186;
+  font-size: 1.25rem;
   font-weight: 700;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.list li:hover {
+  background: rgba(247, 177, 134, 0.12);
+  transform: translateX(4px);
+  border-left-color: #ff8c5a;
+}
+
+.list li:hover::before {
+  transform: translateY(-50%) translateX(3px);
 }
 
 .list li strong {
   color: var(--ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
+/* Tips Grid - Bento Box Style */
 .tipsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: 1fr;
+  gap: 1rem;
   margin-top: 1.5rem;
 }
 
 .tip {
   padding: 1.25rem;
-  background: var(--paper);
-  border-left: 3px solid var(--couleur-bouton-selection);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+:global(.dark) .tip {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.tip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #f7b186, #ff8c5a);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tip:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(247, 177, 134, 0.2);
+  border-color: rgba(247, 177, 134, 0.3);
+}
+
+.tip:hover::before {
+  opacity: 1;
 }
 
 .tip strong {
   display: block;
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ink);
   margin-bottom: 0.5rem;
+  letter-spacing: -0.2px;
 }
 
 .tip p {
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: 0.875rem;
+  line-height: 1.6;
   color: var(--muted);
   margin: 0;
 }
 
-@media (max-width: 768px) {
+/* Tablet & Desktop */
+@media (min-width: 640px) {
   .infoSection {
-    margin-top: 3rem;
-    padding: 0 1rem;
+    padding: 0 1.5rem;
   }
 
   .contentBlock {
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
+    padding: 2rem 1.75rem;
+    margin-bottom: 2.5rem;
   }
 
   .contentBlock h2 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
   }
 
   .tipsGrid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .infoSection {
+    margin-top: 4rem;
   }
 
-  .tip {
-    padding: 1rem;
+  .contentBlock {
+    padding: 2.5rem 2rem;
+  }
+
+  .contentBlock h2 {
+    font-size: 2rem;
+  }
+
+  .tipsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .tipsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
