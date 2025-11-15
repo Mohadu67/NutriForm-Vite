@@ -30,28 +30,28 @@ export default function CaloriePage() {
         "position": 1,
         "name": "Renseignez vos informations personnelles",
         "text": "Entrez votre âge, sexe, poids (en kg) et taille (en cm) dans le formulaire. Ces données sont essentielles pour calculer votre métabolisme de base.",
-        "url": "https://harmonith.fr/calorie#step1"
+        "url": "https://harmonith.fr/outils?tool=cal#step1"
       },
       {
         "@type": "HowToStep",
         "position": 2,
         "name": "Sélectionnez votre niveau d'activité",
         "text": "Choisissez votre niveau d'activité physique quotidienne : sédentaire, légèrement actif, modérément actif, très actif ou extrêmement actif. Ce facteur multiplie votre métabolisme de base.",
-        "url": "https://harmonith.fr/calorie#step2"
+        "url": "https://harmonith.fr/outils?tool=cal#step2"
       },
       {
         "@type": "HowToStep",
         "position": 3,
         "name": "Définissez votre objectif",
         "text": "Indiquez si vous souhaitez perdre du poids, maintenir votre poids actuel ou prendre de la masse. Cela ajustera vos besoins caloriques en conséquence.",
-        "url": "https://harmonith.fr/calorie#step3"
+        "url": "https://harmonith.fr/outils?tool=cal#step3"
       },
       {
         "@type": "HowToStep",
         "position": 4,
         "name": "Consultez vos résultats personnalisés",
         "text": "Obtenez votre dépense énergétique totale (DET), vos besoins caloriques selon votre objectif, et la répartition recommandée en macronutriments (protéines, glucides, lipides).",
-        "url": "https://harmonith.fr/calorie#step4"
+        "url": "https://harmonith.fr/outils?tool=cal#step4"
       }
     ]
   };
@@ -97,7 +97,7 @@ export default function CaloriePage() {
         <meta name="description" content="Calculateur de calories gratuit et précis basé sur la formule Mifflin-St Jeor. Découvrez vos besoins caloriques quotidiens selon votre objectif : perte de poids, maintien ou prise de masse." />
         <meta property="og:title" content="Calculateur de Calories Gratuit - Harmonith" />
         <meta property="og:description" content="Calculez vos besoins caloriques quotidiens gratuitement avec notre outil basé sur des formules scientifiques validées." />
-        <meta property="og:url" content="https://harmonith.fr/calorie" />
+        <meta property="og:url" content="https://harmonith.fr/outils?tool=cal" />
         <script type="application/ld+json">
           {JSON.stringify(howToSchema)}
         </script>
