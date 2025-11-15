@@ -9,7 +9,7 @@ export const TYPE_CARDS = [
   { id: "yoga", icon: "🧘", label: "Yoga" },
   { id: "natation", icon: "🏊", label: "Natation" },
   { id: "etirement", icon: "🤸", label: "Étirement" },
-  { id: "hiit", icon: "⚡", label: "HIIT" },
+  { id: "meditation", icon: "🧘‍♂️", label: "Méditation" },
 ];
 
 export const EQUIP_CARDS = [
@@ -19,9 +19,6 @@ export const EQUIP_CARDS = [
   { id: "machine", icon: "🛠️", label: "Machine" },
   { id: "kettlebell", icon: "🧲", label: "Kettlebell" },
   { id: "poulie", icon: "🎯", label: "Poulie" },
-  { id: "disques", icon: "⚪", label: "Disques" },
-  { id: "elastiques", icon: "🔗", label: "Élastiques" },
-  { id: "step", icon: "📦", label: "Step" },
 ];
 
 export default function CardChoice({ value, onChange, initialValue = null, cards = TYPE_CARDS, multiple = false }) {
