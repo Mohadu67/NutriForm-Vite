@@ -363,7 +363,6 @@
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
   opacity: 0;
   transition: opacity 0.3s var(--transition-smooth);
-  border-radius: 18px;
   z-index: 0;
 }
 
