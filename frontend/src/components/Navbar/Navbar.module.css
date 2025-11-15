@@ -48,21 +48,6 @@
   --ink-muted: #8a8e96;
 }
 
-/* Respect system preference if no explicit theme set */
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --dock-bg: rgba(18, 21, 27, 0.88);
-    --dock-border: rgba(255, 255, 255, 0.08);
-    --dock-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.6),
-      0 2px 12px rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    --ink: #e9ecf1;
-    --ink-secondary: #c5c9d1;
-    --ink-muted: #8a8e96;
-  }
-}
-
 /* ========================================
    DOCK - MOBILE FIRST (Bottom Center)
    ======================================== */
@@ -378,7 +363,6 @@
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
   opacity: 0;
   transition: opacity 0.3s var(--transition-smooth);
-  border-radius: 18px;
   z-index: 0;
 }
 
@@ -612,17 +596,7 @@
 
   /* 2. Separator */
   .separator {
-    order: 2;
-    width: 1px;
-    height: 32px;
-    background: linear-gradient(
-      180deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.12) 50%,
-      transparent 100%
-    );
-    margin: 0 8px;
-    flex-shrink: 0;
+    display: none;
   }
 
   :global(.dark) .separator {
