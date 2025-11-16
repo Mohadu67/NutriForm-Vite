@@ -1,4 +1,4 @@
-import React from "react";
+import { memo } from "react";
 import styles from "../SuivieCard.module.css";
 
 const STYLE_OPTIONS = [
@@ -12,7 +12,7 @@ const STYLE_OPTIONS = [
   { value: "autre", label: "Autre / personnalisé" },
 ];
 
-export default function YogaForm({ yoga = {}, onPatch }) {
+function YogaForm({ yoga = {}, onPatch }) {
   const durationMin = yoga.durationMin ?? "";
   const style = yoga.style ?? "";
   const focus = yoga.focus ?? "";
@@ -78,3 +78,5 @@ export default function YogaForm({ yoga = {}, onPatch }) {
     </section>
   );
 }
+
+export default memo(YogaForm);

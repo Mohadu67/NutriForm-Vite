@@ -1,10 +1,10 @@
-import React, { useState, useId, useEffect } from "react";
+import { memo, useState, useId, useEffect, useCallback } from "react";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import styles from "./ExerciceCard.module.css";
 import { idOf } from "../../Shared/idOf.js";
 
-export default function ExerciceCard({
+function ExerciceCard({
   exo,
   onAdd,
   isAdded = false,
@@ -13,6 +13,20 @@ export default function ExerciceCard({
 }) {
   const [open, setOpen] = useState(false);
   const dialogId = useId();
+
+  const handleOpen = useCallback(() => setOpen(true), []);
+  const handleClose = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') handleClose();
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [open, handleClose]);
 
   if (!exo) return null;
 
@@ -72,7 +86,8 @@ export default function ExerciceCard({
         <button
           type="button"
           className={styles.contentBtn}
-          onClick={() => setOpen(true)}
+          onClick={handleOpen}
+          aria-label={`Voir détails de ${exo.name}`}
         >
           <div className={styles.thumb} aria-hidden>
             {imgSrc ? (
@@ -129,14 +144,14 @@ export default function ExerciceCard({
           className={`${styles.overlay} ${open ? styles.isOpen : ''}`}
           role="dialog"
           aria-modal="true"
-          aria-hidden={!open}
+          aria-labelledby={`${dialogId}-title`}
           id={dialogId}
-          onClick={() => setOpen(false)}
+          onClick={handleClose}
         >
           <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
             <header className={styles.popupHeader}>
-              <h3 className={styles.popupTitle}>{exo.name}</h3>
-              <button type="button" className={styles.closeBtn} onClick={() => setOpen(false)} aria-label="Fermer">×</button>
+              <h3 id={`${dialogId}-title`} className={styles.popupTitle}>{exo.name}</h3>
+              <button type="button" className={styles.closeBtn} onClick={handleClose} aria-label="Fermer">×</button>
             </header>
 
             <div className={styles.popupBody}>
@@ -181,3 +196,5 @@ export default function ExerciceCard({
     </>
   );
 }
+
+export default memo(ExerciceCard);

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import styles from "./GlobalRestTimer.module.css";
 
-export default function GlobalRestTimer() {
+function GlobalRestTimer() {
   const [showModal, setShowModal] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -203,3 +203,5 @@ export default function GlobalRestTimer() {
     </>
   );
 }
+
+export default memo(GlobalRestTimer);

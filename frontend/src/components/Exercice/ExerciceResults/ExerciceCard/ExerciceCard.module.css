@@ -80,7 +80,10 @@
   overflow: hidden;
   box-sizing: border-box;
 }
-.row:hover { background: color-mix(in oklab, var(--paper) 88%, var(--subtle)); box-shadow: 0 6px 16px rgba(0,0,0,.10); }
+@media (hover: hover) and (pointer: fine) {
+  .row:hover { background: color-mix(in oklab, var(--paper) 88%, var(--subtle)); box-shadow: 0 6px 16px rgba(0,0,0,.10); }
+}
+
 .row:active { transform: translateY(0); }
 .row:focus-visible { outline: none; box-shadow: var(--ring); border-color: color-mix(in oklab, var(--accent) 45%, var(--line)); }
 
@@ -192,8 +195,8 @@
 }
 
 .closeBtn {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -207,13 +210,22 @@
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
-.closeBtn:hover {
-  background: rgba(0,0,0,0.12);
-  color: var(--fg);
-  transform: scale(1.05);
+
+@media (hover: hover) and (pointer: fine) {
+  .closeBtn:hover {
+    background: rgba(0,0,0,0.12);
+    color: var(--fg);
+    transform: scale(1.05);
+  }
 }
+
 .closeBtn:active {
   transform: scale(0.95);
+}
+
+.closeBtn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* Hero image */
@@ -356,12 +368,31 @@
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
-.primary { background: linear-gradient(180deg, var(--accent), var(--accent-2)); color: #fff; border: 0; border-radius: 12px; padding: 14px 18px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px color-mix(in oklab, var(--accent-2) 45%, transparent); transition: transform .12s ease, box-shadow .2s ease; }
-.primary:hover { transform: translateY(-1px); }
+.primary { background: linear-gradient(180deg, var(--accent), var(--accent-2)); color: #fff; border: 0; border-radius: 12px; padding: 14px 18px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px color-mix(in oklab, var(--accent-2) 45%, transparent); transition: transform .12s ease, box-shadow .2s ease; min-height: 44px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover { transform: translateY(-1px); }
+}
+
 .primary:active { transform: translateY(0); box-shadow: 0 4px 12px color-mix(in oklab, var(--accent-2) 35%, transparent); }
-.secondary { background: color-mix(in oklab, var(--paper) 96%, transparent); color: var(--fg); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; font-weight: 700; cursor: pointer; transition: transform .12s ease, box-shadow .2s ease; }
-.secondary:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(0,0,0,.10); }
+
+.primary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.secondary { background: color-mix(in oklab, var(--paper) 96%, transparent); color: var(--fg); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; font-weight: 700; cursor: pointer; transition: transform .12s ease, box-shadow .2s ease; min-height: 44px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .secondary:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(0,0,0,.10); }
+}
+
 .secondary:active { transform: translateY(0); }
+
+.secondary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 /* Drag handle & delete */
 .handle {
@@ -380,10 +411,15 @@
   flex-shrink: 0;
   border-radius: 8px;
   transition: background 0.2s ease;
+  min-height: 44px;
 }
-.handle:hover {
-  background: rgba(0, 0, 0, 0.05);
+
+@media (hover: hover) and (pointer: fine) {
+  .handle:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
 }
+
 .handle:active {
   cursor: grabbing;
   background: rgba(0, 0, 0, 0.08);
@@ -412,12 +448,20 @@
     transition: all .12s ease;
     flex-shrink: 0;
     cursor: pointer;
+    min-height: 44px;
 }
 
-.deleteBtn:hover {
+@media (hover: hover) and (pointer: fine) {
+  .deleteBtn:hover {
     background: color-mix(in oklab, var(--accent) 12%, transparent);
     transition: all .12s ease;
   }
+}
+
+.deleteBtn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 /* Responsive tweaks */
 @media (max-width: 380px) {
@@ -460,9 +504,11 @@
   border-style: dashed;
 }
 
-.proposed:hover {
-  opacity: 1;
-  border-style: solid;
+@media (hover: hover) and (pointer: fine) {
+  .proposed:hover {
+    opacity: 1;
+    border-style: solid;
+  }
 }
 
 /* Buttons for proposed items */
@@ -476,20 +522,35 @@
   cursor: pointer;
   font-size: 1rem;
   font-weight: 700;
+  min-height: 44px;
 }
 
 .addBtn {
   color: #22c55e;
 }
 
-.addBtn:hover {
-  background: color-mix(in oklab, #22c55e 12%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .addBtn:hover {
+    background: color-mix(in oklab, #22c55e 12%, transparent);
+  }
+}
+
+.addBtn:focus-visible {
+  outline: 2px solid #22c55e;
+  outline-offset: 2px;
 }
 
 .dismissBtn {
   color: #ef4444;
 }
 
-.dismissBtn:hover {
-  background: color-mix(in oklab, #ef4444 12%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .dismissBtn:hover {
+    background: color-mix(in oklab, #ef4444 12%, transparent);
+  }
+}
+
+.dismissBtn:focus-visible {
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
 }

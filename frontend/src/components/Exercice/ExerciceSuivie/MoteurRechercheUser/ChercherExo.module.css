@@ -1,3 +1,8 @@
+:root {
+  --accent: #ff914d;
+  --min-touch-target: 44px;
+}
+
 .container { display: grid; gap: 12px; }
 .header { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
 .headerActions { display: flex; gap: 8px; }
@@ -8,9 +13,10 @@
   border: 1px solid var(--line);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  min-height: var(--min-touch-target);
 }
-.search:focus {
-  border-color: var(--accent, #ff914d);
+.search:focus-visible {
+  border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(255,145,77,0.3);
 }
 .selects { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
@@ -21,12 +27,17 @@
   background: var(--card, #fff);
   cursor: pointer;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  min-height: var(--min-touch-target);
 }
-.select:hover {
-  border-color: var(--accent, #ff914d);
+
+@media (hover: hover) and (pointer: fine) {
+  .select:hover {
+    border-color: var(--accent);
+  }
 }
-.select:focus {
-  border-color: var(--accent, #ff914d);
+
+.select:focus-visible {
+  border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(255,145,77,0.3);
   outline: none;
 }
@@ -41,10 +52,14 @@
   align-items: center;
   gap: 10px;
   transition: background 0.2s ease, transform 0.1s ease;
+  min-height: var(--min-touch-target);
 }
-.item:hover {
-  background: var(--hover, rgba(0,0,0,0.03));
-  transform: translateY(-1px);
+
+@media (hover: hover) and (pointer: fine) {
+  .item:hover {
+    background: var(--hover, rgba(0,0,0,0.03));
+    transform: translateY(-1px);
+  }
 }
 .itemLabel { display: grid; grid-template-columns: 24px 64px 1fr; gap: 10px; align-items: center; width: 100%; cursor: pointer; }
 .itemTitleRow { font-weight: 800; display: flex; align-items: center; gap: 8px; }
@@ -67,21 +82,78 @@
     border-radius: 8px;
     color: var(--couleur-principale);
     font-weight: bolder;
+    border: none;
+    cursor: pointer;
+    min-height: var(--min-touch-target);
+    transition: filter 0.2s ease, transform 0.2s ease;
 }
 
-.btnAnnule:hover {
+@media (hover: hover) and (pointer: fine) {
+  .btnAnnule:hover {
     background-color: var(--couleur-text-noir);
     filter: brightness(0.9);
     transform: translateY(-1px);
+  }
 }
 
-
-.btnreset:hover {
-  filter: brightness(0.95);
-  transform: translateY(-2px);
+.btnAnnule:active {
+  transform: translateY(0) scale(0.98);
 }
+
+.btnAnnule:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btnreset {
+  min-height: var(--min-touch-target);
+  border: none;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btnreset:hover {
+    filter: brightness(0.95);
+    transform: translateY(-2px);
+  }
+}
+
 .btnreset:active {
   transform: scale(0.97);
 }
 
+.btnreset:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; flex: 0 0 auto; background: #f2f2f2; border: 1px solid rgba(0,0,0,0.08); }
+
+:global(.dark) .select {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e9ecf1;
+}
+
+:global(.dark) .item {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:global(.dark) .item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+:global(.dark) .thumb {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

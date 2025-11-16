@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { memo, useState, useEffect } from "react";
 import styles from "./EchauffementModal.module.css";
 
 const getWarmupData = (muscleGroups, warmupDatabase) => {
@@ -87,7 +87,7 @@ const getWarmupData = (muscleGroups, warmupDatabase) => {
   };
 };
 
-export default function EchauffementModal({ onStart, onSkip, muscleGroups = [] }) {
+function EchauffementModal({ onStart, onSkip, muscleGroups = [] }) {
   const [warmupDatabase, setWarmupDatabase] = useState(null);
   const [warmupTime, setWarmupTime] = useState(300); 
   const [isWarmingUp, setIsWarmingUp] = useState(false);
@@ -225,3 +225,5 @@ export default function EchauffementModal({ onStart, onSkip, muscleGroups = [] }
     </div>
   );
 }
+
+export default memo(EchauffementModal);

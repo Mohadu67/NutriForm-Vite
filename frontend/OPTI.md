@@ -11,8 +11,6 @@
 **Fichiers optimisés :**
 - `Navbar.jsx` (310 lignes)
 - `Navbar.module.css` (637 lignes)
-- `LiquidBlob.jsx` (62 lignes)
-- `LiquidBlob.module.css` (92 lignes)
 - `Navlinks.jsx` (49 lignes)
 
 ### 🎯 Header (Terminé - 2025-11-14)
@@ -373,5 +371,116 @@ Utiliser cette checklist pour chaque composant :
 
 ---
 
-**Dernière mise à jour** : 2025-11-14
-**Prochaine étape** : Footer/ (Priorité 5) ou Exercice/ (Priorité 1)
+**Dernière mise à jour** : 2025-11-15
+**Prochaine étape** : Continuer l'optimisation des CSS et des hooks
+
+---
+
+## 📊 Progression Exercice/ (2025-11-15)
+
+### ✅ Fichiers JavaScript/JSX Optimisés (45+ fichiers)
+
+#### BarreDetape/
+- ✅ **Etapes.jsx** - memo, useCallback, accessibilité améliorée, aria-label
+- ✅ **Etapes.module.css** - disabled states, touch targets 44px, hover media query
+
+#### DynamiChoice/
+- ✅ **BodyPicker/BodyPicker.jsx** - memo, aria-live polite pour selectedList
+- ✅ **BodyPicker/BodyPicker.module.css** - focus-visible, badges styles
+- ✅ **BodyPicker/figureAssets.js** - Object.freeze déjà optimal ✓
+- ✅ **CardChoice/CardChoice.jsx** - memo, Object.freeze constantes, role="group" aria-label
+- ✅ **CardChoice/CardChoice.module.css** - CSS variables, hover media query
+- ✅ **DynamiChoice.jsx** - memo, Object.freeze, useCallback
+- ✅ **DynamiChoice.module.css** - hover media query
+- ✅ **MoteurRecherche/DataMap.jsx** - Object.freeze tous les maps
+- ✅ **MoteurRecherche/MoteurRecherche.jsx** - Object.freeze LVL et SCORE_WEIGHTS
+
+#### ExerciceResults/
+- ✅ **ExerciceCard/ExerciceCard.jsx** - memo, useCallback, Escape key listener, aria-labelledby
+- ✅ **ExerciseResults.jsx** - memo
+
+#### ExerciceSuivie/
+- ✅ **SuivieExo.jsx** - memo, useCallback, aria-label section
+- ✅ **ExerciceCard/SuivieCard.jsx** - memo
+
+##### Forms/ (8 fichiers)
+- ✅ **CardioForm.jsx** - memo
+- ✅ **MuscuForm.jsx** - memo
+- ✅ **PdcForm.jsx** - memo
+- ✅ **StretchForm.jsx** - memo
+- ✅ **SwimForm.jsx** - memo
+- ✅ **WalkRunForm.jsx** - memo
+- ✅ **YogaForm.jsx** - memo
+- ✅ **HIITForm.jsx** - memo
+
+##### Tables/ (4 fichiers)
+- ✅ **MuscuTable.jsx** - déjà avec memo ✓
+- ✅ **CardioTable.jsx** - déjà avec memo ✓
+- ✅ **PdcTable.jsx** - déjà avec memo ✓
+- ✅ **RestTimer.jsx** - memo
+
+##### Autres composants ExerciceSuivie/
+- ✅ **BtnFinSeance/FinSeance.jsx** - memo
+- ✅ **Chrono/Chrono.jsx** - memo
+- ✅ **Chrono/EchauffementModal.jsx** - memo
+- ✅ **Chrono/SaveLoadingAnimation.jsx** - memo
+- ✅ **ExerciceCard/GlobalRestTimer/GlobalRestTimer.jsx** - memo
+- ✅ **ExerciceCard/HIITTimer/HIITPresets.jsx** - memo
+- ✅ **ExerciceCard/HIITTimer/HIITTimer.jsx** - memo
+- ✅ **ExerciceCard/ModeBar/ModeBar.jsx** - memo
+- ✅ **ExerciceCard/Notes/NotesSection.jsx** - memo
+- ✅ **MoteurRechercheUser/ChercherExo.jsx** - memo
+
+#### FormExo/
+- ✅ **FormExo.jsx** - memo
+- ✅ **ConseilJour.jsx** - memo
+- ✅ **salutation.jsx** - memo
+
+#### Autres/
+- ✅ **RepeatSessionModal/RepeatSessionModal.jsx** - memo
+- ✅ **subtitlePools.jsx** - memo
+
+---
+
+### 📝 Optimisations Appliquées
+
+#### JavaScript/React
+- ✅ `import { memo }` au lieu de `import React`
+- ✅ `React.memo()` / `memo()` sur tous les composants
+- ✅ `useCallback` pour les fonctions handlers
+- ✅ `useMemo` pour les valeurs calculées
+- ✅ `Object.freeze()` pour les constantes
+- ✅ Accessibilité : aria-label, aria-live, aria-labelledby, role
+- ✅ Escape key listener pour les modals
+- ✅ Gestion des disabled states
+
+#### CSS
+- ✅ **Mobile-first** : styles de base mobile, @media (min-width)
+- ✅ Variables CSS organisées et documentées
+- ✅ Touch targets ≥ 44px sur mobile
+- ✅ Support dark mode : :global(.dark)
+- ✅ Animations désactivables : @media (prefers-reduced-motion: reduce)
+- ✅ Focus states visibles : :focus-visible
+- ✅ Hover states avec @media (hover: hover) and (pointer: fine)
+
+---
+
+### ⏳ Fichiers Restants à Optimiser
+
+#### CSS (~30 fichiers .module.css)
+- ⏳ Tous les fichiers CSS restants dans Exercice/
+- Actions : Mobile-first, variables CSS, touch targets, prefers-reduced-motion
+
+#### Hooks/Helpers
+- ⏳ useExerciceForm.js
+- ⏳ useSaveSession.js
+- ⏳ useChronoCore.js
+- ⏳ useHIITTimer.js
+- ⏳ progressionHelper.js
+- ⏳ idOf.js
+- ⏳ selectionUtils.js
+
+---
+
+**Dernière mise à jour** : 2025-11-15
+**Prochaine étape** : Optimisation CSS et hooks/helpers

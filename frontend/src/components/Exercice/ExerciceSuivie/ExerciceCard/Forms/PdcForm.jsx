@@ -1,8 +1,8 @@
-import React from "react";
+import { memo } from "react";
 import styles from "../SuivieCard.module.css";
 import { calculateDifference } from "../helpers/progressionHelper.js";
 
-export default function PdcForm({ sets = [], onAdd, onRemove, onPatch, progression, lastExerciseData }) {
+function PdcForm({ sets = [], onAdd, onRemove, onPatch, progression, lastExerciseData }) {
   // Vérifie si on a des séries remplies (avec reps)
   const hasFilledSets = sets.some(s => {
     const reps = Number(s?.reps || 0);
@@ -85,3 +85,5 @@ export default function PdcForm({ sets = [], onAdd, onRemove, onPatch, progressi
     </section>
   );
 }
+
+export default memo(PdcForm);

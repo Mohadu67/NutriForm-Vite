@@ -1,5 +1,9 @@
 /* Modern mode selector with visual buttons */
 
+:root {
+  --min-touch-target: 44px;
+}
+
 .modernModeBar {
   margin-bottom: 0;
 }
@@ -23,15 +27,23 @@
   transition: all .25s cubic-bezier(.4, 0, .2, 1);
   font-weight: 600;
   font-size: 14px;
+  min-height: var(--min-touch-target);
 }
 
-.modeButton:hover {
-  border-color: var(--accent);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .modeButton:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
 }
 
 .modeButton:active {
   transform: translateY(0);
+}
+
+.modeButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .modeButtonActive {
@@ -85,13 +97,17 @@
   transition: border-color .15s ease, box-shadow .15s ease, background-color .2s ease;
 }
 
-.selectControl select:focus {
+.selectControl select:focus-visible {
   outline: 0;
   border-color: color-mix(in oklab, var(--accent) 45%, var(--line-strong));
   box-shadow: var(--ring);
 }
 
-.selectControl select:hover { border-color: color-mix(in oklab, var(--accent) 25%, var(--line-strong)); }
+@media (hover: hover) and (pointer: fine) {
+  .selectControl select:hover {
+    border-color: color-mix(in oklab, var(--accent) 25%, var(--line-strong));
+  }
+}
 
 .selectControl select:disabled {
   opacity: .7;
@@ -105,4 +121,13 @@
 
 @media (min-width: 900px) {
   .modeBar { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

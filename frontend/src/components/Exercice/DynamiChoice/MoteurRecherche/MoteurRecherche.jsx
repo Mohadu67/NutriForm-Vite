@@ -1,14 +1,14 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { TYPE_MAP, MUSCLE_ZONES, MUSCLE_GROUPS, EQUIP_MAP } from "./DataMap";
 
-const LVL = { beginner: 1, easy: 1, intermediate: 2, medium: 2, advanced: 3, hard: 3 };
+const LVL = Object.freeze({ beginner: 1, easy: 1, intermediate: 2, medium: 2, advanced: 3, hard: 3 });
 
-const SCORE_WEIGHTS = {
+const SCORE_WEIGHTS = Object.freeze({
   type: 6,
   muscle: 5,
   equipment: 3,
   level: 1,
-};
+});
 
 function norm(v) {
   if (!v && v !== 0) return "";

@@ -1,6 +1,6 @@
 
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import styles from "./ConseilJour.module.css";
 
 const DEFAULT_TIPS = [
@@ -76,7 +76,7 @@ const DEFAULT_TIPS = [
   },
 ];
 
-export default function ConseilJour({ tips = DEFAULT_TIPS, intervalMs = 5 * 60 * 1000 }) {
+function ConseilJour({ tips = DEFAULT_TIPS, intervalMs = 5 * 60 * 1000 }) {
   const safeTips = Array.isArray(tips) && tips.length ? tips : DEFAULT_TIPS;
   const [index, setIndex] = useState(() => Math.floor(Math.random() * safeTips.length));
   const timerRef = useRef(null);
@@ -109,3 +109,5 @@ export default function ConseilJour({ tips = DEFAULT_TIPS, intervalMs = 5 * 60 *
   );
 }
 
+
+export default memo(ConseilJour);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { memo, useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { FaShare } from "react-icons/fa";
 import { mapItemsToEntries } from "../../../History/SessionTracking/sessionApi";

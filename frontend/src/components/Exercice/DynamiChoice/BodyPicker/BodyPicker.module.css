@@ -1,40 +1,85 @@
+/* ========================================
+   BODY PICKER - Apple-Inspired Design
+   Interactive Muscle Selection
+   ======================================== */
+
 :root {
-  --accent-fill: rgba(255, 130, 40, 0.48);
-  --accent-stroke: rgba(255, 130, 40, 0.95);
-  --accent-hover-fill: rgba(255, 130, 40, 0.32);
-  --accent-hover-stroke: rgba(255, 130, 40, 0.74);
-  --zone-base-fill: rgba(52, 72, 94, 0.22);
-  --zone-base-stroke: rgba(38, 48, 68, 0.44);
-  --zone-outline-stroke: rgba(38, 48, 68, 0.35);
-  --badge-bg: rgba(255, 130, 40, 0.12);
-  --badge-bg-hover: rgba(255, 130, 40, 0.20);
-  --badge-border: rgba(255, 130, 40, 0.38);
-  --badge-text: #2d3646;
+  --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+
+  /* Light Mode */
+  --text-primary-light: #1d1d1f;
+  --text-secondary-light: #86868b;
+  --border-light: rgba(0, 0, 0, 0.06);
+  --accent: #f7b186;
+  --accent-hover: #ff8c5a;
+  --accent-fill: rgba(247, 177, 134, 0.3);
+  --accent-fill-hover: rgba(247, 177, 134, 0.45);
+
+  /* Dark Mode */
+  --text-primary-dark: #f5f5f7;
+  --text-secondary-dark: #a1a1a6;
+  --border-dark: rgba(255, 255, 255, 0.1);
+
+  /* Zone Colors */
+  --zone-base-fill: rgba(120, 140, 160, 0.15);
+  --zone-base-stroke: rgba(100, 120, 140, 0.35);
+  --zone-outline-stroke: rgba(100, 120, 140, 0.25);
 }
 
 :global(.dark) .bodyPickerWrapper {
-  --zone-base-fill: rgba(255, 255, 255, 0.12);
-  --zone-base-stroke: rgba(255, 255, 255, 0.88);
-  --zone-outline-stroke: rgba(255, 255, 255, 0.52);
-  --badge-bg: rgba(255, 130, 40, 0.18);
-  --badge-bg-hover: rgba(255, 130, 40, 0.26);
-  --badge-border: rgba(255, 130, 40, 0.50);
-  --badge-text: #f3f4f6;
+  --zone-base-fill: rgba(255, 255, 255, 0.08);
+  --zone-base-stroke: rgba(255, 255, 255, 0.25);
+  --zone-outline-stroke: rgba(255, 255, 255, 0.15);
+  --accent-fill: rgba(247, 177, 134, 0.35);
+  --accent-fill-hover: rgba(247, 177, 134, 0.5);
 }
 
-.wrapper { display: grid; gap: 18px; justify-items: center; color: inherit; }
-.bodyPickerWrapper { color: inherit; }
-.figures { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; }
-.figure { flex: 1 1 220px; display: flex; justify-content: center; }
-.figureInteractive { cursor: default; }
+/* Main Wrapper */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+}
 
-.wrapper svg {
+.bodyPickerWrapper {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Figures Container */
+.figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.figure {
+  flex: 1 1 240px;
+  display: flex;
+  justify-content: center;
+  max-width: 360px;
+}
+
+.figureInteractive {
+  cursor: default;
+}
+
+/* SVG Styling */
+.wrapper svg,
+.svg {
   width: 100%;
   height: auto;
-  max-width: 360px;
+  max-width: 340px;
   display: block;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
-.svg { width: 100%; max-width: 340px; height: auto; touch-action: manipulation; }
 
 .wrapper svg path,
 .wrapper svg polygon,
@@ -44,71 +89,157 @@
 .wrapper svg g {
   fill: var(--zone-base-fill) !important;
   stroke: var(--zone-base-stroke) !important;
+  stroke-width: 1.5;
   pointer-events: none;
 }
 
+/* Interactive Zones */
 .zone,
 .zone * {
   fill: var(--zone-base-fill) !important;
-  cursor: pointer;
-  transition: transform 0.18s ease, fill 0.18s ease, stroke 0.18s ease, filter 0.18s ease;
   stroke: var(--zone-base-stroke) !important;
-  stroke-width: 1.6;
+  stroke-width: 1.8;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
   pointer-events: auto !important;
 }
+
 @media (hover: hover) and (pointer: fine) {
   .zone:hover,
   .zone:hover * {
-    transform: translateY(-2px);
-    fill: var(--accent-hover-fill) !important;
-    stroke: var(--accent-hover-stroke) !important;
+    fill: var(--accent-fill-hover) !important;
+    stroke: var(--accent-hover) !important;
+    filter: drop-shadow(0 2px 6px rgba(247, 177, 134, 0.2));
   }
 }
+
 .zone:active,
 .zone:active * {
-  transform: scale(0.99);
-  fill: color-mix(in srgb, var(--zone-base-fill) 65%, rgba(30,30,30,0.26) 35%) !important;
+  transform: scale(0.98);
+  transition-duration: 0.1s;
 }
 
+/* Active/Selected State */
 .zone.active,
 .zone.active * {
   fill: var(--accent-fill) !important;
-  stroke: var(--accent-stroke) !important;
-  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.18));
+  stroke: var(--accent) !important;
+  filter: drop-shadow(0 3px 8px rgba(247, 177, 134, 0.3));
 }
+
+/* Zone Outline */
 .zoneOutline {
-  fill: none;
-  stroke: var(--zone-outline-stroke);
+  fill: none !important;
+  stroke: var(--zone-outline-stroke) !important;
   stroke-width: 1.2;
+  pointer-events: none !important;
 }
-.zoneOutline { pointer-events: none; }
-.zone { pointer-events: auto; }
 
-.legend { color: var(--ink, #1f2933); font-size: 0.9rem; text-align: center; }
+/* Focus State */
+.zone:focus-visible {
+  outline: none;
+  filter: drop-shadow(0 0 8px rgba(247, 177, 134, 0.6));
+}
 
+/* Legend */
+.legend {
+  font-family: var(--font-system);
+  font-size: 0.875rem;
+  color: var(--text-secondary-light);
+  text-align: center;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+:global(.dark) .legend {
+  color: var(--text-secondary-dark);
+}
+
+/* Selected List - Badges */
 .selectedList {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: center;
   align-items: center;
-  margin-top: -8px;
+  padding: 4px;
 }
 
-.zone:focus,
-.selectedBadge:focus {
-  outline: none;
+.selectedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(247, 177, 134, 0.12);
+  border: 1px solid rgba(247, 177, 134, 0.25);
+  border-radius: 20px;
+  color: var(--text-primary-light);
+  font-family: var(--font-system);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: all 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+  cursor: default;
+}
+
+:global(.dark) .selectedBadge {
+  background: rgba(247, 177, 134, 0.15);
+  border-color: rgba(247, 177, 134, 0.3);
+  color: var(--text-primary-dark);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .selectedBadge:hover {
-    background: var(--badge-bg-hover);
+    background: rgba(247, 177, 134, 0.18);
     transform: translateY(-1px);
-    transition: transform 0.18s ease, background 0.18s ease;
+    box-shadow: 0 2px 6px rgba(247, 177, 134, 0.2);
+  }
+
+  :global(.dark) .selectedBadge:hover {
+    background: rgba(247, 177, 134, 0.22);
   }
 }
 
+.selectedBadge:active {
+  transform: scale(0.96);
+  transition-duration: 0.1s;
+}
+
+/* Responsive */
+@media (min-width: 640px) {
+  .wrapper {
+    gap: 24px;
+  }
+
+  .figures {
+    gap: 32px;
+  }
+
+  .legend {
+    font-size: 0.9375rem;
+  }
+
+  .selectedBadge {
+    padding: 9px 16px;
+    font-size: 0.9375rem;
+  }
+}
+
+/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  .zone { transition: none; }
-  .zone:hover, .zone:active { transform: none; }
+  .zone,
+  .zone *,
+  .selectedBadge {
+    transition: none !important;
+  }
+
+  .zone:hover,
+  .zone:active {
+    transform: none !important;
+  }
+
+  .selectedBadge:hover,
+  .selectedBadge:active {
+    transform: none !important;
+  }
 }

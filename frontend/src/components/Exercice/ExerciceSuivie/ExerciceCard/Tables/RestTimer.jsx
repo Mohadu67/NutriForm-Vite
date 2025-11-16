@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import styles from "./RestTimer.module.css";
 
-export default function RestTimer({ value = "", onChange, serieNumber }) {
+function RestTimer({ value = "", onChange, serieNumber }) {
   const [showModal, setShowModal] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -199,3 +199,5 @@ export default function RestTimer({ value = "", onChange, serieNumber }) {
     </>
   );
 }
+
+export default memo(RestTimer);

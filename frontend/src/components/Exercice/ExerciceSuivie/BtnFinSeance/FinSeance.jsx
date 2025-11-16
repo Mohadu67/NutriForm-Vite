@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaShare } from "react-icons/fa";
 import styles from "./FinSeance.module.css";
 import useSaveSession from "../ExerciceCard/hooks/useSaveSession";
 import ShareModal from "../../../Share/ShareModal";
 
-export default function FinSeance({ items = [], onFinish, sessionData }) {
+function FinSeance({ items = [], onFinish, sessionData }) {
   const { t } = useTranslation();
   const { saving, error, save } = useSaveSession();
   const [done, setDone] = useState(false);
@@ -114,3 +114,5 @@ export default function FinSeance({ items = [], onFinish, sessionData }) {
     </div>
   );
 }
+
+export default memo(FinSeance);

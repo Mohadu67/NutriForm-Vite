@@ -1,0 +1,384 @@
+/* ========================================
+   HIIT FORM - Dock-Inspired Design
+   Mobile First - Glassmorphism & Animations
+   ======================================== */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+/* Setup Card */
+.setupCard {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 12px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  animation: fadeIn 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+:global(.dark) .setupCard {
+  background: rgba(18, 21, 27, 0.88);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 2px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.setupIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+.setupTitle {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--ink, #222);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+}
+
+.setupSubtitle {
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 0.95rem;
+  color: var(--muted, #6b7280);
+  margin-bottom: 1.5rem;
+}
+
+.setupBtn {
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #f7b186, #e89a6f);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow:
+    0 4px 16px rgba(247, 177, 134, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.setupBtn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow:
+    0 8px 24px rgba(247, 177, 134, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  filter: brightness(1.05);
+}
+
+.setupBtn:active {
+  transform: translateY(0) scale(1);
+}
+
+/* Timer Section */
+.timerSection {
+  animation: slideIn 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Reps Input */
+.repsInput {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+:global(.dark) .repsInput {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.repsLabel {
+  display: block;
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink, #222);
+  margin-bottom: 0.5rem;
+}
+
+.repsField {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink, #222);
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+:global(.dark) .repsField {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.repsField:focus {
+  outline: none;
+  border-color: #f7b186;
+  box-shadow:
+    0 0 0 4px rgba(247, 177, 134, 0.15),
+    0 4px 16px rgba(247, 177, 134, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Stats Card */
+.statsCard {
+  background: rgba(247, 177, 134, 0.1);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 16px rgba(247, 177, 134, 0.1);
+}
+
+:global(.dark) .statsCard {
+  background: rgba(247, 177, 134, 0.08);
+}
+
+.statsTitle {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--ink, #222);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.statItem {
+  text-align: center;
+}
+
+.statValue {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: #f7b186;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.statLabel {
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Rounds List */
+.roundsList {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+:global(.dark) .roundsList {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.roundsTitle {
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink, #222);
+  margin-bottom: 0.75rem;
+}
+
+.roundsItems {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.roundItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: rgba(184, 221, 209, 0.15);
+  border: 1px solid rgba(184, 221, 209, 0.3);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.roundItem:hover {
+  background: rgba(184, 221, 209, 0.25);
+  transform: translateX(4px);
+}
+
+.roundNumber {
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink, #222);
+}
+
+.roundReps {
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #91c7b8;
+}
+
+.roundDelete {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.2);
+  border-radius: 50%;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #ff4444;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.roundDelete:hover {
+  transform: scale(1.15);
+  background: rgba(255, 0, 0, 0.2);
+}
+
+.roundDelete:active {
+  transform: scale(1);
+}
+
+/* Notes Section */
+.notesSection {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+:global(.dark) .notesSection {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.notesLabel {
+  display: block;
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink, #222);
+  margin-bottom: 0.5rem;
+}
+
+.notesField {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 0.9rem;
+  color: var(--ink, #222);
+  resize: vertical;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+:global(.dark) .notesField {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.notesField:focus {
+  outline: none;
+  border-color: #f7b186;
+  box-shadow:
+    0 0 0 4px rgba(247, 177, 134, 0.15),
+    0 4px 16px rgba(247, 177, 134, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Change Config Button */
+.changeConfigBtn {
+  width: 100%;
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.875rem;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  color: var(--ink, #222);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:global(.dark) .changeConfigBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.changeConfigBtn:hover {
+  transform: translateY(-2px);
+  background: rgba(247, 177, 134, 0.15);
+  border-color: rgba(247, 177, 134, 0.3);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.2);
+}
+
+.changeConfigBtn:active {
+  transform: translateY(0);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

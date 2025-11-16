@@ -1,0 +1,274 @@
+/* ========================================
+   HIIT TIMER - Dock-Inspired Design
+   Mobile First - Glassmorphism & Animations
+   ======================================== */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* Timer Card */
+.timerCard {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 12px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  animation: cardPulse 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+:global(.dark) .timerCard {
+  background: rgba(18, 21, 27, 0.88);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 2px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.timerCard.isWork {
+  border-color: rgba(247, 177, 134, 0.3);
+  box-shadow:
+    0 8px 32px rgba(247, 177, 134, 0.15),
+    0 2px 12px rgba(247, 177, 134, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.timerCard.isRest {
+  border-color: rgba(184, 221, 209, 0.3);
+  box-shadow:
+    0 8px 32px rgba(184, 221, 209, 0.15),
+    0 2px 12px rgba(184, 221, 209, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+@keyframes cardPulse {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Phase Label */
+.phaseLabel {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--ink, #222);
+  margin-bottom: 1.5rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Timer Circle */
+.timerCircle {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 1.5rem;
+}
+
+.progressRing {
+  transform: rotate(-90deg);
+}
+
+.progressRingBg {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.05);
+}
+
+:global(.dark) .progressRingBg {
+  stroke: rgba(255, 255, 255, 0.05);
+}
+
+.progressRingCircle {
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.timeDisplay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.timeValue {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: var(--ink, #222);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.timeUnit {
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Round Info */
+.roundInfo {
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink, #222);
+  padding: 0.75rem 1.5rem;
+  background: rgba(247, 177, 134, 0.1);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0 auto;
+}
+
+:global(.dark) .roundInfo {
+  background: rgba(247, 177, 134, 0.08);
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn {
+  font-family: var(--font-p, 'Montserrat', sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+  min-width: 120px;
+}
+
+.btnStart {
+  background: linear-gradient(135deg, #f7b186, #e89a6f);
+  color: #fff;
+  box-shadow:
+    0 4px 16px rgba(247, 177, 134, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.btnStart:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow:
+    0 8px 24px rgba(247, 177, 134, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  filter: brightness(1.05);
+}
+
+.btnPause {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--ink, #222);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+:global(.dark) .btnPause {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.btnPause:hover {
+  background: rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btnResume {
+  background: linear-gradient(135deg, #b8ddd1, #91c7b8);
+  color: #fff;
+  box-shadow:
+    0 4px 16px rgba(184, 221, 209, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.btnResume:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow:
+    0 8px 24px rgba(184, 221, 209, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  filter: brightness(1.05);
+}
+
+.btnSkip,
+.btnReset {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--ink, #222);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  min-width: auto;
+  padding: 1rem 1.5rem;
+}
+
+:global(.dark) .btnSkip,
+:global(.dark) .btnReset {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.btnSkip:hover,
+.btnReset:hover {
+  background: rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .timerCircle {
+    width: 180px;
+    height: 180px;
+  }
+
+  .timeValue {
+    font-size: 3rem;
+  }
+
+  .controls {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

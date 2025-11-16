@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import styles from "../SuivieCard.module.css";
 import walkStyles from "./WalkRunForm.module.css";
 import RouteTracker from "./RouteTracker/RouteTracker.jsx";
 
-export default function WalkRunForm({ data, patchWalkRun }) {
+function WalkRunForm({ data, patchWalkRun }) {
   const walkRun = data?.walkRun || { durationMin: "", pauseMin: "", distanceKm: "", route: [] };
   const [showGPS, setShowGPS] = useState(false);
   const [gpsActive, setGpsActive] = useState(false);
@@ -164,3 +164,4 @@ export default function WalkRunForm({ data, patchWalkRun }) {
     </section>
   );
 }
+export default memo(WalkRunForm);

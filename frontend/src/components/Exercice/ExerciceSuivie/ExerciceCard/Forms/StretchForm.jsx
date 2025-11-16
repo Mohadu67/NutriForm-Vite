@@ -1,7 +1,7 @@
-import React from "react";
+import { memo } from "react";
 import styles from "../SuivieCard.module.css";
 
-export default function StretchForm({ stretch = {}, onPatch }) {
+function StretchForm({ stretch = {}, onPatch }) {
   const durationSec = stretch.durationSec ?? "";
 
   const handleDurationChange = (event) => {
@@ -32,3 +32,5 @@ export default function StretchForm({ stretch = {}, onPatch }) {
     </section>
   );
 }
+
+export default memo(StretchForm);

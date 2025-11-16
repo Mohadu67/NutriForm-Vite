@@ -1,7 +1,7 @@
-import React from "react";
+import { memo } from "react";
 import styles from "../SuivieCard.module.css";
 
-export default function CardioForm({ cardioSets = [], onAdd, onRemove, onPatch }) {
+function CardioForm({ cardioSets = [], onAdd, onRemove, onPatch }) {
   const formatDuration = (set) => {
     const min = Number(set?.durationMin || 0);
     const sec = Number(set?.durationSec || 0);
@@ -105,3 +105,5 @@ export default function CardioForm({ cardioSets = [], onAdd, onRemove, onPatch }
     </section>
   );
 }
+
+export default memo(CardioForm);

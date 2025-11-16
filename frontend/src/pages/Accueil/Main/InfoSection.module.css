@@ -47,14 +47,6 @@
   color: var(--muted);
 }
 
-.list li::before {
-  content: "→";
-  position: absolute;
-  left: 0;
-  color: var(--couleur-bouton-action);
-  font-weight: 700;
-}
-
 .list li strong {
   color: var(--ink);
   font-weight: 600;

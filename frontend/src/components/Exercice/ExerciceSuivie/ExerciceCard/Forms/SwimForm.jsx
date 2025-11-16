@@ -1,4 +1,4 @@
-import React from "react";
+import { memo } from "react";
 import styles from "../SuivieCard.module.css";
 
 function formatNumber(value) {
@@ -9,7 +9,7 @@ function formatNumber(value) {
   return num.toFixed(1);
 }
 
-export default function SwimForm({ swim = {}, onPatch }) {
+function SwimForm({ swim = {}, onPatch }) {
   const poolLength = swim.poolLength ?? "";
   const lapCount = swim.lapCount ?? "";
   const totalDistance = swim.totalDistance ?? "";
@@ -73,3 +73,5 @@ export default function SwimForm({ swim = {}, onPatch }) {
     </section>
   );
 }
+
+export default memo(SwimForm);

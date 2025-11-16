@@ -1,70 +1,272 @@
+/* ========================================
+   CARD CHOICE - Apple-Inspired Design
+   Clean, Minimal, Modern
+   ======================================== */
 
+:root {
+  /* Light Mode - Apple Style */
+  --card-bg-light: #ffffff;
+  --card-border-light: rgba(0, 0, 0, 0.06);
+  --card-shadow-light: rgba(0, 0, 0, 0.04);
+  --card-shadow-hover-light: rgba(0, 0, 0, 0.08);
+  --card-text-light: #1d1d1f;
+  --card-text-secondary-light: #86868b;
+  --card-selected-bg-light: #f7b186;
+  --card-selected-text-light: #ffffff;
+  --card-hover-bg-light: rgba(0, 0, 0, 0.02);
+
+  /* Dark Mode */
+  --card-bg-dark: #1c1c1e;
+  --card-border-dark: rgba(255, 255, 255, 0.1);
+  --card-shadow-dark: rgba(0, 0, 0, 0.3);
+  --card-shadow-hover-dark: rgba(0, 0, 0, 0.5);
+  --card-text-dark: #f5f5f7;
+  --card-text-secondary-dark: #a1a1a6;
+  --card-selected-bg-dark: #f7b186;
+  --card-selected-text-dark: #ffffff;
+  --card-hover-bg-dark: rgba(255, 255, 255, 0.05);
+}
+
+/* Cards Grid - Mobile First */
 .cardsGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: .75rem;
+  gap: 12px;
   width: 100%;
+  padding: 4px;
 }
 
+/* Tablet: 3 columns */
+@media (min-width: 640px) {
+  .cardsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding: 8px;
+  }
+}
+
+/* Desktop: 3 columns, larger gap */
+@media (min-width: 960px) {
+  .cardsGrid {
+    gap: 20px;
+  }
+}
+
+/* Card Button - Apple Style */
 .card {
   position: relative;
-  display: grid;
-  place-items: center;
-  gap: .4rem;
-  padding: 1.5rem 0rem;
-  border-radius: 14px;
-  border: 2px solid rgba(0,0,0,.2);
-  background: #1e2422;
-  color: #e7f6ef;
-  box-shadow: 0 2px 0 rgba(0,0,0,.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 12px;
+  min-height: 120px;
+
+  /* Appearance */
+  background: var(--card-bg-light);
+  border: 1px solid var(--card-border-light);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 3px var(--card-shadow-light),
+    0 1px 2px rgba(0, 0, 0, 0.02);
+
+  /* Interaction */
   cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  /* Typography */
+  color: var(--card-text-light);
   text-align: center;
-  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, background-color .12s ease;
-  z-index: 1;
-  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.card:hover { transform: translateY(-1px); }
-.card:active { transform: translateY(0); }
+/* Dark Mode */
+:global(.dark) .card {
+  background: var(--card-bg-dark);
+  border-color: var(--card-border-dark);
+  box-shadow:
+    0 1px 3px var(--card-shadow-dark),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+  color: var(--card-text-dark);
+}
 
+/* Hover State - Desktop Only */
+@media (hover: hover) and (pointer: fine) {
+  .card:not(.isDisabled):not(.isSelected):hover {
+    background: var(--card-hover-bg-light);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 2px 8px var(--card-shadow-hover-light),
+      0 1px 4px rgba(0, 0, 0, 0.04);
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  :global(.dark) .card:not(.isDisabled):not(.isSelected):hover {
+    background: var(--card-hover-bg-dark);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow:
+      0 2px 8px var(--card-shadow-hover-dark),
+      0 1px 4px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Active State - Touch Feedback */
+.card:not(.isDisabled):active {
+  transform: scale(0.98);
+  transition-duration: 0.1s;
+}
+
+/* Selected State - Emphasized */
+.card.isSelected {
+  background: var(--card-selected-bg-light);
+  border-color: transparent;
+  box-shadow:
+    0 4px 12px rgba(247, 177, 134, 0.3),
+    0 2px 6px rgba(247, 177, 134, 0.2);
+  color: var(--card-selected-text-light);
+  transform: translateY(-1px);
+}
+
+:global(.dark) .card.isSelected {
+  background: var(--card-selected-bg-dark);
+  color: var(--card-selected-text-dark);
+  box-shadow:
+    0 4px 12px rgba(247, 177, 134, 0.4),
+    0 2px 6px rgba(247, 177, 134, 0.3);
+}
+
+/* Selected Hover */
+@media (hover: hover) and (pointer: fine) {
+  .card.isSelected:hover {
+    box-shadow:
+      0 6px 16px rgba(247, 177, 134, 0.35),
+      0 3px 8px rgba(247, 177, 134, 0.25);
+    transform: translateY(-3px) scale(1.02);
+  }
+}
+
+/* Disabled State */
+.card.isDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.5);
+}
+
+/* Focus State - Accessibility */
 .card:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(181,234,215,.55);
-  border-color: #b8ddd1;
+  box-shadow:
+    0 0 0 3px rgba(247, 177, 134, 0.4),
+    0 1px 3px var(--card-shadow-light);
 }
 
-.card::before {
-  content: "";
-  position: absolute;
-  left: .6rem; top: .6rem;
-  width: .5rem; height: .5rem;
-  border-radius: 999px;
-  background: #3ddc97;
-  opacity: .4;
-  pointer-events: none;
+:global(.dark) .card:focus-visible {
+  box-shadow:
+    0 0 0 3px rgba(247, 177, 134, 0.5),
+    0 1px 3px var(--card-shadow-dark);
 }
 
+/* Card Icon - Emoji */
+.cardIcon {
+  font-size: 2.75rem;
+  line-height: 1;
+  margin-bottom: 2px;
+  transition: transform 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.card:hover .cardIcon {
+  transform: scale(1.05);
+}
+
+.card.isSelected .cardIcon {
+  transform: scale(1.08);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Card Label */
+.cardLabel {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  transition: all 0.15s ease;
+}
+
+@media (min-width: 640px) {
+  .cardLabel {
+    font-size: 1rem;
+  }
+}
+
+/* Check Mark - Selected Indicator */
 .cardCheck {
   position: absolute;
-  right: .6rem; top: .6rem;
-  width: 1.75rem; height: 1.75rem;
-  border-radius: 999px;
-  display: grid; place-items: center;
-  background: #2ecb77;
-  color: #0f1713;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  color: #f7b186;
+  border-radius: 50%;
+  font-size: 14px;
   font-weight: 700;
-  box-shadow: inset 0 -1px 0 rgba(0,0,0,.25), 0 1px 0 rgba(0,0,0,.25);
-  pointer-events: none;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.12),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+  animation: checkBounce 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.isSelected {
-  border-color: #2ecb77;
-  box-shadow: 0 4px 0 rgba(19, 114, 78, .35);
+:global(.dark) .cardCheck {
+  background: rgba(28, 28, 30, 0.95);
+  color: #f7b186;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-.cardIcon { font-size: 3rem; line-height: 1; }
-.cardLabel { font-weight: 600; font-size: 1.05rem; }
+@keyframes checkBounce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 
+/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  .card { transition: none; }
+  .card,
+  .cardIcon,
+  .cardLabel,
+  .cardCheck {
+    transition: none;
+    animation: none;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .card {
+    border-width: 2px;
+  }
+
+  .card.isSelected {
+    border: 2px solid #f7b186;
+  }
 }

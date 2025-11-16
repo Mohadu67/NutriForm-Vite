@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import { memo, useState } from "react";
 import styles from "../SuivieCard.module.css";
 import { isNewRecord, calculateDifference, suggestRepsChallenge } from "../helpers/progressionHelper.js";
 
-export default function MuscuForm({ sets = [], onAdd, onRemove, onPatch, progression, lastExerciseData }) {
+function MuscuForm({ sets = [], onAdd, onRemove, onPatch, progression, lastExerciseData }) {
   const [appliedSuggestion, setAppliedSuggestion] = useState(false);
 
   // Vérifie si on a des séries remplies (avec poids ET reps)
@@ -142,3 +142,5 @@ export default function MuscuForm({ sets = [], onAdd, onRemove, onPatch, progres
     </section>
   );
 }
+
+export default memo(MuscuForm);

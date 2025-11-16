@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { memo, useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./SuivieExo.module.css";
 import SuivieCard from "./ExerciceCard/SuivieCard.jsx";
@@ -28,11 +28,11 @@ function loadSaved(it) {
 }
 
 
-export default function SuivieExo({ sessionName, exercises = [], onBack, onSearch, onFinish = () => {} }) {
+function SuivieExo({ sessionName, exercises = [], onBack, onSearch, onFinish = () => {} }) {
   const { t } = useTranslation();
   const label = (sessionName && sessionName.trim()) ? sessionName.trim() : "ta séance";
 
-  function getPersistedSelection() {
+  const getPersistedSelection = useCallback(() => {
     try {
       const a = JSON.parse(localStorage.getItem("formSelectedExercises"));
       if (Array.isArray(a) && a.length) return a;
@@ -42,7 +42,7 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
       if (Array.isArray(b) && b.length) return b;
     } catch {}
     return [];
-  }
+  }, []);
 
   const [items, setItems] = useState(() => {
     if (Array.isArray(exercises) && exercises.length) return exercises;
@@ -155,7 +155,7 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
     });
   }
 
-  function updateItemById(id, nextData) {
+  const updateItemById = useCallback((id, nextData) => {
     setTouched(true);
     setItems(prev => {
       const copy = Array.isArray(prev) ? [...prev] : [];
@@ -169,13 +169,22 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
       } catch {}
       return copy;
     });
-  }
+  }, []);
+
+  const handleBack = useCallback(() => {
+    onBack(Array.isArray(items) ? items : []);
+  }, [items, onBack]);
 
   return (
-    <section className={styles.wrapper}>
-            <button type="button" className={styles.titleBackBtn} onClick={() => onBack(Array.isArray(items) ? items : [])}>
-              {t('exercice.previous')}
-            </button>
+    <section className={styles.wrapper} aria-label={`Suivi de ${label}`}>
+      <button
+        type="button"
+        className={styles.titleBackBtn}
+        onClick={handleBack}
+        aria-label="Retour à la sélection"
+      >
+        {t('exercice.previous')}
+      </button>
       <div className={styles.titleRow}>
         <Chrono
           label={label}
@@ -225,3 +234,5 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
     </section>
   );
 }
+
+export default memo(SuivieExo);

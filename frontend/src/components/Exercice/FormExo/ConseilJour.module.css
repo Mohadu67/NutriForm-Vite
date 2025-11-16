@@ -35,6 +35,10 @@
   }
 }
 
+:root {
+  --min-touch-target: 44px;
+}
+
 .tipCard {
   background: var(--paper);
   border-radius: 14px;
@@ -44,7 +48,13 @@
   border: 1px solid var(--line);
   transition: transform .15s ease, box-shadow .2s ease;
 }
-.tipCard:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+@media (hover: hover) and (pointer: fine) {
+  .tipCard:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+}
 
 .tipHeader {
   display: flex;
@@ -90,4 +100,13 @@
 @media (min-width: 640px) {
   .tipCard { padding: 1.5rem 1.25rem; }
   .tipTitle { font-size: 1.35rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
