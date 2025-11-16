@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Button from "../../../BoutonAction/BoutonAction";
 import styles from "./ChercherExo.module.css";
@@ -6,7 +6,7 @@ import { idOf } from "../../Shared/idOf";
 import { mergeById } from "../../Shared/selectionUtils";
 import { loadExercises } from "../../../../utils/exercisesLoader";
 
-export default function ChercherExo({
+function ChercherExo({
   preselectedIds = [],
   onConfirm = () => {},
   onBack,
@@ -224,3 +224,5 @@ export default function ChercherExo({
     </section>
   );
 }
+
+export default memo(ChercherExo);

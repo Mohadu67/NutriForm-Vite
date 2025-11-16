@@ -1,11 +1,11 @@
-export const TYPE_MAP = {
-  muscu: ["muscu", "renforcement", "strength", "weightlifting", "musculation", "fitness", "crossfit"],
-  cardio: ["cardio", "hiit", "endurance", "aerobic", "aérobie", "conditioning"],
-  yoga: ["yoga", "yogi", "asana", "vinyasa", "hatha", "ashtanga", "yin", "power yoga"],
-  natation: ["natation", "swimming", "nage", "piscine", "crawl", "brasse", "papillon", "dos crawlé"],
-  etirement: ["etirement", "étirement", "stretching", "stretch"],
-  meditation: ["meditation", "méditation", "mindfulness"],
-};
+export const TYPE_MAP = Object.freeze({
+  muscu: Object.freeze(["muscu", "renforcement", "strength", "weightlifting", "musculation", "fitness", "crossfit"]),
+  cardio: Object.freeze(["cardio", "hiit", "endurance", "aerobic", "aérobie", "conditioning"]),
+  yoga: Object.freeze(["yoga", "yogi", "asana", "vinyasa", "hatha", "ashtanga", "yin", "power yoga"]),
+  natation: Object.freeze(["natation", "swimming", "nage", "piscine", "crawl", "brasse", "papillon", "dos crawlé"]),
+  etirement: Object.freeze(["etirement", "étirement", "stretching", "stretch"]),
+  meditation: Object.freeze(["meditation", "méditation", "mindfulness"]),
+});
 
 export const MUSCLE_ZONES = Object.freeze({
   pectoraux: Object.freeze([
@@ -206,21 +206,21 @@ export const MUSCLE_MAP = Object.freeze({
   ),
 });
 
-export const EQUIP_MAP = {
-  "poids-du-corps": [
+export const EQUIP_MAP = Object.freeze({
+  "poids-du-corps": Object.freeze([
     "poids-du-corps", "poids du corps", "bodyweight", "body weight", "none", "no equipment",
     "weightless", "barre-fixe", "barre fixe", "pull-up bar", "pullup bar", "sans matériel", "aucun"
-  ],
-  "halteres": ["halteres", "haltères", "dumbbell", "dumbbells", "dumbell", "dumb bell"],
-  "barre": ["barre", "barbell", "barres", "olympic bar", "ez bar", "barre ez"],
-  "machine": [
+  ]),
+  "halteres": Object.freeze(["halteres", "haltères", "dumbbell", "dumbbells", "dumbell", "dumb bell"]),
+  "barre": Object.freeze(["barre", "barbell", "barres", "olympic bar", "ez bar", "barre ez"]),
+  "machine": Object.freeze([
     "machine", "machines", "selectorized", "smith", "smith machine", "presse",
     "velo", "vélo", "velo-stationnaire", "vélo stationnaire", "assault-bike",
     "airbike", "elliptique", "tapis", "tapis de course", "stepper",
     "rameur", "ski-erg", "ergometer", "leg press", "pec deck", "lat pulldown"
-  ],
-  "kettlebell": ["kettlebell", "kettlebells", "kettle-bell"],
-  "poulie": ["poulie", "poulies", "cable", "cables", "cable machine", "cable crossover"],
-};
+  ]),
+  "kettlebell": Object.freeze(["kettlebell", "kettlebells", "kettle-bell"]),
+  "poulie": Object.freeze(["poulie", "poulies", "cable", "cables", "cable machine", "cable crossover"]),
+});
 
 export default { TYPE_MAP, MUSCLE_MAP, MUSCLE_ZONES, MUSCLE_GROUPS, EQUIP_MAP };

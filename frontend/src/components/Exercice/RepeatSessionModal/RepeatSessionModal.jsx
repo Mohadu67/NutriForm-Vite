@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import styles from "./RepeatSessionModal.module.css";
 import { useTranslation } from "react-i18next";
 
-export default function RepeatSessionModal({ session, onAccept, onDecline }) {
+function RepeatSessionModal({ session, onAccept, onDecline }) {
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -94,3 +94,5 @@ export default function RepeatSessionModal({ session, onAccept, onDecline }) {
     </div>
   );
 }
+
+export default memo(RepeatSessionModal);

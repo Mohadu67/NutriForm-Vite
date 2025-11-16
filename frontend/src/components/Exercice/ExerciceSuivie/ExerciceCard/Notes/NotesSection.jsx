@@ -1,6 +1,6 @@
 
 
-import React, { memo } from "react";
+import { memo } from "react";
 
 function NotesSection({ notes = "", onChange, classes = {} }) {
   const { container = "" } = classes;

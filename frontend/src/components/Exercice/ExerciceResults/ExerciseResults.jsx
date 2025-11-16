@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -22,35 +22,50 @@ import { idOf } from "../Shared/idOf.js";
 import { sameIds, mergeById } from "../Shared/selectionUtils";
 import { loadExercises } from "../../../utils/exercisesLoader.js";
 
-export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [], onChange, onResultsChange, onSearch, initialSelected }) {
+// ========================================
+// LOCAL STORAGE HELPERS
+// ========================================
+
+function loadFromStorage(key, defaultValue = null) {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : defaultValue;
+  } catch {
+    return defaultValue;
+  }
+}
+
+function saveToStorage(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Silently fail
+  }
+}
+
+function removeFromStorage(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Silently fail
+  }
+}
+
+// ========================================
+// MAIN COMPONENT
+// ========================================
+
+function ExerciseResults({ typeId, equipIds = [], muscleIds = [], onChange, onResultsChange, onSearch, initialSelected }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [ordered, setOrdered] = useState(() => {
-    try {
-      const v = localStorage.getItem("dynamiSelected");
-      return v ? JSON.parse(v) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [ordered, setOrdered] = useState(() => loadFromStorage("dynamiSelected", []));
   const [dismissed, setDismissed] = useState(() => {
-    try {
-      const v = localStorage.getItem("dynamiDismissed");
-      return new Set(v ? JSON.parse(v) : []);
-    } catch {
-      return new Set();
-    }
+    const arr = loadFromStorage("dynamiDismissed", []);
+    return new Set(arr);
   });
-  const [hasTouched, setHasTouched] = useState(() => {
-    try {
-      const v = localStorage.getItem("dynamiHasTouched");
-      return v === "1";
-    } catch {
-      return false;
-    }
-  });
+  const [hasTouched, setHasTouched] = useState(() => loadFromStorage("dynamiHasTouched") === "1");
   const [showProposed, setShowProposed] = useState(false);
   const listRef = useRef(null);
 
@@ -79,10 +94,10 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
 
   useEffect(() => {
     if (Array.isArray(ordered) && ordered.length > 0) setHasTouched(true);
-  }, []);
+  }, [ordered.length]);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiHasTouched", hasTouched ? "1" : "0"); } catch {}
+    saveToStorage("dynamiHasTouched", hasTouched ? "1" : "0");
   }, [hasTouched]);
 
   useEffect(() => {
@@ -118,7 +133,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
 
   useEffect(() => {
     if (Array.isArray(results) && results.length > 0) {
-      try { localStorage.setItem("dynamiLastResults", JSON.stringify(results)); } catch {}
+      saveToStorage("dynamiLastResults", results);
     }
   }, [results]);
 
@@ -134,8 +149,6 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     prevFilterKeyRef.current = filterKey;
     setDismissed(new Set());
     setHasTouched(false);
-
-
     setOrdered(Array.isArray(results) && results.length > 0 ? results.slice() : []);
   }, [filterKey, results, hasTouched]);
 
@@ -145,43 +158,6 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     }
   }, [results, ordered, hasTouched]);
 
-  // Commenté: Ce useEffect supprimait les exercices ajoutés manuellement
-  // qui ne correspondaient pas aux filtres actuels
-  // useEffect(() => {
-  //   if (!Array.isArray(results)) return;
-
-  //   if (results.length === 0) {
-  //     setOrdered((prev) => {
-  //       if (!Array.isArray(prev) || prev.length === 0) return prev;
-  //       return [];
-  //     });
-  //     setDismissed((prev) => {
-  //       if (!(prev instanceof Set) || prev.size === 0) return prev;
-  //       return new Set();
-  //     });
-  //     return;
-  //   }
-
-  //   const allowedIds = new Set(results.map((ex) => idOf(ex)));
-
-  //   setOrdered((prev) => {
-  //     if (!Array.isArray(prev) || prev.length === 0) return prev;
-  //     const filtered = prev.filter((item) => allowedIds.has(idOf(item)));
-  //     if (sameIds(prev, filtered)) return prev;
-  //     return filtered;
-  //   });
-
-  //   setDismissed((prev) => {
-  //     if (!(prev instanceof Set) || prev.size === 0) return prev;
-  //     let changed = false;
-  //     const next = new Set();
-  //     prev.forEach((id) => {
-  //       if (allowedIds.has(id)) next.add(id);
-  //       else changed = true;
-  //     });
-  //     return changed ? next : prev;
-  //   });
-  // }, [results]);
 
   const proposed = useMemo(() => {
     if (!results.length) return [];
@@ -224,14 +200,8 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     if (incoming.length) setHasTouched(true);
 
     setOrdered((prev) => {
-      // Ne plus filtrer prev - garder tous les exercices ajoutés manuellement
-      let working = Array.isArray(prev) ? prev : [];
-
-      if (!incoming.length) {
-        return working;
-      }
-
-      // Ne plus filtrer validIncoming - accepter tous les exercices
+      const working = Array.isArray(prev) ? prev : [];
+      if (!incoming.length) return working;
       const validIncoming = incoming;
 
       const merged = mergeById(working, validIncoming);
@@ -244,9 +214,8 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     function handleReplace(e) {
       const items = Array.isArray(e?.detail?.items) ? e.detail.items : [];
       if (!items || items.length === 0) return;
+
       setHasTouched(true);
-      // NE PAS réinitialiser dismissed - garder les exercices supprimés par l'utilisateur
-      // setDismissed(new Set());
       setOrdered((prev) => {
         const merged = mergeById(prev, items);
         if (sameIds(prev, merged)) return prev;
@@ -258,34 +227,38 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   }, []);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiDismissed", JSON.stringify(Array.from(dismissed))); } catch {}
+    saveToStorage("dynamiDismissed", Array.from(dismissed));
   }, [dismissed]);
 
-  function broadcastSelection(next) {
+  const broadcastSelection = useCallback((next) => {
     const arr = Array.isArray(next) ? next : [];
-    try {
-      const str = JSON.stringify(arr);
-      if (arr.length > 0) {
-        localStorage.setItem("dynamiSelected", str);
-        localStorage.setItem("formSelectedExercises", str);
-      } else {
-        localStorage.removeItem("dynamiSelected");
-        localStorage.setItem("formSelectedExercises", "[]");
-      }
-      localStorage.setItem("dynamiHasTouched", arr.length > 0 ? "1" : "0");
-    } catch {}
+
+    if (arr.length > 0) {
+      saveToStorage("dynamiSelected", arr);
+      saveToStorage("formSelectedExercises", arr);
+    } else {
+      removeFromStorage("dynamiSelected");
+      saveToStorage("formSelectedExercises", []);
+    }
+    saveToStorage("dynamiHasTouched", arr.length > 0 ? "1" : "0");
+
     setTimeout(() => {
       try {
         window.dispatchEvent(new CustomEvent("dynami:selected:update", { detail: { items: arr } }));
-      } catch {}
+      } catch {
+        // Silently fail
+      }
+
       try {
         if (onResultsChange) onResultsChange(arr);
         else if (onChange) onChange(arr);
-      } catch {}
+      } catch {
+        // Silently fail
+      }
     }, 0);
-  }
+  }, [onResultsChange, onChange]);
 
-  function onRemoveItem(exOrId) {
+  const onRemoveItem = useCallback((exOrId) => {
     setHasTouched(true);
     const id = idOf(exOrId);
     setOrdered((prev) => prev.filter((x) => idOf(x) !== id));
@@ -294,47 +267,74 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
       next.add(id);
       return next;
     });
-  }
-  function onDismissItem(exOrId) {
+  }, []);
+
+  const onDismissItem = useCallback((exOrId) => {
     const k = idOf(exOrId);
     setDismissed((prev) => {
       const next = new Set(prev);
       next.add(k);
       return next;
     });
-  }
+  }, []);
 
-  function handleResetSuggestions() {
+  const handleResetSuggestions = useCallback(() => {
     setHasTouched(true);
     setDismissed(new Set());
     if (Array.isArray(results) && results.length > 0) {
       setOrdered(results.slice());
     }
+  }, [results]);
+
+  const handleAddExercise = useCallback((exo, key) => {
+    setHasTouched(true);
+    setOrdered((prev) => {
+      if (prev.some((x) => idOf(x) === key)) return prev;
+      return [...prev, exo];
+    });
+  }, []);
+
+  if (loading) {
+    return <p className={styles.loadingText} role="status">Chargement des exercices…</p>;
   }
 
-  if (loading) return <p className={styles.loadingText}>Chargement des exercices…</p>;
-  if (error) return <p className={styles.error}>Erreur: {error}</p>;
-  if (!results.length) return (
-    <div className={styles.noResults}>
-      <p>Aucun exercice trouvé… pour l’instant ! On travaille en salle pour ajouter plus d’exos. Tu peux aussi élargir tes filtres.</p>
-      {onSearch && (
-        <Button type="button" onClick={() => onSearch(ordered)} aria-label="Ajouter des exercices">
-          + Ajouter d'autres exercices
-        </Button>
-      )}
-    </div>
-  );
+  if (error) {
+    return <p className={styles.error} role="alert">Erreur: {error}</p>;
+  }
+
+  if (!results.length) {
+    return (
+      <div className={styles.noResults}>
+        <p>Aucun exercice trouvé… pour l'instant ! On travaille en salle pour ajouter plus d'exos. Tu peux aussi élargir tes filtres.</p>
+        {onSearch && (
+          <Button type="button" onClick={() => onSearch(ordered)} aria-label="Ajouter des exercices">
+            + Ajouter d'autres exercices
+          </Button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
       {onSearch && (
         <div className={styles.actions}>
           {dismissed.size > 0 && (
-            <button type="button" onClick={handleResetSuggestions} className={styles.resetBtn}>
+            <button
+              type="button"
+              onClick={handleResetSuggestions}
+              className={styles.resetBtn}
+              aria-label="Réinitialiser les suggestions"
+            >
               Réinitialiser les suggestions
             </button>
           )}
-          <Button className={styles.BtnAjout} type="button" onClick={() => onSearch(ordered)} aria-label="Ajouter d'autres exercices">
+          <Button
+            className={styles.BtnAjout}
+            type="button"
+            onClick={() => onSearch(ordered)}
+            aria-label="Ajouter d'autres exercices"
+          >
             + Ajouter d'autres exercices
           </Button>
         </div>
@@ -345,7 +345,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <div className={styles.list} ref={listRef}>
+        <div className={styles.list} ref={listRef} role="list">
           {combined.length === 0 ? (
             <p className={styles.empty}>Aucun exercice sélectionné pour l'instant.</p>
           ) : (
@@ -368,11 +368,12 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
               </SortableContext>
 
               {ordered.length > 0 && proposed.length > 0 && !showProposed && (
-                <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                <div className={styles.buttonWrapper}>
                   <Button
                     type="button"
                     onClick={() => setShowProposed(true)}
                     className={styles.showProposedBtn}
+                    aria-label={`Voir ${proposed.length} exercices supplémentaires`}
                   >
                     Voir d'autres exercices ({proposed.length})
                   </Button>
@@ -387,24 +388,19 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
                     exo={exo}
                     isSortable={false}
                     onRemove={onDismissItem}
-                    onAdd={() => {
-                      setHasTouched(true);
-                      setOrdered((prev) => {
-                        if (prev.some((x) => idOf(x) === key)) return prev;
-                        return [...prev, exo];
-                      });
-                    }}
+                    onAdd={() => handleAddExercise(exo, key)}
                     isAdded={false}
                   />
                 );
               })}
 
               {showProposed && proposed.length > 0 && (
-                <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                <div className={styles.buttonWrapper}>
                   <Button
                     type="button"
                     onClick={() => setShowProposed(false)}
                     className={styles.hideProposedBtn}
+                    aria-label="Masquer les suggestions"
                   >
                     Masquer les suggestions
                   </Button>
@@ -417,3 +413,5 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     </div>
   );
 }
+
+export default memo(ExerciseResults);

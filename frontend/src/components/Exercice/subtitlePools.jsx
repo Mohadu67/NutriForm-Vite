@@ -1,6 +1,6 @@
 
 
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 export const SUBTITLE_POOLS = [
   [

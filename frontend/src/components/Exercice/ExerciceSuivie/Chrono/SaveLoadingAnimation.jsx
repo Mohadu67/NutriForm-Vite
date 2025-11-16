@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import styles from './SaveLoadingAnimation.module.css';
 
 const MESSAGES = [
@@ -13,7 +13,7 @@ const MESSAGES = [
   "Vous êtes incroyable ! 💪",
 ];
 
-export default function SaveLoadingAnimation() {
+function SaveLoadingAnimation() {
   const [currentMessage, setCurrentMessage] = useState(0);
 
   useEffect(() => {
@@ -66,3 +66,5 @@ export default function SaveLoadingAnimation() {
     </div>
   );
 }
+
+export default memo(SaveLoadingAnimation);

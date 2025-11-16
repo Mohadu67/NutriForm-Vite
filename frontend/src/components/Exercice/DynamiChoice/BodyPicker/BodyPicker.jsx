@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import * as assets from "./figureAssets";
 import cls from "./BodyPicker.module.css";
@@ -286,7 +286,7 @@ function BodyPicker({ value, onChange, multiple = false }) {
       </div>
       <p className={cls.legend}>{instructions}</p>
       {selectedLabels.length > 0 && (
-        <div className={cls.selectedList}>
+        <div className={cls.selectedList} role="status" aria-live="polite">
           {selectedLabels.map((label) => (
             <span key={label} className={cls.selectedBadge}>{label}</span>
           ))}
@@ -296,4 +296,4 @@ function BodyPicker({ value, onChange, multiple = false }) {
   );
 }
 
-export default BodyPicker;
+export default memo(BodyPicker);

@@ -30,7 +30,7 @@
   transition: all .2s ease;
 }
 
-.container textarea:focus {
+.container textarea:focus-visible {
   outline: none;
   border-color: var(--accent);
   background: var(--paper);
@@ -42,6 +42,20 @@
   opacity: 0.6;
 }
 
-@media (max-width: 420px) {
-  .container textarea { min-height: 90px; font-size: 15px; padding: 10px 12px; }
+/* Mobile-first: smaller screens get compact styles by default */
+@media (min-width: 421px) {
+  .container textarea {
+    min-height: 120px;
+    font-size: 15px;
+    padding: 14px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { secureApiCall } from "../../../utils/authService.js";
 
-export default function Salutation({ className = "", seedKey = "static" }) {
+function Salutation({ className = "", seedKey = "static" }) {
   const { t } = useTranslation();
   const [displayName, setDisplayName] = useState("");
   const phraseRef = useRef("");
@@ -71,3 +71,5 @@ export default function Salutation({ className = "", seedKey = "static" }) {
     </h2>
   );
 }
+
+export default memo(Salutation);

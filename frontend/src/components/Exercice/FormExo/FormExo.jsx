@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { memo, useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./FormExo.module.css";
 import DynamiChoice from "../DynamiChoice/DynamiChoice.jsx";
@@ -15,7 +15,7 @@ import RepeatSessionModal from "../RepeatSessionModal/RepeatSessionModal.jsx";
 import { secureApiCall, getCurrentUser } from "../../../utils/authService.js";
 import { loadExercises } from "../../../utils/exercisesLoader.js";
 
-export default function FormExo({ user: userProp }) {
+function FormExo({ user: userProp }) {
   const user = userProp || getCurrentUser();
   const { t, i18n } = useTranslation();
   const [sessionName, setSessionName] = useState(() => {
@@ -632,3 +632,5 @@ export default function FormExo({ user: userProp }) {
     </div>
   );
 }
+
+export default memo(FormExo);
