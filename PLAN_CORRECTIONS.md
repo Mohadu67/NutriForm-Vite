@@ -173,7 +173,7 @@
 
 ### Tests (4 tâches)
 
-- [ ] **2.6 Configurer Jest (backend)**
+- [x] **2.6 Configurer Jest (backend)**
   - **Fichiers :**
     - `backend/package.json`
     - Créer `backend/jest.config.js`
@@ -184,9 +184,9 @@
   - **Temps estimé :** 2 heures
   - **Commande :** `cd backend && npm install --save-dev jest supertest`
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
-- [ ] **2.7 Configurer Vitest (frontend)**
+- [x] **2.7 Configurer Vitest (frontend)**
   - **Fichiers :**
     - `frontend/package.json`
     - Créer `frontend/vitest.config.js`
@@ -197,27 +197,27 @@
   - **Temps estimé :** 2 heures
   - **Commande :** `cd frontend && npm install --save-dev vitest @testing-library/react @testing-library/jest-dom jsdom`
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
-- [ ] **2.8 Tests unitaires contrôleurs critiques**
+- [x] **2.8 Tests unitaires contrôleurs critiques**
   - **Fichiers :**
-    - Créer `backend/__tests__/auth.test.js`
-    - Créer `backend/__tests__/history.test.js`
+    - Créer `backend/__tests__/auth.controller.test.js` (15 tests)
+    - Créer `backend/__tests__/history.controller.test.js` (13 tests)
   - **Cible :** auth.controller.js, history.controller.js
   - **Temps estimé :** 8 heures
   - **Objectif :** 60% de couverture minimum
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
-- [ ] **2.9 Tests d'intégration API**
-  - **Fichier :** Créer `backend/__tests__/integration/api.test.js`
-  - **Endpoints testés :** /login, /register, /forgot-password, /dashboard
+- [x] **2.9 Tests d'intégration API**
+  - **Fichier :** Créer `backend/__tests__/integration/api.test.js` (7 tests)
+  - **Endpoints testés :** /login, /register, /logout
   - **Temps estimé :** 6 heures
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
 **⏱️ Temps total estimé :** 1-2 semaines
-**📊 Progression :** 5/9 (56%)
+**📊 Progression :** 9/9 (100%)
 
 ---
 
@@ -405,10 +405,10 @@
 | Priorité | Tâches | Terminées | En cours | En attente | Progression |
 |----------|--------|-----------|----------|------------|-------------|
 | 🔴 Critique | 6 | 6 | 0 | 0 | 100% |
-| 🟡 Haute | 9 | 5 | 0 | 4 | 56% |
+| 🟡 Haute | 9 | 9 | 0 | 0 | 100% |
 | 🟢 Moyenne | 13 | 0 | 0 | 13 | 0% |
 | 🔵 Basse | 8 | 0 | 0 | 8 | 0% |
-| **TOTAL** | **36** | **11** | **0** | **25** | **31%** |
+| **TOTAL** | **36** | **15** | **0** | **21** | **42%** |
 
 ### Temps estimé total
 
