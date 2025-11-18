@@ -216,6 +216,8 @@ async function getUserSummary(req, res) {
 
           fromSessions = deriveFromSessions(enriched);
 
+          // Calcul de la moyenne des calories de toutes les sessions
+          const kcalArray = enriched.map(s => Number(s.calories ?? s.caloriesBurned ?? s.kcal ?? 0) || 0).filter(val => val > 0);
           avgKcalAll = kcalArray.length ? Math.round(kcalArray.reduce((a,b)=>a+b,0) / kcalArray.length) : null;
 
           lastExercisesListFallback = [];
@@ -242,7 +244,9 @@ async function getUserSummary(req, res) {
           favoriteMuscleGroupFallback = favoriteMuscleFromEntries?.name || null;
         }
       }
-    } catch (_) {}
+    } catch (err) {
+      console.error('Erreur lors de la récupération des sessions d\'entraînement:', err);
+    }
 
     if (workoutDaysSet.size > 0) {
       let cursor = new Date();

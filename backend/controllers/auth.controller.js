@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { sendVerifyEmail } = require('../services/mailer.service');
+const { validatePassword } = require('../utils/passwordValidator');
 
 function frontBase() {
   const base = process.env.FRONTEND_BASE_URL || 'http://localhost:5173';
@@ -19,15 +20,26 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'Email/pseudo et mot de passe requis.' });
     }
 
-    const primaryQuery = rawId.includes('@') ? { email: rawId } : { pseudo: rawId };
-    const fallbackQuery = rawId.includes('@') ? { pseudo: rawId } : { email: rawId };
+    // Normaliser l'identifiant pour recherche case-insensitive
+    const normalizedId = rawId.trim().toLowerCase();
 
-    let user = await User.findOne(primaryQuery).select('+motdepasse +emailVerifie');
-    if (!user) user = await User.findOne(fallbackQuery).select('+motdepasse +emailVerifie');
-
-    if (!user && !rawId.includes('@')) {
-      const esc = rawId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      user = await User.findOne({ pseudo: { $regex: `^${esc}$`, $options: 'i' } }).select('+motdepasse +emailVerifie');
+    let user;
+    if (rawId.includes('@')) {
+      // Recherche par email (déjà stocké en minuscules)
+      user = await User.findOne({ email: normalizedId }).select('+motdepasse +emailVerifie');
+      // Fallback sur pseudo
+      if (!user) {
+        user = await User.findOne({ pseudo: { $eq: normalizedId } })
+          .collation({ locale: 'en', strength: 2 })
+          .select('+motdepasse +emailVerifie');
+      }
+    } else {
+      // Recherche par pseudo avec collation case-insensitive
+      user = await User.findOne({ pseudo: { $eq: normalizedId } })
+        .collation({ locale: 'en', strength: 2 })
+        .select('+motdepasse +emailVerifie');
+      // Fallback sur email
+      if (!user) user = await User.findOne({ email: normalizedId }).select('+motdepasse +emailVerifie');
     }
 
     if (!user) return res.status(401).json({ message: 'Identifiants invalides.' });
@@ -35,20 +47,15 @@ exports.login = async (req, res) => {
 
     const stored = user.motdepasse || '';
     const isBcrypt = /^\$2[aby]\$/.test(stored);
-    let ok = false;
 
-    if (isBcrypt) {
-      ok = await bcrypt.compare(pwd, stored);
-    } else {
-      if (stored && stored === pwd) {
-        const newHash = await bcrypt.hash(pwd, 10);
-        user.motdepasse = newHash;
-        await user.save();
-        ok = true;
-      } else {
-        ok = false;
-      }
+    // Sécurité: refus des comptes avec mots de passe non hashés
+    if (!isBcrypt) {
+      return res.status(401).json({
+        message: 'Compte legacy détecté. Veuillez réinitialiser votre mot de passe.'
+      });
     }
+
+    const ok = await bcrypt.compare(pwd, stored);
 
     if (!ok) return res.status(401).json({ message: 'Identifiants invalides.' });
 
@@ -67,17 +74,17 @@ exports.login = async (req, res) => {
       photoUrl = `${backendBase}${photoUrl}`;
     }
 
+    // Envoi du token via cookie httpOnly (protection XSS)
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 7,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
     });
 
     return res.json({
       message: 'Connexion réussie.',
-      token,
       displayName,
       user: {
         id: user._id,
@@ -250,8 +257,9 @@ exports.changePassword = async (req, res) => {
       return res.status(400).json({ message: 'Mot de passe actuel et nouveau mot de passe requis.' });
     }
 
-    if (newPassword.length < 8) {
-      return res.status(400).json({ message: 'Le nouveau mot de passe doit contenir au moins 8 caractères.' });
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.valid) {
+      return res.status(400).json({ message: passwordValidation.message });
     }
 
     const user = await User.findById(req.userId).select('+motdepasse');
@@ -270,6 +278,23 @@ exports.changePassword = async (req, res) => {
     return res.json({ message: 'Mot de passe modifié avec succès.' });
   } catch (err) {
     console.error('PUT /change-password', err);
+    return res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
+
+exports.logout = async (req, res) => {
+  try {
+    // Supprimer le cookie httpOnly
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+    });
+
+    return res.json({ message: 'Déconnexion réussie.' });
+  } catch (err) {
+    console.error('POST /logout', err);
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
