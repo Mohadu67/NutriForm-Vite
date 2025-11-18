@@ -35,6 +35,7 @@ export default defineConfig(({ mode }) => ({
       registerType: 'prompt',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}'],
+        globIgnores: ['**/assets/icons/**'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/harmonith\.fr\/.*/i,
