@@ -227,7 +227,9 @@ async function createSession(req, res) {
           }
         }
       }
-    } catch (_) {}
+    } catch (err) {
+      console.error('Erreur lors de la répartition de la durée sur les exercices cardio:', err);
+    }
 
     const userWeight = await getLatestWeight(userId);
     const derived = computeSessionFromEntries(normalized, userWeight);
