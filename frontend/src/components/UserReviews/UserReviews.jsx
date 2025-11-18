@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import styles from "./UserReviews.module.css";
-import { secureApiCall } from "../../utils/authService.js";
+import { secureApiCall, isAuthenticated } from "../../utils/authService.js";
 
 export default function UserReviews() {
   const [reviews, setReviews] = useState([]);
@@ -17,6 +17,11 @@ export default function UserReviews() {
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const checkAuth = useCallback(async () => {
+    if (!isAuthenticated()) {
+      setIsLoggedIn(false);
+      return;
+    }
+
     try {
       const response = await secureApiCall('/api/me');
 
