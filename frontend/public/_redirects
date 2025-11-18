@@ -3,5 +3,8 @@ https://harmonith.com/*     https://harmonith.fr/:splat    301!
 https://www.harmonith.com/* https://harmonith.fr/:splat    301!
 https://www.harmonith.fr/*  https://harmonith.fr/:splat    301!
 
+# Proxy API pour éviter les problèmes de cookies cross-site (Safari)
+/api/*  https://nutriform-vite.onrender.com/api/:splat  200
+
 # SPA fallback
 /*    /index.html   200
