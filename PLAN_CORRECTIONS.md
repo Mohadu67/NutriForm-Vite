@@ -22,15 +22,15 @@
 
 ### Sécurité (4 tâches)
 
-- [ ] **1.1 Retirer credentials hardcodés**
+- [x] **1.1 Retirer credentials hardcodés**
   - **Fichier :** `backend/.env.example:17`
   - **Action :** Remplacer `SMTP_PASS=cqpj czps puqt dhfq` par `SMTP_PASS=your_smtp_password_here`
   - **Impact :** Critique - Prévient compromission du compte email
   - **Temps estimé :** 5 minutes
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
-- [ ] **1.2 Sanitiser HTML dans NewsletterAdmin**
+- [x] **1.2 Sanitiser HTML dans NewsletterAdmin**
   - **Fichier :** `frontend/src/pages/Admin/NewsletterAdmin.jsx:328`
   - **Action :** Utiliser `DOMPurify.sanitize()` sur `newsletter.content`
   - **Impact :** Critique - Prévient attaques XSS admin
@@ -44,9 +44,9 @@
     }} />
     ```
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
-- [ ] **1.3 Supprimer support mots de passe en clair**
+- [x] **1.3 Supprimer support mots de passe en clair**
   - **Fichier :** `backend/controllers/auth.controller.js:40-50`
   - **Actions :**
     1. Supprimer le fallback plaintext
@@ -55,28 +55,28 @@
   - **Impact :** Critique - Sécurise les comptes legacy
   - **Temps estimé :** 2 heures
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
-- [ ] **1.4 Mettre à jour Vite (CVE)**
+- [x] **1.4 Mettre à jour Vite (CVE)**
   - **Fichier :** `frontend/package.json`
   - **Action :** Mettre à jour Vite de 7.0.4 vers 7.0.8+
   - **Commande :** `cd frontend && npm update vite && npm audit fix`
   - **Impact :** Critique - Corrige 3 vulnérabilités (path traversal, directory listing, backslash bypass)
   - **Temps estimé :** 15 minutes
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
 ### Stabilité (2 tâches)
 
-- [ ] **1.5 Corriger bug ReferenceError kcalArray**
+- [x] **1.5 Corriger bug ReferenceError kcalArray**
   - **Fichier :** `backend/controllers/history.controller.js:219`
   - **Action :** Définir `kcalArray` ou supprimer la ligne (variable non définie)
   - **Impact :** Critique - Crash serveur sur route getUserSummary
   - **Temps estimé :** 30 minutes
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
-- [ ] **1.6 Remplacer blocs catch vides**
+- [x] **1.6 Remplacer blocs catch vides**
   - **Fichiers :**
     - `backend/controllers/history.controller.js:245, 304`
     - Autres fichiers concernés (à identifier)
@@ -90,10 +90,10 @@
     }
     ```
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
 **⏱️ Temps total estimé :** 1-2 jours
-**📊 Progression :** 0/6 (0%)
+**📊 Progression :** 6/6 (100%)
 
 ---
 
@@ -101,7 +101,7 @@
 
 ### Sécurité avancée (5 tâches)
 
-- [ ] **2.1 Migrer JWT vers httpOnly cookies**
+- [x] **2.1 Migrer JWT vers httpOnly cookies**
   - **Fichiers :**
     - `frontend/src/utils/authService.js:34-36`
     - `backend/controllers/auth.controller.js`
@@ -112,9 +112,9 @@
   - **Impact :** Haute - Protection contre XSS
   - **Temps estimé :** 4 heures
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
-- [ ] **2.2 Rate limiting sur password reset**
+- [x] **2.2 Rate limiting sur password reset**
   - **Fichier :** `backend/routes/passwordReset.route.js`
   - **Action :** Ajouter middleware de rate limiting (3 requêtes max / 15 min)
   - **Impact :** Haute - Prévient spam emails et énumération
@@ -130,9 +130,9 @@
     router.post('/forgot-password', resetLimiter, forgotPassword);
     ```
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
-- [ ] **2.3 Renforcer validation mots de passe**
+- [x] **2.3 Renforcer validation mots de passe**
   - **Fichier :** `backend/controllers/auth.controller.js:253`
   - **Action :** Passer de 8 à 12 caractères + exiger complexité
   - **Impact :** Haute - Renforce sécurité des comptes
@@ -147,17 +147,17 @@
     }
     ```
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
-- [ ] **2.4 Activer Content Security Policy**
+- [x] **2.4 Activer Content Security Policy**
   - **Fichier :** `backend/server.js:58-61`
   - **Action :** Configurer CSP au lieu de la désactiver
   - **Impact :** Haute - Protection contre XSS et injections
   - **Temps estimé :** 2 heures
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
-- [ ] **2.5 Corriger requêtes NoSQL regex**
+- [x] **2.5 Corriger requêtes NoSQL regex**
   - **Fichier :** `backend/controllers/auth.controller.js:29-30`
   - **Action :** Remplacer regex par requêtes exactes
   - **Impact :** Haute - Prévient ReDoS et injection NoSQL
@@ -169,7 +169,7 @@
     })
     ```
   - **Assigné à :**
-  - **Statut :** ⏸️
+  - **Statut :** ✅
 
 ### Tests (4 tâches)
 
@@ -217,7 +217,7 @@
   - **Statut :** ⏸️
 
 **⏱️ Temps total estimé :** 1-2 semaines
-**📊 Progression :** 0/9 (0%)
+**📊 Progression :** 5/9 (56%)
 
 ---
 
@@ -404,11 +404,11 @@
 
 | Priorité | Tâches | Terminées | En cours | En attente | Progression |
 |----------|--------|-----------|----------|------------|-------------|
-| 🔴 Critique | 6 | 0 | 0 | 6 | 0% |
-| 🟡 Haute | 9 | 0 | 0 | 9 | 0% |
+| 🔴 Critique | 6 | 6 | 0 | 0 | 100% |
+| 🟡 Haute | 9 | 5 | 0 | 4 | 56% |
 | 🟢 Moyenne | 13 | 0 | 0 | 13 | 0% |
 | 🔵 Basse | 8 | 0 | 0 | 8 | 0% |
-| **TOTAL** | **36** | **0** | **0** | **36** | **0%** |
+| **TOTAL** | **36** | **11** | **0** | **25** | **31%** |
 
 ### Temps estimé total
 
