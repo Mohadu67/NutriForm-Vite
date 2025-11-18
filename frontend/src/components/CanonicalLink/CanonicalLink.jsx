@@ -6,12 +6,24 @@ function CanonicalLink() {
   const baseUrl = "https://harmonith.fr";
 
   // Retirer le trailing slash pour une URL cohérente
-  const pathname = location.pathname.replace(/\/$/, '') || '/';
+  let pathname = location.pathname.replace(/\/$/, '') || '/';
 
   // Remplacer /calories par /calorie pour la version canonique
-  const canonicalPath = pathname === '/calories' ? '/calorie' : pathname;
+  pathname = pathname === '/calories' ? '/calorie' : pathname;
 
-  const canonicalUrl = `${baseUrl}${canonicalPath === '/' ? '/' : canonicalPath}`;
+  // Pour /outils avec paramètres tool=imc ou tool=cal, rediriger vers /imc ou /calorie
+  if (pathname === '/outils' && location.search) {
+    const params = new URLSearchParams(location.search);
+    const tool = params.get('tool');
+    if (tool === 'imc') {
+      pathname = '/imc';
+    } else if (tool === 'cal') {
+      pathname = '/calorie';
+    }
+  }
+
+  // Ne jamais inclure les paramètres de recherche dans l'URL canonique
+  const canonicalUrl = `${baseUrl}${pathname === '/' ? '/' : pathname}`;
 
   return (
     <Helmet>
