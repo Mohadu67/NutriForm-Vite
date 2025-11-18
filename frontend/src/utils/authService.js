@@ -2,18 +2,14 @@ const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
 async function apiCall(endpoint, options = {}) {
   const url = `${API_URL}${endpoint}`;
-  const token = localStorage.getItem("token");
-
   const isFormData = options.body instanceof FormData;
 
   const defaultOptions = {
-    credentials: 'include',
+    credentials: 'include', // Envoie automatiquement les cookies httpOnly
     headers: isFormData ? {
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...options.headers,
     } : {
       'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...options.headers,
     },
   };
@@ -30,8 +26,9 @@ export async function login(identifier, password, remember = false) {
 
   const data = await response.json();
 
-  if (response.ok && data.token) {
-    localStorage.setItem("token", data.token);
+  if (response.ok && data.user) {
+    // Token envoyé via cookie httpOnly (sécurisé contre XSS)
+    // On stocke uniquement les données utilisateur non sensibles
     localStorage.setItem("user", JSON.stringify(data.user));
     localStorage.setItem("userId", data.user.id);
 
@@ -50,15 +47,13 @@ export async function login(identifier, password, remember = false) {
 }
 
 export async function secureApiCall(endpoint, options = {}) {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error('Not authenticated');
-  }
-
   try {
     const response = await apiCall(endpoint, options);
 
     if (response.status === 401) {
+      // Cookie expiré ou invalide, nettoyer les données locales
+      localStorage.removeItem("user");
+      localStorage.removeItem("userId");
       throw new Error('Not authenticated');
     }
 
@@ -70,11 +65,13 @@ export async function secureApiCall(endpoint, options = {}) {
 
 export async function logout() {
   try {
+    // Appel API pour supprimer le cookie httpOnly côté serveur
     await apiCall('/api/logout', { method: 'POST' });
   } catch (error) {
+    console.error('Erreur lors de la déconnexion:', error);
   }
 
-  localStorage.removeItem("token");
+  // Nettoyage des données locales
   localStorage.removeItem("user");
   localStorage.removeItem("userId");
   localStorage.removeItem("lastActivity");
@@ -86,8 +83,9 @@ export async function logout() {
 }
 
 export function isAuthenticated() {
-  const token = localStorage.getItem("token");
-  return Boolean(token);
+  // Vérifier si on a les données utilisateur (le token est dans un cookie httpOnly)
+  const user = localStorage.getItem("user");
+  return Boolean(user);
 }
 
 export function getCurrentUser() {
