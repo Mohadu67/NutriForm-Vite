@@ -2,13 +2,20 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 async function authMiddleware(req, res, next) {
-  const authHeader = req.headers['authorization'] || '';
   let token = null;
-  if (authHeader.toLowerCase().startsWith('bearer ')) {
-    token = authHeader.slice(7).trim();
-  } else if (req.cookies && req.cookies.token) {
+
+  // Priorité 1: Cookie httpOnly (sécurisé contre XSS)
+  if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
   }
+  // Priorité 2: Header Authorization (pour API/mobile)
+  else {
+    const authHeader = req.headers['authorization'] || '';
+    if (authHeader.toLowerCase().startsWith('bearer ')) {
+      token = authHeader.slice(7).trim();
+    }
+  }
+
   if (!token) {
     return res.status(401).json({ message: 'Token requis.' });
   }

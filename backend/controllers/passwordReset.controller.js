@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { sendResetEmail } = require('../services/mailer.service');
 const { buildFrontBaseUrl } = require('../utils/urls');
+const { validatePassword } = require('../utils/passwordValidator');
 
 exports.requestPasswordReset = async (req, res) => {
   console.log('[requestPasswordReset] START');
@@ -74,6 +75,12 @@ exports.resetPassword = async (req, res) => {
   if (!token || !password) {
     return res.status(400).json({ message: 'Token and new password are required.' });
   }
+
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.valid) {
+    return res.status(400).json({ message: passwordValidation.message });
+  }
+
   try {
     const user = await User.findOne({
       resetPasswordToken: token,
