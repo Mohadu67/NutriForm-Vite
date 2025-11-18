@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { secureApiCall } from "../../../utils/authService";
+import { secureApiCall, isAuthenticated } from "../../../utils/authService";
 
 export default function useHistoryData() {
   const [records, setRecords] = useState([]);
@@ -7,11 +7,17 @@ export default function useHistoryData() {
   const [points, setPoints] = useState(null);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
-  
+
   const [displayName, setDisplayName] = useState(localStorage.getItem("cachedDisplayName") || "");
   const [user, setUser] = useState(null);
 
   useEffect(() => {
+    // Ne pas appeler l'API si l'utilisateur n'est pas authentifié
+    if (!isAuthenticated()) {
+      setStatus("idle");
+      return;
+    }
+
     setStatus("loading");
 
     secureApiCall('/api/me')

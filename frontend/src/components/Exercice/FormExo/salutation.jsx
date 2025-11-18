@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { secureApiCall } from "../../../utils/authService.js";
+import { secureApiCall, isAuthenticated } from "../../../utils/authService.js";
 
 export default function Salutation({ className = "", seedKey = "static" }) {
   const { t } = useTranslation();
@@ -17,6 +17,9 @@ export default function Salutation({ className = "", seedKey = "static" }) {
         (cached?.email ? String(cached.email).split("@")[0] : "");
       if (cachedName) setDisplayName(cachedName);
     } catch (_) {}
+
+    // Ne pas appeler l'API si l'utilisateur n'est pas authentifié
+    if (!isAuthenticated()) return;
 
     secureApiCall('/api/me')
       .then((res) =>

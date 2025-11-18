@@ -2,14 +2,16 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import style from "./HistoryUser.module.css";
-import { secureApiCall } from "../../../utils/authService";
+import { secureApiCall, isAuthenticated } from "../../../utils/authService";
 
 export default function LogoutActions({ onLogout }) {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    checkAdmin();
+    if (isAuthenticated()) {
+      checkAdmin();
+    }
   }, []);
 
   const checkAdmin = async () => {
