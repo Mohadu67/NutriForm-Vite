@@ -74,17 +74,17 @@ exports.login = async (req, res) => {
       photoUrl = `${backendBase}${photoUrl}`;
     }
 
+    // Envoi du token via cookie httpOnly (protection XSS)
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 7,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
     });
 
     return res.json({
       message: 'Connexion réussie.',
-      token,
       displayName,
       user: {
         id: user._id,
@@ -278,6 +278,23 @@ exports.changePassword = async (req, res) => {
     return res.json({ message: 'Mot de passe modifié avec succès.' });
   } catch (err) {
     console.error('PUT /change-password', err);
+    return res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
+
+exports.logout = async (req, res) => {
+  try {
+    // Supprimer le cookie httpOnly
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+    });
+
+    return res.json({ message: 'Déconnexion réussie.' });
+  } catch (err) {
+    console.error('POST /logout', err);
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
