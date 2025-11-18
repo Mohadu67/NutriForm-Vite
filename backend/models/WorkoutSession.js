@@ -94,7 +94,9 @@ WorkoutSessionSchema.pre('save', function(next) {
         }
       }
     }
-  } catch (_) {}
+  } catch (err) {
+    console.error('Erreur lors de la détection automatique des groupes musculaires:', err);
+  }
   next();
 });
 
