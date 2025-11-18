@@ -35,20 +35,15 @@ exports.login = async (req, res) => {
 
     const stored = user.motdepasse || '';
     const isBcrypt = /^\$2[aby]\$/.test(stored);
-    let ok = false;
 
-    if (isBcrypt) {
-      ok = await bcrypt.compare(pwd, stored);
-    } else {
-      if (stored && stored === pwd) {
-        const newHash = await bcrypt.hash(pwd, 10);
-        user.motdepasse = newHash;
-        await user.save();
-        ok = true;
-      } else {
-        ok = false;
-      }
+    // Sécurité: refus des comptes avec mots de passe non hashés
+    if (!isBcrypt) {
+      return res.status(401).json({
+        message: 'Compte legacy détecté. Veuillez réinitialiser votre mot de passe.'
+      });
     }
+
+    const ok = await bcrypt.compare(pwd, stored);
 
     if (!ok) return res.status(401).json({ message: 'Identifiants invalides.' });
 
