@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import styles from "./ProfileUser.module.css";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import ProfilePhoto from "./ProfilePhoto/ProfilePhoto.jsx";
-import { secureApiCall, logout } from "../../../utils/authService.js";
+import { secureApiCall, logout, isAuthenticated } from "../../../utils/authService.js";
 
 export default function ProfileUser({ onClose, onLogout }) {
   const [user, setUser] = useState(null);
@@ -22,7 +22,11 @@ export default function ProfileUser({ onClose, onLogout }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchUserData();
+    if (isAuthenticated()) {
+      fetchUserData();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const fetchUserData = async () => {
