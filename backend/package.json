@@ -8,7 +8,10 @@
     "dev:local": "dotenv -e .env.local -- node server.js",
     "dev:prod": "dotenv -e .env -- node server.js",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:verbose": "jest --verbose"
   },
   "keywords": [],
   "author": "",
@@ -35,6 +38,9 @@
   },
   "description": "",
   "devDependencies": {
-    "dotenv-cli": "^10.0.0"
+    "@types/jest": "^30.0.0",
+    "dotenv-cli": "^10.0.0",
+    "jest": "^29.7.0",
+    "supertest": "^7.1.4"
   }
 }

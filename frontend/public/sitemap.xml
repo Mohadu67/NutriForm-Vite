@@ -3,51 +3,58 @@
 
   <url>
     <loc>https://harmonith.fr/</loc>
-    <lastmod>2025-01-31</lastmod>
+    <lastmod>2025-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
     <loc>https://harmonith.fr/outils</loc>
-    <lastmod>2025-01-31</lastmod>
+    <lastmod>2025-11-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://harmonith.fr/exo</loc>
-    <lastmod>2025-01-31</lastmod>
+    <lastmod>2025-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://harmonith.fr/outils?tool=imc</loc>
-    <lastmod>2025-01-31</lastmod>
+    <loc>https://harmonith.fr/imc</loc>
+    <lastmod>2025-11-18</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://harmonith.fr/outils?tool=cal</loc>
-    <lastmod>2025-01-31</lastmod>
+    <loc>https://harmonith.fr/calorie</loc>
+    <lastmod>2025-11-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://harmonith.fr/about</loc>
+    <lastmod>2025-11-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://harmonith.fr/contact</loc>
-    <lastmod>2025-01-31</lastmod>
+    <lastmod>2025-11-18</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://harmonith.fr/about</loc>
-    <lastmod>2025-01-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://harmonith.fr/leaderboard</loc>
+    <lastmod>2025-11-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
   </url>
 
 </urlset>
