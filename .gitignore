@@ -34,3 +34,4 @@ backend/.env.local
 AgentClaude.md
 package-lock.json
 package.json
+PLAN_CORRECTIONS.md
