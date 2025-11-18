@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./AdminPage.module.css";
-import { secureApiCall } from "../../utils/authService";
+import { secureApiCall, isAuthenticated } from "../../utils/authService";
 
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
@@ -28,6 +28,11 @@ export default function AdminPage() {
   };
 
   const checkAdmin = useCallback(async () => {
+    if (!isAuthenticated()) {
+      navigate("/");
+      return false;
+    }
+
     try {
       const response = await secureApiCall('/api/me');
 
