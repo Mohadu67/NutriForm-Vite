@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import DOMPurify from "dompurify";
 import styles from "./NewsletterAdmin.module.css";
 import { secureApiCall } from "../../utils/authService.js";
 
@@ -325,7 +326,7 @@ export default function NewsletterAdmin() {
                     <h4 style={{ marginBottom: '12px', color: '#666' }}>Contenu :</h4>
                     <div
                       className={styles.contentPreview}
-                      dangerouslySetInnerHTML={{ __html: newsletter.content }}
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(newsletter.content) }}
                     />
                   </div>
                 )}
