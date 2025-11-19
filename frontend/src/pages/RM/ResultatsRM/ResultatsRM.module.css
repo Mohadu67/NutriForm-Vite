@@ -5,11 +5,11 @@
 }
 
 .mainCard {
-  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
+  background: var(--couleur-bouton-action, #f7b186);
   border-radius: 16px;
   padding: 16px 12px;
-  color: white;
-  box-shadow: 0 8px 32px rgba(255, 179, 133, 0.3);
+  color: var(--couleur-text-bouton, #111111);
+  box-shadow: 0 8px 32px rgba(247, 177, 134, 0.3);
   margin-bottom: 20px;
 }
 
