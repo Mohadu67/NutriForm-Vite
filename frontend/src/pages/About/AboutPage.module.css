@@ -114,7 +114,7 @@
 /* ========== SCROLL INDICATOR ========== */
 .scrollIndicator {
   position: absolute;
-  bottom: 40px;
+  bottom: 150px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
