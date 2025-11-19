@@ -613,10 +613,10 @@ export default function Dashboard() {
                     const height = ((point.value - min) / range) * 100;
                     return (
                       <div key={index} className={style.chartBar}>
+                        <span className={style.chartBarValue}>{point.value}</span>
                         <div
                           className={style.chartBarFill}
-                          style={{ height: `${Math.max(height, 10)}%` }}
-                          title={`${point.value} kg`}
+                          style={{ height: `${Math.max(height, 15)}%` }}
                         />
                         <span className={style.chartBarLabel}>
                           {new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(point.date).split(' ')[0]}
@@ -624,10 +624,6 @@ export default function Dashboard() {
                       </div>
                     );
                   })}
-                </div>
-                <div className={style.chartLegend}>
-                  <span>{Math.min(...weightPoints.map(p => p.value)).toFixed(1)} kg</span>
-                  <span>{Math.max(...weightPoints.map(p => p.value)).toFixed(1)} kg</span>
                 </div>
               </div>
             </section>
