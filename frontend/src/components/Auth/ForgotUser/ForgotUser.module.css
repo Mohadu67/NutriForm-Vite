@@ -1,119 +1,275 @@
-:root {
-  --nf-bg: #ffffff;
-  --nf-ink: #111;
-  --nf-muted: #707070;
-  --nf-border: rgba(0,0,0,.12);
-  --nf-focus: 0 0 0 3px rgba(247,177,134,.4);
+/* ========================================
+   FORGOT PASSWORD - Design Magique
+   ======================================== */
+
+.body {
+  position: relative;
+  padding: 0.5rem;
 }
 
-.auth-panel {
-  margin: 24px auto;
-  padding: 20px 20px 16px;
-  background: var(--nf-bg);
-  border: 1px solid var(--nf-border);
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgba(0,0,0,.08);
+/* ========== HEADER ========== */
+.header {
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
 
-.auth-title {
-  margin: 0 0 12px;
-  font-size: 22px;
-  line-height: 1.2;
+.iconWrapper {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1rem;
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), #f9c4a0);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 25px rgba(247, 177, 134, 0.3);
+  animation: pulse 3s ease-in-out infinite;
 }
 
-.muted { color: var(--nf-muted); font-size: 14px; }
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 25px rgba(247, 177, 134, 0.3); }
+  50% { transform: scale(1.05); box-shadow: 0 12px 35px rgba(247, 177, 134, 0.4); }
+}
 
-.auth-form { display: grid; gap: 10px; }
-.auth-label { font-size: 14px; }
+.title {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0 0 0.25rem;
+}
 
-.auth-input {
+.subtitle {
+  font-size: 0.9rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+/* ========== FORM ========== */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted, #6b7280);
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.input {
   width: 100%;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--nf-border);
-  outline: none;
+  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  background: var(--paper, #ffffff);
+  border: 2px solid var(--line, rgba(0, 0, 0, 0.08));
+  border-radius: 12px;
   font-size: 0.95rem;
+  color: var(--ink, #222325);
+  transition: all 0.2s ease;
 }
 
+.input:focus {
+  outline: none;
+  border-color: var(--couleur-bouton-action, #f7b186);
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.15);
+}
 
-.auth-input:focus-visible { box-shadow: var(--nf-focus); }
+.input::placeholder {
+  color: var(--muted, #6b7280);
+  opacity: 0.6;
+}
 
-.auth-error {
-  color: #c62828;
-  background: rgba(198,40,40,.06);
-  border: 1px solid rgba(198,40,40,.25);
-  border-radius: 10px;
-  padding: 8px 10px;
-  font-size: 14px;
+/* ========== SUBMIT BUTTON ========== */
+.submitBtn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), #f9c4a0);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.3);
+}
+
+.submitBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(247, 177, 134, 0.4);
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ========== BACK LINK ========== */
+.backWrapper {
+  text-align: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line, rgba(0, 0, 0, 0.08));
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--couleur-bouton-action, #f7b186);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.backBtn:hover {
+  color: var(--ink, #222325);
+}
+
+/* ========== MESSAGES ========== */
+.error {
+  background: rgba(230, 57, 70, 0.1);
+  border: 1px solid rgba(230, 57, 70, 0.3);
+  color: #e63946;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
   text-align: center;
 }
 
-.authActions {
+/* ========== LOADING & SUCCESS STATES ========== */
+.loadingState,
+.successState {
   display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  margin-top: 12px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  gap: 1rem;
+  text-align: center;
 }
 
-.linkBtn {
-  background: transparent;
-  border: 1px solid var(--nf-border);
-  padding: 10px 12px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-.linkBtn:focus-visible { outline: none; box-shadow: var(--nf-focus); }
-
-/* --- Loader --- */
 .loaderSvg {
-  width: 72px;
-  height: 72px;
-  display: block;
-  margin: 8px auto 6px;
+  width: 80px;
+  height: 80px;
 }
 
-@media (min-width: 768px) {
-  .loaderSvg { width: 60px; height: 60px; }
+.loadingText {
+  font-size: 0.95rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
 }
 
-/* === Dark mode for Forgot Password === */
+.successIcon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), #f9c4a0);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: successPop 0.5s ease;
+}
+
+@keyframes successPop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.successTitle {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0;
+}
+
+.successText {
+  font-size: 0.9rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
+  max-width: 280px;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.actionBtn {
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actionBtnPrimary {
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), #f9c4a0);
+  color: white;
+  border: none;
+}
+
+.actionBtnPrimary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+}
+
+.actionBtnSecondary {
+  background: transparent;
+  color: var(--muted, #6b7280);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.08));
+}
+
+.actionBtnSecondary:hover {
+  background: var(--paper, #ffffff);
+  color: var(--ink, #222325);
+}
+
+/* ========== DARK MODE ========== */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --nf-bg: #141414;
-    --nf-ink: #f3f4f6;
-    --nf-muted: #a8b0b8;
-    --nf-border: rgba(255,255,255,.16);
-    --nf-focus: 0 0 0 3px rgba(181,234,215,.28);
+  .input {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--ink, #e9ecf1);
   }
 
-  .auth-panel {
-    background:
-      linear-gradient(180deg, rgba(22,22,22,.96), rgba(18,18,18,.94)) padding-box,
-      linear-gradient(135deg, rgba(181,234,215,.18), rgba(247,177,134,.18)) border-box;
-    border: 1px solid var(--nf-border);
-    box-shadow: 0 16px 44px rgba(0,0,0,.55);
-  }
-
-  .auth-title { color: var(--nf-ink); }
-  .muted { color: var(--nf-muted); }
-
-  .auth-input {
-    color: var(--nf-ink);
-    border: 1px solid var(--nf-border);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
-  }
-  .auth-input::placeholder { color: #9aa3ab; }
-  .auth-input:focus-visible { box-shadow: var(--nf-focus); }
-
-  .linkBtn {
-    background: #1b1b1b;
-    color: var(--nf-ink);
-    border: 1px solid var(--nf-border);
-  }
-
-  .auth-error {
-    color: #ffb4b4;
-    background: rgba(198,40,40,.15);
-    border: 1px solid rgba(255,121,121,.35);
+  .input:focus {
+    border-color: var(--couleur-bouton-action, #f7b186);
+    box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.1);
   }
 }
