@@ -1,150 +1,349 @@
-.form { display: grid; gap: 1rem; }
+/* ========================================
+   REGISTER - Design Magique
+   ======================================== */
 
-.loaderSvg {
-  width: 150px;
-  height: auto;
-  margin-bottom: 16px;
-}
-
-.label { font-weight: 700; color: #2B2B2B; }
-
-.input, .select {
-  width: 100%;
-  padding: 0.5rem 1rem;
-  border-radius: 12px;
-  font-size: 1rem;
-  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
-}
-
-.linkBtn {
-  all: unset;
-  cursor: pointer;
-  font-weight: 800;
-  padding: .2rem .3rem;
+.body {
   position: relative;
-  margin: 10px 28px 10px
+  padding: 0.5rem;
 }
-.linkBtn::after {
-  content: "";
+
+/* ========== HEADER ========== */
+.header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.iconWrapper {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1rem;
+  background: linear-gradient(135deg, var(--couleur-bouton-selection, #b8ddd1), var(--couleur-bouton-action, #f7b186));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 25px rgba(184, 221, 209, 0.3);
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 25px rgba(184, 221, 209, 0.3); }
+  50% { transform: scale(1.05); box-shadow: 0 12px 35px rgba(184, 221, 209, 0.4); }
+}
+
+.title {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0 0 0.25rem;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
+}
+
+/* ========== FORM ========== */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.inputIcon {
   position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 0;
-  height: 2px;
-  background-color: var(--couleur-bouton-action);
-  transition: width 0.3s ease, left 0.3s ease;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted, #6b7280);
+  pointer-events: none;
+  transition: color 0.2s ease;
 }
-.linkBtn:hover::after {
+
+.input {
   width: 100%;
-  left: 0;
+  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  background: var(--paper, #ffffff);
+  border: 2px solid var(--line, rgba(0, 0, 0, 0.08));
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: var(--ink, #222325);
+  transition: all 0.2s ease;
 }
 
+.input:focus {
+  outline: none;
+  border-color: var(--couleur-bouton-selection, #b8ddd1);
+  box-shadow: 0 0 0 3px rgba(184, 221, 209, 0.15);
+}
 
-.select { appearance: none; }
+.input::placeholder {
+  color: var(--muted, #6b7280);
+  opacity: 0.6;
+}
 
+/* Password specific */
+.passwordWrapper {
+  position: relative;
+}
 
-.passwordWrapper { position: relative; display: block; width: 100%; }
-.passwordWrapper .input { padding-right: 2.5rem; }
+.passwordWrapper .input {
+  padding-right: 3rem;
+}
+
 .togglePassword {
   position: absolute;
-  right: 1rem;
+  right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  padding: 0.25rem;
+  color: var(--muted, #6b7280);
+  transition: color 0.2s ease;
+  line-height: 1;
 }
 
-/* Photo Upload */
-.photoUpload {
+.togglePassword:hover {
+  color: var(--ink, #222325);
+}
+
+/* ========== CHECKBOXES ========== */
+.checkRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--ink, #222325);
+  cursor: pointer;
+  padding: 0.5rem 0;
+}
+
+.checkRow input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--couleur-bouton-selection, #b8ddd1);
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.checkRow span {
+  line-height: 1.4;
+}
+
+/* ========== SUBMIT BUTTON ========== */
+.submitBtn {
   width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--couleur-bouton-selection, #b8ddd1), #9fd4c4);
+  color: #111;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(184, 221, 209, 0.3);
+  margin-top: 0.5rem;
 }
 
-.photoLabel {
+.submitBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(184, 221, 209, 0.4);
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ========== LOGIN LINK ========== */
+.loginWrapper {
+  text-align: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line, rgba(0, 0, 0, 0.08));
+}
+
+.loginText {
+  font-size: 0.9rem;
+  color: var(--muted, #6b7280);
+}
+
+.loginBtn {
+  background: none;
+  border: none;
+  font-weight: 700;
+  color: var(--couleur-bouton-selection, #b8ddd1);
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.loginBtn:hover {
+  color: var(--ink, #222325);
+}
+
+/* ========== MESSAGES ========== */
+.error {
+  background: rgba(230, 57, 70, 0.1);
+  border: 1px solid rgba(230, 57, 70, 0.3);
+  color: #e63946;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.fieldError {
+  font-size: 0.8rem;
+  color: #e63946;
+  margin-top: 0.25rem;
+}
+
+.success {
+  background: rgba(184, 221, 209, 0.2);
+  border: 1px solid rgba(184, 221, 209, 0.5);
+  color: var(--ink, #222325);
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.muted {
+  font-size: 0.85rem;
+  color: var(--muted, #6b7280);
+  text-align: center;
+  margin: 0.5rem 0;
+}
+
+/* ========== LOADING & SUCCESS STATES ========== */
+.loadingState,
+.successState {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 24px;
-  border: 2px dashed #f7b186;
-  border-radius: 12px;
-  background: #FFF8F0;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: var(--ink, #222);
+  justify-content: center;
+  padding: 2rem 1rem;
+  gap: 1rem;
+  text-align: center;
 }
 
-.photoLabel:hover {
-  border-color: #f49b69;
-  background: #FFE8D6;
+.loaderSvg {
+  width: 80px;
+  height: 80px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .photoLabel {
-    background: #1a1d24;
-    color: #e9ecf1;
-  }
-
-  .photoLabel:hover {
-    background: #2a2d34;
-  }
-}
-
-.photoIcon {
-  font-size: 32px;
-}
-
-.photoInput {
-  display: none;
-}
-
-.photoPreviewContainer {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 0 auto;
-}
-
-.photoPreview {
-  width: 100%;
-  height: 100%;
+.successIcon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, var(--couleur-bouton-selection, #b8ddd1), #9fd4c4);
   border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #f7b186;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
-}
-
-.removePhoto {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: #fff;
-  border: none;
-  font-size: 24px;
-  line-height: 1;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(255, 179, 133, 0.4);
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
+  animation: successPop 0.5s ease;
 }
 
-.removePhoto:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.5);
-  line-height: 1;
-  color: #2B2B2B;
+@keyframes successPop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
 
-.checkRow { display: flex; align-items: center; gap: .6rem; font-size: .95rem; }
+.successTitle {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0;
+}
 
-.hint { font-size: .85rem; color: #6b6b6b; }
-.error { color: #D64545; font-weight: 700; text-align: center; }
+.successText {
+  font-size: 0.9rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
+  max-width: 280px;
+}
 
-@media (max-width: 420px) { .input, .select { font-size: 0.95rem; } }
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.actionBtn {
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actionBtnPrimary {
+  background: var(--couleur-bouton-selection, #b8ddd1);
+  color: #111;
+  border: none;
+}
+
+.actionBtnPrimary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(184, 221, 209, 0.3);
+}
+
+.actionBtnSecondary {
+  background: transparent;
+  color: var(--muted, #6b7280);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.08));
+}
+
+.actionBtnSecondary:hover {
+  background: var(--paper, #ffffff);
+  color: var(--ink, #222325);
+}
+
+/* ========== DARK MODE ========== */
+@media (prefers-color-scheme: dark) {
+  .input {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--ink, #e9ecf1);
+  }
+
+  .input:focus {
+    border-color: var(--couleur-bouton-selection, #b8ddd1);
+    box-shadow: 0 0 0 3px rgba(184, 221, 209, 0.1);
+  }
+}

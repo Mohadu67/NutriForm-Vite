@@ -46,8 +46,8 @@
 
 /* Buttons */
 .btnPrimary {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: white;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   border: none;
   border-radius: 12px;
   padding: 12px 24px;
