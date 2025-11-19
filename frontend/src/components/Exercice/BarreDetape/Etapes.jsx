@@ -11,7 +11,25 @@ export default function Progress({ steps = [], currentStep = 0, onStepChange }) 
             onClick={() => onStepChange && onStepChange(i)}
             aria-current={i === currentStep ? "step" : undefined}
           >
-            <div className={`${styles.circle} ${i === currentStep ? styles.active : ""} ${i < currentStep ? styles.done : ""}`}>{i + 1}</div>
+            <div className={`${styles.circle} ${i === currentStep ? styles.active : ""} ${i < currentStep ? styles.done : ""}`}>
+              {i < currentStep ? (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                i + 1
+              )}
+            </div>
             <div className={styles.label}>{s.title}</div>
           </button>
           {i < steps.length - 1 && (
