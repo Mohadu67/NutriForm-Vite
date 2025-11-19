@@ -1,10 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import styles from "./AboutPage.module.css";
 
 export default function AboutPage() {
+  const missionRef = useRef(null);
+
+  const scrollToMission = () => {
+    missionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   useEffect(() => {
     // Intersection Observer for scroll animations
     const observer = new IntersectionObserver(
@@ -70,10 +76,29 @@ export default function AboutPage() {
             <div className={styles.floatingOrb}></div>
             <div className={styles.floatingOrb}></div>
           </div>
+          <button
+            className={styles.scrollIndicator}
+            onClick={scrollToMission}
+            aria-label="Découvrir notre mission"
+          >
+            <span className={styles.scrollText}>Découvrir</span>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
         </section>
 
         {/* Mission Section */}
-        <section className={`${styles.mission} ${styles.fadeIn}`}>
+        <section ref={missionRef} className={`${styles.mission} ${styles.fadeIn}`}>
           <div className={styles.missionGrid}>
             <div className={styles.missionText}>
               <h2>Notre mission</h2>
