@@ -11,7 +11,6 @@ export default function OutilsCalcul() {
   const location = useLocation();
   const navigate = useNavigate();
   const panelRef = useRef(null);
-  const isInitialMount = useRef(true);
 
   const searchTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -58,36 +57,6 @@ export default function OutilsCalcul() {
     }
   };
 
-  useEffect(() => {
-    // Skip scroll on initial mount
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-
-    if (typeof window === "undefined") return;
-
-    const panel = panelRef.current;
-    if (!panel) return;
-
-    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-
-    const scrollTarget =
-      panel.querySelector("form") ||
-      panel.querySelector("[data-scroll-anchor='true']") ||
-      panel;
-
-    if (typeof scrollTarget.scrollIntoView !== "function") return;
-
-    const frame = window.requestAnimationFrame(() => {
-      scrollTarget.scrollIntoView({
-        behavior: prefersReducedMotion ? "auto" : "smooth",
-        block: "center",
-      });
-    });
-
-    return () => window.cancelAnimationFrame(frame);
-  }, [tab]);
 
   return (
     <main id="outils" className={styles.mainWrapper}>
