@@ -1,8 +1,9 @@
 /* Newsletter Section - Design épuré et soft */
 
 .newsletter {
-  background: var(--couleur-principale, #f7f6f2);
+  background: var(--paper, #ffffff);
   padding: 80px 20px;
+  border-top: 1px solid var(--line, rgba(0,0,0,.08));
 }
 
 .container {
@@ -71,7 +72,7 @@
 
 /* Form Block */
 .formBlock {
-  background: var(--paper, #ffffff);
+  background: var(--couleur-principale, #f7f6f2);
   border-radius: 16px;
   padding: 32px;
   border: 1px solid var(--line, rgba(0,0,0,.08));
@@ -186,11 +187,11 @@
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   .newsletter {
-    background: var(--couleur-principale, #0c0e12);
+    background: var(--paper, #12151b);
   }
 
   .formBlock {
-    background: var(--paper, #12151b);
+    background: var(--couleur-principale, #0c0e12);
   }
 
   .message.error {

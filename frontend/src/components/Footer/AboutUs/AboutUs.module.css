@@ -3,6 +3,7 @@
 .aboutSection {
   background: var(--couleur-principale, #f7f6f2);
   padding: 80px 20px;
+  border-top: 1px solid var(--line, rgba(0,0,0,.08));
 }
 
 .container {
