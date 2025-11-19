@@ -208,7 +208,7 @@
 
 .BtnReturn {
   background: linear-gradient(135deg, var(--form-accent) 0%, var(--form-accent-dark) 100%);
-  color: #fff;
+  color: var(--couleur-text-bouton, #111111);
   box-shadow: 0 4px 16px var(--form-accent-glow);
 }
 
@@ -307,7 +307,7 @@
   padding: 0.75rem 1.5rem;
   border-radius: 12px;
   background: linear-gradient(135deg, var(--form-accent), var(--form-accent-dark));
-  color: white;
+  color: var(--couleur-text-bouton, #111111);
   font-weight: 700;
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);

@@ -4,240 +4,8 @@ import usePageTitle from "../../hooks/usePageTitle.js";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import style from "./Dashboard.module.css";
-import WeightChart from "../../components/History/HistoryUser/HistoryCharts/WeightChart.jsx";
-import CalorieChart from "../../components/History/HistoryUser/HistoryCharts/CalorieChart.jsx";
 import useHistoryData from "../../components/History/HistoryUser/UseHistoryData.js";
-import SuivieSeance from "../../components/History/SessionTracking/SuivieSeance.jsx";
-import RMHistory from "../../components/History/RM/RMHistory/RMHistory.jsx";
-import SwimDistanceCard from "../../components/History/DashboardCards/SwimDistanceCard.jsx";
-import RunDistanceCard from "../../components/History/DashboardCards/RunDistanceCard.jsx";
-import WalkDistanceCard from "../../components/History/DashboardCards/WalkDistanceCard.jsx";
-import BikeDistanceCard from "../../components/History/DashboardCards/BikeDistanceCard.jsx";
-import ActivityHeatmapPanel from "../../components/History/DashboardCards/ActivityHeatmapPanel.jsx";
-import WeeklyGoalCard from "../../components/History/DashboardCards/WeeklyGoalCard.jsx";
 import WeeklyGoalModal from "../../components/History/DashboardCards/WeeklyGoalModal.jsx";
-import BadgesPanel from "../../components/History/DashboardCards/BadgesPanel.jsx";
-
-function DashboardOverview({
-  navigate,
-  status,
-  error,
-  records,
-  capitalizedName,
-  motivationMessage,
-  stats,
-  weeklyGoal,
-  weeklyProgress,
-  onOpenGoalModal,
-  swimStats,
-  runStats,
-  walkStats,
-  bikeStats,
-  formatKmValue,
-  shortDateFormatter,
-  badges,
-  activityHeatmap,
-  weightPoints,
-  rmTests,
-  imcSummary,
-  userSessions,
-  lastCompletedSession,
-  calorieTargets,
-  calorieBurnPoints,
-  onDeleteSuccess,
-  showGoalModal,
-  tempGoal,
-  setTempGoal,
-  onCloseGoalModal,
-  onSaveGoal,
-}) {
-  const showTrainingSection = stats.totalSessions > 0;
-  const showBodySection = weightPoints.length > 0 || calorieTargets.maintenance;
-  const showCardioSection = swimStats.totalKm > 0 || runStats.totalKm > 0 || walkStats.totalKm > 0 || bikeStats.totalKm > 0;
-  const showForceSection = rmTests.length > 0;
-
-  return (
-    <>
-      {/* Welcome Section */}
-      <section className={style.welcomeSection}>
-        <h1 className={style.welcomeTitle}>Salut {capitalizedName} 👋</h1>
-        <p className={style.welcomeSubtitle}>Voici ton tableau de bord</p>
-        <p className={style.motivationMessage}>{motivationMessage}</p>
-      </section>
-
-      {status === "loading" && <p className={style.loading}>Chargement…</p>}
-      {status === "error" && <p className={style.error}>{error}</p>}
-
-      {/* Quick Actions */}
-      <section className={style.quickActionsRow}>
-        <button onClick={() => navigate('/exo')} className={style.quickAction}>
-          <span className={style.quickActionIcon}>🏋️</span>
-          <span className={style.quickActionLabel}>Nouvelle séance</span>
-        </button>
-        <button onClick={() => navigate('/outils')} className={style.quickAction}>
-          <span className={style.quickActionIcon}>🛠️</span>
-          <span className={style.quickActionLabel}>Outils</span>
-        </button>
-      </section>
-
-      {/* Weekly Goal */}
-      {stats.totalSessions > 0 && (
-        <WeeklyGoalCard
-          weeklyGoal={weeklyGoal}
-          completedSessions={stats.last7Days}
-          weeklyProgress={weeklyProgress}
-          onEditGoal={onOpenGoalModal}
-        />
-      )}
-
-      {/* SECTION 1: ENTRAÎNEMENT */}
-      {showTrainingSection && (
-        <section className={style.dashboardSection} data-theme="training">
-          <header className={style.sectionHeader}>
-            <span className={style.sectionIcon}>🏋️</span>
-            <h2 className={style.sectionTitle}>Entraînement</h2>
-          </header>
-          <div className={style.sectionContent}>
-            <SuivieSeance
-              sessions={userSessions.slice(0, 5)}
-              lastSession={lastCompletedSession}
-              onDeleteSuccess={onDeleteSuccess}
-              showSummaryCards={false}
-            />
-            <ActivityHeatmapPanel weeks={activityHeatmap} />
-            {badges.length > 0 && <BadgesPanel badges={badges} />}
-          </div>
-        </section>
-      )}
-
-      {/* Empty state if no training */}
-      {!showTrainingSection && (
-        <section className={style.emptyStateCard}>
-          <div className={style.emptyStateIcon}>🏋️</div>
-          <h3 className={style.emptyStateTitle}>Démarre ta première séance</h3>
-          <p className={style.emptyStateText}>Commence à suivre tes entraînements pour voir tes progrès</p>
-          <button onClick={() => navigate('/exo')} className={style.ctaButton}>
-            Nouvelle séance
-          </button>
-        </section>
-      )}
-
-      {/* SECTION 2: CORPS & NUTRITION */}
-      {showBodySection && (
-        <section className={style.dashboardSection} data-theme="body">
-          <header className={style.sectionHeader}>
-            <span className={style.sectionIcon}>⚖️</span>
-            <h2 className={style.sectionTitle}>Corps & Nutrition</h2>
-          </header>
-          <div className={style.sectionContent}>
-            <WeightChart points={weightPoints} imcSummary={imcSummary} />
-            {calorieTargets.maintenance && (
-              <div className={style.calorieSummaryCard}>
-                <h3 className={style.calorieSummaryTitle}>💡 Dernier calcul calorique</h3>
-                <div className={style.calorieSummaryContent}>
-                  <div className={style.calorieMainValue}>
-                    <span className={style.calorieValue}>{calorieTargets.maintenance}</span>
-                    <span className={style.calorieUnit}>kcal/jour</span>
-                  </div>
-                  <div className={style.calorieTargets}>
-                    <div className={style.calorieTarget}>
-                      <span className={style.calorieLabel}>Perte :</span>
-                      <span className={style.calorieAmount}>{calorieTargets.deficit} kcal</span>
-                    </div>
-                    <div className={style.calorieTarget}>
-                      <span className={style.calorieLabel}>Prise :</span>
-                      <span className={style.calorieAmount}>{calorieTargets.surplus} kcal</span>
-                    </div>
-                  </div>
-                  {calorieTargets.updatedAt && (
-                    <p className={style.calorieDate}>
-                      Calculé le {new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(calorieTargets.updatedAt)}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Empty state if no body data */}
-      {!showBodySection && (
-        <section className={style.emptyStateCard}>
-          <div className={style.emptyStateIcon}>⚖️</div>
-          <h3 className={style.emptyStateTitle}>Calcule ton IMC</h3>
-          <p className={style.emptyStateText}>Suis l'évolution de ton poids et tes besoins caloriques</p>
-          <button onClick={() => navigate('/outils')} className={style.ctaButton}>
-            Calculer mon IMC
-          </button>
-        </section>
-      )}
-
-      {/* SECTION 3: CARDIO */}
-      {showCardioSection && (
-        <section className={style.dashboardSection} data-theme="cardio">
-          <header className={style.sectionHeader}>
-            <span className={style.sectionIcon}>🏃</span>
-            <h2 className={style.sectionTitle}>Cardio</h2>
-          </header>
-          <div className={style.sectionContent}>
-            <div className={style.cardioGrid}>
-              {walkStats.totalKm > 0 && (
-                <WalkDistanceCard
-                  stats={walkStats}
-                  formatKmValue={formatKmValue}
-                  shortDateFormatter={shortDateFormatter}
-                />
-              )}
-              {runStats.totalKm > 0 && (
-                <RunDistanceCard
-                  stats={runStats}
-                  formatKmValue={formatKmValue}
-                  shortDateFormatter={shortDateFormatter}
-                />
-              )}
-              {bikeStats.totalKm > 0 && (
-                <BikeDistanceCard
-                  stats={bikeStats}
-                  formatKmValue={formatKmValue}
-                  shortDateFormatter={shortDateFormatter}
-                />
-              )}
-              {swimStats.totalKm > 0 && (
-                <SwimDistanceCard
-                  stats={swimStats}
-                  formatKmValue={formatKmValue}
-                  shortDateFormatter={shortDateFormatter}
-                />
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* SECTION 4: FORCE (1RM) */}
-      {showForceSection && (
-        <section className={style.dashboardSection} data-theme="force">
-          <header className={style.sectionHeader}>
-            <span className={style.sectionIcon}>💪</span>
-            <h2 className={style.sectionTitle}>Force (1RM)</h2>
-          </header>
-          <div className={style.sectionContent}>
-            <RMHistory rmTests={rmTests} />
-          </div>
-        </section>
-      )}
-
-      <WeeklyGoalModal
-        isOpen={showGoalModal}
-        tempGoal={tempGoal}
-        onChange={setTempGoal}
-        onClose={onCloseGoalModal}
-        onSave={onSaveGoal}
-      />
-    </>
-  );
-}
 
 export default function Dashboard() {
   usePageTitle("Dashboard");
@@ -272,10 +40,11 @@ export default function Dashboard() {
   const [weeklyGoal, setWeeklyGoal] = useState(3);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [tempGoal, setTempGoal] = useState(3);
+  const [showBadgesPopup, setShowBadgesPopup] = useState(false);
+  const [showSessionsPopup, setShowSessionsPopup] = useState(false);
 
   useEffect(() => {
     const list = Array.isArray(sessions) ? sessions : [];
-
     const normalize = (s) => {
       const raw = Array.isArray(s?.entries)
         ? s.entries
@@ -284,7 +53,6 @@ export default function Dashboard() {
         : Array.isArray(s?.exercises)
         ? s.exercises
         : [];
-
       const entries = raw.map((e) => {
         if (e && typeof e === "object") {
           const name = e.name || e.label || e.exerciseName || e.exoName || e.title || "Exercice";
@@ -292,10 +60,8 @@ export default function Dashboard() {
         }
         return { name: String(e ?? "Exercice") };
       });
-
       return { ...s, entries, items: entries, exercises: entries };
     };
-
     setUserSessions(list.map(normalize));
   }, [sessions]);
 
@@ -323,301 +89,56 @@ export default function Dashboard() {
     setShowGoalModal(true);
   }, [weeklyGoal]);
 
+  // IMC & Weight data
   const imcPoints = useMemo(() => records.filter((r) => r.type === "imc"), [records]);
 
-  const fullDateFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat("fr-FR", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }),
-    []
-  );
-
-  const imcSummary = useMemo(() => {
+  const weightData = useMemo(() => {
     if (!imcPoints.length) return null;
     const latest = imcPoints[imcPoints.length - 1];
     const rawValue = Number(latest.value);
-    const formattedValue = Number.isFinite(rawValue) ? rawValue.toFixed(1) : "--";
-
     let interpretation = null;
     if (Number.isFinite(rawValue)) {
-      if (rawValue < 18.5) interpretation = "Insuffisance pondérale";
-      else if (rawValue < 25) interpretation = "Corpulence normale";
+      if (rawValue < 18.5) interpretation = "Insuffisant";
+      else if (rawValue < 25) interpretation = "Normal";
       else if (rawValue < 30) interpretation = "Surpoids";
       else interpretation = "Obésité";
     }
-
-    const weightValue = Number.isFinite(Number(latest.poids))
-      ? `${Number(latest.poids).toFixed(1)} kg`
-      : null;
-
-    let dateLabel = null;
-    if (latest.date instanceof Date) {
-      dateLabel = `Mesure du ${fullDateFormatter.format(latest.date)}`;
-    } else if (latest.date) {
-      const parsed = new Date(latest.date);
-      if (!Number.isNaN(parsed.getTime())) {
-        dateLabel = `Mesure du ${fullDateFormatter.format(parsed)}`;
-      }
-    }
-
     return {
-      value: formattedValue,
+      bmi: Number.isFinite(rawValue) ? rawValue.toFixed(1) : "--",
       interpretation,
-      weight: weightValue,
-      dateLabel,
+      weight: Number.isFinite(Number(latest.poids)) ? Number(latest.poids).toFixed(1) : null,
     };
-  }, [imcPoints, fullDateFormatter]);
-  const weightPoints = useMemo(
-    () =>
-      imcPoints
-        .map((r) => ({ value: Number(r.poids), date: parseDate(r.date) }))
-        .filter((p) => Number.isFinite(p.value) && p.date)
-        .sort((a, b) => a.date - b.date),
-    [imcPoints, parseDate]
-  );
+  }, [imcPoints]);
 
-  const numberFormatter = useMemo(() => new Intl.NumberFormat("fr-FR"), []);
-
-  const calorieCalculations = useMemo(() => {
+  // Calorie data
+  const calorieTargets = useMemo(() => {
     const extractValue = (record) => {
       if (!record || typeof record !== "object") return null;
       const directValue = Number(record.value);
       if (Number.isFinite(directValue)) return directValue;
-      const metaValue =
-        record.meta && typeof record.meta === "object"
-          ? Number(record.meta.calories ?? record.meta.calorie ?? record.meta.kcal ?? record.meta.caloriesDaily ?? record.meta.dailyCalories)
-          : null;
-      if (Number.isFinite(metaValue)) return metaValue;
-      const fields = [
-        "calories",
-        "calorie",
-        "kcal",
-        "totalCalories",
-        "caloriesTotales",
-        "caloriesTotal",
-      ];
-      for (const field of fields) {
-        const raw = record[field];
-        const num = Number(raw);
-        if (Number.isFinite(num)) return num;
-      }
       return null;
     };
 
     const isCalorieRecord = (record) => {
       const type = String(record?.type || record?.category || "").toLowerCase();
-      const action = String(record?.action || "").toLowerCase();
-      return (
-        type.includes("calorie") ||
-        type.includes("nutrition") ||
-        type.includes("aliment") ||
-        action.includes("calories")
-      );
+      return type.includes("calorie") || type.includes("nutrition");
     };
 
     const entries = records
-      .map((record) => {
-        const value = extractValue(record);
-        if (!isCalorieRecord(record) && value === null) return null;
-        if (value === null) return null;
-        const dateValue =
-          parseDate(record?.date) ||
-          parseDate(record?.createdAt) ||
-          parseDate(record?.updatedAt) ||
-          null;
-        return {
-          value,
-          date: dateValue,
-        };
-      })
-      .filter(Boolean)
-      .sort((a, b) => {
-        const timeA = a.date instanceof Date ? a.date.getTime() : 0;
-        const timeB = b.date instanceof Date ? b.date.getTime() : 0;
-        return timeA - timeB;
-      });
+      .filter((r) => isCalorieRecord(r))
+      .map((r) => extractValue(r))
+      .filter((v) => v !== null && v > 0);
 
-    return entries;
-  }, [records, parseDate]);
-
-  const calorieTargets = useMemo(() => {
-    if (!calorieCalculations.length) {
-      return {
-        maintenance: null,
-        deficit: null,
-        surplus: null,
-        updatedAt: null,
-      };
-    }
-    const latest = calorieCalculations[calorieCalculations.length - 1];
-    const base = Number(latest.value);
-    if (!Number.isFinite(base) || base <= 0) {
-      return {
-        maintenance: null,
-        deficit: null,
-        surplus: null,
-        updatedAt: latest.date instanceof Date ? latest.date : null,
-      };
-    }
-
-    const maintenance = Math.round(base);
-    const deficit = Math.max(maintenance - 500, 0);
-    const surplus = maintenance + 500;
-
+    if (!entries.length) return null;
+    const latest = entries[entries.length - 1];
     return {
-      maintenance,
-      deficit,
-      surplus,
-      updatedAt: latest.date instanceof Date ? latest.date : null,
+      maintenance: Math.round(latest),
+      deficit: Math.max(Math.round(latest) - 500, 0),
+      surplus: Math.round(latest) + 500,
     };
-  }, [calorieCalculations]);
-
-  const extractSessionCalories = useCallback((session) => {
-    if (!session || typeof session !== "object") return null;
-
-    const inlineCandidates = [
-      session?.caloriesBurned,
-      session?.calories,
-      session?.stats?.caloriesBurned,
-      session?.stats?.calories,
-      session?.summary?.caloriesBurned,
-      session?.summary?.calories,
-      session?.metrics?.caloriesBurned,
-      session?.metrics?.calories,
-    ];
-
-    for (const value of inlineCandidates) {
-      const num = Number(value);
-      if (Number.isFinite(num) && num > 0) {
-        return num;
-      }
-    }
-
-    const entries = Array.isArray(session?.entries)
-      ? session.entries
-      : Array.isArray(session?.items)
-      ? session.items
-      : Array.isArray(session?.exercises)
-      ? session.exercises
-      : [];
-
-    let aggregate = 0;
-    let hasValue = false;
-
-    entries.forEach((entry) => {
-      if (!entry || typeof entry !== "object") return;
-      const entryCandidates = [entry?.caloriesBurned, entry?.calories, entry?.kcal];
-      entryCandidates.forEach((value) => {
-        const num = Number(value);
-        if (Number.isFinite(num) && num > 0) {
-          aggregate += num;
-          hasValue = true;
-        }
-      });
-
-      if (Array.isArray(entry?.sets)) {
-        entry.sets.forEach((set) => {
-          if (!set || typeof set !== "object") return;
-          const setCandidates = [set?.caloriesBurned, set?.calories, set?.kcal];
-          setCandidates.forEach((value) => {
-            const num = Number(value);
-            if (Number.isFinite(num) && num > 0) {
-              aggregate += num;
-              hasValue = true;
-            }
-          });
-        });
-      }
-    });
-
-    if (hasValue) {
-      return aggregate;
-    }
-
-    return null;
-  }, []);
-
-  const calorieBurnPoints = useMemo(() => {
-    const totals = new Map();
-
-    (userSessions || []).forEach((session) => {
-      const calories = extractSessionCalories(session);
-      if (!Number.isFinite(calories) || calories <= 0) return;
-
-      const rawDate =
-        parseDate(
-          session?.endedAt ||
-            session?.date ||
-            session?.createdAt ||
-            session?.startedAt ||
-            session?.performedAt ||
-            session?.day
-        ) || null;
-
-      if (!rawDate) return;
-
-      const normalized = new Date(rawDate);
-      normalized.setHours(0, 0, 0, 0);
-      const key = normalized.getTime();
-
-      const previous = totals.get(key) || 0;
-      totals.set(key, previous + Math.round(calories));
-    });
-
-    return Array.from(totals.entries())
-      .map(([timestamp, burned]) => ({
-        date: new Date(Number(timestamp)),
-        burned,
-      }))
-      .sort((a, b) => a.date - b.date);
-  }, [userSessions, parseDate, extractSessionCalories]);
-
-  const rmTests = useMemo(() => {
-    return records
-      .filter((r) => r.type === "rm")
-      .map((r) => ({
-        id: r._id || r.id,
-        exercice: r.exercice,
-        poids: r.poids,
-        reps: r.reps,
-        rm: r.rm,
-        date: r.date,
-        formulas: r.formulas || {},
-      }))
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [records]);
 
-  const lastCompletedSession = useMemo(() => {
-    const list = Array.isArray(userSessions) ? userSessions : [];
-    if (list.length === 0) return null;
-
-    const toDate = (s) =>
-      parseDate(s?.endedAt || s?.date || s?.createdAt || s?.performedAt || s?.startedAt || s?.day);
-
-    const isDone = (s) => {
-      const statusValue = String(s?.status || "").toLowerCase();
-      return (
-        Boolean(s?.endedAt) ||
-        Boolean(s?.finishedAt) ||
-        s?.isFinished === true ||
-        s?.percent === 100 ||
-        s?.progress === 100 ||
-        ["done", "completed", "finished", "terminee", "terminée"].includes(statusValue)
-      );
-    };
-
-    const candidates = list
-      .filter((s) => isDone(s))
-      .map((s) => ({ s, d: toDate(s) }))
-      .filter((x) => x.d)
-      .sort((a, b) => b.d - a.d);
-
-    return candidates.length ? candidates[0].s : null;
-  }, [userSessions, parseDate]);
-
+  // Session stats
   const stats = useMemo(() => {
     const totalSessions = userSessions.length;
 
@@ -634,26 +155,7 @@ export default function Dashboard() {
     const last7Days = userSessions.filter((s) => {
       const date = parseDate(s?.date || s?.createdAt || s?.endedAt);
       if (!date) return false;
-      const weekStart = getWeekStart();
-      return date >= weekStart;
-    }).length;
-
-    const last30Days = userSessions.filter((s) => {
-      const date = parseDate(s?.date || s?.createdAt || s?.endedAt);
-      if (!date) return false;
-      const monthAgo = new Date();
-      monthAgo.setDate(monthAgo.getDate() - 30);
-      return date >= monthAgo;
-    }).length;
-
-    const prev30Days = userSessions.filter((s) => {
-      const date = parseDate(s?.date || s?.createdAt || s?.endedAt);
-      if (!date) return false;
-      const twoMonthsAgo = new Date();
-      twoMonthsAgo.setDate(twoMonthsAgo.getDate() - 60);
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
-      return date >= twoMonthsAgo && date < oneMonthAgo;
+      return date >= getWeekStart();
     }).length;
 
     let streak = 0;
@@ -675,7 +177,6 @@ export default function Dashboard() {
     for (let i = 0; i < uniqueDates.length; i++) {
       const expectedDate = new Date(today);
       expectedDate.setDate(today.getDate() - i);
-
       if (uniqueDates[i]?.getTime() === expectedDate.getTime()) {
         streak++;
       } else {
@@ -690,271 +191,139 @@ export default function Dashboard() {
 
     const totalHours = Math.floor(totalMinutes / 60);
 
-    const trend = prev30Days > 0 ? ((last30Days - prev30Days) / prev30Days) * 100 : 0;
-
-    return {
-      totalSessions,
-      last7Days,
-      last30Days,
-      streak,
-      totalHours,
-      totalMinutes,
-      trend,
-    };
+    return { totalSessions, last7Days, streak, totalHours, totalMinutes };
   }, [userSessions, parseDate]);
-
-  const motivationMessage = useMemo(() => {
-    if (stats.streak >= 7) return "🔥 Série de feu ! Tu es sur une lancée incroyable !";
-    if (stats.streak >= 3) return "💪 Continue comme ça, tu es sur la bonne voie !";
-    if (stats.last7Days >= 3) return "⚡ Super semaine ! Tu déchires !";
-    if (stats.totalSessions >= 10) return "🎯 10 séances ! Tu es un warrior !";
-    if (stats.totalSessions >= 1) return "🌟 Bien commencé ! Chaque effort compte !";
-    return "🚀 Commence ton aventure fitness maintenant !";
-  }, [stats]);
-
-  const badges = useMemo(() => {
-    const earned = [];
-    if (stats.totalSessions >= 1) earned.push({ icon: "🎯", name: "Première séance", desc: "Tu as commencé !" });
-    if (stats.totalSessions >= 5) earned.push({ icon: "💪", name: "5 séances", desc: "La régularité paie" });
-    if (stats.totalSessions >= 10) earned.push({ icon: "⚡", name: "10 séances", desc: "Tu es un warrior" });
-    if (stats.totalSessions >= 25) earned.push({ icon: "🔥", name: "25 séances", desc: "Incroyable !" });
-    if (stats.totalSessions >= 50) earned.push({ icon: "👑", name: "50 séances", desc: "Légende vivante" });
-    if (stats.streak >= 3) earned.push({ icon: "📅", name: "3 jours d'affilée", desc: "Consistance" });
-    if (stats.streak >= 7) earned.push({ icon: "🌟", name: "1 semaine", desc: "Série de feu" });
-    if (stats.streak >= 14) earned.push({ icon: "💎", name: "2 semaines", desc: "Imparable" });
-    if (stats.totalHours >= 10) earned.push({ icon: "⏱️", name: "10h d'entraînement", desc: "Dévouement" });
-    if (stats.totalHours >= 25) earned.push({ icon: "⏰", name: "25h d'entraînement", desc: "Maître du temps" });
-    if (weightPoints.length >= 5) earned.push({ icon: "📊", name: "Suivi régulier", desc: "5 pesées" });
-    return earned;
-  }, [stats, weightPoints]);
 
   const weeklyProgress = Math.min((stats.last7Days / weeklyGoal) * 100, 100);
 
-  const kmFormatter = useMemo(
-    () =>
-      new Intl.NumberFormat('fr-FR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-    []
-  );
+  // Recent sessions (last 5)
+  const recentSessions = useMemo(() => {
+    return userSessions
+      .slice()
+      .sort((a, b) => {
+        const dateA = parseDate(a?.endedAt || a?.date || a?.createdAt);
+        const dateB = parseDate(b?.endedAt || b?.date || b?.createdAt);
+        return (dateB || 0) - (dateA || 0);
+      })
+      .slice(0, 5);
+  }, [userSessions, parseDate]);
 
-  const shortDateFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat('fr-FR', {
-        day: '2-digit',
-        month: 'short',
-      }),
-    []
-  );
+  // RM Tests
+  const rmTests = useMemo(() => {
+    return records
+      .filter((r) => r.type === "rm")
+      .map((r) => ({
+        exercice: r.exercice,
+        rm: r.rm,
+        date: r.date,
+      }))
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [records]);
 
-  const formatKmValue = useCallback((value) => kmFormatter.format(Number.isFinite(value) ? value : 0), [kmFormatter]);
+  const bestRM = useMemo(() => {
+    if (!rmTests.length) return null;
+    return rmTests.reduce((best, current) => (current.rm > best.rm ? current : best), rmTests[0]);
+  }, [rmTests]);
 
+  // Cardio stats by sport
   const getEntryDistanceKm = useCallback((entry) => {
     if (!entry || typeof entry !== 'object') return 0;
-
-    // Check for walkRun data first
-    if (entry.walkRun && entry.walkRun.distanceKm != null && entry.walkRun.distanceKm !== '') {
+    if (entry.walkRun && entry.walkRun.distanceKm != null) {
       return Number(entry.walkRun.distanceKm) || 0;
     }
-
-    // Check for swim data
     if (entry.swim) {
       const poolLength = Number(entry.swim.poolLength || 0);
       const lapCount = Number(entry.swim.lapCount || 0);
       if (poolLength > 0 && lapCount > 0) {
-        // lapCount is aller-retours (2 lengths per lap)
         return (poolLength * lapCount * 2) / 1000;
       }
-      const totalDistance = Number(entry.swim.totalDistance || 0);
-      if (totalDistance > 0) {
-        return totalDistance / 1000;
-      }
     }
-
     const sets = Array.isArray(entry.sets) ? entry.sets : [];
     let distanceKm = 0;
-
     for (const set of sets) {
       if (!set) continue;
-      if (set.distanceKm != null && set.distanceKm !== '') {
-        distanceKm += Number(set.distanceKm) || 0;
-      } else if (set.km != null && set.km !== '') {
-        distanceKm += Number(set.km) || 0;
-      } else if (set.meters != null && set.meters !== '') {
-        distanceKm += (Number(set.meters) || 0) / 1000;
-      }
+      if (set.distanceKm != null) distanceKm += Number(set.distanceKm) || 0;
+      else if (set.km != null) distanceKm += Number(set.km) || 0;
+      else if (set.meters != null) distanceKm += (Number(set.meters) || 0) / 1000;
     }
-
-    if (distanceKm === 0 && String(entry?.subType || '').toLowerCase() === 'swim') {
-      const laps = Number((Array.isArray(entry.sets) ? entry.sets[0]?.laps : undefined) ?? entry.laps ?? 0);
-      const poolLength = Number(
-        (Array.isArray(entry.sets) ? entry.sets[0]?.poolLength : undefined) ?? entry.poolLength ?? 0
-      );
-      if (laps > 0 && poolLength > 0) {
-        distanceKm = (laps * poolLength) / 1000;
-      }
-    }
-
     return distanceKm;
   }, []);
 
-  const computeDistanceHistory = useCallback(
-    (predicate) => {
-      const totals = new Map();
-      let totalKm = 0;
+  const getSportType = useCallback((entry) => {
+    const subType = String(entry?.subType || '').toLowerCase();
+    if (subType === 'swim') return 'swim';
+    if (subType === 'bike') return 'bike';
+    if (subType === 'run') return 'run';
+    if (subType === 'walk') return 'walk';
 
-      (userSessions || []).forEach((session) => {
-        const entries = Array.isArray(session?.entries)
-          ? session.entries
-          : Array.isArray(session?.items)
-          ? session.items
-          : Array.isArray(session?.exercises)
-          ? session.exercises
-          : [];
+    const name = String(entry?.name || '').toLowerCase();
+    if (/(natation|swim|piscine|crawl|brasse)/.test(name)) return 'swim';
+    if (/(vélo|velo|bike|cyclisme|vtt)/.test(name)) return 'bike';
+    if (/(course|running|run|footing|trail|jog)/.test(name)) return 'run';
+    if (/(marche|walk|randonnée|rando)/.test(name)) return 'walk';
+    return null;
+  }, []);
 
-        if (!entries.length) return;
-
-        const sessionDate = parseDate(
-          session?.endedAt || session?.date || session?.createdAt || session?.startedAt || session?.performedAt
-        );
-
-        if (!sessionDate) return;
-
-        let sessionKm = 0;
-        for (const entry of entries) {
-          if (!predicate(entry)) continue;
-          const entryKm = getEntryDistanceKm(entry);
-          if (entryKm > 0) {
-            sessionKm += entryKm;
-          }
-        }
-
-        if (sessionKm > 0) {
-          const key = sessionDate.toISOString().slice(0, 10);
-          totals.set(key, (totals.get(key) || 0) + sessionKm);
-          totalKm += sessionKm;
+  const sportStats = useMemo(() => {
+    const stats = { run: 0, bike: 0, swim: 0, walk: 0 };
+    (userSessions || []).forEach((session) => {
+      const entries = session?.entries || session?.items || session?.exercises || [];
+      entries.forEach((entry) => {
+        const sport = getSportType(entry);
+        if (sport) {
+          stats[sport] += getEntryDistanceKm(entry);
         }
       });
-
-      const history = Array.from(totals.entries())
-        .map(([dateKey, distanceKm]) => ({
-          dateKey,
-          distanceKm,
-          date: new Date(`${dateKey}T00:00:00`),
-        }))
-        .sort((a, b) => b.date - a.date);
-
-      const totalSessions = history.length;
-      const avgKm = totalSessions ? totalKm / totalSessions : 0;
-      const bestKm = history.reduce((max, item) => Math.max(max, item.distanceKm), 0);
-
-      return {
-        totalKm,
-        totalSessions,
-        avgKm,
-        bestKm,
-        history,
-      };
-    },
-    [userSessions, parseDate, getEntryDistanceKm]
-  );
-
-  const swimStats = useMemo(() => {
-    const swimPredicate = (entry) => {
-      const subType = String(entry?.subType || '').toLowerCase();
-      if (subType === 'swim') return true;
-      const name = String(entry?.name || entry?.label || entry?.exerciseName || '').toLowerCase();
-      return /(natation|swim|piscine|crawl|brasse|dos)/.test(name);
+    });
+    return {
+      run: stats.run.toFixed(1),
+      bike: stats.bike.toFixed(1),
+      swim: stats.swim.toFixed(1),
+      walk: stats.walk.toFixed(1),
+      total: (stats.run + stats.bike + stats.swim + stats.walk).toFixed(1),
     };
-    return computeDistanceHistory(swimPredicate);
-  }, [computeDistanceHistory]);
+  }, [userSessions, getEntryDistanceKm, getSportType]);
 
-  const walkStats = useMemo(() => {
-    const walkPredicate = (entry) => {
-      const subType = String(entry?.subType || '').toLowerCase();
-      if (subType === 'walk') return true;
-      if (subType === 'run' || subType === 'bike' || subType === 'swim') return false;
+  // Weight points for mini chart
+  const weightPoints = useMemo(() => {
+    return imcPoints
+      .map((r) => ({
+        value: Number(r.poids),
+        date: parseDate(r.date),
+      }))
+      .filter((p) => Number.isFinite(p.value) && p.date)
+      .sort((a, b) => a.date - b.date)
+      .slice(-7); // Last 7 points
+  }, [imcPoints, parseDate]);
 
-      const mode = String(entry?.mode || '').toLowerCase();
-      if (mode === 'walk') return true;
-      if (mode === 'run' || mode === 'bike') return false;
+  // Badges definitions
+  const badges = useMemo(() => {
+    return [
+      { id: 'first', emoji: '🎯', name: 'Premier pas', desc: '1ère séance', unlocked: stats.totalSessions >= 1 },
+      { id: 'five', emoji: '⭐', name: 'Régulier', desc: '5 séances', unlocked: stats.totalSessions >= 5 },
+      { id: 'ten', emoji: '🔥', name: 'Motivé', desc: '10 séances', unlocked: stats.totalSessions >= 10 },
+      { id: 'twentyfive', emoji: '💪', name: 'Athlète', desc: '25 séances', unlocked: stats.totalSessions >= 25 },
+      { id: 'fifty', emoji: '🏆', name: 'Champion', desc: '50 séances', unlocked: stats.totalSessions >= 50 },
+      { id: 'streak3', emoji: '🌟', name: 'Série de 3', desc: '3 jours consécutifs', unlocked: stats.streak >= 3 },
+      { id: 'streak7', emoji: '🚀', name: 'Semaine parfaite', desc: '7 jours consécutifs', unlocked: stats.streak >= 7 },
+      { id: 'streak14', emoji: '👑', name: 'Machine', desc: '14 jours consécutifs', unlocked: stats.streak >= 14 },
+      { id: 'hours10', emoji: '⏱️', name: 'Endurant', desc: '10h d\'entraînement', unlocked: stats.totalHours >= 10 },
+      { id: 'hours25', emoji: '🎖️', name: 'Marathonien', desc: '25h d\'entraînement', unlocked: stats.totalHours >= 25 },
+      { id: 'tracker', emoji: '📊', name: 'Tracker', desc: '5 suivis IMC', unlocked: imcPoints.length >= 5 },
+    ];
+  }, [stats, imcPoints]);
 
-      const name = String(entry?.name || entry?.label || entry?.exerciseName || '').toLowerCase();
-      return /(marche|walk|randonnée|rando)/.test(name);
-    };
-    return computeDistanceHistory(walkPredicate);
-  }, [computeDistanceHistory]);
+  const badgeCount = useMemo(() => badges.filter(b => b.unlocked).length, [badges]);
 
-  const runStats = useMemo(() => {
-    const runPredicate = (entry) => {
-      const subType = String(entry?.subType || '').toLowerCase();
-      if (subType === 'run') return true;
-      if (subType === 'walk' || subType === 'bike' || subType === 'swim') return false;
-
-      const mode = String(entry?.mode || '').toLowerCase();
-      if (mode === 'run') return true;
-      if (mode === 'walk' || mode === 'bike') return false;
-
-      const name = String(entry?.name || entry?.label || entry?.exerciseName || '').toLowerCase();
-      return /(course|running|run|footing|trail|jog|tapis|plein air)/.test(name) && !/(marche|walk|vélo|velo|bike)/.test(name);
-    };
-    return computeDistanceHistory(runPredicate);
-  }, [computeDistanceHistory]);
-
-  const bikeStats = useMemo(() => {
-    const bikePredicate = (entry) => {
-      const subType = String(entry?.subType || '').toLowerCase();
-      if (subType === 'bike') return true;
-      if (subType === 'walk' || subType === 'run' || subType === 'swim') return false;
-
-      const mode = String(entry?.mode || '').toLowerCase();
-      if (mode === 'bike') return true;
-      if (mode === 'walk' || mode === 'run') return false;
-
-      const name = String(entry?.name || entry?.label || entry?.exerciseName || '').toLowerCase();
-      return /(vélo|velo|bike|cyclisme|cycling|vtt)/.test(name);
-    };
-    return computeDistanceHistory(bikePredicate);
-  }, [computeDistanceHistory]);
-
-  const activityHeatmap = useMemo(() => {
-    const weeks = 8;
-    const heatmap = [];
-    const today = new Date();
-    const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
-
-    for (let i = 0; i < weeks; i++) {
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - i * 7 - today.getDay());
-      weekStart.setHours(0, 0, 0, 0);
-
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-      weekEnd.setHours(23, 59, 59, 999);
-
-      const sessionsInWeek = userSessions.filter((s) => {
-        const date = parseDate(s?.date || s?.createdAt || s?.endedAt);
-        if (!date) return false;
-        return date >= weekStart && date <= weekEnd;
-      }).length;
-
-      const startDay = weekStart.getDate();
-      const endDay = weekEnd.getDate();
-      const month = monthNames[weekStart.getMonth()];
-      const isCurrentWeek = i === 0;
-
-      heatmap.push({
-        week: i + 1,
-        count: sessionsInWeek,
-        intensity:
-          sessionsInWeek === 0 ? 0 : sessionsInWeek <= 2 ? 1 : sessionsInWeek <= 4 ? 2 : 3,
-        label: `${startDay}-${endDay} ${month}`,
-        isCurrentWeek,
+  // All sessions sorted for popup
+  const allSessionsSorted = useMemo(() => {
+    return userSessions
+      .slice()
+      .sort((a, b) => {
+        const dateA = parseDate(a?.endedAt || a?.date || a?.createdAt);
+        const dateB = parseDate(b?.endedAt || b?.date || b?.createdAt);
+        return (dateB || 0) - (dateA || 0);
       });
-    }
-
-    return heatmap;
   }, [userSessions, parseDate]);
 
   const capitalizedName = useMemo(() => {
@@ -962,51 +331,429 @@ export default function Dashboard() {
     return displayName.charAt(0).toUpperCase() + displayName.slice(1);
   }, [displayName]);
 
-  const handleSessionDelete = useCallback((id) => {
-    setUserSessions((prev) => prev.filter((s) => s.id !== id));
+  const formatDate = useCallback((date) => {
+    const d = parseDate(date);
+    if (!d) return "--";
+    return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(d);
+  }, [parseDate]);
+
+  const extractSessionCalories = useCallback((session) => {
+    if (!session) return 0;
+    const candidates = [session?.caloriesBurned, session?.calories, session?.stats?.caloriesBurned];
+    for (const value of candidates) {
+      const num = Number(value);
+      if (Number.isFinite(num) && num > 0) return num;
+    }
+    const entries = session?.entries || session?.items || session?.exercises || [];
+    let total = 0;
+    entries.forEach((entry) => {
+      const cal = Number(entry?.caloriesBurned || entry?.calories || 0);
+      if (cal > 0) total += cal;
+    });
+    return total;
   }, []);
+
+  // Weekly calories burned
+  const weeklyCalories = useMemo(() => {
+    const getWeekStart = () => {
+      const now = new Date();
+      const day = now.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + diff);
+      monday.setHours(0, 0, 0, 0);
+      return monday;
+    };
+    const weekStart = getWeekStart();
+    let total = 0;
+    recentSessions.forEach((session) => {
+      const date = parseDate(session?.endedAt || session?.date || session?.createdAt);
+      if (date && date >= weekStart) {
+        total += extractSessionCalories(session);
+      }
+    });
+    return total;
+  }, [recentSessions, parseDate, extractSessionCalories]);
+
+  // Weight change
+  const weightChange = useMemo(() => {
+    if (imcPoints.length < 2) return null;
+    const first = Number(imcPoints[0].poids);
+    const last = Number(imcPoints[imcPoints.length - 1].poids);
+    if (!Number.isFinite(first) || !Number.isFinite(last)) return null;
+    const change = last - first;
+    return {
+      value: Math.abs(change).toFixed(1),
+      direction: change > 0 ? 'up' : change < 0 ? 'down' : 'same',
+    };
+  }, [imcPoints]);
 
   return (
     <>
       <Header />
       <main className={style.dashboard}>
         <div className={style.container}>
-          <DashboardOverview
-            navigate={navigate}
-            status={status}
-            error={error}
-            records={records}
-            capitalizedName={capitalizedName}
-            motivationMessage={motivationMessage}
-            stats={stats}
-            weeklyGoal={weeklyGoal}
-            weeklyProgress={weeklyProgress}
-            onOpenGoalModal={handleOpenGoalModal}
-            swimStats={swimStats}
-            runStats={runStats}
-            walkStats={walkStats}
-            bikeStats={bikeStats}
-            formatKmValue={formatKmValue}
-            shortDateFormatter={shortDateFormatter}
-            badges={badges}
-            activityHeatmap={activityHeatmap}
-            weightPoints={weightPoints}
-            imcSummary={imcSummary}
-            calorieTargets={calorieTargets}
-            calorieBurnPoints={calorieBurnPoints}
-            rmTests={rmTests}
-            userSessions={userSessions}
-            lastCompletedSession={lastCompletedSession}
-            onDeleteSuccess={handleSessionDelete}
-            showGoalModal={showGoalModal}
-            tempGoal={tempGoal}
-            setTempGoal={setTempGoal}
-            onCloseGoalModal={() => setShowGoalModal(false)}
-            onSaveGoal={handleSaveGoal}
-          />
+          {/* Header Section */}
+          <header className={style.header}>
+            <h1 className={style.greeting}>Salut, {capitalizedName}</h1>
+            <p className={style.subtitle}>
+              {stats.streak >= 7
+                ? "Tu es en feu ! Continue comme ça"
+                : stats.streak >= 3
+                ? "Belle série en cours"
+                : stats.totalSessions > 0
+                ? "Voici ton résumé"
+                : "Prêt à commencer ?"}
+            </p>
+          </header>
+
+          {status === "loading" && <p className={style.loading}>Chargement...</p>}
+          {status === "error" && <p className={style.error}>{error}</p>}
+
+          {/* Quick Stats */}
+          <section className={style.statsGrid}>
+            <button
+              className={`${style.statCard} ${style.statCardClickable}`}
+              onClick={() => stats.totalSessions > 0 && setShowSessionsPopup(true)}
+              disabled={stats.totalSessions === 0}
+            >
+              <span className={style.statValue}>{stats.totalSessions}</span>
+              <span className={style.statLabel}>Séances</span>
+            </button>
+            <div className={style.statCard}>
+              <span className={style.statValue}>{stats.streak}</span>
+              <span className={style.statLabel}>Série</span>
+            </div>
+            <div className={style.statCard}>
+              <span className={style.statValue}>{stats.totalHours}h{stats.totalMinutes % 60 > 0 ? String(stats.totalMinutes % 60).padStart(2, '0') : ''}</span>
+              <span className={style.statLabel}>Durée</span>
+            </div>
+            <button
+              className={`${style.statCard} ${style.statCardClickable}`}
+              onClick={() => setShowBadgesPopup(true)}
+            >
+              <span className={style.statValue}>{badgeCount}</span>
+              <span className={style.statLabel}>Badges</span>
+            </button>
+          </section>
+
+          {/* Weekly Progress */}
+          <section className={style.progressSection}>
+            <div className={style.progressHeader}>
+              <h2 className={style.sectionTitle}>Objectif semaine</h2>
+              <button onClick={handleOpenGoalModal} className={style.editButton} aria-label="Modifier objectif">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              </button>
+            </div>
+            <div className={style.progressContent}>
+              <div className={style.progressRing}>
+                <svg viewBox="0 0 100 100" className={style.progressSvg}>
+                  <circle cx="50" cy="50" r="42" className={style.progressBg} />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    className={style.progressFill}
+                    style={{
+                      strokeDasharray: `${(weeklyProgress / 100) * 264} 264`,
+                    }}
+                  />
+                </svg>
+                <div className={style.progressText}>
+                  <span className={style.progressValue}>{stats.last7Days}</span>
+                  <span className={style.progressGoal}>/{weeklyGoal}</span>
+                </div>
+              </div>
+              <div className={style.progressInfo}>
+                <p className={style.progressStatus}>
+                  {weeklyProgress >= 100
+                    ? "Objectif atteint !"
+                    : `${weeklyGoal - stats.last7Days} séance${weeklyGoal - stats.last7Days > 1 ? 's' : ''} restante${weeklyGoal - stats.last7Days > 1 ? 's' : ''}`}
+                </p>
+                {weeklyCalories > 0 && (
+                  <p className={style.progressCalories}>{weeklyCalories} kcal brûlées cette semaine</p>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Quick Actions */}
+          <section className={style.actions}>
+            <button onClick={() => navigate('/exo')} className={style.primaryAction}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Nouvelle séance
+            </button>
+            <button onClick={() => navigate('/outils')} className={style.secondaryAction}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                <path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66" />
+                <path d="m18 15-2-2" />
+                <path d="m15 18-2-2" />
+              </svg>
+              Calculs santé
+            </button>
+          </section>
+
+          {/* Recent Activity */}
+          {recentSessions.length > 0 && (
+            <section className={style.recentSection}>
+              <h2 className={style.sectionTitle}>Activité récente</h2>
+              <div className={style.sessionsList}>
+                {recentSessions.map((session, index) => (
+                  <div key={session.id || index} className={style.sessionItem}>
+                    <div className={style.sessionDate}>
+                      {formatDate(session?.endedAt || session?.date || session?.createdAt)}
+                    </div>
+                    <div className={style.sessionDetails}>
+                      <span className={style.sessionName}>{session?.name || "Séance"}</span>
+                      <span className={style.sessionMeta}>
+                        {session?.durationMinutes ? `${session.durationMinutes} min` : ""}
+                        {session?.entries?.length ? ` • ${session.entries.length} exo` : ""}
+                        {extractSessionCalories(session) > 0 ? ` • ${extractSessionCalories(session)} kcal` : ""}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Body Metrics */}
+          {(weightData || calorieTargets) && (
+            <section className={style.metricsSection}>
+              <h2 className={style.sectionTitle}>Corps & Nutrition</h2>
+              <div className={style.metricsGrid}>
+                {weightData && (
+                  <div className={style.metricCard}>
+                    <div className={style.metricIcon}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 2a10 10 0 1 0 10 10H12V2z" />
+                      </svg>
+                    </div>
+                    <div className={style.metricContent}>
+                      <span className={style.metricValue}>{weightData.bmi}</span>
+                      <span className={style.metricLabel}>IMC • {weightData.interpretation}</span>
+                      {weightData.weight && (
+                        <span className={style.metricMeta}>
+                          {weightData.weight} kg
+                          {weightChange && weightChange.direction !== 'same' && (
+                            <> • {weightChange.direction === 'down' ? '↓' : '↑'} {weightChange.value} kg</>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {calorieTargets && (
+                  <div className={style.metricCard}>
+                    <div className={style.metricIcon}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                      </svg>
+                    </div>
+                    <div className={style.metricContent}>
+                      <span className={style.metricValue}>{calorieTargets.maintenance}</span>
+                      <span className={style.metricLabel}>kcal/jour maintien</span>
+                      <span className={style.metricMeta}>Perte: {calorieTargets.deficit} • Prise: {calorieTargets.surplus}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Cardio Stats */}
+          {Number(sportStats.total) > 0 && (
+            <section className={style.cardioSection}>
+              <h2 className={style.sectionTitle}>Distances parcourues</h2>
+              <div className={style.cardioGrid}>
+                {Number(sportStats.run) > 0 && (
+                  <div className={style.cardioItem}>
+                    <span className={style.cardioIcon}>🏃</span>
+                    <span className={style.cardioValue}>{sportStats.run} km</span>
+                    <span className={style.cardioLabel}>Course</span>
+                  </div>
+                )}
+                {Number(sportStats.bike) > 0 && (
+                  <div className={style.cardioItem}>
+                    <span className={style.cardioIcon}>🚴</span>
+                    <span className={style.cardioValue}>{sportStats.bike} km</span>
+                    <span className={style.cardioLabel}>Vélo</span>
+                  </div>
+                )}
+                {Number(sportStats.swim) > 0 && (
+                  <div className={style.cardioItem}>
+                    <span className={style.cardioIcon}>🏊</span>
+                    <span className={style.cardioValue}>{sportStats.swim} km</span>
+                    <span className={style.cardioLabel}>Natation</span>
+                  </div>
+                )}
+                {Number(sportStats.walk) > 0 && (
+                  <div className={style.cardioItem}>
+                    <span className={style.cardioIcon}>🚶</span>
+                    <span className={style.cardioValue}>{sportStats.walk} km</span>
+                    <span className={style.cardioLabel}>Marche</span>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* 1RM History */}
+          {rmTests.length > 0 && (
+            <section className={style.rmSection}>
+              <h2 className={style.sectionTitle}>Historique 1RM</h2>
+              <div className={style.rmList}>
+                {rmTests.slice(0, 5).map((test, index) => (
+                  <div key={index} className={style.rmItem}>
+                    <div className={style.rmInfo}>
+                      <span className={style.rmExercice}>{test.exercice}</span>
+                      <span className={style.rmDate}>{formatDate(test.date)}</span>
+                    </div>
+                    <span className={style.rmValue}>{test.rm} kg</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Weight Progress Chart */}
+          {weightPoints.length >= 2 && (
+            <section className={style.chartSection}>
+              <h2 className={style.sectionTitle}>Évolution du poids</h2>
+              <div className={style.miniChart}>
+                <div className={style.chartBars}>
+                  {weightPoints.map((point, index) => {
+                    const min = Math.min(...weightPoints.map(p => p.value));
+                    const max = Math.max(...weightPoints.map(p => p.value));
+                    const range = max - min || 1;
+                    const height = ((point.value - min) / range) * 100;
+                    return (
+                      <div key={index} className={style.chartBar}>
+                        <span className={style.chartBarValue}>{point.value}</span>
+                        <div
+                          className={style.chartBarFill}
+                          style={{ height: `${Math.max(height, 15)}%` }}
+                        />
+                        <span className={style.chartBarLabel}>
+                          {new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(point.date).split(' ')[0]}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Empty State */}
+          {stats.totalSessions === 0 && (
+            <section className={style.emptyState}>
+              <div className={style.emptyIcon}>🏋️</div>
+              <h3 className={style.emptyTitle}>Prêt à commencer ?</h3>
+              <p className={style.emptyText}>Lance ta première séance pour voir tes progrès</p>
+              <button onClick={() => navigate('/exo')} className={style.emptyButton}>
+                Commencer
+              </button>
+            </section>
+          )}
         </div>
       </main>
       <Footer />
+
+      <WeeklyGoalModal
+        isOpen={showGoalModal}
+        tempGoal={tempGoal}
+        onChange={setTempGoal}
+        onClose={() => setShowGoalModal(false)}
+        onSave={handleSaveGoal}
+      />
+
+      {/* Badges Popup */}
+      {showBadgesPopup && (
+        <div className={style.popupOverlay} onClick={() => setShowBadgesPopup(false)}>
+          <div className={style.popup} onClick={(e) => e.stopPropagation()}>
+            <div className={style.popupHeader}>
+              <h3 className={style.popupTitle}>Mes badges</h3>
+              <button className={style.popupClose} onClick={() => setShowBadgesPopup(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className={style.badgesGrid}>
+              {badges.map((badge) => (
+                <div
+                  key={badge.id}
+                  className={`${style.badgeItem} ${badge.unlocked ? style.badgeUnlocked : style.badgeLocked}`}
+                >
+                  <span className={style.badgeEmoji}>{badge.emoji}</span>
+                  <span className={style.badgeName}>{badge.name}</span>
+                  <span className={style.badgeDesc}>{badge.desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sessions Popup */}
+      {showSessionsPopup && (
+        <div className={style.popupOverlay} onClick={() => setShowSessionsPopup(false)}>
+          <div className={style.popup} onClick={(e) => e.stopPropagation()}>
+            <div className={style.popupHeader}>
+              <h3 className={style.popupTitle}>Historique des séances</h3>
+              <button className={style.popupClose} onClick={() => setShowSessionsPopup(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className={style.sessionsScroll}>
+              {allSessionsSorted.map((session, index) => (
+                <div key={session.id || index} className={style.sessionCard}>
+                  <div className={style.sessionCardDate}>
+                    {formatDate(session?.endedAt || session?.date || session?.createdAt)}
+                  </div>
+                  <div className={style.sessionCardName}>
+                    {session?.name || "Séance"}
+                  </div>
+                  <div className={style.sessionCardStats}>
+                    {session?.durationMinutes && (
+                      <span>{session.durationMinutes} min</span>
+                    )}
+                    {session?.entries?.length > 0 && (
+                      <span>{session.entries.length} exo</span>
+                    )}
+                    {extractSessionCalories(session) > 0 && (
+                      <span>{extractSessionCalories(session)} kcal</span>
+                    )}
+                  </div>
+                  {session?.entries?.length > 0 && (
+                    <div className={style.sessionCardExos}>
+                      {session.entries.slice(0, 3).map((entry, i) => (
+                        <span key={i} className={style.sessionCardExo}>
+                          {entry.name}
+                        </span>
+                      ))}
+                      {session.entries.length > 3 && (
+                        <span className={style.sessionCardMore}>
+                          +{session.entries.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

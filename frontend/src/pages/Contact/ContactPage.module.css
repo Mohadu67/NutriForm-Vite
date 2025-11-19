@@ -1,6 +1,6 @@
-/* Outils Page - Design magique avec Hero */
+/* Contact Page - Design magique et immersif */
 
-.mainWrapper {
+.contactMain {
   overflow-x: hidden;
 }
 
@@ -101,7 +101,7 @@
   max-width: 450px;
 }
 
-/* Floating orbs */
+/* Floating orbs animation */
 .heroVisual {
   position: absolute;
   inset: 0;
@@ -162,60 +162,15 @@
   transform: translateY(0);
 }
 
-/* ========== TOOLS SECTION ========== */
-.toolsSection {
+/* ========== SECTION WRAPPERS ========== */
+.faqWrapper {
   padding: 80px 24px;
   background: var(--paper, #ffffff);
 }
 
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-/* ========== TABS ========== */
-.tabs {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: 0.75rem;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin: 0 auto 40px;
-  max-width: 500px;
-}
-
-.tab {
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  border: 1px solid var(--line, rgba(0,0,0,.08));
+.formWrapper {
+  padding: 80px 24px;
   background: var(--couleur-principale, #f7f6f2);
-  color: var(--ink, #222325);
-  font-weight: 600;
-  font-family: var(--font-p, 'Montserrat', sans-serif);
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-}
-
-.tab:hover {
-  border-color: var(--couleur-bouton-action, #f7b186);
-}
-
-.tab:focus-visible {
-  outline: 2px solid var(--couleur-bouton-action, #f7b186);
-  outline-offset: 2px;
-}
-
-.tabActive {
-  border: 2px solid var(--couleur-bouton-action, #f7b186);
-  background: var(--couleur-bouton-action, #f7b186);
-  color: var(--couleur-text-bouton, #111111);
-}
-
-.panel {
-  background: transparent;
-  color: var(--ink, #222325);
 }
 
 /* ========== DARK MODE ========== */
@@ -232,11 +187,11 @@
     opacity: 0.2;
   }
 
-  .toolsSection {
+  .faqWrapper {
     background: var(--paper, #12151b);
   }
 
-  .tab {
+  .formWrapper {
     background: var(--couleur-principale, #0c0e12);
   }
 }
@@ -262,7 +217,8 @@
     height: 180px;
   }
 
-  .toolsSection {
+  .faqWrapper,
+  .formWrapper {
     padding: 80px 24px;
   }
 }

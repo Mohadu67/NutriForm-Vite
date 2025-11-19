@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import Header from "../../components/Header/Header.jsx";
@@ -8,6 +8,35 @@ import styles from "./ExoPage.module.css";
 
 export default function ExoPage () {
   usePageTitle("S'entraîner");
+  const formSectionRef = useRef(null);
+
+  const scrollToForm = () => {
+    formSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add(styles.visible);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
+    );
+
+    document.querySelectorAll(`.${styles.fadeIn}`).forEach((el) => {
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const exerciseSchema = {
     "@context": "https://schema.org",
@@ -30,10 +59,53 @@ export default function ExoPage () {
         </script>
       </Helmet>
       <Header />
-      <main>
-        <FormExo />
+      <main className={styles.exoMain}>
+        {/* Hero Section */}
+        <section className={styles.hero}>
+          <div className={styles.heroContent}>
+            <span className={styles.badge}>Bibliothèque</span>
+            <h1 className={styles.heroTitle}>
+              300+ exercices.
+              <br />
+              <span className={styles.highlight}>Un objectif.</span>
+            </h1>
+            <p className={styles.heroSubtitle}>
+              Explore notre base complète pour construire ta séance idéale.
+            </p>
+          </div>
+          <div className={styles.heroVisual}>
+            <div className={styles.floatingOrb}></div>
+            <div className={styles.floatingOrb}></div>
+            <div className={styles.floatingOrb}></div>
+          </div>
+          <button
+            className={styles.scrollIndicator}
+            onClick={scrollToForm}
+            aria-label="Découvrir les exercices"
+          >
+            <span className={styles.scrollText}>Explorer</span>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+        </section>
 
-        <section className={styles.infoSection}>
+        {/* Form Section */}
+        <section ref={formSectionRef} className={`${styles.formSection} ${styles.fadeIn}`}>
+          <FormExo />
+        </section>
+
+        {/* Info Section */}
+        <section className={`${styles.infoSection} ${styles.fadeIn}`}>
           <article className={styles.contentBlock}>
             <h2>Comment choisir ses exercices ?</h2>
             <p>

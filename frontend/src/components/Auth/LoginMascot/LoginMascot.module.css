@@ -5,7 +5,7 @@
   --white: #fff;
   --mint: #b5ead7;
   --mint-deep: #99e0c8;
-  --peach: #ffb385;
+  --peach: var(--couleur-bouton-action, #f7b186);
   --peach-deep: #f6a876;
   --shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
 }
