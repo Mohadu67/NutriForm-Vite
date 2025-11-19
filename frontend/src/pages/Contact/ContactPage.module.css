@@ -1,0 +1,198 @@
+/* Contact Page - Design magique et immersif */
+
+.contactMain {
+  overflow-x: hidden;
+}
+
+/* ========== HERO SECTION ========== */
+.hero {
+  position: relative;
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 24px 80px;
+  background: var(--couleur-principale, #f7f6f2);
+  overflow: hidden;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 600px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0,0,0,.08));
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted, #6b7280);
+  margin-bottom: 24px;
+}
+
+.heroTitle {
+  font-family: 'Merriweather', serif;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--ink, #222325);
+  margin: 0 0 24px;
+}
+
+.highlight {
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), var(--couleur-bouton-selection, #b8ddd1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.heroSubtitle {
+  font-size: clamp(1rem, 2.5vw, 1.125rem);
+  line-height: 1.6;
+  color: var(--muted, #6b7280);
+  margin: 0 auto;
+  max-width: 450px;
+}
+
+/* Floating orbs animation */
+.heroVisual {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.floatingOrb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.4;
+  animation: float 20s ease-in-out infinite;
+}
+
+.floatingOrb:nth-child(1) {
+  width: 250px;
+  height: 250px;
+  background: var(--couleur-bouton-action, #f7b186);
+  top: 15%;
+  left: 5%;
+  animation-delay: 0s;
+}
+
+.floatingOrb:nth-child(2) {
+  width: 300px;
+  height: 300px;
+  background: var(--couleur-bouton-selection, #b8ddd1);
+  bottom: 10%;
+  right: 5%;
+  animation-delay: -7s;
+}
+
+.floatingOrb:nth-child(3) {
+  width: 180px;
+  height: 180px;
+  background: var(--couleur-bouton-action, #f7b186);
+  top: 60%;
+  right: 25%;
+  animation-delay: -14s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -30px) scale(1.05); }
+  50% { transform: translate(-20px, 20px) scale(0.95); }
+  75% { transform: translate(20px, 30px) scale(1.02); }
+}
+
+/* ========== SCROLL ANIMATIONS ========== */
+.fadeIn {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.fadeIn.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ========== SECTION WRAPPERS ========== */
+.faqWrapper {
+  padding: 80px 24px;
+  background: var(--paper, #ffffff);
+}
+
+.formWrapper {
+  padding: 80px 24px;
+  background: var(--couleur-principale, #f7f6f2);
+}
+
+/* ========== DARK MODE ========== */
+@media (prefers-color-scheme: dark) {
+  .hero {
+    background: var(--couleur-principale, #0c0e12);
+  }
+
+  .badge {
+    background: var(--paper, #12151b);
+  }
+
+  .floatingOrb {
+    opacity: 0.2;
+  }
+
+  .faqWrapper {
+    background: var(--paper, #12151b);
+  }
+
+  .formWrapper {
+    background: var(--couleur-principale, #0c0e12);
+  }
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .hero {
+    min-height: 40vh;
+    padding: 100px 20px 60px;
+  }
+
+  .floatingOrb:nth-child(1) {
+    width: 180px;
+    height: 180px;
+  }
+
+  .floatingOrb:nth-child(2) {
+    width: 220px;
+    height: 220px;
+  }
+
+  .floatingOrb:nth-child(3) {
+    width: 120px;
+    height: 120px;
+  }
+
+  .faqWrapper,
+  .formWrapper {
+    padding: 60px 20px;
+  }
+}
+
+/* ========== REDUCED MOTION ========== */
+@media (prefers-reduced-motion: reduce) {
+  .floatingOrb {
+    animation: none;
+  }
+
+  .fadeIn {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
