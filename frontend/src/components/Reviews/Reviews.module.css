@@ -28,21 +28,21 @@
 }
 
 .addReviewBtn {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   border: none;
   padding: 12px 24px;
   border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
   transition: all 0.3s ease;
 }
 
 .addReviewBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 179, 133, 0.4);
+  box-shadow: 0 6px 16px rgba(247, 177, 134, 0.4);
 }
 
 /* Section */
@@ -111,12 +111,12 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f7b186, #f49b69);
+  background: var(--couleur-bouton-action, #f7b186);
   display: grid;
   place-items: center;
   font-size: 20px;
   font-weight: 700;
-  color: #fff;
+  color: var(--couleur-text-bouton, #111111);
 }
 
 .authorInfo {
@@ -141,8 +141,8 @@
 }
 
 .proBadge {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   padding: 4px 12px;
   border-radius: 8px;
   font-size: 11px;
@@ -159,11 +159,11 @@
 }
 
 .starFilled {
-  color: #fbbf24;
+  color: var(--couleur-bouton-action, #f7b186);
 }
 
 .starEmpty {
-  color: #d1d5db;
+  color: var(--muted, #6b7280);
 }
 
 /* Comment */
@@ -296,22 +296,22 @@
 }
 
 .submitBtn {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   border: none;
   padding: 14px 24px;
   border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
   transition: all 0.3s ease;
   margin-top: 8px;
 }
 
 .submitBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 179, 133, 0.4);
+  box-shadow: 0 6px 16px rgba(247, 177, 134, 0.4);
 }
 
 /* Carousel */

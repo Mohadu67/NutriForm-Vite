@@ -2,9 +2,8 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { toast } from 'sonner';
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
-import cstyle from "./CreatUser.module.css";
-import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
-import LabelField from "../../LabelField/LabelField";
+import styles from "./CreatUser.module.css";
+
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const RECAPTCHA_ENABLED = import.meta.env.VITE_ENABLE_RECAPTCHA !== 'false' && import.meta.env.VITE_ENABLE_RECAPTCHA !== '0';
 const EMAIL_REGEX = /[^\s@]+@[^\s@]+\.[^\s@]+/;
@@ -40,6 +39,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
     onCreated?.({ email });
     toLogin?.();
   };
+
   const closeAfterSuccess = () => {
     onCreated?.({ email });
     onClose?.();
@@ -102,7 +102,6 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
         throw new Error(msg);
       }
 
-      
       if (newsletter) {
         try {
           const newsletterCaptchaToken = RECAPTCHA_ENABLED && executeRecaptcha
@@ -113,8 +112,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: emailNorm, captchaToken: newsletterCaptchaToken })
           });
-        } catch (newsletterErr) {
-        }
+        } catch (newsletterErr) {}
       }
 
       setStatus("success");
@@ -128,36 +126,46 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
     }
   };
 
+  // Loading state
   if (status === "sending" || forceSending) {
     return (
-      <div className={cstyle.body}>
-        <div className={cstyle.headerRow}>
-          <h3 className={cstyle.title}>Création du compte</h3>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 0' }}>
-          <img src={logoAnimate} alt="Chargement" className={cstyle.loaderSvg} />
-          <p className={cstyle.muted} aria-live="polite">Création du compte en cours...</p>
-          <p className={cstyle.muted} aria-live="polite">Merci de vérifier votre adresse email pour activer votre compte.</p>
-        </div>
-        <div className={cstyle.actions}>
-          <button type="button" onClick={onClose}>Annuler</button>
+      <div className={styles.body}>
+        <div className={styles.loadingState}>
+          <img src={logoAnimate} alt="Chargement" className={styles.loaderSvg} />
+          <p className={styles.muted}>Création du compte en cours...</p>
+          <p className={styles.muted}>Un email de confirmation va t'être envoyé.</p>
         </div>
       </div>
     );
   }
 
+  // Success state
   if (status === "success") {
     return (
-      <div className={cstyle.body}>
-        <div className={cstyle.headerRow}>
-          <h3 className={cstyle.title}>Création du compte</h3>
-        </div>
-        <div>
-          <p className={cstyle.success}>Compte créé 🎉</p>
-          <p className={cstyle.muted}>T’as oublié de vérifier tes mails ? On dira rien… mais clique sur le lien quand même.</p>
-          <div className={cstyle.actions} style={{ marginTop: 12 }}>
-            <button type="button" className={cstyle.linkBtn} onClick={goLoginAfterSuccess}>Se connecter</button>
-            <button type="button" onClick={closeAfterSuccess}>Fermer</button>
+      <div className={styles.body}>
+        <div className={styles.successState}>
+          <div className={styles.successIcon}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <h3 className={styles.successTitle}>Compte créé !</h3>
+          <p className={styles.successText}>
+            Vérifie ton email pour activer ton compte et commencer à t'entraîner.
+          </p>
+          <div className={styles.actions}>
+            <button
+              className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
+              onClick={goLoginAfterSuccess}
+            >
+              Se connecter
+            </button>
+            <button
+              className={`${styles.actionBtn} ${styles.actionBtnSecondary}`}
+              onClick={closeAfterSuccess}
+            >
+              Fermer
+            </button>
           </div>
         </div>
       </div>
@@ -165,99 +173,155 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
   }
 
   return (
-    <div className={cstyle.body}>
-      <div className={cstyle.headerRow}>
-        <h3 className={cstyle.title}>Créer un compte</h3>
-
+    <div className={styles.body}>
+      {/* Header */}
+      <div className={styles.header}>
+        <div className={styles.iconWrapper}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <line x1="19" y1="8" x2="19" y2="14" />
+            <line x1="22" y1="11" x2="16" y2="11" />
+          </svg>
+        </div>
+        <h3 className={styles.title}>Crée ton compte</h3>
+        <p className={styles.subtitle}>Rejoins la communauté Harmonith</p>
       </div>
 
-      <form className={cstyle.form} onSubmit={handleSubmit} noValidate>
-        <LabelField label="Pseudo" htmlFor="pseudo" className={cstyle.fieldReset}>
-          <input
-            id="pseudo"
-            name="username"
-            autoComplete="username"
-            type="text"
-            className={cstyle.input}
-            aria-invalid={!!errorMsg && !pseudo.trim()}
-            value={pseudo}
-            onChange={(e) => setPseudo(e.target.value)}
-            required
-          />
-        </LabelField>
+      {/* Form */}
+      <form className={styles.form} onSubmit={handleSubmit} noValidate>
+        {/* Pseudo field */}
+        <div className={styles.fieldGroup}>
+          <label className={styles.label} htmlFor="pseudo">Pseudo</label>
+          <div className={styles.inputWrapper}>
+            <input
+              id="pseudo"
+              type="text"
+              className={styles.input}
+              value={pseudo}
+              onChange={(e) => setPseudo(e.target.value)}
+              placeholder="Ton pseudo"
+              required
+              autoComplete="username"
+            />
+            <span className={styles.inputIcon}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94" />
+              </svg>
+            </span>
+          </div>
+        </div>
 
-        <LabelField label="Email" htmlFor="email" className={cstyle.fieldReset}>
-          <input
-            id="email"
-            name="email"
-            autoComplete="email"
-            type="email"
-            className={cstyle.input}
-            aria-invalid={!!errorMsg && !EMAIL_REGEX.test(emailNorm)}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </LabelField>
+        {/* Email field */}
+        <div className={styles.fieldGroup}>
+          <label className={styles.label} htmlFor="email">Email</label>
+          <div className={styles.inputWrapper}>
+            <input
+              id="email"
+              type="email"
+              className={styles.input}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="nom@domaine.com"
+              required
+              autoComplete="email"
+            />
+            <span className={styles.inputIcon}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+            </span>
+          </div>
+        </div>
 
-        <LabelField label="Mot de passe" htmlFor="password" className={cstyle.fieldReset}>
-          <div className={cstyle.passwordWrapper}>
+        {/* Password field */}
+        <div className={styles.fieldGroup}>
+          <label className={styles.label} htmlFor="password">Mot de passe</label>
+          <div className={`${styles.inputWrapper} ${styles.passwordWrapper}`}>
             <input
               id="password"
-              name="new-password"
-              autoComplete="new-password"
               type={showPassword ? "text" : "password"}
-              className={cstyle.input}
-              aria-invalid={!!errorMsg && (!password || password.length < 8)}
+              className={styles.input}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Min. 8 caractères"
               required
+              autoComplete="new-password"
             />
+            <span className={styles.inputIcon}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+            </span>
             <button
               type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              className={cstyle.togglePassword}
-              aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-              title={showPassword ? "Masquer" : "Afficher"}
-              aria-pressed={showPassword}
+              onClick={() => setShowPassword(!showPassword)}
+              className={styles.togglePassword}
+              aria-label={showPassword ? "Masquer" : "Afficher"}
             >
-              {showPassword ? "🙈" : "👁"}
+              {showPassword ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              )}
             </button>
           </div>
-        </LabelField>
+        </div>
 
-        <LabelField label="Confirmer le mot de passe" htmlFor="confirm-password" className={cstyle.fieldReset}>
-          <div className={cstyle.passwordWrapper}>
+        {/* Confirm password field */}
+        <div className={styles.fieldGroup}>
+          <label className={styles.label} htmlFor="confirm">Confirmer</label>
+          <div className={`${styles.inputWrapper} ${styles.passwordWrapper}`}>
             <input
-              id="confirm-password"
-              name="confirm-password"
-              autoComplete="new-password"
+              id="confirm"
               type={showConfirm ? "text" : "password"}
-              className={cstyle.input}
-              aria-invalid={!!errorMsg && password !== confirm}
+              className={styles.input}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
+              placeholder="Confirme ton mot de passe"
               required
+              autoComplete="new-password"
             />
+            <span className={styles.inputIcon}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </span>
             <button
               type="button"
-              onClick={() => setShowConfirm((v) => !v)}
-              className={cstyle.togglePassword}
-              aria-label={showConfirm ? "Masquer la confirmation" : "Afficher la confirmation"}
-              title={showConfirm ? "Masquer" : "Afficher"}
-              aria-pressed={showConfirm}
+              onClick={() => setShowConfirm(!showConfirm)}
+              className={styles.togglePassword}
+              aria-label={showConfirm ? "Masquer" : "Afficher"}
             >
-              {showConfirm ? "🙈" : "👁"}
+              {showConfirm ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              )}
             </button>
           </div>
           {confirm && password !== confirm && (
-            <span className={cstyle.error} style={{ fontSize: '0.85rem', marginTop: '4px', display: 'block' }}>
-              Les mots de passe ne correspondent pas
-            </span>
+            <span className={styles.fieldError}>Les mots de passe ne correspondent pas</span>
           )}
-        </LabelField>
+        </div>
 
-        <label className={cstyle.checkRow}>
+        {/* Checkboxes */}
+        <label className={styles.checkRow}>
           <input
             type="checkbox"
             checked={agree}
@@ -266,35 +330,37 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
           <span>J'accepte la politique de confidentialité</span>
         </label>
 
-        <label className={cstyle.checkRow}>
+        <label className={styles.checkRow}>
           <input
             type="checkbox"
             checked={newsletter}
             onChange={(e) => setNewsletter(e.target.checked)}
           />
-          <span>📬 Je veux recevoir la newsletter (conseils fitness, nouveautés)</span>
+          <span>Je veux recevoir la newsletter (conseils fitness, nouveautés)</span>
         </label>
 
-        {errorMsg && <p className={cstyle.error} role="alert" aria-live="assertive" style={{ marginTop: 0 }}>{errorMsg}</p>}
+        {/* Error message */}
+        {errorMsg && <p className={styles.error}>{errorMsg}</p>}
 
-        <BoutonAction
+        {/* Submit button */}
+        <button
           type="submit"
-          variant="form"
+          className={styles.submitBtn}
           disabled={!isValid || status === "sending" || forceSending}
         >
-          {status === "sending" || forceSending ? "Création…" : "Créer mon compte"}
-        </BoutonAction>
-
-        <div className={cstyle.actions}>
-          <button
-            className={cstyle.linkBtn}
-            type="button"
-            onClick={goLoginAfterSuccess}
-          >
-            J'ai déjà un compte
-          </button>
-        </div>
+          Créer mon compte
+        </button>
       </form>
+
+      {/* Login link */}
+      <div className={styles.loginWrapper}>
+        <span className={styles.loginText}>
+          Déjà un compte ?
+          <button type="button" className={styles.loginBtn} onClick={toLogin}>
+            Connecte-toi
+          </button>
+        </span>
+      </div>
     </div>
   );
 }

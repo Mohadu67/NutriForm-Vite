@@ -1,12 +1,39 @@
+import { useEffect, useRef } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import Faq from "./Faq/Faq.jsx";
 import FormContact from "./FormContact/FormContact.jsx";
+import styles from "./ContactPage.module.css";
 
 export default function ContactPage() {
   usePageTitle("Contact");
+  const faqSectionRef = useRef(null);
+
+  const scrollToFaq = () => {
+    faqSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    // Intersection Observer for scroll animations
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add(styles.visible);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
+    );
+
+    document.querySelectorAll(`.${styles.fadeIn}`).forEach((el) => {
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const contactSchema = {
     "@context": "https://schema.org",
@@ -28,11 +55,61 @@ export default function ContactPage() {
           {JSON.stringify(contactSchema)}
         </script>
       </Helmet>
+
       <Header />
-      <main>
-        <Faq />
-        <FormContact />
+
+      <main className={styles.contactMain}>
+        {/* Hero Section */}
+        <section className={styles.hero}>
+          <div className={styles.heroContent}>
+            <span className={styles.badge}>Support</span>
+            <h1 className={styles.heroTitle}>
+              Une question ?
+              <br />
+              <span className={styles.highlight}>On t'écoute.</span>
+            </h1>
+            <p className={styles.heroSubtitle}>
+              Consulte notre FAQ ou contacte-nous directement.
+              Notre équipe répond généralement sous 24h.
+            </p>
+          </div>
+          <div className={styles.heroVisual}>
+            <div className={styles.floatingOrb}></div>
+            <div className={styles.floatingOrb}></div>
+            <div className={styles.floatingOrb}></div>
+          </div>
+          <button
+            className={styles.scrollIndicator}
+            onClick={scrollToFaq}
+            aria-label="Voir la FAQ"
+          >
+            <span className={styles.scrollText}>FAQ</span>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+        </section>
+
+        {/* FAQ Section */}
+        <section ref={faqSectionRef} className={`${styles.faqWrapper} ${styles.fadeIn}`}>
+          <Faq />
+        </section>
+
+        {/* Contact Form Section */}
+        <section className={`${styles.formWrapper} ${styles.fadeIn}`}>
+          <FormContact />
+        </section>
       </main>
+
       <Footer />
     </>
   );

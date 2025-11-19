@@ -171,6 +171,7 @@
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   transition: background-color .12s ease, transform .12s ease;
+  z-index: 10;
 }
 .popup-close:hover { background: var(--nf-close-hover); transform: rotate(90deg) scale(1.05); }
 

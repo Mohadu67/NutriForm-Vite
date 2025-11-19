@@ -5,10 +5,17 @@ import FormRM from "./FormRM/FormRM.jsx";
 import ResultatsRM from "./ResultatsRM/ResultatsRM.jsx";
 import TableauCharges from "./TableauCharges/TableauCharges.jsx";
 import ArticlesRM from "./ArticlesRM/ArticlesRM.jsx";
+import styles from "./RMPage.module.css";
 
 export default function RMPage() {
   usePageTitle("Calculateur 1RM");
   const [rmData, setRmData] = useState(null);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+
+  const showToast = (message, type = 'info') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: '', type: 'info' }), 4000);
+  };
 
   const howToSchema = {
     "@context": "https://schema.org",
@@ -80,9 +87,10 @@ export default function RMPage() {
     if (!rmData) return;
 
     const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const user = localStorage.getItem("user");
 
-    if (!token) {
-      alert("Connecte-toi pour sauvegarder tes tests de 1RM et suivre ta progression !");
+    if (!token || !user) {
+      showToast("Connecte-toi pour sauvegarder tes tests de 1RM et suivre ta progression !", "warning");
       return;
     }
 
@@ -123,13 +131,13 @@ export default function RMPage() {
       });
 
       if (response.ok) {
-        alert("Test de 1RM sauvegardé avec succès ! 💪");
+        showToast("Test de 1RM sauvegardé avec succès !", "success");
       } else {
         const error = await response.json();
-        alert(error.message || "Erreur lors de la sauvegarde");
+        showToast(error.message || "Erreur lors de la sauvegarde", "error");
       }
     } catch (error) {
-      alert("Erreur de connexion au serveur");
+      showToast("Erreur de connexion au serveur", "error");
     }
   };
 
@@ -150,6 +158,26 @@ export default function RMPage() {
         )}
         <ArticlesRM />
       </main>
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className={`${styles.toast} ${styles[toast.type]}`}>
+          <span className={styles.toastIcon}>
+            {toast.type === 'success' && '✓'}
+            {toast.type === 'error' && '✕'}
+            {toast.type === 'warning' && '⚠'}
+            {toast.type === 'info' && 'ℹ'}
+          </span>
+          <span className={styles.toastMessage}>{toast.message}</span>
+          <button
+            className={styles.toastClose}
+            onClick={() => setToast({ show: false, message: '', type: 'info' })}
+            aria-label="Fermer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </>
   );
 }

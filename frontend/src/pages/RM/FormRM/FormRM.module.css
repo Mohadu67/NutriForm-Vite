@@ -12,7 +12,7 @@
 .title {
   font-size: 1.75rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
+  background: var(--couleur-bouton-action, #f7b186);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -89,7 +89,7 @@
   outline: none;
   border-color: #f7b186;
   background: #fff;
-  box-shadow: 0 0 0 4px rgba(255, 179, 133, 0.1);
+  box-shadow: 0 0 0 4px rgba(247, 177, 134, 0.1);
 }
 
 :global(body.dark) .input:focus,
@@ -108,20 +108,20 @@
 .submitBtn {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
-  color: white;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   border: none;
   border-radius: 12px;
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
 }
 
 .submitBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 179, 133, 0.4);
+  box-shadow: 0 6px 20px rgba(247, 177, 134, 0.4);
 }
 
 .submitBtn:active {

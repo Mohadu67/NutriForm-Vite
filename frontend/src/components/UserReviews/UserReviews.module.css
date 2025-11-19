@@ -1,24 +1,9 @@
-/* Section */
+/* UserReviews Section - Design épuré et soft */
+
 .section {
-  background: var(--paper, #ffffff);
-  padding: 60px 0;
-}
-
-:global(html.light) .section,
-:global(body.light) .section {
-  background: #ffffff;
-}
-
-:global(html.dark) .section,
-:global(body.dark) .section {
-  background: #0c0e12;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .section,
-  :global(body:not(.light)) .section {
-    background: #0c0e12;
-  }
+  background: var(--couleur-principale, #f7f6f2);
+  padding: 80px 0;
+  border-top: 1px solid var(--line, rgba(0,0,0,.08));
 }
 
 .container {
@@ -39,50 +24,28 @@
 
 .title {
   font-family: 'Merriweather', serif;
-  font-size: clamp(28px, 5vw, 38px);
-  font-weight: 800;
-  color: var(--ink, #222);
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 700;
+  color: var(--ink, #222325);
   margin: 0;
-  background: linear-gradient(135deg, #222325, #6b7280);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-:global(html.dark) .title,
-:global(body.dark) .title {
-  background: linear-gradient(135deg, #e9ecf1, #a6b0bf);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .title,
-  :global(body:not(.light)) .title {
-    background: linear-gradient(135deg, #e9ecf1, #a6b0bf);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+  line-height: 1.3;
 }
 
 .addButton {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   border: none;
-  padding: 12px 28px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
-  transition: all 0.3s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .addButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 179, 133, 0.4);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
 }
 
 /* Loading & Empty States */
@@ -91,87 +54,29 @@
   text-align: center;
   padding: 40px 20px;
   color: var(--muted, #6b7280);
-  font-size: 16px;
-}
-
-:global(html.dark) .loading,
-:global(html.dark) .noReviews,
-:global(body.dark) .loading,
-:global(body.dark) .noReviews {
-  color: #a6b0bf;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .loading,
-  :global(html:not(.light)) .noReviews,
-  :global(body:not(.light)) .loading,
-  :global(body:not(.light)) .noReviews {
-    color: #a6b0bf;
-  }
+  font-size: 15px;
 }
 
 /* Reviews Grid */
 .reviewsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
 }
 
-@media (max-width: 768px) {
-  .reviewsGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Review Card */
+/* Review Card - Style épuré */
 .reviewCard {
   background: var(--paper, #ffffff);
-  border: 2px solid #f7b186;
-  border-radius: 20px;
+  border: 1px solid var(--line, rgba(0,0,0,.08));
+  border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.reviewCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, #f7b186, #f49b69);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .reviewCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(255, 179, 133, 0.2);
-}
-
-:global(html.dark) .reviewCard,
-:global(body.dark) .reviewCard {
-  background: #12151b;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-:global(html.dark) .reviewCard:hover,
-:global(body.dark) .reviewCard:hover {
-  box-shadow: 0 12px 32px rgba(255, 179, 133, 0.15);
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .reviewCard,
-  :global(body:not(.light)) .reviewCard {
-    background: #12151b;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  }
-
-  :global(html:not(.light)) .reviewCard:hover,
-  :global(body:not(.light)) .reviewCard:hover {
-    box-shadow: 0 12px 32px rgba(255, 179, 133, 0.15);
-  }
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 /* Card Header */
@@ -191,25 +96,25 @@
 }
 
 .authorInitial {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f7b186, #f49b69);
+  background: color-mix(in srgb, var(--couleur-bouton-selection) 30%, var(--paper));
   display: grid;
   place-items: center;
-  font-size: 24px;
-  font-weight: 700;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink, #222325);
+  border: 1px solid color-mix(in srgb, var(--couleur-bouton-selection) 50%, transparent);
   flex-shrink: 0;
 }
 
 .authorPhoto {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  border: 2px solid var(--line, rgba(0,0,0,.08));
   flex-shrink: 0;
 }
 
@@ -219,27 +124,15 @@
 
 .authorName {
   font-family: 'Montserrat', sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--ink, #222);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink, #222325);
   margin: 0 0 4px 0;
 }
 
-:global(html.dark) .authorName,
-:global(body.dark) .authorName {
-  color: #e9ecf1;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .authorName,
-  :global(body:not(.light)) .authorName {
-    color: #e9ecf1;
-  }
-}
-
 .reviewDate {
-  font-size: 13px;
-  color: #f7b186;
+  font-size: 12px;
+  color: var(--muted, #6b7280);
   font-weight: 500;
   margin: 0;
 }
@@ -248,56 +141,31 @@
 .stars {
   display: flex;
   gap: 2px;
-  font-size: 18px;
+  font-size: 16px;
   flex-shrink: 0;
 }
 
 .starFilled {
-  color: #fbbf24;
-  text-shadow: 0 1px 2px rgba(251, 191, 36, 0.3);
+  color: var(--couleur-bouton-action, #f7b186);
 }
 
 .starEmpty {
-  color: #d1d5db;
-}
-
-:global(html.dark) .starEmpty,
-:global(body.dark) .starEmpty {
-  color: #4b5563;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .starEmpty,
-  :global(body:not(.light)) .starEmpty {
-    color: #4b5563;
-  }
+  color: var(--line, rgba(0,0,0,.08));
 }
 
 /* Comment */
 .reviewComment {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.7;
   color: var(--muted, #6b7280);
   margin: 0;
-}
-
-:global(html.dark) .reviewComment,
-:global(body.dark) .reviewComment {
-  color: #a6b0bf;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .reviewComment,
-  :global(body:not(.light)) .reviewComment {
-    color: #a6b0bf;
-  }
 }
 
 /* Modal */
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   display: grid;
   place-items: center;
@@ -309,26 +177,15 @@
 
 .modal {
   background: var(--paper, #ffffff);
-  border-radius: 24px;
-  padding: 40px;
-  max-width: 550px;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 500px;
   width: 100%;
   position: relative;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
   max-height: 90vh;
   overflow-y: auto;
-}
-
-:global(html.dark) .modal,
-:global(body.dark) .modal {
-  background: #12151b;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .modal,
-  :global(body:not(.light)) .modal {
-    background: #12151b;
-  }
+  border: 1px solid var(--line, rgba(0,0,0,.08));
 }
 
 .closeButton {
@@ -337,67 +194,33 @@
   right: 16px;
   background: none;
   border: none;
-  font-size: 32px;
+  font-size: 28px;
   cursor: pointer;
   color: var(--muted, #6b7280);
   transition: color 0.2s ease;
   line-height: 1;
   padding: 0;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
 }
 
 .closeButton:hover {
-  color: #f7b186;
-}
-
-:global(html.dark) .closeButton,
-:global(body.dark) .closeButton {
-  color: #a6b0bf;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .closeButton,
-  :global(body:not(.light)) .closeButton {
-    color: #a6b0bf;
-  }
+  color: var(--ink, #222325);
 }
 
 .modalTitle {
   font-family: 'Merriweather', serif;
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--ink, #222);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink, #222325);
   margin: 0 0 24px 0;
-  background: linear-gradient(135deg, #222325, #6b7280);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-:global(html.dark) .modalTitle,
-:global(body.dark) .modalTitle {
-  background: linear-gradient(135deg, #e9ecf1, #a6b0bf);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .modalTitle,
-  :global(body:not(.light)) .modalTitle {
-    background: linear-gradient(135deg, #e9ecf1, #a6b0bf);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
 }
 
 /* Form */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 .formGroup {
@@ -409,121 +232,82 @@
 
 .label {
   font-family: 'Montserrat', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--ink, #222);
-}
-
-:global(html.dark) .label,
-:global(body.dark) .label {
-  color: #e9ecf1;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .label,
-  :global(body:not(.light)) .label {
-    color: #e9ecf1;
-  }
+  color: var(--ink, #222325);
 }
 
 .required {
-  color: #f7b186;
+  color: var(--couleur-bouton-action, #f7b186);
 }
 
 .input,
 .textarea {
   font-family: 'Montserrat', sans-serif;
-  font-size: 15px;
-  padding: 12px 16px;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  background: var(--paper, #ffffff);
-  color: var(--ink, #222);
-  transition: border-color 0.2s ease;
-}
-
-:global(html.dark) .input,
-:global(html.dark) .textarea,
-:global(body.dark) .input,
-:global(body.dark) .textarea {
-  background: #1a1d24;
-  color: #e9ecf1;
-  border-color: #2d3139;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .input,
-  :global(html:not(.light)) .textarea,
-  :global(body:not(.light)) .input,
-  :global(body:not(.light)) .textarea {
-    background: #1a1d24;
-    color: #e9ecf1;
-    border-color: #2d3139;
-  }
+  font-size: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line, rgba(0,0,0,.08));
+  border-radius: 10px;
+  background: var(--couleur-principale, #f7f6f2);
+  color: var(--ink, #222325);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .input:focus,
 .textarea:focus {
   outline: none;
-  border-color: #f7b186;
+  border-color: var(--couleur-bouton-action, #f7b186);
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.15);
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .textarea {
   resize: vertical;
-  min-height: 120px;
+  min-height: 100px;
 }
 
 .charCount {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--muted, #6b7280);
   text-align: right;
-}
-
-:global(html.dark) .charCount,
-:global(body.dark) .charCount {
-  color: #a6b0bf;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .charCount,
-  :global(body:not(.light)) .charCount {
-    color: #a6b0bf;
-  }
 }
 
 /* Interactive Stars */
 .starsInteractive {
   display: flex;
   gap: 4px;
-  font-size: 32px;
+  font-size: 28px;
 }
 
 .starsInteractive span {
-  transition: all 0.2s ease;
+  transition: transform 0.15s ease;
 }
 
 .starsInteractive span:hover {
-  transform: scale(1.2);
+  transform: scale(1.15);
 }
 
 /* Submit Button */
 .submitButton {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   border: none;
-  padding: 14px 32px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
+  padding: 14px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
-  transition: all 0.3s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   margin-top: 8px;
 }
 
 .submitButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 179, 133, 0.4);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
 }
 
 .submitButton:disabled {
@@ -533,55 +317,63 @@
 
 /* Message */
 .message {
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 8px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .message.success {
-  background: #d1fae5;
-  color: #065f46;
-  border: 2px solid #10b981;
+  background: color-mix(in srgb, var(--couleur-bouton-selection) 20%, var(--paper));
+  color: var(--ink, #222325);
+  border: 1px solid color-mix(in srgb, var(--couleur-bouton-selection) 40%, transparent);
 }
 
 .message.error {
-  background: #fee2e2;
-  color: #991b1b;
-  border: 2px solid #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  color: #b91c1c;
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
-:global(html.dark) .message.success,
-:global(body.dark) .message.success {
-  background: #064e3b;
-  color: #d1fae5;
-}
-
-:global(html.dark) .message.error,
-:global(body.dark) .message.error {
-  background: #7f1d1d;
-  color: #fee2e2;
-}
-
+/* Dark mode */
 @media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .message.success,
-  :global(body:not(.light)) .message.success {
-    background: #064e3b;
-    color: #d1fae5;
+  .section {
+    background: var(--couleur-principale, #0c0e12);
   }
 
-  :global(html:not(.light)) .message.error,
-  :global(body:not(.light)) .message.error {
-    background: #7f1d1d;
-    color: #fee2e2;
+  .reviewCard {
+    background: var(--paper, #12151b);
+  }
+
+  .authorInitial {
+    background: color-mix(in srgb, var(--couleur-bouton-selection) 15%, var(--paper));
+    border-color: color-mix(in srgb, var(--couleur-bouton-selection) 30%, transparent);
+  }
+
+  .modal {
+    background: var(--paper, #12151b);
+  }
+
+  .input,
+  .textarea {
+    background: color-mix(in srgb, var(--paper) 90%, #000);
+  }
+
+  .starEmpty {
+    color: rgba(255,255,255,.15);
+  }
+
+  .message.error {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.3);
   }
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .section {
-    padding: 40px 0;
+    padding: 60px 0;
   }
 
   .header {
@@ -593,25 +385,37 @@
     width: 100%;
   }
 
+  .reviewsGrid {
+    grid-template-columns: 1fr;
+  }
+
   .modal {
     padding: 24px;
   }
 
   .modalTitle {
-    font-size: 24px;
-  }
-
-  .authorInitial {
-    width: 48px;
-    height: 48px;
     font-size: 20px;
   }
 
+  .authorInitial,
+  .authorPhoto {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
   .authorName {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .reviewComment {
-    font-size: 14px;
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
   }
 }
