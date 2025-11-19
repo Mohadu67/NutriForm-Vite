@@ -7,13 +7,54 @@
 /* ========== HERO SECTION ========== */
 .hero {
   position: relative;
-  min-height: 50vh;
+  min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 120px 24px 80px;
+  padding: 80px 24px;
   background: var(--couleur-principale, #f7f6f2);
   overflow: hidden;
+}
+
+/* ========== SCROLL INDICATOR ========== */
+.scrollIndicator {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--muted, #6b7280);
+  cursor: pointer;
+  padding: 12px;
+  z-index: 10;
+  transition: color 0.2s ease;
+}
+
+.scrollIndicator:hover {
+  color: var(--couleur-bouton-action, #f7b186);
+}
+
+.scrollIndicator svg {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.scrollText {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(8px); }
+  60% { transform: translateY(4px); }
 }
 
 .heroContent {
@@ -159,8 +200,12 @@
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
   .hero {
-    min-height: 40vh;
-    padding: 100px 20px 60px;
+    min-height: 100vh;
+    padding: 60px 20px;
+  }
+
+  .scrollIndicator {
+    bottom: 24px;
   }
 
   .floatingOrb:nth-child(1) {
