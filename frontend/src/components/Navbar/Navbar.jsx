@@ -103,6 +103,7 @@ export default function Navbar() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState('login');
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const [langExpanded, setLangExpanded] = useState(false);
 
   const path = useMemo(() => (location.pathname || "/").toLowerCase(), [location.pathname]);
 
@@ -194,12 +195,12 @@ export default function Navbar() {
     return () => window.removeEventListener('storage', updateLoginState);
   }, [getStoredUser]);
 
-  // Main navigation links (always visible)
+  // Main navigation links (always visible on mobile bottom nav)
   const mainLinks = useMemo(() => [
     {
-      label: t('nav.tools'),
-      path: "/outils",
-      icon: <ToolsIcon size={20} />
+      label: null, // Icon only for home
+      path: "/",
+      icon: <HomeIcon size={20} />
     },
     {
       label: t('nav.exercises'),
@@ -207,15 +208,15 @@ export default function Navbar() {
       icon: <DumbbellIcon size={20} />
     },
     {
-      label: t('nav.contact'),
-      path: "/contact",
-      icon: <MessageIcon size={20} />
+      label: t('nav.tools'),
+      path: "/outils",
+      icon: <ToolsIcon size={20} />
     }
   ], [t]);
 
   // Secondary navigation links (in expanded menu)
   const secondaryLinks = useMemo(() => [
-    { label: t('nav.home'), path: "/", icon: <HomeIcon size={28} /> },
+    { label: t('nav.contact'), path: "/contact", icon: <MessageIcon size={28} /> },
     { label: t('nav.about'), path: "/about", icon: <InfoIcon size={28} /> },
     ...(isLoggedIn ? [
       { label: 'Dashboard', path: "/dashboard", icon: <DashboardIcon size={28} />, onClick: () => navigate('/dashboard') }
@@ -284,18 +285,38 @@ export default function Navbar() {
         {(open || isDesktop) && (
           <div className={styles.utilitiesExpanded}>
             {/* Language selector */}
-            <div className={styles.langGroup}>
-              {['fr', 'en', 'de', 'es'].map(lng => (
+            <div
+              className={`${styles.langGroup} ${isDesktop && langExpanded ? styles.langGroupExpanded : ''}`}
+              onMouseEnter={() => isDesktop && setLangExpanded(true)}
+              onMouseLeave={() => isDesktop && setLangExpanded(false)}
+            >
+              {isDesktop && !langExpanded ? (
+                // Desktop: show only active language
                 <button
-                  key={lng}
-                  onClick={() => changeLanguage(lng)}
-                  className={`${styles.langBtnDock} ${i18n.language === lng ? styles.langActive : ''}`}
-                  title={lng.toUpperCase()}
-                  aria-label={`Switch to ${lng.toUpperCase()}`}
+                  onClick={() => setLangExpanded(true)}
+                  className={`${styles.langBtnDock} ${styles.langActive}`}
+                  title="Changer de langue"
+                  aria-label="Change language"
                 >
-                  {lng.toUpperCase()}
+                  {i18n.language.toUpperCase()}
                 </button>
-              ))}
+              ) : (
+                // Mobile or desktop expanded: show all languages
+                ['fr', 'en', 'de', 'es'].map(lng => (
+                  <button
+                    key={lng}
+                    onClick={() => {
+                      changeLanguage(lng);
+                      setLangExpanded(false);
+                    }}
+                    className={`${styles.langBtnDock} ${i18n.language === lng ? styles.langActive : ''}`}
+                    title={lng.toUpperCase()}
+                    aria-label={`Switch to ${lng.toUpperCase()}`}
+                  >
+                    {lng.toUpperCase()}
+                  </button>
+                ))
+              )}
             </div>
 
             {/* Action buttons */}
@@ -341,15 +362,15 @@ export default function Navbar() {
             <a
               key={link.path}
               href={link.path}
-              className={`${styles.dockItem} ${styles.mainDockItem} ${path === link.path ? styles.dockItemActive : ''}`}
+              className={`${styles.dockItem} ${styles.mainDockItem} ${path === link.path ? styles.dockItemActive : ''} ${!link.label ? styles.iconOnly : ''}`}
               onClick={(e) => {
                 e.preventDefault();
                 link.onClick ? link.onClick() : navigate(link.path);
               }}
-              title={link.label}
+              title={link.label || t('nav.home')}
             >
               <span className={styles.dockIcon}>{link.icon}</span>
-              <span className={styles.dockLabel}>{link.label}</span>
+              {link.label && <span className={styles.dockLabel}>{link.label}</span>}
             </a>
           ))}
 

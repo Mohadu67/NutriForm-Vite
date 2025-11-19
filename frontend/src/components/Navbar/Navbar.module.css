@@ -403,6 +403,18 @@
   transform: translateY(-1px) scale(1.02);
 }
 
+/* Icon only (no label) */
+.iconOnly {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 48px;
+  padding: 8px 12px;
+}
+
+.iconOnly .dockIcon {
+  margin: 0;
+}
+
 /* Active item */
 .dockItemActive::before {
   opacity: 1;
@@ -691,6 +703,15 @@
     white-space: nowrap;
   }
 
+  .mainNav .iconOnly {
+    min-width: 40px;
+    padding: 8px 10px;
+  }
+
+  .mainNav .iconOnly .dockIcon {
+    margin: 0;
+  }
+
   /* ===== STYLES DES BOUTONS SECONDAIRES ===== */
   .secondaryNav .dockItem {
     width: 80px;
@@ -750,11 +771,17 @@
   .langGroup {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 0;
     padding: 4px;
     border-radius: 10px;
     background: rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .langGroupExpanded {
+    gap: 4px;
   }
 
   :global(.dark) .langGroup {
@@ -770,6 +797,8 @@
     transition: all 0.2s ease;
     border: none;
     cursor: pointer;
+    background: transparent;
+    color: var(--ink-muted);
   }
 
   .langBtnDock:hover {
