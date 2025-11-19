@@ -1,93 +1,106 @@
+/* InfoSection - Style épuré et aéré */
+
 .infoSection {
-  max-width: 800px;
-  margin: 4rem auto 2rem;
+  max-width: 720px;
+  margin: 5rem auto 3rem;
   padding: 0 1.5rem;
 }
 
 .contentBlock {
-  margin-bottom: 3rem;
-  padding-bottom: 3rem;
-  border-bottom: 1px solid var(--line);
+  margin-bottom: 2.5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--line, rgba(0,0,0,.08));
 }
 
 .contentBlock:last-child {
   border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 .contentBlock h2 {
-  font-size: 1.75rem;
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 1.25rem;
-  line-height: 1.3;
+  color: var(--ink, #222325);
+  margin-bottom: 1rem;
+  line-height: 1.35;
 }
 
 .contentBlock p {
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1.7;
-  color: var(--muted);
-  margin-bottom: 1rem;
+  color: var(--muted, #6b7280);
+  margin-bottom: 0.75rem;
 }
 
 .contentBlock p:last-child {
   margin-bottom: 0;
 }
 
+/* Liste avec flèches subtiles */
 .list {
-  margin: 1.5rem 0;
-  padding-left: 1.5rem;
+  margin: 1.25rem 0;
+  padding-left: 0;
   list-style: none;
 }
 
 .list li {
   position: relative;
   padding-left: 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   line-height: 1.6;
-  color: var(--muted);
+  color: var(--muted, #6b7280);
+  font-size: 0.95rem;
 }
 
 .list li::before {
-  content: "→";
+  content: "";
   position: absolute;
   left: 0;
-  color: var(--couleur-bouton-action);
-  font-weight: 700;
+  top: 0.6rem;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--couleur-bouton-action, #f7b186);
 }
 
 .list li strong {
-  color: var(--ink);
+  color: var(--ink, #222325);
   font-weight: 600;
 }
 
+/* Grille de conseils */
 .tipsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.25rem;
-  margin-top: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
 }
 
 .tip {
-  padding: 1.25rem;
-  background: var(--paper);
-  border-left: 3px solid var(--couleur-bouton-selection);
+  padding: 1rem 1.25rem;
+  background: var(--couleur-principale, #f7f6f2);
+  border-radius: 10px;
+  border-left: 3px solid var(--couleur-bouton-selection, #b8ddd1);
 }
 
 .tip strong {
   display: block;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: var(--ink);
-  margin-bottom: 0.5rem;
+  color: var(--ink, #222325);
+  margin-bottom: 0.4rem;
 }
 
 .tip p {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   line-height: 1.5;
-  color: var(--muted);
+  color: var(--muted, #6b7280);
   margin: 0;
 }
 
+/* Responsive */
 @media (max-width: 768px) {
   .infoSection {
     margin-top: 3rem;
@@ -100,15 +113,15 @@
   }
 
   .contentBlock h2 {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
 
   .tipsGrid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .tip {
-    padding: 1rem;
+    padding: 0.85rem 1rem;
   }
 }
