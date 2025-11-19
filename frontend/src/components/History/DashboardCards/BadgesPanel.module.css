@@ -11,8 +11,8 @@
 /* Badges Toggle Button */
 .badgesToggle {
   width: 100%;
-  background: linear-gradient(135deg, rgba(255, 179, 133, 0.08) 0%, rgba(255, 179, 133, 0.02) 100%);
-  border: 1px solid rgba(255, 179, 133, 0.3);
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.08) 0%, rgba(247, 177, 134, 0.02) 100%);
+  border: 1px solid rgba(247, 177, 134, 0.3);
   border-radius: 12px;
   padding: 16px 20px;
   display: flex;
@@ -24,10 +24,10 @@
 }
 
 .badgesToggle:hover {
-  background: linear-gradient(135deg, rgba(255, 179, 133, 0.12) 0%, rgba(255, 179, 133, 0.04) 100%);
-  border-color: rgba(255, 179, 133, 0.5);
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.12) 0%, rgba(247, 177, 134, 0.04) 100%);
+  border-color: rgba(247, 177, 134, 0.5);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.15);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.15);
 }
 
 .badgesToggle:active {
@@ -36,14 +36,14 @@
 
 :global(body.dark) .badgesToggle,
 :global(html.dark) .badgesToggle {
-  background: linear-gradient(135deg, rgba(255, 179, 133, 0.05) 0%, rgba(255, 179, 133, 0.01) 100%);
-  border-color: rgba(255, 179, 133, 0.2);
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.05) 0%, rgba(247, 177, 134, 0.01) 100%);
+  border-color: rgba(247, 177, 134, 0.2);
 }
 
 :global(body.dark) .badgesToggle:hover,
 :global(html.dark) .badgesToggle:hover {
-  background: linear-gradient(135deg, rgba(255, 179, 133, 0.08) 0%, rgba(255, 179, 133, 0.02) 100%);
-  border-color: rgba(255, 179, 133, 0.35);
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.08) 0%, rgba(247, 177, 134, 0.02) 100%);
+  border-color: rgba(247, 177, 134, 0.35);
 }
 
 .badgesToggleContent {
@@ -91,7 +91,7 @@
   overscroll-behavior-inline: contain;
   touch-action: pan-x pan-y;
   scrollbar-width: thin;
-  scrollbar-color: #ffb385 transparent;
+  scrollbar-color: var(--couleur-bouton-action, #f7b186) transparent;
   animation: slideDown 0.3s ease-out;
   margin-top: var(--space-3);
 }
@@ -124,7 +124,7 @@
 }
 
 .grid::-webkit-scrollbar-thumb:hover {
-  background: #f49b69;
+  background: var(--couleur-bouton-action, #f7b186);
 }
 
 .badgeCard {

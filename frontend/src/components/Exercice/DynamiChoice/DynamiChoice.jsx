@@ -63,11 +63,6 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   useEffect(() => {
     if (typeof onStepChange === "function") onStepChange(step);
-
-    
-    if (containerRef.current) {
-      containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
   }, [step, onStepChange]);
 
   useEffect(() => {

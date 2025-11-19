@@ -124,7 +124,7 @@
   position: absolute;
   inset: -2px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f7b186, #ff8c5a);
+  background: var(--couleur-bouton-action, #f7b186);
   opacity: 0;
   filter: blur(8px);
   transition: opacity 0.3s ease;
@@ -133,8 +133,8 @@
 
 /* Active State */
 .active {
-  border-color: #f7b186;
-  background: linear-gradient(135deg, rgba(247, 177, 134, 0.25), rgba(255, 140, 90, 0.2));
+  border-color: var(--couleur-bouton-action, #f7b186);
+  background: rgba(247, 177, 134, 0.25);
   backdrop-filter: blur(16px);
   color: var(--couleur-text-noir);
   box-shadow:
@@ -154,13 +154,6 @@
   backdrop-filter: blur(16px);
   color: var(--couleur-text-noir);
   box-shadow: 0 2px 12px rgba(184, 221, 209, 0.3);
-}
-
-.done::after {
-  content: '✓';
-  position: absolute;
-  font-size: 0.75rem;
-  color: #0e1412;
 }
 
 /* Label */
