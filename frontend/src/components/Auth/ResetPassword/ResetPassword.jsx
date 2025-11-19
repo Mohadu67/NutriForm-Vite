@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import styles from "./ResetPassword.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 export default function ResetPassword() {
   const [sp] = useSearchParams();
