@@ -7,12 +7,11 @@
 /* ========== HERO SECTION ========== */
 .hero {
   position: relative;
-  min-height: 100vh;
+  min-height: 80vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 60px 20px 100px;
+  padding: 60px 20px 180px;
   background: var(--couleur-principale, #f7f6f2);
   overflow: hidden;
 }
@@ -20,7 +19,7 @@
 /* ========== SCROLL INDICATOR ========== */
 .scrollIndicator {
   position: absolute;
-  bottom: 80px;
+  bottom: 150px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -273,12 +272,7 @@
 /* ========== TABLET+ ========== */
 @media (min-width: 640px) {
   .hero {
-    min-height: 100vh;
-    padding: 80px 24px;
-  }
-
-  .scrollIndicator {
-    bottom: 40px;
+    padding: 80px 24px 200px;
   }
 
   .badge {
