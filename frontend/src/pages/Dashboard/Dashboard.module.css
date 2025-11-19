@@ -476,6 +476,202 @@
   color: var(--muted, #6b7280);
 }
 
+/* ========== CARDIO SECTION ========== */
+.cardioSection {
+  background: var(--paper, #ffffff);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+:global(body.dark) .cardioSection,
+:global(html.dark) .cardioSection {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.cardioSection .sectionTitle {
+  margin-bottom: 16px;
+}
+
+.cardioGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.cardioItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  background: var(--couleur-principale, #f7f6f2);
+  border-radius: 10px;
+}
+
+:global(body.dark) .cardioItem,
+:global(html.dark) .cardioItem {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.cardioIcon {
+  font-size: 1.25rem;
+  margin-bottom: 4px;
+}
+
+.cardioValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .cardioValue,
+:global(html.dark) .cardioValue {
+  color: #f5f7fa;
+}
+
+.cardioLabel {
+  font-size: 0.7rem;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+}
+
+/* ========== 1RM SECTION ========== */
+.rmSection {
+  background: var(--paper, #ffffff);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+:global(body.dark) .rmSection,
+:global(html.dark) .rmSection {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.rmSection .sectionTitle {
+  margin-bottom: 12px;
+}
+
+.rmList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rmItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--couleur-principale, #f7f6f2);
+  border-radius: 8px;
+}
+
+:global(body.dark) .rmItem,
+:global(html.dark) .rmItem {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rmInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rmExercice {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .rmExercice,
+:global(html.dark) .rmExercice {
+  color: #f5f7fa;
+}
+
+.rmDate {
+  font-size: 0.7rem;
+  color: var(--muted, #6b7280);
+}
+
+.rmValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--couleur-bouton-action, #f7b186);
+}
+
+/* ========== CHART SECTION ========== */
+.chartSection {
+  background: var(--paper, #ffffff);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+:global(body.dark) .chartSection,
+:global(html.dark) .chartSection {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.chartSection .sectionTitle {
+  margin-bottom: 16px;
+}
+
+.miniChart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chartBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 80px;
+}
+
+.chartBar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+
+.chartBarFill {
+  width: 100%;
+  background: var(--couleur-bouton-selection, #b8ddd1);
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 0.3s ease;
+}
+
+.chartBarLabel {
+  font-size: 0.6rem;
+  color: var(--muted, #6b7280);
+}
+
+.chartLegend {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--muted, #6b7280);
+  padding-top: 8px;
+  border-top: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+:global(body.dark) .chartLegend,
+:global(html.dark) .chartLegend {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
 /* ========== EMPTY STATE ========== */
 .emptyState {
   background: var(--paper, #ffffff);
