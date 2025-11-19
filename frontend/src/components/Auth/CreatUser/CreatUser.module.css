@@ -76,7 +76,7 @@
 }
 
 .photoLabel:hover {
-  border-color: #f49b69;
+  border-color: var(--couleur-bouton-action, #f7b186);
   background: #FFE8D6;
 }
 
@@ -112,7 +112,7 @@
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid #f7b186;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
 }
 
 .removePhoto {
@@ -122,13 +122,13 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   border: none;
   font-size: 24px;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(255, 179, 133, 0.4);
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.4);
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -137,7 +137,7 @@
 
 .removePhoto:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.5);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.5);
   line-height: 1;
   color: #2B2B2B;
 }

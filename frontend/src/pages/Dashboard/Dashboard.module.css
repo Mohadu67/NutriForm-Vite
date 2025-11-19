@@ -56,7 +56,7 @@
   left: 0;
   right: 0;
   height: 400px;
-  background: radial-gradient(circle at 20% 50%, rgba(255, 179, 133, 0.08) 0%, transparent 50%),
+  background: radial-gradient(circle at 20% 50%, rgba(247, 177, 134, 0.08) 0%, transparent 50%),
               radial-gradient(circle at 80% 80%, rgba(181, 234, 215, 0.08) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
@@ -69,7 +69,7 @@
 
 :global(body.dark) .dashboard::before,
 :global(html.dark) .dashboard::before {
-  background: radial-gradient(circle at 20% 50%, rgba(255, 179, 133, 0.03) 0%, transparent 50%),
+  background: radial-gradient(circle at 20% 50%, rgba(247, 177, 134, 0.03) 0%, transparent 50%),
               radial-gradient(circle at 80% 80%, rgba(181, 234, 215, 0.03) 0%, transparent 50%);
 }
 
@@ -570,13 +570,13 @@
   gap: 12px;
   padding: 20px 24px;
   border-bottom: 1px solid var(--nf-surface-border);
-  background: linear-gradient(135deg, rgba(255, 179, 133, 0.02) 0%, transparent 100%);
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.02) 0%, transparent 100%);
 }
 
 :global(body.dark) .sectionHeader,
 :global(html.dark) .sectionHeader {
   border-bottom-color: rgba(255, 255, 255, 0.06);
-  background: linear-gradient(135deg, rgba(255, 179, 133, 0.01) 0%, transparent 100%);
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.01) 0%, transparent 100%);
 }
 
 .dashboardSection[data-theme="body"] .sectionHeader {
@@ -635,12 +635,12 @@
 }
 
 .cardioGrid::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
+  background: #f7b186;
   border-radius: 4px;
 }
 
 .cardioGrid::-webkit-scrollbar-thumb:hover {
-  background: #f49b69;
+  background: #f7b186;
 }
 
 .cardioGrid > * {
@@ -699,8 +699,8 @@
 }
 
 .ctaButton {
-  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
-  color: white;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   border: none;
   border-radius: 12px;
   padding: 14px 32px;
@@ -708,12 +708,12 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
 }
 
 .ctaButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(255, 179, 133, 0.4);
+  box-shadow: 0 8px 24px rgba(247, 177, 134, 0.4);
 }
 
 .ctaButton:active {

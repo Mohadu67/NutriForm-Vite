@@ -94,7 +94,7 @@
 }
 
 .grid::-webkit-scrollbar-thumb:hover {
-  background: #f49b69;
+  background: var(--couleur-bouton-action, #f7b186);
 }
 
 .weekCard {
@@ -141,8 +141,8 @@
 }
 
 .currentBadge {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: white;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   font-size: 0.65rem;
   padding: 2px 6px;
   border-radius: 4px;
