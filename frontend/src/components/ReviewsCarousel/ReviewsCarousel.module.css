@@ -1,61 +1,26 @@
-/* Reviews Carousel Section */
+/* Reviews Carousel Section - Design épuré et soft */
+
 .carouselSection {
-  background: linear-gradient(135deg, #F7F6F2 0%, #FFF8F0 100%);
-  padding: 60px 0;
+  background: var(--paper, #ffffff);
+  padding: 80px 0;
   overflow: hidden;
-}
-
-:global(html.light) .carouselSection,
-:global(body.light) .carouselSection {
-  background: linear-gradient(135deg, #F7F6F2 0%, #FFF8F0 100%);
-}
-
-:global(html.dark) .carouselSection,
-:global(body.dark) .carouselSection {
-  background: linear-gradient(135deg, #0c0e12 0%, #12151b 100%);
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .carouselSection,
-  :global(body:not(.light)) .carouselSection {
-    background: linear-gradient(135deg, #0c0e12 0%, #12151b 100%);
-  }
+  border-top: 1px solid var(--line, rgba(0,0,0,.08));
+  border-bottom: 1px solid var(--line, rgba(0,0,0,.08));
 }
 
 .container {
   max-width: 100%;
 }
 
-/* Title */
+/* Title - Simple et élégant */
 .title {
   font-family: 'Merriweather', serif;
-  font-size: clamp(28px, 5vw, 38px);
-  font-weight: 800;
-  color: var(--ink, #222);
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 700;
+  color: var(--ink, #222325);
   text-align: center;
   margin: 0 0 48px 0;
-  background: linear-gradient(135deg, #222325, #6b7280);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-:global(html.dark) .title,
-:global(body.dark) .title {
-  background: linear-gradient(135deg, #e9ecf1, #a6b0bf);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .title,
-  :global(body:not(.light)) .title {
-    background: linear-gradient(135deg, #e9ecf1, #a6b0bf);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+  line-height: 1.3;
 }
 
 /* Carousel Wrapper */
@@ -66,15 +31,15 @@
   mask-image: linear-gradient(
     to right,
     transparent,
-    black 10%,
-    black 90%,
+    black 8%,
+    black 92%,
     transparent
   );
   -webkit-mask-image: linear-gradient(
     to right,
     transparent,
-    black 10%,
-    black 90%,
+    black 8%,
+    black 92%,
     transparent
   );
 }
@@ -83,7 +48,7 @@
   width: 100%;
 }
 
-/* Carousel Track - Animation de défilement */
+/* Carousel Track - Animation fluide */
 .carouselTrack {
   display: flex;
   gap: 24px;
@@ -96,7 +61,7 @@
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-33.333%); /* 1/3 car on a dupliqué 3 fois */
+    transform: translateX(-33.333%);
   }
 }
 
@@ -105,58 +70,23 @@
   animation-play-state: paused;
 }
 
-/* Review Card */
+/* Review Card - Style épuré */
 .reviewCard {
-  background: var(--paper, #ffffff);
-  border: 2px solid #f7b186;
-  border-radius: 20px;
+  background: var(--couleur-principale, #f7f6f2);
+  border: 1px solid var(--line, rgba(0,0,0,.08));
+  border-radius: 16px;
   padding: 24px;
-  min-width: 380px;
-  max-width: 380px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  min-width: 360px;
+  max-width: 360px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   flex-shrink: 0;
   position: relative;
-  overflow: hidden;
-}
-
-.reviewCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: var(--couleur-bouton-action, #f7b186);
 }
 
 .reviewCard:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 12px 32px rgba(255, 179, 133, 0.2);
-}
-
-:global(html.dark) .reviewCard,
-:global(body.dark) .reviewCard {
-  background: #12151b;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-:global(html.dark) .reviewCard:hover,
-:global(body.dark) .reviewCard:hover {
-  box-shadow: 0 12px 32px rgba(255, 179, 133, 0.15);
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .reviewCard,
-  :global(body:not(.light)) .reviewCard {
-    background: #12151b;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  }
-
-  :global(html:not(.light)) .reviewCard:hover,
-  :global(body:not(.light)) .reviewCard:hover {
-    box-shadow: 0 12px 32px rgba(255, 179, 133, 0.15);
-  }
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 /* Card Header */
@@ -176,25 +106,24 @@
 }
 
 .authorPhoto {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #f7b186;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.2);
+  border: 2px solid var(--line, rgba(0,0,0,.08));
 }
 
 .authorInitial {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: var(--couleur-bouton-action, #f7b186);
+  background: color-mix(in srgb, var(--couleur-bouton-selection) 30%, var(--paper));
   display: grid;
   place-items: center;
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--couleur-text-bouton, #111111);
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink, #222325);
+  border: 1px solid color-mix(in srgb, var(--couleur-bouton-selection) 50%, transparent);
 }
 
 .authorInfo {
@@ -203,30 +132,16 @@
 
 .authorName {
   font-family: 'Montserrat', sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--ink, #222);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink, #222325);
   margin: 0 0 4px 0;
 }
 
-:global(html.dark) .authorName,
-:global(body.dark) .authorName {
-  color: #e9ecf1;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .authorName,
-  :global(body:not(.light)) .authorName {
-    color: #e9ecf1;
-  }
-}
-
 .authorProfession {
-  font-size: 13px;
-  color: #f7b186;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 12px;
+  color: var(--muted, #6b7280);
+  font-weight: 500;
   margin: 0;
 }
 
@@ -234,34 +149,21 @@
 .stars {
   display: flex;
   gap: 2px;
-  font-size: 18px;
+  font-size: 16px;
   flex-shrink: 0;
 }
 
 .starFilled {
-  color: #fbbf24;
-  text-shadow: 0 1px 2px rgba(251, 191, 36, 0.3);
+  color: var(--couleur-bouton-action, #f7b186);
 }
 
 .starEmpty {
-  color: #d1d5db;
-}
-
-:global(html.dark) .starEmpty,
-:global(body.dark) .starEmpty {
-  color: #4b5563;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .starEmpty,
-  :global(body:not(.light)) .starEmpty {
-    color: #4b5563;
-  }
+  color: var(--line, rgba(0,0,0,.08));
 }
 
 /* Comment */
 .reviewComment {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.7;
   color: var(--muted, #6b7280);
   margin: 0 0 16px 0;
@@ -271,52 +173,49 @@
   overflow: hidden;
 }
 
-:global(html.dark) .reviewComment,
-:global(body.dark) .reviewComment {
-  color: #a6b0bf;
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .reviewComment,
-  :global(body:not(.light)) .reviewComment {
-    color: #a6b0bf;
-  }
-}
-
-/* Pro Badge */
+/* Pro Badge - Subtil */
 .proBadge {
-  background: transparent;
-  color: #6b7280;
-  border: 2px solid #e5e7eb;
-  padding: 6px 14px;
+  background: var(--paper, #ffffff);
+  color: var(--muted, #6b7280);
+  border: 1px solid var(--line, rgba(0,0,0,.08));
+  padding: 6px 12px;
   border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
   display: inline-block;
-  cursor: default;
-  pointer-events: none;
 }
 
-:global(html.dark) .proBadge,
-:global(body.dark) .proBadge {
-  color: #a6b0bf;
-  border-color: #374151;
-}
-
+/* Dark mode */
 @media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .proBadge,
-  :global(body:not(.light)) .proBadge {
-    color: #a6b0bf;
-    border-color: #374151;
+  .carouselSection {
+    background: var(--paper, #12151b);
+  }
+
+  .reviewCard {
+    background: color-mix(in srgb, var(--paper) 95%, #000);
+  }
+
+  .authorInitial {
+    background: color-mix(in srgb, var(--couleur-bouton-selection) 15%, var(--paper));
+    border-color: color-mix(in srgb, var(--couleur-bouton-selection) 30%, transparent);
+  }
+
+  .proBadge {
+    background: transparent;
+    border-color: var(--line);
+  }
+
+  .starEmpty {
+    color: rgba(255,255,255,.15);
   }
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .carouselSection {
-    padding: 40px 0;
+    padding: 60px 0;
   }
 
   .title {
@@ -336,21 +235,21 @@
 
   .authorPhoto,
   .authorInitial {
-    width: 48px;
-    height: 48px;
-    font-size: 20px;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
   }
 
   .authorName {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .authorProfession {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .reviewComment {
-    font-size: 14px;
+    font-size: 13px;
     -webkit-line-clamp: 3;
   }
 }
