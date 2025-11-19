@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import Header from "../../components/Header/Header.jsx";
@@ -9,6 +9,11 @@ import styles from "./ContactPage.module.css";
 
 export default function ContactPage() {
   usePageTitle("Contact");
+  const faqSectionRef = useRef(null);
+
+  const scrollToFaq = () => {
+    faqSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
     // Intersection Observer for scroll animations
@@ -73,10 +78,29 @@ export default function ContactPage() {
             <div className={styles.floatingOrb}></div>
             <div className={styles.floatingOrb}></div>
           </div>
+          <button
+            className={styles.scrollIndicator}
+            onClick={scrollToFaq}
+            aria-label="Voir la FAQ"
+          >
+            <span className={styles.scrollText}>FAQ</span>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
         </section>
 
         {/* FAQ Section */}
-        <section className={`${styles.faqWrapper} ${styles.fadeIn}`}>
+        <section ref={faqSectionRef} className={`${styles.faqWrapper} ${styles.fadeIn}`}>
           <Faq />
         </section>
 

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import IntroOutils from "./IntrOutils";
 import OutilsCards from "./OutilsCards";
@@ -7,6 +7,11 @@ import styles from "./Main.module.css";
 
 export default function Main() {
   const { t } = useTranslation();
+  const toolsSectionRef = useRef(null);
+
+  const scrollToTools = () => {
+    toolsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -47,10 +52,29 @@ export default function Main() {
           <div className={styles.floatingOrb}></div>
           <div className={styles.floatingOrb}></div>
         </div>
+        <button
+          className={styles.scrollIndicator}
+          onClick={scrollToTools}
+          aria-label="Découvrir les outils"
+        >
+          <span className={styles.scrollText}>Découvrir</span>
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
       </section>
 
       {/* Tools Section */}
-      <section className={`${styles.toolsSection} ${styles.fadeIn}`}>
+      <section ref={toolsSectionRef} className={`${styles.toolsSection} ${styles.fadeIn}`}>
         <IntroOutils title={t('home.toolsTitle')}>
           <OutilsCards />
         </IntroOutils>
