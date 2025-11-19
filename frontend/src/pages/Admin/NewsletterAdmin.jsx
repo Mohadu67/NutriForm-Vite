@@ -323,7 +323,7 @@ export default function NewsletterAdmin() {
 
                 {isExpanded && (
                   <div className={styles.cardContent}>
-                    <h4 style={{ marginBottom: '12px', color: '#666' }}>Contenu :</h4>
+                    <h4 style={{ marginBottom: '12px', color: 'var(--muted, #666)' }}>Contenu :</h4>
                     <div
                       className={styles.contentPreview}
                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(newsletter.content) }}
