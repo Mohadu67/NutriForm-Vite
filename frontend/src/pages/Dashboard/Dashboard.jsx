@@ -40,6 +40,8 @@ export default function Dashboard() {
   const [weeklyGoal, setWeeklyGoal] = useState(3);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [tempGoal, setTempGoal] = useState(3);
+  const [showBadgesPopup, setShowBadgesPopup] = useState(false);
+  const [showSessionsPopup, setShowSessionsPopup] = useState(false);
 
   useEffect(() => {
     const list = Array.isArray(sessions) ? sessions : [];
@@ -294,22 +296,35 @@ export default function Dashboard() {
       .slice(-7); // Last 7 points
   }, [imcPoints, parseDate]);
 
-  // Badges
-  const badgeCount = useMemo(() => {
-    let count = 0;
-    if (stats.totalSessions >= 1) count++;
-    if (stats.totalSessions >= 5) count++;
-    if (stats.totalSessions >= 10) count++;
-    if (stats.totalSessions >= 25) count++;
-    if (stats.totalSessions >= 50) count++;
-    if (stats.streak >= 3) count++;
-    if (stats.streak >= 7) count++;
-    if (stats.streak >= 14) count++;
-    if (stats.totalHours >= 10) count++;
-    if (stats.totalHours >= 25) count++;
-    if (imcPoints.length >= 5) count++;
-    return count;
+  // Badges definitions
+  const badges = useMemo(() => {
+    return [
+      { id: 'first', emoji: '🎯', name: 'Premier pas', desc: '1ère séance', unlocked: stats.totalSessions >= 1 },
+      { id: 'five', emoji: '⭐', name: 'Régulier', desc: '5 séances', unlocked: stats.totalSessions >= 5 },
+      { id: 'ten', emoji: '🔥', name: 'Motivé', desc: '10 séances', unlocked: stats.totalSessions >= 10 },
+      { id: 'twentyfive', emoji: '💪', name: 'Athlète', desc: '25 séances', unlocked: stats.totalSessions >= 25 },
+      { id: 'fifty', emoji: '🏆', name: 'Champion', desc: '50 séances', unlocked: stats.totalSessions >= 50 },
+      { id: 'streak3', emoji: '🌟', name: 'Série de 3', desc: '3 jours consécutifs', unlocked: stats.streak >= 3 },
+      { id: 'streak7', emoji: '🚀', name: 'Semaine parfaite', desc: '7 jours consécutifs', unlocked: stats.streak >= 7 },
+      { id: 'streak14', emoji: '👑', name: 'Machine', desc: '14 jours consécutifs', unlocked: stats.streak >= 14 },
+      { id: 'hours10', emoji: '⏱️', name: 'Endurant', desc: '10h d\'entraînement', unlocked: stats.totalHours >= 10 },
+      { id: 'hours25', emoji: '🎖️', name: 'Marathonien', desc: '25h d\'entraînement', unlocked: stats.totalHours >= 25 },
+      { id: 'tracker', emoji: '📊', name: 'Tracker', desc: '5 suivis IMC', unlocked: imcPoints.length >= 5 },
+    ];
   }, [stats, imcPoints]);
+
+  const badgeCount = useMemo(() => badges.filter(b => b.unlocked).length, [badges]);
+
+  // All sessions sorted for popup
+  const allSessionsSorted = useMemo(() => {
+    return userSessions
+      .slice()
+      .sort((a, b) => {
+        const dateA = parseDate(a?.endedAt || a?.date || a?.createdAt);
+        const dateB = parseDate(b?.endedAt || b?.date || b?.createdAt);
+        return (dateB || 0) - (dateA || 0);
+      });
+  }, [userSessions, parseDate]);
 
   const capitalizedName = useMemo(() => {
     if (!displayName) return "Utilisateur";
@@ -397,10 +412,14 @@ export default function Dashboard() {
 
           {/* Quick Stats */}
           <section className={style.statsGrid}>
-            <div className={style.statCard}>
+            <button
+              className={`${style.statCard} ${style.statCardClickable}`}
+              onClick={() => stats.totalSessions > 0 && setShowSessionsPopup(true)}
+              disabled={stats.totalSessions === 0}
+            >
               <span className={style.statValue}>{stats.totalSessions}</span>
               <span className={style.statLabel}>Séances</span>
-            </div>
+            </button>
             <div className={style.statCard}>
               <span className={style.statValue}>{stats.streak}</span>
               <span className={style.statLabel}>Série</span>
@@ -409,10 +428,13 @@ export default function Dashboard() {
               <span className={style.statValue}>{stats.totalHours}h{stats.totalMinutes % 60 > 0 ? String(stats.totalMinutes % 60).padStart(2, '0') : ''}</span>
               <span className={style.statLabel}>Durée</span>
             </div>
-            <div className={style.statCard}>
+            <button
+              className={`${style.statCard} ${style.statCardClickable}`}
+              onClick={() => setShowBadgesPopup(true)}
+            >
               <span className={style.statValue}>{badgeCount}</span>
               <span className={style.statLabel}>Badges</span>
-            </div>
+            </button>
           </section>
 
           {/* Weekly Progress */}
@@ -651,6 +673,87 @@ export default function Dashboard() {
         onClose={() => setShowGoalModal(false)}
         onSave={handleSaveGoal}
       />
+
+      {/* Badges Popup */}
+      {showBadgesPopup && (
+        <div className={style.popupOverlay} onClick={() => setShowBadgesPopup(false)}>
+          <div className={style.popup} onClick={(e) => e.stopPropagation()}>
+            <div className={style.popupHeader}>
+              <h3 className={style.popupTitle}>Mes badges</h3>
+              <button className={style.popupClose} onClick={() => setShowBadgesPopup(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className={style.badgesGrid}>
+              {badges.map((badge) => (
+                <div
+                  key={badge.id}
+                  className={`${style.badgeItem} ${badge.unlocked ? style.badgeUnlocked : style.badgeLocked}`}
+                >
+                  <span className={style.badgeEmoji}>{badge.emoji}</span>
+                  <span className={style.badgeName}>{badge.name}</span>
+                  <span className={style.badgeDesc}>{badge.desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sessions Popup */}
+      {showSessionsPopup && (
+        <div className={style.popupOverlay} onClick={() => setShowSessionsPopup(false)}>
+          <div className={style.popup} onClick={(e) => e.stopPropagation()}>
+            <div className={style.popupHeader}>
+              <h3 className={style.popupTitle}>Historique des séances</h3>
+              <button className={style.popupClose} onClick={() => setShowSessionsPopup(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className={style.sessionsScroll}>
+              {allSessionsSorted.map((session, index) => (
+                <div key={session.id || index} className={style.sessionCard}>
+                  <div className={style.sessionCardDate}>
+                    {formatDate(session?.endedAt || session?.date || session?.createdAt)}
+                  </div>
+                  <div className={style.sessionCardName}>
+                    {session?.name || "Séance"}
+                  </div>
+                  <div className={style.sessionCardStats}>
+                    {session?.durationMinutes && (
+                      <span>{session.durationMinutes} min</span>
+                    )}
+                    {session?.entries?.length > 0 && (
+                      <span>{session.entries.length} exo</span>
+                    )}
+                    {extractSessionCalories(session) > 0 && (
+                      <span>{extractSessionCalories(session)} kcal</span>
+                    )}
+                  </div>
+                  {session?.entries?.length > 0 && (
+                    <div className={style.sessionCardExos}>
+                      {session.entries.slice(0, 3).map((entry, i) => (
+                        <span key={i} className={style.sessionCardExo}>
+                          {entry.name}
+                        </span>
+                      ))}
+                      {session.entries.length > 3 && (
+                        <span className={style.sessionCardMore}>
+                          +{session.entries.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
