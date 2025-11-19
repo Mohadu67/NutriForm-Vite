@@ -1,9 +1,10 @@
 /* Reviews Carousel Section - Design épuré et soft */
 
 .carouselSection {
-  background: var(--couleur-principale, #f7f6f2);
+  background: var(--paper, #ffffff);
   padding: 80px 0;
   overflow: hidden;
+  border-top: 1px solid var(--line, rgba(0,0,0,.08));
 }
 
 .container {
@@ -70,7 +71,7 @@
 
 /* Review Card - Style épuré */
 .reviewCard {
-  background: var(--paper, #ffffff);
+  background: var(--couleur-principale, #f7f6f2);
   border: 1px solid var(--line, rgba(0,0,0,.08));
   border-radius: 16px;
   padding: 24px;
@@ -188,11 +189,11 @@
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   .carouselSection {
-    background: var(--couleur-principale, #0c0e12);
+    background: var(--paper, #12151b);
   }
 
   .reviewCard {
-    background: var(--paper, #12151b);
+    background: var(--couleur-principale, #0c0e12);
   }
 
   .authorInitial {
