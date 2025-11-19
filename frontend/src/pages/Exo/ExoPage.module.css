@@ -12,7 +12,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
+  padding: 60px 20px 100px;
   background: var(--couleur-principale, #f7f6f2);
   overflow: hidden;
 }
@@ -20,7 +20,7 @@
 /* ========== SCROLL INDICATOR ========== */
 .scrollIndicator {
   position: absolute;
-  bottom: 24px;
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;

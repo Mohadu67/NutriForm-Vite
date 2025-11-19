@@ -225,14 +225,22 @@
 }
 
 @media (max-width: 768px) {
-  #tarteaucitronRoot #tarteaucitronAlertBig {
+  #tarteaucitronRoot #tarteaucitronAlertBig,
+  #tarteaucitronRoot #tarteaucitronAlertSmall {
+    bottom: 80px !important;
     border-radius: 12px !important;
     padding: 20px !important;
+    max-width: calc(100vw - 32px) !important;
   }
 
   #tarteaucitronRoot button {
     font-size: 13px !important;
     padding: 10px 16px !important;
+  }
+
+  #tarteaucitronRoot #tarteaucitronIcon {
+    bottom: 80px !important;
+    right: 16px !important;
   }
 }
 

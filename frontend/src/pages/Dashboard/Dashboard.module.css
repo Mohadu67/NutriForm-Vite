@@ -643,33 +643,33 @@
   align-items: center;
   gap: 4px;
   height: 100%;
+  justify-content: flex-end;
+}
+
+.chartBarValue {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .chartBarValue,
+:global(html.dark) .chartBarValue {
+  color: #f5f7fa;
 }
 
 .chartBarFill {
   width: 100%;
+  max-width: 24px;
   background: var(--couleur-bouton-selection, #b8ddd1);
-  border-radius: 4px 4px 0 0;
-  min-height: 4px;
+  border-radius: 4px;
+  min-height: 8px;
   transition: height 0.3s ease;
 }
 
 .chartBarLabel {
   font-size: 0.6rem;
   color: var(--muted, #6b7280);
-}
-
-.chartLegend {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.7rem;
-  color: var(--muted, #6b7280);
-  padding-top: 8px;
-  border-top: 1px solid var(--line, rgba(0, 0, 0, 0.06));
-}
-
-:global(body.dark) .chartLegend,
-:global(html.dark) .chartLegend {
-  border-top-color: rgba(255, 255, 255, 0.06);
+  margin-top: 4px;
 }
 
 /* ========== EMPTY STATE ========== */
