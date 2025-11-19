@@ -156,13 +156,6 @@
   box-shadow: 0 2px 12px rgba(184, 221, 209, 0.3);
 }
 
-.done::after {
-  content: '✓';
-  position: absolute;
-  font-size: 0.75rem;
-  color: #0e1412;
-}
-
 /* Label */
 .label {
   font-family: var(--font-p);
