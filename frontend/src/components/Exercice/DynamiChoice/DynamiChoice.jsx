@@ -18,7 +18,6 @@ const MUSCLE_CARDS = [
 export default function DynamiChoice({ onComplete = () => {}, onStepChange, requestedStep, onSearch }) {
   const { t } = useTranslation();
   const containerRef = useRef(null);
-  const isInitialMount = useRef(true);
   const [step, setStep] = useState(() => {
     try {
       const v = localStorage.getItem("dynamiStep");
@@ -64,16 +63,6 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   useEffect(() => {
     if (typeof onStepChange === "function") onStepChange(step);
-
-    // Skip scroll on initial mount
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-
-    if (containerRef.current) {
-      containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
   }, [step, onStepChange]);
 
   useEffect(() => {
