@@ -17,18 +17,18 @@
   width: 60px;
   height: 60px;
   margin: 0 auto 1rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), #f9c4a0);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 25px rgba(247, 177, 134, 0.3);
   animation: pulse 3s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3); }
-  50% { transform: scale(1.05); box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4); }
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 25px rgba(247, 177, 134, 0.3); }
+  50% { transform: scale(1.05); box-shadow: 0 12px 35px rgba(247, 177, 134, 0.4); }
 }
 
 .title {
@@ -93,8 +93,8 @@
 
 .input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+  border-color: var(--couleur-bouton-action, #f7b186);
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.15);
 }
 
 .input::placeholder {
@@ -106,7 +106,7 @@
 .submitBtn {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), #f9c4a0);
   color: white;
   font-size: 1rem;
   font-weight: 700;
@@ -114,12 +114,12 @@
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.3);
 }
 
 .submitBtn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(247, 177, 134, 0.4);
 }
 
 .submitBtn:active:not(:disabled) {
@@ -145,7 +145,7 @@
   border: none;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #667eea;
+  color: var(--couleur-bouton-action, #f7b186);
   cursor: pointer;
   padding: 0;
   transition: color 0.2s ease;
@@ -193,7 +193,7 @@
 .successIcon {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), #f9c4a0);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -239,14 +239,14 @@
 }
 
 .actionBtnPrimary {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), #f9c4a0);
   color: white;
   border: none;
 }
 
 .actionBtnPrimary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
 }
 
 .actionBtnSecondary {
@@ -269,7 +269,7 @@
   }
 
   .input:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--couleur-bouton-action, #f7b186);
+    box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.1);
   }
 }
