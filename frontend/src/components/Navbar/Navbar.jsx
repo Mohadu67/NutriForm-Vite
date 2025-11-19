@@ -196,8 +196,7 @@ export default function Navbar() {
     {
       label: t('nav.tools'),
       path: "/outils",
-      icon: <ToolsIcon size={20} />,
-      onClick: () => handleScroll("/outils", "outils")
+      icon: <ToolsIcon size={20} />
     },
     {
       label: t('nav.exercises'),
@@ -207,10 +206,9 @@ export default function Navbar() {
     {
       label: t('nav.contact'),
       path: "/contact",
-      icon: <MessageIcon size={20} />,
-      onClick: () => handleScroll("/contact", "contact-form")
+      icon: <MessageIcon size={20} />
     }
-  ], [t, handleScroll]);
+  ], [t]);
 
   // Secondary navigation links (in expanded menu)
   const secondaryLinks = useMemo(() => [
