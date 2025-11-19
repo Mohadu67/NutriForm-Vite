@@ -223,7 +223,7 @@ export default function Dashboard() {
     return rmTests.reduce((best, current) => (current.rm > best.rm ? current : best), rmTests[0]);
   }, [rmTests]);
 
-  // Cardio stats
+  // Cardio stats by sport
   const getEntryDistanceKm = useCallback((entry) => {
     if (!entry || typeof entry !== 'object') return 0;
     if (entry.walkRun && entry.walkRun.distanceKm != null) {
@@ -247,16 +247,52 @@ export default function Dashboard() {
     return distanceKm;
   }, []);
 
-  const cardioStats = useMemo(() => {
-    let totalKm = 0;
+  const getSportType = useCallback((entry) => {
+    const subType = String(entry?.subType || '').toLowerCase();
+    if (subType === 'swim') return 'swim';
+    if (subType === 'bike') return 'bike';
+    if (subType === 'run') return 'run';
+    if (subType === 'walk') return 'walk';
+
+    const name = String(entry?.name || '').toLowerCase();
+    if (/(natation|swim|piscine|crawl|brasse)/.test(name)) return 'swim';
+    if (/(vélo|velo|bike|cyclisme|vtt)/.test(name)) return 'bike';
+    if (/(course|running|run|footing|trail|jog)/.test(name)) return 'run';
+    if (/(marche|walk|randonnée|rando)/.test(name)) return 'walk';
+    return null;
+  }, []);
+
+  const sportStats = useMemo(() => {
+    const stats = { run: 0, bike: 0, swim: 0, walk: 0 };
     (userSessions || []).forEach((session) => {
       const entries = session?.entries || session?.items || session?.exercises || [];
       entries.forEach((entry) => {
-        totalKm += getEntryDistanceKm(entry);
+        const sport = getSportType(entry);
+        if (sport) {
+          stats[sport] += getEntryDistanceKm(entry);
+        }
       });
     });
-    return { totalKm: totalKm.toFixed(1) };
-  }, [userSessions, getEntryDistanceKm]);
+    return {
+      run: stats.run.toFixed(1),
+      bike: stats.bike.toFixed(1),
+      swim: stats.swim.toFixed(1),
+      walk: stats.walk.toFixed(1),
+      total: (stats.run + stats.bike + stats.swim + stats.walk).toFixed(1),
+    };
+  }, [userSessions, getEntryDistanceKm, getSportType]);
+
+  // Weight points for mini chart
+  const weightPoints = useMemo(() => {
+    return imcPoints
+      .map((r) => ({
+        value: Number(r.poids),
+        date: parseDate(r.date),
+      }))
+      .filter((p) => Number.isFinite(p.value) && p.date)
+      .sort((a, b) => a.date - b.date)
+      .slice(-7); // Last 7 points
+  }, [imcPoints, parseDate]);
 
   // Badges
   const badgeCount = useMemo(() => {
@@ -509,29 +545,90 @@ export default function Dashboard() {
             </section>
           )}
 
-          {/* Performance Summary */}
-          {(Number(cardioStats.totalKm) > 0 || bestRM) && (
-            <section className={style.performanceSection}>
-              <h2 className={style.sectionTitle}>Performance</h2>
-              <div className={style.performanceGrid}>
-                {Number(cardioStats.totalKm) > 0 && (
-                  <div className={style.performanceCard}>
-                    <span className={style.performanceIcon}>🏃</span>
-                    <div className={style.performanceContent}>
-                      <span className={style.performanceValue}>{cardioStats.totalKm} km</span>
-                      <span className={style.performanceLabel}>Distance totale</span>
-                    </div>
+          {/* Cardio Stats */}
+          {Number(sportStats.total) > 0 && (
+            <section className={style.cardioSection}>
+              <h2 className={style.sectionTitle}>Distances parcourues</h2>
+              <div className={style.cardioGrid}>
+                {Number(sportStats.run) > 0 && (
+                  <div className={style.cardioItem}>
+                    <span className={style.cardioIcon}>🏃</span>
+                    <span className={style.cardioValue}>{sportStats.run} km</span>
+                    <span className={style.cardioLabel}>Course</span>
                   </div>
                 )}
-                {bestRM && (
-                  <div className={style.performanceCard}>
-                    <span className={style.performanceIcon}>💪</span>
-                    <div className={style.performanceContent}>
-                      <span className={style.performanceValue}>{bestRM.rm} kg</span>
-                      <span className={style.performanceLabel}>Meilleur 1RM • {bestRM.exercice}</span>
-                    </div>
+                {Number(sportStats.bike) > 0 && (
+                  <div className={style.cardioItem}>
+                    <span className={style.cardioIcon}>🚴</span>
+                    <span className={style.cardioValue}>{sportStats.bike} km</span>
+                    <span className={style.cardioLabel}>Vélo</span>
                   </div>
                 )}
+                {Number(sportStats.swim) > 0 && (
+                  <div className={style.cardioItem}>
+                    <span className={style.cardioIcon}>🏊</span>
+                    <span className={style.cardioValue}>{sportStats.swim} km</span>
+                    <span className={style.cardioLabel}>Natation</span>
+                  </div>
+                )}
+                {Number(sportStats.walk) > 0 && (
+                  <div className={style.cardioItem}>
+                    <span className={style.cardioIcon}>🚶</span>
+                    <span className={style.cardioValue}>{sportStats.walk} km</span>
+                    <span className={style.cardioLabel}>Marche</span>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* 1RM History */}
+          {rmTests.length > 0 && (
+            <section className={style.rmSection}>
+              <h2 className={style.sectionTitle}>Historique 1RM</h2>
+              <div className={style.rmList}>
+                {rmTests.slice(0, 5).map((test, index) => (
+                  <div key={index} className={style.rmItem}>
+                    <div className={style.rmInfo}>
+                      <span className={style.rmExercice}>{test.exercice}</span>
+                      <span className={style.rmDate}>{formatDate(test.date)}</span>
+                    </div>
+                    <span className={style.rmValue}>{test.rm} kg</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Weight Progress Chart */}
+          {weightPoints.length >= 2 && (
+            <section className={style.chartSection}>
+              <h2 className={style.sectionTitle}>Évolution du poids</h2>
+              <div className={style.miniChart}>
+                <div className={style.chartBars}>
+                  {weightPoints.map((point, index) => {
+                    const min = Math.min(...weightPoints.map(p => p.value));
+                    const max = Math.max(...weightPoints.map(p => p.value));
+                    const range = max - min || 1;
+                    const height = ((point.value - min) / range) * 100;
+                    return (
+                      <div key={index} className={style.chartBar}>
+                        <div
+                          className={style.chartBarFill}
+                          style={{ height: `${Math.max(height, 10)}%` }}
+                          title={`${point.value} kg`}
+                        />
+                        <span className={style.chartBarLabel}>
+                          {new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(point.date).split(' ')[0]}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className={style.chartLegend}>
+                  <span>{Math.min(...weightPoints.map(p => p.value)).toFixed(1)} kg</span>
+                  <span>{Math.max(...weightPoints.map(p => p.value)).toFixed(1)} kg</span>
+                </div>
               </div>
             </section>
           )}
