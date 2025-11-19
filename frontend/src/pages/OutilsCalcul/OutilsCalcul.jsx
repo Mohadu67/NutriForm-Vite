@@ -11,6 +11,7 @@ export default function OutilsCalcul() {
   const location = useLocation();
   const navigate = useNavigate();
   const panelRef = useRef(null);
+  const isInitialMount = useRef(true);
 
   const searchTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -26,6 +27,26 @@ export default function OutilsCalcul() {
     }
   }, [searchTab, tab]);
 
+  // Scroll animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add(styles.visible);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
+    );
+
+    document.querySelectorAll(`.${styles.fadeIn}`).forEach((el) => {
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   const updateRoute = (next) => {
     if (!VALID_TABS.includes(next)) return;
     setTab(next);
@@ -38,6 +59,12 @@ export default function OutilsCalcul() {
   };
 
   useEffect(() => {
+    // Skip scroll on initial mount
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     if (typeof window === "undefined") return;
 
     const panel = panelRef.current;
@@ -52,7 +79,6 @@ export default function OutilsCalcul() {
 
     if (typeof scrollTarget.scrollIntoView !== "function") return;
 
-    // defer to next frame to ensure layout is settled before scrolling
     const frame = window.requestAnimationFrame(() => {
       scrollTarget.scrollIntoView({
         behavior: prefersReducedMotion ? "auto" : "smooth",
@@ -64,49 +90,67 @@ export default function OutilsCalcul() {
   }, [tab]);
 
   return (
-    <main id="outils" className={styles.container}>
-      <header className={styles.header}>
-        <h2 style={{ margin: 0 }}>Outils de calcul</h2>
-        <p style={{ margin: 0, color: 'var(--muted, #666)' }}>
-          Trois outils essentiels pour ton entraînement et ta nutrition.
-        </p>
-      </header>
+    <main id="outils" className={styles.mainWrapper}>
+      {/* Hero Section */}
+      <section className={styles.hero}>
+        <div className={styles.heroContent}>
+          <span className={styles.badge}>Calculateurs</span>
+          <h1 className={styles.heroTitle}>
+            Mesure.
+            <br />
+            <span className={styles.highlight}>Progresse.</span>
+          </h1>
+          <p className={styles.heroSubtitle}>
+            Trois outils scientifiques pour optimiser ton entraînement et ta nutrition.
+          </p>
+        </div>
+        <div className={styles.heroVisual}>
+          <div className={styles.floatingOrb}></div>
+          <div className={styles.floatingOrb}></div>
+          <div className={styles.floatingOrb}></div>
+        </div>
+      </section>
 
-      <div className={styles.tabs}>
-        <button
-          type="button"
-          onClick={() => updateRoute("imc")}
-          aria-pressed={tab === "imc"}
-          className={`${styles.tab} ${tab === "imc" ? styles.tabActive : ""}`}
-        >
-          IMC
-        </button>
-        <button
-          type="button"
-          onClick={() => updateRoute("cal")}
-          aria-pressed={tab === "cal"}
-          className={`${styles.tab} ${tab === "cal" ? styles.tabActive : ""}`}
-        >
-          Calories
-        </button>
-        <button
-          type="button"
-          onClick={() => updateRoute("rm")}
-          aria-pressed={tab === "rm"}
-          className={`${styles.tab} ${tab === "rm" ? styles.tabActive : ""}`}
-        >
-          1RM
-        </button>
-      </div>
+      {/* Tools Section */}
+      <section className={`${styles.toolsSection} ${styles.fadeIn}`}>
+        <div className={styles.container}>
+          <div className={styles.tabs}>
+            <button
+              type="button"
+              onClick={() => updateRoute("imc")}
+              aria-pressed={tab === "imc"}
+              className={`${styles.tab} ${tab === "imc" ? styles.tabActive : ""}`}
+            >
+              IMC
+            </button>
+            <button
+              type="button"
+              onClick={() => updateRoute("cal")}
+              aria-pressed={tab === "cal"}
+              className={`${styles.tab} ${tab === "cal" ? styles.tabActive : ""}`}
+            >
+              Calories
+            </button>
+            <button
+              type="button"
+              onClick={() => updateRoute("rm")}
+              aria-pressed={tab === "rm"}
+              className={`${styles.tab} ${tab === "rm" ? styles.tabActive : ""}`}
+            >
+              1RM
+            </button>
+          </div>
 
-      <section ref={panelRef} className={styles.panel}>
-        {tab === "imc" ? (
-          <ImcPage />
-        ) : tab === "cal" ? (
-          <CaloriePage />
-        ) : (
-          <RMPage />
-        )}
+          <div ref={panelRef} className={styles.panel}>
+            {tab === "imc" ? (
+              <ImcPage />
+            ) : tab === "cal" ? (
+              <CaloriePage />
+            ) : (
+              <RMPage />
+            )}
+          </div>
+        </div>
       </section>
     </main>
   );
