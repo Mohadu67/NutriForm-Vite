@@ -1,98 +1,284 @@
-.form { 
-  display: grid; 
-  gap: 25px; 
+/* ========================================
+   LOGIN - Design Magique
+   ======================================== */
+
+.body {
+  position: relative;
+  padding: 0.5rem;
 }
 
+/* ========== HEADER ========== */
+.header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
 
-.passwordWrapper {
+.iconWrapper {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1rem;
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), var(--couleur-bouton-selection, #b8ddd1));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 25px rgba(247, 177, 134, 0.3);
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 25px rgba(247, 177, 134, 0.3); }
+  50% { transform: scale(1.05); box-shadow: 0 12px 35px rgba(247, 177, 134, 0.4); }
+}
+
+.title {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0 0 0.25rem;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
+}
+
+/* ========== FORM ========== */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+}
+
+.inputWrapper {
   position: relative;
-  display: block;
-  width: 100%;
-  margin: 0 auto;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted, #6b7280);
+  pointer-events: none;
+  transition: color 0.2s ease;
 }
 
 .input {
-  padding: 0.5rem 0.7rem;
-  border: 1px solid #2B2B2B;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  transition: border-color .2s, box-shadow .2s;
   width: 100%;
-}
-
-
-.linkBtn {
-  all: unset;
-  cursor: pointer;
-  font-weight: 800;
-  padding: .2rem .3rem;
-  position: relative;
-  margin: 10px 28px 10px
-}
-.linkBtn::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 0;
-  height: 2px;
-  background-color: var(--couleur-bouton-action);
-  transition: width 0.3s ease, left 0.3s ease;
-}
-.linkBtn:hover::after {
-  width: 100%;
-  left: 0;
-}
-
-.remember { 
-  display: flex; 
-  align-items: center; 
-  gap: .6rem; 
-  font-size: .95rem;
-}
-
-.error {
-  color: #D64545;
-  font-weight: 700;
-  margin-top: .25rem;
-  text-align: center;
-}
-
-.submit {
-  padding: .9rem 1.2rem;
-  background: var(--couleur-bouton-action, #f7b186);
-  color: var(--couleur-text-bouton, #111111);
-  font-weight: 800;
-  border: none;
+  padding: 0.875rem 1rem 0.875rem 2.75rem;
+  background: var(--paper, #ffffff);
+  border: 2px solid var(--line, rgba(0, 0, 0, 0.08));
   border-radius: 12px;
-  cursor: pointer;
-}
-.submit:disabled { opacity: .6; cursor: not-allowed; }
-
-.loaderSvg {
-  width: 100px;
-  height: 150px;
-  margin: 1rem auto;
-  display: block;
+  font-size: 0.95rem;
+  color: var(--ink, #222325);
+  transition: all 0.2s ease;
 }
 
-h3 {
-  font-family: var(--font-titre);
-  font-size: 1.6rem;
-  font-weight: 800;
-  text-align: center;
-  margin: 0 0 1rem 0;
+.input:focus {
+  outline: none;
+  border-color: var(--couleur-bouton-action, #f7b186);
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.15);
+}
+
+.input:focus + .inputIcon,
+.input:not(:placeholder-shown) + .inputIcon {
+  color: var(--couleur-bouton-action, #f7b186);
+}
+
+.input::placeholder {
+  color: var(--muted, #6b7280);
+  opacity: 0.6;
+}
+
+/* Password specific */
+.passwordWrapper {
+  position: relative;
+}
+
+.passwordWrapper .input {
+  padding-right: 3rem;
 }
 
 .togglePassword {
   position: absolute;
-  right: 1rem;
+  right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.2rem;
-  color: #2B2B2B;
+  font-size: 1.1rem;
+  padding: 0.25rem;
+  color: var(--muted, #6b7280);
+  transition: color 0.2s ease;
   line-height: 1;
+}
+
+.togglePassword:hover {
+  color: var(--ink, #222325);
+}
+
+/* ========== REMEMBER & FORGOT ========== */
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--ink, #222325);
+  cursor: pointer;
+}
+
+.remember input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--couleur-bouton-action, #f7b186);
+  cursor: pointer;
+}
+
+.forgotBtn {
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--couleur-bouton-action, #f7b186);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.forgotBtn:hover {
+  color: var(--ink, #222325);
+}
+
+/* ========== SUBMIT BUTTON ========== */
+.submitBtn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), #f9c4a0);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.3);
+  margin-top: 0.5rem;
+}
+
+.submitBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(247, 177, 134, 0.4);
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ========== SIGNUP LINK ========== */
+.signupWrapper {
+  text-align: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line, rgba(0, 0, 0, 0.08));
+}
+
+.signupText {
+  font-size: 0.9rem;
+  color: var(--muted, #6b7280);
+}
+
+.signupBtn {
+  background: none;
+  border: none;
+  font-weight: 700;
+  color: var(--couleur-bouton-action, #f7b186);
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.signupBtn:hover {
+  color: var(--ink, #222325);
+}
+
+/* ========== ERROR ========== */
+.error {
+  background: rgba(230, 57, 70, 0.1);
+  border: 1px solid rgba(230, 57, 70, 0.3);
+  color: #e63946;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* ========== LOADING STATE ========== */
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  gap: 1rem;
+}
+
+.loaderSvg {
+  width: 80px;
+  height: 80px;
+}
+
+.loadingText {
+  font-size: 0.95rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
+}
+
+/* ========== DARK MODE ========== */
+@media (prefers-color-scheme: dark) {
+  .input {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--ink, #e9ecf1);
+  }
+
+  .input:focus {
+    border-color: var(--couleur-bouton-action, #f7b186);
+    box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.1);
+  }
+
+  .submitBtn {
+    color: #111;
+  }
 }
