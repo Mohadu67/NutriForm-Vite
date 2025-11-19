@@ -39,6 +39,7 @@ export default function Footer() {
   }, []);
 
   const path = (location.pathname || "/").toLowerCase();
+  const isHomePage = path === "/";
 
   const links = useMemo(() => {
     const connexion = isLoggedIn
@@ -79,10 +80,14 @@ export default function Footer() {
 
   return (
     <>
-      <Newsletter />
-      <ReviewsCarousel />
-      <UserReviews />
-      <AboutUs />
+      {isHomePage && (
+        <>
+          <Newsletter />
+          <ReviewsCarousel />
+          <UserReviews />
+          <AboutUs />
+        </>
+      )}
 
       <footer className={styles.footer}>
         <div className={styles.inner}>
