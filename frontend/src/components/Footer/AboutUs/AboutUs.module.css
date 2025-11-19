@@ -7,7 +7,7 @@
   --about-muted: #8a8f98;
   --about-line: rgba(0,0,0,0.08);
   --about-accent: #f7b186;
-  --about-accent-2: #f49b69;
+  --about-accent-2: var(--couleur-bouton-action, #f7b186);
   --about-shadow-sm: 0 4px 12px rgba(0,0,0,.06);
   --about-shadow-md: 0 8px 24px rgba(0,0,0,.1);
   --about-shadow-lg: 0 16px 40px rgba(0,0,0,.14);
@@ -22,7 +22,7 @@
   --about-muted: #8a8f98;
   --about-line: rgba(0,0,0,0.08);
   --about-accent: #f7b186;
-  --about-accent-2: #f49b69;
+  --about-accent-2: var(--couleur-bouton-action, #f7b186);
   --about-shadow-sm: 0 4px 12px rgba(0,0,0,.06);
   --about-shadow-md: 0 8px 24px rgba(0,0,0,.1);
   --about-shadow-lg: 0 16px 40px rgba(0,0,0,.14);
@@ -308,7 +308,7 @@
   font-family: 'Merriweather', serif;
   font-size: 48px;
   font-weight: 800;
-  color: white;
+  color: var(--couleur-text-bouton, #111111);
   text-shadow: 0 2px 8px rgba(0,0,0,.2);
 }
 
@@ -359,7 +359,7 @@
 
 .memberSocials a:hover {
   background: linear-gradient(135deg, var(--about-accent), var(--about-accent-2));
-  color: white;
+  color: var(--couleur-text-bouton, #111111);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px color-mix(in oklab, var(--about-accent) 40%, transparent);
 }

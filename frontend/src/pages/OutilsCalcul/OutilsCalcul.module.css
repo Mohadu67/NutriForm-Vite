@@ -99,8 +99,8 @@
 
 .tabActive {
   border: 2px solid var(--couleur-bouton-action);
-  background: linear-gradient(180deg, var(--couleur-bouton-action), color-mix(in oklab, var(--couleur-bouton-action) 78%, #f49b69));
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
 }
 
 .panel {

@@ -41,8 +41,8 @@
 
 #tarteaucitronRoot #tarteaucitronPersonalize,
 #tarteaucitronRoot .tarteaucitronAllow {
-  background: linear-gradient(135deg, #FFB385 0%, #F7B186 45%, #E07A47 100%) !important;
-  color: #111 !important;
+  background: #f7b186 !important;
+  color: #111111 !important;
   box-shadow:
     0 8px 20px rgba(224, 122, 71, 0.3),
     0 2px 6px rgba(0, 0, 0, 0.1),
@@ -67,7 +67,7 @@
 #tarteaucitronRoot .tarteaucitronAllow:hover {
   transform: translateY(-3px) !important;
   box-shadow:
-    0 12px 28px rgba(224, 122, 71, 0.4),
+    0 12px 28px rgba(247, 177, 134, 0.4),
     0 4px 10px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
 }
@@ -140,15 +140,15 @@
 }
 
 #tarteaucitronRoot #tarteaucitron #tarteaucitronClosePanel:hover {
-  background: rgba(224, 122, 71, 0.2) !important;
+  background: rgba(247, 177, 134, 0.2) !important;
 }
 
 #tarteaucitronRoot #tarteaucitron #tarteaucitronClosePanel:active {
-  background: rgba(224, 122, 71, 0.3) !important;
+  background: rgba(247, 177, 134, 0.3) !important;
 }
 
 #tarteaucitronRoot #tarteaucitronServices .tarteaucitronTitle {
-  color: #FFB385 !important;
+  color: #f7b186 !important;
   font-weight: 700 !important;
   font-size: 18px !important;
   margin-bottom: 12px !important;
@@ -173,8 +173,8 @@
 
 /* === TOGGLES === */
 #tarteaucitronRoot .tarteaucitronIsSelected .tarteaucitronCheck {
-  background: linear-gradient(135deg, #FFB385, #E07A47) !important;
-  border-color: #E07A47 !important;
+  background: #f7b186 !important;
+  border-color: #f7b186 !important;
 }
 
 #tarteaucitronRoot .tarteaucitronCheck {
@@ -185,15 +185,15 @@
 
 /* === BOUTON COOKIE INFO === */
 #tarteaucitronRoot #tarteaucitronIcon {
-  background: linear-gradient(135deg, #FFB385, #E07A47) !important;
+  background: #f7b186 !important;
   border-radius: 50% !important;
-  box-shadow: 0 4px 12px rgba(224, 122, 71, 0.3) !important;
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3) !important;
   border: none !important;
 }
 
 #tarteaucitronRoot #tarteaucitronIcon:hover {
   transform: scale(1.05) !important;
-  box-shadow: 0 6px 16px rgba(224, 122, 71, 0.4) !important;
+  box-shadow: 0 6px 16px rgba(247, 177, 134, 0.4) !important;
 }
 
 /* === LIENS === */
@@ -203,7 +203,7 @@
 }
 
 #tarteaucitronRoot a:hover {
-  color: #FFB385 !important;
+  color: #f7b186 !important;
 }
 
 #tarteaucitronRoot #tarteaucitronServices::-webkit-scrollbar {
@@ -216,12 +216,12 @@
 }
 
 #tarteaucitronRoot #tarteaucitronServices::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #FFB385, #E07A47);
+  background: #f7b186;
   border-radius: 4px;
 }
 
 #tarteaucitronRoot #tarteaucitronServices::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #F7B186, #FFB385);
+  background: #f7b186;
 }
 
 @media (max-width: 768px) {
