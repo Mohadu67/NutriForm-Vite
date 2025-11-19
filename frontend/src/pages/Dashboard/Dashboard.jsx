@@ -302,6 +302,41 @@ export default function Dashboard() {
     return total;
   }, []);
 
+  // Weekly calories burned
+  const weeklyCalories = useMemo(() => {
+    const getWeekStart = () => {
+      const now = new Date();
+      const day = now.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + diff);
+      monday.setHours(0, 0, 0, 0);
+      return monday;
+    };
+    const weekStart = getWeekStart();
+    let total = 0;
+    recentSessions.forEach((session) => {
+      const date = parseDate(session?.endedAt || session?.date || session?.createdAt);
+      if (date && date >= weekStart) {
+        total += extractSessionCalories(session);
+      }
+    });
+    return total;
+  }, [recentSessions, parseDate, extractSessionCalories]);
+
+  // Weight change
+  const weightChange = useMemo(() => {
+    if (imcPoints.length < 2) return null;
+    const first = Number(imcPoints[0].poids);
+    const last = Number(imcPoints[imcPoints.length - 1].poids);
+    if (!Number.isFinite(first) || !Number.isFinite(last)) return null;
+    const change = last - first;
+    return {
+      value: Math.abs(change).toFixed(1),
+      direction: change > 0 ? 'up' : change < 0 ? 'down' : 'same',
+    };
+  }, [imcPoints]);
+
   return (
     <>
       <Header />
@@ -310,7 +345,15 @@ export default function Dashboard() {
           {/* Header Section */}
           <header className={style.header}>
             <h1 className={style.greeting}>Salut, {capitalizedName}</h1>
-            <p className={style.subtitle}>Voici ton résumé</p>
+            <p className={style.subtitle}>
+              {stats.streak >= 7
+                ? "Tu es en feu ! Continue comme ça"
+                : stats.streak >= 3
+                ? "Belle série en cours"
+                : stats.totalSessions > 0
+                ? "Voici ton résumé"
+                : "Prêt à commencer ?"}
+            </p>
           </header>
 
           {status === "loading" && <p className={style.loading}>Chargement...</p>}
@@ -324,11 +367,11 @@ export default function Dashboard() {
             </div>
             <div className={style.statCard}>
               <span className={style.statValue}>{stats.streak}</span>
-              <span className={style.statLabel}>Jours série</span>
+              <span className={style.statLabel}>Série</span>
             </div>
             <div className={style.statCard}>
-              <span className={style.statValue}>{stats.totalHours}h</span>
-              <span className={style.statLabel}>Total</span>
+              <span className={style.statValue}>{stats.totalHours}h{stats.totalMinutes % 60 > 0 ? String(stats.totalMinutes % 60).padStart(2, '0') : ''}</span>
+              <span className={style.statLabel}>Durée</span>
             </div>
             <div className={style.statCard}>
               <span className={style.statValue}>{badgeCount}</span>
@@ -372,6 +415,9 @@ export default function Dashboard() {
                     ? "Objectif atteint !"
                     : `${weeklyGoal - stats.last7Days} séance${weeklyGoal - stats.last7Days > 1 ? 's' : ''} restante${weeklyGoal - stats.last7Days > 1 ? 's' : ''}`}
                 </p>
+                {weeklyCalories > 0 && (
+                  <p className={style.progressCalories}>{weeklyCalories} kcal brûlées cette semaine</p>
+                )}
               </div>
             </div>
           </section>
@@ -386,10 +432,12 @@ export default function Dashboard() {
             </button>
             <button onClick={() => navigate('/outils')} className={style.secondaryAction}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                <path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66" />
+                <path d="m18 15-2-2" />
+                <path d="m15 18-2-2" />
               </svg>
-              Outils
+              Calculs santé
             </button>
           </section>
 
@@ -432,7 +480,14 @@ export default function Dashboard() {
                     <div className={style.metricContent}>
                       <span className={style.metricValue}>{weightData.bmi}</span>
                       <span className={style.metricLabel}>IMC • {weightData.interpretation}</span>
-                      {weightData.weight && <span className={style.metricMeta}>{weightData.weight} kg</span>}
+                      {weightData.weight && (
+                        <span className={style.metricMeta}>
+                          {weightData.weight} kg
+                          {weightChange && weightChange.direction !== 'same' && (
+                            <> • {weightChange.direction === 'down' ? '↓' : '↑'} {weightChange.value} kg</>
+                          )}
+                        </span>
+                      )}
                     </div>
                   </div>
                 )}

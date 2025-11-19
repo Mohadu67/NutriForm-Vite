@@ -210,6 +210,13 @@
   margin: 0;
 }
 
+.progressCalories {
+  font-size: 0.8rem;
+  color: var(--couleur-bouton-action, #f7b186);
+  margin: 6px 0 0;
+  font-weight: 600;
+}
+
 /* ========== ACTIONS ========== */
 .actions {
   display: grid;
