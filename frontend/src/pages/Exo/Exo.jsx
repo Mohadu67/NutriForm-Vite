@@ -9,6 +9,11 @@ import styles from "./ExoPage.module.css";
 export default function ExoPage () {
   usePageTitle("S'entraîner");
 
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
