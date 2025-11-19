@@ -1,218 +1,106 @@
-import { useState, useEffect } from 'react';
-import { FaTrophy, FaMedal, FaFire } from 'react-icons/fa';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { secureApiCall } from '../../utils/authService';
-import { API_BASE_URL } from '../../shared/config/api';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import styles from './Leaderboard.module.css';
 
+// Icons
+const TrophyIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+    <path d="M4 22h16"/>
+    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+  </svg>
+);
+
+const FireIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 23c-3.62 0-7-2.6-7-7 0-2.47 1.5-4.73 2.94-6.58.63-.81 1.32-1.57 1.92-2.36.22-.29.43-.58.62-.88.13-.21.22-.4.27-.53.03-.07.03-.1.03-.1l1.61 1.42c-.08.16-.21.4-.38.7a21 21 0 0 1-1.61 2.16C9.03 11.37 8 12.92 8 15c0 2.75 2.24 5 5 5s5-2.25 5-5c0-.41-.04-.76-.11-1.08-.1-.45-.27-.86-.5-1.26-.43-.74-1.1-1.4-2-2.1l-.23-.17c-.47-.37-1-.8-1.5-1.34-.5-.53-.96-1.15-1.28-1.9-.32-.76-.47-1.65-.38-2.72l1.99.4c-.03.44.02.86.15 1.24.18.5.48.97.87 1.39.38.4.82.76 1.23 1.09l.24.18c1.04.8 1.9 1.65 2.53 2.73.36.61.61 1.26.78 1.97.11.48.17 1 .17 1.57 0 4.4-3.38 7-7 7h.04z"/>
+  </svg>
+);
+
+const CrownIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .55-.45 1-1 1H6c-.55 0-1-.45-1-1v-1h14v1z"/>
+  </svg>
+);
+
 const Leaderboard = () => {
-  const [leaderboards, setLeaderboards] = useState({
-    all: [],
-    cardio: [],
-    muscu: [],
-    poids_corps: []
-  });
+  const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [period, setPeriod] = useState('alltime');
+  const [category, setCategory] = useState('all');
   const [isOptedIn, setIsOptedIn] = useState(false);
-  const [userEntry, setUserEntry] = useState(null);
   const [optInLoading, setOptInLoading] = useState(false);
+  const [userRank, setUserRank] = useState(null);
 
-  useEffect(() => {
-    // Données mock pour test
-    setLeaderboards({
-      all: [
-        {
-          _id: '1',
-          rank: 1,
-          displayName: 'Sophie',
-          avatarUrl: null,
-          stats: {
-            totalSessions: 245,
-            currentStreak: 12,
-            thisWeekSessions: 8,
-            thisMonthSessions: 32
-          }
-        },
-        {
-          _id: '2',
-          rank: 2,
-          displayName: 'Thomas',
-          avatarUrl: null,
-          stats: {
-            totalSessions: 198,
-            currentStreak: 5,
-            thisWeekSessions: 6,
-            thisMonthSessions: 28
-          }
-        },
-        {
-          _id: '3',
-          rank: 3,
-          displayName: 'Marie',
-          avatarUrl: null,
-          stats: {
-            totalSessions: 167,
-            currentStreak: 8,
-            thisWeekSessions: 5,
-            thisMonthSessions: 24
-          }
-        }
-      ],
-      cardio: [
-        {
-          _id: '4',
-          rank: 1,
-          displayName: 'Lucas',
-          avatarUrl: null,
-          stats: {
-            cardioSessions: 156,
-            currentStreak: 15
-          }
-        },
-        {
-          _id: '5',
-          rank: 2,
-          displayName: 'Emma',
-          avatarUrl: null,
-          stats: {
-            cardioSessions: 134,
-            currentStreak: 7
-          }
-        },
-        {
-          _id: '6',
-          rank: 3,
-          displayName: 'Alex',
-          avatarUrl: null,
-          stats: {
-            cardioSessions: 112,
-            currentStreak: 3
-          }
-        }
-      ],
-      muscu: [
-        {
-          _id: '7',
-          rank: 1,
-          displayName: 'Pierre',
-          avatarUrl: null,
-          stats: {
-            muscuSessions: 189,
-            currentStreak: 10
-          }
-        },
-        {
-          _id: '8',
-          rank: 2,
-          displayName: 'Julie',
-          avatarUrl: null,
-          stats: {
-            muscuSessions: 145,
-            currentStreak: 6
-          }
-        },
-        {
-          _id: '9',
-          rank: 3,
-          displayName: 'Maxime',
-          avatarUrl: null,
-          stats: {
-            muscuSessions: 128,
-            currentStreak: 4
-          }
-        }
-      ],
-      poids_corps: [
-        {
-          _id: '10',
-          rank: 1,
-          displayName: 'Léa',
-          avatarUrl: null,
-          stats: {
-            poidsCorpsSessions: 98,
-            currentStreak: 9
-          }
-        },
-        {
-          _id: '11',
-          rank: 2,
-          displayName: 'Antoine',
-          avatarUrl: null,
-          stats: {
-            poidsCorpsSessions: 87,
-            currentStreak: 5
-          }
-        },
-        {
-          _id: '12',
-          rank: 3,
-          displayName: 'Clara',
-          avatarUrl: null,
-          stats: {
-            poidsCorpsSessions: 76,
-            currentStreak: 2
-          }
-        }
-      ]
-    });
-    setLoading(false);
+  // Check if user is logged in
+  const isLoggedIn = useMemo(() => {
+    return !!(localStorage.getItem('token') || sessionStorage.getItem('token'));
+  }, []);
 
-    // fetchLeaderboards();
-    // checkOptInStatus();
-  }, [period]);
-
-  const fetchLeaderboards = async () => {
+  // Fetch leaderboard data (public endpoint)
+  const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // Fetch all 4 leaderboards in parallel
-      const types = ['all', 'cardio', 'muscu', 'poids_corps'];
-      const promises = types.map(type =>
-        secureApiCall(
-          `/api/leaderboard?period=${period}&type=${type}&limit=3`,
-          { method: 'GET' }
-        ).then(res => res.json())
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/leaderboard?period=${period}&type=${category}&limit=50`
       );
+      const data = await response.json();
 
-      const results = await Promise.all(promises);
-
-      const newLeaderboards = {};
-      types.forEach((type, index) => {
-        if (results[index].success) {
-          newLeaderboards[type] = results[index].data;
-        } else {
-          newLeaderboards[type] = [];
-        }
-      });
-
-      setLeaderboards(newLeaderboards);
+      if (data.success) {
+        setLeaderboard(data.data || []);
+      } else {
+        setLeaderboard([]);
+      }
     } catch (err) {
-      console.error('Erreur lors du chargement du leaderboard:', err);
-      setError('Erreur lors du chargement du classement');
+      console.error('Erreur lors du chargement:', err);
+      setError('Impossible de charger le classement');
+      setLeaderboard([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [period, category]);
 
-  const checkOptInStatus = async () => {
+  // Check opt-in status (only if logged in)
+  const checkOptInStatus = useCallback(async () => {
+    if (!isLoggedIn) return;
+
     try {
       const response = await secureApiCall('/api/leaderboard/status', { method: 'GET' });
       const data = await response.json();
 
       if (data.success) {
         setIsOptedIn(data.isOptedIn);
-        setUserEntry(data.data);
+        if (data.isOptedIn && data.data) {
+          const userId = data.data.userId;
+          const rankResponse = await fetch(
+            `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/leaderboard/user/${userId}/rank?period=${period}&type=${category}`
+          );
+          const rankData = await rankResponse.json();
+          if (rankData.success) {
+            setUserRank(rankData.rank);
+          }
+        }
       }
     } catch (err) {
-      console.error('Erreur lors de la vérification du statut:', err);
+      console.error('Erreur statut:', err);
     }
-  };
+  }, [isLoggedIn, period, category]);
+
+  useEffect(() => {
+    fetchLeaderboard();
+    checkOptInStatus();
+  }, [fetchLeaderboard, checkOptInStatus]);
 
   const handleOptIn = async () => {
+    if (!isLoggedIn) return;
     setOptInLoading(true);
 
     try {
@@ -221,18 +109,18 @@ const Leaderboard = () => {
 
       if (data.success) {
         setIsOptedIn(true);
-        setUserEntry(data.data);
-        fetchLeaderboards();
+        fetchLeaderboard();
+        checkOptInStatus();
       }
     } catch (err) {
-      console.error('Erreur lors de l\'inscription:', err);
-      setError('Erreur lors de l\'inscription au classement');
+      console.error('Erreur opt-in:', err);
     } finally {
       setOptInLoading(false);
     }
   };
 
   const handleOptOut = async () => {
+    if (!isLoggedIn) return;
     setOptInLoading(true);
 
     try {
@@ -241,186 +129,240 @@ const Leaderboard = () => {
 
       if (data.success) {
         setIsOptedIn(false);
-        fetchLeaderboards();
+        setUserRank(null);
+        fetchLeaderboard();
       }
     } catch (err) {
-      console.error('Erreur lors de la désinscription:', err);
-      setError('Erreur lors de la désinscription du classement');
+      console.error('Erreur opt-out:', err);
     } finally {
       setOptInLoading(false);
     }
   };
 
-  const getRankIcon = (rank) => {
-    if (rank === 1) return <FaTrophy style={{ color: '#FFD700' }} size={32} />;
-    if (rank === 2) return <FaMedal style={{ color: '#C0C0C0' }} size={28} />;
-    if (rank === 3) return <FaMedal style={{ color: '#CD7F32' }} size={24} />;
-    return null;
+  const getStatValue = (entry) => {
+    if (category === 'muscu') return entry.stats?.muscuSessions || 0;
+    if (category === 'cardio') return entry.stats?.cardioSessions || 0;
+    if (category === 'poids_corps') return entry.stats?.poidsCorpsSessions || 0;
+    if (period === 'week') return entry.stats?.thisWeekSessions || 0;
+    if (period === 'month') return entry.stats?.thisMonthSessions || 0;
+    return entry.stats?.totalSessions || 0;
   };
 
-  const capitalizeFirstLetter = (name) => {
-    if (!name) return 'Anonyme';
-    return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+  const getStatLabel = () => {
+    if (period === 'week') return 'cette semaine';
+    if (period === 'month') return 'ce mois';
+    return 'au total';
   };
 
-  const getStatValue = (entry, type) => {
-    if (type === 'muscu') return entry.stats.muscuSessions;
-    if (type === 'cardio') return entry.stats.cardioSessions;
-    if (type === 'poids_corps') return entry.stats.poidsCorpsSessions;
-
-    if (period === 'week') return entry.stats.thisWeekSessions;
-    if (period === 'month') return entry.stats.thisMonthSessions;
-
-    return entry.stats.totalSessions;
+  const getCategoryLabel = () => {
+    if (category === 'muscu') return 'Musculation';
+    if (category === 'cardio') return 'Cardio';
+    if (category === 'poids_corps') return 'Poids du corps';
+    return 'Général';
   };
 
-  const getStatLabel = (type) => {
-    if (period === 'week') return 'séances cette semaine';
-    if (period === 'month') return 'séances ce mois-ci';
-    return 'séances totales';
-  };
-
-  const getPodiumTitle = (type) => {
-    if (type === 'all') return 'Classement Général';
-    if (type === 'cardio') return 'Classement Cardio';
-    if (type === 'muscu') return 'Classement Musculation';
-    if (type === 'poids_corps') return 'Classement Poids du Corps';
-    return '';
-  };
+  const podium = leaderboard.slice(0, 3);
+  const restOfList = leaderboard.slice(3);
 
   return (
     <>
       <Header />
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>
-            <FaTrophy />
-            Classement
-          </h1>
-          <p className={styles.subtitle}>Comparez vos performances avec la communauté</p>
-        </div>
+      <main className={styles.page}>
+        <div className={styles.container}>
+          {/* Hero */}
+          <header className={styles.hero}>
+            <div className={styles.heroIcon}>
+              <TrophyIcon size={48} />
+            </div>
+            <h1 className={styles.title}>Classement</h1>
+            <p className={styles.subtitle}>Les meilleurs athlètes de la communauté</p>
+          </header>
 
-      {!isOptedIn && (
-        <div className={styles.optInBanner}>
-          <p>
-            Vous n'êtes pas encore visible dans le classement. Rejoignez pour
-            comparer vos performances avec les autres !
-          </p>
-          <button
-            className={styles.optInBtn}
-            onClick={handleOptIn}
-            disabled={optInLoading}
-          >
-            {optInLoading ? '...' : 'Rejoindre le classement'}
-          </button>
-        </div>
-      )}
+          {/* Opt-in Banner */}
+          {isLoggedIn && !isOptedIn && (
+            <div className={styles.optInBanner}>
+              <div className={styles.optInContent}>
+                <span className={styles.optInEmoji}>🏆</span>
+                <div className={styles.optInText}>
+                  <strong>Rejoins le classement !</strong>
+                  <span>Compare tes performances avec la communauté</span>
+                </div>
+              </div>
+              <button className={styles.optInBtn} onClick={handleOptIn} disabled={optInLoading}>
+                {optInLoading ? 'Inscription...' : 'Rejoindre'}
+              </button>
+            </div>
+          )}
 
-      {isOptedIn && userEntry && (
-        <div className={styles.optInBanner}>
-          <p>✅ Vous êtes visible dans le classement !</p>
-          <button
-            className={styles.optInBtn}
-            onClick={handleOptOut}
-            disabled={optInLoading}
-          >
-            {optInLoading ? '...' : 'Quitter le classement'}
-          </button>
-        </div>
-      )}
+          {/* User rank */}
+          {isLoggedIn && isOptedIn && userRank && (
+            <div className={styles.userRankBanner}>
+              <span>Tu es</span>
+              <strong className={styles.userRankNumber}>#{userRank}</strong>
+              <span>en {getCategoryLabel()}</span>
+              <button className={styles.optOutBtn} onClick={handleOptOut} disabled={optInLoading}>
+                Quitter
+              </button>
+            </div>
+          )}
 
-      <div className={styles.periodButtons}>
-        <button
-          className={`${styles.periodBtn} ${period === 'week' ? styles.active : ''}`}
-          onClick={() => setPeriod('week')}
-        >
-          Cette semaine
-        </button>
-        <button
-          className={`${styles.periodBtn} ${period === 'month' ? styles.active : ''}`}
-          onClick={() => setPeriod('month')}
-        >
-          Ce mois-ci
-        </button>
-        <button
-          className={`${styles.periodBtn} ${period === 'alltime' ? styles.active : ''}`}
-          onClick={() => setPeriod('alltime')}
-        >
-          Depuis toujours
-        </button>
-      </div>
+          {/* Filters */}
+          <div className={styles.filters}>
+            <div className={styles.filterGroup}>
+              {['week', 'month', 'alltime'].map((p) => (
+                <button
+                  key={p}
+                  className={`${styles.filterBtn} ${period === p ? styles.active : ''}`}
+                  onClick={() => setPeriod(p)}
+                >
+                  {p === 'week' ? 'Semaine' : p === 'month' ? 'Mois' : 'Total'}
+                </button>
+              ))}
+            </div>
+            <div className={styles.filterGroup}>
+              {['all', 'muscu', 'cardio'].map((c) => (
+                <button
+                  key={c}
+                  className={`${styles.filterBtn} ${category === c ? styles.active : ''}`}
+                  onClick={() => setCategory(c)}
+                >
+                  {c === 'all' ? 'Tout' : c === 'muscu' ? 'Muscu' : 'Cardio'}
+                </button>
+              ))}
+            </div>
+          </div>
 
-      {loading ? (
-        <div className={styles.loading}>Chargement...</div>
-      ) : error ? (
-        <div className={styles.error}>{error}</div>
-      ) : (
-        <div className={styles.podiumsContainer}>
-          {['all', 'cardio', 'muscu', 'poids_corps'].map(type => {
-            const podiumData = leaderboards[type] || [];
-            if (podiumData.length === 0) return null;
-
-            return (
-              <div key={type} className={styles.podiumSection}>
-                <h2 className={styles.podiumTitle}>
-                  <FaTrophy size={20} />
-                  {getPodiumTitle(type)}
-                </h2>
+          {/* Content */}
+          {loading ? (
+            <div className={styles.loading}>
+              <div className={styles.spinner}></div>
+              <span>Chargement...</span>
+            </div>
+          ) : error ? (
+            <div className={styles.error}>{error}</div>
+          ) : leaderboard.length === 0 ? (
+            <div className={styles.empty}>
+              <TrophyIcon size={48} />
+              <h3>Aucun participant</h3>
+              <p>Sois le premier à rejoindre le classement !</p>
+            </div>
+          ) : (
+            <>
+              {/* Podium */}
+              {podium.length > 0 && (
                 <div className={styles.podium}>
-                  {podiumData.map((entry) => (
-                    <div
-                      key={entry._id}
-                      className={`${styles.podiumCard} ${styles[`rank${entry.rank}`]}`}
-                    >
-                      <div className={styles.rankIconContainer}>
-                        {getRankIcon(entry.rank)}
+                  {podium[1] && (
+                    <div className={`${styles.podiumItem} ${styles.silver}`}>
+                      <div className={styles.podiumRank}>2</div>
+                      <div className={styles.podiumAvatar}>
+                        {podium[1].avatarUrl ? (
+                          <img src={podium[1].avatarUrl} alt="" />
+                        ) : (
+                          <span>{podium[1].displayName?.charAt(0).toUpperCase()}</span>
+                        )}
                       </div>
-                      {entry.avatarUrl ? (
-                        <img
-                          src={entry.avatarUrl.startsWith('http') ? entry.avatarUrl : `${API_BASE_URL}${entry.avatarUrl}`}
-                          alt={entry.displayName}
-                          className={styles.podiumAvatar}
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className={styles.podiumAvatar} style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: 'linear-gradient(135deg, var(--couleur-bouton-action), var(--couleur-bouton-action, #ff9966))',
-                          color: 'white',
-                          fontSize: '2rem',
-                          fontWeight: 'bold'
-                        }}>
-                          {entry.displayName?.charAt(0).toUpperCase() || '?'}
+                      <div className={styles.podiumName}>{podium[1].displayName}</div>
+                      <div className={styles.podiumStats}>
+                        <strong>{getStatValue(podium[1])}</strong>
+                        <span>séances</span>
+                      </div>
+                      {podium[1].stats?.currentStreak > 0 && (
+                        <div className={styles.streak}>
+                          <FireIcon size={14} />
+                          {podium[1].stats.currentStreak}j
                         </div>
                       )}
-                      <div className={styles.podiumName}>
-                        {capitalizeFirstLetter(entry.displayName)}
+                      <div className={styles.podiumBar}></div>
+                    </div>
+                  )}
+
+                  {podium[0] && (
+                    <div className={`${styles.podiumItem} ${styles.gold}`}>
+                      <div className={styles.crown}><CrownIcon /></div>
+                      <div className={styles.podiumRank}>1</div>
+                      <div className={styles.podiumAvatar}>
+                        {podium[0].avatarUrl ? (
+                          <img src={podium[0].avatarUrl} alt="" />
+                        ) : (
+                          <span>{podium[0].displayName?.charAt(0).toUpperCase()}</span>
+                        )}
                       </div>
-                      {entry.stats.currentStreak > 0 && (
-                        <div className={styles.podiumStreak}>
-                          <FaFire style={{ color: '#E63946' }} size={14} />
-                          {entry.stats.currentStreak}j
+                      <div className={styles.podiumName}>{podium[0].displayName}</div>
+                      <div className={styles.podiumStats}>
+                        <strong>{getStatValue(podium[0])}</strong>
+                        <span>séances</span>
+                      </div>
+                      {podium[0].stats?.currentStreak > 0 && (
+                        <div className={styles.streak}>
+                          <FireIcon size={14} />
+                          {podium[0].stats.currentStreak}j
                         </div>
                       )}
-                      <div className={styles.podiumStatValue}>
-                        {getStatValue(entry, type)}
+                      <div className={styles.podiumBar}></div>
+                    </div>
+                  )}
+
+                  {podium[2] && (
+                    <div className={`${styles.podiumItem} ${styles.bronze}`}>
+                      <div className={styles.podiumRank}>3</div>
+                      <div className={styles.podiumAvatar}>
+                        {podium[2].avatarUrl ? (
+                          <img src={podium[2].avatarUrl} alt="" />
+                        ) : (
+                          <span>{podium[2].displayName?.charAt(0).toUpperCase()}</span>
+                        )}
                       </div>
-                      <div className={styles.podiumStatLabel}>
-                        {getStatLabel(type)}
+                      <div className={styles.podiumName}>{podium[2].displayName}</div>
+                      <div className={styles.podiumStats}>
+                        <strong>{getStatValue(podium[2])}</strong>
+                        <span>séances</span>
+                      </div>
+                      {podium[2].stats?.currentStreak > 0 && (
+                        <div className={styles.streak}>
+                          <FireIcon size={14} />
+                          {podium[2].stats.currentStreak}j
+                        </div>
+                      )}
+                      <div className={styles.podiumBar}></div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* List */}
+              {restOfList.length > 0 && (
+                <div className={styles.list}>
+                  {restOfList.map((entry) => (
+                    <div key={entry._id} className={styles.listItem}>
+                      <div className={styles.listRank}>#{entry.rank}</div>
+                      <div className={styles.listAvatar}>
+                        {entry.avatarUrl ? (
+                          <img src={entry.avatarUrl} alt="" />
+                        ) : (
+                          <span>{entry.displayName?.charAt(0).toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className={styles.listInfo}>
+                        <div className={styles.listName}>{entry.displayName}</div>
+                        {entry.stats?.currentStreak > 0 && (
+                          <div className={styles.listStreak}>
+                            <FireIcon size={12} />
+                            {entry.stats.currentStreak}j
+                          </div>
+                        )}
+                      </div>
+                      <div className={styles.listStats}>
+                        <strong>{getStatValue(entry)}</strong>
+                        <span>{getStatLabel()}</span>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            );
-          })}
+              )}
+            </>
+          )}
         </div>
-      )}
-      </div>
+      </main>
       <Footer />
     </>
   );
