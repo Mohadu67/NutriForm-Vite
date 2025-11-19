@@ -471,8 +471,7 @@
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
   .hero {
-    min-height: 60vh;
-    padding: 100px 20px 60px;
+    min-height: 80vh;
   }
 
   .floatingOrb:nth-child(1) {
