@@ -7,12 +7,11 @@
 /* ========== HERO SECTION ========== */
 .hero {
   position: relative;
-  min-height: 100vh;
+  min-height: 80vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 80px 24px;
+  padding: 60px 20px 180px;
   background: var(--couleur-principale, #f7f6f2);
   overflow: hidden;
 }
@@ -20,7 +19,7 @@
 /* ========== SCROLL INDICATOR ========== */
 .scrollIndicator {
   position: absolute;
-  bottom: 40px;
+  bottom: 150px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -118,8 +117,8 @@
 }
 
 .floatingOrb:nth-child(1) {
-  width: 300px;
-  height: 300px;
+  width: 200px;
+  height: 200px;
   background: var(--couleur-bouton-action, #f7b186);
   top: 10%;
   left: 5%;
@@ -127,8 +126,8 @@
 }
 
 .floatingOrb:nth-child(2) {
-  width: 350px;
-  height: 350px;
+  width: 250px;
+  height: 250px;
   background: var(--couleur-bouton-selection, #b8ddd1);
   bottom: 5%;
   right: 5%;
@@ -136,8 +135,8 @@
 }
 
 .floatingOrb:nth-child(3) {
-  width: 200px;
-  height: 200px;
+  width: 140px;
+  height: 140px;
   background: var(--couleur-bouton-action, #f7b186);
   top: 55%;
   right: 20%;
@@ -380,53 +379,30 @@
   }
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* Tablet+ */
+@media (min-width: 768px) {
   .hero {
-    min-height: 100vh;
-    padding: 60px 20px 100px;
-  }
-
-  .scrollIndicator {
-    bottom: 80px;
+    padding: 80px 24px 200px;
   }
 
   .floatingOrb:nth-child(1) {
+    width: 300px;
+    height: 300px;
+  }
+
+  .floatingOrb:nth-child(2) {
+    width: 350px;
+    height: 350px;
+  }
+
+  .floatingOrb:nth-child(3) {
     width: 200px;
     height: 200px;
   }
 
-  .floatingOrb:nth-child(2) {
-    width: 250px;
-    height: 250px;
-  }
-
-  .floatingOrb:nth-child(3) {
-    width: 140px;
-    height: 140px;
-  }
-
   .toolsSection,
   .infoWrapper {
-    padding: 60px 20px;
-  }
-
-  .titre {
-    margin: 0 0 1.5rem;
-  }
-
-  .primaryCard {
-    padding: 1.5rem;
-    min-height: 220px;
-  }
-
-  .iconBadge {
-    width: 48px;
-    height: 48px;
-  }
-
-  .cardTitle {
-    font-size: 1.1rem;
+    padding: 80px 24px;
   }
 }
 
