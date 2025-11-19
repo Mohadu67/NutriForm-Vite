@@ -165,7 +165,7 @@
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #f7b186 0%, #f49b69 50%, #f7b186 100%);
+  background: var(--couleur-bouton-action, #f7b186);
   background-size: 200% 100%;
   border-radius: 999px;
   animation: progressMove 1.5s ease-in-out infinite;

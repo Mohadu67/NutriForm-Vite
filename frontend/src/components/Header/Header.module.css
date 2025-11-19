@@ -11,7 +11,7 @@
   --header-gap-desktop: 2rem;
   --header-margin-bottom-mobile: 1.5rem; /* 24px */
   --header-margin-bottom-desktop: 2.5rem; /* 40px */
-  --header-bg: #fff;
+  --header-bg: var(--paper, #ffffff);
   --header-bg-dark: #1a1a1a;
   --header-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   --header-transition: background-color 0.3s ease, box-shadow 0.3s ease;
@@ -41,7 +41,7 @@
 /* Focus States - Accessibility
    -------------------------------------------------------------------------- */
 .header a:focus-visible {
-  outline: 2px solid #ff6b35;
+  outline: 2px solid var(--couleur-bouton-action, #f7b186);
   outline-offset: 4px;
   border-radius: 0.5rem;
 }

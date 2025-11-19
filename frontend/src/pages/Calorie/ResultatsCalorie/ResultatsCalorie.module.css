@@ -12,7 +12,7 @@
   --paper: #12151b;
   --ink: #e9ecf1;
   --muted: #a6b0bf;
-  --accent: #f49b69;
+  --accent: var(--couleur-bouton-action, #f7b186);
   --shadow-sm: 0 4px 12px rgba(0,0,0,0.35);
   --shadow-md: 0 8px 20px rgba(0,0,0,0.45);
   --shadow-lg: 0 12px 28px rgba(0,0,0,0.65);
@@ -133,7 +133,7 @@
 .popupMacros p { margin: .35rem 0; }
 
 .popupButton { display: block; width: 100%; padding: .9rem 1rem; color: var(--ink); border: 1px solid var(--accent); border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; text-align: center; transition: transform .15s ease, background-color .2s ease; }
-.popupButton:hover { background-color: var(--accent); transform: translateY(-1px); color: #fff; }
+.popupButton:hover { background-color: var(--accent); transform: translateY(-1px); color: var(--couleur-text-bouton, #111111); }
 .popupButton:active { transform: translateY(0); }
 .popupButton:focus-visible { outline: 3px solid rgba(181,234,215,0.9); outline-offset: 2px; }
 

@@ -257,7 +257,7 @@
 }
 
 .splitFillMuscu {
-  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
+  background: var(--couleur-bouton-action, #f7b186);
   box-shadow: 0 0 8px rgba(255, 179, 133, 0.4);
 }
 
@@ -374,7 +374,7 @@
 }
 
 .carouselList::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #ffb385, #f49b69);
+  background: var(--couleur-bouton-action, #f7b186);
   border-radius: 999px;
 }
 

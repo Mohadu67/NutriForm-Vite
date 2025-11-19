@@ -10,7 +10,7 @@
   --suivie-border: rgba(0,0,0,0.08);
   --suivie-border-strong: rgba(0,0,0,0.12);
   --suivie-accent: #f7b186;
-  --suivie-accent-hover: #f49b69;
+  --suivie-accent-hover: var(--couleur-bouton-action, #f7b186);
   --suivie-shadow-sm: 0 2px 8px rgba(0,0,0,.06);
   --suivie-shadow-md: 0 8px 24px rgba(0,0,0,.1);
   --suivie-shadow-lg: 0 16px 48px rgba(0,0,0,.15);
@@ -258,8 +258,8 @@
   padding: 16px 24px;
   border: none;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--suivie-accent), var(--suivie-accent-hover));
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
@@ -285,17 +285,17 @@
   border: 1px solid var(--suivie-border);
   border-radius: 18px;
   box-shadow: var(--suivie-shadow-sm);
-  background: linear-gradient(155deg, rgba(255, 181, 129, 0.12), rgba(255, 255, 255, 0.8));
+  background: linear-gradient(155deg, rgba(247, 177, 134, 0.12), rgba(255, 255, 255, 0.8));
 }
 
 :global(html.dark) .focusForm,
 :global(body.dark) .focusForm {
-  background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+  background: linear-gradient(155deg, rgba(247, 177, 134, 0.08), rgba(26, 29, 36, 0.6));
 }
 
 @media (prefers-color-scheme: dark) {
   :global(:root:not(.light)) .focusForm {
-    background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+    background: linear-gradient(155deg, rgba(247, 177, 134, 0.08), rgba(26, 29, 36, 0.6));
   }
 }
 
@@ -365,17 +365,17 @@
 }
 
 .yogaForm {
-  background: linear-gradient(155deg, rgba(255, 181, 129, 0.12), rgba(255, 255, 255, 0.8));
+  background: linear-gradient(155deg, rgba(247, 177, 134, 0.12), rgba(255, 255, 255, 0.8));
 }
 
 :global(html.dark) .yogaForm,
 :global(body.dark) .yogaForm {
-  background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+  background: linear-gradient(155deg, rgba(247, 177, 134, 0.08), rgba(26, 29, 36, 0.6));
 }
 
 @media (prefers-color-scheme: dark) {
   :global(:root:not(.light)) .yogaForm {
-    background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+    background: linear-gradient(155deg, rgba(247, 177, 134, 0.08), rgba(26, 29, 36, 0.6));
   }
 }
 
@@ -385,17 +385,17 @@
 }
 
 .stretchForm {
-  background: linear-gradient(155deg, rgba(255, 181, 129, 0.12), rgba(255, 255, 255, 0.8));
+  background: linear-gradient(155deg, rgba(247, 177, 134, 0.12), rgba(255, 255, 255, 0.8));
 }
 
 :global(html.dark) .stretchForm,
 :global(body.dark) .stretchForm {
-  background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+  background: linear-gradient(155deg, rgba(247, 177, 134, 0.08), rgba(26, 29, 36, 0.6));
 }
 
 @media (prefers-color-scheme: dark) {
   :global(:root:not(.light)) .stretchForm {
-    background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
+    background: linear-gradient(155deg, rgba(247, 177, 134, 0.08), rgba(26, 29, 36, 0.6));
   }
 }
 
@@ -405,12 +405,12 @@
 
 :global(html.dark) .muscuForm,
 :global(body.dark) .muscuForm {
-  background: linear-gradient(150deg, rgba(255, 181, 129, 0.06), rgba(26, 29, 36, 0.6));
+  background: linear-gradient(150deg, rgba(247, 177, 134, 0.06), rgba(26, 29, 36, 0.6));
 }
 
 @media (prefers-color-scheme: dark) {
   :global(:root:not(.light)) .muscuForm {
-    background: linear-gradient(150deg, rgba(255, 181, 129, 0.06), rgba(26, 29, 36, 0.6));
+    background: linear-gradient(150deg, rgba(247, 177, 134, 0.06), rgba(26, 29, 36, 0.6));
   }
 }
 
@@ -714,7 +714,7 @@
   align-self: flex-start;
   padding: 8px 14px;
   background: var(--suivie-accent);
-  color: white;
+  color: var(--couleur-text-bouton, #111111);
   border: none;
   border-radius: 8px;
   font-size: 13px;

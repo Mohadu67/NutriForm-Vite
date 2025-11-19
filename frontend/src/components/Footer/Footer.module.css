@@ -160,7 +160,7 @@
 .socialList :global(a:hover),
 .socialList :global(a:focus-visible) {
   background: rgba(247, 177, 134, 0.22);
-  color: #f97316;
+  color: var(--couleur-bouton-action, #f7b186);
   border-color: rgba(247, 177, 134, 0.45);
   transform: translateY(-2px);
   outline: none;

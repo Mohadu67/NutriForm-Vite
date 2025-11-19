@@ -389,7 +389,7 @@ const Leaderboard = () => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          background: 'linear-gradient(135deg, var(--couleur-bouton-action), #ff9966)',
+                          background: 'linear-gradient(135deg, var(--couleur-bouton-action), var(--couleur-bouton-action, #ff9966))',
                           color: 'white',
                           fontSize: '2rem',
                           fontWeight: 'bold'

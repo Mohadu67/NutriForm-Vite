@@ -25,7 +25,7 @@ class ErrorBoundary extends React.Component {
             style={{
               marginTop: '1rem',
               padding: '0.5rem 1rem',
-              background: '#007bff',
+              background: 'var(--couleur-bouton-action, #007bff)',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
@@ -37,7 +37,7 @@ class ErrorBoundary extends React.Component {
           {import.meta.env.DEV && this.state.error && (
             <details style={{ marginTop: '1rem', textAlign: 'left' }}>
               <summary>Détails de l'erreur (dev mode)</summary>
-              <pre style={{ background: '#f5f5f5', padding: '1rem', overflow: 'auto' }}>
+              <pre style={{ background: 'var(--paper, #f5f5f5)', padding: '1rem', overflow: 'auto' }}>
                 {this.state.error.toString()}
               </pre>
             </details>

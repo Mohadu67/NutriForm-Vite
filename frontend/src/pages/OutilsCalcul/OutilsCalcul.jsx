@@ -67,7 +67,7 @@ export default function OutilsCalcul() {
     <main id="outils" className={styles.container}>
       <header className={styles.header}>
         <h2 style={{ margin: 0 }}>Outils de calcul</h2>
-        <p style={{ margin: 0, color: "#666" }}>
+        <p style={{ margin: 0, color: 'var(--muted, #666)' }}>
           Trois outils essentiels pour ton entraînement et ta nutrition.
         </p>
       </header>

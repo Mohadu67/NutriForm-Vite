@@ -35,7 +35,7 @@
   font-weight: 800;
   color: #ffffff;
   margin: 0;
-  background: linear-gradient(135deg, #f7b186, #f49b69);
+  background: var(--couleur-bouton-action, #f7b186);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -72,7 +72,7 @@
 }
 
 .navItemActive {
-  background: linear-gradient(90deg, rgba(255, 179, 133, 0.2) 0%, transparent 100%);
+  background: linear-gradient(90deg, rgba(247, 177, 134, 0.2) 0%, transparent 100%);
   color: #f7b186;
   border-left: 3px solid #f7b186;
   padding-left: 21px;
@@ -340,7 +340,7 @@
 
 .actionCard:hover {
   border-color: #f7b186;
-  box-shadow: 0 8px 24px rgba(255, 179, 133, 0.2);
+  box-shadow: 0 8px 24px rgba(247, 177, 134, 0.2);
   transform: translateY(-4px);
 }
 
@@ -351,7 +351,7 @@
   }
 
   .actionCard:hover {
-    box-shadow: 0 8px 24px rgba(255, 179, 133, 0.15);
+    box-shadow: 0 8px 24px rgba(247, 177, 134, 0.15);
   }
 }
 
@@ -423,12 +423,12 @@
 }
 
 .filterActive {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
 }
 
 .filterActive:hover {
-  background: linear-gradient(135deg, #f49b69, #f7b186);
+  background: var(--couleur-bouton-action, #f7b186);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -695,8 +695,8 @@
 }
 
 .btnPrimary {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   border: none;
   padding: 12px 24px;
   border-radius: 12px;
@@ -704,12 +704,12 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
 }
 
 .btnPrimary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 179, 133, 0.4);
+  box-shadow: 0 6px 16px rgba(247, 177, 134, 0.4);
 }
 
 .btnPrimary:disabled {
@@ -792,7 +792,7 @@
 
 .newsletterCard:hover {
   border-color: #f7b186;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.2);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.2);
   transform: translateY(-2px);
 }
 
@@ -803,7 +803,7 @@
   }
 
   .newsletterCard:hover {
-    box-shadow: 0 4px 12px rgba(255, 179, 133, 0.15);
+    box-shadow: 0 4px 12px rgba(247, 177, 134, 0.15);
   }
 }
 

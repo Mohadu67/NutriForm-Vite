@@ -58,14 +58,14 @@
   text-align: center;
 }
 
-.submit { 
-  padding: .9rem 1.2rem; 
-  background: #f7b186; 
-  color: #0d0d0d; 
-  font-weight: 800; 
-  border: none; 
-  border-radius: 12px; 
-  cursor: pointer; 
+.submit {
+  padding: .9rem 1.2rem;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
+  font-weight: 800;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
 }
 .submit:disabled { opacity: .6; cursor: not-allowed; }
 

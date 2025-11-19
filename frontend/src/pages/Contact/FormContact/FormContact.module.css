@@ -112,8 +112,8 @@
   border: 2px solid var(--accent);
   border-radius: 12px;
   cursor: pointer;
-  background: linear-gradient(180deg, var(--accent), color-mix(in oklab, var(--accent) 85%, #f49b69));
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   transition: transform .12s ease, background .12s ease, box-shadow .2s ease;
 }
 

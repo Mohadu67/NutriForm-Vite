@@ -168,7 +168,7 @@
 .highlight {
   color: var(--accent-ink);
   font-weight: 800;
-  background: linear-gradient(135deg, #f7b186, #ff8c5a);
+  background: var(--couleur-bouton-action, #f7b186);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -232,8 +232,8 @@
 
 /* Finish Button - Primary CTA */
 .finishBtn {
-  background: linear-gradient(135deg, #f7b186 0%, #e89a6f 100%);
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   border: none;
   border-radius: 14px;
   padding: 1rem 1.5rem;

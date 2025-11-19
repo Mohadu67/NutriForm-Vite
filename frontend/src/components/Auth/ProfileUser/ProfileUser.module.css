@@ -13,7 +13,7 @@
 
 /* Header avec gradient */
 .header {
-  background: linear-gradient(135deg, #f7b186 0%, #f49b69 100%);
+  background: var(--couleur-bouton-action, #f7b186);
   padding: 32px 24px 40px;
   text-align: center;
   display: flex;
@@ -26,7 +26,7 @@
   font-family: 'Merriweather', serif;
   font-size: 1.75rem;
   font-weight: 800;
-  color: white;
+  color: var(--couleur-text-bouton, #111111);
   text-align: center;
   margin: 0;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -131,7 +131,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f7b186, #f49b69);
+  background: var(--couleur-bouton-action, #f7b186);
   flex-shrink: 0;
 }
 

@@ -6,7 +6,7 @@
   --line: rgba(0,0,0,.10);
   --line-strong: rgba(0,0,0,.14);
   --accent: var(--couleur-bouton-action, #f7b186);
-  --accent-2: #f49b69;
+  --accent-2: var(--couleur-bouton-action, #f7b186);
   --accent-soft: var(--couleur-bouton-selection, #b8ddd1);
   --surface: var(--couleur-principale, #F7F6F2);
   --shadow-sm: 0 6px 16px rgba(0,0,0,.08);
@@ -85,19 +85,19 @@
 }
 
 .learnMore {
-  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  background: var(--couleur-bouton-action, #f7b186);
   border-radius: 10px;
   border: 0;
-  color: #fff;
+  color: var(--couleur-text-bouton, #111111);
   padding: 10px 18px;
   margin-top: 12px;
   cursor: pointer;
   font-weight: 800;
-  box-shadow: 0 8px 20px color-mix(in oklab, var(--accent-2) 45%, transparent);
+  box-shadow: 0 8px 20px color-mix(in oklab, var(--couleur-bouton-action, #f7b186) 45%, transparent);
   transition: transform .12s ease, box-shadow .2s ease;
 }
 .learnMore:hover { transform: translateY(-1px); }
-.learnMore:active { transform: translateY(0); box-shadow: 0 4px 12px color-mix(in oklab, var(--accent-2) 35%, transparent); }
+.learnMore:active { transform: translateY(0); box-shadow: 0 4px 12px color-mix(in oklab, var(--couleur-bouton-action, #f7b186) 35%, transparent); }
 
 .link {
   font-family: var(--font-titre);

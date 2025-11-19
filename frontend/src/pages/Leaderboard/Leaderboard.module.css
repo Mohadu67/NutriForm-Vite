@@ -58,7 +58,7 @@
 }
 
 .optInBanner {
-  background: linear-gradient(135deg, rgba(181, 234, 215, 0.15), rgba(255, 179, 133, 0.15));
+  background: linear-gradient(135deg, rgba(181, 234, 215, 0.15), rgba(247, 177, 134, 0.15));
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 1.5rem;

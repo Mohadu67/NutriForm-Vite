@@ -74,14 +74,14 @@
 }
 
 .goalButton {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
+  background: var(--couleur-bouton-action, #f7b186);
   border: none;
   border-radius: 12px;
   width: 48px;
   height: 48px;
   font-size: 1.5rem;
   font-weight: 700;
-  color: white;
+  color: var(--couleur-text-bouton, #111111);
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(255, 179, 133, 0.3);
@@ -164,8 +164,8 @@
 }
 
 .saveButton {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: white;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   box-shadow: 0 2px 8px rgba(255, 179, 133, 0.3);
 }
 

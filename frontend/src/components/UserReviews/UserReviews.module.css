@@ -68,21 +68,21 @@
 }
 
 .addButton {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   border: none;
   padding: 12px 28px;
   border-radius: 12px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
   transition: all 0.3s ease;
 }
 
 .addButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 179, 133, 0.4);
+  box-shadow: 0 6px 16px rgba(247, 177, 134, 0.4);
 }
 
 /* Loading & Empty States */
@@ -142,7 +142,7 @@
   left: 0;
   width: 100%;
   height: 4px;
-  background: linear-gradient(90deg, #f7b186, #f49b69);
+  background: var(--couleur-bouton-action, #f7b186);
 }
 
 .reviewCard:hover {
@@ -194,13 +194,13 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #f7b186, #f49b69);
+  background: var(--couleur-bouton-action, #f7b186);
   display: grid;
   place-items: center;
   font-size: 24px;
   font-weight: 700;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  color: var(--couleur-text-bouton, #111111);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
   flex-shrink: 0;
 }
 
@@ -253,12 +253,12 @@
 }
 
 .starFilled {
-  color: #fbbf24;
-  text-shadow: 0 1px 2px rgba(251, 191, 36, 0.3);
+  color: var(--couleur-bouton-action, #f7b186);
+  text-shadow: 0 1px 2px rgba(247, 177, 134, 0.3);
 }
 
 .starEmpty {
-  color: #d1d5db;
+  color: var(--muted, #6b7280);
 }
 
 :global(html.dark) .starEmpty,
@@ -508,22 +508,22 @@
 
 /* Submit Button */
 .submitButton {
-  background: linear-gradient(135deg, #f7b186, #f49b69);
-  color: #fff;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
   border: none;
   padding: 14px 32px;
   border-radius: 12px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
   transition: all 0.3s ease;
   margin-top: 8px;
 }
 
 .submitButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 179, 133, 0.4);
+  box-shadow: 0 6px 16px rgba(247, 177, 134, 0.4);
 }
 
 .submitButton:disabled {
