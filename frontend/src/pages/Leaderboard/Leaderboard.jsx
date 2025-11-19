@@ -50,7 +50,7 @@ const Leaderboard = () => {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/leaderboard?period=${period}&type=${category}&limit=50`
+        `${import.meta.env.VITE_API_URL || ''}/api/leaderboard?period=${period}&type=${category}&limit=50`
       );
       const data = await response.json();
 
@@ -81,7 +81,7 @@ const Leaderboard = () => {
         if (data.isOptedIn && data.data) {
           const userId = data.data.userId;
           const rankResponse = await fetch(
-            `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/leaderboard/user/${userId}/rank?period=${period}&type=${category}`
+            `${import.meta.env.VITE_API_URL || ''}/api/leaderboard/user/${userId}/rank?period=${period}&type=${category}`
           );
           const rankData = await rankResponse.json();
           if (rankData.success) {
