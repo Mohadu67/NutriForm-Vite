@@ -80,7 +80,7 @@
 
 .tip {
   padding: 1rem 1.25rem;
-  background: var(--couleur-principale, #f7f6f2);
+  background: var(--paper, #ffffff);
   border-radius: 10px;
   border-left: 3px solid var(--couleur-bouton-selection, #b8ddd1);
 }

@@ -1,9 +1,8 @@
 /* About Us Section - Design épuré et soft */
 
 .aboutSection {
-  background: var(--paper, #ffffff);
+  background: var(--couleur-principale, #f7f6f2);
   padding: 80px 20px;
-  border-top: 1px solid var(--line, rgba(0,0,0,.08));
 }
 
 .container {
@@ -51,7 +50,7 @@
 }
 
 .statCard {
-  background: var(--couleur-principale, #f7f6f2);
+  background: var(--paper, #ffffff);
   padding: 24px 16px;
   border-radius: 12px;
   border: 1px solid var(--line, rgba(0,0,0,.08));
@@ -89,7 +88,7 @@
 }
 
 .valueCard {
-  background: var(--couleur-principale, #f7f6f2);
+  background: var(--paper, #ffffff);
   padding: 24px 20px;
   border-radius: 12px;
   border: 1px solid var(--line, rgba(0,0,0,.08));
@@ -156,7 +155,7 @@
 }
 
 .memberCard {
-  background: var(--couleur-principale, #f7f6f2);
+  background: var(--paper, #ffffff);
   padding: 24px;
   border-radius: 16px;
   border: 1px solid var(--line, rgba(0,0,0,.08));
@@ -250,13 +249,13 @@
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   .aboutSection {
-    background: var(--paper, #12151b);
+    background: var(--couleur-principale, #0c0e12);
   }
 
   .statCard,
   .valueCard,
   .memberCard {
-    background: color-mix(in srgb, var(--paper) 95%, #000);
+    background: var(--paper, #12151b);
   }
 
   .memberPhoto {
