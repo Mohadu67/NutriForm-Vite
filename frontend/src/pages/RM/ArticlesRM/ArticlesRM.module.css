@@ -567,11 +567,6 @@
   border-radius: 4px 0 0 4px;
 }
 
-.articleBlock:hover {
-  transform: translateX(8px);
-  box-shadow: var(--shadow-l);
-}
-
 .articleBlock:last-child {
   margin-bottom: 0;
 }
