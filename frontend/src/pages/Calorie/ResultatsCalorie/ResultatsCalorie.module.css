@@ -464,18 +464,13 @@
   .cardAction svg,
   .orb1,
   .orb2,
-  .calorieBadge,
-  .popupOverlay,
-  .popupCard,
-  .popupClose,
-  .popupButton {
+  .calorieBadge {
     animation: none !important;
     transition: none !important;
   }
 
   .card:hover,
-  .card:hover .iconWrapper,
-  .popupButton:hover {
+  .card:hover .iconWrapper {
     transform: none;
   }
 }
@@ -491,192 +486,6 @@
   display: none;
 }
 
-/* ============================================
-   POPUP OVERLAY - MOBILE FIRST
-   ============================================ */
-.popupOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0,0,0,0.4);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  padding: 1rem;
-  overflow-y: auto;
-  animation: overlayFade 0.25s ease;
-  /* Forcer le positionnement sur le viewport */
-  margin: 0;
-}
-
-/* ============================================
-   POPUP CARD - MOBILE FIRST
-   ============================================ */
-.popupCard {
-  position: relative;
-  background: var(--paper);
-  border: 1px solid rgba(247, 177, 134, 0.2);
-  border-radius: 18px;
-  padding: 2rem 1.5rem;
-  width: 100%;
-  max-width: 520px;
-  max-height: calc(100vh - 2rem);
-  overflow-y: auto;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05);
-  animation: popupIn 0.25s ease-out;
-  flex-shrink: 0;
-  /* Smooth scrolling pour le contenu de la popup */
-  -webkit-overflow-scrolling: touch;
-  /* Forcer le centrage */
-  margin: auto;
-}
-
-/* Desktop popup */
-@media (min-width: 640px) {
-  .popupCard {
-    padding: 2.5rem 2.5rem 2rem;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .popupCard {
-    background: linear-gradient(135deg, rgba(25, 30, 40, 0.98) 0%, rgba(18, 21, 27, 0.95) 100%);
-    border-color: rgba(247, 177, 134, 0.2);
-  }
-}
-
-/* ============================================
-   POPUP BOUTON FERMER - MOBILE FIRST
-   ============================================ */
-.popupClose {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 38px;
-  height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: rgba(247, 177, 134, 0.15);
-  border: 1px solid rgba(247, 177, 134, 0.3);
-  font-size: 22px;
-  line-height: 1;
-  cursor: pointer;
-  color: var(--ink);
-  transition: transform 0.2s ease, background-color 0.2s ease;
-  z-index: 10;
-}
-
-.popupClose:hover {
-  transform: rotate(90deg) scale(1.1);
-  background: rgba(247, 177, 134, 0.25);
-}
-
-.popupClose:active {
-  transform: scale(0.95);
-}
-
-/* ============================================
-   POPUP CONTENU - MOBILE FIRST
-   ============================================ */
-.popupTitle {
-  font-family: var(--font-titre, 'Merriweather', serif);
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin: 0 0 1.5rem;
-  text-align: center;
-  color: var(--ink);
-  background: linear-gradient(135deg, var(--orange), var(--orange-dark));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Desktop */
-@media (min-width: 640px) {
-  .popupTitle {
-    font-size: 1.8rem;
-  }
-}
-
-.popupCalories {
-  display: inline-block;
-  font-size: 1.1rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--orange), var(--orange-light));
-  color: #fff;
-  padding: 0.6rem 1.5rem;
-  border-radius: 999px;
-  text-align: center;
-  margin: 0 auto 1.5rem auto;
-  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.3);
-}
-
-/* Desktop */
-@media (min-width: 640px) {
-  .popupCalories {
-    font-size: 1.2rem;
-  }
-}
-
-.popupMacros {
-  font-size: 0.95rem;
-  margin-bottom: 1.5rem;
-  color: var(--muted);
-  line-height: 1.8;
-}
-
-/* Desktop */
-@media (min-width: 640px) {
-  .popupMacros {
-    font-size: 1rem;
-  }
-}
-
-.popupMacros p {
-  margin: 0.5rem 0;
-}
-
-.popupButton {
-  display: block;
-  width: 100%;
-  padding: 0.9rem 1.2rem;
-  background: linear-gradient(135deg, var(--orange), var(--orange-light));
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.3);
-}
-
-/* Desktop */
-@media (min-width: 640px) {
-  .popupButton {
-    padding: 1rem 1.2rem;
-    font-size: 1.05rem;
-  }
-}
-
-.popupButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(247, 177, 134, 0.4);
-}
-
-.popupButton:active {
-  transform: translateY(0);
-}
 
 /* ============================================
    ANIMATIONS
@@ -689,25 +498,5 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes overlayFade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes popupIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
   }
 }
