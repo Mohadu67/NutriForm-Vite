@@ -1,4 +1,5 @@
 import { useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import styles from "./ResultatPopup.module.css";
 
 export default function ResultatPopup({ titre, calories, macros, onClose }) {
@@ -56,7 +57,7 @@ export default function ResultatPopup({ titre, calories, macros, onClose }) {
     ]
   };
 
-  return (
+  return createPortal(
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
@@ -166,6 +167,7 @@ export default function ResultatPopup({ titre, calories, macros, onClose }) {
           Compris
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
