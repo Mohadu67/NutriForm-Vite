@@ -257,6 +257,7 @@ export default function SuivieCard({ exo, value, onChange }) {
                   onPatch={patchSet}
                   progression={progression}
                   lastExerciseData={lastExerciseData}
+                  exerciseName={exo?.name || ''}
                 />
               )}
 
