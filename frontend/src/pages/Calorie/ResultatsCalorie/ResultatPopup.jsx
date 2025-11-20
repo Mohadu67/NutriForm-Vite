@@ -1,20 +1,22 @@
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import styles from "./ResultatsCalorie.module.css";
 import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
 
 
 export default function ResultatPopup({ titre, calories, macros, onClose }) {
-  // Bloquer le scroll du body quand la popup est ouverte
-  useEffect(() => {
+  // Bloquer le scroll du body AVANT le paint (useLayoutEffect)
+  useLayoutEffect(() => {
     // Sauvegarder l'état actuel
     const originalOverflow = document.body.style.overflow;
     const originalPaddingRight = document.body.style.paddingRight;
+    const originalPosition = document.body.style.position;
 
     // Calculer la largeur de la scrollbar pour éviter le "jump"
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
 
-    // Bloquer le scroll et compenser la scrollbar
+    // Bloquer le scroll immédiatement
     document.body.style.overflow = 'hidden';
+    document.body.style.position = 'relative';
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
@@ -23,6 +25,7 @@ export default function ResultatPopup({ titre, calories, macros, onClose }) {
     return () => {
       document.body.style.overflow = originalOverflow;
       document.body.style.paddingRight = originalPaddingRight;
+      document.body.style.position = originalPosition;
     };
   }, []);
 
