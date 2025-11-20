@@ -2,150 +2,568 @@
   --paper: #F7F6F2;
   --ink: #2B2B2B;
   --muted: #555;
-  --accent: #f7b186;
+  --orange: #f7b186;
+  --orange-light: #f9c4a0;
+  --orange-dark: #f5965f;
+  --green: #b8ddd1;
+  --green-light: #c8e8df;
+  --green-dark: #7bc4a8;
+  --red-soft: #f59e95;
+  --yellow-gold: #ffd369;
   --shadow-sm: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-md: 0 8px 20px rgba(0,0,0,0.12);
-  --shadow-lg: 0 12px 28px rgba(0,0,0,0.18);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-lg: 0 16px 40px rgba(0,0,0,0.18);
 }
 
-:root.dark {
-  --paper: #12151b;
-  --ink: #e9ecf1;
-  --muted: #a6b0bf;
-  --accent: var(--couleur-bouton-action, #f7b186);
-  --shadow-sm: 0 4px 12px rgba(0,0,0,0.35);
-  --shadow-md: 0 8px 20px rgba(0,0,0,0.45);
-  --shadow-lg: 0 12px 28px rgba(0,0,0,0.65);
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12151b;
+    --ink: #e9ecf1;
+    --muted: #a6b0bf;
+    --shadow-sm: 0 4px 12px rgba(0,0,0,0.45);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.55);
+    --shadow-lg: 0 16px 40px rgba(0,0,0,0.70);
+  }
 }
 
-.card {
-  border: 1px solid var(--muted);
-  border-radius: 16px;
-  padding: 1.6rem;
-  background: linear-gradient(135deg, var(--paper) 0%, color-mix(in oklab, var(--paper) 97%, var(--accent)) 100%);
-  cursor: pointer;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  overflow: hidden;
-}
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--accent) 15%, transparent), transparent);
-  transition: left .4s ease;
-}
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--accent);
-}
-.card:hover::before {
-  left: 100%;
-}
-
-.cardTitle { font-family: "Merriweather", serif; font-size: 1.3rem; font-weight: 800; margin-bottom: .8rem; color: var(--ink); }
-.cardSubtitle { font-size: 1rem; font-weight: 600; margin-bottom: .5rem; color: var(--ink); }
-.cardDescription { font-size: .95rem; font-weight: 500; line-height: 1.5; color: var(--muted); }
-
-.cardIcon {
-  width: 40px;
-  height: auto;
-  margin-bottom: 0.8rem;
-}
-
-.calorieBadge {
-  background: linear-gradient(135deg, var(--accent) 0%, color-mix(in oklab, var(--accent) 85%, #000) 100%);
-  color: #000;
-  font-weight: 700;
-  padding: .4rem 1.2rem;
-  border-radius: 999px;
-  font-size: 1.15rem;
-  margin-bottom: .8rem;
-  box-shadow: 0 2px 8px color-mix(in oklab, var(--accent) 35%, transparent);
-  position: relative;
-  z-index: 1;
-}
-
+/* Container principal */
 .resultatsContainer {
   display: grid;
-  grid-template-columns: 1fr; /* column on mobile */
-  gap: 1.2rem;
-  margin: 2rem auto;
-  max-width: 1100px;
-  padding: 0 1rem;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin: 3rem auto;
+  max-width: 1200px;
+  padding: 0 1.5rem;
+  animation: fadeInUp 0.6s ease-out;
 }
 
 @media (min-width: 768px) {
   .resultatsContainer {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* row/grid on desktop */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2.5rem;
   }
 }
 
-.popupOverlay { position: fixed; inset: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 9999; animation: overlayFade .2s ease; }
+/* Card principale */
+.card {
+  position: relative;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.7) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-md);
+  isolation: isolate;
+}
 
-.popupCard { position: relative; background-color: var(--paper); border: 1px solid var(--muted); border-radius: 16px; padding: 2rem 2.25rem 1.75rem; width: min(560px,92vw); max-height: 82vh; overflow-y: auto; box-shadow: var(--shadow-lg); transform-origin: var(--originX,50%) var(--originY,50%); animation: popupIn .25s cubic-bezier(.2,.8,.2,1); }
+.card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, var(--orange), var(--green));
+  border-radius: 24px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: -1;
+  filter: blur(8px);
+}
+
+.card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.card:hover::before {
+  opacity: 0.4;
+}
+
+.card:active {
+  transform: translateY(-4px) scale(1.01);
+}
+
+/* Dark mode pour les cards */
+@media (prefers-color-scheme: dark) {
+  .card {
+    background: linear-gradient(135deg,
+      rgba(30, 35, 45, 0.95) 0%,
+      rgba(25, 30, 40, 0.9) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Orbes flottantes */
+.orb1, .orb2 {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.3;
+  animation: float 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orb1 {
+  width: 150px;
+  height: 150px;
+  top: -50px;
+  right: -50px;
+  background: radial-gradient(circle, var(--orange-light), transparent);
+  animation-delay: 0s;
+}
+
+.orb2 {
+  width: 120px;
+  height: 120px;
+  bottom: -40px;
+  left: -40px;
+  background: radial-gradient(circle, var(--green-light), transparent);
+  animation-delay: 3s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(10px, -10px) scale(1.1);
+  }
+  66% {
+    transform: translate(-10px, 10px) scale(0.9);
+  }
+}
+
+/* Variantes de couleur pour chaque type */
+.perte .orb1 {
+  background: radial-gradient(circle, var(--orange-dark), transparent);
+}
+
+.perte .orb2 {
+  background: radial-gradient(circle, var(--red-soft), transparent);
+}
+
+.stabiliser .orb1 {
+  background: radial-gradient(circle, var(--green-light), transparent);
+}
+
+.stabiliser .orb2 {
+  background: radial-gradient(circle, var(--green-dark), transparent);
+}
+
+.prise .orb1 {
+  background: radial-gradient(circle, var(--orange), transparent);
+}
+
+.prise .orb2 {
+  background: radial-gradient(circle, var(--yellow-gold), transparent);
+}
+
+/* Icon wrapper */
+.iconWrapper {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .iconWrapper {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Icônes SVG */
+.cardIconSvg {
+  width: 50px;
+  height: 50px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+}
+
+.perte .iconWrapper {
+  background: linear-gradient(135deg, var(--orange-dark), var(--red-soft));
+  box-shadow: 0 8px 25px rgba(247, 158, 149, 0.4);
+}
+
+.perte .cardIconSvg {
+  color: #fff;
+}
+
+.stabiliser .iconWrapper {
+  background: linear-gradient(135deg, var(--green), var(--green-light));
+  box-shadow: 0 8px 25px rgba(184, 221, 209, 0.4);
+}
+
+.stabiliser .cardIconSvg {
+  color: #0d3d2f;
+}
+
+.prise .iconWrapper {
+  background: linear-gradient(135deg, var(--orange), var(--yellow-gold));
+  box-shadow: 0 8px 25px rgba(255, 211, 105, 0.4);
+}
+
+.prise .cardIconSvg {
+  color: #fff;
+}
+
+/* Titre */
+.cardTitle {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0 0 1rem 0;
+  text-align: center;
+  color: var(--ink);
+  background: linear-gradient(135deg, var(--ink), var(--muted));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .cardTitle {
+    background: linear-gradient(135deg, #ffffff, #d0d0d0);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+}
+
+/* Badge de calories */
+.calorieBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem auto;
+  padding: 1rem 1.8rem;
+  border-radius: 16px;
+  position: relative;
+  z-index: 1;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.perte .calorieBadge {
+  background: linear-gradient(135deg, var(--orange-dark), var(--red-soft));
+  box-shadow: 0 6px 20px rgba(247, 158, 149, 0.35);
+}
+
+.stabiliser .calorieBadge {
+  background: linear-gradient(135deg, var(--green), var(--green-light));
+  box-shadow: 0 6px 20px rgba(184, 221, 209, 0.35);
+}
+
+.prise .calorieBadge {
+  background: linear-gradient(135deg, var(--orange), var(--yellow-gold));
+  box-shadow: 0 6px 20px rgba(255, 211, 105, 0.35);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 6px 20px rgba(247, 177, 134, 0.35);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 8px 30px rgba(247, 177, 134, 0.5);
+  }
+}
+
+.calorieNumber {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.calorieUnit {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 0.3rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.stabiliser .calorieNumber,
+.stabiliser .calorieUnit {
+  color: #0d3d2f;
+  text-shadow: 0 2px 8px rgba(13, 61, 47, 0.15);
+}
+
+/* Description */
+.cardDescription {
+  font-family: var(--font-paragraphe, 'Inter', sans-serif);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--muted);
+  text-align: center;
+  margin: 1rem 0 1.5rem 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Action button */
+.cardAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--orange);
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 1;
+  transition: gap 0.3s ease, color 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .cardAction {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.card:hover .cardAction {
+  gap: 0.8rem;
+  color: var(--orange-dark);
+}
+
+.cardAction svg {
+  transition: transform 0.3s ease;
+}
+
+.card:hover .cardAction svg {
+  transform: translateX(4px);
+}
+
+/* Animation d'apparition */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .card {
+    padding: 2rem 1.5rem;
+  }
+
+  .cardTitle {
+    font-size: 1.3rem;
+  }
+
+  .calorieNumber {
+    font-size: 1.9rem;
+  }
+
+  .iconWrapper {
+    width: 70px;
+    height: 70px;
+  }
+
+  .cardIconSvg {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Accessibilité */
+.card:focus-visible {
+  outline: 3px solid var(--orange);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .iconWrapper,
+  .cardAction,
+  .cardAction svg,
+  .orb1,
+  .orb2,
+  .calorieBadge {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+}
+
+/* Anciens styles pour compatibilité (si nécessaire) */
+.cardSubtitle {
+  display: none;
+}
+
+.cardIcon {
+  display: none;
+}
+
+/* Popup styles (conservés de l'ancien fichier) */
+.popupOverlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: overlayFade 0.3s ease;
+}
+
+.popupCard {
+  position: relative;
+  background: linear-gradient(135deg, var(--paper) 0%, rgba(247, 246, 242, 0.95) 100%);
+  border: 1.5px solid rgba(247, 177, 134, 0.3);
+  border-radius: 20px;
+  padding: 2.5rem 2.5rem 2rem;
+  width: min(560px, 92vw);
+  max-height: 82vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  transform-origin: var(--originX, 50%) var(--originY, 50%);
+  animation: popupIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .popupCard {
+    background: linear-gradient(135deg, rgba(25, 30, 40, 0.98) 0%, rgba(18, 21, 27, 0.95) 100%);
+    border-color: rgba(247, 177, 134, 0.2);
+  }
+}
 
 .popupClose {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 36px;
-  height: 36px;
+  top: 12px;
+  right: 12px;
+  width: 38px;
+  height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(0,0,0,0.06);
-  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(247, 177, 134, 0.15);
+  border: 1px solid rgba(247, 177, 134, 0.3);
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
-  transition: transform 120ms ease, background-color 120ms ease;
+  color: var(--ink);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  z-index: 10;
 }
-.popupClose:hover { transform: scale(1.06); background: rgba(0,0,0,0.1); }
-.popupClose:active { transform: scale(0.98); }
-.popupClose:focus-visible { outline: 3px solid rgba(181,234,215,0.9); outline-offset: 2px; }
 
-.popupTitle { font-family: "Merriweather", serif; font-size: 1.6rem; font-weight: 800; margin: 0 0 1rem; text-align: center; color: var(--ink); }
+.popupClose:hover {
+  transform: rotate(90deg) scale(1.1);
+  background: rgba(247, 177, 134, 0.25);
+}
+
+.popupClose:active {
+  transform: scale(0.95);
+}
+
+.popupTitle {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0 0 1.5rem;
+  text-align: center;
+  color: var(--ink);
+  background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
 .popupCalories {
   display: inline-block;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  background-color: var(--accent);
-  color: var(--ink);
-  padding: 0.35rem 1rem;
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  color: #fff;
+  padding: 0.6rem 1.5rem;
   border-radius: 999px;
   text-align: center;
-  margin: 0 auto 1rem auto;
+  margin: 0 auto 1.5rem auto;
+  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.3);
 }
 
-.popupMacros { font-size: 1rem; margin-bottom: 1.25rem; color: var(--muted); }
-.popupMacros p { margin: .35rem 0; }
+.popupMacros {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  color: var(--muted);
+  line-height: 1.8;
+}
 
-.popupButton { display: block; width: 100%; padding: .9rem 1rem; color: var(--ink); border: 1px solid var(--accent); border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; text-align: center; transition: transform .15s ease, background-color .2s ease; }
-.popupButton:hover { background-color: var(--accent); transform: translateY(-1px); color: var(--couleur-text-bouton, #111111); }
-.popupButton:active { transform: translateY(0); }
-.popupButton:focus-visible { outline: 3px solid rgba(181,234,215,0.9); outline-offset: 2px; }
+.popupMacros p {
+  margin: 0.5rem 0;
+}
+
+.popupButton {
+  display: block;
+  width: 100%;
+  padding: 1rem 1.2rem;
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.3);
+}
+
+.popupButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(247, 177, 134, 0.4);
+}
+
+.popupButton:active {
+  transform: translateY(0);
+}
 
 @keyframes overlayFade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes popupIn {
   from {
     opacity: 0;
-    transform: scale(0.94);
+    transform: scale(0.9);
   }
   to {
     opacity: 1;
