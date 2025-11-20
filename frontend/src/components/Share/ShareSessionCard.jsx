@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { FaDumbbell, FaClock, FaFire, FaCalendar } from 'react-icons/fa';
+import { FaDumbbell, FaClock, FaFire, FaCalendar, FaTrophy } from 'react-icons/fa';
 import styles from './ShareCard.module.css';
 
 // Fonction helper pour deviner le groupe musculaire
@@ -24,16 +24,16 @@ const ShareSessionCard = ({ session, user }) => {
     const minutes = Math.floor((seconds % 3600) / 60);
 
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h${minutes}`;
     }
-    return `${minutes} min`;
+    return `${minutes}min`;
   };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
+      day: '2-digit',
+      month: 'short',
       year: 'numeric',
     });
   };
@@ -51,7 +51,6 @@ const ShareSessionCard = ({ session, user }) => {
   const getMuscleGroups = () => {
     const muscles = new Set();
     session.entries?.forEach((entry) => {
-      // Utiliser muscleGroup existant ou le deviner
       const muscleGroup = entry.muscleGroup || guessMuscleGroup(entry.exerciseName || entry.name || '');
       if (muscleGroup) {
         muscles.add(muscleGroup);
@@ -60,96 +59,109 @@ const ShareSessionCard = ({ session, user }) => {
     return Array.from(muscles);
   };
 
-  // Composant Grid pour remplacer Bootstrap Row/Col
-  const StatsGrid = ({ children }) => (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
-      {children}
-    </div>
-  );
-
-  const StatColumn = ({ children }) => (
-    <div style={{ textAlign: 'center' }}>
-      {children}
-    </div>
-  );
-
   return (
     <div ref={cardRef} className={styles.shareCardContainer}>
       <div className={styles.shareCard}>
-        <div style={{ padding: '1.5rem' }}>
-          {/* Header */}
+        {/* Background decoratif */}
+        <div className={styles.backgroundPattern}></div>
+
+        <div className={styles.cardContent}>
+          {/* Header compact */}
           <div className={styles.header}>
-            <div className={styles.logo}>
-              <FaDumbbell size={30} />
-              <span className={styles.appName}>NutriForm</span>
+            <div className={styles.brandLogo}>
+              <div className={styles.logoCircle}>
+                <FaDumbbell />
+              </div>
+              <span className={styles.brandName}>NutriForm</span>
             </div>
-            <div className={styles.userName}>{user?.displayName || user?.pseudo || 'Athlète'}</div>
+            <div className={styles.userBadge}>
+              <div className={styles.userAvatar}>
+                {(user?.displayName || user?.pseudo || 'A')[0].toUpperCase()}
+              </div>
+              <span className={styles.userName}>{user?.displayName || user?.pseudo || 'Athlète'}</span>
+            </div>
           </div>
 
-          {/* Session Title */}
-          <div className={styles.sessionTitle}>
-            {session.name || 'Séance de sport'}
+          {/* Session Title avec trophy */}
+          <div className={styles.titleSection}>
+            <div className={styles.trophyIcon}>
+              <FaTrophy />
+            </div>
+            <h2 className={styles.sessionTitle}>{session.name || 'Séance de sport'}</h2>
+            <div className={styles.dateInfo}>
+              <FaCalendar />
+              <span>{formatDate(session.endedAt || session.createdAt)}</span>
+            </div>
           </div>
 
-          {/* Date */}
-          <div className={styles.date}>
-            <FaCalendar style={{ marginRight: '0.5rem' }} />
-            {formatDate(session.endedAt || session.createdAt)}
-          </div>
-
-          {/* Main Stats */}
-          <div className={styles.mainStats}>
-            <StatsGrid>
-              <StatColumn>
-                <div className={styles.statIcon}>
-                  <FaClock size={24} />
-                </div>
+          {/* Stats principales avec cards */}
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+              <div className={styles.statIconWrapper} data-color="purple">
+                <FaClock />
+              </div>
+              <div className={styles.statInfo}>
                 <div className={styles.statValue}>{formatDuration(session.durationSec || 0)}</div>
                 <div className={styles.statLabel}>Durée</div>
-              </StatColumn>
-              <StatColumn>
-                <div className={styles.statIcon}>
-                  <FaFire size={24} />
-                </div>
+              </div>
+            </div>
+
+            <div className={styles.statCard}>
+              <div className={styles.statIconWrapper} data-color="orange">
+                <FaFire />
+              </div>
+              <div className={styles.statInfo}>
                 <div className={styles.statValue}>{session.calories || 0}</div>
                 <div className={styles.statLabel}>kcal</div>
-              </StatColumn>
-              <StatColumn>
-                <div className={styles.statIcon}>
-                  <FaDumbbell size={24} />
-                </div>
+              </div>
+            </div>
+
+            <div className={styles.statCard}>
+              <div className={styles.statIconWrapper} data-color="blue">
+                <FaDumbbell />
+              </div>
+              <div className={styles.statInfo}>
                 <div className={styles.statValue}>{getExerciseCount()}</div>
                 <div className={styles.statLabel}>Exercices</div>
-              </StatColumn>
-            </StatsGrid>
-          </div>
-
-          {/* Additional Stats */}
-          <div className={styles.additionalStats}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div style={{ textAlign: 'center' }}>
-                <strong>{getTotalSets()}</strong> séries
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <strong>{getMuscleGroups().length}</strong> groupes musculaires
               </div>
             </div>
           </div>
 
-          {/* Muscle Groups */}
+          {/* Séries et groupes musculaires */}
+          <div className={styles.secondaryStats}>
+            <div className={styles.secondaryStat}>
+              <div className={styles.secondaryValue}>{getTotalSets()}</div>
+              <div className={styles.secondaryLabel}>Séries</div>
+            </div>
+            <div className={styles.dividerDot}></div>
+            <div className={styles.secondaryStat}>
+              <div className={styles.secondaryValue}>{getMuscleGroups().length}</div>
+              <div className={styles.secondaryLabel}>Groupes</div>
+            </div>
+          </div>
+
+          {/* Muscle Groups pills */}
           {getMuscleGroups().length > 0 && (
             <div className={styles.muscleGroups}>
-              {getMuscleGroups().map((muscle, index) => (
-                <span key={index} className={styles.muscleTag}>
+              {getMuscleGroups().slice(0, 4).map((muscle, index) => (
+                <span key={index} className={styles.musclePill}>
                   {muscle}
                 </span>
               ))}
+              {getMuscleGroups().length > 4 && (
+                <span className={styles.musclePill} data-more>
+                  +{getMuscleGroups().length - 4}
+                </span>
+              )}
             </div>
           )}
 
           {/* Footer */}
           <div className={styles.footer}>
-            <div className={styles.footerText}>Entraînement complété avec succès</div>
+            <div className={styles.achievement}>
+              <span className={styles.checkmark}>✓</span>
+              <span>Entraînement complété</span>
+            </div>
             <div className={styles.branding}>nutriform.fr</div>
           </div>
         </div>
