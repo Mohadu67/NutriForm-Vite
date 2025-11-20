@@ -295,11 +295,12 @@
   align-items: center;
   background: var(--paper);
   border-radius: 16px;
-  padding: 1.5rem 1rem;
+  padding: 1.5rem 1rem 0;
   transition: all 0.3s ease;
   position: relative;
   border: 2px solid var(--line);
   width: 140px;
+  min-height: 280px;
 }
 
 .podiumItem:hover {
@@ -474,13 +475,10 @@
 }
 
 .podiumBar {
-  position: absolute;
-  bottom: -2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80%;
+  width: 100%;
   border-radius: 0 0 8px 8px;
   opacity: 0.8;
+  margin-top: auto;
 }
 
 /* ========================================
