@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "./ProfilePhoto.module.css";
 import { secureApiCall } from "../../../../utils/authService.js";
-import { API_BASE_URL } from "../../../../shared/config/api.js";
 
 export default function ProfilePhoto({ user }) {
   const [photo, setPhoto] = useState(user?.photo || null);
@@ -119,7 +118,7 @@ export default function ProfilePhoto({ user }) {
         <div className={styles.photoContainer}>
           {photo ? (
             <img
-              src={photo.startsWith('http') ? photo : `${API_BASE_URL}${photo}`}
+              src={photo}
               alt="Photo de profil"
               className={styles.photo}
             />
