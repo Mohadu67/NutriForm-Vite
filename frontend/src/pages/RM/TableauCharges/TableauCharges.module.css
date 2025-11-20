@@ -77,15 +77,6 @@
   border-bottom-color: rgba(255, 255, 255, 0.03);
 }
 
-.tableRow:hover {
-  background: #fafafa;
-}
-
-:global(body.dark) .tableRow:hover,
-:global(html.dark) .tableRow:hover {
-  background: rgba(255, 179, 133, 0.05);
-}
-
 .tableRow:last-child {
   border-bottom: none;
 }

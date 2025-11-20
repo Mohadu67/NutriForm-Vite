@@ -102,27 +102,16 @@
   border: 1px solid var(--nf-surface-border);
   border-radius: 12px;
   padding: 16px;
-  transition: all 0.3s ease;
   cursor: default;
   min-width: 160px;
   flex-shrink: 0;
   scroll-snap-align: start;
 }
 
-.weekCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-}
-
 :global(body.dark) .weekCard,
 :global(html.dark) .weekCard {
   background: #1a1d24;
   border-color: rgba(255, 255, 255, 0.05);
-}
-
-:global(body.dark) .weekCard:hover,
-:global(html.dark) .weekCard:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 .weekHeader {
