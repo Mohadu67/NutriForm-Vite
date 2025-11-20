@@ -24,9 +24,7 @@ function startLeaderboardCron() {
 
           // Récupérer les infos utilisateur pour mettre à jour l'avatar
           const user = await User.findById(entry.userId);
-          const avatarUrl = user?.photo
-            ? `${process.env.BACKEND_BASE_URL || 'http://localhost:3000'}${user.photo}`
-            : null;
+          const avatarUrl = user?.photo || null;
 
           await LeaderboardEntry.findByIdAndUpdate(entry._id, {
             stats,

@@ -127,10 +127,8 @@ exports.optIn = async (req, res) => {
     // Calculer les stats de l'utilisateur
     const stats = await calculateUserStats(userId);
 
-    // Construire l'URL complète de l'avatar si existe
-    const avatarUrl = user.photo
-      ? `${process.env.BACKEND_BASE_URL || 'http://localhost:3000'}${user.photo}`
-      : null;
+    // L'URL de l'avatar est déjà complète (Cloudinary) ou null
+    const avatarUrl = user.photo || null;
 
     // Créer ou mettre à jour l'entrée leaderboard
     const leaderboardEntry = await LeaderboardEntry.findOneAndUpdate(
