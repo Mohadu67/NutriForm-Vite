@@ -491,7 +491,9 @@
   display: none;
 }
 
-/* Popup styles - version sobre - MOBILE FIRST */
+/* ============================================
+   POPUP OVERLAY - MOBILE FIRST
+   ============================================ */
 .popupOverlay {
   position: fixed;
   top: 0;
@@ -508,9 +510,13 @@
   justify-content: center;
   z-index: 9999;
   padding: 1rem;
+  overflow: hidden;
   animation: overlayFade 0.25s ease;
 }
 
+/* ============================================
+   POPUP CARD - MOBILE FIRST
+   ============================================ */
 .popupCard {
   position: relative;
   background: var(--paper);
@@ -524,6 +530,8 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05);
   animation: popupIn 0.25s ease-out;
   margin: auto;
+  /* Smooth scrolling pour le contenu de la popup */
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Desktop popup */
@@ -540,6 +548,9 @@
   }
 }
 
+/* ============================================
+   POPUP BOUTON FERMER - MOBILE FIRST
+   ============================================ */
 .popupClose {
   position: absolute;
   top: 12px;
