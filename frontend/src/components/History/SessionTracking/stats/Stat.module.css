@@ -8,12 +8,6 @@
   flex-direction: column;
   gap: 20px;
   width: 100%;
-  transition: all 0.3s ease;
-}
-
-.card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
 }
 
 :global(body.dark) .card,
@@ -21,11 +15,6 @@
   background: #1a1d24;
   border-color: #2d3139;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-:global(body.dark) .card:hover,
-:global(html.dark) .card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .header {
@@ -125,25 +114,12 @@
   border-radius: 14px;
   padding: 16px;
   min-height: 0;
-  transition: all 0.2s ease;
-}
-
-.metricCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  border-color: rgba(255, 179, 133, 0.3);
 }
 
 :global(body.dark) .metricCard,
 :global(html.dark) .metricCard {
   background: linear-gradient(135deg, #1a1d24 0%, #151820 100%);
   border-color: rgba(255, 255, 255, 0.06);
-}
-
-:global(body.dark) .metricCard:hover,
-:global(html.dark) .metricCard:hover {
-  border-color: rgba(255, 179, 133, 0.25);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .metricIcon {
@@ -193,23 +169,12 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: all 0.2s ease;
-}
-
-.splitCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 :global(body.dark) .splitCard,
 :global(html.dark) .splitCard {
   background: linear-gradient(135deg, #1a1d24 0%, #151820 100%);
   border-color: rgba(255, 255, 255, 0.06);
-}
-
-:global(body.dark) .splitCard:hover,
-:global(html.dark) .splitCard:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .splitHeader {
@@ -295,25 +260,12 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.noteItem:hover {
-  transform: translateX(4px);
-  border-color: rgba(255, 179, 133, 0.2);
-  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
 }
 
 :global(body.dark) .noteItem,
 :global(html.dark) .noteItem {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
   border-color: rgba(255, 255, 255, 0.06);
-}
-
-:global(body.dark) .noteItem:hover,
-:global(html.dark) .noteItem:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
-  border-color: rgba(255, 179, 133, 0.25);
 }
 
 .noteTitle {
