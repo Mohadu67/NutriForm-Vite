@@ -498,6 +498,8 @@
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   width: 100vw;
   height: 100vh;
   background-color: rgba(0,0,0,0.4);
@@ -508,7 +510,10 @@
   justify-content: center;
   z-index: 9999;
   padding: 1rem;
+  overflow-y: auto;
   animation: overlayFade 0.25s ease;
+  /* Forcer le positionnement sur le viewport */
+  margin: 0;
 }
 
 /* ============================================
@@ -529,6 +534,8 @@
   flex-shrink: 0;
   /* Smooth scrolling pour le contenu de la popup */
   -webkit-overflow-scrolling: touch;
+  /* Forcer le centrage */
+  margin: auto;
 }
 
 /* Desktop popup */
