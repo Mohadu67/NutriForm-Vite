@@ -5,22 +5,23 @@
   padding: 0;
 }
 
-/* Card principale - style soft et épuré */
+/* Card principale - style soft avec gradient subtil */
 .shareCard {
-  background: #ffffff;
+  background: linear-gradient(135deg, #fef9f5 0%, #f8fdfb 100%);
   border-radius: 16px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  border: 1px solid rgba(247, 177, 134, 0.1);
 }
 
 .cardContent {
   padding: 32px 28px;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 24px;
 }
 
-/* Header simple */
+/* Header avec avatar */
 .header {
   display: flex;
   justify-content: space-between;
@@ -45,10 +46,33 @@
   letter-spacing: -0.3px;
 }
 
-.userInfo {
-  font-size: 0.95rem;
+.userBadge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.userAvatar {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #f7b186 0%, #b8ddd1 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.userName {
+  font-size: 0.9rem;
   font-weight: 600;
-  color: #6b7280;
+  color: #222325;
 }
 
 /* Titre section */
@@ -70,15 +94,27 @@
   font-size: 1rem;
   font-weight: 500;
   color: #6b7280;
-  margin: 0;
+  margin: 0 0 12px 0;
 }
 
-/* Stats - layout horizontal simple */
+.dateInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Stats - layout horizontal */
 .stats {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
-  padding: 24px 0;
+  gap: 12px;
 }
 
 .stat {
@@ -86,19 +122,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 20px 12px;
-  background: #F7F6F2;
+  background: rgba(255, 255, 255, 0.7);
   border-radius: 12px;
-  transition: transform 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
 }
 
 .stat:hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .statIcon {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   color: #f7b186;
 }
 
@@ -115,17 +153,54 @@
 }
 
 .statLabel {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
+/* Infos secondaires */
+.secondaryInfo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.infoValue {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #222325;
+}
+
+.infoLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.infoDivider {
+  color: #6b7280;
+  font-size: 0.8rem;
+  opacity: 0.5;
+}
+
 /* Call to action */
 .cta {
   text-align: center;
-  padding: 24px 0 8px;
+  padding: 20px 0 8px;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
@@ -133,7 +208,7 @@
   font-size: 1.1rem;
   font-weight: 700;
   color: #222325;
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
 }
 
 .ctaLink {
@@ -147,7 +222,21 @@
 @media (max-width: 576px) {
   .cardContent {
     padding: 24px 20px;
-    gap: 24px;
+    gap: 20px;
+  }
+
+  .userBadge {
+    padding: 4px 10px 4px 4px;
+  }
+
+  .userAvatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+
+  .userName {
+    font-size: 0.85rem;
   }
 
   .sessionTitle {
@@ -155,17 +244,16 @@
   }
 
   .stats {
-    gap: 12px;
-    padding: 20px 0;
+    gap: 10px;
   }
 
   .stat {
     padding: 16px 8px;
-    gap: 10px;
+    gap: 8px;
   }
 
   .statIcon {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
   }
 
   .statValue {
@@ -174,6 +262,19 @@
 
   .statLabel {
     font-size: 0.75rem;
+  }
+
+  .secondaryInfo {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+
+  .infoValue {
+    font-size: 0.85rem;
+  }
+
+  .infoLabel {
+    font-size: 0.8rem;
   }
 
   .ctaText {
