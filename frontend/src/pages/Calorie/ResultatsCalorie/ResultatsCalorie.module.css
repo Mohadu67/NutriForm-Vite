@@ -15,16 +15,37 @@
   --shadow-lg: 0 16px 40px rgba(0,0,0,0.18);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #12151b;
-    --ink: #e9ecf1;
-    --muted: #a6b0bf;
-    --shadow-sm: 0 4px 12px rgba(0,0,0,0.45);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.55);
-    --shadow-lg: 0 16px 40px rgba(0,0,0,0.70);
-  }
+:root.dark,
+[data-theme="dark"] {
+  --paper: #12151b;
+  --ink: #e9ecf1;
+  --muted: #a6b0bf;
+  --shadow-sm: 0 4px 12px rgba(0,0,0,0.45);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.55);
+  --shadow-lg: 0 16px 40px rgba(0,0,0,0.70);
 }
+
+:root.dark .card,
+[data-theme="dark"] .card {
+  background: linear-gradient(135deg,
+    rgba(30, 35, 45, 0.95) 0%,
+    rgba(25, 30, 40, 0.9) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:root.dark .cardTitle,
+[data-theme="dark"] .cardTitle {
+  background: linear-gradient(135deg, #ffffff, #d0d0d0);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+:root.dark .cardAction,
+[data-theme="dark"] .cardAction {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
 
 /* ============================================
    CONTAINER PRINCIPAL - MOBILE FIRST
@@ -112,16 +133,6 @@
   transform: translateY(-2px);
 }
 
-/* Dark mode pour les cards */
-@media (prefers-color-scheme: dark) {
-  .card {
-    background: linear-gradient(135deg,
-      rgba(30, 35, 45, 0.95) 0%,
-      rgba(25, 30, 40, 0.9) 100%
-    );
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-}
 
 /* ============================================
    ORBES FLOTTANTES - VERSION SOBRE - MOBILE FIRST
@@ -300,13 +311,6 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .cardTitle {
-    background: linear-gradient(135deg, #ffffff, #d0d0d0);
-    -webkit-background-clip: text;
-    background-clip: text;
-  }
-}
 
 /* ============================================
    BADGE DE CALORIES - MOBILE FIRST
@@ -430,11 +434,6 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .cardAction {
-    border-top-color: rgba(255, 255, 255, 0.1);
-  }
-}
 
 .card:hover .cardAction {
   gap: 0.8rem;

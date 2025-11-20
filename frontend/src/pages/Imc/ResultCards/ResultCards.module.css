@@ -12,17 +12,23 @@
   --shadow-md: 0 4px 12px rgba(0,0,0,.08);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #12151b;
-    --ink: #e9ecf1;
-    --muted: #a6b0bf;
-    --line: rgba(255,255,255,.08);
-    --line-strong: rgba(255,255,255,.12);
-    --shadow-sm: 0 2px 6px rgba(0,0,0,.35);
-    --shadow-md: 0 4px 12px rgba(0,0,0,.45);
-  }
+:root.dark,
+[data-theme="dark"] {
+  --paper: #12151b;
+  --ink: #e9ecf1;
+  --muted: #a6b0bf;
+  --line: rgba(255,255,255,.08);
+  --line-strong: rgba(255,255,255,.12);
+  --shadow-sm: 0 2px 6px rgba(0,0,0,.35);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.45);
 }
+
+:root.dark .colTitle,
+[data-theme="dark"] .colTitle {
+  background: linear-gradient(135deg, color-mix(in oklab, var(--accent-soft) 60%, transparent), color-mix(in oklab, var(--accent-soft) 40%, transparent));
+  color: var(--ink);
+}
+
 
 .wrapper {
   display: grid;
@@ -86,12 +92,6 @@
   box-shadow: 0 2px 6px rgba(184, 221, 209, 0.15);
 }
 
-@media (prefers-color-scheme: dark) {
-  .colTitle {
-    background: linear-gradient(135deg, color-mix(in oklab, var(--accent-soft) 60%, transparent), color-mix(in oklab, var(--accent-soft) 40%, transparent));
-    color: var(--ink);
-  }
-}
 
 .moreContent {
   max-height: 0;

@@ -54,7 +54,7 @@ export default function ArticlesCalorie() {
     return () => observer.disconnect();
   }, [articles]);
 
-  const resolveImage = (img) => (img ? `./images/${img}` : "");
+  const resolveImage = (img) => (img ? `/images/${img}` : "");
 
   return (
     <section aria-labelledby="articles-calorie-title">

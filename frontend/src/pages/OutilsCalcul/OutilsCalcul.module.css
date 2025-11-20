@@ -218,28 +218,6 @@
   color: var(--ink, #222325);
 }
 
-/* ========== DARK MODE ========== */
-@media (prefers-color-scheme: dark) {
-  .hero {
-    background: var(--couleur-principale, #0c0e12);
-  }
-
-  .badge {
-    background: var(--paper, #12151b);
-  }
-
-  .floatingOrb {
-    opacity: 0.2;
-  }
-
-  .toolsSection {
-    background: var(--paper, #12151b);
-  }
-
-  .tab {
-    background: var(--couleur-principale, #0c0e12);
-  }
-}
 
 /* ========== TABLET+ ========== */
 @media (min-width: 768px) {

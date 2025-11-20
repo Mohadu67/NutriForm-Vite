@@ -13,17 +13,42 @@
   --green-light: #c8e8df;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #12151b;
-    --ink: #e9ecf1;
-    --muted: #a6b0bf;
-    --line: rgba(255,255,255,.1);
-    --shadow-s: 0 2px 8px rgba(0,0,0,.35);
-    --shadow-m: 0 6px 16px rgba(0,0,0,.45);
-    --shadow-l: 0 12px 32px rgba(0,0,0,.65);
-  }
+:root.dark,
+[data-theme="dark"] {
+  --paper: #12151b;
+  --ink: #e9ecf1;
+  --muted: #a6b0bf;
+  --line: rgba(255,255,255,.1);
+  --shadow-s: 0 2px 8px rgba(0,0,0,.35);
+  --shadow-m: 0 6px 16px rgba(0,0,0,.45);
+  --shadow-l: 0 12px 32px rgba(0,0,0,.65);
 }
+
+:root.dark .titleh2,
+[data-theme="dark"] .titleh2 {
+  background: linear-gradient(135deg, #ffffff, #d0d0d0);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+:root.dark .card,
+[data-theme="dark"] .card {
+  background: linear-gradient(135deg,
+    rgba(30, 35, 45, 0.95) 0%,
+    rgba(25, 30, 40, 0.9) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:root.dark .articleBlock,
+[data-theme="dark"] .articleBlock {
+  background: linear-gradient(135deg,
+    rgba(30, 35, 45, 0.95) 0%,
+    rgba(25, 30, 40, 0.9) 100%
+  );
+  border-color: rgba(247, 177, 134, 0.2);
+}
+
 
 /* Section Header */
 .sectionHeader {
@@ -62,13 +87,6 @@
   animation: fadeInUp 0.6s ease-out 0.1s backwards;
 }
 
-@media (prefers-color-scheme: dark) {
-  .titleh2 {
-    background: linear-gradient(135deg, #ffffff, #d0d0d0);
-    -webkit-background-clip: text;
-    background-clip: text;
-  }
-}
 
 .subtitle {
   font-family: var(--font-paragraphe, 'Inter', sans-serif);
@@ -120,15 +138,6 @@
   position: relative;
 }
 
-@media (prefers-color-scheme: dark) {
-  .card {
-    background: linear-gradient(135deg,
-      rgba(30, 35, 45, 0.95) 0%,
-      rgba(25, 30, 40, 0.9) 100%
-    );
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-}
 
 .card::before {
   content: '';
@@ -475,15 +484,6 @@
   overflow: hidden;
 }
 
-@media (prefers-color-scheme: dark) {
-  .articleBlock {
-    background: linear-gradient(135deg,
-      rgba(30, 35, 45, 0.95) 0%,
-      rgba(25, 30, 40, 0.9) 100%
-    );
-    border-color: rgba(247, 177, 134, 0.2);
-  }
-}
 
 .articleBlock::before {
   content: '';
