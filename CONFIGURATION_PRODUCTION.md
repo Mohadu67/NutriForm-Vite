@@ -16,19 +16,24 @@ has been blocked by CORS policy
 
 ## ✅ Solution Frontend
 
-### Fichier créé : `frontend/.env.production`
+### Configuration : `frontend/.env.production`
 
 ```env
-VITE_API_URL=https://harmonith.fr/api
-VITE_RECAPTCHA_SITE_KEY=**************
+VITE_API_URL=https://harmonith.fr
 ```
 
-**⚠️ À MODIFIER** : Remplace `https://harmonith.fr/api` par l'URL réelle de ton API backend en production.
+**Architecture actuelle** :
+- Frontend : **Netlify** (`https://harmonith.fr`)
+- Backend : **Render** (`https://nutriform-vite.onrender.com`)
+- Proxy : Configuré dans `frontend/public/_redirects`
+  ```
+  /api/*  https://nutriform-vite.onrender.com/api/:splat  200
+  ```
 
-### Possibilités :
-- Si ton backend est sur un sous-domaine : `https://api.harmonith.fr`
-- Si ton backend est derrière un proxy : `https://harmonith.fr/api`
-- Si ton backend est sur un autre domaine : `https://backend-harmonith.com`
+**Comment ça marche** :
+1. Le code appelle : `https://harmonith.fr/api/leaderboard`
+2. Le proxy Netlify redirige vers : `https://nutriform-vite.onrender.com/api/leaderboard`
+3. Le backend Render répond avec les données
 
 ---
 
@@ -66,15 +71,16 @@ const allowedOriginsList = process.env.ALLOWED_ORIGINS
 
 ## 🚀 Checklist Déploiement
 
-### Frontend
-- [ ] Créer/modifier `.env.production` avec la bonne `VITE_API_URL`
+### Frontend (Netlify)
+- [x] `.env.production` configuré avec `VITE_API_URL=https://harmonith.fr`
 - [ ] Rebuild l'application : `npm run build`
-- [ ] Redéployer sur l'hébergement
+- [ ] Redéployer sur Netlify (push sur main ou trigger manual deploy)
 
-### Backend
-- [ ] Ajouter `ALLOWED_ORIGINS` dans les variables d'environnement de production
-- [ ] Ou ajouter `FRONTEND_BASE_URL=https://harmonith.fr`
-- [ ] Redémarrer le serveur backend
+### Backend (Render)
+- [ ] Sur Render.com, aller dans **Environment Variables**
+- [ ] Ajouter : `ALLOWED_ORIGINS=https://harmonith.fr,https://www.harmonith.fr`
+- [ ] Ou ajouter : `FRONTEND_BASE_URL=https://harmonith.fr`
+- [ ] Le serveur redémarre automatiquement sur Render après changement d'env
 
 ---
 
