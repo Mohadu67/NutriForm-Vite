@@ -9,7 +9,6 @@ import ArticlesCalorie from "./ArticlesCalorie/ArticlesCalorie.jsx";
 export default function CaloriePage() {
   usePageTitle("Calcul des calories");
   const [selectedCard, setSelectedCard] = useState(null);
-  const [popupOrigin, setPopupOrigin] = useState({ x: 50, y: 50 });
   const [calories, setCalories] = useState(null);
 
   const howToSchema = {
@@ -61,7 +60,13 @@ export default function CaloriePage() {
       setTimeout(() => {
         const element = document.getElementById('result-container');
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+          const offsetPosition = elementPosition - 100; // Offset de 100px pour laisser de l'espace
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
         }
       }, 100);
     }
@@ -109,16 +114,7 @@ export default function CaloriePage() {
             perte={calories - 500}
             stabiliser={calories}
             prise={calories + 500}
-            onCardClick={(type, e) => {
-              if (e && typeof e.clientX === "number") {
-                const x = Math.round((e.clientX / window.innerWidth) * 100);
-                const y = Math.round((e.clientY / window.innerHeight) * 100);
-                setPopupOrigin({ x, y });
-              } else {
-                setPopupOrigin({ x: 50, y: 50 });
-              }
-              setSelectedCard(type);
-            }}
+            onCardClick={(type) => setSelectedCard(type)}
           />
         )}
         {selectedCard && calories !== null && (
@@ -141,7 +137,6 @@ export default function CaloriePage() {
               return computeMacros(base, selectedCard);
             })()}
             onClose={() => setSelectedCard(null)}
-            origin={popupOrigin}
           />
         )}
           <ArticlesCalorie />

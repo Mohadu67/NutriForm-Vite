@@ -10,21 +10,21 @@ export default function ResultatsCalorie({ perte, stabiliser, prise, onCardClick
         icone="/assets/icons/graphdown.svg"
         calories={perte}
         description="Ce niveau de consommation de calories quotidien te permettra de perdre entre 0,5 et 1 kg par semaine d'une manière saine et durable."
-        onClick={(e) => onCardClick && onCardClick("perte", e)}
+        onClick={() => onCardClick && onCardClick("perte")}
       />
       <ResultatCard
         titre="Stabiliser"
         icone="/assets/icons/graph.svg"
         calories={stabiliser}
         description="Ce niveau de consommation de calories quotidien te permettra de stabiliser ton poids actuel."
-        onClick={(e) => onCardClick && onCardClick("stabiliser", e)}
+        onClick={() => onCardClick && onCardClick("stabiliser")}
       />
       <ResultatCard
         titre="Prendre du poids"
         icone="/assets/icons/graphup.svg"
         calories={prise}
         description="Ce niveau de consommation de calories quotidien te permettra de prendre entre 0,5 et 1 kg par semaine."
-        onClick={(e) => onCardClick && onCardClick("prise", e)}
+        onClick={() => onCardClick && onCardClick("prise")}
       />
     </div>
   );
