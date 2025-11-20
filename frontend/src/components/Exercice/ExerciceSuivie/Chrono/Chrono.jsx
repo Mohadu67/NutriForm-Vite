@@ -422,12 +422,13 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
     <>
       {saving && <SaveLoadingAnimation />}
 
-      {showWarmup && (
+      {showWarmup && createPortal(
         <EchauffementModal
           onStart={handleStartSession}
           onSkip={handleStartSession}
           muscleGroups={muscleGroups}
-        />
+        />,
+        document.body
       )}
       <div className={styles.card}>
         <div className={styles.header}>
