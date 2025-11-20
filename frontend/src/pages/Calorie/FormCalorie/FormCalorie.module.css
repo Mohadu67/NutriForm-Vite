@@ -145,20 +145,16 @@
   font-size: 1rem;
   background: var(--input-bg);
   color: var(--fg-form);
-  transition: border-color .2s;
+  transition: border-color .2s, box-shadow .2s;
   width: 100%;
   font-family: inherit;
-}
-
-.form input:hover,
-.form select:hover {
-  border-color: var(--accent-form-light);
 }
 
 .form input:focus,
 .form select:focus {
   border-color: var(--accent-form);
   outline: none;
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.1);
 }
 
 .infoBox {

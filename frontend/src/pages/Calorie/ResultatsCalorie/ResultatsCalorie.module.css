@@ -48,45 +48,45 @@
 .card {
   position: relative;
   background: linear-gradient(135deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(255, 255, 255, 0.7) 100%
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.85) 100%
   );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
-  border-radius: 24px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  border-radius: 20px;
   padding: 2.5rem 2rem;
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
   isolation: isolate;
 }
 
 .card::before {
   content: '';
   position: absolute;
-  inset: -2px;
+  inset: -1px;
   background: linear-gradient(135deg, var(--orange), var(--green));
-  border-radius: 24px;
+  border-radius: 20px;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.3s ease;
   z-index: -1;
-  filter: blur(8px);
+  filter: blur(6px);
 }
 
 .card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: var(--shadow-lg);
-  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border-color: rgba(247, 177, 134, 0.3);
 }
 
 .card:hover::before {
-  opacity: 0.4;
+  opacity: 0.15;
 }
 
 .card:active {
-  transform: translateY(-4px) scale(1.01);
+  transform: translateY(-2px);
 }
 
 /* Dark mode pour les cards */
@@ -100,44 +100,41 @@
   }
 }
 
-/* Orbes flottantes */
+/* Orbes flottantes - version sobre */
 .orb1, .orb2 {
   position: absolute;
   border-radius: 50%;
-  filter: blur(40px);
-  opacity: 0.3;
-  animation: float 6s ease-in-out infinite;
+  filter: blur(50px);
+  opacity: 0.15;
+  animation: float 8s ease-in-out infinite;
   pointer-events: none;
   z-index: 0;
 }
 
 .orb1 {
-  width: 150px;
-  height: 150px;
-  top: -50px;
-  right: -50px;
+  width: 120px;
+  height: 120px;
+  top: -40px;
+  right: -40px;
   background: radial-gradient(circle, var(--orange-light), transparent);
   animation-delay: 0s;
 }
 
 .orb2 {
-  width: 120px;
-  height: 120px;
-  bottom: -40px;
-  left: -40px;
+  width: 100px;
+  height: 100px;
+  bottom: -30px;
+  left: -30px;
   background: radial-gradient(circle, var(--green-light), transparent);
-  animation-delay: 3s;
+  animation-delay: 4s;
 }
 
 @keyframes float {
   0%, 100% {
     transform: translate(0, 0) scale(1);
   }
-  33% {
-    transform: translate(10px, -10px) scale(1.1);
-  }
-  66% {
-    transform: translate(-10px, 10px) scale(0.9);
+  50% {
+    transform: translate(5px, -5px) scale(1.05);
   }
 }
 
@@ -168,20 +165,20 @@
 
 /* Icon wrapper */
 .iconWrapper {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   margin: 0 auto 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 20px;
+  border-radius: 16px;
   position: relative;
   z-index: 1;
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
 .card:hover .iconWrapper {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.05);
 }
 
 /* Icônes SVG */
@@ -193,7 +190,7 @@
 
 .perte .iconWrapper {
   background: linear-gradient(135deg, var(--orange-dark), var(--red-soft));
-  box-shadow: 0 8px 25px rgba(247, 158, 149, 0.4);
+  box-shadow: 0 4px 12px rgba(247, 158, 149, 0.25);
 }
 
 .perte .cardIconSvg {
@@ -202,7 +199,7 @@
 
 .stabiliser .iconWrapper {
   background: linear-gradient(135deg, var(--green), var(--green-light));
-  box-shadow: 0 8px 25px rgba(184, 221, 209, 0.4);
+  box-shadow: 0 4px 12px rgba(184, 221, 209, 0.25);
 }
 
 .stabiliser .cardIconSvg {
@@ -211,7 +208,7 @@
 
 .prise .iconWrapper {
   background: linear-gradient(135deg, var(--orange), var(--yellow-gold));
-  box-shadow: 0 8px 25px rgba(255, 211, 105, 0.4);
+  box-shadow: 0 4px 12px rgba(255, 211, 105, 0.25);
 }
 
 .prise .cardIconSvg {
@@ -250,36 +247,24 @@
   justify-content: center;
   margin: 1.5rem auto;
   padding: 1rem 1.8rem;
-  border-radius: 16px;
+  border-radius: 14px;
   position: relative;
   z-index: 1;
-  animation: pulse 3s ease-in-out infinite;
 }
 
 .perte .calorieBadge {
   background: linear-gradient(135deg, var(--orange-dark), var(--red-soft));
-  box-shadow: 0 6px 20px rgba(247, 158, 149, 0.35);
+  box-shadow: 0 3px 10px rgba(247, 158, 149, 0.2);
 }
 
 .stabiliser .calorieBadge {
   background: linear-gradient(135deg, var(--green), var(--green-light));
-  box-shadow: 0 6px 20px rgba(184, 221, 209, 0.35);
+  box-shadow: 0 3px 10px rgba(184, 221, 209, 0.2);
 }
 
 .prise .calorieBadge {
   background: linear-gradient(135deg, var(--orange), var(--yellow-gold));
-  box-shadow: 0 6px 20px rgba(255, 211, 105, 0.35);
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 6px 20px rgba(247, 177, 134, 0.35);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 8px 30px rgba(247, 177, 134, 0.5);
-  }
+  box-shadow: 0 3px 10px rgba(255, 211, 105, 0.2);
 }
 
 .calorieNumber {
@@ -423,34 +408,33 @@
   display: none;
 }
 
-/* Popup styles (conservés de l'ancien fichier) */
+/* Popup styles - version sobre */
 .popupOverlay {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0,0,0,0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background-color: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  animation: overlayFade 0.3s ease;
+  animation: overlayFade 0.25s ease;
 }
 
 .popupCard {
   position: relative;
-  background: linear-gradient(135deg, var(--paper) 0%, rgba(247, 246, 242, 0.95) 100%);
-  border: 1.5px solid rgba(247, 177, 134, 0.3);
-  border-radius: 20px;
+  background: var(--paper);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  border-radius: 18px;
   padding: 2.5rem 2.5rem 2rem;
-  width: min(560px, 92vw);
-  max-height: 82vh;
+  width: min(520px, 92vw);
+  max-height: 85vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-lg);
-  transform-origin: var(--originX, 50%) var(--originY, 50%);
-  animation: popupIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05);
+  animation: popupIn 0.25s ease-out;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -563,10 +547,10 @@
 @keyframes popupIn {
   from {
     opacity: 0;
-    transform: scale(0.9);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0);
   }
 }

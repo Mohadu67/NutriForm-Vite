@@ -106,13 +106,10 @@
   text-align: center;
 }
 
-.input:hover {
-  border-color: var(--accent-form-light);
-}
-
 .input:focus {
   border-color: var(--accent-form);
   outline: none;
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.1);
 }
 
 /* Clean numeric inputs */
