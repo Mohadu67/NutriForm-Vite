@@ -72,7 +72,7 @@ const ShareSessionCard = ({ session, user }) => {
               <div className={styles.logoCircle}>
                 <FaDumbbell />
               </div>
-              <span className={styles.brandName}>NutriForm</span>
+              <span className={styles.brandName}>Harmonith</span>
             </div>
             <div className={styles.userBadge}>
               <div className={styles.userAvatar}>
@@ -162,7 +162,7 @@ const ShareSessionCard = ({ session, user }) => {
               <span className={styles.checkmark}>✓</span>
               <span>Entraînement complété</span>
             </div>
-            <div className={styles.branding}>nutriform.fr</div>
+            <div className={styles.branding}>harmonith.fr</div>
           </div>
         </div>
       </div>
