@@ -57,18 +57,21 @@ export default function CaloriePage() {
 
   useEffect(() => {
     if (calories !== null) {
-      setTimeout(() => {
-        const element = document.getElementById('result-container');
-        if (element) {
-          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-          const offsetPosition = elementPosition - 100; // Offset de 100px pour laisser de l'espace
+      // Attendre que le DOM soit complètement mis à jour
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const element = document.getElementById('result-container');
+          if (element) {
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = window.scrollY + elementPosition - 120;
 
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
-        }
-      }, 100);
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
+          }
+        }, 200);
+      });
     }
   }, [calories]);
 

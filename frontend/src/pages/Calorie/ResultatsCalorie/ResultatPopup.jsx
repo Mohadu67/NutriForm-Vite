@@ -5,20 +5,20 @@ export default function ResultatPopup({ titre, calories, macros, onClose }) {
   // Bloquer le scroll du body AVANT le paint
   useLayoutEffect(() => {
     const originalOverflow = document.body.style.overflow;
-    const originalPosition = document.body.style.position;
+    const originalPaddingRight = document.body.style.paddingRight;
 
+    // Calculer la largeur de la scrollbar
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+    // Bloquer le scroll simplement
     document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
-    document.body.style.top = `-${window.scrollY}px`;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
 
     return () => {
-      const scrollY = document.body.style.top;
       document.body.style.overflow = originalOverflow;
-      document.body.style.position = originalPosition;
-      document.body.style.width = '';
-      document.body.style.top = '';
-      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      document.body.style.paddingRight = originalPaddingRight;
     };
   }, []);
 
