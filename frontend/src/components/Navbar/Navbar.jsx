@@ -330,16 +330,14 @@ export default function Navbar() {
                 {darkMode ? <SunIcon size={20} /> : <MoonIcon size={20} />}
               </button>
 
-              {isLoggedIn && (
-                <button
-                  onClick={() => navigateAndClose('/leaderboard')}
-                  className={styles.dockIconBtn}
-                  title="Classement"
-                  aria-label="View leaderboard"
-                >
-                  <TrophyIcon size={20} />
-                </button>
-              )}
+              <button
+                onClick={() => navigateAndClose('/leaderboard')}
+                className={styles.dockIconBtn}
+                title="Classement"
+                aria-label="View leaderboard"
+              >
+                <TrophyIcon size={20} />
+              </button>
 
               <button
                 onClick={() => openPopup(isLoggedIn ? 'profile' : 'login')}
