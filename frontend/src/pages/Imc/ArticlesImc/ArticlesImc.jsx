@@ -51,7 +51,7 @@ export default function ArticlesImc() {
     return () => observer.disconnect();
   }, [articles]);
 
-  const resolveImage = (img) => (img ? `./images/${img}` : "");
+  const resolveImage = (img) => (img ? `/images/${img}` : "");
 
       return (
         <>
