@@ -1,35 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const User = require('../models/User');
 const auth = require('../middlewares/auth.middleware');
 
+// Configuration Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dbkulqwrt',
+  api_key: process.env.CLOUDINARY_API_KEY || '491896755629941',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'PzrPFEEtNS6YAJ65vMP4AiDGkPs'
+});
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../../frontend/public/uploads/profiles');
-
-    
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    
-    const ext = path.extname(file.originalname);
-    const filename = `${req.userId}-${Date.now()}${ext}`;
-    cb(null, filename);
+// Configuration du stockage Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'nutriform/profiles',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    transformation: [{ width: 500, height: 500, crop: 'limit' }],
+    public_id: (req, file) => `${req.userId}-${Date.now()}`
   }
 });
 
-
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|gif|webp/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const extname = allowedTypes.test(file.originalname.split('.').pop().toLowerCase());
   const mimetype = allowedTypes.test(file.mimetype);
 
   if (extname && mimetype) {
@@ -43,7 +40,7 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024 
+    fileSize: 5 * 1024 * 1024
   }
 });
 
@@ -57,28 +54,31 @@ router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => 
       });
     }
 
-    
     const user = await User.findById(req.userId);
 
     if (!user) {
-      
-      fs.unlinkSync(req.file.path);
+      // Supprimer l'image uploadée sur Cloudinary
+      if (req.file.filename) {
+        await cloudinary.uploader.destroy(req.file.filename);
+      }
       return res.status(404).json({
         success: false,
         message: 'Utilisateur non trouvé'
       });
     }
 
-    
-    if (user.photo) {
-      const oldPhotoPath = path.join(__dirname, '../../frontend/public', user.photo);
-      if (fs.existsSync(oldPhotoPath)) {
-        fs.unlinkSync(oldPhotoPath);
+    // Supprimer l'ancienne photo de Cloudinary si elle existe
+    if (user.photo && user.photo.includes('cloudinary.com')) {
+      try {
+        const publicId = user.photo.split('/').slice(-2).join('/').split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      } catch (err) {
+        console.error('Erreur suppression ancienne photo:', err);
       }
     }
 
-
-    const photoUrl = `/uploads/profiles/${req.file.filename}`;
+    // L'URL Cloudinary complète est dans req.file.path
+    const photoUrl = req.file.path;
     user.photo = photoUrl;
     await user.save();
 
@@ -90,9 +90,13 @@ router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => 
   } catch (error) {
     console.error('Erreur upload photo:', error);
 
-    
-    if (req.file) {
-      fs.unlinkSync(req.file.path);
+    // Tenter de supprimer l'image uploadée sur Cloudinary en cas d'erreur
+    if (req.file && req.file.filename) {
+      try {
+        await cloudinary.uploader.destroy(req.file.filename);
+      } catch (err) {
+        console.error('Erreur nettoyage Cloudinary:', err);
+      }
     }
 
     res.status(500).json({
@@ -121,13 +125,16 @@ router.delete('/profile-photo', auth, async (req, res) => {
       });
     }
 
-    
-    const photoPath = path.join(__dirname, '../../frontend/public', user.photo);
-    if (fs.existsSync(photoPath)) {
-      fs.unlinkSync(photoPath);
+    // Supprimer la photo de Cloudinary
+    if (user.photo.includes('cloudinary.com')) {
+      try {
+        const publicId = user.photo.split('/').slice(-2).join('/').split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      } catch (err) {
+        console.error('Erreur suppression Cloudinary:', err);
+      }
     }
 
-    
     user.photo = null;
     await user.save();
 
