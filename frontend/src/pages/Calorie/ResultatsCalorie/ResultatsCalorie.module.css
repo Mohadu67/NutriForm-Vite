@@ -498,10 +498,8 @@
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background-color: rgba(0,0,0,0.4);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -510,7 +508,6 @@
   justify-content: center;
   z-index: 9999;
   padding: 1rem;
-  overflow: hidden;
   animation: overlayFade 0.25s ease;
 }
 
@@ -525,11 +522,11 @@
   padding: 2rem 1.5rem;
   width: 100%;
   max-width: 520px;
-  max-height: 85vh;
+  max-height: calc(100vh - 2rem);
   overflow-y: auto;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05);
   animation: popupIn 0.25s ease-out;
-  margin: auto;
+  flex-shrink: 0;
   /* Smooth scrolling pour le contenu de la popup */
   -webkit-overflow-scrolling: touch;
 }
