@@ -2,153 +2,501 @@
   --paper: #F7F6F2;
   --ink: #2B2B2B;
   --muted: #555;
-  --accent: #f7b186;
+  --orange: #f7b186;
+  --orange-light: #f9c4a0;
+  --orange-dark: #f5965f;
+  --green: #b8ddd1;
+  --green-light: #c8e8df;
+  --green-dark: #7bc4a8;
+  --red-soft: #f59e95;
+  --yellow-gold: #ffd369;
   --shadow-sm: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-md: 0 8px 20px rgba(0,0,0,0.12);
-  --shadow-lg: 0 12px 28px rgba(0,0,0,0.18);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-lg: 0 16px 40px rgba(0,0,0,0.18);
 }
 
-:root.dark {
-  --paper: #12151b;
-  --ink: #e9ecf1;
-  --muted: #a6b0bf;
-  --accent: var(--couleur-bouton-action, #f7b186);
-  --shadow-sm: 0 4px 12px rgba(0,0,0,0.35);
-  --shadow-md: 0 8px 20px rgba(0,0,0,0.45);
-  --shadow-lg: 0 12px 28px rgba(0,0,0,0.65);
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12151b;
+    --ink: #e9ecf1;
+    --muted: #a6b0bf;
+    --shadow-sm: 0 4px 12px rgba(0,0,0,0.45);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.55);
+    --shadow-lg: 0 16px 40px rgba(0,0,0,0.70);
+  }
 }
 
+/* ============================================
+   CONTAINER PRINCIPAL - MOBILE FIRST
+   ============================================ */
+.resultatsContainer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin: 3rem auto;
+  max-width: 1200px;
+  padding: 0 1rem;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Tablet */
+@media (min-width: 640px) {
+  .resultatsContainer {
+    gap: 2rem;
+    padding: 0 1.5rem;
+  }
+}
+
+/* Desktop */
+@media (min-width: 768px) {
+  .resultatsContainer {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem;
+  }
+}
+
+/* ============================================
+   CARD PRINCIPALE - MOBILE FIRST
+   ============================================ */
 .card {
-  border: 1px solid var(--muted);
-  border-radius: 16px;
-  padding: 1.6rem;
-  background: linear-gradient(135deg, var(--paper) 0%, color-mix(in oklab, var(--paper) 97%, var(--accent)) 100%);
+  position: relative;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.85) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
   cursor: pointer;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  overflow: hidden;
 }
+
+/* Tablet et Desktop */
+@media (min-width: 640px) {
+  .card {
+    padding: 2.5rem 2rem;
+  }
+}
+
 .card::before {
-  content: "";
+  content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--accent) 15%, transparent), transparent);
-  transition: left .4s ease;
+  inset: -1px;
+  background: linear-gradient(135deg, var(--orange), var(--green));
+  border-radius: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  filter: blur(6px);
 }
+
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border-color: rgba(247, 177, 134, 0.3);
 }
+
 .card:hover::before {
-  left: 100%;
+  opacity: 0.15;
 }
 
-.cardTitle { font-family: "Merriweather", serif; font-size: 1.3rem; font-weight: 800; margin-bottom: .8rem; color: var(--ink); }
-.cardSubtitle { font-size: 1rem; font-weight: 600; margin-bottom: .5rem; color: var(--ink); }
-.cardDescription { font-size: .95rem; font-weight: 500; line-height: 1.5; color: var(--muted); }
+.card:active {
+  transform: translateY(-2px);
+}
 
-.cardIcon {
+/* Dark mode pour les cards */
+@media (prefers-color-scheme: dark) {
+  .card {
+    background: linear-gradient(135deg,
+      rgba(30, 35, 45, 0.95) 0%,
+      rgba(25, 30, 40, 0.9) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* ============================================
+   ORBES FLOTTANTES - VERSION SOBRE - MOBILE FIRST
+   ============================================ */
+.orb1, .orb2 {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(50px);
+  opacity: 0.15;
+  animation: float 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orb1 {
+  width: 100px;
+  height: 100px;
+  top: -30px;
+  right: -30px;
+  background: radial-gradient(circle, var(--orange-light), transparent);
+  animation-delay: 0s;
+}
+
+.orb2 {
+  width: 80px;
+  height: 80px;
+  bottom: -20px;
+  left: -20px;
+  background: radial-gradient(circle, var(--green-light), transparent);
+  animation-delay: 4s;
+}
+
+/* Desktop - orbes plus grandes */
+@media (min-width: 768px) {
+  .orb1 {
+    width: 120px;
+    height: 120px;
+    top: -40px;
+    right: -40px;
+  }
+
+  .orb2 {
+    width: 100px;
+    height: 100px;
+    bottom: -30px;
+    left: -30px;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(5px, -5px) scale(1.05);
+  }
+}
+
+/* Variantes de couleur pour chaque type */
+.perte .orb1 {
+  background: radial-gradient(circle, var(--orange-dark), transparent);
+}
+
+.perte .orb2 {
+  background: radial-gradient(circle, var(--red-soft), transparent);
+}
+
+.stabiliser .orb1 {
+  background: radial-gradient(circle, var(--green-light), transparent);
+}
+
+.stabiliser .orb2 {
+  background: radial-gradient(circle, var(--green-dark), transparent);
+}
+
+.prise .orb1 {
+  background: radial-gradient(circle, var(--orange), transparent);
+}
+
+.prise .orb2 {
+  background: radial-gradient(circle, var(--yellow-gold), transparent);
+}
+
+/* ============================================
+   ICON WRAPPER - MOBILE FIRST
+   ============================================ */
+.iconWrapper {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.2s ease;
+}
+
+/* Desktop */
+@media (min-width: 768px) {
+  .iconWrapper {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+.card:hover .iconWrapper {
+  transform: scale(1.05);
+}
+
+/* Icônes SVG */
+.cardIconSvg {
   width: 40px;
-  height: auto;
-  margin-bottom: 0.8rem;
+  height: 40px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
 }
 
-.calorieBadge {
-  background: linear-gradient(135deg, var(--accent) 0%, color-mix(in oklab, var(--accent) 85%, #000) 100%);
-  color: #000;
-  font-weight: 700;
-  padding: .4rem 1.2rem;
-  border-radius: 999px;
-  font-size: 1.15rem;
-  margin-bottom: .8rem;
-  box-shadow: 0 2px 8px color-mix(in oklab, var(--accent) 35%, transparent);
+/* Desktop */
+@media (min-width: 768px) {
+  .cardIconSvg {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+.perte .iconWrapper {
+  background: linear-gradient(135deg, var(--orange-dark), var(--red-soft));
+  box-shadow: 0 4px 12px rgba(247, 158, 149, 0.25);
+}
+
+.perte .cardIconSvg {
+  color: #fff;
+}
+
+.stabiliser .iconWrapper {
+  background: linear-gradient(135deg, var(--green), var(--green-light));
+  box-shadow: 0 4px 12px rgba(184, 221, 209, 0.25);
+}
+
+.stabiliser .cardIconSvg {
+  color: #0d3d2f;
+}
+
+.prise .iconWrapper {
+  background: linear-gradient(135deg, var(--orange), var(--yellow-gold));
+  box-shadow: 0 4px 12px rgba(255, 211, 105, 0.25);
+}
+
+.prise .cardIconSvg {
+  color: #fff;
+}
+
+/* ============================================
+   TITRE - MOBILE FIRST
+   ============================================ */
+.cardTitle {
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0 0 1rem 0;
+  text-align: center;
+  color: var(--ink);
+  background: linear-gradient(135deg, var(--ink), var(--muted));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   position: relative;
   z-index: 1;
 }
 
-.resultatsContainer {
-  display: grid;
-  grid-template-columns: 1fr; /* column on mobile */
-  gap: 1.2rem;
-  margin: 2rem auto;
-  max-width: 1100px;
-  padding: 0 1rem;
-}
-
+/* Desktop */
 @media (min-width: 768px) {
-  .resultatsContainer {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* row/grid on desktop */
+  .cardTitle {
+    font-size: 1.5rem;
   }
 }
 
-.popupOverlay { position: fixed; inset: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 9999; animation: overlayFade .2s ease; }
+@media (prefers-color-scheme: dark) {
+  .cardTitle {
+    background: linear-gradient(135deg, #ffffff, #d0d0d0);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+}
 
-.popupCard { position: relative; background-color: var(--paper); border: 1px solid var(--muted); border-radius: 16px; padding: 2rem 2.25rem 1.75rem; width: min(560px,92vw); max-height: 82vh; overflow-y: auto; box-shadow: var(--shadow-lg); transform-origin: var(--originX,50%) var(--originY,50%); animation: popupIn .25s cubic-bezier(.2,.8,.2,1); }
-
-.popupClose {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
+/* ============================================
+   BADGE DE CALORIES - MOBILE FIRST
+   ============================================ */
+.calorieBadge {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: rgba(0,0,0,0.06);
-  border: 1px solid rgba(0,0,0,0.12);
-  font-size: 22px;
+  margin: 1.5rem auto;
+  padding: 0.9rem 1.5rem;
+  border-radius: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Desktop */
+@media (min-width: 768px) {
+  .calorieBadge {
+    padding: 1rem 1.8rem;
+  }
+}
+
+.perte .calorieBadge {
+  background: linear-gradient(135deg, var(--orange-dark), var(--red-soft));
+  box-shadow: 0 3px 10px rgba(247, 158, 149, 0.2);
+}
+
+.stabiliser .calorieBadge {
+  background: linear-gradient(135deg, var(--green), var(--green-light));
+  box-shadow: 0 3px 10px rgba(184, 221, 209, 0.2);
+}
+
+.prise .calorieBadge {
+  background: linear-gradient(135deg, var(--orange), var(--yellow-gold));
+  box-shadow: 0 3px 10px rgba(255, 211, 105, 0.2);
+}
+
+.calorieNumber {
+  font-size: 1.9rem;
+  font-weight: 900;
+  color: #fff;
   line-height: 1;
-  cursor: pointer;
-  transition: transform 120ms ease, background-color 120ms ease;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
-.popupClose:hover { transform: scale(1.06); background: rgba(0,0,0,0.1); }
-.popupClose:active { transform: scale(0.98); }
-.popupClose:focus-visible { outline: 3px solid rgba(181,234,215,0.9); outline-offset: 2px; }
 
-.popupTitle { font-family: "Merriweather", serif; font-size: 1.6rem; font-weight: 800; margin: 0 0 1rem; text-align: center; color: var(--ink); }
+/* Desktop */
+@media (min-width: 768px) {
+  .calorieNumber {
+    font-size: 2.2rem;
+  }
+}
 
-.popupCalories {
-  display: inline-block;
-  font-size: 1.1rem;
-  font-weight: 700;
-  background-color: var(--accent);
-  color: var(--ink);
-  padding: 0.35rem 1rem;
-  border-radius: 999px;
+.calorieUnit {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 0.3rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Desktop */
+@media (min-width: 768px) {
+  .calorieUnit {
+    font-size: 0.85rem;
+  }
+}
+
+.stabiliser .calorieNumber,
+.stabiliser .calorieUnit {
+  color: #0d3d2f;
+  text-shadow: 0 2px 8px rgba(13, 61, 47, 0.15);
+}
+
+/* ============================================
+   DESCRIPTION - MOBILE FIRST
+   ============================================ */
+.cardDescription {
+  font-family: var(--font-paragraphe, 'Inter', sans-serif);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--muted);
   text-align: center;
-  margin: 0 auto 1rem auto;
+  margin: 1rem 0 1.5rem 0;
+  position: relative;
+  z-index: 1;
 }
 
-.popupMacros { font-size: 1rem; margin-bottom: 1.25rem; color: var(--muted); }
-.popupMacros p { margin: .35rem 0; }
-
-.popupButton { display: block; width: 100%; padding: .9rem 1rem; color: var(--ink); border: 1px solid var(--accent); border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; text-align: center; transition: transform .15s ease, background-color .2s ease; }
-.popupButton:hover { background-color: var(--accent); transform: translateY(-1px); color: var(--couleur-text-bouton, #111111); }
-.popupButton:active { transform: translateY(0); }
-.popupButton:focus-visible { outline: 3px solid rgba(181,234,215,0.9); outline-offset: 2px; }
-
-@keyframes overlayFade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+/* Desktop */
+@media (min-width: 768px) {
+  .cardDescription {
+    font-size: 0.95rem;
+  }
 }
 
-@keyframes popupIn {
+/* ============================================
+   ACTION BUTTON - MOBILE FIRST
+   ============================================ */
+.cardAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-titre, 'Merriweather', serif);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--orange);
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 1;
+  transition: gap 0.3s ease, color 0.3s ease;
+}
+
+/* Desktop */
+@media (min-width: 768px) {
+  .cardAction {
+    font-size: 0.95rem;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .cardAction {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.card:hover .cardAction {
+  gap: 0.8rem;
+  color: var(--orange-dark);
+}
+
+.cardAction svg {
+  transition: transform 0.3s ease;
+}
+
+.card:hover .cardAction svg {
+  transform: translateX(4px);
+}
+
+/* ============================================
+   ACCESSIBILITÉ
+   ============================================ */
+.card:focus-visible {
+  outline: 3px solid var(--orange);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .iconWrapper,
+  .cardAction,
+  .cardAction svg,
+  .orb1,
+  .orb2,
+  .calorieBadge {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .card:hover,
+  .card:hover .iconWrapper {
+    transform: none;
+  }
+}
+
+/* ============================================
+   ANCIENS STYLES (COMPATIBILITÉ)
+   ============================================ */
+.cardSubtitle {
+  display: none;
+}
+
+.cardIcon {
+  display: none;
+}
+
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: scale(0.94);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0);
   }
 }

@@ -1,6 +1,4 @@
-
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styles from "./ArticlesCalorie.module.css";
 
 export default function ArticlesCalorie() {
@@ -8,6 +6,7 @@ export default function ArticlesCalorie() {
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showFullArticle, setShowFullArticle] = useState(false);
+  const cardsRef = useRef([]);
 
   const openModal = (article) => {
     setSelectedArticle(article);
@@ -33,36 +32,82 @@ export default function ArticlesCalorie() {
       .catch(() => {});
   }, []);
 
+  // Intersection Observer pour animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry, index) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              entry.target.classList.add(styles.visible);
+            }, index * 100);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    cardsRef.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => observer.disconnect();
+  }, [articles]);
+
   const resolveImage = (img) => (img ? `./images/${img}` : "");
 
   return (
     <section aria-labelledby="articles-calorie-title">
-      <h2 id="articles-calorie-title" className={styles.titleh2}>
-        Approfondir autour des calories
-      </h2>
+      <div className={styles.sectionHeader}>
+        <span className={styles.badge}>Découvrir</span>
+        <h2 id="articles-calorie-title" className={styles.titleh2}>
+          Approfondir autour des calories
+        </h2>
+        <p className={styles.subtitle}>Tout ce qu'il faut savoir sur ton métabolisme et tes besoins énergétiques</p>
+      </div>
 
       {/* Version mobile : cards cliquables */}
       <div className={styles.gridMobile}>
         {articles.map((article, index) => (
           <div
             key={index}
-            className={styles.card}
+            ref={(el) => (cardsRef.current[index] = el)}
+            className={`${styles.card} ${styles.fadeInCard}`}
             onClick={() => openModal(article)}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") openModal(article);
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openModal(article);
+              }
             }}
           >
-            {article.image && (
-              <img
-                src={resolveImage(article.image)}
-                alt={article.alt || article.titre || "illustration"}
-                loading="lazy"
-                className={styles.image}
-              />
-            )}
-            <h3 className={styles.title}>{article.titre}</h3>
+            <div className={styles.cardImageWrapper}>
+              {article.image && (
+                <img
+                  src={resolveImage(article.image)}
+                  alt={article.alt || article.titre || "illustration"}
+                  loading="lazy"
+                  className={styles.image}
+                />
+              )}
+              <div className={styles.cardOverlay}>
+                <svg className={styles.readIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </div>
+            </div>
+            <div className={styles.cardContent}>
+              <h3 className={styles.title}>{article.titre}</h3>
+              <div className={styles.cardAction}>
+                <span>Lire l'article</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </div>
           </div>
         ))}
       </div>
