@@ -296,13 +296,6 @@
   );
   border: 1px solid rgba(247, 177, 134, 0.15);
   border-radius: 16px;
-  transition: all 0.2s ease;
-}
-
-.macroCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.12);
-  border-color: rgba(247, 177, 134, 0.25);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -411,15 +404,6 @@
   font-size: 0.9rem;
   line-height: 1.6;
   color: #555;
-  transition: all 0.2s ease;
-}
-
-.conseilItem:hover {
-  background: linear-gradient(135deg,
-    rgba(247, 177, 134, 0.1) 0%,
-    rgba(247, 177, 134, 0.04) 100%
-  );
-  transform: translateX(4px);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -429,13 +413,6 @@
       rgba(247, 177, 134, 0.03) 100%
     );
     color: #a6b0bf;
-  }
-
-  .conseilItem:hover {
-    background: linear-gradient(135deg,
-      rgba(247, 177, 134, 0.12) 0%,
-      rgba(247, 177, 134, 0.05) 100%
-    );
   }
 }
 
@@ -590,14 +567,12 @@
   .overlay,
   .modal,
   .closeBtn,
-  .macroCard,
   .actionBtn {
     animation: none !important;
     transition: none !important;
   }
 
   .closeBtn:hover,
-  .macroCard:hover,
   .actionBtn:hover {
     transform: none !important;
   }
