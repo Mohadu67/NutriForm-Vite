@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { FaShare } from "react-icons/fa";
 import { mapItemsToEntries } from "../../../History/SessionTracking/sessionApi";
 import styles from "./Chrono.module.css";
 import useSaveSession from "../ExerciceCard/hooks/useSaveSession";
@@ -382,7 +381,8 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
         setSavedSession(res.data);
         setSessionStats({ calories, doneExercises, totalExercises, durationSec: finalSec });
         setShowConfirm(false);
-        // Ne pas appeler stopAndReset() tout de suite, on attend que l'utilisateur ferme le modal
+        // Ouvrir directement le modal de partage
+        setShowShareModal(true);
       } else {
         if (typeof onFinish === 'function') {
           onFinish({ durationSec: finalSec, savedCount, calories, doneExercises, totalExercises, summary });
@@ -497,54 +497,24 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
         document.body
       )}
 
-      {savedSession && createPortal(
-        <div className={styles.successOverlay}>
-          <div className={styles.successBox}>
-            <h3>🎉 Félicitations !</h3>
-            <p>Votre séance a été enregistrée avec succès !</p>
-            {sessionStats && (
-              <div className={styles.successStats}>
-                <div>⏱ {Math.floor(sessionStats.durationSec / 60)} min</div>
-                <div>🔥 {sessionStats.calories} kcal</div>
-                <div>✅ {sessionStats.doneExercises}/{sessionStats.totalExercises} exercices</div>
-              </div>
-            )}
-            <div className={styles.successActions}>
-              <button
-                className={styles.shareBtn}
-                onClick={() => setShowShareModal(true)}
-              >
-                <FaShare /> Partager ma séance
-              </button>
-              <button
-                className={styles.closeBtn}
-                onClick={() => {
-                  setSavedSession(null);
-                  setSessionStats(null);
-                  if (typeof onFinish === 'function') {
-                    onFinish({
-                      durationSec: sessionStats?.durationSec || 0,
-                      savedCount: 1,
-                      calories: sessionStats?.calories || 0,
-                      doneExercises: sessionStats?.doneExercises || 0,
-                      totalExercises: sessionStats?.totalExercises || 0
-                    });
-                  }
-                  stopAndReset();
-                }}
-              >
-                Fermer
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-
       {savedSession && (
         <ShareModal
           show={showShareModal}
-          onHide={() => setShowShareModal(false)}
+          onHide={() => {
+            setShowShareModal(false);
+            setSavedSession(null);
+            setSessionStats(null);
+            if (typeof onFinish === 'function') {
+              onFinish({
+                durationSec: sessionStats?.durationSec || 0,
+                savedCount: 1,
+                calories: sessionStats?.calories || 0,
+                doneExercises: sessionStats?.doneExercises || 0,
+                totalExercises: sessionStats?.totalExercises || 0
+              });
+            }
+            stopAndReset();
+          }}
           session={savedSession}
           user={JSON.parse(localStorage.getItem('user') || '{}')}
         />

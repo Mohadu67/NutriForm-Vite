@@ -108,7 +108,7 @@ const ShareModal = ({ show, onHide, session, user }) => {
             await navigator.share({
               files: [file],
               title: 'Ma séance de sport',
-              text: `J'ai terminé ma séance "${session.name || 'Séance'}" sur NutriForm ! 💪\n⏱️ ${Math.floor((session.durationSec || 0) / 60)} min | 🔥 ${session.calories || 0} kcal`,
+              text: `J'ai terminé ma séance "${session.name || 'Séance'}" sur Harmonith ! 💪\n⏱️ ${Math.floor((session.durationSec || 0) / 60)} min | 🔥 ${session.calories || 0} kcal`,
             });
 
             // Success feedback
@@ -129,8 +129,8 @@ const ShareModal = ({ show, onHide, session, user }) => {
   };
 
   const fallbackShare = (platform) => {
-    const text = encodeURIComponent(`J'ai terminé ma séance "${session.name || 'Séance'}" sur NutriForm ! 💪\n\n⏱️ ${Math.floor((session.durationSec || 0) / 60)} min | 🔥 ${session.calories || 0} kcal\n\n✨ Rejoins-moi sur NutriForm`);
-    const url = encodeURIComponent('https://nutriform.fr');
+    const text = encodeURIComponent(`J'ai terminé ma séance "${session.name || 'Séance'}" sur Harmonith ! 💪\n\n⏱️ ${Math.floor((session.durationSec || 0) / 60)} min | 🔥 ${session.calories || 0} kcal\n\n✨ Rejoins-moi sur Harmonith`);
+    const url = encodeURIComponent('https://harmonith.fr/leaderboard');
 
     let shareUrl = '';
 
@@ -142,7 +142,7 @@ const ShareModal = ({ show, onHide, session, user }) => {
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`;
         break;
       case 'twitter':
-        shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}&hashtags=NutriForm,Fitness,Workout`;
+        shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}&hashtags=Harmonith,Fitness,Workout`;
         break;
       default:
         break;
@@ -158,14 +158,14 @@ const ShareModal = ({ show, onHide, session, user }) => {
   };
 
   const handleCopyLink = async () => {
-    const shareText = `🎉 J'ai terminé ma séance "${session.name || 'Séance de sport'}" sur NutriForm !
+    const shareText = `🎉 J'ai terminé ma séance "${session.name || 'Séance de sport'}" sur Harmonith !
 
 📊 Résultats :
 ⏱️ Durée : ${Math.floor((session.durationSec || 0) / 60)} min
 🔥 Calories : ${session.calories || 0} kcal
 💪 Exercices : ${session.entries?.length || 0}
 
-✨ Rejoins-moi sur NutriForm : https://nutriform.fr`;
+✨ Rejoins-moi sur Harmonith : https://harmonith.fr/leaderboard`;
 
     try {
       await navigator.clipboard.writeText(shareText);
