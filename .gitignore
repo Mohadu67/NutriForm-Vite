@@ -28,6 +28,11 @@ backend/.env
 frontend/.env
 .env
 backend/.env.local
+frontend/.env.local
+.env.local
+.env.production
+backend/.env.production
+frontend/.env.production
 
 # files
 
