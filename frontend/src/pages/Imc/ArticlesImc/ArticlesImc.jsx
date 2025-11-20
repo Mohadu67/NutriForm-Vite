@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import styles from "./ArticlesImc.module.css"
 
 export default function ArticlesImc() {
@@ -6,6 +6,7 @@ export default function ArticlesImc() {
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showFullArticle, setShowFullArticle] = useState(false);
+  const cardsRef = useRef([]);
 
   const openModal = (article) => {
     setSelectedArticle(article);
@@ -28,34 +29,78 @@ export default function ArticlesImc() {
             .catch(() => {});
     }, []);
 
+  // Intersection Observer pour animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry, index) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              entry.target.classList.add(styles.visible);
+            }, index * 100);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    cardsRef.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => observer.disconnect();
+  }, [articles]);
+
   const resolveImage = (img) => (img ? `./images/${img}` : "");
 
       return (
         <>
-        <h2 className={styles.titleh2}>Apprendre l'essentiel sur l'IMC</h2>
+        <div className={styles.sectionHeader}>
+          <span className={styles.badge}>Découvrir</span>
+          <h2 className={styles.titleh2}>Apprendre l'essentiel sur l'IMC</h2>
+          <p className={styles.subtitle}>Tout ce que tu dois savoir pour comprendre et interpréter ton IMC</p>
+        </div>
 
           {/* Version mobile : cards cliquables */}
           <section className={styles.gridMobile}>
             {articles.map((article, index) => (
               <div
                 key={index}
-                className={styles.card}
+                ref={(el) => (cardsRef.current[index] = el)}
+                className={`${styles.card} ${styles.fadeInCard}`}
                 onClick={() => openModal(article)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
                     openModal(article);
                   }
                 }}
               >
-                <img
-                  src={resolveImage(article.image)}
-                  alt={article.alt}
-                  loading="lazy"
-                  className={styles.image}
-                />
-                <h3 className={styles.title}>{article.titre}</h3>
+                <div className={styles.cardImageWrapper}>
+                  <img
+                    src={resolveImage(article.image)}
+                    alt={article.alt}
+                    loading="lazy"
+                    className={styles.image}
+                  />
+                  <div className={styles.cardOverlay}>
+                    <svg className={styles.readIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </div>
+                </div>
+                <div className={styles.cardContent}>
+                  <h3 className={styles.title}>{article.titre}</h3>
+                  <div className={styles.cardAction}>
+                    <span>Lire l'article</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                </div>
               </div>
             ))}
           </section>

@@ -265,11 +265,6 @@
   border-radius: 20px;
   padding: 32px;
   border: 1px solid var(--line, rgba(0,0,0,.08));
-  transition: border-color 0.2s ease;
-}
-
-.valueCard:hover {
-  border-color: var(--couleur-bouton-action, #f7b186);
 }
 
 .valueIcon {
@@ -323,11 +318,6 @@
   border-radius: 20px;
   padding: 32px;
   border: 1px solid var(--line, rgba(0,0,0,.08));
-  transition: border-color 0.2s ease;
-}
-
-.bentoCard:hover {
-  border-color: var(--couleur-bouton-action, #f7b186);
 }
 
 .bentoLarge {
@@ -471,7 +461,8 @@
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
   .hero {
-    min-height: 80vh;
+    min-height: 60vh;
+    padding: 100px 20px 60px;
   }
 
   .floatingOrb:nth-child(1) {
