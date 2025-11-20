@@ -1,7 +1,20 @@
 import { useRef } from 'react';
-import { Card, Row, Col } from 'react-bootstrap';
 import { FaDumbbell, FaClock, FaFire, FaCalendar } from 'react-icons/fa';
 import styles from './ShareCard.module.css';
+
+// Fonction helper pour deviner le groupe musculaire
+function guessMuscleGroup(name = "") {
+  const n = String(name).toLowerCase();
+  if (/mollet|calf/.test(n)) return "Mollets";
+  if (/pompe|push|bench|développé|developpe|pec/.test(n)) return "Pectoraux";
+  if (/traction|pull|row|tirage|dos/.test(n)) return "Dos";
+  if (/squat|presse|leg|fente|deadlift|soulevé|souleve|jambe/.test(n)) return "Jambes";
+  if (/curl|biceps/.test(n)) return "Biceps";
+  if (/triceps|dip/.test(n)) return "Triceps";
+  if (/épaule|epaule|shoulder|overhead|militaire|lateral/.test(n)) return "Épaules";
+  if (/abdo|crunch|gainage|core|planche/.test(n)) return "Abdos";
+  return null;
+}
 
 const ShareSessionCard = ({ session, user }) => {
   const cardRef = useRef(null);
@@ -11,17 +24,16 @@ const ShareSessionCard = ({ session, user }) => {
     const minutes = Math.floor((seconds % 3600) / 60);
 
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h${minutes}`;
     }
-    return `${minutes} min`;
+    return `${minutes}min`;
   };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+      day: '2-digit',
+      month: 'short',
     });
   };
 
@@ -38,8 +50,9 @@ const ShareSessionCard = ({ session, user }) => {
   const getMuscleGroups = () => {
     const muscles = new Set();
     session.entries?.forEach((entry) => {
-      if (entry.muscleGroup) {
-        muscles.add(entry.muscleGroup);
+      const muscleGroup = entry.muscleGroup || guessMuscleGroup(entry.exerciseName || entry.name || '');
+      if (muscleGroup) {
+        muscles.add(muscleGroup);
       }
     });
     return Array.from(muscles);
@@ -47,81 +60,84 @@ const ShareSessionCard = ({ session, user }) => {
 
   return (
     <div ref={cardRef} className={styles.shareCardContainer}>
-      <Card className={styles.shareCard}>
-        <Card.Body>
-          {/* Header */}
+      <div className={styles.shareCard}>
+        <div className={styles.cardContent}>
+          {/* Header avec avatar */}
           <div className={styles.header}>
             <div className={styles.logo}>
-              <FaDumbbell size={30} />
-              <span className={styles.appName}>NutriForm</span>
+              <FaDumbbell className={styles.logoIcon} />
+              <span className={styles.brandName}>Harmonith</span>
             </div>
-            <div className={styles.userName}>{user?.displayName || user?.pseudo || 'Athlète'}</div>
-          </div>
-
-          {/* Session Title */}
-          <div className={styles.sessionTitle}>
-            {session.name || 'Séance de sport'}
-          </div>
-
-          {/* Date */}
-          <div className={styles.date}>
-            <FaCalendar className="me-2" />
-            {formatDate(session.endedAt || session.createdAt)}
-          </div>
-
-          {/* Main Stats */}
-          <Row className={styles.mainStats}>
-            <Col xs={4} className="text-center">
-              <div className={styles.statIcon}>
-                <FaClock size={24} />
+            <div className={styles.userBadge}>
+              <div className={styles.userAvatar}>
+                {(user?.displayName || user?.pseudo || 'A')[0].toUpperCase()}
               </div>
-              <div className={styles.statValue}>{formatDuration(session.durationSec || 0)}</div>
-              <div className={styles.statLabel}>Durée</div>
-            </Col>
-            <Col xs={4} className="text-center">
-              <div className={styles.statIcon}>
-                <FaFire size={24} />
-              </div>
-              <div className={styles.statValue}>{session.calories || 0}</div>
-              <div className={styles.statLabel}>kcal</div>
-            </Col>
-            <Col xs={4} className="text-center">
-              <div className={styles.statIcon}>
-                <FaDumbbell size={24} />
-              </div>
-              <div className={styles.statValue}>{getExerciseCount()}</div>
-              <div className={styles.statLabel}>Exercices</div>
-            </Col>
-          </Row>
-
-          {/* Additional Stats */}
-          <Row className={styles.additionalStats}>
-            <Col xs={6} className="text-center">
-              <strong>{getTotalSets()}</strong> séries
-            </Col>
-            <Col xs={6} className="text-center">
-              <strong>{getMuscleGroups().length}</strong> groupes musculaires
-            </Col>
-          </Row>
-
-          {/* Muscle Groups */}
-          {getMuscleGroups().length > 0 && (
-            <div className={styles.muscleGroups}>
-              {getMuscleGroups().map((muscle, index) => (
-                <span key={index} className={styles.muscleTag}>
-                  {muscle}
-                </span>
-              ))}
+              <span className={styles.userName}>
+                {user?.displayName || user?.pseudo || 'Athlète'}
+              </span>
             </div>
-          )}
-
-          {/* Footer */}
-          <div className={styles.footer}>
-            <div className={styles.footerText}>Entraînement complété avec succès</div>
-            <div className={styles.branding}>nutriform.fr</div>
           </div>
-        </Card.Body>
-      </Card>
+
+          {/* Titre de la séance */}
+          <div className={styles.titleSection}>
+            <h2 className={styles.sessionTitle}>{session.name || 'Séance de sport'}</h2>
+            <p className={styles.subtitle}>Entraînement complété ! 🎉</p>
+            <div className={styles.dateInfo}>
+              <FaCalendar />
+              <span>{formatDate(session.endedAt || session.createdAt)}</span>
+            </div>
+          </div>
+
+          {/* Stats principales */}
+          <div className={styles.stats}>
+            <div className={styles.stat}>
+              <FaClock className={styles.statIcon} />
+              <div className={styles.statContent}>
+                <div className={styles.statValue}>{formatDuration(session.durationSec || 0)}</div>
+                <div className={styles.statLabel}>Durée</div>
+              </div>
+            </div>
+
+            <div className={styles.stat}>
+              <FaFire className={styles.statIcon} />
+              <div className={styles.statContent}>
+                <div className={styles.statValue}>{session.calories || 0}</div>
+                <div className={styles.statLabel}>kcal</div>
+              </div>
+            </div>
+
+            <div className={styles.stat}>
+              <FaDumbbell className={styles.statIcon} />
+              <div className={styles.statContent}>
+                <div className={styles.statValue}>{getExerciseCount()}</div>
+                <div className={styles.statLabel}>Exercices</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Infos secondaires */}
+          <div className={styles.secondaryInfo}>
+            <div className={styles.infoItem}>
+              <span className={styles.infoValue}>{getTotalSets()}</span>
+              <span className={styles.infoLabel}>Séries</span>
+            </div>
+            {getMuscleGroups().length > 0 && (
+              <>
+                <span className={styles.infoDivider}>•</span>
+                <div className={styles.infoItem}>
+                  <span className={styles.infoValue}>{getMuscleGroups().slice(0, 3).join(', ')}</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Call to action */}
+          <div className={styles.cta}>
+            <p className={styles.ctaText}>Rejoins-moi sur Harmonith !</p>
+            <div className={styles.ctaLink}>harmonith.fr</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

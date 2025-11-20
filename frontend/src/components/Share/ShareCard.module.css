@@ -1,146 +1,287 @@
+/* Container */
 .shareCardContainer {
   max-width: 500px;
   margin: 0 auto;
+  padding: 0;
 }
 
+/* Card principale - style soft avec gradient subtil */
 .shareCard {
-  background: linear-gradient(135deg, #f7b186 0%, #b8ddd1 100%);
-  border: none;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #fef9f5 0%, #f8fdfb 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  border: 1px solid rgba(247, 177, 134, 0.1);
 }
 
+.cardContent {
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header avec avatar */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--couleur-text-bouton, #111111);
-  font-weight: bold;
-  font-size: 1.2rem;
+  gap: 8px;
 }
 
-.appName {
-  font-size: 1.3rem;
-  letter-spacing: 1px;
+.logoIcon {
+  color: #f7b186;
+  font-size: 1.5rem;
+}
+
+.brandName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #222325;
+  letter-spacing: -0.3px;
+}
+
+.userBadge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.userAvatar {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #f7b186 0%, #b8ddd1 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
 }
 
 .userName {
-  color: var(--couleur-text-bouton, #111111);
+  font-size: 0.9rem;
   font-weight: 600;
-  font-size: 1.1rem;
+  color: #222325;
+}
+
+/* Titre section */
+.titleSection {
+  text-align: center;
+  padding: 8px 0;
 }
 
 .sessionTitle {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: var(--couleur-text-bouton, #111111);
-  text-align: center;
-  margin-bottom: 0.5rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #222325;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
 }
 
-.date {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
+.subtitle {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0 0 12px 0;
 }
 
-.mainStats {
-  margin: 2rem 0;
-  padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
+.dateInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Stats - layout horizontal */
+.stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .statIcon {
-  color: var(--couleur-text-bouton, #111111);
-  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  color: #f7b186;
 }
 
-.statValue {
-  font-size: 2rem;
-  font-weight: bold;
-  color: var(--couleur-text-bouton, #111111);
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.statLabel {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.9);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.additionalStats {
-  margin: 1rem 0;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  color: var(--couleur-text-bouton, #111111);
-  font-size: 0.95rem;
-}
-
-.muscleGroups {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-  margin: 1.5rem 0;
-}
-
-.muscleTag {
-  background: rgba(255, 255, 255, 0.3);
-  color: var(--couleur-text-bouton, #111111);
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  backdrop-filter: blur(5px);
-}
-
-.footer {
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 2px solid rgba(255, 255, 255, 0.3);
+.statContent {
   text-align: center;
 }
 
-.footerText {
-  color: var(--couleur-text-bouton, #111111);
-  font-size: 1rem;
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #222325;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 0.8rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.branding {
-  color: rgba(255, 255, 255, 0.8);
+/* Infos secondaires */
+.secondaryInfo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.infoValue {
   font-size: 0.9rem;
-  font-weight: 500;
-  letter-spacing: 1px;
+  font-weight: 700;
+  color: #222325;
 }
 
+.infoLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.infoDivider {
+  color: #6b7280;
+  font-size: 0.8rem;
+  opacity: 0.5;
+}
+
+/* Call to action */
+.cta {
+  text-align: center;
+  padding: 20px 0 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.ctaText {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #222325;
+  margin: 0 0 8px 0;
+}
+
+.ctaLink {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f7b186;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive */
 @media (max-width: 576px) {
+  .cardContent {
+    padding: 24px 20px;
+    gap: 20px;
+  }
+
+  .userBadge {
+    padding: 4px 10px 4px 4px;
+  }
+
+  .userAvatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+
+  .userName {
+    font-size: 0.85rem;
+  }
+
   .sessionTitle {
     font-size: 1.5rem;
   }
 
-  .statValue {
-    font-size: 1.5rem;
+  .stats {
+    gap: 10px;
   }
 
-  .mainStats {
-    padding: 1rem;
+  .stat {
+    padding: 16px 8px;
+    gap: 8px;
+  }
+
+  .statIcon {
+    font-size: 1.3rem;
+  }
+
+  .statValue {
+    font-size: 1.25rem;
+  }
+
+  .statLabel {
+    font-size: 0.75rem;
+  }
+
+  .secondaryInfo {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+
+  .infoValue {
+    font-size: 0.85rem;
+  }
+
+  .infoLabel {
+    font-size: 0.8rem;
+  }
+
+  .ctaText {
+    font-size: 1rem;
+  }
+
+  .ctaLink {
+    font-size: 0.9rem;
   }
 }
