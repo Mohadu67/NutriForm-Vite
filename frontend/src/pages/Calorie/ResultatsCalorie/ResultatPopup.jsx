@@ -22,15 +22,8 @@ export default function ResultatPopup({ titre, calories, macros, onClose }) {
     };
   }, []);
 
-  // Déterminer le type pour le style
-  const getType = () => {
-    const lower = titre.toLowerCase();
-    if (lower.includes('perdre')) return 'perte';
-    if (lower.includes('prendre')) return 'prise';
-    return 'stabiliser';
-  };
-
-  const type = getType();
+  // Le type est passé directement via titre ("perte", "stabiliser", "prise")
+  const type = titre;
 
   // Mapper les titres affichés
   const titreMap = {
@@ -43,6 +36,24 @@ export default function ResultatPopup({ titre, calories, macros, onClose }) {
     perte: 'Un déficit calorique contrôlé pour perdre 0,5 à 1 kg par semaine de manière saine.',
     stabiliser: 'L\'apport calorique parfait pour maintenir votre poids actuel.',
     prise: 'Un surplus calorique pour prendre 0,5 à 1 kg par semaine et construire du muscle.'
+  };
+
+  const conseils = {
+    perte: [
+      'Privilégie les aliments riches en protéines pour préserver ta masse musculaire.',
+      'Hydrate-toi bien, bois au moins 2L d\'eau par jour.',
+      'Ne descends jamais en dessous de 1200 kcal/jour (femmes) ou 1500 kcal/jour (hommes).'
+    ],
+    stabiliser: [
+      'Maintiens une routine alimentaire équilibrée.',
+      'Écoute tes signaux de faim et de satiété.',
+      'Pratique une activité physique régulière pour ta santé globale.'
+    ],
+    prise: [
+      'Augmente progressivement tes portions pour éviter les inconforts digestifs.',
+      'Privilégie les aliments denses en calories et nutriments (noix, avocats, etc.).',
+      'Entraîne-toi en musculation pour optimiser la prise de muscle.'
+    ]
   };
 
   return (
@@ -119,6 +130,22 @@ export default function ResultatPopup({ titre, calories, macros, onClose }) {
             </div>
           </div>
         )}
+
+        {/* Conseils pratiques */}
+        <div className={styles.conseilsSection}>
+          <h3 className={styles.sectionTitle}>Conseils pratiques</h3>
+          <ul className={styles.conseilsList}>
+            {conseils[type].map((conseil, index) => (
+              <li key={index} className={styles.conseilItem}>
+                <svg className={styles.conseilIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M9 12l2 2 4-4"/>
+                  <circle cx="12" cy="12" r="10"/>
+                </svg>
+                <span>{conseil}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
         {/* Info Section */}
         <div className={styles.infoSection}>
