@@ -245,17 +245,37 @@ function normalizeString(str) {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // Supprime les accents
-    .replace(/[^a-z0-9]/g, '') // Garde seulement lettres et chiffres
+    .replace(/[^\w\s]/g, ' ') // Garde lettres, chiffres et espaces
+    .replace(/\s+/g, ' ') // Normalise les espaces multiples
     .trim();
 }
 
+// Calcule la similarité entre deux strings pour fuzzy matching
+function calculateSimilarity(str1, str2) {
+  const s1 = normalizeString(str1);
+  const s2 = normalizeString(str2);
+
+  // Match exact
+  if (s1 === s2) return 1.0;
+
+  // Si l'un contient l'autre (ex: "développé couché" contient "developpe couche")
+  if (s1.includes(s2) || s2.includes(s1)) return 0.9;
+
+  // Découpe en mots et compare
+  const words1 = s1.split(' ').filter(w => w.length > 0);
+  const words2 = s2.split(' ').filter(w => w.length > 0);
+
+  // Compte les mots en commun
+  const commonWords = words1.filter(w1 => words2.some(w2 => w2.includes(w1) || w1.includes(w2)));
+  const similarity = commonWords.length / Math.max(words1.length, words2.length);
+
+  return similarity;
+}
+
 function getLastExerciseData(exerciseId) {
-  return getSessions({ limit: 30 }).then((res) => {
+  return getSessions({ limit: 50 }).then((res) => {
     const sessions = Array.isArray(res) ? res : (res?.items || []);
     const foundSessions = [];
-
-    // Normalise l'ID de recherche
-    const normalizedTargetId = normalizeString(exerciseId);
 
     for (const session of sessions) {
       if (!session?.entries) continue;
@@ -263,11 +283,15 @@ function getLastExerciseData(exerciseId) {
       const entry = session.entries.find(e => {
         if (!e) return false;
 
-        // Compare les noms normalisés (l'API utilise 'exerciseName', pas 'exerciseId')
-        const eId = normalizeString(e?.exerciseId || e?.id || '');
-        const eName = normalizeString(e?.exerciseName || e?.name || '');
+        // Compare avec similarité pour être plus tolérant
+        const eId = e?.exerciseId || e?.id || '';
+        const eName = e?.exerciseName || e?.name || '';
 
-        return eId === normalizedTargetId || eName === normalizedTargetId;
+        // Match exact ou similarité élevée (>= 0.85)
+        const idSimilarity = calculateSimilarity(exerciseId, eId);
+        const nameSimilarity = calculateSimilarity(exerciseId, eName);
+
+        return idSimilarity >= 0.85 || nameSimilarity >= 0.85;
       });
 
       if (entry && entry.sets && entry.sets.length > 0) {

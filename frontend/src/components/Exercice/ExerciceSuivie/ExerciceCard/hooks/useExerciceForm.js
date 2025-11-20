@@ -539,8 +539,8 @@ export default function useExerciceForm(exo, value, onChange) {
   }
 
   const progression = useMemo(() => {
-    return calculateProgression(lastExerciseData, isPdc);
-  }, [lastExerciseData, isPdc]);
+    return calculateProgression(lastExerciseData, isPdc, exoName);
+  }, [lastExerciseData, isPdc, exoName]);
 
   return {
     mode,

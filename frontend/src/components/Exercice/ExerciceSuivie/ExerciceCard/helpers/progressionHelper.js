@@ -7,7 +7,7 @@
  * - Progression standard : +2.5kg pour upper body, +5kg pour lower body
  */
 
-export function calculateProgression(lastSessionData, isPdc = false) {
+export function calculateProgression(lastSessionData, isPdc = false, exerciseName = '') {
   if (!lastSessionData?.last) return null;
 
   const last = lastSessionData.last;
@@ -21,14 +21,25 @@ export function calculateProgression(lastSessionData, isPdc = false) {
     return calculatePdcProgression(last, previous);
   }
 
-  return calculateMuscuProgression(last, previous, goal);
+  return calculateMuscuProgression(last, previous, goal, exerciseName);
 }
 
-function calculateMuscuProgression(last, previous, goal = 'hypertrophy') {
+function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exerciseName = '') {
   const lastBest = findBestSet(last.allSets);
 
   if (!lastBest || !lastBest.weightKg || !lastBest.reps) {
     return null;
+  }
+
+  // Validation des données aberrantes
+  if (lastBest.weightKg > 500 || lastBest.reps > 100) {
+    return {
+      weight: lastBest.weightKg,
+      reps: lastBest.reps,
+      isProgression: false,
+      message: "⚠️ Valeurs inhabituelles détectées. Vérifie ta saisie !",
+      goal: goal
+    };
   }
 
   const suggestion = {
@@ -40,7 +51,7 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy') {
     goal: goal
   };
 
-  const increment = isLowerBody(lastBest) ? 5 : 2.5;
+  const increment = isLowerBody(exerciseName) ? 5 : 2.5;
 
   // Si on a les 2 séances, on peut calculer une vraie progression
   if (previous?.allSets) {
@@ -130,10 +141,27 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy') {
         return suggestion;
       }
 
+      // Détection de plateau ou régression
       if (weightDiff === 0 && repsDiff <= 0) {
+        // Si régression importante en reps
+        if (repsDiff < -2) {
+          suggestion.weight = lastBest.weightKg;
+          suggestion.reps = lastBest.reps;
+          suggestion.message = `💭 Régression détectée (-${Math.abs(repsDiff)} reps). Considère une semaine de décharge (-20% poids) pour récupérer`;
+          suggestion.isDeload = true;
+          return suggestion;
+        }
+
+        // Stagnation simple
         suggestion.weight = lastBest.weightKg;
         suggestion.reps = lastBest.reps;
         suggestion.message = `Même charge qu'avant. Essaie de battre ${lastBest.reps} reps !`;
+        return suggestion;
+      }
+
+      // Détection de grande variation (possible erreur de saisie)
+      if (Math.abs(weightDiff) > increment * 3 || Math.abs(repsDiff) > 10) {
+        suggestion.message = `⚠️ Grande variation détectée (${weightDiff > 0 ? '+' : ''}${weightDiff}kg, ${repsDiff > 0 ? '+' : ''}${repsDiff} reps). Vérifie ta saisie !`;
         return suggestion;
       }
     }
@@ -210,10 +238,24 @@ function findBestSet(sets) {
 }
 
 // Détecte si c'est un exercice lower body (progression plus agressive)
-function isLowerBody(set) {
-  // Pour l'instant, on retourne false par défaut
-  // Pourrait être amélioré avec l'info de l'exercice
-  return false;
+function isLowerBody(exerciseNameOrSet) {
+  // Accepte soit un nom d'exercice, soit un set avec exerciceName
+  const name = typeof exerciseNameOrSet === 'string'
+    ? exerciseNameOrSet
+    : exerciseNameOrSet?.exerciseName || exerciseNameOrSet?.name || '';
+
+  const lowerBodyKeywords = [
+    'squat', 'jambe', 'leg', 'cuisse', 'quadriceps', 'ischio',
+    'mollet', 'calf', 'fessier', 'glute', 'deadlift', 'soulevé',
+    'presse', 'press', 'extension', 'curl', 'hack'
+  ];
+
+  const normalized = String(name || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  return lowerBodyKeywords.some(keyword => normalized.includes(keyword));
 }
 
 // Compare la série actuelle avec l'historique pour détecter un record
@@ -341,7 +383,7 @@ function detectFatigueInSession(currentSet, currentSetIndex, allCurrentSets) {
 }
 
 // Suggère un objectif de reps pour motiver l'utilisateur
-export function suggestRepsChallenge(currentSet, lastSessionData, currentSetIndex = 0, allCurrentSets = []) {
+export function suggestRepsChallenge(currentSet, lastSessionData, currentSetIndex = 0, allCurrentSets = [], exerciseName = '') {
   if (!currentSet || !lastSessionData?.last) return null;
 
   const currentWeight = Number(currentSet.weight || currentSet.weightKg || 0);
@@ -349,6 +391,17 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
 
   // Pas de suggestion si pas de valeurs
   if (!currentWeight || !currentReps) return null;
+
+  // Validation des données aberrantes
+  if (currentWeight > 500 || currentReps > 100) {
+    return {
+      type: 'validation_error',
+      currentReps,
+      currentWeight,
+      message: `⚠️ Valeurs inhabituelles (${currentWeight}kg × ${currentReps} reps). Vérifie ta saisie !`,
+      isError: true
+    };
+  }
 
   // NOUVEAU: Détecte la fatigue dans la séance en cours
   const fatigue = detectFatigueInSession(currentSet, currentSetIndex, allCurrentSets);
@@ -397,7 +450,7 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
     if (currentWeight === lastWeight) {
       // Si l'utilisateur atteint ou dépasse 12-13 reps → suggérer d'augmenter le poids
       if (currentReps >= 12) {
-        const increment = isLowerBody(currentSet) ? 5 : 2.5;
+        const increment = isLowerBody(exerciseName) ? 5 : 2.5;
         return {
           type: 'hypertrophy_increase_weight',
           targetReps: 8,
@@ -512,7 +565,7 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
     if (currentWeight === lastWeight) {
       // Si plus de 6 reps → suggérer d'augmenter le poids
       if (currentReps > 6) {
-        const increment = isLowerBody(currentSet) ? 5 : 2.5;
+        const increment = isLowerBody(exerciseName) ? 5 : 2.5;
         return {
           type: 'strength_increase',
           targetWeight: currentWeight + increment,
