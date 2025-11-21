@@ -37,6 +37,7 @@ const Leaderboard = () => {
   const [isOptedIn, setIsOptedIn] = useState(false);
   const [optInLoading, setOptInLoading] = useState(false);
   const [userRank, setUserRank] = useState(null);
+  const [refreshLoading, setRefreshLoading] = useState(false);
 
   // Check if user is logged in
   const isLoggedIn = useMemo(() => {
@@ -139,6 +140,26 @@ const Leaderboard = () => {
     }
   };
 
+  const handleRefreshProfile = async () => {
+    if (!isLoggedIn) return;
+    setRefreshLoading(true);
+
+    try {
+      const response = await secureApiCall('/api/leaderboard/refresh-profile', { method: 'POST' });
+      const data = await response.json();
+
+      if (data.success) {
+        // Rafraîchir les données du leaderboard après la mise à jour
+        await fetchLeaderboard();
+        await checkOptInStatus();
+      }
+    } catch (err) {
+      console.error('Erreur lors du rafraîchissement:', err);
+    } finally {
+      setRefreshLoading(false);
+    }
+  };
+
   const getStatValue = (entry) => {
     if (category === 'muscu') return entry.stats?.muscuSessions || 0;
     if (category === 'cardio') return entry.stats?.cardioSessions || 0;
@@ -200,9 +221,19 @@ const Leaderboard = () => {
               <span>Tu es</span>
               <strong className={styles.userRankNumber}>#{userRank}</strong>
               <span>en {getCategoryLabel()}</span>
-              <button className={styles.optOutBtn} onClick={handleOptOut} disabled={optInLoading}>
-                Quitter
-              </button>
+              <div className={styles.userRankActions}>
+                <button
+                  className={styles.refreshBtn}
+                  onClick={handleRefreshProfile}
+                  disabled={refreshLoading}
+                  title="Rafraîchir mon profil"
+                >
+                  {refreshLoading ? '⏳' : '🔄'}
+                </button>
+                <button className={styles.optOutBtn} onClick={handleOptOut} disabled={optInLoading}>
+                  Quitter
+                </button>
+              </div>
             </div>
           )}
 

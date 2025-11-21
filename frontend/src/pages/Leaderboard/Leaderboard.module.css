@@ -151,6 +151,39 @@
   margin: 0 0.25rem;
 }
 
+.userRankActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+
+.refreshBtn {
+  background: var(--couleur-bouton-action);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
+}
+
+.refreshBtn:hover:not(:disabled) {
+  transform: rotate(180deg);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.4);
+}
+
+.refreshBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .optOutBtn {
   background: transparent;
   color: var(--muted);
@@ -159,7 +192,6 @@
   padding: 0.4rem 1rem;
   font-size: 0.8rem;
   cursor: pointer;
-  margin-left: 1rem;
   transition: all 0.2s ease;
 }
 
@@ -621,6 +653,16 @@
 
   .userRankNumber {
     font-size: 1.25rem;
+  }
+
+  .userRankActions {
+    margin-left: 0.5rem;
+  }
+
+  .refreshBtn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
   }
 
   .filters {

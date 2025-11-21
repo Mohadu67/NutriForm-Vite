@@ -41,4 +41,11 @@ router.post('/opt-out', auth, leaderboardController.optOut);
  */
 router.get('/status', auth, leaderboardController.getOptInStatus);
 
+/**
+ * @route   POST /api/leaderboard/refresh-profile
+ * @desc    Rafraîchir immédiatement son profil dans le classement
+ * @access  Private
+ */
+router.post('/refresh-profile', auth, leaderboardController.refreshProfile);
+
 module.exports = router;
