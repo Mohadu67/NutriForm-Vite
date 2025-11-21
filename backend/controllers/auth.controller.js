@@ -75,11 +75,11 @@ exports.login = async (req, res) => {
     }
 
     // Envoi du token via cookie httpOnly (protection XSS)
-    // sameSite: 'lax' fonctionne avec le proxy Netlify (même origine)
+    // sameSite: 'none' permet les cookies cross-domain (harmonith.fr <-> nutriform-vite.onrender.com)
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
     });
@@ -289,7 +289,7 @@ exports.logout = async (req, res) => {
     res.clearCookie('token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
       path: '/',
     });
 
