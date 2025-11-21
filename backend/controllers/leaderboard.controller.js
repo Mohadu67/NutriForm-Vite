@@ -224,6 +224,58 @@ exports.getOptInStatus = async (req, res) => {
 };
 
 /**
+ * Rafraîchir le profil de l'utilisateur dans le leaderboard
+ * Met à jour le nom, la photo et les statistiques
+ */
+exports.refreshProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Vérifier si l'utilisateur est dans le leaderboard
+    const leaderboardEntry = await LeaderboardEntry.findOne({ userId });
+
+    if (!leaderboardEntry) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vous n\'êtes pas inscrit au classement',
+      });
+    }
+
+    // Récupérer les infos utilisateur à jour
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Utilisateur non trouvé',
+      });
+    }
+
+    // Recalculer les stats
+    const stats = await calculateUserStats(userId);
+
+    // Mettre à jour l'entrée leaderboard
+    leaderboardEntry.displayName = user.pseudo || user.prenom || 'Anonyme';
+    leaderboardEntry.avatarUrl = user.photo || null;
+    leaderboardEntry.stats = stats;
+    leaderboardEntry.lastUpdated = new Date();
+
+    await leaderboardEntry.save();
+
+    res.json({
+      success: true,
+      message: 'Profil mis à jour avec succès',
+      data: leaderboardEntry,
+    });
+  } catch (error) {
+    console.error('Erreur lors du rafraîchissement du profil:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors du rafraîchissement du profil',
+    });
+  }
+};
+
+/**
  * Fonction helper pour calculer les stats d'un utilisateur
  */
 async function calculateUserStats(userId) {
