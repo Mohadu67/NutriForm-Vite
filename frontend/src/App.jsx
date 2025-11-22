@@ -21,18 +21,13 @@ import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
 import CanonicalLink from "./components/CanonicalLink/CanonicalLink.jsx";
-import { initActivityListeners, checkSession, logout } from "./utils/sessionManager.js";
 import './i18n/config';
 
 export default function App() {
   useEffect(() => {
     Clarity.init("thd0hih6t5");
-
-    initActivityListeners();
-
-    if (!checkSession()) {
-      logout();
-    }
+    // Note: Session management is now handled server-side via httpOnly cookies
+    // No need for client-side session checks anymore
   }, []);
 
   return (

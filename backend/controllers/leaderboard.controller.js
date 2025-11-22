@@ -11,20 +11,38 @@ exports.getLeaderboard = async (req, res) => {
 
     let sortField = 'stats.totalSessions';
 
-    // Déterminer le champ de tri selon la période
-    if (period === 'week') {
-      sortField = 'stats.thisWeekSessions';
-    } else if (period === 'month') {
-      sortField = 'stats.thisMonthSessions';
-    }
-
-    // Déterminer le champ selon le type d'exercice
+    // Déterminer le champ de tri selon la combinaison période + type
     if (type === 'muscu') {
-      sortField = 'stats.muscuSessions';
+      if (period === 'week') {
+        sortField = 'stats.muscuThisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.muscuThisMonthSessions';
+      } else {
+        sortField = 'stats.muscuSessions';
+      }
     } else if (type === 'cardio') {
-      sortField = 'stats.cardioSessions';
+      if (period === 'week') {
+        sortField = 'stats.cardioThisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.cardioThisMonthSessions';
+      } else {
+        sortField = 'stats.cardioSessions';
+      }
     } else if (type === 'poids_corps') {
-      sortField = 'stats.poidsCorpsSessions';
+      if (period === 'week') {
+        sortField = 'stats.poidsCorpsThisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.poidsCorpsThisMonthSessions';
+      } else {
+        sortField = 'stats.poidsCorpsSessions';
+      }
+    } else {
+      // Type 'all' - filtrer uniquement par période
+      if (period === 'week') {
+        sortField = 'stats.thisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.thisMonthSessions';
+      }
     }
 
     const leaderboard = await LeaderboardEntry.find({ visibility: 'public' })
@@ -74,18 +92,38 @@ exports.getUserRank = async (req, res) => {
 
     let sortField = 'stats.totalSessions';
 
-    if (period === 'week') {
-      sortField = 'stats.thisWeekSessions';
-    } else if (period === 'month') {
-      sortField = 'stats.thisMonthSessions';
-    }
-
+    // Déterminer le champ de tri selon la combinaison période + type
     if (type === 'muscu') {
-      sortField = 'stats.muscuSessions';
+      if (period === 'week') {
+        sortField = 'stats.muscuThisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.muscuThisMonthSessions';
+      } else {
+        sortField = 'stats.muscuSessions';
+      }
     } else if (type === 'cardio') {
-      sortField = 'stats.cardioSessions';
+      if (period === 'week') {
+        sortField = 'stats.cardioThisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.cardioThisMonthSessions';
+      } else {
+        sortField = 'stats.cardioSessions';
+      }
     } else if (type === 'poids_corps') {
-      sortField = 'stats.poidsCorpsSessions';
+      if (period === 'week') {
+        sortField = 'stats.poidsCorpsThisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.poidsCorpsThisMonthSessions';
+      } else {
+        sortField = 'stats.poidsCorpsSessions';
+      }
+    } else {
+      // Type 'all' - filtrer uniquement par période
+      if (period === 'week') {
+        sortField = 'stats.thisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.thisMonthSessions';
+      }
     }
 
     // Compter combien d'utilisateurs ont un meilleur score
@@ -316,20 +354,28 @@ async function calculateUserStats(userId) {
   let muscuSessions = 0;
   let cardioSessions = 0;
   let poidsCorpsSessions = 0;
+  let muscuThisWeekSessions = 0;
+  let muscuThisMonthSessions = 0;
+  let cardioThisWeekSessions = 0;
+  let cardioThisMonthSessions = 0;
+  let poidsCorpsThisWeekSessions = 0;
+  let poidsCorpsThisMonthSessions = 0;
 
   sessions.forEach((session) => {
     totalCalories += session.calories || 0;
     totalDurationMin += Math.floor((session.durationSec || 0) / 60);
 
     const sessionDate = new Date(session.endedAt || session.createdAt);
+    const isThisWeek = sessionDate >= startOfWeek;
+    const isThisMonth = sessionDate >= startOfMonth;
 
     // Vérifier si la session est dans la semaine calendaire (lundi-dimanche)
-    if (sessionDate >= startOfWeek) {
+    if (isThisWeek) {
       thisWeekSessions++;
     }
 
     // Vérifier si la session est dans le mois calendaire
-    if (sessionDate >= startOfMonth) {
+    if (isThisMonth) {
       thisMonthSessions++;
     }
 
@@ -342,10 +388,16 @@ async function calculateUserStats(userId) {
 
       if (muscuCount >= cardioCount && muscuCount >= poidsCorpsCount) {
         muscuSessions++;
+        if (isThisWeek) muscuThisWeekSessions++;
+        if (isThisMonth) muscuThisMonthSessions++;
       } else if (cardioCount >= poidsCorpsCount) {
         cardioSessions++;
+        if (isThisWeek) cardioThisWeekSessions++;
+        if (isThisMonth) cardioThisMonthSessions++;
       } else {
         poidsCorpsSessions++;
+        if (isThisWeek) poidsCorpsThisWeekSessions++;
+        if (isThisMonth) poidsCorpsThisMonthSessions++;
       }
     }
   });
@@ -363,6 +415,12 @@ async function calculateUserStats(userId) {
     muscuSessions,
     cardioSessions,
     poidsCorpsSessions,
+    muscuThisWeekSessions,
+    muscuThisMonthSessions,
+    cardioThisWeekSessions,
+    cardioThisMonthSessions,
+    poidsCorpsThisWeekSessions,
+    poidsCorpsThisMonthSessions,
   };
 }
 
