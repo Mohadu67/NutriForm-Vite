@@ -511,7 +511,15 @@ export default function Dashboard() {
               onClick={() => stats.totalSessions > 0 && setShowSessionsPopup(true)}
               disabled={stats.totalSessions === 0}
             >
-              <span className={style.statIcon}>🏋️</span>
+              <span className={style.statIcon}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14.4 14.4 9.6 9.6"/>
+                  <path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/>
+                  <path d="m21.5 21.5-1.4-1.4"/>
+                  <path d="M3.9 3.9 2.5 2.5"/>
+                  <path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>
+                </svg>
+              </span>
               <div className={style.statContent}>
                 <span className={style.statValue}>{stats.totalSessions}</span>
                 <span className={style.statLabel}>Séances</span>
@@ -523,7 +531,11 @@ export default function Dashboard() {
               </div>
             </button>
             <div className={`${style.statCard} ${style.statCardStreak}`}>
-              <span className={style.statIcon}>🔥</span>
+              <span className={style.statIcon}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+                </svg>
+              </span>
               <div className={style.statContent}>
                 <span className={style.statValue}>{stats.streak}</span>
                 <span className={style.statLabel}>Série</span>
@@ -533,7 +545,12 @@ export default function Dashboard() {
               </div>
             </div>
             <div className={`${style.statCard} ${style.statCardDuration}`}>
-              <span className={style.statIcon}>⏱️</span>
+              <span className={style.statIcon}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </span>
               <div className={style.statContent}>
                 <span className={style.statValue}>{stats.totalHours}h{stats.totalMinutes % 60 > 0 ? String(stats.totalMinutes % 60).padStart(2, '0') : ''}</span>
                 <span className={style.statLabel}>Durée</span>
@@ -546,7 +563,16 @@ export default function Dashboard() {
               className={`${style.statCard} ${style.statCardClickable} ${style.statCardBadges}`}
               onClick={() => setShowBadgesPopup(true)}
             >
-              <span className={style.statIcon}>🏆</span>
+              <span className={style.statIcon}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                  <path d="M4 22h16"/>
+                  <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                  <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                  <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                </svg>
+              </span>
               <div className={style.statContent}>
                 <span className={style.statValue}>{badgeCount}</span>
                 <span className={style.statLabel}>Badges</span>
@@ -651,6 +677,74 @@ export default function Dashboard() {
             </section>
           )}
 
+          {/* Cardio Stats */}
+          {Number(sportStats.total) > 0 && (
+            <section className={style.cardioSection}>
+              <h2 className={style.sectionTitle}>Distances parcourues</h2>
+              <div className={style.cardioGrid}>
+                {Number(sportStats.run) > 0 && (
+                  <div className={style.cardioItem}>
+                    <div className={style.cardioIcon}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 21l-5-6 2-3"/>
+                        <path d="M15 21l5-6-2-3"/>
+                        <circle cx="12" cy="4" r="2"/>
+                        <path d="M10 7.5h4"/>
+                        <path d="M12 7.5v3"/>
+                        <path d="m8 13 4-2 4 2"/>
+                      </svg>
+                    </div>
+                    <span className={style.cardioValue}>{sportStats.run} km</span>
+                    <span className={style.cardioLabel}>Course</span>
+                  </div>
+                )}
+                {Number(sportStats.bike) > 0 && (
+                  <div className={style.cardioItem}>
+                    <div className={style.cardioIcon}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="5.5" cy="17.5" r="3.5"/>
+                        <circle cx="18.5" cy="17.5" r="3.5"/>
+                        <path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+                        <path d="m12 17.5-3.5-5.5 3.5-4.5"/>
+                        <path d="M12 12h5.5L15 6"/>
+                      </svg>
+                    </div>
+                    <span className={style.cardioValue}>{sportStats.bike} km</span>
+                    <span className={style.cardioLabel}>Vélo</span>
+                  </div>
+                )}
+                {Number(sportStats.swim) > 0 && (
+                  <div className={style.cardioItem}>
+                    <div className={style.cardioIcon}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="16" cy="5" r="2"/>
+                        <path d="M3 18c.6-.6 1.7-.6 2.4 0 .8.8 2 .8 2.8 0s2-.8 2.8 0c.8.8 2 .8 2.8 0s2-.8 2.8 0c.8.8 2 .8 2.8 0 .6-.6 1.7-.6 2.4 0"/>
+                        <path d="M3 14c.6-.6 1.7-.6 2.4 0 .8.8 2 .8 2.8 0s2-.8 2.8 0c.8.8 2 .8 2.8 0s2-.8 2.8 0c.8.8 2 .8 2.8 0 .6-.6 1.7-.6 2.4 0"/>
+                        <path d="m14 8-2 4 3 2"/>
+                      </svg>
+                    </div>
+                    <span className={style.cardioValue}>{sportStats.swim} km</span>
+                    <span className={style.cardioLabel}>Natation</span>
+                  </div>
+                )}
+                {Number(sportStats.walk) > 0 && (
+                  <div className={style.cardioItem}>
+                    <div className={style.cardioIcon}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="5" r="1"/>
+                        <path d="M10 22v-5l-1-1v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4l-1 1v5"/>
+                        <path d="m8 10-1.5-1.5"/>
+                        <path d="m16 10 1.5-1.5"/>
+                      </svg>
+                    </div>
+                    <span className={style.cardioValue}>{sportStats.walk} km</span>
+                    <span className={style.cardioLabel}>Marche</span>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
           {/* Body Metrics */}
           {(weightData || calorieTargets) && (
             <section className={style.metricsSection}>
@@ -659,8 +753,12 @@ export default function Dashboard() {
                 {weightData && (
                   <div className={style.metricCard}>
                     <div className={style.metricIcon}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12 2a10 10 0 1 0 10 10H12V2z" />
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M7 20h10"/>
+                        <path d="M5 17a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3z"/>
+                        <path d="M19 17a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3z"/>
+                        <path d="M12 11V8"/>
+                        <path d="m8 8 4-5 4 5"/>
                       </svg>
                     </div>
                     <div className={style.metricContent}>
@@ -680,8 +778,10 @@ export default function Dashboard() {
                 {calorieTargets && (
                   <div className={style.metricCard}>
                     <div className={style.metricIcon}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 2a10 10 0 0 1 7.07 17.07 10 10 0 1 1-14.14 0A10 10 0 0 1 12 2z"/>
+                        <path d="M12 6v6l4 2"/>
+                        <circle cx="12" cy="12" r="1"/>
                       </svg>
                     </div>
                     <div className={style.metricContent}>
@@ -689,43 +789,6 @@ export default function Dashboard() {
                       <span className={style.metricLabel}>kcal/jour maintien</span>
                       <span className={style.metricMeta}>Perte: {calorieTargets.deficit} • Prise: {calorieTargets.surplus}</span>
                     </div>
-                  </div>
-                )}
-              </div>
-            </section>
-          )}
-
-          {/* Cardio Stats */}
-          {Number(sportStats.total) > 0 && (
-            <section className={style.cardioSection}>
-              <h2 className={style.sectionTitle}>Distances parcourues</h2>
-              <div className={style.cardioGrid}>
-                {Number(sportStats.run) > 0 && (
-                  <div className={style.cardioItem}>
-                    <span className={style.cardioIcon}>🏃</span>
-                    <span className={style.cardioValue}>{sportStats.run} km</span>
-                    <span className={style.cardioLabel}>Course</span>
-                  </div>
-                )}
-                {Number(sportStats.bike) > 0 && (
-                  <div className={style.cardioItem}>
-                    <span className={style.cardioIcon}>🚴</span>
-                    <span className={style.cardioValue}>{sportStats.bike} km</span>
-                    <span className={style.cardioLabel}>Vélo</span>
-                  </div>
-                )}
-                {Number(sportStats.swim) > 0 && (
-                  <div className={style.cardioItem}>
-                    <span className={style.cardioIcon}>🏊</span>
-                    <span className={style.cardioValue}>{sportStats.swim} km</span>
-                    <span className={style.cardioLabel}>Natation</span>
-                  </div>
-                )}
-                {Number(sportStats.walk) > 0 && (
-                  <div className={style.cardioItem}>
-                    <span className={style.cardioIcon}>🚶</span>
-                    <span className={style.cardioValue}>{sportStats.walk} km</span>
-                    <span className={style.cardioLabel}>Marche</span>
                   </div>
                 )}
               </div>
