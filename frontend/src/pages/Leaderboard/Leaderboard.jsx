@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { secureApiCall } from '../../utils/authService';
+import { secureApiCall, isAuthenticated } from '../../utils/authService';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import styles from './Leaderboard.module.css';
@@ -41,7 +41,7 @@ const Leaderboard = () => {
 
   // Check if user is logged in
   const isLoggedIn = useMemo(() => {
-    return !!(localStorage.getItem('token') || sessionStorage.getItem('token'));
+    return isAuthenticated();
   }, []);
 
   // Fetch leaderboard data (public endpoint)
@@ -167,9 +167,23 @@ const Leaderboard = () => {
   };
 
   const getStatValue = (entry) => {
-    if (category === 'muscu') return entry.stats?.muscuSessions || 0;
-    if (category === 'cardio') return entry.stats?.cardioSessions || 0;
-    if (category === 'poids_corps') return entry.stats?.poidsCorpsSessions || 0;
+    // Combinaison période + type
+    if (category === 'muscu') {
+      if (period === 'week') return entry.stats?.muscuThisWeekSessions || 0;
+      if (period === 'month') return entry.stats?.muscuThisMonthSessions || 0;
+      return entry.stats?.muscuSessions || 0;
+    }
+    if (category === 'cardio') {
+      if (period === 'week') return entry.stats?.cardioThisWeekSessions || 0;
+      if (period === 'month') return entry.stats?.cardioThisMonthSessions || 0;
+      return entry.stats?.cardioSessions || 0;
+    }
+    if (category === 'poids_corps') {
+      if (period === 'week') return entry.stats?.poidsCorpsThisWeekSessions || 0;
+      if (period === 'month') return entry.stats?.poidsCorpsThisMonthSessions || 0;
+      return entry.stats?.poidsCorpsSessions || 0;
+    }
+    // Type 'all' - filtrer uniquement par période
     if (period === 'week') return entry.stats?.thisWeekSessions || 0;
     if (period === 'month') return entry.stats?.thisMonthSessions || 0;
     return entry.stats?.totalSessions || 0;
@@ -222,11 +236,17 @@ const Leaderboard = () => {
           )}
 
           {/* User rank */}
-          {isLoggedIn && isOptedIn && userRank && (
+          {isLoggedIn && isOptedIn && (
             <div className={styles.userRankBanner}>
-              <span>Tu es</span>
-              <strong className={styles.userRankNumber}>#{userRank}</strong>
-              <span>en {getCategoryLabel()}</span>
+              {userRank ? (
+                <>
+                  <span>Tu es</span>
+                  <strong className={styles.userRankNumber}>#{userRank}</strong>
+                  <span>en {getCategoryLabel()}</span>
+                </>
+              ) : (
+                <span>Chargement de ton rang...</span>
+              )}
               <div className={styles.userRankActions}>
                 <button
                   className={styles.refreshBtn}
