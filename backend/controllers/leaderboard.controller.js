@@ -127,8 +127,13 @@ exports.optIn = async (req, res) => {
     // Calculer les stats de l'utilisateur
     const stats = await calculateUserStats(userId);
 
-    // L'URL de l'avatar est déjà complète (Cloudinary) ou null
-    const avatarUrl = user.photo || null;
+    // Gérer l'URL de la photo (Cloudinary ou legacy locale)
+    let avatarUrl = user.photo || null;
+    if (avatarUrl && !avatarUrl.startsWith('http')) {
+      // Photo legacy (locale) - ajouter l'URL du backend
+      const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+      avatarUrl = `${backendBase}${avatarUrl}`;
+    }
 
     // Créer ou mettre à jour l'entrée leaderboard
     const leaderboardEntry = await LeaderboardEntry.findOneAndUpdate(
@@ -253,9 +258,17 @@ exports.refreshProfile = async (req, res) => {
     // Recalculer les stats
     const stats = await calculateUserStats(userId);
 
+    // Gérer l'URL de la photo (Cloudinary ou legacy locale)
+    let avatarUrl = user.photo || null;
+    if (avatarUrl && !avatarUrl.startsWith('http')) {
+      // Photo legacy (locale) - ajouter l'URL du backend
+      const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+      avatarUrl = `${backendBase}${avatarUrl}`;
+    }
+
     // Mettre à jour l'entrée leaderboard
     leaderboardEntry.displayName = user.pseudo || user.prenom || 'Anonyme';
-    leaderboardEntry.avatarUrl = user.photo || null;
+    leaderboardEntry.avatarUrl = avatarUrl;
     leaderboardEntry.stats = stats;
     leaderboardEntry.lastUpdated = new Date();
 
