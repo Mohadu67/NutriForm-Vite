@@ -15,6 +15,7 @@
   gap: 1.5rem;
   width: 95%;
   max-width: 680px;
+  margin: 120px auto 2rem;
 }
 
 @keyframes formFadeIn {
