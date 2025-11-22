@@ -41,7 +41,7 @@ const leaderboardEntrySchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
-      // Stats par type d'exercice
+      // Stats par type d'exercice (all-time)
       muscuSessions: {
         type: Number,
         default: 0,
@@ -51,6 +51,31 @@ const leaderboardEntrySchema = new mongoose.Schema(
         default: 0,
       },
       poidsCorpsSessions: {
+        type: Number,
+        default: 0,
+      },
+      // Stats par type d'exercice + période
+      muscuThisWeekSessions: {
+        type: Number,
+        default: 0,
+      },
+      muscuThisMonthSessions: {
+        type: Number,
+        default: 0,
+      },
+      cardioThisWeekSessions: {
+        type: Number,
+        default: 0,
+      },
+      cardioThisMonthSessions: {
+        type: Number,
+        default: 0,
+      },
+      poidsCorpsThisWeekSessions: {
+        type: Number,
+        default: 0,
+      },
+      poidsCorpsThisMonthSessions: {
         type: Number,
         default: 0,
       },
@@ -75,6 +100,12 @@ leaderboardEntrySchema.index({ 'stats.totalSessions': -1 });
 leaderboardEntrySchema.index({ 'stats.thisWeekSessions': -1 });
 leaderboardEntrySchema.index({ 'stats.thisMonthSessions': -1 });
 leaderboardEntrySchema.index({ 'stats.currentStreak': -1 });
+leaderboardEntrySchema.index({ 'stats.muscuSessions': -1 });
+leaderboardEntrySchema.index({ 'stats.cardioSessions': -1 });
+leaderboardEntrySchema.index({ 'stats.muscuThisWeekSessions': -1 });
+leaderboardEntrySchema.index({ 'stats.muscuThisMonthSessions': -1 });
+leaderboardEntrySchema.index({ 'stats.cardioThisWeekSessions': -1 });
+leaderboardEntrySchema.index({ 'stats.cardioThisMonthSessions': -1 });
 leaderboardEntrySchema.index({ visibility: 1 });
 
 module.exports = mongoose.model('LeaderboardEntry', leaderboardEntrySchema);
