@@ -232,11 +232,6 @@ export default function FormExo({ user: userProp }) {
         }
       });
 
-      console.log('📋 Exercices de la séance passée:', lastWeekSession.entries.map(e => ({
-        name: e.exerciseName,
-        id: e.exerciseId
-      })));
-
       // Convertir les entries en exercices complets depuis le JSON
       const exercises = lastWeekSession.entries.map((entry, index) => {
         let matchedExercise = null;
@@ -244,9 +239,6 @@ export default function FormExo({ user: userProp }) {
         // Stratégie 1 : Match par ID (le plus fiable)
         if (entry.exerciseId) {
           matchedExercise = byId.get(entry.exerciseId);
-          if (matchedExercise) {
-            console.log(`✅ Match par ID pour "${entry.exerciseName}" (${entry.exerciseId}):`, matchedExercise.name);
-          }
         }
 
         // Stratégie 2 : Fallback sur nom exact (insensible à la casse)
@@ -255,9 +247,6 @@ export default function FormExo({ user: userProp }) {
           matchedExercise = allExercises.find(ex =>
             (ex.name || '').toLowerCase().trim() === entryNameLower
           );
-          if (matchedExercise) {
-            console.log(`✅ Match par nom exact pour "${entry.exerciseName}":`, matchedExercise.name);
-          }
         }
 
         // Stratégie 3 : Recherche floue
@@ -267,9 +256,6 @@ export default function FormExo({ user: userProp }) {
             const exNameLower = (ex.name || '').toLowerCase().trim();
             return exNameLower.includes(entryNameLower) || entryNameLower.includes(exNameLower);
           });
-          if (matchedExercise) {
-            console.log(`⚠️ Match floue pour "${entry.exerciseName}":`, matchedExercise.name);
-          }
         }
 
         if (matchedExercise) {
@@ -310,7 +296,6 @@ export default function FormExo({ user: userProp }) {
         }
       });
       const muscleIds = Array.from(musclesSet);
-      console.log('🎯 Muscles détectés pour propositions:', muscleIds);
 
       setSelectedExercises(exercises);
       setCurrentStep(3);

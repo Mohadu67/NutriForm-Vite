@@ -64,7 +64,7 @@ const ShareModal = ({ show, onHide, session, user }) => {
 
       return canvas;
     } catch (error) {
-      console.error('Erreur lors de la génération de l\'image:', error);
+      t.error('Erreur lors de la génération de l\'image:', error);
       throw error;
     } finally {
       setGenerating(false);
