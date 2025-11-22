@@ -76,10 +76,12 @@ exports.login = async (req, res) => {
 
     // Envoi du token via cookie httpOnly (protection XSS)
     // sameSite: 'none' permet les cookies cross-domain (harmonith.fr <-> nutriform-vite.onrender.com)
+    // En dev local: sameSite 'lax' car même domaine (localhost)
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
     });
@@ -286,10 +288,11 @@ exports.changePassword = async (req, res) => {
 exports.logout = async (req, res) => {
   try {
     // Supprimer le cookie httpOnly
+    const isProduction = process.env.NODE_ENV === 'production';
     res.clearCookie('token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
       path: '/',
     });
 
