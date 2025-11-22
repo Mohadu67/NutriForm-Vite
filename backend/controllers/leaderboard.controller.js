@@ -11,20 +11,38 @@ exports.getLeaderboard = async (req, res) => {
 
     let sortField = 'stats.totalSessions';
 
-    // Déterminer le champ de tri selon la période
-    if (period === 'week') {
-      sortField = 'stats.thisWeekSessions';
-    } else if (period === 'month') {
-      sortField = 'stats.thisMonthSessions';
-    }
-
-    // Déterminer le champ selon le type d'exercice
+    // Déterminer le champ de tri selon la combinaison période + type
     if (type === 'muscu') {
-      sortField = 'stats.muscuSessions';
+      if (period === 'week') {
+        sortField = 'stats.muscuThisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.muscuThisMonthSessions';
+      } else {
+        sortField = 'stats.muscuSessions';
+      }
     } else if (type === 'cardio') {
-      sortField = 'stats.cardioSessions';
+      if (period === 'week') {
+        sortField = 'stats.cardioThisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.cardioThisMonthSessions';
+      } else {
+        sortField = 'stats.cardioSessions';
+      }
     } else if (type === 'poids_corps') {
-      sortField = 'stats.poidsCorpsSessions';
+      if (period === 'week') {
+        sortField = 'stats.poidsCorpsThisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.poidsCorpsThisMonthSessions';
+      } else {
+        sortField = 'stats.poidsCorpsSessions';
+      }
+    } else {
+      // Type 'all' - filtrer uniquement par période
+      if (period === 'week') {
+        sortField = 'stats.thisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.thisMonthSessions';
+      }
     }
 
     const leaderboard = await LeaderboardEntry.find({ visibility: 'public' })
@@ -74,18 +92,38 @@ exports.getUserRank = async (req, res) => {
 
     let sortField = 'stats.totalSessions';
 
-    if (period === 'week') {
-      sortField = 'stats.thisWeekSessions';
-    } else if (period === 'month') {
-      sortField = 'stats.thisMonthSessions';
-    }
-
+    // Déterminer le champ de tri selon la combinaison période + type
     if (type === 'muscu') {
-      sortField = 'stats.muscuSessions';
+      if (period === 'week') {
+        sortField = 'stats.muscuThisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.muscuThisMonthSessions';
+      } else {
+        sortField = 'stats.muscuSessions';
+      }
     } else if (type === 'cardio') {
-      sortField = 'stats.cardioSessions';
+      if (period === 'week') {
+        sortField = 'stats.cardioThisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.cardioThisMonthSessions';
+      } else {
+        sortField = 'stats.cardioSessions';
+      }
     } else if (type === 'poids_corps') {
-      sortField = 'stats.poidsCorpsSessions';
+      if (period === 'week') {
+        sortField = 'stats.poidsCorpsThisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.poidsCorpsThisMonthSessions';
+      } else {
+        sortField = 'stats.poidsCorpsSessions';
+      }
+    } else {
+      // Type 'all' - filtrer uniquement par période
+      if (period === 'week') {
+        sortField = 'stats.thisWeekSessions';
+      } else if (period === 'month') {
+        sortField = 'stats.thisMonthSessions';
+      }
     }
 
     // Compter combien d'utilisateurs ont un meilleur score
@@ -127,8 +165,13 @@ exports.optIn = async (req, res) => {
     // Calculer les stats de l'utilisateur
     const stats = await calculateUserStats(userId);
 
-    // L'URL de l'avatar est déjà complète (Cloudinary) ou null
-    const avatarUrl = user.photo || null;
+    // Gérer l'URL de la photo (Cloudinary ou legacy locale)
+    let avatarUrl = user.photo || null;
+    if (avatarUrl && !avatarUrl.startsWith('http')) {
+      // Photo legacy (locale) - ajouter l'URL du backend
+      const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+      avatarUrl = `${backendBase}${avatarUrl}`;
+    }
 
     // Créer ou mettre à jour l'entrée leaderboard
     const leaderboardEntry = await LeaderboardEntry.findOneAndUpdate(
@@ -224,6 +267,66 @@ exports.getOptInStatus = async (req, res) => {
 };
 
 /**
+ * Rafraîchir le profil de l'utilisateur dans le leaderboard
+ * Met à jour le nom, la photo et les statistiques
+ */
+exports.refreshProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Vérifier si l'utilisateur est dans le leaderboard
+    const leaderboardEntry = await LeaderboardEntry.findOne({ userId });
+
+    if (!leaderboardEntry) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vous n\'êtes pas inscrit au classement',
+      });
+    }
+
+    // Récupérer les infos utilisateur à jour
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Utilisateur non trouvé',
+      });
+    }
+
+    // Recalculer les stats
+    const stats = await calculateUserStats(userId);
+
+    // Gérer l'URL de la photo (Cloudinary ou legacy locale)
+    let avatarUrl = user.photo || null;
+    if (avatarUrl && !avatarUrl.startsWith('http')) {
+      // Photo legacy (locale) - ajouter l'URL du backend
+      const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+      avatarUrl = `${backendBase}${avatarUrl}`;
+    }
+
+    // Mettre à jour l'entrée leaderboard
+    leaderboardEntry.displayName = user.pseudo || user.prenom || 'Anonyme';
+    leaderboardEntry.avatarUrl = avatarUrl;
+    leaderboardEntry.stats = stats;
+    leaderboardEntry.lastUpdated = new Date();
+
+    await leaderboardEntry.save();
+
+    res.json({
+      success: true,
+      message: 'Profil mis à jour avec succès',
+      data: leaderboardEntry,
+    });
+  } catch (error) {
+    console.error('Erreur lors du rafraîchissement du profil:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors du rafraîchissement du profil',
+    });
+  }
+};
+
+/**
  * Fonction helper pour calculer les stats d'un utilisateur
  */
 async function calculateUserStats(userId) {
@@ -233,8 +336,16 @@ async function calculateUserStats(userId) {
   }).lean();
 
   const now = new Date();
-  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  // Début de la semaine (lundi 00:00:00)
+  const startOfWeek = new Date(now);
+  const dayOfWeek = startOfWeek.getDay(); // 0 = dimanche, 1 = lundi, ...
+  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Si dimanche, reculer de 6 jours
+  startOfWeek.setDate(startOfWeek.getDate() + diff);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  // Début du mois (1er jour du mois 00:00:00)
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
 
   let totalCalories = 0;
   let totalDurationMin = 0;
@@ -243,18 +354,28 @@ async function calculateUserStats(userId) {
   let muscuSessions = 0;
   let cardioSessions = 0;
   let poidsCorpsSessions = 0;
+  let muscuThisWeekSessions = 0;
+  let muscuThisMonthSessions = 0;
+  let cardioThisWeekSessions = 0;
+  let cardioThisMonthSessions = 0;
+  let poidsCorpsThisWeekSessions = 0;
+  let poidsCorpsThisMonthSessions = 0;
 
   sessions.forEach((session) => {
     totalCalories += session.calories || 0;
     totalDurationMin += Math.floor((session.durationSec || 0) / 60);
 
     const sessionDate = new Date(session.endedAt || session.createdAt);
+    const isThisWeek = sessionDate >= startOfWeek;
+    const isThisMonth = sessionDate >= startOfMonth;
 
-    if (sessionDate >= oneWeekAgo) {
+    // Vérifier si la session est dans la semaine calendaire (lundi-dimanche)
+    if (isThisWeek) {
       thisWeekSessions++;
     }
 
-    if (sessionDate >= oneMonthAgo) {
+    // Vérifier si la session est dans le mois calendaire
+    if (isThisMonth) {
       thisMonthSessions++;
     }
 
@@ -267,10 +388,16 @@ async function calculateUserStats(userId) {
 
       if (muscuCount >= cardioCount && muscuCount >= poidsCorpsCount) {
         muscuSessions++;
+        if (isThisWeek) muscuThisWeekSessions++;
+        if (isThisMonth) muscuThisMonthSessions++;
       } else if (cardioCount >= poidsCorpsCount) {
         cardioSessions++;
+        if (isThisWeek) cardioThisWeekSessions++;
+        if (isThisMonth) cardioThisMonthSessions++;
       } else {
         poidsCorpsSessions++;
+        if (isThisWeek) poidsCorpsThisWeekSessions++;
+        if (isThisMonth) poidsCorpsThisMonthSessions++;
       }
     }
   });
@@ -288,6 +415,12 @@ async function calculateUserStats(userId) {
     muscuSessions,
     cardioSessions,
     poidsCorpsSessions,
+    muscuThisWeekSessions,
+    muscuThisMonthSessions,
+    cardioThisWeekSessions,
+    cardioThisMonthSessions,
+    poidsCorpsThisWeekSessions,
+    poidsCorpsThisMonthSessions,
   };
 }
 

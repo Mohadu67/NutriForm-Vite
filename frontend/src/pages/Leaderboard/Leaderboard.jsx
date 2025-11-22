@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { secureApiCall } from '../../utils/authService';
+import { secureApiCall, isAuthenticated } from '../../utils/authService';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import styles from './Leaderboard.module.css';
@@ -37,10 +37,11 @@ const Leaderboard = () => {
   const [isOptedIn, setIsOptedIn] = useState(false);
   const [optInLoading, setOptInLoading] = useState(false);
   const [userRank, setUserRank] = useState(null);
+  const [refreshLoading, setRefreshLoading] = useState(false);
 
   // Check if user is logged in
   const isLoggedIn = useMemo(() => {
-    return !!(localStorage.getItem('token') || sessionStorage.getItem('token'));
+    return isAuthenticated();
   }, []);
 
   // Fetch leaderboard data (public endpoint)
@@ -78,15 +79,21 @@ const Leaderboard = () => {
 
       if (data.success) {
         setIsOptedIn(data.isOptedIn);
+        console.log('[DEBUG] Status data:', data);
         if (data.isOptedIn && data.data) {
           const userId = data.data.userId;
+          console.log('[DEBUG] UserId from status:', userId);
           const rankResponse = await fetch(
             `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/leaderboard/user/${userId}/rank?period=${period}&type=${category}`
           );
           const rankData = await rankResponse.json();
+          console.log('[DEBUG] Rank data:', rankData);
           if (rankData.success) {
             setUserRank(rankData.rank);
+            console.log('[DEBUG] User rank set to:', rankData.rank);
           }
+        } else {
+          console.log('[DEBUG] Not opted in or no data:', { isOptedIn: data.isOptedIn, hasData: !!data.data });
         }
       }
     } catch (err) {
@@ -139,10 +146,44 @@ const Leaderboard = () => {
     }
   };
 
+  const handleRefreshProfile = async () => {
+    if (!isLoggedIn) return;
+    setRefreshLoading(true);
+
+    try {
+      const response = await secureApiCall('/api/leaderboard/refresh-profile', { method: 'POST' });
+      const data = await response.json();
+
+      if (data.success) {
+        // Rafraîchir les données du leaderboard après la mise à jour
+        await fetchLeaderboard();
+        await checkOptInStatus();
+      }
+    } catch (err) {
+      console.error('Erreur lors du rafraîchissement:', err);
+    } finally {
+      setRefreshLoading(false);
+    }
+  };
+
   const getStatValue = (entry) => {
-    if (category === 'muscu') return entry.stats?.muscuSessions || 0;
-    if (category === 'cardio') return entry.stats?.cardioSessions || 0;
-    if (category === 'poids_corps') return entry.stats?.poidsCorpsSessions || 0;
+    // Combinaison période + type
+    if (category === 'muscu') {
+      if (period === 'week') return entry.stats?.muscuThisWeekSessions || 0;
+      if (period === 'month') return entry.stats?.muscuThisMonthSessions || 0;
+      return entry.stats?.muscuSessions || 0;
+    }
+    if (category === 'cardio') {
+      if (period === 'week') return entry.stats?.cardioThisWeekSessions || 0;
+      if (period === 'month') return entry.stats?.cardioThisMonthSessions || 0;
+      return entry.stats?.cardioSessions || 0;
+    }
+    if (category === 'poids_corps') {
+      if (period === 'week') return entry.stats?.poidsCorpsThisWeekSessions || 0;
+      if (period === 'month') return entry.stats?.poidsCorpsThisMonthSessions || 0;
+      return entry.stats?.poidsCorpsSessions || 0;
+    }
+    // Type 'all' - filtrer uniquement par période
     if (period === 'week') return entry.stats?.thisWeekSessions || 0;
     if (period === 'month') return entry.stats?.thisMonthSessions || 0;
     return entry.stats?.totalSessions || 0;
@@ -195,14 +236,30 @@ const Leaderboard = () => {
           )}
 
           {/* User rank */}
-          {isLoggedIn && isOptedIn && userRank && (
+          {isLoggedIn && isOptedIn && (
             <div className={styles.userRankBanner}>
-              <span>Tu es</span>
-              <strong className={styles.userRankNumber}>#{userRank}</strong>
-              <span>en {getCategoryLabel()}</span>
-              <button className={styles.optOutBtn} onClick={handleOptOut} disabled={optInLoading}>
-                Quitter
-              </button>
+              {userRank ? (
+                <>
+                  <span>Tu es</span>
+                  <strong className={styles.userRankNumber}>#{userRank}</strong>
+                  <span>en {getCategoryLabel()}</span>
+                </>
+              ) : (
+                <span>Chargement de ton rang...</span>
+              )}
+              <div className={styles.userRankActions}>
+                <button
+                  className={styles.refreshBtn}
+                  onClick={handleRefreshProfile}
+                  disabled={refreshLoading}
+                  title="Rafraîchir mon profil"
+                >
+                  {refreshLoading ? '⏳' : '🔄'}
+                </button>
+                <button className={styles.optOutBtn} onClick={handleOptOut} disabled={optInLoading}>
+                  Quitter
+                </button>
+              </div>
             </div>
           )}
 

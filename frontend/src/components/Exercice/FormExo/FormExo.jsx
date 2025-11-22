@@ -8,7 +8,6 @@ import SuivieExo from "../ExerciceSuivie/SuivieExo.jsx";
 import ChercherExo from "../ExerciceSuivie/MoteurRechercheUser/ChercherExo.jsx";
 import SuivieSeance from "../../History/SessionTracking/SuivieSeance.jsx";
 import Stat from "../../History/SessionTracking/stats/Stat.jsx";
-import { saveSession } from "../../History/SessionTracking/sessionApi.js";
 import ConseilJour from "./ConseilJour.jsx";
 import { idOf } from "../Shared/idOf.js";
 import RepeatSessionModal from "../RepeatSessionModal/RepeatSessionModal.jsx";
@@ -17,7 +16,7 @@ import { loadExercises } from "../../../utils/exercisesLoader.js";
 
 export default function FormExo({ user: userProp }) {
   const user = userProp || getCurrentUser();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [sessionName, setSessionName] = useState(() => {
     try { return JSON.parse(localStorage.getItem("formSessionName")) || ""; } catch { return ""; }
   });
@@ -525,29 +524,15 @@ export default function FormExo({ user: userProp }) {
                 };
               })();
 
+              // Note: La séance est déjà sauvegardée par Chrono.jsx
+              // Pas besoin de sauvegarder ici pour éviter les doublons
               try {
-                if (user && (user.id || user._id)) {
-                  const body = {
-                    name:
-                      sessionName ||
-                      t("exercise.form.defaultSessionName", {
-                        date: new Date().toLocaleDateString(i18n.language),
-                      }),
-                    startedAt: stats?.when || new Date().toISOString(),
-                    endedAt: new Date().toISOString(),
-                    notes: "",
-                    items,
-                    summary: summaryForSave,
-                    plannedExercises: summaryForSave?.plannedExercises,
-                    completedExercises: summaryForSave?.completedExercises,
-                  };
-                  const saved = await saveSession(body);
-                  if (saved && (saved.id || saved._id)) {
-                    stats.savedId = saved.id || saved._id;
-                  }
+                // Récupérer l'ID de la séance déjà sauvegardée si disponible
+                if (payload?.savedSessionId) {
+                  stats.savedId = payload.savedSessionId;
                 }
               } catch (e) {
-                console.warn("Persist session failed:", e?.message || e);
+                console.warn("Get saved session ID failed:", e?.message || e);
               }
 
               setLastStats(stats);

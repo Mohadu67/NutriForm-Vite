@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import usePageTitle from "../../hooks/usePageTitle.js";
+import { isAuthenticated, secureApiCall } from "../../utils/authService.js";
 import FormRM from "./FormRM/FormRM.jsx";
 import ResultatsRM from "./ResultatsRM/ResultatsRM.jsx";
 import TableauCharges from "./TableauCharges/TableauCharges.jsx";
@@ -86,10 +87,7 @@ export default function RMPage() {
   const handleSaveTest = async () => {
     if (!rmData) return;
 
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-    const user = localStorage.getItem("user");
-
-    if (!token || !user) {
+    if (!isAuthenticated()) {
       showToast("Connecte-toi pour sauvegarder tes tests de 1RM et suivre ta progression !", "warning");
       return;
     }
@@ -121,11 +119,10 @@ export default function RMPage() {
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/history`, {
+      const response = await secureApiCall('/api/history', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
