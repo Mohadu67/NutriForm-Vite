@@ -356,6 +356,26 @@
   color: var(--muted, #6b7280);
 }
 
+.deleteBtn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.deleteBtn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.deleteBtn:active {
+  transform: scale(0.95);
+}
+
 /* ========== METRICS SECTION ========== */
 .metricsSection {
   margin-bottom: 16px;

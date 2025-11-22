@@ -7,7 +7,7 @@ import ShareModal from "../../../Share/ShareModal";
 
 export default function FinSeance({ items = [], onFinish, sessionData }) {
   const { t } = useTranslation();
-  const { saving, error, save } = useSaveSession();
+  const { saving, save } = useSaveSession();
   const [done, setDone] = useState(false);
   const [progress, setProgress] = useState({ total: 0, current: 0 });
   const [errors, setErrors] = useState([]);
@@ -39,30 +39,22 @@ export default function FinSeance({ items = [], onFinish, sessionData }) {
     }
 
     const total = items.length;
-    setProgress({ total, current: 0 });
+    setProgress({ total, current: total });
 
-    let okCount = 0;
-    let failCount = 0;
-    const errs = [];
-    let lastSavedSession = null;
+    // Créer UNE seule séance avec TOUS les exercices
+    const res = await save({
+      items: items,
+      snapshot: sessionData || {}
+    });
 
-    for (let i = 0; i < total; i++) {
-      const it = items[i];
-      const res = await save({ exo: it.exo, data: it.data, mode: it.mode });
-      if (res?.ok) {
-        okCount++;
-        if (res?.session) lastSavedSession = res.session;
-      } else {
-        failCount++;
-        if (error) errs.push(error);
-      }
-      setProgress({ total, current: i + 1 });
-    }
+    const okCount = res?.ok ? 1 : 0;
+    const failCount = res?.ok ? 0 : 1;
+    const errs = res?.error ? [res.error] : [];
 
     setDone(true);
     setErrors(errs);
-    if (lastSavedSession || sessionData) {
-      setSavedSession(lastSavedSession || sessionData);
+    if (res?.data || sessionData) {
+      setSavedSession(res?.data || sessionData);
     }
     if (onFinish) onFinish({ ok: failCount === 0, okCount, failCount, errors: errs });
   }
