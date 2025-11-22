@@ -79,15 +79,21 @@ const Leaderboard = () => {
 
       if (data.success) {
         setIsOptedIn(data.isOptedIn);
+        console.log('[DEBUG] Status data:', data);
         if (data.isOptedIn && data.data) {
           const userId = data.data.userId;
+          console.log('[DEBUG] UserId from status:', userId);
           const rankResponse = await fetch(
             `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/leaderboard/user/${userId}/rank?period=${period}&type=${category}`
           );
           const rankData = await rankResponse.json();
+          console.log('[DEBUG] Rank data:', rankData);
           if (rankData.success) {
             setUserRank(rankData.rank);
+            console.log('[DEBUG] User rank set to:', rankData.rank);
           }
+        } else {
+          console.log('[DEBUG] Not opted in or no data:', { isOptedIn: data.isOptedIn, hasData: !!data.data });
         }
       }
     } catch (err) {
