@@ -285,8 +285,16 @@ async function calculateUserStats(userId) {
   }).lean();
 
   const now = new Date();
-  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  // Début de la semaine (lundi 00:00:00)
+  const startOfWeek = new Date(now);
+  const dayOfWeek = startOfWeek.getDay(); // 0 = dimanche, 1 = lundi, ...
+  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Si dimanche, reculer de 6 jours
+  startOfWeek.setDate(startOfWeek.getDate() + diff);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  // Début du mois (1er jour du mois 00:00:00)
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
 
   let totalCalories = 0;
   let totalDurationMin = 0;
@@ -302,11 +310,13 @@ async function calculateUserStats(userId) {
 
     const sessionDate = new Date(session.endedAt || session.createdAt);
 
-    if (sessionDate >= oneWeekAgo) {
+    // Vérifier si la session est dans la semaine calendaire (lundi-dimanche)
+    if (sessionDate >= startOfWeek) {
       thisWeekSessions++;
     }
 
-    if (sessionDate >= oneMonthAgo) {
+    // Vérifier si la session est dans le mois calendaire
+    if (sessionDate >= startOfMonth) {
       thisMonthSessions++;
     }
 
