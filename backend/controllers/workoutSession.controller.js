@@ -276,7 +276,10 @@ async function getSessions(req, res) {
     if (!userId) return res.status(401).json({ error: "unauthorized" });
 
     const { date, limit = 20, cursor } = req.query;
-    const q = { userId: new mongoose.Types.ObjectId(userId) };
+    const q = {
+      userId: new mongoose.Types.ObjectId(userId),
+      status: 'finished' // Ne compter que les séances terminées
+    };
 
     if (date) {
       const { start, end } = dayRangeUtc(date);

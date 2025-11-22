@@ -6,6 +6,7 @@ import Footer from "../../components/Footer/Footer.jsx";
 import style from "./Dashboard.module.css";
 import useHistoryData from "../../components/History/HistoryUser/UseHistoryData.js";
 import WeeklyGoalModal from "../../components/History/DashboardCards/WeeklyGoalModal.jsx";
+import { deleteSession } from "../../components/History/SessionTracking/sessionApi.js";
 
 export default function Dashboard() {
   usePageTitle("Dashboard");
@@ -88,6 +89,18 @@ export default function Dashboard() {
     setTempGoal(weeklyGoal);
     setShowGoalModal(true);
   }, [weeklyGoal]);
+
+  const handleDeleteSession = useCallback(async (sessionId) => {
+    if (!window.confirm("Supprimer cette séance ?")) return;
+    try {
+      await deleteSession(sessionId);
+      // Mettre à jour la liste des séances en supprimant celle-ci
+      setUserSessions(prev => prev.filter(s => s.id !== sessionId && s._id !== sessionId));
+    } catch (err) {
+      console.error("Erreur lors de la suppression de la séance:", err);
+      alert("Impossible de supprimer la séance");
+    }
+  }, []);
 
   // IMC & Weight data
   const imcPoints = useMemo(() => records.filter((r) => r.type === "imc"), [records]);
@@ -517,6 +530,14 @@ export default function Dashboard() {
                         {extractSessionCalories(session) > 0 ? ` • ${extractSessionCalories(session)} kcal` : ""}
                       </span>
                     </div>
+                    <button
+                      className={style.deleteBtn}
+                      onClick={() => handleDeleteSession(session.id || session._id)}
+                      title="Supprimer cette séance"
+                      aria-label="Supprimer cette séance"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 ))}
               </div>
