@@ -5,6 +5,119 @@
   width: 100%;
 }
 
+/* Prompt de récupération */
+.recoveryPrompt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.recoveryContent {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  max-width: 400px;
+  margin: 1rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.4s ease;
+  text-align: center;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.recoveryIcon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.recoveryContent h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  color: #2d3748;
+}
+
+.recoveryContent p {
+  margin: 0 0 1.5rem 0;
+  color: #4a5568;
+  line-height: 1.6;
+}
+
+.recoveryButtons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.recoverButton,
+.discardButton {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.recoverButton {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: white;
+}
+
+.recoverButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(17, 153, 142, 0.4);
+}
+
+.discardButton {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.discardButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 87, 108, 0.4);
+}
+
 /* Écran de démarrage */
 .startScreen {
   display: flex;
@@ -44,6 +157,17 @@
   color: #4a5568;
   max-width: 400px;
   line-height: 1.5;
+}
+
+/* Indicateur GPS pré-démarrage */
+.preStartGps {
+  padding: 0.75rem 1.25rem;
+  background: white;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s ease;
 }
 
 .mapContainer {
@@ -149,6 +273,17 @@
   transform: translateY(0);
 }
 
+.recenterButton {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+}
+
+.recenterButton:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
 /* Animation du point actuel */
 .currentPositionPulse {
   position: relative;
@@ -166,6 +301,16 @@
   border: 3px solid white;
   border-radius: 50%;
   box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+  animation: pulseRing 2s infinite;
+}
+
+.pausedPositionDot {
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, #ff9800, #ff5722);
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7);
   animation: pulseRing 2s infinite;
 }
 
@@ -266,6 +411,7 @@
 
 .controls {
   display: flex;
+  gap: 0.75rem;
   justify-content: center;
   margin-top: 0.5rem;
 }
@@ -279,6 +425,8 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  flex: 1;
+  max-width: 200px;
 }
 
 .startButton {
@@ -287,6 +435,26 @@
 }
 
 .startButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(17, 153, 142, 0.4);
+}
+
+.pauseButton {
+  background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+  color: white;
+}
+
+.pauseButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
+}
+
+.resumeButton {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: white;
+}
+
+.resumeButton:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(17, 153, 142, 0.4);
 }
@@ -316,6 +484,24 @@
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 500;
+  position: relative;
+}
+
+.autoSave {
+  position: absolute;
+  right: 1rem;
+  font-size: 0.75rem;
+  opacity: 0.7;
+  animation: fadeInOut 2s infinite;
+}
+
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .pulse {
@@ -367,6 +553,37 @@
 
   .trackButton {
     width: 100%;
+    max-width: none;
     padding: 1rem;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .mapStats {
+    top: 12px;
+    right: 12px;
+  }
+
+  .statBadge {
+    padding: 6px 10px;
+  }
+
+  .statIcon {
+    font-size: 12px;
+  }
+
+  .statText {
+    font-size: 12px;
+  }
+
+  .recoveryContent {
+    padding: 1.5rem;
+  }
+
+  .autoSave {
+    position: static;
+    margin-left: auto;
   }
 }
