@@ -14,10 +14,17 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
   const { time, setTime, running, setRunning, showConfirm, setShowConfirm, startTs, setStartTs, stopAndReset, freezeClock } = useChronoCore(startedAt, { resume: resumeFromStartedAt });
 
   const hasSession = Boolean(startTs || startedAt);
-  const [showWarmup, setShowWarmup] = useState(false);
+  const [showWarmup, setShowWarmup] = useState(!hasSession); // Afficher automatiquement si pas de session en cours
   const [showShareModal, setShowShareModal] = useState(false);
   const [savedSession, setSavedSession] = useState(null);
   const [sessionStats, setSessionStats] = useState(null);
+
+  // Afficher le modal d'échauffement automatiquement au premier chargement
+  useEffect(() => {
+    if (!hasSession && !showWarmup) {
+      setShowWarmup(true);
+    }
+  }, [hasSession, showWarmup]);
 
   const muscleGroups = useMemo(() => {
     const safe = Array.isArray(items) ? items : [];
@@ -373,7 +380,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
     })();
 
     try {
-      const res = await save({ entries, durationSec: finalSec, label, summary });
+      const res = await save({ entries, durationSec: finalSec, label: displayLabel, summary });
       const savedCount = res?.ok && !res?.skipped ? 1 : 0;
 
       // Stocker la session et les stats pour le partage
@@ -404,6 +411,49 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
     return `${minutes}:${seconds}`;
   };
 
+  // Déterminer le label à afficher avec génération automatique
+  const displayLabel = useMemo(() => {
+    const isDefaultLabel = !label || label.toLowerCase() === 'ta séance' || label.toLowerCase() === 'séance' || label.trim() === '';
+
+    if (!isDefaultLabel) {
+      return label;
+    }
+
+    // Générer un nom automatique basé sur les groupes musculaires
+    if (!muscleGroups || muscleGroups.length === 0) {
+      return "Séance d'entraînement";
+    }
+
+    const muscleNames = {
+      'pectoraux': 'Pectoraux',
+      'epaules': 'Épaules',
+      'bras': 'Bras',
+      'dos': 'Dos',
+      'core': 'Core',
+      'jambes': 'Jambes',
+      'cardio': 'Cardio',
+      'yoga': 'Yoga',
+      'meditation': 'Méditation',
+      'etirement': 'Étirements',
+      'swim': 'Natation'
+    };
+
+    const names = muscleGroups.map(g => muscleNames[g] || g).filter(Boolean);
+
+    let generatedName;
+    if (names.length === 0) {
+      generatedName = "Séance d'entraînement";
+    } else if (names.length === 1) {
+      generatedName = `Séance ${names[0]}`;
+    } else if (names.length === 2) {
+      generatedName = `Séance ${names[0]} + ${names[1]}`;
+    } else {
+      generatedName = `Séance Full Body`;
+    }
+
+    return generatedName;
+  }, [label, muscleGroups]);
+
   const handleStartSession = () => {
     setTime(0);
     if (!startTs) {
@@ -433,7 +483,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
       <div className={styles.card}>
         <div className={styles.header}>
           <h2 className={styles.title}>
-            C'est parti pour ta séance <span className={styles.highlight}>{label || "ta séance"}</span>
+            C'est parti pour <span className={styles.highlight}>{displayLabel}</span>
           </h2>
           <div className={styles.actions}>
             {(!hasSession) && (
@@ -460,8 +510,10 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
               </button>
             )}
             {(hasSession && running) && (
-              <button className={styles.goBtn} disabled>
-                En cours…
+              <button
+                className={styles.goBtn}
+                onClick={() => setRunning(false)}>
+                Pause
               </button>
             )}
             <button className={styles.finishBtn} onClick={() => setShowConfirm(true)} disabled={saving} aria-busy={saving}>
@@ -493,6 +545,18 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
               <button onClick={() => setShowConfirm(false)}>Continuer</button>
               <button className={styles.finishBtn} onClick={handleConfirmFinish} disabled={saving} aria-busy={saving}>Terminer</button>
             </div>
+            <button
+              className={styles.cancelLink}
+              onClick={() => {
+                setShowConfirm(false);
+                stopAndReset();
+                if (typeof onFinish === 'function') {
+                  onFinish({ durationSec: 0, savedCount: 0, calories: 0, doneExercises: 0, totalExercises: 0 });
+                }
+              }}
+            >
+              Annuler la séance
+            </button>
           </div>
         </div>,
         document.body

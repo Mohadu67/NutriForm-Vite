@@ -328,6 +328,87 @@ export default function Dashboard() {
 
   const badgeCount = useMemo(() => badges.filter(b => b.unlocked).length, [badges]);
 
+  // Next badge to unlock
+  const nextBadge = useMemo(() => {
+    return badges.find(b => !b.unlocked);
+  }, [badges]);
+
+  // Best streak ever
+  const bestStreak = useMemo(() => {
+    let maxStreak = 0;
+    let currentStreak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const sortedDates = userSessions
+      .map((s) => {
+        const d = parseDate(s?.date || s?.createdAt || s?.endedAt);
+        if (!d) return null;
+        d.setHours(0, 0, 0, 0);
+        return d;
+      })
+      .filter(Boolean)
+      .sort((a, b) => b - a);
+
+    const uniqueDates = [...new Set(sortedDates.map((d) => d.getTime()))].map((t) => new Date(t));
+
+    for (let i = 0; i < uniqueDates.length; i++) {
+      if (i === 0 || uniqueDates[i].getTime() === uniqueDates[i - 1].getTime() - 86400000) {
+        currentStreak++;
+        maxStreak = Math.max(maxStreak, currentStreak);
+      } else {
+        currentStreak = 1;
+      }
+    }
+
+    return maxStreak;
+  }, [userSessions, parseDate]);
+
+  // Average session duration
+  const avgSessionDuration = useMemo(() => {
+    if (stats.totalSessions === 0) return 0;
+    return Math.round(stats.totalMinutes / stats.totalSessions);
+  }, [stats.totalSessions, stats.totalMinutes]);
+
+  // Sessions trend (compared to previous week)
+  const sessionsTrend = useMemo(() => {
+    const getWeekStart = () => {
+      const now = new Date();
+      const day = now.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + diff);
+      monday.setHours(0, 0, 0, 0);
+      return monday;
+    };
+
+    const getPreviousWeekStart = () => {
+      const weekStart = getWeekStart();
+      const previousWeek = new Date(weekStart);
+      previousWeek.setDate(weekStart.getDate() - 7);
+      return previousWeek;
+    };
+
+    const weekStart = getWeekStart();
+    const previousWeekStart = getPreviousWeekStart();
+
+    const previousWeekSessions = userSessions.filter((s) => {
+      const date = parseDate(s?.date || s?.createdAt || s?.endedAt);
+      if (!date) return false;
+      return date >= previousWeekStart && date < weekStart;
+    }).length;
+
+    const currentWeekSessions = stats.last7Days;
+
+    if (previousWeekSessions === 0) return null;
+
+    const diff = currentWeekSessions - previousWeekSessions;
+    return {
+      value: Math.abs(diff),
+      direction: diff > 0 ? 'up' : diff < 0 ? 'down' : 'same',
+    };
+  }, [userSessions, stats.last7Days, parseDate]);
+
   // All sessions sorted for popup
   const allSessionsSorted = useMemo(() => {
     return userSessions
@@ -426,27 +507,53 @@ export default function Dashboard() {
           {/* Quick Stats */}
           <section className={style.statsGrid}>
             <button
-              className={`${style.statCard} ${style.statCardClickable}`}
+              className={`${style.statCard} ${style.statCardClickable} ${style.statCardSessions}`}
               onClick={() => stats.totalSessions > 0 && setShowSessionsPopup(true)}
               disabled={stats.totalSessions === 0}
             >
-              <span className={style.statValue}>{stats.totalSessions}</span>
-              <span className={style.statLabel}>Séances</span>
+              <span className={style.statIcon}>🏋️</span>
+              <div className={style.statContent}>
+                <span className={style.statValue}>{stats.totalSessions}</span>
+                <span className={style.statLabel}>Séances</span>
+                {sessionsTrend && sessionsTrend.direction !== 'same' && (
+                  <span className={style.statTrend}>
+                    {sessionsTrend.direction === 'up' ? '↗' : '↘'} {sessionsTrend.value} vs sem. dernière
+                  </span>
+                )}
+              </div>
             </button>
-            <div className={style.statCard}>
-              <span className={style.statValue}>{stats.streak}</span>
-              <span className={style.statLabel}>Série</span>
+            <div className={`${style.statCard} ${style.statCardStreak}`}>
+              <span className={style.statIcon}>🔥</span>
+              <div className={style.statContent}>
+                <span className={style.statValue}>{stats.streak}</span>
+                <span className={style.statLabel}>Série</span>
+                {bestStreak > stats.streak && (
+                  <span className={style.statTrend}>Record: {bestStreak}j</span>
+                )}
+              </div>
             </div>
-            <div className={style.statCard}>
-              <span className={style.statValue}>{stats.totalHours}h{stats.totalMinutes % 60 > 0 ? String(stats.totalMinutes % 60).padStart(2, '0') : ''}</span>
-              <span className={style.statLabel}>Durée</span>
+            <div className={`${style.statCard} ${style.statCardDuration}`}>
+              <span className={style.statIcon}>⏱️</span>
+              <div className={style.statContent}>
+                <span className={style.statValue}>{stats.totalHours}h{stats.totalMinutes % 60 > 0 ? String(stats.totalMinutes % 60).padStart(2, '0') : ''}</span>
+                <span className={style.statLabel}>Durée</span>
+                {avgSessionDuration > 0 && (
+                  <span className={style.statTrend}>~{avgSessionDuration}min/séance</span>
+                )}
+              </div>
             </div>
             <button
-              className={`${style.statCard} ${style.statCardClickable}`}
+              className={`${style.statCard} ${style.statCardClickable} ${style.statCardBadges}`}
               onClick={() => setShowBadgesPopup(true)}
             >
-              <span className={style.statValue}>{badgeCount}</span>
-              <span className={style.statLabel}>Badges</span>
+              <span className={style.statIcon}>🏆</span>
+              <div className={style.statContent}>
+                <span className={style.statValue}>{badgeCount}</span>
+                <span className={style.statLabel}>Badges</span>
+                {nextBadge && (
+                  <span className={style.statTrend}>Prochain: {nextBadge.emoji} {nextBadge.name}</span>
+                )}
+              </div>
             </button>
           </section>
 
@@ -726,51 +833,85 @@ export default function Dashboard() {
       {/* Sessions Popup */}
       {showSessionsPopup && (
         <div className={style.popupOverlay} onClick={() => setShowSessionsPopup(false)}>
-          <div className={style.popup} onClick={(e) => e.stopPropagation()}>
+          <div className={style.popupLarge} onClick={(e) => e.stopPropagation()}>
             <div className={style.popupHeader}>
-              <h3 className={style.popupTitle}>Historique des séances</h3>
+              <div>
+                <h3 className={style.popupTitle}>Historique des séances</h3>
+                <p className={style.popupSubtitle}>{stats.totalSessions} séance{stats.totalSessions > 1 ? 's' : ''} • {stats.totalHours}h{stats.totalMinutes % 60 > 0 ? String(stats.totalMinutes % 60).padStart(2, '0') : ''} total</p>
+              </div>
               <button className={style.popupClose} onClick={() => setShowSessionsPopup(false)}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M18 6L6 18M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <div className={style.sessionsScroll}>
-              {allSessionsSorted.map((session, index) => (
-                <div key={session.id || index} className={style.sessionCard}>
-                  <div className={style.sessionCardDate}>
-                    {formatDate(session?.endedAt || session?.date || session?.createdAt)}
-                  </div>
-                  <div className={style.sessionCardName}>
-                    {session?.name || "Séance"}
-                  </div>
-                  <div className={style.sessionCardStats}>
-                    {session?.durationMinutes && (
-                      <span>{session.durationMinutes} min</span>
-                    )}
-                    {session?.entries?.length > 0 && (
-                      <span>{session.entries.length} exo</span>
-                    )}
-                    {extractSessionCalories(session) > 0 && (
-                      <span>{extractSessionCalories(session)} kcal</span>
-                    )}
-                  </div>
-                  {session?.entries?.length > 0 && (
-                    <div className={style.sessionCardExos}>
-                      {session.entries.slice(0, 3).map((entry, i) => (
-                        <span key={i} className={style.sessionCardExo}>
-                          {entry.name}
-                        </span>
-                      ))}
-                      {session.entries.length > 3 && (
-                        <span className={style.sessionCardMore}>
-                          +{session.entries.length - 3}
-                        </span>
-                      )}
+            <div className={style.sessionsListPopup}>
+              {allSessionsSorted.map((session, index) => {
+                const calories = extractSessionCalories(session);
+                const hasDetails = session?.durationMinutes || session?.entries?.length || calories > 0;
+                return (
+                  <div key={session.id || index} className={style.sessionPopupCard}>
+                    <div className={style.sessionPopupHeader}>
+                      <div className={style.sessionPopupDateBadge}>
+                        {formatDate(session?.endedAt || session?.date || session?.createdAt)}
+                      </div>
+                      <button
+                        className={style.sessionPopupDelete}
+                        onClick={() => handleDeleteSession(session.id || session._id)}
+                        title="Supprimer cette séance"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                      </button>
                     </div>
-                  )}
-                </div>
-              ))}
+                    <h4 className={style.sessionPopupName}>{session?.name || "Séance d'entraînement"}</h4>
+
+                    {hasDetails && (
+                      <div className={style.sessionPopupStats}>
+                        {session?.durationMinutes && (
+                          <div className={style.sessionPopupStat}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <circle cx="12" cy="12" r="10" />
+                              <path d="M12 6v6l4 2" />
+                            </svg>
+                            <span>{session.durationMinutes} min</span>
+                          </div>
+                        )}
+                        {session?.entries?.length > 0 && (
+                          <div className={style.sessionPopupStat}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" />
+                            </svg>
+                            <span>{session.entries.length} exercice{session.entries.length > 1 ? 's' : ''}</span>
+                          </div>
+                        )}
+                        {calories > 0 && (
+                          <div className={style.sessionPopupStat}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                            </svg>
+                            <span>{calories} kcal</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {session?.entries?.length > 0 && (
+                      <div className={style.sessionPopupExercises}>
+                        {session.entries.map((entry, i) => (
+                          <div key={i} className={style.sessionPopupExercise}>
+                            <span className={style.sessionPopupExerciseName}>{entry.name}</span>
+                            {entry.sets?.length > 0 && (
+                              <span className={style.sessionPopupExerciseSets}>{entry.sets.length} série{entry.sets.length > 1 ? 's' : ''}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
