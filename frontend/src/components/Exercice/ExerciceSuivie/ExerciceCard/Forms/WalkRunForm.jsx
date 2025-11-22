@@ -7,6 +7,7 @@ export default function WalkRunForm({ data, patchWalkRun }) {
   const walkRun = data?.walkRun || { durationMin: "", pauseMin: "", distanceKm: "", route: [] };
   const [showGPS, setShowGPS] = useState(false);
   const [gpsActive, setGpsActive] = useState(false);
+  const [liveStats, setLiveStats] = useState(null);
 
   const [pauseTimerRunning, setPauseTimerRunning] = useState(false);
   const [pauseTimerSeconds, setPauseTimerSeconds] = useState(0);
@@ -41,13 +42,16 @@ export default function WalkRunForm({ data, patchWalkRun }) {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  const averagePace = walkRun.durationMin && walkRun.distanceKm
+  // Utiliser les stats live si disponibles, sinon les données sauvegardées
+  const displayStats = liveStats || walkRun;
+
+  const averagePace = displayStats.durationMin && displayStats.distanceKm
     ? (() => {
-        const totalMin = Number(walkRun.durationMin);
-        const pauseMin = Number(walkRun.pauseMin || 0);
+        const totalMin = Number(displayStats.durationMin);
+        const pauseMin = Number(displayStats.pauseMin || 0);
         const activeMin = totalMin - pauseMin;
         if (activeMin <= 0) return null;
-        return (walkRun.distanceKm / (activeMin / 60)).toFixed(2);
+        return (displayStats.distanceKm / (activeMin / 60)).toFixed(2);
       })()
     : null;
 
@@ -71,19 +75,56 @@ export default function WalkRunForm({ data, patchWalkRun }) {
 
       {/* Carte GPS */}
       {showGPS ? (
-        <RouteTracker
-          onRouteUpdate={(routeData) => {
-            patchWalkRun({
-              distanceKm: routeData.distance.toFixed(2),
-              durationMin: Math.round(routeData.duration / 60),
-              pauseMin: routeData.pauseTime.toFixed(1),
-              route: routeData.route,
-            });
-            setGpsActive(false);
-          }}
-          onTrackingStart={() => setGpsActive(true)}
-          onTrackingStop={() => setGpsActive(false)}
-        />
+        <>
+          <RouteTracker
+            onRouteUpdate={(routeData) => {
+              const updatedData = {
+                distanceKm: routeData.distance.toFixed(2),
+                durationMin: Math.round(routeData.duration / 60),
+                pauseMin: routeData.pauseTime.toFixed(1),
+                route: routeData.route,
+              };
+
+              // Si c'est une mise à jour en direct, juste afficher sans sauvegarder
+              if (routeData.isLive) {
+                setLiveStats(updatedData);
+              } else {
+                // Sauvegarder définitivement et arrêter le mode live
+                patchWalkRun(updatedData);
+                setGpsActive(false);
+                setLiveStats(null);
+              }
+            }}
+            onTrackingStart={() => setGpsActive(true)}
+            onTrackingStop={() => setGpsActive(false)}
+          />
+
+          {/* Affichage des stats live pendant le tracking */}
+          {gpsActive && liveStats && (
+            <div className={walkStyles.liveStatsPreview}>
+              <div className={walkStyles.liveStatsHeader}>
+                <span className={walkStyles.liveDot}>🔴</span>
+                <span>Aperçu en direct</span>
+              </div>
+              <div className={walkStyles.liveStatsGrid}>
+                <div className={walkStyles.liveStat}>
+                  <span className={walkStyles.liveStatLabel}>Distance</span>
+                  <span className={walkStyles.liveStatValue}>{liveStats.distanceKm} km</span>
+                </div>
+                <div className={walkStyles.liveStat}>
+                  <span className={walkStyles.liveStatLabel}>Durée</span>
+                  <span className={walkStyles.liveStatValue}>{liveStats.durationMin} min</span>
+                </div>
+                {liveStats.pauseMin > 0 && (
+                  <div className={walkStyles.liveStat}>
+                    <span className={walkStyles.liveStatLabel}>Pause</span>
+                    <span className={walkStyles.liveStatValue}>{liveStats.pauseMin} min</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </>
       ) : (
         <>
           <div className={styles.focusInputsRow}>
@@ -95,9 +136,10 @@ export default function WalkRunForm({ data, patchWalkRun }) {
                   min="0"
                   step="1"
                   inputMode="numeric"
-                  value={walkRun.durationMin}
+                  value={displayStats.durationMin}
                   onChange={(e) => patchWalkRun({ durationMin: e.target.value })}
                   placeholder="30"
+                  disabled={gpsActive}
                 />
                 <span className={walkStyles.unit}>min</span>
               </div>
@@ -111,9 +153,10 @@ export default function WalkRunForm({ data, patchWalkRun }) {
                   min="0"
                   step="0.1"
                   inputMode="decimal"
-                  value={walkRun.distanceKm}
+                  value={displayStats.distanceKm}
                   onChange={(e) => patchWalkRun({ distanceKm: e.target.value })}
                   placeholder="5.0"
+                  disabled={gpsActive}
                 />
                 <span className={walkStyles.unit}>km</span>
               </div>
@@ -142,10 +185,10 @@ export default function WalkRunForm({ data, patchWalkRun }) {
                   min="0"
                   step="0.1"
                   inputMode="decimal"
-                  value={walkRun.pauseMin}
+                  value={displayStats.pauseMin}
                   onChange={(e) => patchWalkRun({ pauseMin: e.target.value })}
                   placeholder="0"
-                  disabled={pauseTimerRunning}
+                  disabled={pauseTimerRunning || gpsActive}
                 />
                 <span className={walkStyles.unit}>min</span>
               </div>
