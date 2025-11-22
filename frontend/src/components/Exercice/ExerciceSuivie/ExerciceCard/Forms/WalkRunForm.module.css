@@ -207,6 +207,93 @@
   }
 }
 
+/* Live Stats Preview */
+.liveStatsPreview {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.08), rgba(102, 126, 234, 0.08));
+  border: 2px solid rgba(76, 175, 80, 0.3);
+  border-radius: 16px;
+  animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.liveStatsHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--suivie-ink);
+  margin-bottom: 0.75rem;
+}
+
+.liveDot {
+  font-size: 12px;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.liveStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.75rem;
+}
+
+.liveStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+:global(html.dark) .liveStat,
+:global(body.dark) .liveStat {
+  background: rgba(26, 29, 36, 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not(.light)) .liveStat {
+    background: rgba(26, 29, 36, 0.6);
+  }
+}
+
+.liveStatLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--suivie-muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.liveStatValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--suivie-accent);
+}
+
 @media (max-width: 380px) {
   .paceCard {
     flex-direction: column;
@@ -226,5 +313,13 @@
   .gpsToggleButton {
     font-size: 14px;
     padding: 12px 16px;
+  }
+
+  .liveStatsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .liveStatValue {
+    font-size: 16px;
   }
 }
