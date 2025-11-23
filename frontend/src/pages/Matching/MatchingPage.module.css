@@ -12,7 +12,7 @@
 .header h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -40,7 +40,7 @@
 .statCard h3 {
   font-size: 2rem;
   font-weight: 700;
-  color: #667eea;
+  color: #f7b186;
   margin: 0;
 }
 
@@ -150,7 +150,7 @@
 
 .stats strong {
   font-size: 1.5rem;
-  color: #667eea;
+  color: #f7b186;
 }
 
 .stats small {
@@ -216,14 +216,14 @@
 }
 
 .likeBtn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
   border: none;
   color: white;
 }
 
 .likeBtn:hover:not(:disabled) {
   transform: scale(1.05);
-  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 5px 20px rgba(247, 177, 134, 0.4);
 }
 
 /* Empty State */
