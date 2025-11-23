@@ -32,7 +32,7 @@ frontend/.env.local
 .env.local
 .env.production
 backend/.env.production
-frontend/.env.production
+# frontend/.env.production  # Pas de secrets ici, on le commit pour Netlify
 
 # files
 
