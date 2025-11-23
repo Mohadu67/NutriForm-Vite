@@ -43,7 +43,7 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
         setMessages([
           {
             role: 'bot',
-            content: "Salut ! 👋 Je suis l'assistant NutriForm. Comment puis-je t'aider aujourd'hui ?",
+            content: "Salut ! 👋 Je suis l'assistant Harmonith. Comment puis-je t'aider aujourd'hui ?",
             createdAt: new Date()
           }
         ]);
@@ -56,7 +56,7 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
         setMessages([
           {
             role: 'bot',
-            content: "Salut ! 👋 Je suis l'assistant NutriForm. Comment puis-je t'aider aujourd'hui ?",
+            content: "Salut ! 👋 Je suis l'assistant Harmonith. Comment puis-je t'aider aujourd'hui ?",
             createdAt: new Date()
           }
         ]);

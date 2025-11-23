@@ -75,7 +75,7 @@ exports.login = async (req, res) => {
     }
 
     // Envoi du token via cookie httpOnly (protection XSS)
-    // sameSite: 'none' permet les cookies cross-domain (harmonith.fr <-> nutriform-vite.onrender.com)
+    // sameSite: 'none' permet les cookies cross-domain (harmonith.fr <-> harmonith-api.onrender.com)
     // En dev local: sameSite 'lax' car même domaine (localhost)
     const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('token', token, {
