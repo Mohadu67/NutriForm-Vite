@@ -33,8 +33,7 @@ const userProfileSchema = new mongoose.Schema({
       default: 'Point'
     },
     coordinates: {
-      type: [Number], // [longitude, latitude]
-      index: '2dsphere'
+      type: [Number] // [longitude, latitude]
     },
     city: String,
     neighborhood: String, // Quartier pour hyper-local
@@ -136,7 +135,7 @@ const userProfileSchema = new mongoose.Schema({
 
 // Index pour recherche géospatiale hyper-locale
 userProfileSchema.index({ 'location.coordinates': '2dsphere' });
-userProfileSchema.index({ userId: 1 });
+// L'index sur userId est automatiquement créé via "unique: true" à la ligne 8
 userProfileSchema.index({ 'location.city': 1, 'location.neighborhood': 1 });
 userProfileSchema.index({ isVisible: 1, verified: 1 });
 
