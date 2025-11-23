@@ -38,7 +38,7 @@ export const endpoints = {
     create: "/subscriptions/create-checkout-session",
     status: "/subscriptions/status",
     cancel: "/subscriptions/cancel",
-    portal: "/subscriptions/create-portal-session",
+    portal: "/subscriptions/customer-portal",
   },
   chat: {
     send: "/chat/send",
