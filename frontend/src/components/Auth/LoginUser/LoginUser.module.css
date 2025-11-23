@@ -271,6 +271,13 @@
 }
 
 /* Error */
+.errorWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeIn 0.3s ease-out;
+}
+
 .error {
   color: #e63946;
   font-weight: 600;
@@ -281,12 +288,37 @@
   background: rgba(230, 57, 70, 0.08);
   border: 1px solid rgba(230, 57, 70, 0.2);
   animation: shake 0.4s ease;
+  margin: 0;
 }
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-8px); }
   75% { transform: translateX(8px); }
+}
+
+.resendBtn {
+  background: var(--auth-peach);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.2);
+}
+
+.resendBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(247, 177, 134, 0.35);
+  background: #ff9966;
+}
+
+.resendBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.25);
 }
 
 /* Submit Button */
