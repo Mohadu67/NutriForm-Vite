@@ -259,7 +259,7 @@ export default function Navbar() {
       { label: 'Dashboard', path: "/dashboard", icon: <DashboardIcon size={28} />, onClick: () => navigate('/dashboard') }
     ] : []),
     ...(isLoggedIn && isPremium ? [
-      { label: 'Partenaires', path: "/matching", icon: <UsersIcon size={28} />, onClick: () => navigate('/matching') }
+      { label: 'Partenaires', path: "/matching", icon: <UsersIcon size={28} />, onClick: () => navigate('/matching'), isPremium: true }
     ] : [])
   ], [t, isLoggedIn, isPremium, navigate]);
 
@@ -351,7 +351,7 @@ export default function Navbar() {
                   <a
                     key={link.path}
                     href={link.path}
-                    className={`${styles.dockItem} ${path === link.path ? styles.dockItemActive : ''}`}
+                    className={`${styles.dockItem} ${path === link.path ? styles.dockItemActive : ''} ${link.isPremium ? styles.premiumItem : ''}`}
                     onClick={(e) => {
                       e.preventDefault();
                       link.onClick ? link.onClick() : navigateAndClose(link.path);
@@ -407,7 +407,7 @@ export default function Navbar() {
                   {isLoggedIn && isPremium && (
                     <button
                       onClick={() => navigateAndClose('/matching')}
-                      className={styles.dockIconBtn}
+                      className={`${styles.dockIconBtn} ${styles.premiumIconBtn}`}
                       title="Partenaires"
                       aria-label="Find workout partners"
                     >
@@ -491,7 +491,7 @@ export default function Navbar() {
                 <a
                   key={link.path}
                   href={link.path}
-                  className={`${styles.dockItem} ${path === link.path ? styles.dockItemActive : ''}`}
+                  className={`${styles.dockItem} ${path === link.path ? styles.dockItemActive : ''} ${link.isPremium ? styles.premiumItem : ''}`}
                   onClick={(e) => {
                     e.preventDefault();
                     link.onClick ? link.onClick() : navigateAndClose(link.path);
@@ -562,7 +562,7 @@ export default function Navbar() {
                 {isLoggedIn && isPremium && (
                   <button
                     onClick={() => navigateAndClose('/matching')}
-                    className={styles.dockIconBtn}
+                    className={`${styles.dockIconBtn} ${styles.premiumIconBtn}`}
                     title="Partenaires"
                     aria-label="Find workout partners"
                   >
