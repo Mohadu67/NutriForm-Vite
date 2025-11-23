@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useChat } from "../../contexts/ChatContext";
 import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
 
@@ -92,8 +93,15 @@ const UserIcon = ({ size = 20 }) => (
   </svg>
 );
 
+const ChatIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+  </svg>
+);
+
 export default function Navbar() {
   const { t, i18n } = useTranslation();
+  const { openChat } = useChat();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -347,6 +355,21 @@ export default function Navbar() {
               >
                 <UserIcon size={20} />
               </button>
+
+              {/* Chat button - mobile only */}
+              {!isDesktop && (
+                <button
+                  onClick={() => {
+                    openChat();
+                    closeMenu();
+                  }}
+                  className={styles.dockIconBtn}
+                  title="Chat"
+                  aria-label="Open chat"
+                >
+                  <ChatIcon size={20} />
+                </button>
+              )}
             </div>
           </div>
         )}
