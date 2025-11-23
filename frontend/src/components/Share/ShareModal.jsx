@@ -80,7 +80,7 @@ const ShareModal = ({ show, onHide, session, user }) => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         const date = new Date().toISOString().split('T')[0];
-        link.download = `nutriform-${session.name || 'seance'}-${date}.png`;
+        link.download = `harmonith-${session.name || 'seance'}-${date}.png`;
         link.href = url;
         link.click();
         URL.revokeObjectURL(url);
@@ -100,7 +100,7 @@ const ShareModal = ({ show, onHide, session, user }) => {
       if (!canvas) throw new Error('Échec de la génération de l\'image');
 
       canvas.toBlob(async (blob) => {
-        const file = new File([blob], 'nutriform-session.png', { type: 'image/png' });
+        const file = new File([blob], 'harmonith-session.png', { type: 'image/png' });
 
         // Native sharing si disponible
         if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
