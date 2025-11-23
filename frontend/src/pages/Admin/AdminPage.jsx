@@ -1,23 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "./AdminPage.module.css";
+import { MdStar, MdEmail, MdSupport, MdCheckCircle, MdSchedule, MdGroups, MdRateReview, MdDelete, MdEdit, MdSend } from 'react-icons/md';
+import Navbar from '../../components/Navbar/Navbar.jsx';
+import Footer from '../../components/Footer/Footer.jsx';
 import { secureApiCall, isAuthenticated } from "../../utils/authService";
-
-const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+import styles from "./AdminPage.module.css";
 
 export default function AdminPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeSection, setActiveSection] = useState("dashboard");
   const [reviews, setReviews] = useState([]);
   const [newsletters, setNewsletters] = useState([]);
   const [stats, setStats] = useState({
     totalReviews: 0,
     pendingReviews: 0,
     approvedReviews: 0,
-    totalNewsletters: 0,
     activeSubscribers: 0,
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedReviews, setSelectedReviews] = useState([]);
@@ -35,7 +35,6 @@ export default function AdminPage() {
 
     try {
       const response = await secureApiCall('/api/me');
-
       if (response.ok) {
         const data = await response.json();
         if (data.role !== "admin") {
@@ -72,7 +71,6 @@ export default function AdminPage() {
           totalReviews: reviewsData.reviews.length,
           pendingReviews: pending,
           approvedReviews: approved,
-          totalNewsletters: 0,
           activeSubscribers: newsletterStats.stats?.active || 0,
         });
       }
@@ -85,7 +83,6 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const response = await secureApiCall('/api/reviews/users/all');
-
       const data = await response.json();
       if (data.success) {
         setReviews(data.reviews);
@@ -101,7 +98,6 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const response = await secureApiCall('/api/newsletter-admin');
-
       const data = await response.json();
       if (data.success) {
         setNewsletters(data.newsletters);
@@ -117,24 +113,19 @@ export default function AdminPage() {
     checkAdmin().then((isAdmin) => {
       if (isAdmin) {
         fetchStats();
-        if (activeTab === "reviews") fetchReviews();
-        if (activeTab === "newsletter") fetchNewsletters();
+        if (activeSection === "reviews") fetchReviews();
+        if (activeSection === "newsletter") fetchNewsletters();
       }
     });
-  }, [activeTab, checkAdmin, fetchStats, fetchReviews, fetchNewsletters]);
+  }, [activeSection, checkAdmin, fetchStats, fetchReviews, fetchNewsletters]);
 
   const handleApprove = async (id) => {
     try {
-      const response = await secureApiCall(`/api/reviews/users/${id}/approve`, {
-        method: "PUT",
-      });
-
+      const response = await secureApiCall(`/api/reviews/users/${id}/approve`, { method: "PUT" });
       const data = await response.json();
       if (data.success) {
-        showMessage("success", "Avis approuvé avec succès !");
-        setReviews((prev) =>
-          prev.map((r) => (r._id === id ? { ...r, isApproved: true } : r))
-        );
+        showMessage("success", "Avis approuvé !");
+        setReviews((prev) => prev.map((r) => (r._id === id ? { ...r, isApproved: true } : r)));
         fetchStats();
       } else {
         showMessage("error", data.message || "Erreur");
@@ -146,12 +137,8 @@ export default function AdminPage() {
 
   const handleDelete = async (id) => {
     if (!confirm("Voulez-vous vraiment supprimer cet avis ?")) return;
-
     try {
-      const response = await secureApiCall(`/api/reviews/users/${id}`, {
-        method: "DELETE",
-      });
-
+      const response = await secureApiCall(`/api/reviews/users/${id}`, { method: "DELETE" });
       const data = await response.json();
       if (data.success) {
         showMessage("success", "Avis supprimé !");
@@ -167,16 +154,10 @@ export default function AdminPage() {
 
   const handleBulkApprove = async () => {
     if (selectedReviews.length === 0) return;
-
     try {
       await Promise.all(
-        selectedReviews.map((id) =>
-          secureApiCall(`/api/reviews/users/${id}/approve`, {
-            method: "PUT",
-          })
-        )
+        selectedReviews.map((id) => secureApiCall(`/api/reviews/users/${id}/approve`, { method: "PUT" }))
       );
-
       showMessage("success", `${selectedReviews.length} avis approuvés !`);
       setSelectedReviews([]);
       fetchReviews();
@@ -189,16 +170,10 @@ export default function AdminPage() {
   const handleBulkDelete = async () => {
     if (selectedReviews.length === 0) return;
     if (!confirm(`Supprimer ${selectedReviews.length} avis ?`)) return;
-
     try {
       await Promise.all(
-        selectedReviews.map((id) =>
-          secureApiCall(`/api/reviews/users/${id}`, {
-            method: "DELETE",
-          })
-        )
+        selectedReviews.map((id) => secureApiCall(`/api/reviews/users/${id}`, { method: "DELETE" }))
       );
-
       showMessage("success", `${selectedReviews.length} avis supprimés !`);
       setSelectedReviews([]);
       fetchReviews();
@@ -214,34 +189,18 @@ export default function AdminPage() {
     );
   };
 
-  const selectAllReviews = () => {
-    const filtered = getFilteredReviews();
-    if (selectedReviews.length === filtered.length) {
-      setSelectedReviews([]);
-    } else {
-      setSelectedReviews(filtered.map((r) => r._id));
-    }
-  };
-
   const getFilteredReviews = () => {
     switch (filterStatus) {
-      case "pending":
-        return reviews.filter((r) => !r.isApproved);
-      case "approved":
-        return reviews.filter((r) => r.isApproved);
-      default:
-        return reviews;
+      case "pending": return reviews.filter((r) => !r.isApproved);
+      case "approved": return reviews.filter((r) => r.isApproved);
+      default: return reviews;
     }
   };
 
   const handleDeleteNewsletter = async (id) => {
     if (!confirm("Voulez-vous vraiment supprimer cette newsletter ?")) return;
-
     try {
-      const response = await secureApiCall(`/api/newsletter-admin/${id}`, {
-        method: "DELETE",
-      });
-
+      const response = await secureApiCall(`/api/newsletter-admin/${id}`, { method: "DELETE" });
       const data = await response.json();
       if (data.success) {
         showMessage("success", "Newsletter supprimée !");
@@ -255,26 +214,20 @@ export default function AdminPage() {
   };
 
   const handleSendNow = async (id, title) => {
-    if (!confirm(`Voulez-vous vraiment envoyer la newsletter "${title}" maintenant ?`)) return;
-
+    if (!confirm(`Voulez-vous vraiment envoyer "${title}" ?`)) return;
     try {
       setLoading(true);
-      const response = await secureApiCall(`/api/newsletter-admin/${id}/send-now`, {
-        method: "POST",
-      });
-
+      const response = await secureApiCall(`/api/newsletter-admin/${id}/send-now`, { method: "POST" });
       const data = await response.json();
-
       if (data.success) {
-        showMessage("success", `Newsletter envoyée avec succès à ${data.stats?.successCount || 0} abonnés !`);
+        showMessage("success", `Newsletter envoyée à ${data.stats?.successCount || 0} abonnés !`);
         fetchNewsletters();
         fetchStats();
       } else {
-        showMessage("error", data.message || "Erreur lors de l'envoi");
+        showMessage("error", data.message || "Erreur");
       }
     } catch (err) {
-      console.error("Erreur lors de l'envoi:", err);
-      showMessage("error", "Erreur lors de l'envoi de la newsletter");
+      showMessage("error", "Erreur lors de l'envoi");
     } finally {
       setLoading(false);
     }
@@ -283,279 +236,199 @@ export default function AdminPage() {
   const filteredReviews = getFilteredReviews();
 
   return (
-    <div className={styles.adminLayout}>
-      {}
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <h1 className={styles.sidebarTitle}>🛡️ Admin</h1>
+    <>
+      <Navbar />
+      <div className={styles.container}>
+        {/* Header */}
+        <div className={styles.header}>
+          <h1>Administration</h1>
+          <p>Gérez votre plateforme</p>
         </div>
 
-        <nav className={styles.sidebarNav}>
+        {/* Message */}
+        {message.text && (
+          <div className={`${styles.alert} ${styles[message.type]}`}>
+            {message.type === "success" ? "✓" : "⚠"} {message.text}
+            <button onClick={() => setMessage({ type: "", text: "" })} className={styles.alertClose}>×</button>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div className={styles.nav}>
           <button
-            className={`${styles.navItem} ${activeTab === "dashboard" ? styles.navItemActive : ""}`}
-            onClick={() => setActiveTab("dashboard")}
+            className={`${styles.navBtn} ${activeSection === "dashboard" ? styles.navBtnActive : ""}`}
+            onClick={() => setActiveSection("dashboard")}
           >
-            <span className={styles.navIcon}>📊</span>
-            <span>Dashboard</span>
+            Dashboard
           </button>
           <button
-            className={`${styles.navItem} ${activeTab === "reviews" ? styles.navItemActive : ""}`}
-            onClick={() => setActiveTab("reviews")}
+            className={`${styles.navBtn} ${activeSection === "reviews" ? styles.navBtnActive : ""}`}
+            onClick={() => setActiveSection("reviews")}
           >
-            <span className={styles.navIcon}>⭐</span>
-            <span>Avis</span>
-            {stats.pendingReviews > 0 && (
-              <span className={styles.badge}>{stats.pendingReviews}</span>
-            )}
+            <MdStar /> Avis
+            {stats.pendingReviews > 0 && <span className={styles.badge}>{stats.pendingReviews}</span>}
           </button>
           <button
-            className={`${styles.navItem} ${activeTab === "newsletter" ? styles.navItemActive : ""}`}
-            onClick={() => setActiveTab("newsletter")}
+            className={`${styles.navBtn} ${activeSection === "newsletter" ? styles.navBtnActive : ""}`}
+            onClick={() => setActiveSection("newsletter")}
           >
-            <span className={styles.navIcon}>📧</span>
-            <span>Newsletter</span>
+            <MdEmail /> Newsletter
           </button>
           <button
-            className={`${styles.navItem} ${activeTab === "support" ? styles.navItemActive : ""}`}
+            className={styles.navBtn}
             onClick={() => navigate("/admin/support-tickets")}
           >
-            <span className={styles.navIcon}>💬</span>
-            <span>Support Tickets</span>
-          </button>
-        </nav>
-
-        <div className={styles.sidebarFooter}>
-          <button onClick={() => navigate("/")} className={styles.backButton}>
-            <span>←</span> Retour au site
+            <MdSupport /> Support
           </button>
         </div>
-      </aside>
 
-      {}
-      <main className={styles.mainContent}>
-        {}
-        <header className={styles.contentHeader}>
-          <div>
-            <h2 className={styles.contentTitle}>
-              {activeTab === "dashboard" && "Tableau de bord"}
-              {activeTab === "reviews" && "Gestion des avis"}
-              {activeTab === "newsletter" && "Gestion de la newsletter"}
-            </h2>
-            <p className={styles.contentSubtitle}>
-              {activeTab === "dashboard" && "Vue d'ensemble de l'administration"}
-              {activeTab === "reviews" && "Modérez et gérez les avis utilisateurs"}
-              {activeTab === "newsletter" && "Créez et envoyez des newsletters"}
-            </p>
-          </div>
-        </header>
-
-        {}
-        {message.text && (
-          <div className={`${styles.alert} ${styles[`alert${message.type.charAt(0).toUpperCase() + message.type.slice(1)}`]}`}>
-            {message.type === "success" ? "✓" : "⚠"} {message.text}
-          </div>
-        )}
-
-        {}
-        {activeTab === "dashboard" && (
-          <div className={styles.dashboard}>
+        {/* Dashboard */}
+        {activeSection === "dashboard" && (
+          <div className={styles.content}>
+            {/* Stats */}
             <div className={styles.statsGrid}>
               <div className={styles.statCard}>
-                <div className={styles.statIcon} style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
-                  ⭐
+                <div className={styles.statIcon}>
+                  <MdRateReview />
                 </div>
-                <div className={styles.statContent}>
-                  <p className={styles.statLabel}>Total Avis</p>
-                  <h3 className={styles.statValue}>{stats.totalReviews}</h3>
-                </div>
-              </div>
-
-              <div className={styles.statCard}>
-                <div className={styles.statIcon} style={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" }}>
-                  ⏳
-                </div>
-                <div className={styles.statContent}>
-                  <p className={styles.statLabel}>En attente</p>
-                  <h3 className={styles.statValue}>{stats.pendingReviews}</h3>
+                <div className={styles.statInfo}>
+                  <div className={styles.statValue}>{stats.totalReviews}</div>
+                  <div className={styles.statLabel}>Total Avis</div>
                 </div>
               </div>
 
               <div className={styles.statCard}>
-                <div className={styles.statIcon} style={{ background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" }}>
-                  ✓
+                <div className={styles.statIcon}>
+                  <MdSchedule />
                 </div>
-                <div className={styles.statContent}>
-                  <p className={styles.statLabel}>Approuvés</p>
-                  <h3 className={styles.statValue}>{stats.approvedReviews}</h3>
+                <div className={styles.statInfo}>
+                  <div className={styles.statValue}>{stats.pendingReviews}</div>
+                  <div className={styles.statLabel}>En attente</div>
                 </div>
               </div>
 
               <div className={styles.statCard}>
-                <div className={styles.statIcon} style={{ background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)" }}>
-                  👥
+                <div className={styles.statIcon}>
+                  <MdCheckCircle />
                 </div>
-                <div className={styles.statContent}>
-                  <p className={styles.statLabel}>Abonnés Newsletter</p>
-                  <h3 className={styles.statValue}>{stats.activeSubscribers}</h3>
+                <div className={styles.statInfo}>
+                  <div className={styles.statValue}>{stats.approvedReviews}</div>
+                  <div className={styles.statLabel}>Approuvés</div>
+                </div>
+              </div>
+
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>
+                  <MdGroups />
+                </div>
+                <div className={styles.statInfo}>
+                  <div className={styles.statValue}>{stats.activeSubscribers}</div>
+                  <div className={styles.statLabel}>Abonnés</div>
                 </div>
               </div>
             </div>
 
-            <div className={styles.quickActions}>
-              <h3 className={styles.sectionTitle}>Actions rapides</h3>
-              <div className={styles.actionsGrid}>
-                <button
-                  className={styles.actionCard}
-                  onClick={() => setActiveTab("reviews")}
-                >
-                  <span className={styles.actionIcon}>⭐</span>
-                  <span className={styles.actionLabel}>Modérer les avis</span>
-                  {stats.pendingReviews > 0 && (
-                    <span className={styles.actionBadge}>{stats.pendingReviews}</span>
-                  )}
-                </button>
+            {/* Actions */}
+            <h2>Actions rapides</h2>
+            <div className={styles.actionsGrid}>
+              <div className={styles.actionCard} onClick={() => setActiveSection("reviews")}>
+                <MdStar className={styles.actionIcon} />
+                <h3>Modérer les avis</h3>
+                {stats.pendingReviews > 0 && <span className={styles.actionBadge}>{stats.pendingReviews}</span>}
+              </div>
 
-                <button
-                  className={styles.actionCard}
-                  onClick={() => navigate("/admin/newsletter/new")}
-                >
-                  <span className={styles.actionIcon}>📝</span>
-                  <span className={styles.actionLabel}>Nouvelle Newsletter</span>
-                </button>
+              <div className={styles.actionCard} onClick={() => navigate("/admin/newsletter/new")}>
+                <MdEdit className={styles.actionIcon} />
+                <h3>Créer newsletter</h3>
+              </div>
 
-                <button
-                  className={styles.actionCard}
-                  onClick={() => navigate("/admin/support-tickets")}
-                >
-                  <span className={styles.actionIcon}>💬</span>
-                  <span className={styles.actionLabel}>Support Tickets</span>
-                </button>
+              <div className={styles.actionCard} onClick={() => navigate("/admin/support-tickets")}>
+                <MdSupport className={styles.actionIcon} />
+                <h3>Support</h3>
               </div>
             </div>
           </div>
         )}
 
-        {}
-        {activeTab === "reviews" && (
-          <div className={styles.reviewsSection}>
-            {}
-            <div className={styles.toolbar}>
-              <div className={styles.filters}>
-                <button
-                  className={`${styles.filterBtn} ${filterStatus === "all" ? styles.filterActive : ""}`}
-                  onClick={() => setFilterStatus("all")}
-                >
-                  Tous ({reviews.length})
-                </button>
-                <button
-                  className={`${styles.filterBtn} ${filterStatus === "pending" ? styles.filterActive : ""}`}
-                  onClick={() => setFilterStatus("pending")}
-                >
-                  En attente ({stats.pendingReviews})
-                </button>
-                <button
-                  className={`${styles.filterBtn} ${filterStatus === "approved" ? styles.filterActive : ""}`}
-                  onClick={() => setFilterStatus("approved")}
-                >
-                  Approuvés ({stats.approvedReviews})
-                </button>
-              </div>
+        {/* Reviews */}
+        {activeSection === "reviews" && (
+          <div className={styles.content}>
+            {/* Filters */}
+            <div className={styles.filters}>
+              <button
+                className={`${styles.filterBtn} ${filterStatus === "all" ? styles.filterBtnActive : ""}`}
+                onClick={() => setFilterStatus("all")}
+              >
+                Tous ({reviews.length})
+              </button>
+              <button
+                className={`${styles.filterBtn} ${filterStatus === "pending" ? styles.filterBtnActive : ""}`}
+                onClick={() => setFilterStatus("pending")}
+              >
+                En attente ({stats.pendingReviews})
+              </button>
+              <button
+                className={`${styles.filterBtn} ${filterStatus === "approved" ? styles.filterBtnActive : ""}`}
+                onClick={() => setFilterStatus("approved")}
+              >
+                Approuvés ({stats.approvedReviews})
+              </button>
 
               {selectedReviews.length > 0 && (
                 <div className={styles.bulkActions}>
-                  <span className={styles.bulkCount}>{selectedReviews.length} sélectionnés</span>
-                  <button className={styles.bulkBtn} onClick={handleBulkApprove}>
-                    Approuver
+                  <span>{selectedReviews.length} sélectionnés</span>
+                  <button className={styles.btnSuccess} onClick={handleBulkApprove}>
+                    <MdCheckCircle /> Approuver
                   </button>
-                  <button className={`${styles.bulkBtn} ${styles.bulkBtnDanger}`} onClick={handleBulkDelete}>
-                    Supprimer
+                  <button className={styles.btnDanger} onClick={handleBulkDelete}>
+                    <MdDelete /> Supprimer
                   </button>
                 </div>
               )}
             </div>
 
-            {}
+            {/* Reviews List */}
             {loading ? (
-              <div className={styles.loadingState}>
-                <div className={styles.spinner}></div>
-                <p>Chargement...</p>
-              </div>
+              <div className={styles.loading}>Chargement...</div>
             ) : filteredReviews.length === 0 ? (
-              <div className={styles.emptyState}>
-                <span className={styles.emptyIcon}>📭</span>
+              <div className={styles.empty}>
+                <MdRateReview className={styles.emptyIcon} />
                 <h3>Aucun avis</h3>
-                <p>Il n'y a aucun avis à afficher pour le moment.</p>
               </div>
             ) : (
-              <div className={styles.reviewsTable}>
-                <div className={styles.tableHeader}>
-                  <div className={styles.tableCell}>
-                    <input
-                      type="checkbox"
-                      checked={selectedReviews.length === filteredReviews.length && filteredReviews.length > 0}
-                      onChange={selectAllReviews}
-                      className={styles.checkbox}
-                    />
-                  </div>
-                  <div className={styles.tableCell}>Auteur</div>
-                  <div className={styles.tableCell}>Note</div>
-                  <div className={styles.tableCell}>Commentaire</div>
-                  <div className={styles.tableCell}>Statut</div>
-                  <div className={styles.tableCell}>Actions</div>
-                </div>
-
+              <div className={styles.reviewsGrid}>
                 {filteredReviews.map((review) => (
-                  <div key={review._id} className={styles.tableRow}>
-                    <div className={styles.tableCell}>
+                  <div key={review._id} className={styles.reviewCard}>
+                    <div className={styles.reviewHeader}>
                       <input
                         type="checkbox"
                         checked={selectedReviews.includes(review._id)}
                         onChange={() => toggleSelectReview(review._id)}
                         className={styles.checkbox}
                       />
-                    </div>
-                    <div className={styles.tableCell}>
-                      <div className={styles.reviewAuthor}>
-                        <span className={styles.authorName}>{review.name}</span>
-                        <span className={styles.reviewDate}>
+                      <div>
+                        <strong>{review.name}</strong>
+                        <div className={styles.reviewDate}>
                           {new Date(review.createdAt).toLocaleDateString("fr-FR")}
-                        </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className={styles.tableCell}>
-                      <div className={styles.rating}>
-                        {"⭐".repeat(review.rating)}
-                      </div>
-                    </div>
-                    <div className={styles.tableCell}>
-                      <p className={styles.reviewText}>{review.comment}</p>
-                    </div>
-                    <div className={styles.tableCell}>
-                      <span
-                        className={`${styles.status} ${review.isApproved ? styles.statusApproved : styles.statusPending}`}
-                      >
+                      <span className={`${styles.statusBadge} ${review.isApproved ? styles.statusApproved : styles.statusPending}`}>
                         {review.isApproved ? "✓ Approuvé" : "⏳ En attente"}
                       </span>
                     </div>
-                    <div className={styles.tableCell}>
-                      <div className={styles.actions}>
-                        {!review.isApproved && (
-                          <button
-                            onClick={() => handleApprove(review._id)}
-                            className={styles.btnApprove}
-                            title="Approuver"
-                          >
-                            ✓
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleDelete(review._id)}
-                          className={styles.btnDelete}
-                          title="Supprimer"
-                        >
-                          🗑
+
+                    <div className={styles.rating}>{"⭐".repeat(review.rating)}</div>
+                    <p className={styles.reviewText}>{review.comment}</p>
+
+                    <div className={styles.reviewActions}>
+                      {!review.isApproved && (
+                        <button className={styles.btnSuccess} onClick={() => handleApprove(review._id)}>
+                          <MdCheckCircle /> Approuver
                         </button>
-                      </div>
+                      )}
+                      <button className={styles.btnDanger} onClick={() => handleDelete(review._id)}>
+                        <MdDelete /> Supprimer
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -564,88 +437,60 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Newsletter Tab */}
-        {activeTab === "newsletter" && (
-          <div className={styles.newsletterSection}>
+        {/* Newsletter */}
+        {activeSection === "newsletter" && (
+          <div className={styles.content}>
             <div className={styles.sectionHeader}>
-              <button
-                onClick={() => navigate("/admin/newsletter/new")}
-                className={styles.btnPrimary}
-              >
-                + Nouvelle Newsletter
+              <button className={styles.btnPrimary} onClick={() => navigate("/admin/newsletter/new")}>
+                <MdEdit /> Nouvelle Newsletter
               </button>
             </div>
 
             {loading ? (
-              <div className={styles.loadingState}>
-                <div className={styles.spinner}></div>
-                <p>Chargement...</p>
-              </div>
+              <div className={styles.loading}>Chargement...</div>
             ) : newsletters.length === 0 ? (
-              <div className={styles.emptyState}>
-                <span className={styles.emptyIcon}>📧</span>
+              <div className={styles.empty}>
+                <MdEmail className={styles.emptyIcon} />
                 <h3>Aucune newsletter</h3>
-                <p>Commencez par créer votre première newsletter.</p>
-                <button
-                  onClick={() => navigate("/admin/newsletter/new")}
-                  className={styles.btnPrimary}
-                  style={{ marginTop: "16px" }}
-                >
-                  + Créer une newsletter
+                <button className={styles.btnPrimary} onClick={() => navigate("/admin/newsletter/new")}>
+                  <MdEdit /> Créer une newsletter
                 </button>
               </div>
             ) : (
-              <div className={styles.newsletterGrid}>
+              <div className={styles.newslettersGrid}>
                 {newsletters.map((newsletter) => (
                   <div key={newsletter._id} className={styles.newsletterCard}>
                     <div className={styles.newsletterHeader}>
-                      <h3 className={styles.newsletterTitle}>{newsletter.title}</h3>
-                      <span
-                        className={`${styles.status} ${
-                          newsletter.status === "sent"
-                            ? styles.statusSent
-                            : newsletter.status === "scheduled"
-                            ? styles.statusScheduled
-                            : styles.statusDraft
-                        }`}
-                      >
-                        {newsletter.status === "sent"
-                          ? "✓ Envoyée"
-                          : newsletter.status === "scheduled"
-                          ? "📅 Programmée"
-                          : "📝 Brouillon"}
+                      <h3>{newsletter.title}</h3>
+                      <span className={`${styles.statusBadge} ${
+                        newsletter.status === "sent" ? styles.statusApproved :
+                        newsletter.status === "scheduled" ? styles.statusPending :
+                        styles.statusDraft
+                      }`}>
+                        {newsletter.status === "sent" ? "✓ Envoyée" :
+                         newsletter.status === "scheduled" ? "📅 Programmée" :
+                         "📝 Brouillon"}
                       </span>
                     </div>
 
                     <p className={styles.newsletterSubject}>
                       <strong>Sujet:</strong> {newsletter.subject}
                     </p>
-
                     <p className={styles.newsletterDate}>
                       Créée le {new Date(newsletter.createdAt).toLocaleDateString("fr-FR")}
                     </p>
 
                     <div className={styles.newsletterActions}>
-                      <button
-                        onClick={() => navigate(`/admin/newsletter/${newsletter._id}`)}
-                        className={styles.btnSecondary}
-                      >
-                        Modifier
+                      <button className={styles.btnSecondary} onClick={() => navigate(`/admin/newsletter/${newsletter._id}`)}>
+                        <MdEdit /> Modifier
                       </button>
                       {newsletter.status !== "sent" && (
                         <>
-                          <button
-                            onClick={() => handleSendNow(newsletter._id, newsletter.title)}
-                            className={styles.btnPrimary}
-                            disabled={loading}
-                          >
-                            📤 Envoyer maintenant
+                          <button className={styles.btnPrimary} onClick={() => handleSendNow(newsletter._id, newsletter.title)} disabled={loading}>
+                            <MdSend /> Envoyer
                           </button>
-                          <button
-                            onClick={() => handleDeleteNewsletter(newsletter._id)}
-                            className={styles.btnDanger}
-                          >
-                            Supprimer
+                          <button className={styles.btnDanger} onClick={() => handleDeleteNewsletter(newsletter._id)}>
+                            <MdDelete /> Supprimer
                           </button>
                         </>
                       )}
@@ -656,7 +501,8 @@ export default function AdminPage() {
             )}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 }
