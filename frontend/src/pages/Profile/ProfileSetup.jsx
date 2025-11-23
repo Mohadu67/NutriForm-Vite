@@ -508,10 +508,10 @@ export default function ProfileSetup() {
                     <Form.Label>Âge min</Form.Label>
                     <Form.Control
                       type="number"
-                      value={matchPreferences.preferredAgeRange.min}
+                      value={matchPreferences?.preferredAgeRange?.min || 18}
                       onChange={(e) => setMatchPreferences({
                         ...matchPreferences,
-                        preferredAgeRange: { ...matchPreferences.preferredAgeRange, min: parseInt(e.target.value) }
+                        preferredAgeRange: { ...(matchPreferences.preferredAgeRange || { min: 18, max: 99 }), min: parseInt(e.target.value) }
                       })}
                       min={13}
                       max={120}
@@ -523,10 +523,10 @@ export default function ProfileSetup() {
                     <Form.Label>Âge max</Form.Label>
                     <Form.Control
                       type="number"
-                      value={matchPreferences.preferredAgeRange.max}
+                      value={matchPreferences?.preferredAgeRange?.max || 99}
                       onChange={(e) => setMatchPreferences({
                         ...matchPreferences,
-                        preferredAgeRange: { ...matchPreferences.preferredAgeRange, max: parseInt(e.target.value) }
+                        preferredAgeRange: { ...(matchPreferences.preferredAgeRange || { min: 18, max: 99 }), max: parseInt(e.target.value) }
                       })}
                       min={13}
                       max={120}
