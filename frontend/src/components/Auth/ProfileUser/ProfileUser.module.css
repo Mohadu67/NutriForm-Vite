@@ -1,5 +1,6 @@
-/* === PROFILE USER - Design moderne === */
+/* === PROFILE USER - Design Harmonieux & Soft === */
 
+/* Body container avec scroll fonctionnel */
 .body {
   padding: 0;
   width: 100%;
@@ -7,29 +8,106 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  min-height: 400px;
-  background: var(--profile-bg, #ffffff);
+  min-height: 100%;
+  max-height: 85vh;
+  position: relative;
+  background: linear-gradient(160deg,
+    rgba(248, 250, 252, 0.98) 0%,
+    rgba(241, 245, 249, 0.95) 100%
+  );
+  backdrop-filter: blur(40px) saturate(100%);
+  -webkit-backdrop-filter: blur(40px) saturate(100%);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* Header avec gradient */
+/* Smooth scrollbar styling */
+.body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 10px;
+}
+
+.body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.body::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* Subtle gradient overlay */
+.body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(0, 0, 0, 0.01) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Header soft et élégant */
 .header {
-  background: var(--couleur-bouton-action, #f7b186);
-  padding: 32px 24px 40px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 36px 28px 40px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  animation: slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .title {
   font-family: 'Merriweather', serif;
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--couleur-text-bouton, #111111);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #1f2937;
   text-align: center;
   margin: 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  letter-spacing: -0.3px;
+  position: relative;
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
 }
 
 /* Photo wrapper */
@@ -37,70 +115,95 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  animation: fadeIn 0.6s ease-out 0.2s backwards;
 }
 
-/* Content wrapper */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Content wrapper avec scroll */
 .content {
-  padding: 32px 24px;
+  padding: 32px 28px 40px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22px;
+  position: relative;
+  z-index: 1;
+  animation: fadeInContent 0.6s ease-out 0.3s backwards;
+}
+
+@keyframes fadeInContent {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Messages */
 .loading,
 .error {
   text-align: center;
-  padding: 20px;
-  font-size: 1rem;
-  color: var(--profile-muted, #6b7280);
-  animation: fadeIn 300ms ease-out;
+  padding: 18px;
+  font-size: 0.95rem;
+  color: #666;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease;
 }
 
 .error {
-  color: #ef4444;
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.12));
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.08);
   border-radius: 12px;
-  border-left: 4px solid #ef4444;
+  border-left: 3px solid #ef4444;
   margin: 0;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.08);
 }
 
 .success {
   text-align: center;
   padding: 14px 20px;
-  font-size: 0.9375rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  color: #16a34a;
-  background: linear-gradient(135deg, rgba(22, 163, 74, 0.08), rgba(21, 128, 61, 0.12));
+  color: #059669;
+  background: rgba(16, 185, 129, 0.08);
   border-radius: 12px;
-  border-left: 4px solid #16a34a;
+  border-left: 3px solid #10b981;
   margin: 0;
-  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.15);
-  animation: slideDown 400ms ease-out;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
+  animation: slideDownSoft 0.4s ease-out;
+}
+
+@keyframes slideDownSoft {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Section d'informations */
 .infoSection {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
+/* Info Card soft */
 .infoCard {
-  background: var(--profile-bg, #ffffff);
-  border: 1px solid var(--profile-border, rgba(0, 0, 0, 0.08));
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.infoCard:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border-color: rgba(247, 177, 134, 0.3);
+  padding: 22px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .infoRow {
@@ -112,15 +215,15 @@
 }
 
 .infoRow:not(:last-child) {
-  border-bottom: 1px solid var(--profile-border, rgba(0, 0, 0, 0.06));
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .label {
   font-weight: 700;
-  font-size: 0.875rem;
-  color: var(--profile-muted, #6b7280);
+  font-size: 0.85rem;
+  color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.4px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -128,28 +231,33 @@
 
 .label::before {
   content: '';
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--couleur-bouton-action, #f7b186);
+  background: rgba(0, 0, 0, 0.2);
   flex-shrink: 0;
 }
 
 .value {
   font-weight: 600;
-  color: var(--profile-text, #111827);
+  color: #111827;
   font-size: 1rem;
   text-align: right;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Formulaire */
+/* Formulaire soft */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  animation: fadeIn 300ms ease-out;
+  gap: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 .field {
@@ -160,253 +268,274 @@
 
 .fieldLabel {
   font-weight: 700;
-  font-size: 0.875rem;
-  color: var(--profile-text, #374151);
+  font-size: 0.85rem;
+  color: #374151;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
-  margin-left: 4px;
+  letter-spacing: 0.4px;
 }
 
 .input {
-  padding: 14px 16px;
+  width: 100%;
+  padding: 13px 16px;
   font-size: 1rem;
-  border: 2px solid var(--profile-border, rgba(0, 0, 0, 0.08));
-  border-radius: 12px;
-  background: var(--profile-bg, #fafafa);
-  color: var(--profile-text, #111827);
-  font-family: inherit;
   font-weight: 500;
-  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.input:focus {
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #111827;
+  transition: all 0.25s ease;
   outline: none;
-  border-color: #f7b186;
-  background: var(--profile-bg, #ffffff);
-  box-shadow: 0 0 0 4px rgba(247, 177, 134, 0.12);
 }
 
 .input::placeholder {
-  color: var(--profile-muted, #9ca3af);
+  color: #9ca3af;
 }
 
-/* Actions */
+.input:focus {
+  background: white;
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 0 0 3px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+/* Actions buttons */
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 8px;
+  gap: 11px;
+  margin-top: 6px;
 }
 
-.actions button {
-  width: 100%;
-  padding: 14px 24px;
-  font-size: 1rem;
-  font-weight: 700;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  text-transform: none;
-  letter-spacing: 0.025em;
+.actions :global(button) {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  letter-spacing: 0.2px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: none;
 }
 
-.actions button:hover {
+.actions :global(button):hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
-.actions button:active {
+.actions :global(button):active:not(:disabled) {
   transform: translateY(0);
 }
 
-/* Variantes de boutons */
-.actions :global(button[variant="secondary"]) {
-  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-  color: #374151;
+/* === SUBSCRIPTION SECTION === */
+.subscriptionCard {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 14px;
+  margin-bottom: 18px;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.02);
+  position: relative;
 }
 
-.actions :global(button[variant="secondary"]):hover {
-  background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+.subscriptionTitle {
+  font-family: 'Merriweather', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.2px;
 }
 
-.actions :global(button[variant="admin"]) {
-  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-  color: #1e40af;
-  border: 2px solid #3b82f6;
+.subscriptionTitle::before {
+  content: '💎';
+  font-size: 1.45rem;
+  opacity: 0.7;
+  animation: gentleFloat 3s ease-in-out infinite;
 }
 
-.actions :global(button[variant="admin"]):hover {
-  background: linear-gradient(135deg, #bfdbfe, #93c5fd);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); opacity: 0.7; }
+  50% { transform: translateY(-3px); opacity: 0.85; }
 }
 
-.actions :global(button[variant="logout"]) {
-  background: linear-gradient(135deg, #fee2e2, #fecaca);
-  color: #dc2626;
+.tier {
+  font-weight: 700 !important;
+  padding: 5px 14px;
+  border-radius: 8px;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-size: 0.9rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.actions :global(button[variant="logout"]):hover {
-  background: linear-gradient(135deg, #fecaca, #fca5a5);
+.tier.premium {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
-/* === ANIMATIONS === */
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.tier.free {
+  background: rgba(107, 114, 128, 0.08);
+  color: #6b7280;
+  border: 1px solid rgba(107, 114, 128, 0.15);
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.subscriptionActions {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-/* === RESPONSIVE === */
-
-@media (max-width: 479px) {
-  .header {
-    padding: 24px 16px 32px;
-    gap: 20px;
-  }
-
-  .title {
-    font-size: 1.5rem;
-  }
-
-  .content {
-    padding: 24px 16px;
-  }
-
-  .infoRow {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .value {
-    text-align: left;
-    width: 100%;
-  }
+.loadingText {
+  color: #6b7280;
+  text-align: center;
+  margin: 18px 0;
+  font-weight: 500;
+  font-size: 0.95rem;
 }
 
-@media (min-width: 480px) and (max-width: 639px) {
-  .actions {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .actions button {
-    flex: 1;
-    min-width: 140px;
-  }
-}
-
-@media (min-width: 640px) {
+/* Responsive mobile-first */
+@media (max-width: 640px) {
   .body {
-    min-height: 500px;
+    max-height: 90vh;
   }
 
   .header {
-    padding: 40px 32px 48px;
-    gap: 28px;
+    padding: 28px 20px 32px;
   }
 
   .title {
-    font-size: 2rem;
+    font-size: 1.65rem;
   }
 
   .content {
-    padding: 40px 32px;
+    padding: 26px 20px 32px;
   }
 
-  .infoCard {
-    padding: 24px;
+  .infoCard,
+  .subscriptionCard {
+    padding: 18px;
   }
 
-  .infoRow {
-    padding: 16px 0;
+  .form {
+    padding: 18px;
   }
 
-  .input {
-    padding: 16px 20px;
-    font-size: 1.0625rem;
-  }
-
-  .actions {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .actions button {
-    flex: 1;
-    min-width: 160px;
+  .subscriptionTitle {
+    font-size: 1.2rem;
   }
 }
 
-/* === DARK MODE === */
+@media (min-width: 641px) and (max-width: 768px) {
+  .body {
+    max-height: 87vh;
+  }
+}
 
+/* Dark mode harmonieux */
 :global(body.dark) .body,
 :global(html.dark) .body {
-  background: #1a1a1a;
+  background: linear-gradient(160deg,
+    rgba(31, 41, 55, 0.95) 0%,
+    rgba(17, 24, 39, 0.98) 50%,
+    rgba(31, 41, 55, 0.95) 100%
+  );
 }
 
 :global(body.dark) .header,
 :global(html.dark) .header {
-  background: linear-gradient(135deg, #d97745 0%, #c96437 100%);
+  background: linear-gradient(135deg,
+    rgba(55, 65, 81, 0.5) 0%,
+    rgba(31, 41, 55, 0.5) 100%
+  );
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+:global(body.dark) .title,
+:global(html.dark) .title {
+  color: #f3f4f6;
 }
 
 :global(body.dark) .infoCard,
 :global(html.dark) .infoCard {
-  background: #1f1f1f;
+  background: rgba(31, 41, 55, 0.6);
   border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-:global(body.dark) .infoCard:hover,
-:global(html.dark) .infoCard:hover {
-  border-color: rgba(217, 119, 69, 0.3);
+:global(body.dark) .subscriptionCard,
+:global(html.dark) .subscriptionCard {
+  background: rgba(31, 41, 55, 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
-:global(body.dark) .infoRow,
-:global(html.dark) .infoRow {
-  border-color: rgba(255, 255, 255, 0.06);
+:global(body.dark) .form,
+:global(html.dark) .form {
+  background: rgba(31, 41, 55, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 :global(body.dark) .input,
 :global(html.dark) .input {
-  background: #1f1f1f;
-  border-color: rgba(255, 255, 255, 0.08);
-  color: #e9ecf1;
+  background: rgba(17, 24, 39, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
 }
 
 :global(body.dark) .input:focus,
 :global(html.dark) .input:focus {
-  background: #252525;
-  border-color: #d97745;
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-:global(body.dark) .actions :global(button[variant="admin"]),
-:global(html.dark) .actions :global(button[variant="admin"]) {
-  background: linear-gradient(135deg, #1e3a8a, #1e40af);
-  color: #bfdbfe;
-  border-color: #3b82f6;
+:global(body.dark) .label,
+:global(html.dark) .label {
+  color: #9ca3af;
 }
 
-:global(body.dark) .actions :global(button[variant="admin"]):hover,
-:global(html.dark) .actions :global(button[variant="admin"]):hover {
-  background: linear-gradient(135deg, #1e40af, #2563eb);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);
+:global(body.dark) .value,
+:global(html.dark) .value {
+  color: #e5e7eb;
+}
+
+:global(body.dark) .fieldLabel,
+:global(html.dark) .fieldLabel {
+  color: #d1d5db;
+}
+
+:global(body.dark) .subscriptionTitle,
+:global(html.dark) .subscriptionTitle {
+  color: #f3f4f6;
+}
+
+:global(body.dark) .tier.free,
+:global(html.dark) .tier.free {
+  background: rgba(156, 163, 175, 0.15);
+  color: #9ca3af;
+  border-color: rgba(156, 163, 175, 0.25);
+}
+
+:global(body.dark) .body::-webkit-scrollbar-track,
+:global(html.dark) .body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+:global(body.dark) .infoRow:not(:last-child),
+:global(html.dark) .infoRow:not(:last-child) {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+:global(body.dark) .subscriptionActions,
+:global(html.dark) .subscriptionActions {
+  border-top-color: rgba(255, 255, 255, 0.08);
 }

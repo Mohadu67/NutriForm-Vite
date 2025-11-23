@@ -4,16 +4,17 @@ import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/
 import { isAuthenticated } from '../../shared/api/auth';
 import styles from './ChatPanel.module.css';
 
-export default function ChatPanel() {
+export default function ChatPanel({ conversationId: propConversationId, initialMessage, onClose }) {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
-  const [conversationId, setConversationId] = useState(null);
+  const [conversationId, setConversationId] = useState(propConversationId || null);
   const [loading, setLoading] = useState(false);
   const [escalated, setEscalated] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const initialMessageSentRef = useRef(false);
 
   // Vérifier si l'utilisateur est authentifié
   useEffect(() => {
@@ -29,15 +30,29 @@ export default function ChatPanel() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Charger l'historique si conversationId existe dans localStorage
+  // Charger l'historique ou initialiser nouvelle conversation
   useEffect(() => {
     if (isAuth) {
-      const savedConvId = localStorage.getItem('chatConversationId');
-      if (savedConvId) {
-        setConversationId(savedConvId);
-        loadHistory(savedConvId);
+      if (propConversationId) {
+        // Charger conversation existante
+        setConversationId(propConversationId);
+        loadHistory(propConversationId);
+      } else if (initialMessage && !initialMessageSentRef.current) {
+        // Nouvelle conversation avec message initial
+        initialMessageSentRef.current = true;
+        setMessages([
+          {
+            role: 'bot',
+            content: "Salut ! 👋 Je suis l'assistant NutriForm. Comment puis-je t'aider aujourd'hui ?",
+            createdAt: new Date()
+          }
+        ]);
+        // Envoyer le message initial automatiquement
+        setTimeout(() => {
+          handleSendMessageDirect(initialMessage);
+        }, 300);
       } else {
-        // Message de bienvenue initial
+        // Message de bienvenue par défaut
         setMessages([
           {
             role: 'bot',
@@ -47,7 +62,7 @@ export default function ChatPanel() {
         ]);
       }
     }
-  }, [isAuth]);
+  }, [isAuth, propConversationId, initialMessage]);
 
   const loadHistory = async (convId) => {
     try {
@@ -60,29 +75,28 @@ export default function ChatPanel() {
     }
   };
 
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!inputMessage.trim() || !isAuth || loading) return;
-
-    const userMsg = inputMessage.trim();
-    setInputMessage('');
+  const handleSendMessageDirect = async (message) => {
+    if (!message.trim() || !isAuth || loading) return;
 
     // Ajouter message utilisateur
     setMessages(prev => [...prev, {
       role: 'user',
-      content: userMsg,
+      content: message,
       createdAt: new Date()
     }]);
 
     setLoading(true);
 
     try {
-      const response = await sendChatMessage(userMsg, conversationId);
+      const response = await sendChatMessage(message, conversationId);
 
       // Sauvegarder conversationId
       if (!conversationId) {
-        setConversationId(response.conversationId);
-        localStorage.setItem('chatConversationId', response.conversationId);
+        const newConvId = response.conversationId;
+        setConversationId(newConvId);
+
+        // Sauvegarder dans localStorage pour l'historique
+        saveConversationToHistory(newConvId, message);
       }
 
       // Ajouter réponse bot
@@ -109,6 +123,40 @@ export default function ChatPanel() {
     }
   };
 
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!inputMessage.trim() || !isAuth || loading) return;
+
+    const userMsg = inputMessage.trim();
+    setInputMessage('');
+
+    await handleSendMessageDirect(userMsg);
+  };
+
+  const saveConversationToHistory = (convId, firstMessage) => {
+    try {
+      const savedConversations = localStorage.getItem('chatConversations');
+      let conversations = savedConversations ? JSON.parse(savedConversations) : [];
+
+      // Ajouter nouvelle conversation
+      conversations.unshift({
+        id: convId,
+        lastMessage: firstMessage,
+        updatedAt: new Date().toISOString(),
+        escalated: false
+      });
+
+      // Garder seulement les 20 dernières conversations
+      if (conversations.length > 20) {
+        conversations = conversations.slice(0, 20);
+      }
+
+      localStorage.setItem('chatConversations', JSON.stringify(conversations));
+    } catch (err) {
+      console.error('Erreur sauvegarde historique:', err);
+    }
+  };
+
   const handleEscalate = async () => {
     if (!conversationId) return;
 
@@ -128,37 +176,20 @@ export default function ChatPanel() {
     }
   };
 
-  const handleNewChat = () => {
-    setMessages([
-      {
-        role: 'bot',
-        content: "Salut ! 👋 Je suis l'assistant NutriForm. Comment puis-je t'aider aujourd'hui ?",
-        createdAt: new Date()
-      }
-    ]);
-    setConversationId(null);
-    setEscalated(false);
-    localStorage.removeItem('chatConversationId');
-  };
 
   return (
     <div className={styles.chatPanel}>
-      {/* Header */}
-      <div className={styles.chatHeader}>
-        <div>
-          <h4 className={styles.chatTitle}>💬 Assistant</h4>
-          <p className={styles.chatSubtitle}>
-            {escalated ? '🟢 Support humain' : '🤖 IA'}
-          </p>
+      {/* Header - shown only when not in navbar (desktop popup mode) */}
+      {!onClose && (
+        <div className={styles.chatHeader}>
+          <div>
+            <h4 className={styles.chatTitle}>💬 Assistant</h4>
+            <p className={styles.chatSubtitle}>
+              {escalated ? '🟢 Support humain' : '🤖 IA'}
+            </p>
+          </div>
         </div>
-        <button
-          className={styles.newChatBtn}
-          onClick={handleNewChat}
-          title="Nouvelle conversation"
-        >
-          ↻
-        </button>
-      </div>
+      )}
 
       {/* Messages */}
       <div className={styles.chatMessages}>
