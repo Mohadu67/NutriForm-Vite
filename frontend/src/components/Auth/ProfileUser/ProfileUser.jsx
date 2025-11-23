@@ -163,6 +163,7 @@ export default function ProfileUser({ onClose, onLogout }) {
     window.dispatchEvent(new Event("storage"));
     onLogout?.();
     onClose?.();
+    navigate('/');
   };
 
   const handleAdminClick = () => {
