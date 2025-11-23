@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Form, Badge, Spinner, Alert } from 'react-bootstrap';
-import Navbar from '../../components/Shared/Navbar';
-import Footer from '../../components/Shared/Footer';
+import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
 import {
   getAllSupportTickets,
   getSupportTicketById,
