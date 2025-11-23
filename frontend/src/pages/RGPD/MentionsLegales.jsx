@@ -36,7 +36,7 @@ const MentionsLegales = () => {
               https:
             </a> <br />
             <strong>Téléphone :</strong> 0783330694<br />
-            <strong>Github :</strong>{"https://github.com/Mohadu67/nutriform-vite"}<br />
+            <strong>Github :</strong>{"https://github.com/Mohadu67/harmonith"}<br />
           </p>
         </section>
 

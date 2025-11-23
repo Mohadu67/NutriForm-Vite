@@ -51,7 +51,7 @@ export default function ChatWidget() {
         setMessages([
           {
             role: 'bot',
-            content: "Salut ! 👋 Je suis l'assistant NutriForm. Comment puis-je t'aider aujourd'hui ?",
+            content: "Salut ! 👋 Je suis l'assistant Harmonith. Comment puis-je t'aider aujourd'hui ?",
             createdAt: new Date()
           }
         ]);
@@ -155,7 +155,7 @@ export default function ChatWidget() {
     setMessages([
       {
         role: 'bot',
-        content: "Salut ! 👋 Je suis l'assistant NutriForm. Comment puis-je t'aider aujourd'hui ?",
+        content: "Salut ! 👋 Je suis l'assistant Harmonith. Comment puis-je t'aider aujourd'hui ?",
         createdAt: new Date()
       }
     ]);
@@ -190,7 +190,7 @@ export default function ChatWidget() {
           {/* Header */}
           <div className={styles.chatHeader}>
             <div>
-              <h3 className={styles.chatTitle}>💬 Assistant NutriForm</h3>
+              <h3 className={styles.chatTitle}>💬 Assistant Harmonith</h3>
               <p className={styles.chatSubtitle}>
                 {escalated ? '🟢 Support humain' : '🤖 Assistant virtuel'}
               </p>
