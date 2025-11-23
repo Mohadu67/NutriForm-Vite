@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button, Container } from "react-bootstrap";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
@@ -7,16 +8,35 @@ import style from "./Dashboard.module.css";
 import useHistoryData from "../../components/History/HistoryUser/UseHistoryData.js";
 import WeeklyGoalModal from "../../components/History/DashboardCards/WeeklyGoalModal.jsx";
 import { deleteSession } from "../../components/History/SessionTracking/sessionApi.js";
+import { getSubscriptionStatus } from "../../shared/api/subscription.js";
 
 export default function Dashboard() {
   usePageTitle("Dashboard");
   const navigate = useNavigate();
+  const [subscriptionTier, setSubscriptionTier] = useState(null);
+  const [loadingSubscription, setLoadingSubscription] = useState(true);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (!user) {
       navigate("/");
+      return;
     }
+
+    // Vérifier le statut d'abonnement
+    const checkSubscription = async () => {
+      try {
+        const status = await getSubscriptionStatus();
+        setSubscriptionTier(status.tier);
+      } catch (err) {
+        console.error("Erreur récupération subscription:", err);
+        setSubscriptionTier('free'); // Default à free si erreur
+      } finally {
+        setLoadingSubscription(false);
+      }
+    };
+
+    checkSubscription();
   }, [navigate]);
 
   const parseDate = useCallback((raw) => {
@@ -481,6 +501,64 @@ export default function Dashboard() {
       direction: change > 0 ? 'up' : change < 0 ? 'down' : 'same',
     };
   }, [imcPoints]);
+
+  // Afficher paywall si free user
+  if (subscriptionTier === 'free') {
+    return (
+      <>
+        <Header />
+        <Container className="text-center py-5" style={{ minHeight: 'calc(100vh - 200px)' }}>
+          <div style={{ maxWidth: '600px', margin: '0 auto', padding: '60px 20px' }}>
+            <div style={{ fontSize: '5rem', marginBottom: '20px' }}>🔒</div>
+            <h1 style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '20px', color: '#333' }}>
+              Dashboard Premium
+            </h1>
+            <p style={{ fontSize: '1.2rem', color: '#6c757d', marginBottom: '30px' }}>
+              Le Dashboard est réservé aux membres Premium. Passez Premium pour sauvegarder vos séances et suivre votre progression.
+            </p>
+            <div style={{
+              background: '#f8f9fa',
+              padding: '30px',
+              borderRadius: '15px',
+              marginBottom: '30px'
+            }}>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>Avec Premium, débloquez :</h3>
+              <ul style={{
+                listStyle: 'none',
+                padding: 0,
+                textAlign: 'left',
+                display: 'inline-block'
+              }}>
+                <li style={{ padding: '10px 0', fontSize: '1.1rem' }}>✓ Sauvegarde illimitée de vos séances</li>
+                <li style={{ padding: '10px 0', fontSize: '1.1rem' }}>✓ Dashboard complet avec statistiques</li>
+                <li style={{ padding: '10px 0', fontSize: '1.1rem' }}>✓ Historique complet de progression</li>
+                <li style={{ padding: '10px 0', fontSize: '1.1rem' }}>✓ Badges & Gamification</li>
+                <li style={{ padding: '10px 0', fontSize: '1.1rem' }}>✓ Participation au Leaderboard</li>
+                <li style={{ padding: '10px 0', fontSize: '1.1rem' }}>✓ Export CSV de vos données</li>
+              </ul>
+            </div>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => navigate('/pricing')}
+              style={{
+                fontSize: '1.2rem',
+                padding: '15px 40px',
+                borderRadius: '10px',
+                fontWeight: '600'
+              }}
+            >
+              Découvrir Premium - 3,99€/mois
+            </Button>
+            <p style={{ marginTop: '15px', color: '#6c757d' }}>
+              🎉 7 jours d'essai gratuit - Sans engagement
+            </p>
+          </div>
+        </Container>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
