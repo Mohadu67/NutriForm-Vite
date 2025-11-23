@@ -878,20 +878,80 @@
 }
 
 /* ========================================
-   CHAT SECTION - Mobile only
+   MOBILE PANEL - Mobile only
    ======================================== */
 
-.chatSection {
-  width: 100vw;
-  height: calc(100vh - 180px);
-  margin: 0 -20px;
-  padding: 0;
-  background: white;
-  overflow: hidden;
+.mobilePanel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
+  animation: fadeIn 0.2s ease;
 }
 
-@media (min-width: 769px) {
-  .chatSection {
-    display: none;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Chat history header */
+.chatHistoryHeader {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.chatHistoryHeader h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  flex: 1;
+}
+
+/* Chat header with close button */
+.chatHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.chatHeader h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.chatCloseBtn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.chatCloseBtn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
 }
