@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button, Container } from "react-bootstrap";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Button } from "react-bootstrap";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
@@ -13,14 +13,26 @@ import { getSubscriptionStatus } from "../../shared/api/subscription.js";
 export default function Dashboard() {
   usePageTitle("Dashboard");
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [subscriptionTier, setSubscriptionTier] = useState(null);
-  const [loadingSubscription, setLoadingSubscription] = useState(true);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (!user) {
       navigate("/");
       return;
+    }
+
+    // Vérifier le paramètre success dans l'URL
+    const success = searchParams.get('success');
+    if (success === 'true') {
+      setShowSuccessMessage(true);
+      // Nettoyer l'URL après 5 secondes
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+        setSearchParams({});
+      }, 5000);
     }
 
     // Vérifier le statut d'abonnement
@@ -31,13 +43,11 @@ export default function Dashboard() {
       } catch (err) {
         console.error("Erreur récupération subscription:", err);
         setSubscriptionTier('free'); // Default à free si erreur
-      } finally {
-        setLoadingSubscription(false);
       }
     };
 
     checkSubscription();
-  }, [navigate]);
+  }, [navigate, searchParams, setSearchParams]);
 
   const parseDate = useCallback((raw) => {
     if (!raw) return null;
@@ -252,11 +262,6 @@ export default function Dashboard() {
       }))
       .sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [records]);
-
-  const bestRM = useMemo(() => {
-    if (!rmTests.length) return null;
-    return rmTests.reduce((best, current) => (current.rm > best.rm ? current : best), rmTests[0]);
-  }, [rmTests]);
 
   // Cardio stats by sport
   const getEntryDistanceKm = useCallback((entry) => {
@@ -507,54 +512,39 @@ export default function Dashboard() {
     return (
       <>
         <Header />
-        <Container className="text-center py-5" style={{ minHeight: 'calc(100vh - 200px)' }}>
-          <div style={{ maxWidth: '600px', margin: '0 auto', padding: '60px 20px' }}>
-            <div style={{ fontSize: '5rem', marginBottom: '20px' }}>🔒</div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '20px', color: '#333' }}>
+        <div className={style.paywallContainer}>
+          <div className={style.paywallContent}>
+            <div className={style.paywallIcon}>🔒</div>
+            <h1 className={style.paywallTitle}>
               Dashboard Premium
             </h1>
-            <p style={{ fontSize: '1.2rem', color: '#6c757d', marginBottom: '30px' }}>
+            <p className={style.paywallSubtitle}>
               Le Dashboard est réservé aux membres Premium. Passez Premium pour sauvegarder vos séances et suivre votre progression.
             </p>
-            <div style={{
-              background: '#f8f9fa',
-              padding: '30px',
-              borderRadius: '15px',
-              marginBottom: '30px'
-            }}>
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>Avec Premium, débloquez :</h3>
-              <ul style={{
-                listStyle: 'none',
-                padding: 0,
-                textAlign: 'left',
-                display: 'inline-block'
-              }}>
-                <li style={{ padding: '10px 0', fontSize: '1.1rem' }}>✓ Sauvegarde illimitée de vos séances</li>
-                <li style={{ padding: '10px 0', fontSize: '1.1rem' }}>✓ Dashboard complet avec statistiques</li>
-                <li style={{ padding: '10px 0', fontSize: '1.1rem' }}>✓ Historique complet de progression</li>
-                <li style={{ padding: '10px 0', fontSize: '1.1rem' }}>✓ Badges & Gamification</li>
-                <li style={{ padding: '10px 0', fontSize: '1.1rem' }}>✓ Participation au Leaderboard</li>
-                <li style={{ padding: '10px 0', fontSize: '1.1rem' }}>✓ Export CSV de vos données</li>
+            <div className={style.paywallCard}>
+              <h3 className={style.paywallCardTitle}>Avec Premium, débloquez :</h3>
+              <ul className={style.paywallFeatures}>
+                <li className={style.paywallFeature}>Sauvegarde illimitée de vos séances</li>
+                <li className={style.paywallFeature}>Dashboard complet avec statistiques</li>
+                <li className={style.paywallFeature}>Historique complet de progression</li>
+                <li className={style.paywallFeature}>Badges & Gamification</li>
+                <li className={style.paywallFeature}>Participation au Leaderboard</li>
+                <li className={style.paywallFeature}>Export CSV de vos données</li>
               </ul>
             </div>
             <Button
               variant="primary"
               size="lg"
               onClick={() => navigate('/pricing')}
-              style={{
-                fontSize: '1.2rem',
-                padding: '15px 40px',
-                borderRadius: '10px',
-                fontWeight: '600'
-              }}
+              className={style.paywallButton}
             >
               Découvrir Premium - 3,99€/mois
             </Button>
-            <p style={{ marginTop: '15px', color: '#6c757d' }}>
+            <p className={style.paywallNotice}>
               🎉 7 jours d'essai gratuit - Sans engagement
             </p>
           </div>
-        </Container>
+        </div>
         <Footer />
       </>
     );
@@ -565,6 +555,13 @@ export default function Dashboard() {
       <Header />
       <main className={style.dashboard}>
         <div className={style.container}>
+          {/* Success Message after Payment */}
+          {showSuccessMessage && (
+            <div className={style.successBanner}>
+              🎉 Bienvenue dans Premium ! Votre essai gratuit de 7 jours a commencé. Profitez de toutes les fonctionnalités !
+            </div>
+          )}
+
           {/* Header Section */}
           <header className={style.header}>
             <h1 className={style.greeting}>Salut, {capitalizedName}</h1>

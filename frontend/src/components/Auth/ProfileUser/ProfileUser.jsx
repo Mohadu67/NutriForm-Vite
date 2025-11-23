@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./ProfileUser.module.css";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import ProfilePhoto from "./ProfilePhoto/ProfilePhoto.jsx";
 import { secureApiCall, logout, isAuthenticated } from "../../../utils/authService.js";
+import { getSubscriptionStatus, createCustomerPortalSession } from "../../../shared/api/subscription.js";
 
 export default function ProfileUser({ onClose, onLogout }) {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -21,13 +24,27 @@ export default function ProfileUser({ onClose, onLogout }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Subscription state
+  const [subscriptionInfo, setSubscriptionInfo] = useState(null);
+  const [loadingSubscription, setLoadingSubscription] = useState(false);
+
   useEffect(() => {
     if (isAuthenticated()) {
       fetchUserData();
+      fetchSubscriptionInfo();
     } else {
       setLoading(false);
     }
   }, []);
+
+  const fetchSubscriptionInfo = async () => {
+    try {
+      const status = await getSubscriptionStatus();
+      setSubscriptionInfo(status);
+    } catch (err) {
+      console.error('Erreur récupération subscription:', err);
+    }
+  };
 
   const fetchUserData = async () => {
     try {
@@ -41,7 +58,7 @@ export default function ProfileUser({ onClose, onLogout }) {
       setPseudo(data.pseudo || "");
       setEmail(data.email || "");
       setLoading(false);
-    } catch (err) {
+    } catch {
       const weeklyGoal = localStorage.getItem('weeklyGoal');
       const dynamiPrefs = {
         dynamiStep: localStorage.getItem('dynamiStep'),
@@ -125,6 +142,22 @@ export default function ProfileUser({ onClose, onLogout }) {
     }
   };
 
+  const handleUpgrade = () => {
+    if (onClose) onClose();
+    navigate('/pricing');
+  };
+
+  const handleManageSubscription = async () => {
+    setLoadingSubscription(true);
+    try {
+      const { url } = await createCustomerPortalSession();
+      window.location.href = url;
+    } catch (err) {
+      setError(err.response?.data?.error || 'Erreur lors de l\'accès au portail');
+      setLoadingSubscription(false);
+    }
+  };
+
   const handleLogout = async () => {
     await logout();
     window.dispatchEvent(new Event("storage"));
@@ -185,6 +218,59 @@ export default function ProfileUser({ onClose, onLogout }) {
                 <span className={styles.label}>Email</span>
                 <span className={styles.value}>{user?.email || "Non renseigné"}</span>
               </div>
+            </div>
+
+            {/* Subscription Section */}
+            <div className={styles.subscriptionCard}>
+              <h4 className={styles.subscriptionTitle}>Abonnement</h4>
+              {subscriptionInfo ? (
+                <>
+                  <div className={styles.infoRow}>
+                    <span className={styles.label}>Formule</span>
+                    <span className={`${styles.value} ${styles.tier} ${styles[subscriptionInfo.tier]}`}>
+                      {subscriptionInfo.tier === 'premium' ? '✨ Premium' : 'Gratuit'}
+                    </span>
+                  </div>
+
+                  {subscriptionInfo.tier === 'premium' && subscriptionInfo.isInTrial && subscriptionInfo.trialEnd && (
+                    <div className={styles.infoRow}>
+                      <span className={styles.label}>Période d'essai</span>
+                      <span className={styles.value}>
+                        Expire le {new Date(subscriptionInfo.trialEnd).toLocaleDateString('fr-FR')}
+                      </span>
+                    </div>
+                  )}
+
+                  {subscriptionInfo.tier === 'premium' && !subscriptionInfo.isInTrial && subscriptionInfo.currentPeriodEnd && (
+                    <div className={styles.infoRow}>
+                      <span className={styles.label}>Renouvellement</span>
+                      <span className={styles.value}>
+                        {subscriptionInfo.cancelAtPeriodEnd ? 'Annulé - ' : ''}
+                        {new Date(subscriptionInfo.currentPeriodEnd).toLocaleDateString('fr-FR')}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className={styles.subscriptionActions}>
+                    {subscriptionInfo.tier === 'free' ? (
+                      <BoutonAction type="button" onClick={handleUpgrade} variant="primary">
+                        🚀 Passer à Premium
+                      </BoutonAction>
+                    ) : (
+                      <BoutonAction
+                        type="button"
+                        onClick={handleManageSubscription}
+                        variant="secondary"
+                        disabled={loadingSubscription}
+                      >
+                        {loadingSubscription ? 'Chargement...' : 'Gérer mon abonnement'}
+                      </BoutonAction>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <p className={styles.loadingText}>Chargement...</p>
+              )}
             </div>
 
             <div className={styles.actions}>
