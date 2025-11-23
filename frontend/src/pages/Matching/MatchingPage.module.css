@@ -1,0 +1,273 @@
+.container {
+  padding: 60px 20px;
+  min-height: calc(100vh - 200px);
+  max-width: 700px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+}
+
+.header p {
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+/* Stats Cards */
+.statCard {
+  border-radius: 15px;
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+}
+
+.statCard h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #667eea;
+  margin: 0;
+}
+
+.statCard small {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+/* Match Card */
+.matchCard {
+  border-radius: 25px;
+  border: none;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.matchScore {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.scoreBadge {
+  font-size: 1.2rem;
+  padding: 10px 20px;
+  border-radius: 20px;
+}
+
+.profileInfo {
+  padding: 20px 0;
+}
+
+.profileInfo h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.location {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.levelBadge {
+  margin-bottom: 20px;
+}
+
+.bio {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.6;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.workoutTypes {
+  margin-bottom: 25px;
+}
+
+.workoutTypes h6 {
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.typeGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.typeBadge {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  border-radius: 15px;
+}
+
+.stats {
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: 15px;
+  margin-bottom: 25px;
+}
+
+.stats h6 {
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.stats strong {
+  font-size: 1.5rem;
+  color: #667eea;
+}
+
+.stats small {
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+/* Score Breakdown */
+.scoreBreakdown {
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 15px;
+}
+
+.scoreBreakdown h6 {
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.breakdownItem {
+  margin-bottom: 15px;
+}
+
+.breakdownItem span {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 20px;
+  background: white;
+  border-top: 2px solid #f0f0f0;
+}
+
+.rejectBtn,
+.likeBtn {
+  flex: 1;
+  border-radius: 30px;
+  padding: 15px 30px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.rejectBtn {
+  border: 2px solid #dc3545;
+  color: #dc3545;
+  background: white;
+}
+
+.rejectBtn:hover:not(:disabled) {
+  background: #dc3545;
+  color: white;
+  transform: scale(1.05);
+}
+
+.likeBtn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+}
+
+.likeBtn:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Empty State */
+.emptyCard {
+  border-radius: 25px;
+  border: none;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.emptyIcon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+}
+
+.emptyCard h3 {
+  color: #333;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 30px 15px;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .matchCard {
+    border-radius: 20px;
+  }
+
+  .profileInfo h2 {
+    font-size: 1.5rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .rejectBtn,
+  .likeBtn {
+    width: 100%;
+  }
+}
