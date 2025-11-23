@@ -2,6 +2,18 @@
   padding: 60px 20px;
   min-height: calc(100vh - 200px);
   max-width: 900px;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .header {
@@ -17,11 +29,24 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 10px;
+  animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .header p {
   color: #6c757d;
   font-size: 1.1rem;
+  animation: fadeIn 0.8s ease 0.2s both;
 }
 
 /* Progress Bar */
@@ -30,36 +55,117 @@
   justify-content: space-between;
   margin-bottom: 40px;
   gap: 10px;
+  position: relative;
+}
+
+.progressBar::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  right: 5%;
+  height: 3px;
+  background: #f0f0f0;
+  transform: translateY(-50%);
+  z-index: -1;
+  border-radius: 2px;
 }
 
 .progressStep {
   flex: 1;
   padding: 15px;
   text-align: center;
-  background: #f0f0f0;
+  background: #ffffff;
+  border: 2px solid #e0e0e0;
   border-radius: 12px;
   font-weight: 600;
   color: #999;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.progressStep:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .progressStep.active {
   background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
   color: white;
+  border-color: transparent;
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 8px 20px rgba(184, 221, 209, 0.3),
+    0 4px 12px rgba(247, 177, 134, 0.2);
+}
+
+.progressStep.active::after {
+  content: '✓';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #f7b186;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Card */
 .card {
   border-radius: 20px;
-  border: none;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(184, 221, 209, 0.2);
+  background: #ffffff;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(184, 221, 209, 0.1);
   margin-bottom: 30px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.card:hover {
+  box-shadow:
+    0 15px 40px rgba(0, 0, 0, 0.12),
+    0 4px 12px rgba(184, 221, 209, 0.15);
+  transform: translateY(-2px);
 }
 
 .card h3 {
   color: #333;
   font-weight: 700;
   margin-bottom: 20px;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.card h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
+  border-radius: 2px;
 }
 
 /* Fitness Level Grid */
@@ -73,32 +179,80 @@
 .levelCard {
   padding: 20px;
   border: 2px solid #e0e0e0;
-  border-radius: 12px;
+  border-radius: 15px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: center;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.levelCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(184, 221, 209, 0.05) 0%, rgba(247, 177, 134, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .levelCard:hover {
   border-color: #f7b186;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.2);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 8px 20px rgba(247, 177, 134, 0.25),
+    0 4px 12px rgba(184, 221, 209, 0.15);
+}
+
+.levelCard:hover::before {
+  opacity: 1;
 }
 
 .levelCard.selected {
   border-color: #f7b186;
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.1) 0%, rgba(247, 177, 134, 0.1) 100%);
+  background: linear-gradient(135deg, rgba(184, 221, 209, 0.15) 0%, rgba(247, 177, 134, 0.15) 100%);
+  transform: scale(1.02);
+  box-shadow:
+    0 6px 16px rgba(247, 177, 134, 0.3),
+    0 2px 8px rgba(184, 221, 209, 0.2);
+}
+
+.levelCard.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.4);
 }
 
 .levelCard strong {
   display: block;
   color: #333;
   margin-bottom: 5px;
+  position: relative;
+  z-index: 1;
+  font-size: 1.1rem;
 }
 
 .levelCard small {
   color: #6c757d;
   font-size: 0.85rem;
+  position: relative;
+  z-index: 1;
 }
 
 /* Workout Type Grid */
@@ -113,20 +267,44 @@
   padding: 10px 16px;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   border-radius: 20px;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.workoutBadge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(184, 221, 209, 0.2) 0%, rgba(247, 177, 134, 0.2) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .workoutBadge:hover {
-  transform: scale(1.05);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+}
+
+.workoutBadge:hover::before {
+  opacity: 1;
 }
 
 /* Availability */
 .daySection {
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 12px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(184, 221, 209, 0.05) 0%, rgba(247, 177, 134, 0.05) 100%);
+  border: 1px solid rgba(184, 221, 209, 0.2);
+  border-radius: 15px;
   margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.daySection:hover {
+  border-color: rgba(247, 177, 134, 0.3);
+  box-shadow: 0 4px 12px rgba(184, 221, 209, 0.15);
 }
 
 .timeSlot {
@@ -134,11 +312,31 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 10px;
+  padding: 12px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s ease;
+}
+
+.timeSlot:hover {
+  border-color: #f7b186;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.15);
 }
 
 .timeSlot input {
   flex: 1;
   max-width: 150px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  transition: all 0.2s ease;
+}
+
+.timeSlot input:focus {
+  outline: none;
+  border-color: #f7b186;
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.1);
 }
 
 .timeSlot span {
@@ -159,7 +357,48 @@
   border-radius: 25px;
   padding: 12px 30px;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 2px solid transparent;
+}
+
+.navigation button[class*="primary"] {
+  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
+  border-color: transparent;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.navigation button[class*="primary"]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.navigation button[class*="primary"]:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 20px rgba(184, 221, 209, 0.35),
+    0 4px 12px rgba(247, 177, 134, 0.25);
+}
+
+.navigation button[class*="primary"]:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.navigation button[class*="outline"] {
+  border-color: #e0e0e0;
+  background: white;
+}
+
+.navigation button[class*="outline"]:hover {
+  border-color: #f7b186;
+  background: rgba(247, 177, 134, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.15);
 }
 
 /* Responsive */
