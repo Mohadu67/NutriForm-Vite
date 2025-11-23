@@ -101,6 +101,15 @@ const ChatIcon = ({ size = 20 }) => (
   </svg>
 );
 
+const UsersIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+    <circle cx="9" cy="7" r="4"/>
+    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+  </svg>
+);
+
 export default function Navbar() {
   const { t, i18n } = useTranslation();
   const { openChat } = useChat();
@@ -109,6 +118,7 @@ export default function Navbar() {
 
   const [open, setOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState('login');
@@ -196,10 +206,24 @@ export default function Navbar() {
     setDocumentTheme(isDark);
   }, [setDocumentTheme]);
 
-  // Monitor login state
+  // Monitor login state and premium status
   useEffect(() => {
     const updateLoginState = () => {
-      setIsLoggedIn(Boolean(getStoredUser()));
+      const user = getStoredUser();
+      setIsLoggedIn(Boolean(user));
+
+      // Check premium status from localStorage
+      try {
+        const subscriptionData = localStorage.getItem('subscriptionStatus');
+        if (subscriptionData) {
+          const subscription = JSON.parse(subscriptionData);
+          setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
+        } else {
+          setIsPremium(false);
+        }
+      } catch {
+        setIsPremium(false);
+      }
     };
 
     updateLoginState();
@@ -233,8 +257,11 @@ export default function Navbar() {
     { label: t('nav.about'), path: "/about", icon: <InfoIcon size={28} /> },
     ...(isLoggedIn ? [
       { label: 'Dashboard', path: "/dashboard", icon: <DashboardIcon size={28} />, onClick: () => navigate('/dashboard') }
+    ] : []),
+    ...(isLoggedIn && isPremium ? [
+      { label: 'Partenaires', path: "/matching", icon: <UsersIcon size={28} />, onClick: () => navigate('/matching') }
     ] : [])
-  ], [t, isLoggedIn, navigate]);
+  ], [t, isLoggedIn, isPremium, navigate]);
 
   // Close menu handler
   const closeMenu = useCallback(() => {
@@ -376,6 +403,17 @@ export default function Navbar() {
                   >
                     <TrophyIcon size={20} />
                   </button>
+
+                  {isLoggedIn && isPremium && (
+                    <button
+                      onClick={() => navigateAndClose('/matching')}
+                      className={styles.dockIconBtn}
+                      title="Partenaires"
+                      aria-label="Find workout partners"
+                    >
+                      <UsersIcon size={20} />
+                    </button>
+                  )}
 
                   <button
                     onClick={openChatHistory}
@@ -520,6 +558,17 @@ export default function Navbar() {
                 >
                   <TrophyIcon size={20} />
                 </button>
+
+                {isLoggedIn && isPremium && (
+                  <button
+                    onClick={() => navigateAndClose('/matching')}
+                    className={styles.dockIconBtn}
+                    title="Partenaires"
+                    aria-label="Find workout partners"
+                  >
+                    <UsersIcon size={20} />
+                  </button>
+                )}
 
                 <button
                   onClick={() => openPopup(isLoggedIn ? 'profile' : 'login')}
