@@ -876,3 +876,22 @@
   outline: 3px solid var(--accent);
   outline-offset: 4px;
 }
+
+/* ========================================
+   CHAT SECTION - Mobile only
+   ======================================== */
+
+.chatSection {
+  width: 100vw;
+  height: calc(100vh - 180px);
+  margin: 0 -20px;
+  padding: 0;
+  background: white;
+  overflow: hidden;
+}
+
+@media (min-width: 769px) {
+  .chatSection {
+    display: none;
+  }
+}

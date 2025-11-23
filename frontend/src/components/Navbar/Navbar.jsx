@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useChat } from "../../contexts/ChatContext";
 import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
+import ChatPanel from "../Chat/ChatPanel.jsx";
 
 // SVG Icons - Modern Design
 const ToolsIcon = ({ size = 20 }) => (
@@ -355,22 +356,14 @@ export default function Navbar() {
               >
                 <UserIcon size={20} />
               </button>
-
-              {/* Chat button - mobile only */}
-              {!isDesktop && (
-                <button
-                  onClick={() => {
-                    openChat();
-                    closeMenu();
-                  }}
-                  className={styles.dockIconBtn}
-                  title="Chat"
-                  aria-label="Open chat"
-                >
-                  <ChatIcon size={20} />
-                </button>
-              )}
             </div>
+          </div>
+        )}
+
+        {/* Chat Panel - Mobile only, visible when expanded */}
+        {open && !isDesktop && (
+          <div className={styles.chatSection}>
+            <ChatPanel />
           </div>
         )}
 
