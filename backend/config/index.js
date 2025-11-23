@@ -42,7 +42,7 @@ module.exports = {
   env: process.env.NODE_ENV || "development",
   isProd: process.env.NODE_ENV === "production",
   port: Number(process.env.PORT || 3000),
-  mongoUri: process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://localhost:27017/nutriform",
+  mongoUri: process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://localhost:27017/harmonith",
   jwtSecret: process.env.JWT_SECRET || "secret",
   frontUrl,
   allowedOrigins,
@@ -52,6 +52,6 @@ module.exports = {
     secure: bool(process.env.SMTP_SECURE, process.env.NODE_ENV === "production"),
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
-    from: process.env.CONTACT_EMAIL || process.env.SMTP_USER || "no-reply@nutriform.com",
+    from: process.env.CONTACT_EMAIL || process.env.SMTP_USER || "no-reply@harmonith.fr",
   },
 };

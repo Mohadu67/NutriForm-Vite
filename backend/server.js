@@ -47,7 +47,7 @@ console.log('📍 URI:', config.mongoUri.replace(/\/\/.*@/, '//*****@')); // Mas
 
 mongoose
   .connect(config.mongoUri, {
-    dbName: 'nutriform',
+    dbName: 'harmonith',
     authSource: 'admin',
     serverSelectionTimeoutMS: 10000, // Timeout après 10 secondes
     socketTimeoutMS: 45000,
