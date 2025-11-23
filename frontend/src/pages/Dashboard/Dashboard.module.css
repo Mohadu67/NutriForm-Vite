@@ -329,7 +329,7 @@
 /* ========== ACTIONS ========== */
 .actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -374,6 +374,68 @@
 
 .secondaryAction:hover {
   border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+/* ========== MATCHING ACTION (PREMIUM) ========== */
+.matchingAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: none;
+  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(184, 221, 209, 0.25);
+}
+
+.matchingAction::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.matchingAction:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 8px 20px rgba(184, 221, 209, 0.35),
+    0 4px 12px rgba(247, 177, 134, 0.25);
+}
+
+.matchingAction:hover::before {
+  opacity: 1;
+}
+
+.matchingAction:active {
+  transform: translateY(-1px);
+}
+
+:global(body.dark) .matchingAction,
+:global(html.dark) .matchingAction {
+  box-shadow:
+    0 2px 8px rgba(184, 221, 209, 0.2),
+    0 0 20px rgba(184, 221, 209, 0.1);
+}
+
+:global(body.dark) .matchingAction:hover,
+:global(html.dark) .matchingAction:hover {
+  box-shadow:
+    0 8px 20px rgba(184, 221, 209, 0.3),
+    0 4px 12px rgba(247, 177, 134, 0.2),
+    0 0 30px rgba(184, 221, 209, 0.15);
 }
 
 /* ========== RECENT SECTION ========== */
