@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useChat } from "../../contexts/ChatContext";
 import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
 import ChatPanel from "../Chat/ChatPanel.jsx";
+import ChatHistory from "../Chat/ChatHistory.jsx";
 
 // SVG Icons - Modern Design
 const ToolsIcon = ({ size = 20 }) => (
@@ -113,6 +114,9 @@ export default function Navbar() {
   const [popupView, setPopupView] = useState('login');
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
   const [langExpanded, setLangExpanded] = useState(false);
+  const [currentView, setCurrentView] = useState('navigation'); // 'navigation', 'history', 'conversation'
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [initialMessage, setInitialMessage] = useState('');
 
   const path = useMemo(() => (location.pathname || "/").toLowerCase(), [location.pathname]);
 
@@ -233,7 +237,17 @@ export default function Navbar() {
   ], [t, isLoggedIn, navigate]);
 
   // Close menu handler
-  const closeMenu = useCallback(() => setOpen(false), []);
+  const closeMenu = useCallback(() => {
+    setOpen(false);
+    setCurrentView('navigation');
+  }, []);
+
+  // Reset to navigation when opening
+  useEffect(() => {
+    if (open && !isDesktop) {
+      setCurrentView('navigation');
+    }
+  }, [open, isDesktop]);
 
   // Navigate and close menu
   const navigateAndClose = useCallback((targetPath) => {
@@ -246,6 +260,37 @@ export default function Navbar() {
     setPopupView(view);
     setIsPopupOpen(true);
     setOpen(false);
+  }, []);
+
+  // Open chat history from navigation
+  const openChatHistory = useCallback(() => {
+    setCurrentView('history');
+  }, []);
+
+  // Open chat with a specific conversation
+  const openChatConversation = useCallback((conversation) => {
+    setSelectedConversation(conversation);
+    setInitialMessage('');
+    setCurrentView('conversation');
+  }, []);
+
+  // Start new conversation with initial message
+  const startNewConversation = useCallback((message) => {
+    setSelectedConversation(null);
+    setInitialMessage(message);
+    setCurrentView('conversation');
+  }, []);
+
+  // Close chat conversation and go back to history
+  const closeChatConversation = useCallback(() => {
+    setCurrentView('history');
+    setSelectedConversation(null);
+    setInitialMessage('');
+  }, []);
+
+  // Close chat history and go back to navigation
+  const closeChatHistory = useCallback(() => {
+    setCurrentView('navigation');
   }, []);
 
   return (
@@ -261,110 +306,232 @@ export default function Navbar() {
 
       {/* Main Dock Navigation */}
       <nav className={`${styles.dock} ${open ? styles.dockExpanded : ''}`}>
-        {/* Logo - visible when expanded (mobile only) */}
+        {/* Mobile: Conditional rendering based on currentView */}
         {open && !isDesktop && (
-          <div className={styles.dockLogo}>
-            <span className={styles.logoText}>Harmo</span>
-            <span className={styles.logoAccent}>Nith</span>
-          </div>
-        )}
+          <>
+            {/* Panel 1: Navigation */}
+            {currentView === 'navigation' && (
+              <div className={styles.mobilePanel}>
+              {/* Logo */}
+              <div className={styles.dockLogo}>
+                <span className={styles.logoText}>Harmo</span>
+                <span className={styles.logoAccent}>Nith</span>
+              </div>
 
-        {/* Secondary links - visible when expanded or desktop */}
-        {(open || isDesktop) && (
-          <div className={styles.secondaryNav}>
-            {secondaryLinks.map((link) => (
-              <a
-                key={link.path}
-                href={link.path}
-                className={`${styles.dockItem} ${path === link.path ? styles.dockItemActive : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  link.onClick ? link.onClick() : navigateAndClose(link.path);
-                }}
-                title={link.label}
-              >
-                <span className={styles.dockIcon}>{link.icon}</span>
-                <span className={styles.dockLabel}>{link.label}</span>
-              </a>
-            ))}
-          </div>
-        )}
-
-        {/* Utilities - visible when expanded or desktop */}
-        {(open || isDesktop) && (
-          <div className={styles.utilitiesExpanded}>
-            {/* Language selector */}
-            <div
-              className={`${styles.langGroup} ${isDesktop && langExpanded ? styles.langGroupExpanded : ''}`}
-              onMouseEnter={() => isDesktop && setLangExpanded(true)}
-              onMouseLeave={() => isDesktop && setLangExpanded(false)}
-            >
-              {isDesktop && !langExpanded ? (
-                // Desktop: show only active language
-                <button
-                  onClick={() => setLangExpanded(true)}
-                  className={`${styles.langBtnDock} ${styles.langActive}`}
-                  title="Changer de langue"
-                  aria-label="Change language"
-                >
-                  {i18n.language.toUpperCase()}
-                </button>
-              ) : (
-                // Mobile or desktop expanded: show all languages
-                ['fr', 'en', 'de', 'es'].map(lng => (
-                  <button
-                    key={lng}
-                    onClick={() => {
-                      changeLanguage(lng);
-                      setLangExpanded(false);
+              {/* Secondary links */}
+              <div className={styles.secondaryNav}>
+                {secondaryLinks.map((link) => (
+                  <a
+                    key={link.path}
+                    href={link.path}
+                    className={`${styles.dockItem} ${path === link.path ? styles.dockItemActive : ''}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      link.onClick ? link.onClick() : navigateAndClose(link.path);
                     }}
-                    className={`${styles.langBtnDock} ${i18n.language === lng ? styles.langActive : ''}`}
-                    title={lng.toUpperCase()}
-                    aria-label={`Switch to ${lng.toUpperCase()}`}
+                    title={link.label}
                   >
-                    {lng.toUpperCase()}
+                    <span className={styles.dockIcon}>{link.icon}</span>
+                    <span className={styles.dockLabel}>{link.label}</span>
+                  </a>
+                ))}
+              </div>
+
+              {/* Utilities */}
+              <div className={styles.utilitiesExpanded}>
+                {/* Language selector */}
+                <div className={styles.langGroup}>
+                  {['fr', 'en', 'de', 'es'].map(lng => (
+                    <button
+                      key={lng}
+                      onClick={() => {
+                        changeLanguage(lng);
+                        setLangExpanded(false);
+                      }}
+                      className={`${styles.langBtnDock} ${i18n.language === lng ? styles.langActive : ''}`}
+                      title={lng.toUpperCase()}
+                      aria-label={`Switch to ${lng.toUpperCase()}`}
+                    >
+                      {lng.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Action buttons */}
+                <div className={styles.iconsGroup}>
+                  <button
+                    onClick={toggleDarkMode}
+                    className={styles.dockIconBtn}
+                    title={darkMode ? 'Light mode' : 'Dark mode'}
+                    aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                  >
+                    {darkMode ? <SunIcon size={20} /> : <MoonIcon size={20} />}
                   </button>
-                ))
-              )}
-            </div>
 
-            {/* Action buttons */}
-            <div className={styles.iconsGroup}>
-              <button
-                onClick={toggleDarkMode}
-                className={styles.dockIconBtn}
-                title={darkMode ? 'Light mode' : 'Dark mode'}
-                aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {darkMode ? <SunIcon size={20} /> : <MoonIcon size={20} />}
-              </button>
+                  <button
+                    onClick={() => navigateAndClose('/leaderboard')}
+                    className={styles.dockIconBtn}
+                    title="Classement"
+                    aria-label="View leaderboard"
+                  >
+                    <TrophyIcon size={20} />
+                  </button>
 
-              <button
-                onClick={() => navigateAndClose('/leaderboard')}
-                className={styles.dockIconBtn}
-                title="Classement"
-                aria-label="View leaderboard"
-              >
-                <TrophyIcon size={20} />
-              </button>
+                  <button
+                    onClick={openChatHistory}
+                    className={styles.dockIconBtn}
+                    title="Messages"
+                    aria-label="Open messages"
+                  >
+                    <ChatIcon size={20} />
+                  </button>
 
-              <button
-                onClick={() => openPopup(isLoggedIn ? 'profile' : 'login')}
-                className={styles.dockIconBtn}
-                title={isLoggedIn ? 'Profil' : 'Connexion'}
-                aria-label={isLoggedIn ? 'View profile' : 'Sign in'}
-              >
-                <UserIcon size={20} />
-              </button>
-            </div>
-          </div>
+                  <button
+                    onClick={() => openPopup(isLoggedIn ? 'profile' : 'login')}
+                    className={styles.dockIconBtn}
+                    title={isLoggedIn ? 'Profil' : 'Connexion'}
+                    aria-label={isLoggedIn ? 'View profile' : 'Sign in'}
+                  >
+                    <UserIcon size={20} />
+                  </button>
+                </div>
+              </div>
+              </div>
+            )}
+
+            {/* Panel 2: Chat History */}
+            {currentView === 'history' && (
+              <div className={styles.mobilePanel}>
+              <div className={styles.chatHistoryHeader}>
+                <button
+                  onClick={closeChatHistory}
+                  className={styles.chatCloseBtn}
+                  title="Retour"
+                  aria-label="Back to navigation"
+                >
+                  ←
+                </button>
+                <h3>💬 Messages</h3>
+              </div>
+              <ChatHistory
+                onSelectConversation={openChatConversation}
+                onNewConversation={startNewConversation}
+              />
+              </div>
+            )}
+
+            {/* Panel 3: Chat Conversation */}
+            {currentView === 'conversation' && (
+              <div className={styles.mobilePanel}>
+              <div className={styles.chatHeader}>
+                <h3>💬 Chat</h3>
+                <button
+                  onClick={closeChatConversation}
+                  className={styles.chatCloseBtn}
+                  title="Retour"
+                  aria-label="Back to history"
+                >
+                  ←
+                </button>
+              </div>
+              <ChatPanel
+                conversationId={selectedConversation?.id}
+                initialMessage={initialMessage}
+                onClose={closeChatConversation}
+              />
+              </div>
+            )}
+          </>
         )}
 
-        {/* Chat Panel - Mobile only, visible when expanded */}
-        {open && !isDesktop && (
-          <div className={styles.chatSection}>
-            <ChatPanel />
-          </div>
+        {/* Desktop: Show navigation normally */}
+        {(open || isDesktop) && isDesktop && (
+          <>
+            {/* Secondary links */}
+            <div className={styles.secondaryNav}>
+              {secondaryLinks.map((link) => (
+                <a
+                  key={link.path}
+                  href={link.path}
+                  className={`${styles.dockItem} ${path === link.path ? styles.dockItemActive : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    link.onClick ? link.onClick() : navigateAndClose(link.path);
+                  }}
+                  title={link.label}
+                >
+                  <span className={styles.dockIcon}>{link.icon}</span>
+                  <span className={styles.dockLabel}>{link.label}</span>
+                </a>
+              ))}
+            </div>
+
+            {/* Utilities */}
+            <div className={styles.utilitiesExpanded}>
+              {/* Language selector */}
+              <div
+                className={`${styles.langGroup} ${langExpanded ? styles.langGroupExpanded : ''}`}
+                onMouseEnter={() => setLangExpanded(true)}
+                onMouseLeave={() => setLangExpanded(false)}
+              >
+                {!langExpanded ? (
+                  <button
+                    onClick={() => setLangExpanded(true)}
+                    className={`${styles.langBtnDock} ${styles.langActive}`}
+                    title="Changer de langue"
+                    aria-label="Change language"
+                  >
+                    {i18n.language.toUpperCase()}
+                  </button>
+                ) : (
+                  ['fr', 'en', 'de', 'es'].map(lng => (
+                    <button
+                      key={lng}
+                      onClick={() => {
+                        changeLanguage(lng);
+                        setLangExpanded(false);
+                      }}
+                      className={`${styles.langBtnDock} ${i18n.language === lng ? styles.langActive : ''}`}
+                      title={lng.toUpperCase()}
+                      aria-label={`Switch to ${lng.toUpperCase()}`}
+                    >
+                      {lng.toUpperCase()}
+                    </button>
+                  ))
+                )}
+              </div>
+
+              {/* Action buttons */}
+              <div className={styles.iconsGroup}>
+                <button
+                  onClick={toggleDarkMode}
+                  className={styles.dockIconBtn}
+                  title={darkMode ? 'Light mode' : 'Dark mode'}
+                  aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                  {darkMode ? <SunIcon size={20} /> : <MoonIcon size={20} />}
+                </button>
+
+                <button
+                  onClick={() => navigateAndClose('/leaderboard')}
+                  className={styles.dockIconBtn}
+                  title="Classement"
+                  aria-label="View leaderboard"
+                >
+                  <TrophyIcon size={20} />
+                </button>
+
+                <button
+                  onClick={() => openPopup(isLoggedIn ? 'profile' : 'login')}
+                  className={styles.dockIconBtn}
+                  title={isLoggedIn ? 'Profil' : 'Connexion'}
+                  aria-label={isLoggedIn ? 'View profile' : 'Sign in'}
+                >
+                  <UserIcon size={20} />
+                </button>
+              </div>
+            </div>
+          </>
         )}
 
         {/* Separator */}
