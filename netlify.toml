@@ -1,0 +1,8 @@
+[build]
+  base = "frontend"
+  publish = "dist"
+  command = "npm run build"
+
+# Copier _headers depuis public vers dist
+[[plugins]]
+  package = "@netlify/plugin-local-install-core"
