@@ -81,7 +81,8 @@ exports.login = async (req, res) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? 'none' : 'lax',
+      sameSite: 'lax', // 'lax' fonctionne avec même domaine principal (harmonith.fr + api.harmonith.fr)
+      domain: isProduction ? '.harmonith.fr' : undefined, // Partage cookie entre harmonith.fr et api.harmonith.fr
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
     });
@@ -292,7 +293,8 @@ exports.logout = async (req, res) => {
     res.clearCookie('token', {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? 'none' : 'lax',
+      sameSite: 'lax',
+      domain: isProduction ? '.harmonith.fr' : undefined,
       path: '/',
     });
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import styles from "./Reviews.module.css";
+import { isAuthenticated } from "../../utils/authService";
 
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
@@ -8,6 +9,7 @@ export default function Reviews() {
   const [userReviews, setUserReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [newReview, setNewReview] = useState({
     name: "",
     rating: 5,
@@ -47,6 +49,7 @@ export default function Reviews() {
     try {
       const response = await fetch(`${API_URL}/api/reviews/users`, {
         method: "POST",
+        credentials: "include", // Envoie le cookie httpOnly
         headers: {
           "Content-Type": "application/json",
         },
@@ -94,7 +97,13 @@ export default function Reviews() {
           <h2 className={styles.title}>Ce qu'ils pensent d'Harmonith</h2>
           <button
             className={styles.addReviewBtn}
-            onClick={() => setShowReviewModal(true)}
+            onClick={() => {
+              if (isAuthenticated()) {
+                setShowReviewModal(true);
+              } else {
+                setShowLoginPrompt(true);
+              }
+            }}
           >
             ✍️ Laisser un avis
           </button>
@@ -212,7 +221,34 @@ export default function Reviews() {
           </div>
         )}
 
-        {}
+        {/* Modal Connexion Requise */}
+        {showLoginPrompt && (
+          <div className={styles.modalOverlay} onClick={() => setShowLoginPrompt(false)}>
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h3>Connexion requise</h3>
+                <button
+                  className={styles.closeBtn}
+                  onClick={() => setShowLoginPrompt(false)}
+                >
+                  ✕
+                </button>
+              </div>
+              <div className={styles.loginPromptContent}>
+                <p className={styles.loginPromptText}>
+                  Pour laisser un avis, vous devez être connecté(e) à votre compte Harmonith.
+                </p>
+                <div className={styles.loginPromptActions}>
+                  <a href="/dashboard" className={styles.loginBtn}>
+                    🔐 Se connecter / Créer un compte
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Avis */}
         {showReviewModal && (
           <div className={styles.modalOverlay} onClick={() => setShowReviewModal(false)}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
