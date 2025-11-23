@@ -315,6 +315,13 @@ export default function AdminPage() {
             <span className={styles.navIcon}>📧</span>
             <span>Newsletter</span>
           </button>
+          <button
+            className={`${styles.navItem} ${activeTab === "support" ? styles.navItemActive : ""}`}
+            onClick={() => navigate("/admin/support-tickets")}
+          >
+            <span className={styles.navIcon}>💬</span>
+            <span>Support Tickets</span>
+          </button>
         </nav>
 
         <div className={styles.sidebarFooter}>
@@ -414,6 +421,14 @@ export default function AdminPage() {
                 >
                   <span className={styles.actionIcon}>📝</span>
                   <span className={styles.actionLabel}>Nouvelle Newsletter</span>
+                </button>
+
+                <button
+                  className={styles.actionCard}
+                  onClick={() => navigate("/admin/support-tickets")}
+                >
+                  <span className={styles.actionIcon}>💬</span>
+                  <span className={styles.actionLabel}>Support Tickets</span>
                 </button>
               </div>
             </div>
