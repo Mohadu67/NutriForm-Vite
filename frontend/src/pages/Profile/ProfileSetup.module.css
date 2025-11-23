@@ -12,7 +12,7 @@
 .header h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -44,7 +44,7 @@
 }
 
 .progressStep.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
   color: white;
 }
 
@@ -80,14 +80,14 @@
 }
 
 .levelCard:hover {
-  border-color: #667eea;
+  border-color: #f7b186;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.2);
 }
 
 .levelCard.selected {
-  border-color: #667eea;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-color: #f7b186;
+  background: linear-gradient(135deg, rgba(184, 221, 209, 0.1) 0%, rgba(247, 177, 134, 0.1) 100%);
 }
 
 .levelCard strong {
