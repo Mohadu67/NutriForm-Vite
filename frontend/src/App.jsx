@@ -19,6 +19,8 @@ import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import Leaderboard from "./pages/Leaderboard/Leaderboard.jsx";
 import Pricing from "./pages/Pricing/Pricing.jsx";
 import SupportTickets from "./pages/Admin/SupportTickets.jsx";
+import ProfileSetup from "./pages/Profile/ProfileSetup.jsx";
+import MatchingPage from "./pages/Matching/MatchingPage.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
@@ -59,6 +61,8 @@ export default function App() {
       <Route path="/admin/newsletter/new" element={<NewsletterAdmin />} />
       <Route path="/admin/newsletter/:id" element={<NewsletterAdmin />} />
       <Route path="/admin/support-tickets" element={<SupportTickets />} />
+      <Route path="/profile/setup" element={<ProfileSetup />} />
+      <Route path="/matching" element={<MatchingPage />} />
       <Route path="*" element={<NotFound />} />
       </Routes>
     </ErrorBoundary>
