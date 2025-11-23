@@ -20,42 +20,23 @@
 
 /* ========== SUCCESS BANNER ========== */
 .successBanner {
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.15), rgba(247, 177, 134, 0.15));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1.5px solid rgba(184, 221, 209, 0.4);
+  background: #ecfdf5;
+  border: 1px solid #10b981;
+  border-left: 4px solid #10b981;
   border-radius: 16px;
-  padding: 20px 24px;
+  padding: 16px 20px;
   margin-bottom: 24px;
-  color: #374151;
-  font-size: 1.05rem;
-  font-weight: 600;
+  color: #065f46;
+  font-size: 0.95rem;
+  font-weight: 500;
   text-align: center;
-  box-shadow:
-    0 10px 30px rgba(184, 221, 209, 0.2),
-    0 0 40px rgba(247, 177, 134, 0.1);
-  animation: slideDownBanner 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes slideDownBanner {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 :global(body.dark) .successBanner,
 :global(html.dark) .successBanner {
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.1), rgba(247, 177, 134, 0.1));
-  border-color: rgba(184, 221, 209, 0.3);
-  color: rgba(255, 255, 255, 0.95);
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.3),
-    0 0 40px rgba(184, 221, 209, 0.15);
+  background: #1a2e25;
+  border-color: #10b981;
+  color: #6ee7b7;
 }
 
 /* ========== HEADER ========== */
@@ -1337,253 +1318,80 @@
 /* ========== PAYWALL PREMIUM ========== */
 .paywallContainer {
   min-height: calc(100vh - 200px);
-  background: radial-gradient(ellipse at top, rgba(184, 221, 209, 0.05) 0%, transparent 60%);
+  background: var(--couleur-principale, #f7f6f2);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
-  position: relative;
-  overflow: hidden;
+  padding: 100px 20px 60px;
 }
 
-.paywallContainer::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -25%;
-  width: 150%;
-  height: 150%;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(184, 221, 209, 0.08) 0%,
-    transparent 50%
-  );
-  animation: floatGlow 15s ease-in-out infinite;
-  pointer-events: none;
-}
-
-@keyframes floatGlow {
-  0%, 100% {
-    transform: translate(0, 0) rotate(0deg);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translate(10%, 10%) rotate(180deg);
-    opacity: 0.8;
-  }
+:global(body.dark) .paywallContainer,
+:global(html.dark) .paywallContainer {
+  background: #0c0e12;
 }
 
 .paywallContent {
-  max-width: 700px;
+  max-width: 600px;
   text-align: center;
-  position: relative;
-  z-index: 1;
-  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .paywallIcon {
-  font-size: 6rem;
-  margin-bottom: 30px;
-  filter: drop-shadow(0 10px 30px rgba(184, 221, 209, 0.3));
-  animation: iconFloat 3s ease-in-out infinite;
-}
-
-@keyframes iconFloat {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-10px) scale(1.05);
-  }
+  font-size: 4rem;
+  margin-bottom: 24px;
 }
 
 .paywallTitle {
   font-family: 'Merriweather', serif;
-  font-size: 3.5rem;
-  font-weight: 900;
-  margin-bottom: 25px;
-  background: linear-gradient(135deg, #222325 0%, #b8ddd1 50%, #f7b186 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 2px 20px rgba(184, 221, 209, 0.2));
-  line-height: 1.2;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0 0 16px;
+  letter-spacing: -0.5px;
+}
+
+:global(body.dark) .paywallTitle,
+:global(html.dark) .paywallTitle {
+  color: #f5f7fa;
 }
 
 .paywallSubtitle {
-  font-size: 1.3rem;
-  color: #6b7280;
+  font-size: 1.1rem;
+  color: var(--muted, #6b7280);
   margin-bottom: 40px;
   line-height: 1.6;
 }
 
 .paywallCard {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(184, 221, 209, 0.3);
-  border-radius: 25px;
-  padding: 40px;
-  margin-bottom: 40px;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(184, 221, 209, 0.1) inset;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.paywallCardTitle {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #222325;
-  margin-bottom: 25px;
-}
-
-.paywallFeatures {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  text-align: left;
-  display: inline-block;
-  max-width: 100%;
-}
-
-.paywallFeature {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 15px 0;
-  font-size: 1.15rem;
-  color: #374151;
-  opacity: 0;
-  animation: slideInFeature 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.paywallFeature:nth-child(1) { animation-delay: 0.1s; }
-.paywallFeature:nth-child(2) { animation-delay: 0.2s; }
-.paywallFeature:nth-child(3) { animation-delay: 0.3s; }
-.paywallFeature:nth-child(4) { animation-delay: 0.4s; }
-.paywallFeature:nth-child(5) { animation-delay: 0.5s; }
-.paywallFeature:nth-child(6) { animation-delay: 0.6s; }
-
-@keyframes slideInFeature {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.paywallFeature::before {
-  content: '✓';
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.4), rgba(247, 177, 134, 0.4));
-  color: #b8ddd1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
-  box-shadow: 0 0 20px rgba(184, 221, 209, 0.4);
-}
-
-.paywallButton {
-  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%) !important;
-  color: white !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  font-size: 1.3rem !important;
-  padding: 18px 50px !important;
-  border-radius: 18px !important;
-  font-weight: 700 !important;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow:
-    0 15px 40px rgba(247, 177, 134, 0.4),
-    0 0 60px rgba(184, 221, 209, 0.3) !important;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.paywallButton::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1), height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.paywallButton:hover {
-  transform: translateY(-5px) scale(1.03) !important;
-  box-shadow:
-    0 20px 50px rgba(247, 177, 134, 0.5),
-    0 0 80px rgba(184, 221, 209, 0.4) !important;
-}
-
-.paywallButton:hover::before {
-  width: 400px;
-  height: 400px;
-}
-
-.paywallButton:active {
-  transform: translateY(-2px) scale(1.01) !important;
-}
-
-.paywallNotice {
-  margin-top: 20px;
-  font-size: 1.1rem;
-  color: #6b7280;
-  font-weight: 600;
-}
-
-/* Dark mode for paywall */
-:global(body.dark) .paywallContainer,
-:global(html.dark) .paywallContainer {
-  background: radial-gradient(ellipse at top, rgba(184, 221, 209, 0.03) 0%, transparent 60%);
-}
-
-:global(body.dark) .paywallTitle,
-:global(html.dark) .paywallTitle {
-  background: linear-gradient(135deg, #f5f7fa 0%, #b8ddd1 50%, #f7b186 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-:global(body.dark) .paywallSubtitle,
-:global(html.dark) .paywallSubtitle {
-  color: #9ca3af;
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 20px;
+  padding: 32px 28px;
+  margin-bottom: 32px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 :global(body.dark) .paywallCard,
 :global(html.dark) .paywallCard {
-  background: rgba(30, 41, 59, 0.6);
-  border-color: rgba(184, 221, 209, 0.2);
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(184, 221, 209, 0.1) inset;
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.paywallCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+:global(body.dark) .paywallCard:hover,
+:global(html.dark) .paywallCard:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.paywallCardTitle {
+  font-family: 'Merriweather', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0 0 24px;
 }
 
 :global(body.dark) .paywallCardTitle,
@@ -1591,68 +1399,124 @@
   color: #f5f7fa;
 }
 
-:global(body.dark) .paywallFeature,
-:global(html.dark) .paywallFeature {
-  color: rgba(255, 255, 255, 0.85);
+.paywallFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
 }
 
-:global(body.dark) .paywallNotice,
-:global(html.dark) .paywallNotice {
-  color: #9ca3af;
+.paywallFeature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  font-size: 1rem;
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .paywallFeature,
+:global(html.dark) .paywallFeature {
+  color: #e5e7eb;
+}
+
+.paywallFeature::before {
+  content: '✓';
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+:global(body.dark) .paywallFeature::before,
+:global(html.dark) .paywallFeature::before {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.paywallButton {
+  width: 100%;
+  background: var(--couleur-bouton-action, #f7b186) !important;
+  color: white !important;
+  border: none !important;
+  font-size: 1.1rem !important;
+  padding: 16px 32px !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.paywallButton:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(247, 177, 134, 0.3) !important;
+}
+
+:global(body.dark) .paywallButton:hover,
+:global(html.dark) .paywallButton:hover {
+  box-shadow: 0 8px 20px rgba(247, 177, 134, 0.4) !important;
+}
+
+.paywallNotice {
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: var(--muted, #6b7280);
+  font-weight: 500;
 }
 
 /* Responsive paywall */
 @media (max-width: 768px) {
   .paywallContainer {
-    padding: 60px 20px;
+    padding: 80px 16px 40px;
   }
 
-  .paywallIcon {
-    font-size: 4.5rem;
-    margin-bottom: 25px;
-  }
-
-  .paywallTitle {
-    font-size: 2.5rem;
-  }
-
-  .paywallSubtitle {
-    font-size: 1.1rem;
-    margin-bottom: 30px;
-  }
-
-  .paywallCard {
-    padding: 30px 25px;
-    border-radius: 20px;
-  }
-
-  .paywallCardTitle {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-  }
-
-  .paywallFeature {
-    font-size: 1.05rem;
-    padding: 12px 0;
-  }
-
-  .paywallButton {
-    font-size: 1.1rem !important;
-    padding: 16px 40px !important;
-  }
-
-  .paywallNotice {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
   .paywallIcon {
     font-size: 3.5rem;
   }
 
   .paywallTitle {
     font-size: 2rem;
+  }
+
+  .paywallSubtitle {
+    font-size: 1rem;
+  }
+
+  .paywallCard {
+    padding: 28px 24px;
+  }
+
+  .paywallCardTitle {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .paywallContainer {
+    padding: 70px 12px 32px;
+  }
+
+  .paywallIcon {
+    font-size: 3rem;
+  }
+
+  .paywallTitle {
+    font-size: 1.75rem;
+  }
+
+  .paywallCardTitle {
+    font-size: 1.2rem;
+  }
+
+  .paywallFeature {
+    font-size: 0.95rem;
   }
 
   .paywallSubtitle {

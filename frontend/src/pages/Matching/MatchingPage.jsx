@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Badge, Spinner, Alert, ProgressBar, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
@@ -41,6 +40,8 @@ export default function MatchingPage() {
   const [error, setError] = useState(null);
   const [mutualMatches, setMutualMatches] = useState([]);
   const [showMatches, setShowMatches] = useState(false);
+  const [cardAnimation, setCardAnimation] = useState('enter'); // 'enter', 'likeExit', 'rejectExit'
+  const [mutualMatchData, setMutualMatchData] = useState(null); // Pour afficher la popup de match mutuel
 
   useEffect(() => {
     loadProfileAndMatches();
@@ -66,8 +67,11 @@ export default function MatchingPage() {
         minScore: 40 // Score minimum de 40/100
       });
 
-      // Filtrer pour ne montrer que les nouveaux matches non vus
-      const newMatches = suggestions.filter(m => m.status === 'new');
+      // Filtrer pour ne montrer que les matches non vus (nouveaux + ceux qui nous ont liké)
+      const newMatches = suggestions.filter(m =>
+        m.status === 'new' ||
+        (m.status.includes('liked') && !m.hasLiked)
+      );
       setMatches(newMatches);
 
       // Charger les matches mutuels
@@ -97,19 +101,34 @@ export default function MatchingPage() {
 
     try {
       setActionLoading(true);
+
+      // Déclencher l'animation de sortie
+      setCardAnimation('likeExit');
+
       const { match, message } = await likeProfile(currentMatch.profile.userId);
+
+      // Attendre la fin de l'animation (500ms)
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       if (match.isMutual) {
         // C'est un match mutuel !
-        alert(`🎉 ${message}\nVous pouvez maintenant échanger avec ce partenaire !`);
-        loadProfileAndMatches(); // Recharger pour mettre à jour
+        setMutualMatchData({
+          profile: currentMatch.profile,
+          message: message
+        });
+        // Recharger après 3 secondes pour laisser le temps de voir la popup
+        setTimeout(() => {
+          loadProfileAndMatches();
+        }, 3000);
       } else {
         // Like enregistré, passer au suivant
         setCurrentIndex(prev => prev + 1);
+        setCardAnimation('enter'); // Réinitialiser pour la prochaine carte
       }
     } catch (err) {
       console.error('Erreur like:', err);
       setError('Erreur lors du like.');
+      setCardAnimation('enter'); // Réinitialiser en cas d'erreur
     } finally {
       setActionLoading(false);
     }
@@ -122,11 +141,21 @@ export default function MatchingPage() {
 
     try {
       setActionLoading(true);
+
+      // Déclencher l'animation de sortie
+      setCardAnimation('rejectExit');
+
       await rejectProfile(currentMatch.profile.userId);
+
+      // Attendre la fin de l'animation (500ms)
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       setCurrentIndex(prev => prev + 1);
+      setCardAnimation('enter'); // Réinitialiser pour la prochaine carte
     } catch (err) {
       console.error('Erreur reject:', err);
       setError('Erreur lors du rejet.');
+      setCardAnimation('enter'); // Réinitialiser en cas d'erreur
     } finally {
       setActionLoading(false);
     }
@@ -136,10 +165,12 @@ export default function MatchingPage() {
     return (
       <>
         <Navbar />
-        <Container className="text-center py-5">
-          <Spinner animation="border" variant="primary" />
-          <p className="mt-3">Recherche de partenaires d'entraînement...</p>
-        </Container>
+        <div className={styles.container}>
+          <div className={styles.loadingState}>
+            <div className={styles.spinner}></div>
+            <p>Recherche de partenaires d'entraînement...</p>
+          </div>
+        </div>
         <Footer />
       </>
     );
@@ -151,67 +182,58 @@ export default function MatchingPage() {
   return (
     <>
       <Navbar />
-      <Container className={styles.container}>
+      <div className={styles.container}>
         <div className={styles.header}>
           <h1>Trouver un partenaire</h1>
           <p>Matching hyper-local basé sur l'IA</p>
         </div>
 
         {/* Stats Bar */}
-        <Row className="mb-4">
-          <Col md={4}>
-            <Card className={styles.statCard}>
-              <Card.Body className="text-center">
-                <h3>{matches.length - currentIndex}</h3>
-                <small>Nouveaux profils</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={4}>
-            <Card className={styles.statCard}>
-              <Card.Body className="text-center">
-                <h3>{mutualMatches.length}</h3>
-                <small>Matches mutuels</small>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={4}>
-            <Card className={styles.statCard}>
-              <Card.Body className="text-center">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setShowMatches(true)}
-                  disabled={mutualMatches.length === 0}
-                >
-                  Voir mes matches
-                </Button>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <h3>{matches.length - currentIndex}</h3>
+            <small>Nouveaux profils</small>
+          </div>
+          <div className={styles.statCard}>
+            <h3>{mutualMatches.length}</h3>
+            <small>Matches mutuels</small>
+          </div>
+          <div className={styles.statCard}>
+            <button
+              className={styles.viewMatchesBtn}
+              onClick={() => setShowMatches(true)}
+              disabled={mutualMatches.length === 0}
+            >
+              Voir mes matches
+            </button>
+          </div>
+        </div>
 
-        {error && <Alert variant="danger" dismissible onClose={() => setError(null)}>{error}</Alert>}
+        {error && (
+          <div className={styles.errorAlert}>
+            <span>{error}</span>
+            <button onClick={() => setError(null)}>×</button>
+          </div>
+        )}
 
         {/* Progress */}
         {matches.length > 0 && (
-          <ProgressBar
-            now={progress}
-            label={`${currentIndex}/${matches.length}`}
-            className="mb-4"
-          />
+          <div className={styles.progressBar}>
+            <div className={styles.progressFill} style={{ width: `${progress}%` }}></div>
+            <span className={styles.progressLabel}>{currentIndex}/{matches.length}</span>
+          </div>
         )}
 
         {/* Match Card */}
         {currentMatch ? (
-          <Card className={styles.matchCard}>
-            <Card.Body>
+          <div className={`${styles.matchCard} ${styles[cardAnimation]}`}>
+            <div className={styles.matchCardBody}>
               <div className={styles.matchScore}>
-                <Badge bg="success" className={styles.scoreBadge}>
+                <span className={styles.scoreBadge}>
                   {currentMatch.matchScore}% Match
-                </Badge>
+                </span>
                 {currentMatch.profile.verified && (
-                  <Badge bg="primary" className="ms-2">✓ Vérifié</Badge>
+                  <span className={styles.verifiedBadge}>✓ Vérifié</span>
                 )}
               </div>
 
@@ -219,14 +241,13 @@ export default function MatchingPage() {
                 <h2>{currentMatch.profile.age} ans</h2>
                 <p className={styles.location}>
                   📍 {currentMatch.profile.location.neighborhood || currentMatch.profile.location.city}
-                  {' '}
-                  <Badge bg="light" text="dark">{currentMatch.distance} km</Badge>
+                  <span className={styles.distanceBadge}>{currentMatch.distance} km</span>
                 </p>
 
                 <div className={styles.levelBadge}>
-                  <Badge bg="info">
+                  <span className={styles.levelTag}>
                     {FITNESS_LEVEL_LABELS[currentMatch.profile.fitnessLevel]}
-                  </Badge>
+                  </span>
                 </div>
 
                 {currentMatch.profile.bio && (
@@ -237,9 +258,9 @@ export default function MatchingPage() {
                   <h6>Types d'entraînement:</h6>
                   <div className={styles.typeGrid}>
                     {currentMatch.profile.workoutTypes.map((type) => (
-                      <Badge key={type} bg="secondary" className={styles.typeBadge}>
+                      <span key={type} className={styles.typeBadge}>
                         {WORKOUT_ICONS[type]} {type}
-                      </Badge>
+                      </span>
                     ))}
                   </div>
                 </div>
@@ -247,23 +268,20 @@ export default function MatchingPage() {
                 {currentMatch.profile.stats && (
                   <div className={styles.stats}>
                     <h6>Statistiques:</h6>
-                    <Row>
-                      <Col xs={4} className="text-center">
+                    <div className={styles.statsRow}>
+                      <div className={styles.statItem}>
                         <strong>{currentMatch.profile.stats.totalWorkouts || 0}</strong>
-                        <br />
                         <small>Séances</small>
-                      </Col>
-                      <Col xs={4} className="text-center">
+                      </div>
+                      <div className={styles.statItem}>
                         <strong>{currentMatch.profile.stats.currentStreak || 0}</strong>
-                        <br />
                         <small>Jours de suite</small>
-                      </Col>
-                      <Col xs={4} className="text-center">
+                      </div>
+                      <div className={styles.statItem}>
                         <strong>{currentMatch.profile.stats.totalPoints || 0}</strong>
-                        <br />
                         <small>Points</small>
-                      </Col>
-                    </Row>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -271,117 +289,165 @@ export default function MatchingPage() {
                   <h6>Pourquoi ce match?</h6>
                   <div className={styles.breakdownItem}>
                     <span>Proximité:</span>
-                    <ProgressBar
-                      now={(currentMatch.scoreBreakdown.proximityScore / 40) * 100}
-                      label={`${currentMatch.scoreBreakdown.proximityScore}/40`}
-                      variant="success"
-                    />
+                    <div className={styles.progressBarSmall}>
+                      <div
+                        className={`${styles.progressFillSmall} ${styles.proximity}`}
+                        style={{ width: `${(currentMatch.scoreBreakdown.proximityScore / 40) * 100}%` }}
+                      ></div>
+                      <span className={styles.progressLabelSmall}>{currentMatch.scoreBreakdown.proximityScore}/40</span>
+                    </div>
                   </div>
                   <div className={styles.breakdownItem}>
                     <span>Entraînements:</span>
-                    <ProgressBar
-                      now={(currentMatch.scoreBreakdown.workoutTypeScore / 25) * 100}
-                      label={`${currentMatch.scoreBreakdown.workoutTypeScore}/25`}
-                      variant="info"
-                    />
+                    <div className={styles.progressBarSmall}>
+                      <div
+                        className={`${styles.progressFillSmall} ${styles.workout}`}
+                        style={{ width: `${(currentMatch.scoreBreakdown.workoutTypeScore / 25) * 100}%` }}
+                      ></div>
+                      <span className={styles.progressLabelSmall}>{currentMatch.scoreBreakdown.workoutTypeScore}/25</span>
+                    </div>
                   </div>
                   <div className={styles.breakdownItem}>
                     <span>Niveau:</span>
-                    <ProgressBar
-                      now={(currentMatch.scoreBreakdown.fitnessLevelScore / 20) * 100}
-                      label={`${currentMatch.scoreBreakdown.fitnessLevelScore}/20`}
-                      variant="warning"
-                    />
+                    <div className={styles.progressBarSmall}>
+                      <div
+                        className={`${styles.progressFillSmall} ${styles.level}`}
+                        style={{ width: `${(currentMatch.scoreBreakdown.fitnessLevelScore / 20) * 100}%` }}
+                      ></div>
+                      <span className={styles.progressLabelSmall}>{currentMatch.scoreBreakdown.fitnessLevelScore}/20</span>
+                    </div>
                   </div>
                   <div className={styles.breakdownItem}>
                     <span>Disponibilité:</span>
-                    <ProgressBar
-                      now={(currentMatch.scoreBreakdown.availabilityScore / 15) * 100}
-                      label={`${currentMatch.scoreBreakdown.availabilityScore}/15`}
-                      variant="primary"
-                    />
+                    <div className={styles.progressBarSmall}>
+                      <div
+                        className={`${styles.progressFillSmall} ${styles.availability}`}
+                        style={{ width: `${(currentMatch.scoreBreakdown.availabilityScore / 15) * 100}%` }}
+                      ></div>
+                      <span className={styles.progressLabelSmall}>{currentMatch.scoreBreakdown.availabilityScore}/15</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </Card.Body>
+            </div>
 
-            <Card.Footer className={styles.actions}>
-              <Button
-                variant="outline-danger"
-                size="lg"
+            <div className={styles.actions}>
+              <button
                 onClick={handleReject}
                 disabled={actionLoading}
                 className={styles.rejectBtn}
               >
                 ✗ Passer
-              </Button>
-              <Button
-                variant="primary"
-                size="lg"
+              </button>
+              <button
                 onClick={handleLike}
                 disabled={actionLoading}
                 className={styles.likeBtn}
               >
-                {actionLoading ? <Spinner animation="border" size="sm" /> : '❤️ Liker'}
-              </Button>
-            </Card.Footer>
-          </Card>
+                {actionLoading ? <div className={styles.spinner}></div> : '❤️ Liker'}
+              </button>
+            </div>
+          </div>
         ) : (
-          <Card className={styles.emptyCard}>
-            <Card.Body className="text-center py-5">
-              <div className={styles.emptyIcon}>🎯</div>
-              <h3>Plus de profils pour le moment</h3>
-              <p className="text-muted">
-                Vous avez vu tous les profils disponibles dans votre zone.
-                <br />
-                Revenez plus tard ou ajustez vos préférences de matching.
-              </p>
-              <Button variant="outline-primary" onClick={() => navigate('/profile/setup')}>
-                Ajuster mes préférences
-              </Button>
-            </Card.Body>
-          </Card>
+          <div className={styles.emptyCard}>
+            <div className={styles.emptyIcon}>🎯</div>
+            <h3>Plus de profils pour le moment</h3>
+            <p>
+              Vous avez vu tous les profils disponibles dans votre zone.
+              <br />
+              Revenez plus tard ou ajustez vos préférences de matching.
+            </p>
+            <button className={styles.emptyBtn} onClick={() => navigate('/profile/setup')}>
+              Ajuster mes préférences
+            </button>
+          </div>
         )}
-      </Container>
+      </div>
 
       {/* Modal Matches Mutuels */}
-      <Modal show={showMatches} onHide={() => setShowMatches(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Mes Matches ({mutualMatches.length})</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {mutualMatches.length === 0 ? (
-            <p className="text-center text-muted">Aucun match mutuel pour le moment.</p>
-          ) : (
-            <Row>
-              {mutualMatches.map((match) => (
-                <Col md={6} key={match.matchId} className="mb-3">
-                  <Card>
-                    <Card.Body>
+      {showMatches && (
+        <div className={styles.modalOverlay} onClick={() => setShowMatches(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Mes Matches ({mutualMatches.length})</h3>
+              <button className={styles.modalClose} onClick={() => setShowMatches(false)}>×</button>
+            </div>
+            <div className={styles.modalBody}>
+              {mutualMatches.length === 0 ? (
+                <p className={styles.noMatches}>Aucun match mutuel pour le moment.</p>
+              ) : (
+                <div className={styles.matchesGrid}>
+                  {mutualMatches.map((match) => (
+                    <div key={match.matchId} className={styles.mutualMatchCard}>
                       <h5>{match.partner.pseudo || match.partner.email}</h5>
                       {match.partner.profile && (
                         <>
-                          <Badge bg="success">{match.matchScore}% Match</Badge>
-                          <Badge bg="light" text="dark" className="ms-2">
-                            {match.distance} km
-                          </Badge>
-                          <p className="mt-2 mb-1">
+                          <div className={styles.matchBadges}>
+                            <span className={styles.scoreBadge}>{match.matchScore}% Match</span>
+                            <span className={styles.distanceBadge}>{match.distance} km</span>
+                          </div>
+                          <p className={styles.matchInfo}>
                             <strong>Niveau:</strong> {FITNESS_LEVEL_LABELS[match.partner.profile.fitnessLevel]}
                           </p>
-                          <p className="mb-0">
+                          <p className={styles.matchInfo}>
                             <strong>Entraînements:</strong>{' '}
                             {match.partner.profile.workoutTypes.slice(0, 3).join(', ')}
                           </p>
                         </>
                       )}
-                    </Card.Body>
-                  </Card>
-                </Col>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Match Mutuel */}
+      {mutualMatchData && (
+        <div className={styles.mutualMatchOverlay} onClick={() => setMutualMatchData(null)}>
+          <div className={styles.mutualMatchPopup} onClick={(e) => e.stopPropagation()}>
+            {/* Coeurs qui tombent */}
+            <div className={styles.heartsContainer}>
+              {[...Array(20)].map((_, i) => (
+                <div
+                  key={i}
+                  className={styles.fallingHeart}
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    animationDelay: `${Math.random() * 2}s`,
+                    animationDuration: `${2 + Math.random() * 2}s`
+                  }}
+                >
+                  ❤️
+                </div>
               ))}
-            </Row>
-          )}
-        </Modal.Body>
-      </Modal>
+            </div>
+
+            {/* Contenu de la popup */}
+            <div className={styles.mutualMatchContent}>
+              <div className={styles.mutualMatchIcon}>🎉</div>
+              <h2 className={styles.mutualMatchTitle}>C'est un Match !</h2>
+              <p className={styles.mutualMatchMessage}>
+                {mutualMatchData.message}
+              </p>
+              <div className={styles.mutualMatchProfile}>
+                <p className={styles.mutualMatchAge}>{mutualMatchData.profile.age} ans</p>
+                <p className={styles.mutualMatchLocation}>
+                  📍 {mutualMatchData.profile.location.neighborhood || mutualMatchData.profile.location.city}
+                </p>
+              </div>
+              <button
+                className={styles.mutualMatchBtn}
+                onClick={() => setMutualMatchData(null)}
+              >
+                Super ! 🎊
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </>
