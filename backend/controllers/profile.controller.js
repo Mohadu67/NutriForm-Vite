@@ -208,6 +208,8 @@ exports.updateMatchPreferences = async (req, res) => {
     const userId = req.user._id;
     const { matchPreferences } = req.body;
 
+    console.log('[updateMatchPreferences] Reçu:', JSON.stringify(matchPreferences, null, 2));
+
     if (!matchPreferences || typeof matchPreferences !== 'object') {
       return res.status(400).json({ error: 'Format de préférences invalide.' });
     }
@@ -218,14 +220,39 @@ exports.updateMatchPreferences = async (req, res) => {
       profile = new UserProfile({ userId });
     }
 
-    // Fusionner les préférences
-    profile.matchPreferences = {
-      ...profile.matchPreferences,
-      ...matchPreferences
-    };
+    // Fusionner les préférences en gérant les objets imbriqués
+    if (!profile.matchPreferences) {
+      profile.matchPreferences = {};
+    }
+
+    // Fusionner preferredAgeRange correctement
+    if (matchPreferences.preferredAgeRange) {
+      profile.matchPreferences.preferredAgeRange = {
+        min: matchPreferences.preferredAgeRange.min ?? profile.matchPreferences.preferredAgeRange?.min ?? 18,
+        max: matchPreferences.preferredAgeRange.max ?? profile.matchPreferences.preferredAgeRange?.max ?? 99
+      };
+    }
+
+    // Autres champs
+    if (matchPreferences.maxDistance !== undefined) {
+      profile.matchPreferences.maxDistance = matchPreferences.maxDistance;
+    }
+    if (matchPreferences.preferredFitnessLevels !== undefined) {
+      profile.matchPreferences.preferredFitnessLevels = matchPreferences.preferredFitnessLevels;
+    }
+    if (matchPreferences.preferredWorkoutTypes !== undefined) {
+      profile.matchPreferences.preferredWorkoutTypes = matchPreferences.preferredWorkoutTypes;
+    }
+    if (matchPreferences.preferredGender !== undefined) {
+      profile.matchPreferences.preferredGender = matchPreferences.preferredGender;
+    }
+    if (matchPreferences.onlyVerified !== undefined) {
+      profile.matchPreferences.onlyVerified = matchPreferences.onlyVerified;
+    }
 
     profile.lastActive = new Date();
 
+    console.log('[updateMatchPreferences] Avant sauvegarde:', JSON.stringify(profile.matchPreferences, null, 2));
     await profile.save();
 
     res.json({
@@ -234,7 +261,8 @@ exports.updateMatchPreferences = async (req, res) => {
     });
   } catch (error) {
     console.error('Erreur updateMatchPreferences:', error);
-    res.status(500).json({ error: 'Erreur lors de la mise à jour des préférences.' });
+    console.error('Stack:', error.stack);
+    res.status(500).json({ error: error.message || 'Erreur lors de la mise à jour des préférences.' });
   }
 };
 
