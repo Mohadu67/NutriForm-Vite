@@ -18,10 +18,12 @@ import AdminPage from "./pages/Admin/AdminPage.jsx";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import Leaderboard from "./pages/Leaderboard/Leaderboard.jsx";
 import Pricing from "./pages/Pricing/Pricing.jsx";
+import SupportTickets from "./pages/Admin/SupportTickets.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
 import CanonicalLink from "./components/CanonicalLink/CanonicalLink.jsx";
+import ChatWidget from "./components/Chat/ChatWidget.jsx";
 import './i18n/config';
 
 export default function App() {
@@ -35,6 +37,7 @@ export default function App() {
     <ErrorBoundary>
       <UpdatePrompt />
       <CanonicalLink />
+      <ChatWidget />
       <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/imc" element={<ImcPage />} />
@@ -55,6 +58,7 @@ export default function App() {
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/admin/newsletter/new" element={<NewsletterAdmin />} />
       <Route path="/admin/newsletter/:id" element={<NewsletterAdmin />} />
+      <Route path="/admin/support-tickets" element={<SupportTickets />} />
       <Route path="*" element={<NotFound />} />
       </Routes>
     </ErrorBoundary>
