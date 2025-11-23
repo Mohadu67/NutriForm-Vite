@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Spinner, Alert } from 'react-bootstrap';
-import { useTranslation } from 'react-i18next';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import { createCheckoutSession, getSubscriptionStatus } from '../../shared/api/subscription';
@@ -9,7 +8,6 @@ import { isAuthenticated } from '../../shared/api/auth';
 import styles from './Pricing.module.css';
 
 export default function Pricing() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
