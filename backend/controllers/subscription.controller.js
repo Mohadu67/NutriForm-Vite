@@ -7,9 +7,13 @@ const Subscription = require('../models/Subscription');
  * POST /api/subscriptions/create-checkout-session
  */
 async function createCheckoutSession(req, res) {
+  console.log('🎯 createCheckoutSession appelé pour userId:', req.userId);
+  console.log('🔑 Stripe Secret Key:', process.env.STRIPE_SECRET_KEY?.slice(0, 20) + '...' + process.env.STRIPE_SECRET_KEY?.slice(-4));
+  console.log('💰 Stripe Price ID:', process.env.STRIPE_PRICE_ID);
   try {
     const userId = req.userId;
     const user = await User.findById(userId);
+    console.log('👤 User trouvé:', user ? user.email : 'NON TROUVÉ');
 
     if (!user) {
       return res.status(404).json({ error: 'Utilisateur introuvable.' });

@@ -54,9 +54,8 @@ const subscriptionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Index pour retrouver rapidement par userId
-subscriptionSchema.index({ userId: 1 });
-subscriptionSchema.index({ stripeSubscriptionId: 1 });
+// Les index sur userId et stripeSubscriptionId sont automatiquement créés via "unique: true"
+// Pas besoin de les redéfinir ici
 
 // Méthode pour vérifier si la subscription est active (y compris trial)
 subscriptionSchema.methods.isActive = function () {
