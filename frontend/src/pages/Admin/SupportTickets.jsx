@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Form, Badge, Spinner, Alert } from 'react-bootstrap';
+import { MdArrowBack } from 'react-icons/md';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import {
@@ -9,8 +10,10 @@ import {
   resolveSupportTicket,
   getSupportTicketStats
 } from '../../shared/api/chat';
+import styles from './SupportTickets.module.css';
 
 export default function SupportTickets() {
+  const navigate = useNavigate();
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -19,7 +22,7 @@ export default function SupportTickets() {
   const [sending, setSending] = useState(false);
   const [stats, setStats] = useState(null);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState('open'); // open, in_progress, resolved, all
+  const [filter, setFilter] = useState('open');
 
   useEffect(() => {
     loadTickets();
@@ -63,7 +66,6 @@ export default function SupportTickets() {
 
   const handleSendReply = async (e) => {
     e.preventDefault();
-
     if (!replyMessage.trim() || !selectedTicket) return;
 
     try {
@@ -72,7 +74,6 @@ export default function SupportTickets() {
       setMessages(prev => [...prev, message]);
       setReplyMessage('');
 
-      // Mettre à jour le ticket dans la liste
       setTickets(prev =>
         prev.map(t => (t._id === selectedTicket._id ? { ...t, status: 'in_progress' } : t))
       );
@@ -101,225 +102,197 @@ export default function SupportTickets() {
   };
 
   const getStatusBadge = (status) => {
-    const variants = {
-      open: 'danger',
-      in_progress: 'warning',
-      resolved: 'success',
-      closed: 'secondary'
+    const statusMap = {
+      open: { text: 'Ouvert', class: styles.statusOpen },
+      in_progress: { text: 'En cours', class: styles.statusProgress },
+      resolved: { text: 'Résolu', class: styles.statusResolved },
+      closed: { text: 'Fermé', class: styles.statusClosed }
     };
-    return <Badge bg={variants[status] || 'secondary'}>{status}</Badge>;
+    const s = statusMap[status] || statusMap.open;
+    return <span className={`${styles.badge} ${s.class}`}>{s.text}</span>;
   };
 
   const getPriorityBadge = (priority) => {
-    const variants = {
-      low: 'secondary',
-      medium: 'info',
-      high: 'warning',
-      urgent: 'danger'
+    const priorityMap = {
+      low: { text: 'Basse', class: styles.priorityLow },
+      medium: { text: 'Moyenne', class: styles.priorityMedium },
+      high: { text: 'Haute', class: styles.priorityHigh },
+      urgent: { text: 'Urgent', class: styles.priorityUrgent }
     };
-    return <Badge bg={variants[priority] || 'info'}>{priority}</Badge>;
+    const p = priorityMap[priority] || priorityMap.medium;
+    return <span className={`${styles.badge} ${p.class}`}>{p.text}</span>;
   };
 
   return (
     <>
       <Navbar />
-      <Container className="py-5">
-        <h1>🎫 Support Tickets</h1>
+      <div className={styles.container}>
+        {/* Header */}
+        <div className={styles.header}>
+          <button className={styles.backBtn} onClick={() => navigate('/admin')}>
+            <MdArrowBack /> Retour
+          </button>
+          <h1>Support Tickets</h1>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className={styles.alert}>
+            ⚠ {error}
+            <button onClick={() => setError(null)} className={styles.alertClose}>×</button>
+          </div>
+        )}
 
         {/* Stats */}
         {stats && (
-          <Row className="my-4">
-            <Col md={3}>
-              <Card className="text-center">
-                <Card.Body>
-                  <h3>{stats.totalOpen}</h3>
-                  <p className="mb-0">Ouverts</p>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={3}>
-              <Card className="text-center">
-                <Card.Body>
-                  <h3>{stats.highPriority}</h3>
-                  <p className="mb-0">Haute priorité</p>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={3}>
-              <Card className="text-center">
-                <Card.Body>
-                  <h3>{stats.totalResolved}</h3>
-                  <p className="mb-0">Résolus</p>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={3}>
-              <Card className="text-center">
-                <Card.Body>
-                  <h3>{stats.avgResolutionTimeHours}h</h3>
-                  <p className="mb-0">Temps moy. résolution</p>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
+          <div className={styles.statsGrid}>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>{stats.totalOpen}</div>
+              <div className={styles.statLabel}>Ouverts</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>{stats.highPriority}</div>
+              <div className={styles.statLabel}>Haute priorité</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>{stats.totalResolved}</div>
+              <div className={styles.statLabel}>Résolus</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statValue}>{stats.avgResolutionTimeHours}h</div>
+              <div className={styles.statLabel}>Temps moyen</div>
+            </div>
+          </div>
         )}
 
-        {/* Filtres */}
-        <div className="mb-3">
-          <Button
-            variant={filter === 'open' ? 'primary' : 'outline-primary'}
+        {/* Filters */}
+        <div className={styles.filters}>
+          <button
+            className={`${styles.filterBtn} ${filter === 'open' ? styles.filterBtnActive : ''}`}
             onClick={() => setFilter('open')}
-            className="me-2"
           >
             Ouverts
-          </Button>
-          <Button
-            variant={filter === 'in_progress' ? 'primary' : 'outline-primary'}
+          </button>
+          <button
+            className={`${styles.filterBtn} ${filter === 'in_progress' ? styles.filterBtnActive : ''}`}
             onClick={() => setFilter('in_progress')}
-            className="me-2"
           >
             En cours
-          </Button>
-          <Button
-            variant={filter === 'resolved' ? 'primary' : 'outline-primary'}
+          </button>
+          <button
+            className={`${styles.filterBtn} ${filter === 'resolved' ? styles.filterBtnActive : ''}`}
             onClick={() => setFilter('resolved')}
-            className="me-2"
           >
             Résolus
-          </Button>
-          <Button
-            variant={filter === 'all' ? 'primary' : 'outline-primary'}
+          </button>
+          <button
+            className={`${styles.filterBtn} ${filter === 'all' ? styles.filterBtnActive : ''}`}
             onClick={() => setFilter('all')}
           >
             Tous
-          </Button>
+          </button>
         </div>
 
-        {error && <Alert variant="danger" dismissible onClose={() => setError(null)}>{error}</Alert>}
-
-        <Row>
+        <div className={styles.content}>
           {/* Liste tickets */}
-          <Col md={4}>
-            <Card>
-              <Card.Header>
-                <strong>Tickets ({tickets.length})</strong>
-              </Card.Header>
-              <Card.Body style={{ maxHeight: '600px', overflowY: 'auto' }}>
-                {loading ? (
-                  <div className="text-center py-3">
-                    <Spinner animation="border" />
+          <div className={styles.ticketsList}>
+            <div className={styles.ticketsHeader}>
+              <strong>Tickets ({tickets.length})</strong>
+            </div>
+            <div className={styles.ticketsBody}>
+              {loading ? (
+                <div className={styles.loading}>Chargement...</div>
+              ) : tickets.length === 0 ? (
+                <div className={styles.emptyList}>Aucun ticket</div>
+              ) : (
+                tickets.map((ticket) => (
+                  <div
+                    key={ticket._id}
+                    className={`${styles.ticketItem} ${selectedTicket?._id === ticket._id ? styles.ticketItemActive : ''}`}
+                    onClick={() => handleSelectTicket(ticket._id)}
+                  >
+                    <div className={styles.ticketBadges}>
+                      {getStatusBadge(ticket.status)}
+                      {getPriorityBadge(ticket.priority)}
+                    </div>
+                    <h4>{ticket.subject}</h4>
+                    <div className={styles.ticketMeta}>
+                      {ticket.userId?.pseudo || ticket.userId?.email}
+                    </div>
+                    <div className={styles.ticketDate}>
+                      {new Date(ticket.createdAt).toLocaleDateString('fr-FR')}
+                    </div>
                   </div>
-                ) : tickets.length === 0 ? (
-                  <p className="text-muted">Aucun ticket</p>
-                ) : (
-                  tickets.map((ticket) => (
-                    <Card
-                      key={ticket._id}
-                      className={`mb-2 ${selectedTicket?._id === ticket._id ? 'border-primary' : ''}`}
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => handleSelectTicket(ticket._id)}
-                    >
-                      <Card.Body>
-                        <div className="d-flex justify-content-between align-items-start mb-2">
-                          {getStatusBadge(ticket.status)}
-                          {getPriorityBadge(ticket.priority)}
-                        </div>
-                        <h6 className="mb-1">{ticket.subject}</h6>
-                        <small className="text-muted">
-                          {ticket.userId?.pseudo || ticket.userId?.email}
-                        </small>
-                        <br />
-                        <small className="text-muted">
-                          {new Date(ticket.createdAt).toLocaleDateString('fr-FR')}
-                        </small>
-                      </Card.Body>
-                    </Card>
-                  ))
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
+                ))
+              )}
+            </div>
+          </div>
 
           {/* Détail ticket */}
-          <Col md={8}>
+          <div className={styles.ticketDetail}>
             {selectedTicket ? (
-              <Card>
-                <Card.Header>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div>
-                      <strong>{selectedTicket.subject}</strong>
-                      <br />
-                      <small className="text-muted">
-                        Par {selectedTicket.userId?.pseudo || selectedTicket.userId?.email}
-                      </small>
-                    </div>
-                    <div>
-                      {selectedTicket.status !== 'resolved' && (
-                        <Button variant="success" size="sm" onClick={handleResolve}>
-                          Résoudre
-                        </Button>
-                      )}
+              <>
+                <div className={styles.detailHeader}>
+                  <div>
+                    <h3>{selectedTicket.subject}</h3>
+                    <div className={styles.detailMeta}>
+                      Par {selectedTicket.userId?.pseudo || selectedTicket.userId?.email}
                     </div>
                   </div>
-                </Card.Header>
-                <Card.Body style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  {selectedTicket.status !== 'resolved' && (
+                    <button className={styles.btnResolve} onClick={handleResolve}>
+                      Résoudre
+                    </button>
+                  )}
+                </div>
+
+                <div className={styles.messagesContainer}>
                   {messages.map((msg, index) => (
                     <div
                       key={index}
-                      className={`mb-3 ${msg.role === 'admin' ? 'text-end' : ''}`}
+                      className={`${styles.message} ${
+                        msg.role === 'admin' ? styles.messageAdmin :
+                        msg.role === 'bot' ? styles.messageBot :
+                        styles.messageUser
+                      }`}
                     >
-                      <div
-                        style={{
-                          display: 'inline-block',
-                          maxWidth: '75%',
-                          padding: '10px 15px',
-                          borderRadius: '12px',
-                          background: msg.role === 'admin' ? '#28a745' : msg.role === 'bot' ? '#f0f0f0' : '#007bff',
-                          color: msg.role === 'bot' ? '#333' : 'white'
-                        }}
-                      >
+                      <div className={styles.messageBubble}>
                         {msg.content}
                       </div>
-                      <br />
-                      <small className="text-muted">
-                        {msg.role === 'admin' && `Admin`}
-                        {' '}
+                      <div className={styles.messageTime}>
+                        {msg.role === 'admin' && 'Admin • '}
                         {new Date(msg.createdAt).toLocaleTimeString('fr-FR')}
-                      </small>
+                      </div>
                     </div>
                   ))}
-                </Card.Body>
-                <Card.Footer>
-                  <Form onSubmit={handleSendReply}>
-                    <Form.Group className="mb-2">
-                      <Form.Control
-                        as="textarea"
-                        rows={3}
-                        value={replyMessage}
-                        onChange={(e) => setReplyMessage(e.target.value)}
-                        placeholder="Votre réponse..."
-                        disabled={selectedTicket.status === 'resolved' || sending}
-                      />
-                    </Form.Group>
-                    <Button
-                      type="submit"
-                      disabled={!replyMessage.trim() || selectedTicket.status === 'resolved' || sending}
-                    >
-                      {sending ? <Spinner animation="border" size="sm" /> : 'Envoyer'}
-                    </Button>
-                  </Form>
-                </Card.Footer>
-              </Card>
+                </div>
+
+                <form className={styles.replyForm} onSubmit={handleSendReply}>
+                  <textarea
+                    className={styles.replyTextarea}
+                    rows={3}
+                    value={replyMessage}
+                    onChange={(e) => setReplyMessage(e.target.value)}
+                    placeholder="Votre réponse..."
+                    disabled={selectedTicket.status === 'resolved' || sending}
+                  />
+                  <button
+                    type="submit"
+                    className={styles.btnSend}
+                    disabled={!replyMessage.trim() || selectedTicket.status === 'resolved' || sending}
+                  >
+                    {sending ? 'Envoi...' : 'Envoyer'}
+                  </button>
+                </form>
+              </>
             ) : (
-              <Card>
-                <Card.Body className="text-center py-5 text-muted">
-                  Sélectionne un ticket pour voir les détails
-                </Card.Body>
-              </Card>
+              <div className={styles.emptyDetail}>
+                <p>Sélectionnez un ticket pour voir les détails</p>
+              </div>
             )}
-          </Col>
-        </Row>
-      </Container>
+          </div>
+        </div>
+      </div>
       <Footer />
     </>
   );
