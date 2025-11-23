@@ -5,16 +5,24 @@ const adminMiddleware = require('../middlewares/admin.middleware');
 
 
 const optionalAuth = (req, res, next) => {
-  
-  
-  const token = req.headers.authorization?.split(' ')[1];
+  let token = null;
+
+  // Priorité 1: Cookie httpOnly
+  if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  }
+  // Priorité 2: Header Authorization
+  else if (req.headers.authorization) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
   if (token) {
     try {
       const jwt = require('jsonwebtoken');
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.userId = decoded.id;
     } catch (err) {
-      
+      // Token invalide, on continue sans userId
     }
   }
   next();
