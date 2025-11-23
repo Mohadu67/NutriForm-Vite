@@ -33,6 +33,17 @@ export const endpoints = {
     reject: "/matching/reject",
     mutual: "/matching/mutual",
     block: "/matching/block",
+  },
+  subscription: {
+    create: "/subscriptions/create-checkout-session",
+    status: "/subscriptions/status",
+    cancel: "/subscriptions/cancel",
+    portal: "/subscriptions/create-portal-session",
+  },
+  chat: {
+    send: "/chat/send",
+    history: "/chat/history",
+    escalate: "/chat/escalate",
   }
 };
 export default endpoints;

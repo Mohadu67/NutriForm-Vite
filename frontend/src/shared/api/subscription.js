@@ -1,11 +1,12 @@
 import client from './client';
+import endpoints from './endpoints';
 
 /**
  * Créer une session Stripe Checkout
  * @returns {Promise<{sessionId: string, url: string}>}
  */
 export async function createCheckoutSession() {
-  const response = await client.post('/subscriptions/create-checkout-session');
+  const response = await client.post(endpoints.subscription.create);
   return response.data;
 }
 
@@ -14,7 +15,7 @@ export async function createCheckoutSession() {
  * @returns {Promise<{tier: string, hasSubscription: boolean, status?: string, ...}>}
  */
 export async function getSubscriptionStatus() {
-  const response = await client.get('/subscriptions/status');
+  const response = await client.get(endpoints.subscription.status);
   return response.data;
 }
 
@@ -23,7 +24,7 @@ export async function getSubscriptionStatus() {
  * @returns {Promise<{message: string, currentPeriodEnd: Date}>}
  */
 export async function cancelSubscription() {
-  const response = await client.post('/subscriptions/cancel');
+  const response = await client.post(endpoints.subscription.cancel);
   return response.data;
 }
 
@@ -32,6 +33,6 @@ export async function cancelSubscription() {
  * @returns {Promise<{url: string}>}
  */
 export async function createCustomerPortalSession() {
-  const response = await client.post('/subscriptions/customer-portal');
+  const response = await client.post(endpoints.subscription.portal);
   return response.data;
 }

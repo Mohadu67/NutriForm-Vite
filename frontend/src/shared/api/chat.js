@@ -1,4 +1,5 @@
 import client from './client';
+import endpoints from './endpoints';
 
 /**
  * Envoyer un message au chatbot
@@ -7,7 +8,7 @@ import client from './client';
  * @returns {Promise<{conversationId, message, botResponse, escalated}>}
  */
 export async function sendChatMessage(message, conversationId = null) {
-  const response = await client.post('/chat/send', {
+  const response = await client.post(endpoints.chat.send, {
     message,
     conversationId
   });
@@ -20,7 +21,7 @@ export async function sendChatMessage(message, conversationId = null) {
  * @returns {Promise<{messages: Array}>}
  */
 export async function getChatHistory(conversationId) {
-  const response = await client.get(`/chat/history/${conversationId}`);
+  const response = await client.get(`${endpoints.chat.history}/${conversationId}`);
   return response.data;
 }
 
@@ -31,7 +32,7 @@ export async function getChatHistory(conversationId) {
  * @returns {Promise<{message, ticket}>}
  */
 export async function escalateChat(conversationId, reason = '') {
-  const response = await client.post('/chat/escalate', {
+  const response = await client.post(endpoints.chat.escalate, {
     conversationId,
     reason
   });
