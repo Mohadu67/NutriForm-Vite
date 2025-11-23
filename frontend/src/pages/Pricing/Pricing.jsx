@@ -71,7 +71,7 @@ export default function Pricing() {
         <div className={styles.header}>
           <h1>Choisissez votre plan</h1>
           <p className={styles.subtitle}>
-            Débloquez tout le potentiel de NutriForm avec Premium
+            Débloquez tout le potentiel d'Harmonith avec Premium
           </p>
         </div>
 
