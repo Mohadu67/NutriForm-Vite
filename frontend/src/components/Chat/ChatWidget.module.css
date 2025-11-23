@@ -266,20 +266,24 @@
 }
 
 /* Mobile Responsive */
-@media (max-width: 480px) {
-  .chatPopup {
-    bottom: 90px;
-    right: 10px;
-    left: 10px;
-    width: auto;
-    height: 550px;
+@media (max-width: 768px) {
+  /* Cacher le bouton flottant en mobile (sera dans la navbar) */
+  .chatButton {
+    display: none;
   }
 
-  .chatButton {
-    bottom: 16px;
-    right: 16px;
-    width: 56px;
-    height: 56px;
+  .chatPopup {
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .chatHeader {
+    border-radius: 0;
   }
 
   .message {

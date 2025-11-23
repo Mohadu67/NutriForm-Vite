@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Button, Spinner, Alert } from 'react-bootstrap';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { isAuthenticated } from '../../shared/api/auth';
+import { useChat } from '../../contexts/ChatContext';
 import styles from './ChatWidget.module.css';
 
 export default function ChatWidget() {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isChatOpen: isOpen, toggleChat, closeChat } = useChat();
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [conversationId, setConversationId] = useState(null);
@@ -150,10 +151,6 @@ export default function ChatWidget() {
     }
   };
 
-  const handleToggle = () => {
-    setIsOpen(!isOpen);
-  };
-
   const handleNewChat = () => {
     setMessages([
       {
@@ -173,7 +170,7 @@ export default function ChatWidget() {
       {/* Bouton flottant */}
       <button
         className={styles.chatButton}
-        onClick={handleToggle}
+        onClick={toggleChat}
         aria-label="Ouvrir le chat"
       >
         {isOpen ? (

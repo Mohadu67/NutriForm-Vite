@@ -26,6 +26,7 @@ import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
 import CanonicalLink from "./components/CanonicalLink/CanonicalLink.jsx";
 import ChatWidget from "./components/Chat/ChatWidget.jsx";
+import { ChatProvider } from "./contexts/ChatContext.jsx";
 import './i18n/config';
 
 export default function App() {
@@ -37,10 +38,11 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <UpdatePrompt />
-      <CanonicalLink />
-      <ChatWidget />
-      <Routes>
+      <ChatProvider>
+        <UpdatePrompt />
+        <CanonicalLink />
+        <ChatWidget />
+        <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/imc" element={<ImcPage />} />
       <Route path="/calorie" element={<CaloriePage />} />
@@ -65,6 +67,7 @@ export default function App() {
       <Route path="/matching" element={<MatchingPage />} />
       <Route path="*" element={<NotFound />} />
       </Routes>
+      </ChatProvider>
     </ErrorBoundary>
   );
 }
