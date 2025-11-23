@@ -304,3 +304,56 @@ exports.logout = async (req, res) => {
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
+
+exports.resendVerificationEmail = async (req, res) => {
+  try {
+    const { email } = req.body || {};
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email requis.' });
+    }
+
+    const emailNorm = String(email).toLowerCase().trim();
+    const user = await User.findOne({ email: emailNorm });
+
+    if (!user) {
+      // Ne pas révéler si l'email existe ou non pour des raisons de sécurité
+      return res.json({ message: 'Si cet email existe et n\'est pas vérifié, un nouveau lien a été envoyé.' });
+    }
+
+    // Si déjà vérifié, ne rien faire
+    if (user.emailVerifie) {
+      return res.json({ message: 'Cet email est déjà vérifié. Vous pouvez vous connecter.' });
+    }
+
+    // Générer un nouveau token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 heure
+
+    user.verificationToken = token;
+    user.verificationExpires = expiresAt;
+    await user.save();
+
+    const verifyUrl = `${frontBase()}/verify-email?token=${encodeURIComponent(token)}`;
+
+    console.log('[AUTH] Resend verification: sending email to', emailNorm);
+    console.log('[AUTH] Verification URL:', verifyUrl);
+
+    try {
+      const result = await sendVerifyEmail({
+        to: emailNorm,
+        toName: user.prenom || user.pseudo || emailNorm,
+        verifyUrl
+      });
+      console.log('[AUTH] ✅ Verification email resent successfully:', result?.messageId || 'no messageId');
+
+      return res.json({ message: 'Email de vérification renvoyé. Vérifie ta boîte mail ✉️' });
+    } catch (mailErr) {
+      console.error('[AUTH] ❌ MAIL_ERROR resend:', mailErr.message);
+      return res.status(502).json({ message: "Impossible d'envoyer l'email. Réessaie plus tard." });
+    }
+  } catch (err) {
+    console.error('POST /resend-verification', err);
+    return res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};

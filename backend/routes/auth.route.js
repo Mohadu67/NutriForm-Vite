@@ -4,7 +4,7 @@ const rateLimit = require('express-rate-limit');
 
 const auth = require('../middlewares/auth.middleware');
 const verifyCaptcha = require('../middlewares/recaptcha.middleware');
-const { login, register, me, updateProfile, changePassword, logout } = require('../controllers/auth.controller.js');
+const { login, register, me, updateProfile, changePassword, logout, resendVerificationEmail } = require('../controllers/auth.controller.js');
 
 // Rate limiting spécifique pour l'authentification
 const authLimiter = rateLimit({
@@ -21,8 +21,23 @@ const authLimiter = rateLimit({
   }
 });
 
+// Rate limiting pour le renvoi d'email de vérification
+const resendLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 heure
+  max: 3, // Max 3 tentatives par heure
+  skipSuccessfulRequests: false,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({
+      message: 'Trop de tentatives. Veuillez réessayer dans 1 heure.'
+    });
+  }
+});
+
 router.post('/login', authLimiter, login);
 router.post('/register', authLimiter, verifyCaptcha, register);
+router.post('/resend-verification', resendLimiter, resendVerificationEmail);
 router.post('/logout', logout);
 router.get('/me', auth, me);
 router.put('/update-profile', auth, updateProfile);

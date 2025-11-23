@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, Spinner, Alert } from 'react-bootstrap';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import { createCheckoutSession, getSubscriptionStatus } from '../../shared/api/subscription';
@@ -24,7 +23,6 @@ export default function Pricing() {
       setIsAuth(auth);
 
       if (auth) {
-        // Récupérer le statut d'abonnement si connecté
         try {
           const status = await getSubscriptionStatus();
           setSubscriptionStatus(status);
@@ -39,7 +37,6 @@ export default function Pricing() {
 
   const handleUpgrade = async () => {
     if (!isAuth) {
-      // Rediriger vers login avec retour sur pricing
       navigate('/');
       return;
     }
@@ -54,7 +51,7 @@ export default function Pricing() {
 
     try {
       const { url } = await createCheckoutSession();
-      window.location.href = url; // Redirection vers Stripe Checkout
+      window.location.href = url;
     } catch (err) {
       console.error('Erreur création checkout:', err);
       setError(err.response?.data?.error || 'Une erreur est survenue.');
@@ -67,7 +64,7 @@ export default function Pricing() {
   return (
     <>
       <Navbar />
-      <Container className={styles.pricingContainer}>
+      <div className={styles.container}>
         <div className={styles.header}>
           <h1>Choisissez votre plan</h1>
           <p className={styles.subtitle}>
@@ -76,176 +73,157 @@ export default function Pricing() {
         </div>
 
         {canceled && (
-          <Alert variant="warning" className="text-center">
+          <div className={`${styles.alert} ${styles.alertWarning}`}>
             Paiement annulé. Vous pouvez réessayer quand vous voulez !
-          </Alert>
+          </div>
         )}
 
         {success && (
-          <Alert variant="success" className="text-center">
+          <div className={`${styles.alert} ${styles.alertSuccess}`}>
             🎉 Bienvenue dans Premium ! Votre essai gratuit de 7 jours a commencé.
-          </Alert>
+          </div>
         )}
 
-        <Row className={styles.plansRow}>
+        <div className={styles.plansGrid}>
           {/* Plan Gratuit */}
-          <Col md={6} className={styles.planCol}>
-            <Card className={`${styles.planCard} ${styles.freePlan}`}>
-              <Card.Body>
-                <div className={styles.planHeader}>
-                  <h2>Gratuit</h2>
-                  <div className={styles.price}>
-                    <span className={styles.amount}>0€</span>
-                    <span className={styles.period}>/mois</span>
-                  </div>
-                </div>
+          <div className={styles.planCard}>
+            <div className={styles.planHeader}>
+              <h2>Gratuit</h2>
+              <div className={styles.price}>
+                <span className={styles.amount}>0€</span>
+                <span className={styles.period}>/mois</span>
+              </div>
+            </div>
 
-                <ul className={styles.featuresList}>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    Bibliothèque d'exercices complète
-                  </li>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    Suivi de séance en direct
-                  </li>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    Calculateurs (IMC, Calories, 1RM)
-                  </li>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    Leaderboard (lecture seule)
-                  </li>
-                  <li className={`${styles.featureItem} ${styles.disabled}`}>
-                    <span className={styles.crossIcon}>✗</span>
-                    Sauvegarde des séances
-                  </li>
-                  <li className={`${styles.featureItem} ${styles.disabled}`}>
-                    <span className={styles.crossIcon}>✗</span>
-                    Dashboard & Statistiques
-                  </li>
-                  <li className={`${styles.featureItem} ${styles.disabled}`}>
-                    <span className={styles.crossIcon}>✗</span>
-                    Historique complet
-                  </li>
-                  <li className={`${styles.featureItem} ${styles.disabled}`}>
-                    <span className={styles.crossIcon}>✗</span>
-                    Participation Leaderboard
-                  </li>
-                </ul>
+            <ul className={styles.featuresList}>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                Bibliothèque d'exercices complète
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                Suivi de séance en direct
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                Calculateurs (IMC, Calories, 1RM)
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                Leaderboard (lecture seule)
+              </li>
+              <li className={`${styles.featureItem} ${styles.disabled}`}>
+                <span className={styles.crossIcon}>✗</span>
+                Sauvegarde des séances
+              </li>
+              <li className={`${styles.featureItem} ${styles.disabled}`}>
+                <span className={styles.crossIcon}>✗</span>
+                Dashboard & Statistiques
+              </li>
+              <li className={`${styles.featureItem} ${styles.disabled}`}>
+                <span className={styles.crossIcon}>✗</span>
+                Historique complet
+              </li>
+              <li className={`${styles.featureItem} ${styles.disabled}`}>
+                <span className={styles.crossIcon}>✗</span>
+                Participation Leaderboard
+              </li>
+            </ul>
 
-                <Button
-                  variant="outline-secondary"
-                  className={styles.planButton}
-                  disabled
-                >
-                  Plan actuel
-                </Button>
-              </Card.Body>
-            </Card>
-          </Col>
+            <button className={`${styles.planButton} ${styles.secondaryButton}`} disabled>
+              Plan actuel
+            </button>
+          </div>
 
           {/* Plan Premium */}
-          <Col md={6} className={styles.planCol}>
-            <Card className={`${styles.planCard} ${styles.premiumPlan}`}>
-              {!isPremium && (
-                <div className={styles.badge}>7 jours gratuits</div>
+          <div className={`${styles.planCard} ${styles.premiumPlan}`}>
+            {!isPremium && (
+              <div className={styles.badge}>7 jours gratuits</div>
+            )}
+
+            <div className={styles.planHeader}>
+              <h2>Premium</h2>
+              <div className={styles.price}>
+                <span className={styles.amount}>3,99€</span>
+                <span className={styles.period}>/mois</span>
+              </div>
+            </div>
+
+            <ul className={styles.featuresList}>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                Tout du plan Gratuit
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                <strong>Sauvegarde illimitée</strong> des séances
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                <strong>Dashboard complet</strong> avec analytics
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                <strong>Historique illimité</strong>
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                <strong>Statistiques détaillées</strong> & graphs
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                <strong>Heatmap 12 semaines</strong>
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                <strong>Badges & Gamification</strong>
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                <strong>Participation Leaderboard</strong>
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                <strong>Export CSV</strong> de vos données
+              </li>
+              <li className={styles.featureItem}>
+                <span className={styles.checkIcon}>✓</span>
+                <strong>Support prioritaire</strong>
+              </li>
+            </ul>
+
+            {error && (
+              <div className={styles.error}>
+                {error}
+              </div>
+            )}
+
+            <button
+              className={`${styles.planButton} ${styles.primaryButton}`}
+              onClick={handleUpgrade}
+              disabled={loading || isPremium}
+            >
+              {loading ? (
+                <>
+                  <div className={styles.spinner}></div>
+                  Chargement...
+                </>
+              ) : isPremium ? (
+                'Abonné ✓'
+              ) : isAuth ? (
+                'Essayer 7 jours gratuits'
+              ) : (
+                'Se connecter pour essayer'
               )}
-              <Card.Body>
-                <div className={styles.planHeader}>
-                  <h2>Premium</h2>
-                  <div className={styles.price}>
-                    <span className={styles.amount}>3,99€</span>
-                    <span className={styles.period}>/mois</span>
-                  </div>
-                </div>
+            </button>
 
-                <ul className={styles.featuresList}>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    Tout du plan Gratuit
-                  </li>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    <strong>Sauvegarde illimitée</strong> des séances
-                  </li>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    <strong>Dashboard complet</strong> avec analytics
-                  </li>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    <strong>Historique illimité</strong>
-                  </li>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    <strong>Statistiques détaillées</strong> & graphs
-                  </li>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    <strong>Heatmap 12 semaines</strong>
-                  </li>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    <strong>Badges & Gamification</strong>
-                  </li>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    <strong>Participation Leaderboard</strong>
-                  </li>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    <strong>Export CSV</strong> de vos données
-                  </li>
-                  <li className={styles.featureItem}>
-                    <span className={styles.checkIcon}>✓</span>
-                    <strong>Support prioritaire</strong>
-                  </li>
-                </ul>
-
-                {error && (
-                  <Alert variant="danger" className="mb-3">
-                    {error}
-                  </Alert>
-                )}
-
-                <Button
-                  variant="primary"
-                  className={styles.planButton}
-                  onClick={handleUpgrade}
-                  disabled={loading || isPremium}
-                >
-                  {loading ? (
-                    <>
-                      <Spinner
-                        as="span"
-                        animation="border"
-                        size="sm"
-                        role="status"
-                        aria-hidden="true"
-                        className="me-2"
-                      />
-                      Chargement...
-                    </>
-                  ) : isPremium ? (
-                    'Abonné ✓'
-                  ) : isAuth ? (
-                    'Essayer 7 jours gratuits'
-                  ) : (
-                    'Se connecter pour essayer'
-                  )}
-                </Button>
-
-                {!isPremium && (
-                  <p className={styles.trialNotice}>
-                    Sans engagement. Annulez quand vous voulez.
-                  </p>
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+            {!isPremium && (
+              <p className={styles.trialNotice}>
+                Sans engagement. Annulez quand vous voulez.
+              </p>
+            )}
+          </div>
+        </div>
 
         <div className={styles.faq}>
           <h3>Questions fréquentes</h3>
@@ -271,7 +249,7 @@ export default function Pricing() {
             </p>
           </div>
         </div>
-      </Container>
+      </div>
       <Footer />
     </>
   );

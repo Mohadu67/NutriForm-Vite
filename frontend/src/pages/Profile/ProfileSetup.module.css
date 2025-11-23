@@ -1,426 +1,761 @@
+/* ========== BASE ========== */
 .container {
-  padding: 60px 20px;
   min-height: calc(100vh - 200px);
-  max-width: 900px;
-  animation: fadeIn 0.5s ease;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 100px 20px 40px;
+  background: var(--couleur-principale, #f7f6f2);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+:global(body.dark) .container,
+:global(html.dark) .container {
+  background: #0c0e12;
 }
 
+/* ========== HEADER ========== */
 .header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
 .header h1 {
-  font-size: 2.5rem;
+  font-family: 'Merriweather', serif;
+  font-size: 2rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 10px;
-  animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--ink, #222325);
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+:global(body.dark) .header h1,
+:global(html.dark) .header h1 {
+  color: #f5f7fa;
 }
 
 .header p {
-  color: #6c757d;
-  font-size: 1.1rem;
-  animation: fadeIn 0.8s ease 0.2s both;
+  font-size: 0.95rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
 }
 
-/* Progress Bar */
+/* ========== LOADING ========== */
+.loadingContainer {
+  min-height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: var(--couleur-bouton-action, #f7b186);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+:global(body.dark) .spinner,
+:global(html.dark) .spinner {
+  border-color: rgba(255, 255, 255, 0.1);
+  border-top-color: var(--couleur-bouton-action, #f7b186);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingContainer p {
+  color: var(--muted, #6b7280);
+  font-size: 1rem;
+}
+
+/* ========== PROGRESS BAR ========== */
 .progressBar {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 40px;
-  gap: 10px;
-  position: relative;
-}
-
-.progressBar::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 5%;
-  right: 5%;
-  height: 3px;
-  background: #f0f0f0;
-  transform: translateY(-50%);
-  z-index: -1;
-  border-radius: 2px;
+  gap: 12px;
+  margin-bottom: 32px;
 }
 
 .progressStep {
   flex: 1;
-  padding: 15px;
+  padding: 16px 12px;
   text-align: center;
-  background: #ffffff;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 16px;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #999;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  color: var(--muted, #6b7280);
+  letter-spacing: 0.3px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.progressStep:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+:global(body.dark) .progressStep,
+:global(html.dark) .progressStep {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .progressStep.active {
-  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
+  background: var(--couleur-bouton-action, #f7b186);
   color: white;
-  border-color: transparent;
-  transform: translateY(-4px) scale(1.02);
-  box-shadow:
-    0 8px 20px rgba(184, 221, 209, 0.3),
-    0 4px 12px rgba(247, 177, 134, 0.2);
+  border-color: var(--couleur-bouton-action, #f7b186);
 }
 
-.progressStep.active::after {
-  content: '✓';
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 24px;
-  height: 24px;
-  background: #ffffff;
-  border-radius: 50%;
+/* ========== ALERTS ========== */
+.alert {
+  padding: 16px 20px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.alert button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  color: #f7b186;
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  transition: background 0.2s ease;
 }
 
-/* Card */
+.alertError {
+  background: var(--paper, #ffffff);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+}
+
+:global(body.dark) .alertError,
+:global(html.dark) .alertError {
+  background: #1a1d24;
+  border-color: rgba(220, 53, 69, 0.3);
+}
+
+.alertError button {
+  color: #dc3545;
+}
+
+.alertError button:hover {
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.alertSuccess {
+  background: var(--paper, #ffffff);
+  border: 1px solid rgba(40, 167, 69, 0.2);
+  color: #28a745;
+}
+
+:global(body.dark) .alertSuccess,
+:global(html.dark) .alertSuccess {
+  background: #1a1d24;
+  border-color: rgba(40, 167, 69, 0.3);
+}
+
+.alertSuccess button {
+  color: #28a745;
+}
+
+.alertSuccess button:hover {
+  background: rgba(40, 167, 69, 0.1);
+}
+
+/* ========== CARD ========== */
 .card {
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
   border-radius: 20px;
-  border: 1px solid rgba(184, 221, 209, 0.2);
-  background: #ffffff;
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.08),
-    0 2px 8px rgba(184, 221, 209, 0.1);
-  margin-bottom: 30px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  animation: slideIn 0.5s ease;
+  padding: 28px;
+  margin-bottom: 24px;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.card:hover {
-  box-shadow:
-    0 15px 40px rgba(0, 0, 0, 0.12),
-    0 4px 12px rgba(184, 221, 209, 0.15);
-  transform: translateY(-2px);
+:global(body.dark) .card,
+:global(html.dark) .card {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .card h3 {
-  color: #333;
+  font-family: 'Merriweather', serif;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 20px;
-  position: relative;
-  padding-bottom: 15px;
+  color: var(--ink, #222325);
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
 }
 
-.card h3::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 60px;
-  height: 3px;
-  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
-  border-radius: 2px;
+:global(body.dark) .card h3,
+:global(html.dark) .card h3 {
+  color: #f5f7fa;
 }
 
-/* Fitness Level Grid */
+.card > p {
+  color: var(--muted, #6b7280);
+  font-size: 0.9rem;
+  margin: 0 0 24px;
+}
+
+/* ========== FORM ========== */
+.formGroup {
+  margin-bottom: 24px;
+}
+
+.formLabel {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+:global(body.dark) .formLabel,
+:global(html.dark) .formLabel {
+  color: #f5f7fa;
+}
+
+.formControl {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 12px;
+  background: var(--couleur-principale, #f7f6f2);
+  color: var(--ink, #222325);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+:global(body.dark) .formControl,
+:global(html.dark) .formControl {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #f5f7fa;
+}
+
+.formControl:focus {
+  outline: none;
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+.formControl::placeholder {
+  color: var(--muted, #6b7280);
+}
+
+textarea.formControl {
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+.formText {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--muted, #6b7280);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.formCheck {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.formCheck input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--couleur-bouton-action, #f7b186);
+}
+
+.formCheck label {
+  font-size: 0.95rem;
+  color: var(--ink, #222325);
+  cursor: pointer;
+  flex: 1;
+}
+
+:global(body.dark) .formCheck label,
+:global(html.dark) .formCheck label {
+  color: #f5f7fa;
+}
+
+/* ========== FITNESS LEVEL GRID ========== */
 .levelGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  margin-bottom: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .levelCard {
-  padding: 20px;
-  border: 2px solid #e0e0e0;
-  border-radius: 15px;
+  padding: 16px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
-  background: #ffffff;
-  position: relative;
-  overflow: hidden;
+  background: var(--paper, #ffffff);
 }
 
-.levelCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.05) 0%, rgba(247, 177, 134, 0.05) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+:global(body.dark) .levelCard,
+:global(html.dark) .levelCard {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .levelCard:hover {
-  border-color: #f7b186;
-  transform: translateY(-4px) scale(1.02);
-  box-shadow:
-    0 8px 20px rgba(247, 177, 134, 0.25),
-    0 4px 12px rgba(184, 221, 209, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-color: var(--couleur-bouton-action, #f7b186);
 }
 
-.levelCard:hover::before {
-  opacity: 1;
+:global(body.dark) .levelCard:hover,
+:global(html.dark) .levelCard:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
 .levelCard.selected {
-  border-color: #f7b186;
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.15) 0%, rgba(247, 177, 134, 0.15) 100%);
-  transform: scale(1.02);
-  box-shadow:
-    0 6px 16px rgba(247, 177, 134, 0.3),
-    0 2px 8px rgba(184, 221, 209, 0.2);
-}
-
-.levelCard.selected::after {
-  content: '✓';
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
-  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
+  background: var(--couleur-bouton-action, #f7b186);
+  border-color: var(--couleur-bouton-action, #f7b186);
   color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
-  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.4);
 }
 
 .levelCard strong {
   display: block;
-  color: #333;
-  margin-bottom: 5px;
-  position: relative;
-  z-index: 1;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.levelCard.selected strong {
+  color: white;
 }
 
 .levelCard small {
-  color: #6c757d;
-  font-size: 0.85rem;
-  position: relative;
-  z-index: 1;
+  font-size: 0.8rem;
+  color: var(--muted, #6b7280);
 }
 
-/* Workout Type Grid */
+.levelCard.selected small {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ========== WORKOUT TYPE GRID ========== */
 .workoutGrid {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .workoutBadge {
-  padding: 10px 16px;
-  font-size: 0.95rem;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  border-radius: 20px;
-  border: 2px solid transparent;
-  position: relative;
-  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  background: var(--couleur-principale, #f7f6f2);
+  color: var(--muted, #6b7280);
 }
 
-.workoutBadge::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.2) 0%, rgba(247, 177, 134, 0.2) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+:global(body.dark) .workoutBadge,
+:global(html.dark) .workoutBadge {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .workoutBadge:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--couleur-bouton-action, #f7b186);
 }
 
-.workoutBadge:hover::before {
-  opacity: 1;
+:global(body.dark) .workoutBadge:hover,
+:global(html.dark) .workoutBadge:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Availability */
+.workoutBadge.selected {
+  background: var(--couleur-bouton-action, #f7b186);
+  border-color: var(--couleur-bouton-action, #f7b186);
+  color: white;
+}
+
+/* ========== LOCATION ========== */
+.locationButton {
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  color: var(--couleur-bouton-action, #f7b186);
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.3px;
+  margin-top: 8px;
+}
+
+:global(body.dark) .locationButton,
+:global(html.dark) .locationButton {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.locationButton:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+:global(body.dark) .locationButton:hover,
+:global(html.dark) .locationButton:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.locationBadge {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 6px 12px;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: white;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ========== AVAILABILITY ========== */
 .daySection {
   padding: 20px;
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.05) 0%, rgba(247, 177, 134, 0.05) 100%);
-  border: 1px solid rgba(184, 221, 209, 0.2);
-  border-radius: 15px;
-  margin-bottom: 15px;
-  transition: all 0.3s ease;
+  background: var(--couleur-principale, #f7f6f2);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 16px;
+  margin-bottom: 16px;
 }
 
-.daySection:hover {
-  border-color: rgba(247, 177, 134, 0.3);
-  box-shadow: 0 4px 12px rgba(184, 221, 209, 0.15);
+:global(body.dark) .daySection,
+:global(html.dark) .daySection {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.daySectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.daySectionHeader strong {
+  font-size: 1rem;
+  color: var(--ink, #222325);
+  font-weight: 700;
+}
+
+:global(body.dark) .daySectionHeader strong,
+:global(html.dark) .daySectionHeader strong {
+  color: #f5f7fa;
+}
+
+.addSlotButton {
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  color: var(--couleur-bouton-action, #f7b186);
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:global(body.dark) .addSlotButton,
+:global(html.dark) .addSlotButton {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.addSlotButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+:global(body.dark) .addSlotButton:hover,
+:global(html.dark) .addSlotButton:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .timeSlot {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 12px;
   padding: 12px;
-  background: white;
-  border-radius: 10px;
-  border: 1px solid #e0e0e0;
-  transition: all 0.2s ease;
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 12px;
 }
 
-.timeSlot:hover {
-  border-color: #f7b186;
-  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.15);
+:global(body.dark) .timeSlot,
+:global(html.dark) .timeSlot {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .timeSlot input {
   flex: 1;
-  max-width: 150px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  max-width: 140px;
   padding: 8px 12px;
-  transition: all 0.2s ease;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 8px;
+  background: var(--couleur-principale, #f7f6f2);
+  color: var(--ink, #222325);
+  font-size: 0.9rem;
+}
+
+:global(body.dark) .timeSlot input,
+:global(html.dark) .timeSlot input {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #f5f7fa;
 }
 
 .timeSlot input:focus {
   outline: none;
-  border-color: #f7b186;
-  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.1);
+  border-color: var(--couleur-bouton-action, #f7b186);
 }
 
 .timeSlot span {
-  color: #6c757d;
+  color: var(--muted, #6b7280);
   font-weight: 500;
+  font-size: 0.9rem;
 }
 
-/* Navigation */
+.removeSlotButton {
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  color: #dc3545;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:global(body.dark) .removeSlotButton,
+:global(html.dark) .removeSlotButton {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.removeSlotButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
+  border-color: #dc3545;
+}
+
+:global(body.dark) .removeSlotButton:hover,
+:global(html.dark) .removeSlotButton:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.noSlots {
+  color: var(--muted, #6b7280);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* ========== RANGE ========== */
+.rangeLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.rangeLabel strong {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+:global(body.dark) .rangeLabel strong,
+:global(html.dark) .rangeLabel strong {
+  color: #f5f7fa;
+}
+
+.rangeLabel span {
+  font-size: 0.9rem;
+  color: var(--couleur-bouton-action, #f7b186);
+  font-weight: 700;
+}
+
+.formRange {
+  width: 100%;
+  height: 6px;
+  border-radius: 6px;
+  background: var(--line, rgba(0, 0, 0, 0.06));
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+:global(body.dark) .formRange,
+:global(html.dark) .formRange {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.formRange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--couleur-bouton-action, #f7b186);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.formRange::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.formRange::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--couleur-bouton-action, #f7b186);
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.formRange::-moz-range-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* ========== NAVIGATION ========== */
 .navigation {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 30px;
-  gap: 15px;
+  gap: 12px;
+  margin-top: 32px;
 }
 
-.navigation button {
-  border-radius: 25px;
-  padding: 12px 30px;
+.backButton,
+.nextButton {
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-size: 1rem;
   font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.navigation button[class*="primary"] {
-  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
-  border-color: transparent;
+.backButton {
+  background: var(--paper, #ffffff);
+  color: var(--muted, #6b7280);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+:global(body.dark) .backButton,
+:global(html.dark) .backButton {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.backButton:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .backButton:hover,
+:global(html.dark) .backButton:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  color: #f5f7fa;
+}
+
+.nextButton {
+  background: var(--couleur-bouton-action, #f7b186);
   color: white;
-  position: relative;
-  overflow: hidden;
+  margin-left: auto;
 }
 
-.navigation button[class*="primary"]::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.nextButton:hover:not(:disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(247, 177, 134, 0.3);
 }
 
-.navigation button[class*="primary"]:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 20px rgba(184, 221, 209, 0.35),
-    0 4px 12px rgba(247, 177, 134, 0.25);
+:global(body.dark) .nextButton:hover:not(:disabled),
+:global(html.dark) .nextButton:hover:not(:disabled) {
+  box-shadow: 0 8px 20px rgba(247, 177, 134, 0.4);
 }
 
-.navigation button[class*="primary"]:hover:not(:disabled)::before {
-  opacity: 1;
+.nextButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.navigation button[class*="outline"] {
-  border-color: #e0e0e0;
-  background: white;
-}
-
-.navigation button[class*="outline"]:hover {
-  border-color: #f7b186;
-  background: rgba(247, 177, 134, 0.05);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.15);
-}
-
-/* Responsive */
+/* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
   .container {
-    padding: 30px 15px;
+    padding: 80px 16px 32px;
   }
 
   .header h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 
   .progressBar {
     flex-direction: column;
+    gap: 8px;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+    gap: 0;
   }
 
   .levelGrid {
     grid-template-columns: 1fr;
-  }
-
-  .workoutGrid {
-    justify-content: center;
   }
 
   .timeSlot {
@@ -429,5 +764,32 @@
 
   .timeSlot input {
     max-width: 100%;
+  }
+
+  .navigation {
+    flex-direction: column;
+  }
+
+  .nextButton {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .backButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 70px 12px 24px;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .card {
+    padding: 20px;
   }
 }

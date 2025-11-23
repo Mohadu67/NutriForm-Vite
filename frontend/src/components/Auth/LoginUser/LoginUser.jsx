@@ -9,7 +9,7 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { status, errorMsg, handleSubmit } = useLogin(onSuccess, { minDurationMs: 1500 });
+  const { status, errorMsg, unverifiedEmail, handleSubmit, resendVerification } = useLogin(onSuccess, { minDurationMs: 1500 });
 
   const loading = status === "loading";
 
@@ -127,7 +127,18 @@ export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
 
         {/* Error message */}
         {status === "error" && (
-          <p className={styles.error}>{errorMsg || "Erreur de connexion. Réessaie."}</p>
+          <div className={styles.errorWrapper}>
+            <p className={styles.error}>{errorMsg || "Erreur de connexion. Réessaie."}</p>
+            {unverifiedEmail && (
+              <button
+                type="button"
+                className={styles.resendBtn}
+                onClick={resendVerification}
+              >
+                Renvoyer l'email de vérification
+              </button>
+            )}
+          </div>
         )}
 
         {/* Submit button */}
