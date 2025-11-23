@@ -177,7 +177,7 @@
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(247, 177, 134, 0.1);
 }
 
 /* Badges minimalistes sur la carte */
@@ -274,14 +274,14 @@
 }
 
 .recenterButton {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #b8ddd1, #f7b186);
   color: white;
   border: none;
 }
 
 .recenterButton:hover {
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(247, 177, 134, 0.4);
 }
 
 /* Animation du point actuel */
@@ -297,10 +297,10 @@
 .currentPositionDot {
   width: 16px;
   height: 16px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #b8ddd1, #f7b186);
   border: 3px solid white;
   border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+  box-shadow: 0 0 0 0 rgba(247, 177, 134, 0.7);
   animation: pulseRing 2s infinite;
 }
 
@@ -316,13 +316,13 @@
 
 @keyframes pulseRing {
   0% {
-    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+    box-shadow: 0 0 0 0 rgba(247, 177, 134, 0.7);
   }
   50% {
-    box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+    box-shadow: 0 0 0 10px rgba(247, 177, 134, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+    box-shadow: 0 0 0 0 rgba(247, 177, 134, 0);
   }
 }
 
@@ -371,10 +371,10 @@
   flex-direction: column;
   align-items: center;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #b8ddd1 0%, #f7b186 100%);
   border-radius: 12px;
   color: white;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
   transition: transform 0.2s ease;
 }
 
