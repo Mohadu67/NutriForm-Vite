@@ -21,3 +21,12 @@ export function refresh() {
 export function logout() {
   return client.post(endpoints.auth.logout);
 }
+
+export async function isAuthenticated() {
+  try {
+    await me();
+    return true;
+  } catch (error) {
+    return false;
+  }
+}

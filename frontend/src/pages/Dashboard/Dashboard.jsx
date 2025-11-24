@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Button } from "react-bootstrap";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
@@ -7,17 +8,46 @@ import style from "./Dashboard.module.css";
 import useHistoryData from "../../components/History/HistoryUser/UseHistoryData.js";
 import WeeklyGoalModal from "../../components/History/DashboardCards/WeeklyGoalModal.jsx";
 import { deleteSession, updateSession } from "../../components/History/SessionTracking/sessionApi.js";
+import { getSubscriptionStatus } from "../../shared/api/subscription.js";
 
 export default function Dashboard() {
   usePageTitle("Dashboard");
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [subscriptionTier, setSubscriptionTier] = useState(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (!user) {
       navigate("/");
+      return;
     }
-  }, [navigate]);
+
+    // Vérifier le paramètre success dans l'URL
+    const success = searchParams.get('success');
+    if (success === 'true') {
+      setShowSuccessMessage(true);
+      // Nettoyer l'URL après 5 secondes
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+        setSearchParams({});
+      }, 5000);
+    }
+
+    // Vérifier le statut d'abonnement
+    const checkSubscription = async () => {
+      try {
+        const status = await getSubscriptionStatus();
+        setSubscriptionTier(status.tier);
+      } catch (err) {
+        console.error("Erreur récupération subscription:", err);
+        setSubscriptionTier('free'); // Default à free si erreur
+      }
+    };
+
+    checkSubscription();
+  }, [navigate, searchParams, setSearchParams]);
 
   const parseDate = useCallback((raw) => {
     if (!raw) return null;
@@ -304,11 +334,6 @@ export default function Dashboard() {
       .sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [records]);
 
-  const bestRM = useMemo(() => {
-    if (!rmTests.length) return null;
-    return rmTests.reduce((best, current) => (current.rm > best.rm ? current : best), rmTests[0]);
-  }, [rmTests]);
-
   // Cardio stats by sport
   const getEntryDistanceKm = useCallback((entry) => {
     if (!entry || typeof entry !== 'object') return 0;
@@ -553,11 +578,61 @@ export default function Dashboard() {
     };
   }, [imcPoints]);
 
+  // Afficher paywall si free user
+  if (subscriptionTier === 'free') {
+    return (
+      <>
+        <Header />
+        <div className={style.paywallContainer}>
+          <div className={style.paywallContent}>
+            <div className={style.paywallIcon}>🔒</div>
+            <h1 className={style.paywallTitle}>
+              Dashboard Premium
+            </h1>
+            <p className={style.paywallSubtitle}>
+              Le Dashboard est réservé aux membres Premium. Passez Premium pour sauvegarder vos séances et suivre votre progression.
+            </p>
+            <div className={style.paywallCard}>
+              <h3 className={style.paywallCardTitle}>Avec Premium, débloquez :</h3>
+              <ul className={style.paywallFeatures}>
+                <li className={style.paywallFeature}>Sauvegarde illimitée de vos séances</li>
+                <li className={style.paywallFeature}>Dashboard complet avec statistiques</li>
+                <li className={style.paywallFeature}>Historique complet de progression</li>
+                <li className={style.paywallFeature}>Badges & Gamification</li>
+                <li className={style.paywallFeature}>Participation au Leaderboard</li>
+                <li className={style.paywallFeature}>Export CSV de vos données</li>
+              </ul>
+            </div>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => navigate('/pricing')}
+              className={style.paywallButton}
+            >
+              Découvrir Premium - 3,99€/mois
+            </Button>
+            <p className={style.paywallNotice}>
+              🎉 7 jours d'essai gratuit - Sans engagement
+            </p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
       <Header />
       <main className={style.dashboard}>
         <div className={style.container}>
+          {/* Success Message after Payment */}
+          {showSuccessMessage && (
+            <div className={style.successBanner}>
+              🎉 Bienvenue dans Premium ! Votre essai gratuit de 7 jours a commencé. Profitez de toutes les fonctionnalités !
+            </div>
+          )}
+
           {/* Header Section */}
           <header className={style.header}>
             <h1 className={style.greeting}>Salut, {capitalizedName}</h1>
@@ -714,6 +789,17 @@ export default function Dashboard() {
               </svg>
               Calculs santé
             </button>
+            {subscriptionTier === 'premium' && (
+              <button onClick={() => navigate('/matching')} className={style.matchingAction}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Trouver un partenaire
+              </button>
+            )}
           </section>
 
           {/* Recent Activity */}

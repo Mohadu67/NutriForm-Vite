@@ -17,10 +17,16 @@ import NewsletterAdmin from "./pages/Admin/NewsletterAdmin.jsx";
 import AdminPage from "./pages/Admin/AdminPage.jsx";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 import Leaderboard from "./pages/Leaderboard/Leaderboard.jsx";
+import Pricing from "./pages/Pricing/Pricing.jsx";
+import SupportTickets from "./pages/Admin/SupportTickets.jsx";
+import ProfileSetup from "./pages/Profile/ProfileSetup.jsx";
+import MatchingPage from "./pages/Matching/MatchingPage.jsx";
+import Chat from "./pages/Chat/Chat.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
 import CanonicalLink from "./components/CanonicalLink/CanonicalLink.jsx";
+import { ChatProvider } from "./contexts/ChatContext.jsx";
 import './i18n/config';
 
 export default function App() {
@@ -32,9 +38,10 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <UpdatePrompt />
-      <CanonicalLink />
-      <Routes>
+      <ChatProvider>
+        <UpdatePrompt />
+        <CanonicalLink />
+        <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/imc" element={<ImcPage />} />
       <Route path="/calorie" element={<CaloriePage />} />
@@ -43,6 +50,7 @@ export default function App() {
       <Route path="/about" element={<AboutPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
+      <Route path="/pricing" element={<Pricing />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/cookies" element={<CookiesPolicy />} />
@@ -53,8 +61,13 @@ export default function App() {
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/admin/newsletter/new" element={<NewsletterAdmin />} />
       <Route path="/admin/newsletter/:id" element={<NewsletterAdmin />} />
+      <Route path="/admin/support-tickets" element={<SupportTickets />} />
+      <Route path="/profile/setup" element={<ProfileSetup />} />
+      <Route path="/matching" element={<MatchingPage />} />
+      <Route path="/chat/:matchId" element={<Chat />} />
       <Route path="*" element={<NotFound />} />
       </Routes>
+      </ChatProvider>
     </ErrorBoundary>
   );
 }

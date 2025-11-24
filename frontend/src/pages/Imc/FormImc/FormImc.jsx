@@ -114,13 +114,17 @@ export default function FormImc({ onCalculate }) {
           }
         })
         .catch((e) => {
+          console.error("Failed to save IMC calculation to history:", e);
         });
-    } catch (_) {}
+    } catch (e) {
+      console.error("Failed to send IMC calculation to API:", e);
+    }
 
     if (userId && window.sauvegarderDonnees) {
       try {
         window.sauvegarderDonnees({ imc });
-      } catch (_) {
+      } catch (e) {
+        console.error("Failed to save IMC data via window.sauvegarderDonnees:", e);
       }
     }
   };
