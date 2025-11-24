@@ -1079,6 +1079,7 @@
   border-radius: 16px;
   border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
   background: var(--couleur-principale, #f7f6f2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 :global(body.dark) .mutualMatchCard,
@@ -1087,11 +1088,59 @@
   border-color: rgba(255, 255, 255, 0.08);
 }
 
+.mutualMatchCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  border-color: rgba(247, 177, 134, 0.3);
+}
+
+:global(body.dark) .mutualMatchCard:hover,
+:global(html.dark) .mutualMatchCard:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.matchCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.matchAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid var(--couleur-bouton-action, #f7b186);
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
+}
+
+.matchAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186) 0%, #f9c89f 100%);
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .mutualMatchCard h5 {
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--ink, #222325);
-  margin: 0 0 12px;
+  margin: 0;
+  flex: 1;
 }
 
 :global(body.dark) .mutualMatchCard h5,
@@ -1392,12 +1441,56 @@
   border-radius: 16px;
   padding: 20px;
   margin: 24px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 :global(body.dark) .mutualMatchProfile,
 :global(html.dark) .mutualMatchProfile {
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.08);
+}
+
+.mutualMatchAvatarLarge {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid var(--couleur-bouton-action, #f7b186);
+  box-shadow: 0 8px 24px rgba(247, 177, 134, 0.4);
+  margin-bottom: 16px;
+  animation: avatarPulse 2s ease-in-out infinite;
+}
+
+@keyframes avatarPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 8px 24px rgba(247, 177, 134, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 12px 32px rgba(247, 177, 134, 0.6);
+  }
+}
+
+.mutualMatchAvatarLarge img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarPlaceholderLarge {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186) 0%, #f9c89f 100%);
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .mutualMatchAge {

@@ -3,7 +3,7 @@ import styles from "./LoginUser.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import useLogin from "./UseLogin.js";
 
-export default function LoginUser({ onSuccess, toSignup, toForgot, onClose }) {
+export default function LoginUser({ onSuccess, toSignup, toForgot }) {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);

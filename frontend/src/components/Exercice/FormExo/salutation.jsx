@@ -16,7 +16,9 @@ export default function Salutation({ className = "", seedKey = "static" }) {
         cached?.displayName ||
         (cached?.email ? String(cached.email).split("@")[0] : "");
       if (cachedName) setDisplayName(cachedName);
-    } catch (_) {}
+    } catch (e) {
+      console.error("Failed to load cached user name from localStorage:", e);
+    }
 
     // Ne pas appeler l'API si l'utilisateur n'est pas authentifié
     if (!isAuthenticated()) return;

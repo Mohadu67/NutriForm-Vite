@@ -51,6 +51,7 @@ export default function ProfilePhoto({ user }) {
             userData.photo = data.photo;
             localStorage.setItem("user", JSON.stringify(userData));
           } catch (e) {
+            console.error("Failed to update user photo in localStorage:", e);
           }
         }
 
@@ -94,6 +95,7 @@ export default function ProfilePhoto({ user }) {
             userData.photo = null;
             localStorage.setItem("user", JSON.stringify(userData));
           } catch (e) {
+            console.error("Failed to remove user photo from localStorage:", e);
           }
         }
 

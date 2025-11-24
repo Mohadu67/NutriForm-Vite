@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useChat } from '../../contexts/ChatContext';
@@ -47,11 +47,7 @@ export default function MatchingPage() {
   const [cardAnimation, setCardAnimation] = useState('enter'); // 'enter', 'likeExit', 'rejectExit'
   const [mutualMatchData, setMutualMatchData] = useState(null); // Pour afficher la popup de match mutuel
 
-  useEffect(() => {
-    loadProfileAndMatches();
-  }, []);
-
-  const loadProfileAndMatches = async () => {
+  const loadProfileAndMatches = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -87,16 +83,20 @@ export default function MatchingPage() {
       }
     } catch (err) {
       console.error('Erreur chargement matches:', err);
-      if (err.response?.data?.error === 'premium_required') {
+      if (err?.response?.data?.error === 'premium_required') {
         setError('Le matching est réservé aux membres Premium. Abonnez-vous pour débloquer cette fonctionnalité !');
         setTimeout(() => navigate('/pricing'), 2000);
       } else {
-        setError(err.response?.data?.message || 'Erreur lors du chargement des matches.');
+        setError(err?.response?.data?.message || 'Erreur lors du chargement des matches.');
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    loadProfileAndMatches();
+  }, [loadProfileAndMatches]);
 
   const handleLike = async () => {
     if (currentIndex >= matches.length || actionLoading) return;
@@ -384,7 +384,18 @@ export default function MatchingPage() {
                 <div className={styles.matchesGrid}>
                   {mutualMatches.map((match) => (
                     <div key={match.matchId} className={styles.mutualMatchCard}>
-                      <h5>{match.partner.pseudo || match.partner.email}</h5>
+                      <div className={styles.matchCardHeader}>
+                        <div className={styles.matchAvatar}>
+                          {match.partner.avatar ? (
+                            <img src={match.partner.avatar} alt={match.partner.pseudo || 'User'} />
+                          ) : (
+                            <div className={styles.avatarPlaceholder}>
+                              {(match.partner.pseudo || match.partner.email || 'U')[0].toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <h5>{match.partner.pseudo || match.partner.email}</h5>
+                      </div>
                       {match.partner.profile && (
                         <>
                           <div className={styles.matchBadges}>
@@ -453,6 +464,15 @@ export default function MatchingPage() {
                 {mutualMatchData.message}
               </p>
               <div className={styles.mutualMatchProfile}>
+                <div className={styles.mutualMatchAvatarLarge}>
+                  {mutualMatchData.profile.avatar ? (
+                    <img src={mutualMatchData.profile.avatar} alt="Match" />
+                  ) : (
+                    <div className={styles.avatarPlaceholderLarge}>
+                      {(mutualMatchData.profile.pseudo || 'U')[0].toUpperCase()}
+                    </div>
+                  )}
+                </div>
                 <p className={styles.mutualMatchAge}>{mutualMatchData.profile.age} ans</p>
                 <p className={styles.mutualMatchLocation}>
                   📍 {mutualMatchData.profile.location.neighborhood || mutualMatchData.profile.location.city}

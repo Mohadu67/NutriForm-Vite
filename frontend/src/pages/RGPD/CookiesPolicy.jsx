@@ -12,8 +12,8 @@ export default function CookiesPolicy() {
           "Le gestionnaire de consentement n'est pas disponible pour le moment. Réessayez après le chargement de la page."
         );
       }
-    } catch {
-
+    } catch (e) {
+      console.error("Failed to open consent panel:", e);
     }
   }, []);
 

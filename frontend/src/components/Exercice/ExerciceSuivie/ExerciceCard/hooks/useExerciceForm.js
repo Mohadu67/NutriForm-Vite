@@ -331,7 +331,7 @@ export default function useExerciceForm(exo, value, onChange) {
     if (!isDeepEqual(data, initial)) {
       setData(initial);
     }
-  }, [initial]);
+  }, [initial, data]);
 
   const isCardio = mode === "cardio";
   const isPdc = mode === "pdc";
@@ -346,14 +346,14 @@ export default function useExerciceForm(exo, value, onChange) {
     if (!Array.isArray(data.sets)) {
       setData((prev) => ({ ...prev, sets: [] }));
     }
-  }, [isCardio, isPdc]);
+  }, [isCardio, isPdc, data.sets]);
 
   useEffect(() => {
     if (!isCardio) return;
     if (!Array.isArray(data.cardioSets)) {
       setData((prev) => ({ ...prev, cardioSets: [] }));
     }
-  }, [isCardio]);
+  }, [isCardio, data.cardioSets]);
 
   useEffect(() => {
     if (!isSwim) return;

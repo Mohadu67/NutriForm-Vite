@@ -15,7 +15,7 @@ export default function ReviewsCarousel() {
         setReviews(data.professionalReviews || []);
         setLoading(false);
       })
-      .catch((err) => {
+      .catch(() => {
         setLoading(false);
       });
   }, []);

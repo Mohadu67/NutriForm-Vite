@@ -7,7 +7,6 @@ export default function UserReviews() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     rating: 5,
@@ -28,7 +27,6 @@ export default function UserReviews() {
       if (response.ok) {
         const data = await response.json();
         setIsLoggedIn(true);
-        setUserName(data.pseudo || data.prenom || data.displayName || "");
         setFormData((prev) => ({
           ...prev,
           name: data.pseudo || data.prenom || data.displayName || "",
@@ -36,7 +34,7 @@ export default function UserReviews() {
       } else {
         setIsLoggedIn(false);
       }
-    } catch (err) {
+    } catch {
       setIsLoggedIn(false);
     }
   }, []);
@@ -48,7 +46,7 @@ export default function UserReviews() {
       if (data.success) {
         setReviews(data.reviews);
       }
-    } catch (err) {
+    } catch {
     } finally {
       setLoading(false);
     }
@@ -85,7 +83,7 @@ export default function UserReviews() {
       } else {
         setMessage({ type: "error", text: data.message || "Erreur lors de l'envoi" });
       }
-    } catch (err) {
+    } catch {
       setMessage({ type: "error", text: "Erreur lors de l'envoi de l'avis" });
     } finally {
       setSubmitting(false);

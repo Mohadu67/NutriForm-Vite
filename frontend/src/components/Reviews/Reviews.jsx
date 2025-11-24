@@ -26,7 +26,7 @@ export default function Reviews() {
         setProReviews(data.professionalReviews || []);
         setLoading(false);
       })
-      .catch((err) => {
+      .catch(() => {
         setLoading(false);
       });
   }, []);
@@ -38,7 +38,7 @@ export default function Reviews() {
       .then((data) => {
         setUserReviews(data.reviews || []);
       })
-      .catch((err) => {
+      .catch(() => {
       });
   }, []);
 
@@ -63,7 +63,7 @@ export default function Reviews() {
         setShowReviewModal(false);
         alert("Merci pour votre avis ! ✅");
       }
-    } catch (err) {
+    } catch {
       alert("Erreur lors de l'envoi de votre avis");
     }
   };

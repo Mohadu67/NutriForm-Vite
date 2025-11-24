@@ -3,7 +3,7 @@ import { secureApiCall } from '../../../utils/authService.js';
 function safeStringify(obj) {
   try {
     return JSON.stringify(obj);
-  } catch (e) {
+  } catch {
     const seen = new WeakSet();
     return JSON.stringify(obj, (key, value) => {
       if (typeof value === 'function') return undefined;
@@ -29,7 +29,9 @@ async function request(path, options = {}) {
   });
 
   let data = null;
-  try { data = await res.json(); } catch {}
+  try { data = await res.json(); } catch (e) {
+    console.error("Failed to parse JSON response:", e);
+  }
   if (!res.ok) {
     const msg = (data && (data.error || data.message)) || `request_failed_${res.status}`;
     const err = new Error(msg);

@@ -75,7 +75,7 @@ exports.getMatchSuggestions = async (req, res) => {
     }
 
     // Récupérer les profils candidats
-    const candidates = await UserProfile.find(geoQuery).limit(100);
+    const candidates = await UserProfile.find(geoQuery).limit(100).populate('userId');
 
     // Calculer le score pour chaque candidat
     const scoredMatches = [];
@@ -87,8 +87,8 @@ exports.getMatchSuggestions = async (req, res) => {
         // Vérifier si un match existe déjà
         const existingMatch = await Match.findOne({
           $or: [
-            { user1Id: userId, user2Id: candidate.userId },
-            { user1Id: candidate.userId, user2Id: userId }
+            { user1Id: userId, user2Id: candidate.userId._id || candidate.userId },
+            { user1Id: candidate.userId._id || candidate.userId, user2Id: userId }
           ]
         });
 
@@ -98,11 +98,15 @@ exports.getMatchSuggestions = async (req, res) => {
         }
 
         const distance = myProfile.distanceTo(candidate);
+        const candidateUserId = candidate.userId._id || candidate.userId;
+        const candidateUser = candidate.userId.pseudo ? candidate.userId : null;
 
         scoredMatches.push({
           matchId: existingMatch?._id || null,
           profile: {
-            userId: candidate.userId,
+            userId: candidateUserId,
+            pseudo: candidateUser?.pseudo,
+            avatar: candidateUser?.photo,
             bio: candidate.bio,
             age: candidate.age,
             gender: candidate.gender,
@@ -378,14 +382,16 @@ exports.getMutualMatches = async (req, res) => {
 
     const formattedMatches = await Promise.all(matches.map(async (match) => {
       const partnerId = match.user1Id._id.equals(userId) ? match.user2Id._id : match.user1Id._id;
+      const partnerUser = match.user1Id._id.equals(userId) ? match.user2Id : match.user1Id;
       const partnerProfile = await UserProfile.findOne({ userId: partnerId });
 
       return {
         matchId: match._id,
         partner: {
           userId: partnerId,
-          pseudo: match.user1Id._id.equals(userId) ? match.user2Id.pseudo : match.user1Id.pseudo,
-          email: match.user1Id._id.equals(userId) ? match.user2Id.email : match.user1Id.email,
+          pseudo: partnerUser.pseudo,
+          email: partnerUser.email,
+          avatar: partnerUser.photo,
           profile: partnerProfile ? {
             bio: partnerProfile.bio,
             age: partnerProfile.age,

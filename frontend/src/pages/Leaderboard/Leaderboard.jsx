@@ -89,6 +89,7 @@ const Leaderboard = () => {
             setUserRank(rankData.rank);
           }
         } else {
+          console.error("User is not opted in to leaderboard");
         }
       }
     } catch (err) {

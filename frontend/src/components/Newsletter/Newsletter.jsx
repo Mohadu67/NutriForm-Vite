@@ -74,7 +74,7 @@ export default function Newsletter() {
         setStatus("error");
         setMessage(data.message || t('newsletter.errorGeneric'));
       }
-    } catch (error) {
+    } catch {
       setStatus("error");
       setMessage(t('newsletter.errorNetwork'));
     }

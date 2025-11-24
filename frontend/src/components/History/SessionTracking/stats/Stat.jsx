@@ -37,7 +37,7 @@ export default function Stat({
         serverData,
       });
       return { ...FALLBACK_STATS, ...(computed || {}) };
-    } catch (error) {
+    } catch {
       return FALLBACK_STATS;
     }
   }, [lastSession, items, bodyMassKg, serverData]);

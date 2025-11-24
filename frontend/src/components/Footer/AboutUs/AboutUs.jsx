@@ -35,7 +35,7 @@ export default function AboutUs() {
         setRawData(json);
         setLoading(false);
       })
-      .catch((err) => {
+      .catch(() => {
         if (isMounted) {
           setRawData(null);
           setLoading(false);

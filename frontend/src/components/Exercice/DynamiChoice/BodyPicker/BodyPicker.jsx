@@ -238,7 +238,9 @@ function BodyPicker({ value, onChange, multiple = false }) {
           const b = svg.getBBox();
           if (b && b.width && b.height) svg.setAttribute("viewBox", `0 0 ${b.width} ${b.height}`);
         }
-      } catch {}
+      } catch (e) {
+        console.error("Failed to adjust SVG viewBox:", e);
+      }
       svg.removeAttribute("width");
       svg.removeAttribute("height");
       svg.style.width = "100%";

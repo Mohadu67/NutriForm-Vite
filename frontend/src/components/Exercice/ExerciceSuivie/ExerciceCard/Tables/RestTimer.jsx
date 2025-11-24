@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./RestTimer.module.css";
 
 export default function RestTimer({ value = "", onChange, serieNumber }) {
@@ -11,6 +11,28 @@ export default function RestTimer({ value = "", onChange, serieNumber }) {
   useEffect(() => {
     if (value) setSelectedTime(value);
   }, [value]);
+
+  const triggerEndAlert = useCallback(() => {
+
+    document.body.classList.add(styles.flashAlert);
+    setTimeout(() => {
+      document.body.classList.remove(styles.flashAlert);
+    }, 1500);
+
+
+    if (navigator.vibrate) {
+      navigator.vibrate([200, 100, 200]);
+    }
+
+
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("Repos terminé !", {
+        body: `Série ${serieNumber} - C'est reparti !`,
+        icon: "/icon-192.png",
+        silent: false,
+      });
+    }
+  }, [serieNumber]);
 
   useEffect(() => {
     if (isActive && timeLeft > 0) {
@@ -36,29 +58,7 @@ export default function RestTimer({ value = "", onChange, serieNumber }) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isActive, timeLeft]);
-
-  function triggerEndAlert() {
-    
-    document.body.classList.add(styles.flashAlert);
-    setTimeout(() => {
-      document.body.classList.remove(styles.flashAlert);
-    }, 1500);
-
-    
-    if (navigator.vibrate) {
-      navigator.vibrate([200, 100, 200]);
-    }
-
-    
-    if ("Notification" in window && Notification.permission === "granted") {
-      new Notification("Repos terminé !", {
-        body: `Série ${serieNumber} - C'est reparti !`,
-        icon: "/icon-192.png",
-        silent: false,
-      });
-    }
-  }
+  }, [isActive, timeLeft, triggerEndAlert]);
 
   function handleStartTimer(seconds) {
     setSelectedTime(seconds);

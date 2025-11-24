@@ -37,13 +37,13 @@ export default function useLogin(onLoginSuccess, options = {}) {
       if (contentType.includes("application/json")) {
         try {
           data = await res.json();
-        } catch (_) {
+        } catch {
           data = null;
         }
       } else {
         try {
           raw = await res.text();
-        } catch (_) {
+        } catch {
           raw = "";
         }
       }
@@ -63,9 +63,9 @@ export default function useLogin(onLoginSuccess, options = {}) {
         const other = remember ? sessionStorage : localStorage;
         if (token) storage.setItem("token", token);
         if (user) storage.setItem("user", JSON.stringify(user));
-        try { other.removeItem("token"); } catch (_) {}
-        try { other.removeItem("user"); } catch (_) {}
-      } catch (_) {}
+        try { other.removeItem("token"); } catch (e) { console.error("Failed to remove token from other storage:", e); }
+        try { other.removeItem("user"); } catch (e) { console.error("Failed to remove user from other storage:", e); }
+      } catch (e) { console.error("Failed to save token and user to storage:", e); }
 
       const end = (typeof performance !== "undefined" ? performance.now() : Date.now());
       const elapsed = end - start;

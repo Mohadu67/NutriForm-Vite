@@ -181,6 +181,7 @@ export default function SuivieSeance({
         const exercises = await loadExercises("all");
         if (!cancelled) setExercisesDb(exercises);
       } catch (err) {
+        console.error("Failed to load exercises database:", err);
       }
     })();
 

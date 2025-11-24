@@ -41,7 +41,6 @@ function loadSavedDraft(exo) {
 
 export default function SuivieCard({ exo, value, onChange }) {
   const [open, setOpen] = useState(false);
-  const [toast, setToast] = useState(null);
 
   const hydratedOnMountRef = useRef(false);
 
@@ -53,7 +52,6 @@ export default function SuivieCard({ exo, value, onChange }) {
     emit,
     isCardio,
     isPdc,
-    isMuscu,
     isSwim,
     isYoga,
     isStretch,
@@ -132,7 +130,9 @@ export default function SuivieCard({ exo, value, onChange }) {
       if (typeof onChange === 'function') {
         onChange(idOf(exo), next);
       }
-    } catch {}
+    } catch (e) {
+      console.error("Failed to emit or call onChange when closing popup:", e);
+    }
     setOpen(false);
   }
 
@@ -152,7 +152,7 @@ export default function SuivieCard({ exo, value, onChange }) {
       }
     }
     hydratedOnMountRef.current = true;
-  }, []);
+  }, [exo, isSwim, isYoga, isStretch, isWalkRun, mode, setMode, emit]);
 
   useEffect(() => {
     if (open) {
@@ -176,8 +176,10 @@ export default function SuivieCard({ exo, value, onChange }) {
     const enriched = { ...payload, done };
     try {
       localStorage.setItem(storageKeyFromExo(exo), JSON.stringify(enriched));
-    } catch {}
-  }, [data, mode]);
+    } catch (e) {
+      console.error("Failed to auto-save exercise data to localStorage:", e);
+    }
+  }, [data, mode, exo]);
 
   return (
     <>

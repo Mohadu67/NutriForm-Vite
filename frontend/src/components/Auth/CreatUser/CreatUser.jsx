@@ -95,7 +95,9 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
       });
 
       let data = {};
-      try { data = await res.json(); } catch {}
+      try { data = await res.json(); } catch (e) {
+        console.error("Failed to parse response:", e);
+      }
 
       if (!res.ok) {
         const msg = data?.message || (res.status === 500 ? "Erreur serveur" : `Erreur HTTP ${res.status}`);
@@ -112,7 +114,9 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: emailNorm, captchaToken: newsletterCaptchaToken })
           });
-        } catch (newsletterErr) {}
+        } catch (newsletterErr) {
+          console.error("Failed to subscribe to newsletter:", newsletterErr);
+        }
       }
 
       setStatus("success");

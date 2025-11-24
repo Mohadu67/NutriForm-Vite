@@ -6,7 +6,7 @@ import ProfilePhoto from "./ProfilePhoto/ProfilePhoto.jsx";
 import { secureApiCall, logout, isAuthenticated } from "../../../utils/authService.js";
 import { getSubscriptionStatus, createCustomerPortalSession } from "../../../shared/api/subscription.js";
 
-export default function ProfileUser({ onClose, onLogout }) {
+export default function ProfileUser({ onLogout }) {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -77,7 +77,6 @@ export default function ProfileUser({ onClose, onLogout }) {
       });
 
       if (onLogout) onLogout();
-      if (onClose) onClose();
       window.location.href = '/';
     }
   };
@@ -143,7 +142,6 @@ export default function ProfileUser({ onClose, onLogout }) {
   };
 
   const handleUpgrade = () => {
-    if (onClose) onClose();
     navigate('/pricing');
   };
 
@@ -162,13 +160,11 @@ export default function ProfileUser({ onClose, onLogout }) {
     await logout();
     window.dispatchEvent(new Event("storage"));
     onLogout?.();
-    onClose?.();
     navigate('/');
   };
 
   const handleAdminClick = () => {
     window.location.href = '/admin';
-    onClose?.();
   };
 
   const isAdmin = user?.role === 'admin' || user?.isAdmin === true;

@@ -136,8 +136,11 @@ export default function FormCalorie({ onResult, onCalculate }) {
           }
         })
         .catch((e) => {
+          console.error("Failed to save calorie calculation to history:", e);
         });
-    } catch (_) {}
+    } catch (e) {
+      console.error("Failed to send calorie calculation to API:", e);
+    }
   };
 
   return (
