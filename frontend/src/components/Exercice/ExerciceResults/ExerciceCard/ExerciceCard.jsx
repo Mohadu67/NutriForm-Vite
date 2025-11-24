@@ -1,4 +1,4 @@
-import React, { useState, useId, useEffect } from "react";
+import React, { useState, useId } from "react";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import styles from "./ExerciceCard.module.css";
@@ -7,7 +7,6 @@ import { idOf } from "../../Shared/idOf.js";
 export default function ExerciceCard({
   exo,
   onAdd,
-  isAdded = false,
   onRemove,
   isSortable = false,
 }) {
@@ -20,7 +19,7 @@ export default function ExerciceCard({
   const initial = exo.name?.trim()?.[0]?.toUpperCase() || "?";
   const exId = idOf(exo);
 
-  const sortable = isSortable ? useSortable({ id: exId }) : null;
+  const sortable = useSortable({ id: exId });
 
   const {
     attributes,
@@ -29,7 +28,7 @@ export default function ExerciceCard({
     transform,
     transition,
     isDragging,
-  } = sortable || {
+  } = isSortable ? sortable : {
     attributes: {},
     listeners: {},
     setNodeRef: null,

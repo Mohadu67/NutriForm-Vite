@@ -4,7 +4,7 @@ import { getMessages, sendMessage as sendMatchMessage, markMessagesAsRead } from
 import { isAuthenticated } from '../../shared/api/auth';
 import styles from './UnifiedChatPanel.module.css';
 
-export default function UnifiedChatPanel({ conversationId, matchConversation, initialMessage, onClose }) {
+export default function UnifiedChatPanel({ conversationId, matchConversation, initialMessage }) {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
