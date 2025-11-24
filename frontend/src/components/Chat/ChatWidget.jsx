@@ -6,7 +6,7 @@ import { useChat } from '../../contexts/ChatContext';
 import styles from './ChatWidget.module.css';
 
 export default function ChatWidget() {
-  const { isChatOpen: isOpen, toggleChat, closeChat } = useChat();
+  const { isChatOpen: isOpen, toggleChat } = useChat();
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [conversationId, setConversationId] = useState(null);
@@ -39,6 +39,19 @@ export default function ChatWidget() {
     }
   }, [isOpen]);
 
+  const loadHistory = async (convId) => {
+    try {
+      const { messages: history } = await getChatHistory(convId);
+      setMessages(history);
+
+      // Vérifier si conversation est escaladée
+      const hasEscalation = history.some(msg => msg.escalated);
+      setEscalated(hasEscalation);
+    } catch (err) {
+      console.error('Erreur chargement historique:', err);
+    }
+  };
+
   // Charger l'historique si conversationId existe dans localStorage
   useEffect(() => {
     if (isOpen && isAuth) {
@@ -58,19 +71,6 @@ export default function ChatWidget() {
       }
     }
   }, [isOpen, isAuth]);
-
-  const loadHistory = async (convId) => {
-    try {
-      const { messages: history } = await getChatHistory(convId);
-      setMessages(history);
-
-      // Vérifier si conversation est escaladée
-      const hasEscalation = history.some(msg => msg.escalated);
-      setEscalated(hasEscalation);
-    } catch (err) {
-      console.error('Erreur chargement historique:', err);
-    }
-  };
 
   const handleSendMessage = async (e) => {
     e?.preventDefault();
