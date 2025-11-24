@@ -82,7 +82,9 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   }, []);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiHasTouched", hasTouched ? "1" : "0"); } catch {}
+    try { localStorage.setItem("dynamiHasTouched", hasTouched ? "1" : "0"); } catch (e) {
+      console.error("Failed to save dynamiHasTouched:", e);
+    }
   }, [hasTouched]);
 
   useEffect(() => {
@@ -118,7 +120,9 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
 
   useEffect(() => {
     if (Array.isArray(results) && results.length > 0) {
-      try { localStorage.setItem("dynamiLastResults", JSON.stringify(results)); } catch {}
+      try { localStorage.setItem("dynamiLastResults", JSON.stringify(results)); } catch (e) {
+        console.error("Failed to save dynamiLastResults:", e);
+      }
     }
   }, [results]);
 
@@ -258,7 +262,9 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   }, []);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiDismissed", JSON.stringify(Array.from(dismissed))); } catch {}
+    try { localStorage.setItem("dynamiDismissed", JSON.stringify(Array.from(dismissed))); } catch (e) {
+      console.error("Failed to save dynamiDismissed:", e);
+    }
   }, [dismissed]);
 
   function broadcastSelection(next) {
@@ -273,15 +279,21 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
         localStorage.setItem("formSelectedExercises", "[]");
       }
       localStorage.setItem("dynamiHasTouched", arr.length > 0 ? "1" : "0");
-    } catch {}
+    } catch (e) {
+      console.error("Failed to save selection to localStorage:", e);
+    }
     setTimeout(() => {
       try {
         window.dispatchEvent(new CustomEvent("dynami:selected:update", { detail: { items: arr } }));
-      } catch {}
+      } catch (e) {
+        console.error("Failed to dispatch dynami:selected:update:", e);
+      }
       try {
         if (onResultsChange) onResultsChange(arr);
         else if (onChange) onChange(arr);
-      } catch {}
+      } catch (e) {
+        console.error("Failed to call onResultsChange/onChange:", e);
+      }
     }, 0);
   }
 

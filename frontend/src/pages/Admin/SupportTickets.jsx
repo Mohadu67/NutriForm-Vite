@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MdArrowBack } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
@@ -24,12 +24,7 @@ export default function SupportTickets() {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('open');
 
-  useEffect(() => {
-    loadTickets();
-    loadStats();
-  }, [filter]);
-
-  const loadTickets = async () => {
+  const loadTickets = useCallback(async () => {
     try {
       setLoading(true);
       const filters = filter === 'all' ? {} : { status: filter };
@@ -41,16 +36,21 @@ export default function SupportTickets() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
 
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     try {
       const data = await getSupportTicketStats();
       setStats(data);
     } catch (err) {
       console.error('Erreur chargement stats:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadTickets();
+    loadStats();
+  }, [loadTickets, loadStats]);
 
   const handleSelectTicket = async (ticketId) => {
     try {
