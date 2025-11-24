@@ -32,6 +32,7 @@ const chatRoutes = require('./routes/chat.route.js');
 const supportTicketRoutes = require('./routes/supportTicket.route.js');
 const profileRoutes = require('./routes/profile.route.js');
 const matchingRoutes = require('./routes/matching.route.js');
+const matchChatRoutes = require('./routes/matchChat.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 
@@ -128,6 +129,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/admin/support-tickets', supportTicketRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/matching', matchingRoutes);
+app.use('/api/match-chat', matchChatRoutes);
 
 app.get('/', (req, res) => {
   res.send('Bienvenue sur le backend de NutriForm 🚀');

@@ -88,13 +88,25 @@ export default function SupportTickets() {
   const handleResolve = async () => {
     if (!selectedTicket) return;
 
+    const deleteMessages = window.confirm(
+      '⚠️ Voulez-vous supprimer les messages de cette conversation ?\n\n' +
+      '✅ OUI : Le ticket sera résolu et tous les messages seront supprimés.\n' +
+      '❌ NON : Le ticket sera résolu mais les messages seront conservés.'
+    );
+
     try {
-      await resolveSupportTicket(selectedTicket._id);
+      const result = await resolveSupportTicket(selectedTicket._id, '', deleteMessages);
+
       setSelectedTicket(prev => ({ ...prev, status: 'resolved' }));
       setTickets(prev =>
         prev.map(t => (t._id === selectedTicket._id ? { ...t, status: 'resolved' } : t))
       );
       loadStats();
+
+      if (result.messagesDeleted) {
+        setError('✅ Ticket résolu et messages supprimés.');
+        setTimeout(() => setError(null), 3000);
+      }
     } catch (err) {
       console.error('Erreur résolution ticket:', err);
       setError('Impossible de résoudre le ticket.');

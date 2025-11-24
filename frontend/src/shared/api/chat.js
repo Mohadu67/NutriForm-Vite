@@ -46,7 +46,7 @@ export async function escalateChat(conversationId, reason = '') {
  */
 export async function getAllSupportTickets(filters = {}) {
   const params = new URLSearchParams(filters);
-  const response = await client.get(`/admin/support-tickets?${params}`);
+  const response = await client.get(`/api/admin/support-tickets?${params}`);
   return response.data;
 }
 
@@ -56,7 +56,7 @@ export async function getAllSupportTickets(filters = {}) {
  * @returns {Promise<{ticket, messages}>}
  */
 export async function getSupportTicketById(ticketId) {
-  const response = await client.get(`/admin/support-tickets/${ticketId}`);
+  const response = await client.get(`/api/admin/support-tickets/${ticketId}`);
   return response.data;
 }
 
@@ -67,7 +67,7 @@ export async function getSupportTicketById(ticketId) {
  * @returns {Promise<{message, ticket}>}
  */
 export async function replyToSupportTicket(ticketId, message) {
-  const response = await client.post(`/admin/support-tickets/${ticketId}/reply`, {
+  const response = await client.post(`/api/admin/support-tickets/${ticketId}/reply`, {
     message
   });
   return response.data;
@@ -77,11 +77,13 @@ export async function replyToSupportTicket(ticketId, message) {
  * ADMIN: Résoudre un ticket
  * @param {string} ticketId
  * @param {string} notes - Notes de résolution (optionnel)
- * @returns {Promise<{message, ticket}>}
+ * @param {boolean} deleteMessages - Supprimer les messages de la conversation (optionnel)
+ * @returns {Promise<{message, ticket, messagesDeleted}>}
  */
-export async function resolveSupportTicket(ticketId, notes = '') {
-  const response = await client.post(`/admin/support-tickets/${ticketId}/resolve`, {
-    notes
+export async function resolveSupportTicket(ticketId, notes = '', deleteMessages = false) {
+  const response = await client.post(`/api/admin/support-tickets/${ticketId}/resolve`, {
+    notes,
+    deleteMessages
   });
   return response.data;
 }
@@ -92,7 +94,7 @@ export async function resolveSupportTicket(ticketId, notes = '') {
  * @returns {Promise<{message, ticket}>}
  */
 export async function reopenSupportTicket(ticketId) {
-  const response = await client.post(`/admin/support-tickets/${ticketId}/reopen`);
+  const response = await client.post(`/api/admin/support-tickets/${ticketId}/reopen`);
   return response.data;
 }
 
@@ -103,7 +105,7 @@ export async function reopenSupportTicket(ticketId) {
  * @returns {Promise<{message, ticket}>}
  */
 export async function assignSupportTicket(ticketId, adminId) {
-  const response = await client.post(`/admin/support-tickets/${ticketId}/assign`, {
+  const response = await client.post(`/api/admin/support-tickets/${ticketId}/assign`, {
     adminId
   });
   return response.data;
@@ -114,6 +116,25 @@ export async function assignSupportTicket(ticketId, adminId) {
  * @returns {Promise<{totalOpen, totalResolved, totalClosed, highPriority, avgResolutionTimeHours}>}
  */
 export async function getSupportTicketStats() {
-  const response = await client.get('/admin/support-tickets/stats');
+  const response = await client.get('/api/admin/support-tickets/stats');
+  return response.data;
+}
+
+/**
+ * Récupérer toutes les conversations IA de l'utilisateur
+ * @returns {Promise<{conversations: Array}>}
+ */
+export async function getAIConversations() {
+  const response = await client.get('/api/chat/ai-conversations');
+  return response.data;
+}
+
+/**
+ * Supprimer une conversation IA
+ * @param {string} conversationId
+ * @returns {Promise<{message: string}>}
+ */
+export async function deleteAIConversation(conversationId) {
+  const response = await client.delete(`/api/chat/ai-conversation/${conversationId}`);
   return response.data;
 }

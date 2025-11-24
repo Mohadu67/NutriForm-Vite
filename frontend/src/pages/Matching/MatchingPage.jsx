@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { useChat } from '../../contexts/ChatContext';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import { getMatchSuggestions, likeProfile, rejectProfile, getMutualMatches } from '../../shared/api/matching';
 import { getMyProfile } from '../../shared/api/profile';
+import { getOrCreateConversation } from '../../shared/api/matchChat';
 import styles from './MatchingPage.module.css';
 
 const WORKOUT_ICONS = {
@@ -32,6 +35,7 @@ const FITNESS_LEVEL_LABELS = {
 
 export default function MatchingPage() {
   const navigate = useNavigate();
+  const { openMatchChat } = useChat();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [matches, setMatches] = useState([]);
@@ -114,7 +118,8 @@ export default function MatchingPage() {
         // C'est un match mutuel !
         setMutualMatchData({
           profile: currentMatch.profile,
-          message: message
+          message: message,
+          matchId: match._id
         });
         // Recharger après 3 secondes pour laisser le temps de voir la popup
         setTimeout(() => {
@@ -393,6 +398,21 @@ export default function MatchingPage() {
                             <strong>Entraînements:</strong>{' '}
                             {match.partner.profile.workoutTypes.slice(0, 3).join(', ')}
                           </p>
+                          <button
+                            className={styles.chatButton}
+                            onClick={async () => {
+                              try {
+                                setShowMatches(false);
+                                const { conversation } = await getOrCreateConversation(match.matchId);
+                                openMatchChat(conversation);
+                              } catch (err) {
+                                console.error('Erreur ouverture chat:', err);
+                                toast.error('Erreur lors de l\'ouverture du chat');
+                              }
+                            }}
+                          >
+                            💬 Envoyer un message
+                          </button>
                         </>
                       )}
                     </div>
@@ -438,12 +458,29 @@ export default function MatchingPage() {
                   📍 {mutualMatchData.profile.location.neighborhood || mutualMatchData.profile.location.city}
                 </p>
               </div>
-              <button
-                className={styles.mutualMatchBtn}
-                onClick={() => setMutualMatchData(null)}
-              >
-                Super ! 🎊
-              </button>
+              <div className={styles.mutualMatchActions}>
+                <button
+                  className={styles.mutualMatchBtn}
+                  onClick={() => setMutualMatchData(null)}
+                >
+                  Super ! 🎊
+                </button>
+                <button
+                  className={styles.mutualMatchChatBtn}
+                  onClick={async () => {
+                    try {
+                      const { conversation } = await getOrCreateConversation(mutualMatchData.matchId);
+                      setMutualMatchData(null);
+                      openMatchChat(conversation);
+                    } catch (err) {
+                      console.error('Erreur ouverture chat:', err);
+                      toast.error('Erreur lors de l\'ouverture du chat');
+                    }
+                  }}
+                >
+                  💬 Envoyer un message
+                </button>
+              </div>
             </div>
           </div>
         </div>
