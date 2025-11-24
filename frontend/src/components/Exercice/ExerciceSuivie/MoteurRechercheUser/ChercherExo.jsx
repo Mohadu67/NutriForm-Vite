@@ -9,7 +9,6 @@ import { loadExercises } from "../../../../utils/exercisesLoader";
 export default function ChercherExo({
   preselectedIds = [],
   onConfirm = () => {},
-  onBack,
   onCancel,
 }) {
   const { t } = useTranslation();
@@ -103,13 +102,19 @@ export default function ChercherExo({
       localStorage.setItem("dynamiSelected", str);
       localStorage.setItem("formSelectedExercises", str);
       localStorage.setItem("dynamiHasTouched", "1");
-    } catch {}
+    } catch (e) {
+      console.error("Failed to save merged exercises:", e);
+    }
 
-    try { onConfirm && onConfirm(merged); } catch {}
+    try { onConfirm && onConfirm(merged); } catch (e) {
+      console.error("Failed to call onConfirm:", e);
+    }
 
     try {
       window.dispatchEvent(new CustomEvent('dynami:selected:replace', { detail: { items: merged } }));
-    } catch {}
+    } catch (e) {
+      console.error("Failed to dispatch event:", e);
+    }
 
     setQ("");
     setSelectedIds(new Set());

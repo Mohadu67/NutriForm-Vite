@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button, Spinner } from 'react-bootstrap';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { isAuthenticated } from '../../shared/api/auth';
@@ -30,52 +30,7 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Charger l'historique ou initialiser nouvelle conversation
-  useEffect(() => {
-    if (isAuth) {
-      if (propConversationId) {
-        // Charger conversation existante
-        setConversationId(propConversationId);
-        loadHistory(propConversationId);
-      } else if (initialMessage && !initialMessageSentRef.current) {
-        // Nouvelle conversation avec message initial
-        initialMessageSentRef.current = true;
-        setMessages([
-          {
-            role: 'bot',
-            content: "Salut ! 👋 Je suis l'assistant Harmonith. Comment puis-je t'aider aujourd'hui ?",
-            createdAt: new Date()
-          }
-        ]);
-        // Envoyer le message initial automatiquement
-        setTimeout(() => {
-          handleSendMessageDirect(initialMessage);
-        }, 300);
-      } else {
-        // Message de bienvenue par défaut
-        setMessages([
-          {
-            role: 'bot',
-            content: "Salut ! 👋 Je suis l'assistant Harmonith. Comment puis-je t'aider aujourd'hui ?",
-            createdAt: new Date()
-          }
-        ]);
-      }
-    }
-  }, [isAuth, propConversationId, initialMessage]);
-
-  const loadHistory = async (convId) => {
-    try {
-      const { messages: history } = await getChatHistory(convId);
-      if (history && history.length > 0) {
-        setMessages(history);
-      }
-    } catch (err) {
-      console.error('Erreur chargement historique:', err);
-    }
-  };
-
-  const handleSendMessageDirect = async (message) => {
+  const handleSendMessageDirect = useCallback(async (message) => {
     if (!message.trim() || !isAuth || loading) return;
 
     // Ajouter message utilisateur
@@ -120,6 +75,51 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
       console.error('Erreur envoi message:', err);
     } finally {
       setLoading(false);
+    }
+  }, [isAuth, loading, conversationId]);
+
+  // Charger l'historique ou initialiser nouvelle conversation
+  useEffect(() => {
+    if (isAuth) {
+      if (propConversationId) {
+        // Charger conversation existante
+        setConversationId(propConversationId);
+        loadHistory(propConversationId);
+      } else if (initialMessage && !initialMessageSentRef.current) {
+        // Nouvelle conversation avec message initial
+        initialMessageSentRef.current = true;
+        setMessages([
+          {
+            role: 'bot',
+            content: "Salut ! 👋 Je suis l'assistant Harmonith. Comment puis-je t'aider aujourd'hui ?",
+            createdAt: new Date()
+          }
+        ]);
+        // Envoyer le message initial automatiquement
+        setTimeout(() => {
+          handleSendMessageDirect(initialMessage);
+        }, 300);
+      } else {
+        // Message de bienvenue par défaut
+        setMessages([
+          {
+            role: 'bot',
+            content: "Salut ! 👋 Je suis l'assistant Harmonith. Comment puis-je t'aider aujourd'hui ?",
+            createdAt: new Date()
+          }
+        ]);
+      }
+    }
+  }, [isAuth, propConversationId, initialMessage, handleSendMessageDirect]);
+
+  const loadHistory = async (convId) => {
+    try {
+      const { messages: history } = await getChatHistory(convId);
+      if (history && history.length > 0) {
+        setMessages(history);
+      }
+    } catch (err) {
+      console.error('Erreur chargement historique:', err);
     }
   };
 

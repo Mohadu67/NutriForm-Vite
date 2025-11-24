@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import styles from "./NewsletterAdmin.module.css";
@@ -34,14 +34,9 @@ export default function NewsletterAdmin() {
     status: "draft"
   });
 
-  
-  useEffect(() => {
-    checkAdminAccess();
-  }, []);
-
-  const checkAdminAccess = () => {
+  const checkAdminAccess = useCallback(() => {
     try {
-      
+
       const userFromLocal = localStorage.getItem('user');
       const userFromSession = sessionStorage.getItem('user');
       const userStr = userFromLocal || userFromSession;
@@ -61,18 +56,12 @@ export default function NewsletterAdmin() {
 
       setIsAdmin(true);
       setCheckingAuth(false);
-    } catch (error) {
+    } catch {
       navigate('/');
     }
-  };
+  }, [navigate]);
 
-  useEffect(() => {
-    if (isAdmin) {
-      fetchNewsletters();
-    }
-  }, [isAdmin]);
-
-  const fetchNewsletters = async () => {
+  const fetchNewsletters = useCallback(async () => {
     try {
       const res = await secureApiCall('/api/newsletter-admin');
 
@@ -86,11 +75,22 @@ export default function NewsletterAdmin() {
       if (data.success) {
         setNewsletters(data.newsletters);
       }
-    } catch (error) {
+    } catch {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+
+  useEffect(() => {
+    checkAdminAccess();
+  }, [checkAdminAccess]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchNewsletters();
+    }
+  }, [isAdmin, fetchNewsletters]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
