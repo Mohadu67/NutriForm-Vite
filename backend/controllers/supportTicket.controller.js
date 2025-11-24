@@ -128,7 +128,7 @@ async function replyToTicket(req, res) {
 async function resolveTicket(req, res) {
   try {
     const { id } = req.params;
-    const { notes } = req.body;
+    const { notes, deleteMessages } = req.body;
     const adminId = req.userId;
 
     const ticket = await SupportTicket.findById(id);
@@ -142,9 +142,28 @@ async function resolveTicket(req, res) {
     }
     await ticket.save();
 
+    // Supprimer les messages de la conversation si demandé
+    if (deleteMessages && ticket.conversationId) {
+      const AIConversation = require('../models/AIConversation');
+
+      // Marquer la conversation comme inactive
+      await AIConversation.findOneAndUpdate(
+        { conversationId: ticket.conversationId },
+        { isActive: false }
+      );
+
+      // Supprimer tous les messages
+      await ChatMessage.deleteMany({ conversationId: ticket.conversationId });
+
+      console.log(`🗑️ Messages supprimés pour le ticket ${id} (conversation ${ticket.conversationId})`);
+    }
+
     res.status(200).json({
-      message: 'Ticket résolu avec succès.',
-      ticket
+      message: deleteMessages
+        ? 'Ticket résolu et messages supprimés avec succès.'
+        : 'Ticket résolu avec succès.',
+      ticket,
+      messagesDeleted: deleteMessages || false
     });
   } catch (error) {
     console.error('Erreur resolveTicket:', error);
