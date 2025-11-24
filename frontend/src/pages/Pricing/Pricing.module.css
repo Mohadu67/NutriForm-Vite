@@ -1,0 +1,429 @@
+/* ========== BASE ========== */
+.container {
+  min-height: calc(100vh - 200px);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 100px 20px 60px;
+  background: var(--couleur-principale, #f7f6f2);
+}
+
+:global(body.dark) .container,
+:global(html.dark) .container {
+  background: #0c0e12;
+}
+
+/* ========== HEADER ========== */
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.header h1 {
+  font-family: 'Merriweather', serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0 0 12px;
+  letter-spacing: -0.5px;
+}
+
+:global(body.dark) .header h1,
+:global(html.dark) .header h1 {
+  color: #f5f7fa;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
+}
+
+/* ========== ALERTS ========== */
+.alert {
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 32px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.alertWarning {
+  border-left: 4px solid #fbbf24;
+  background: #fffbeb;
+}
+
+:global(body.dark) .alertWarning,
+:global(html.dark) .alertWarning {
+  background: #3a2d1a;
+  border-left-color: #fbbf24;
+}
+
+.alertSuccess {
+  border-left: 4px solid #10b981;
+  background: #ecfdf5;
+}
+
+:global(body.dark) .alertSuccess,
+:global(html.dark) .alertSuccess {
+  background: #1a2e25;
+  border-left-color: #10b981;
+}
+
+/* ========== PLANS GRID ========== */
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin-bottom: 64px;
+}
+
+/* ========== PLAN CARD ========== */
+.planCard {
+  position: relative;
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 20px;
+  padding: 32px 28px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:global(body.dark) .planCard,
+:global(html.dark) .planCard {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.planCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+:global(body.dark) .planCard:hover,
+:global(html.dark) .planCard:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Premium highlight */
+.premiumPlan {
+  border-color: var(--couleur-bouton-action, #f7b186);
+  border-width: 2px;
+}
+
+:global(body.dark) .premiumPlan,
+:global(html.dark) .premiumPlan {
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+/* ========== BADGE ========== */
+.badge {
+  position: absolute;
+  top: -12px;
+  right: 24px;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* ========== PLAN HEADER ========== */
+.planHeader {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+:global(body.dark) .planHeader,
+:global(html.dark) .planHeader {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.planHeader h2 {
+  font-family: 'Merriweather', serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0 0 12px;
+}
+
+:global(body.dark) .planHeader h2,
+:global(html.dark) .planHeader h2 {
+  color: #f5f7fa;
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--couleur-bouton-action, #f7b186);
+  line-height: 1;
+}
+
+.period {
+  font-size: 1rem;
+  color: var(--muted, #6b7280);
+}
+
+/* ========== FEATURES LIST ========== */
+.featuresList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px 0;
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 0.95rem;
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .featureItem,
+:global(html.dark) .featureItem {
+  color: #e5e7eb;
+}
+
+.featureItem.disabled {
+  color: var(--muted, #6b7280);
+  opacity: 0.6;
+}
+
+.checkIcon,
+.crossIcon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.checkIcon {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+:global(body.dark) .checkIcon,
+:global(html.dark) .checkIcon {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.crossIcon {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+:global(body.dark) .crossIcon,
+:global(html.dark) .crossIcon {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+/* ========== BUTTONS ========== */
+.planButton {
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: 12px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.planButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.primaryButton {
+  background: var(--couleur-bouton-action, #f7b186);
+  color: white;
+}
+
+.primaryButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(247, 177, 134, 0.3);
+}
+
+:global(body.dark) .primaryButton:hover:not(:disabled),
+:global(html.dark) .primaryButton:hover:not(:disabled) {
+  box-shadow: 0 8px 20px rgba(247, 177, 134, 0.4);
+}
+
+.secondaryButton {
+  background: var(--couleur-principale, #f7f6f2);
+  color: var(--muted, #6b7280);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+:global(body.dark) .secondaryButton,
+:global(html.dark) .secondaryButton {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #9ca3af;
+}
+
+/* ========== SPINNER ========== */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========== TRIAL NOTICE ========== */
+.trialNotice {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted, #6b7280);
+  margin: 12px 0 0;
+}
+
+/* ========== ERROR ========== */
+.error {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  color: #991b1b;
+}
+
+:global(body.dark) .error,
+:global(html.dark) .error {
+  background: #3a1a1a;
+  border-color: #5a2a2a;
+  color: #fca5a5;
+}
+
+/* ========== FAQ ========== */
+.faq {
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 20px;
+  padding: 40px 32px;
+  margin-top: 48px;
+}
+
+:global(body.dark) .faq,
+:global(html.dark) .faq {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.faq h3 {
+  font-family: 'Merriweather', serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0 0 32px;
+  text-align: center;
+}
+
+:global(body.dark) .faq h3,
+:global(html.dark) .faq h3 {
+  color: #f5f7fa;
+}
+
+.faqItem {
+  margin-bottom: 28px;
+}
+
+.faqItem:last-child {
+  margin-bottom: 0;
+}
+
+.faqItem h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+  margin: 0 0 8px;
+}
+
+:global(body.dark) .faqItem h4,
+:global(html.dark) .faqItem h4 {
+  color: #e5e7eb;
+}
+
+.faqItem p {
+  font-size: 0.95rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .container {
+    padding: 80px 16px 40px;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .plansGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .planCard {
+    padding: 28px 24px;
+  }
+
+  .faq {
+    padding: 32px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 70px 12px 32px;
+  }
+
+  .header h1 {
+    font-size: 1.75rem;
+  }
+
+  .planHeader h2 {
+    font-size: 1.5rem;
+  }
+
+  .amount {
+    font-size: 2rem;
+  }
+}
