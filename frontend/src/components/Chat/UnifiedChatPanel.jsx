@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { getMessages, sendMessage as sendMatchMessage, markMessagesAsRead } from '../../shared/api/matchChat';
-import { isAuthenticated } from '../../shared/api/auth';
 import styles from './UnifiedChatPanel.module.css';
 
 export default function UnifiedChatPanel({ conversationId, matchConversation, initialMessage }) {
@@ -19,13 +18,12 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
   const isMatchChat = !!matchConversation;
 
-  // Vérifier authentification
+  // Vérifier authentification - avec cookies httpOnly, on assume authentifié par défaut
+  // et on vérifie avec les appels API
   useEffect(() => {
-    const checkAuth = async () => {
-      const auth = await isAuthenticated();
-      setIsAuth(auth);
-    };
-    checkAuth();
+    // Avec httpOnly cookies, on ne peut pas vérifier via localStorage
+    // On assume que l'utilisateur est authentifié si les cookies existent (côté serveur)
+    setIsAuth(true);
   }, []);
 
   // Auto-scroll
@@ -35,16 +33,21 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
   // Charger messages
   useEffect(() => {
-    if (isAuth) {
-      if (isMatchChat && matchConversation?._id) {
-        loadMatchMessages();
-        markMessagesAsRead(matchConversation._id).catch(err =>
-          console.error('Erreur marquage lu:', err)
-        );
-      } else if (conversationId) {
-        loadHistory(conversationId);
-      } else if (initialMessage && !initialMessageSentRef.current) {
-        initialMessageSentRef.current = true;
+    // Pour les match chats, il faut être authentifié
+    if (isMatchChat && isAuth && matchConversation?._id) {
+      loadMatchMessages();
+      markMessagesAsRead(matchConversation._id).catch(err =>
+        console.error('Erreur marquage lu:', err)
+      );
+    }
+    // Pour les chats IA avec conversationId existant, charger l'historique (nécessite auth)
+    else if (!isMatchChat && conversationId && isAuth) {
+      loadHistory(conversationId);
+    }
+    // Pour un nouveau chat IA sans conversationId
+    else if (!isMatchChat && !conversationId && !initialMessageSentRef.current) {
+      initialMessageSentRef.current = true;
+      if (isAuth) {
         setMessages([
           {
             role: 'bot',
@@ -52,7 +55,18 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
             createdAt: new Date()
           }
         ]);
-        handleSendMessage(initialMessage);
+        if (initialMessage) {
+          handleSendMessage(initialMessage);
+        }
+      } else {
+        // Message pour utilisateur non connecté
+        setMessages([
+          {
+            role: 'bot',
+            content: "👋 Bienvenue ! Pour utiliser l'assistant IA Harmonith, vous devez être connecté. Cliquez sur l'icône utilisateur en haut pour vous connecter ou créer un compte gratuit.",
+            createdAt: new Date()
+          }
+        ]);
       }
     }
   }, [isAuth, conversationId, matchConversation?._id, isMatchChat]);
@@ -168,8 +182,19 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     } catch (err) {
       console.error('Erreur envoi message:', err);
-      // Remettre le message dans l'input en cas d'erreur
-      setInputMessage(content);
+
+      // Si erreur 401, l'utilisateur n'est pas authentifié
+      if (err?.response?.status === 401) {
+        setIsAuth(false);
+        setMessages(prev => [...prev, {
+          role: 'bot',
+          content: "❌ Vous devez être connecté pour utiliser le chat. Veuillez vous connecter.",
+          createdAt: new Date()
+        }]);
+      } else {
+        // Remettre le message dans l'input en cas d'erreur
+        setInputMessage(content);
+      }
     } finally {
       setSending(false);
     }
@@ -310,7 +335,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
           type="text"
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
-          placeholder="Écrivez votre message..."
+          placeholder={!isAuth ? "Connectez-vous pour utiliser le chat..." : "Écrivez votre message..."}
           className={styles.chatInput}
           disabled={sending || !isAuth}
           maxLength={2000}

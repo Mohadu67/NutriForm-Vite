@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useChat } from '../../contexts/ChatContext';
-import { isAuthenticated } from '../../shared/api/auth';
 import { getConversations, deleteConversation as deleteMatchConv } from '../../shared/api/matchChat';
 import { getAIConversations, deleteAIConversation } from '../../shared/api/chat';
-import { getSubscriptionStatus } from '../../shared/api/subscription';
 import styles from './ChatHistory.module.css';
 
 export default function ChatHistory() {
@@ -13,24 +11,23 @@ export default function ChatHistory() {
   const [isAuth, setIsAuth] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
 
-  // Vérifier authentification et premium
+  // Vérifier authentification et premium - avec cookies httpOnly
   useEffect(() => {
-    const checkAuth = async () => {
-      const auth = await isAuthenticated();
-      setIsAuth(auth);
+    // Avec httpOnly cookies, on assume authentifié par défaut
+    // L'authentification sera vérifiée lors des appels API
+    setIsAuth(true);
 
-      // Check premium status from API
-      if (auth) {
-        try {
-          const subscription = await getSubscriptionStatus();
-          setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
-        } catch (err) {
-          console.error('Erreur récupération subscription:', err);
-          setIsPremium(false);
-        }
+    // Charger le statut premium depuis localStorage (si disponible)
+    // Sinon ce sera vérifié via l'API
+    try {
+      const subscriptionData = localStorage.getItem('subscriptionStatus');
+      if (subscriptionData) {
+        const subscription = JSON.parse(subscriptionData);
+        setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
       }
-    };
-    checkAuth();
+    } catch (err) {
+      console.error('Erreur récupération subscription depuis localStorage:', err);
+    }
   }, []);
 
   // Charger les conversations IA depuis l'API
@@ -47,6 +44,9 @@ export default function ChatHistory() {
       setConversations(aiConvs || []);
     } catch (err) {
       console.error('Erreur chargement conversations IA:', err);
+      if (err?.response?.status === 401) {
+        setIsAuth(false);
+      }
     }
   };
 
@@ -63,6 +63,9 @@ export default function ChatHistory() {
       setMatchConversations(conversations || []);
     } catch (err) {
       console.error('Erreur chargement conversations matches:', err);
+      if (err?.response?.status === 401) {
+        setIsAuth(false);
+      }
     }
   };
 
