@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useChat } from "../../contexts/ChatContext";
