@@ -63,7 +63,7 @@ export default function FormContact({ onSend }) {
       setErrors({});
 
       setTimeout(() => setStatus("idle"), 2200);
-    } catch (err) {
+    } catch {
       setStatus("error");
     }
   };

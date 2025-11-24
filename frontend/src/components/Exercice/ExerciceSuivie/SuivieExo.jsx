@@ -15,7 +15,9 @@ function storageKey(it) {
 function saveSaved(it, data) {
   try {
     localStorage.setItem(storageKey(it), JSON.stringify(data ?? null));
-  } catch {}
+  } catch (e) {
+    console.error("Failed to save exercise data:", e);
+  }
 }
 
 function loadSaved(it) {
@@ -28,7 +30,7 @@ function loadSaved(it) {
 }
 
 
-export default function SuivieExo({ sessionName, exercises = [], onBack, onSearch, onFinish = () => {} }) {
+export default function SuivieExo({ sessionName, exercises = [], onBack, onFinish = () => {} }) {
   const { t } = useTranslation();
   const label = (sessionName && sessionName.trim()) ? sessionName.trim() : "ta séance";
 
@@ -36,11 +38,15 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
     try {
       const a = JSON.parse(localStorage.getItem("formSelectedExercises"));
       if (Array.isArray(a) && a.length) return a;
-    } catch {}
+    } catch (e) {
+      console.error("Failed to load formSelectedExercises:", e);
+    }
     try {
       const b = JSON.parse(localStorage.getItem("dynamiSelected"));
       if (Array.isArray(b) && b.length) return b;
-    } catch {}
+    } catch (e) {
+      console.error("Failed to load dynamiSelected:", e);
+    }
     return [];
   }
 
@@ -62,7 +68,9 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
     try {
       if (startedAt) localStorage.setItem(STARTED_KEY, startedAt);
       else localStorage.removeItem(STARTED_KEY);
-    } catch {}
+    } catch (e) {
+      console.error("Failed to save startedAt:", e);
+    }
   }, [startedAt]);
 
   useEffect(() => {
@@ -166,7 +174,9 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onSearc
       copy[idx] = { ...copy[idx], data: nextData, mode: nextMode, done };
       try {
         saveSaved(copy[idx], nextData);
-      } catch {}
+      } catch (e) {
+        console.error("Failed to save updated exercise:", e);
+      }
       return copy;
     });
   }

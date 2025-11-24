@@ -1,0 +1,795 @@
+/* ========== BASE ========== */
+.container {
+  min-height: calc(100vh - 200px);
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 100px 20px 40px;
+  background: var(--couleur-principale, #f7f6f2);
+}
+
+:global(body.dark) .container,
+:global(html.dark) .container {
+  background: #0c0e12;
+}
+
+/* ========== HEADER ========== */
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.header h1 {
+  font-family: 'Merriweather', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+}
+
+:global(body.dark) .header h1,
+:global(html.dark) .header h1 {
+  color: #f5f7fa;
+}
+
+.header p {
+  font-size: 0.95rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
+}
+
+/* ========== LOADING ========== */
+.loadingContainer {
+  min-height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: var(--couleur-bouton-action, #f7b186);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+:global(body.dark) .spinner,
+:global(html.dark) .spinner {
+  border-color: rgba(255, 255, 255, 0.1);
+  border-top-color: var(--couleur-bouton-action, #f7b186);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingContainer p {
+  color: var(--muted, #6b7280);
+  font-size: 1rem;
+}
+
+/* ========== PROGRESS BAR ========== */
+.progressBar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.progressStep {
+  flex: 1;
+  padding: 16px 12px;
+  text-align: center;
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  letter-spacing: 0.3px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:global(body.dark) .progressStep,
+:global(html.dark) .progressStep {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.progressStep.active {
+  background: var(--couleur-bouton-action, #f7b186);
+  color: white;
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+/* ========== ALERTS ========== */
+.alert {
+  padding: 16px 20px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.alert button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.alertError {
+  background: var(--paper, #ffffff);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+}
+
+:global(body.dark) .alertError,
+:global(html.dark) .alertError {
+  background: #1a1d24;
+  border-color: rgba(220, 53, 69, 0.3);
+}
+
+.alertError button {
+  color: #dc3545;
+}
+
+.alertError button:hover {
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.alertSuccess {
+  background: var(--paper, #ffffff);
+  border: 1px solid rgba(40, 167, 69, 0.2);
+  color: #28a745;
+}
+
+:global(body.dark) .alertSuccess,
+:global(html.dark) .alertSuccess {
+  background: #1a1d24;
+  border-color: rgba(40, 167, 69, 0.3);
+}
+
+.alertSuccess button {
+  color: #28a745;
+}
+
+.alertSuccess button:hover {
+  background: rgba(40, 167, 69, 0.1);
+}
+
+/* ========== CARD ========== */
+.card {
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+:global(body.dark) .card,
+:global(html.dark) .card {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.card h3 {
+  font-family: 'Merriweather', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+}
+
+:global(body.dark) .card h3,
+:global(html.dark) .card h3 {
+  color: #f5f7fa;
+}
+
+.card > p {
+  color: var(--muted, #6b7280);
+  font-size: 0.9rem;
+  margin: 0 0 24px;
+}
+
+/* ========== FORM ========== */
+.formGroup {
+  margin-bottom: 24px;
+}
+
+.formLabel {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+:global(body.dark) .formLabel,
+:global(html.dark) .formLabel {
+  color: #f5f7fa;
+}
+
+.formControl {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 12px;
+  background: var(--couleur-principale, #f7f6f2);
+  color: var(--ink, #222325);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+:global(body.dark) .formControl,
+:global(html.dark) .formControl {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #f5f7fa;
+}
+
+.formControl:focus {
+  outline: none;
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+.formControl::placeholder {
+  color: var(--muted, #6b7280);
+}
+
+textarea.formControl {
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+.formText {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--muted, #6b7280);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.formCheck {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.formCheck input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--couleur-bouton-action, #f7b186);
+}
+
+.formCheck label {
+  font-size: 0.95rem;
+  color: var(--ink, #222325);
+  cursor: pointer;
+  flex: 1;
+}
+
+:global(body.dark) .formCheck label,
+:global(html.dark) .formCheck label {
+  color: #f5f7fa;
+}
+
+/* ========== FITNESS LEVEL GRID ========== */
+.levelGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.levelCard {
+  padding: 16px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  background: var(--paper, #ffffff);
+}
+
+:global(body.dark) .levelCard,
+:global(html.dark) .levelCard {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.levelCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+:global(body.dark) .levelCard:hover,
+:global(html.dark) .levelCard:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.levelCard.selected {
+  background: var(--couleur-bouton-action, #f7b186);
+  border-color: var(--couleur-bouton-action, #f7b186);
+  color: white;
+}
+
+.levelCard strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.levelCard.selected strong {
+  color: white;
+}
+
+.levelCard small {
+  font-size: 0.8rem;
+  color: var(--muted, #6b7280);
+}
+
+.levelCard.selected small {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ========== WORKOUT TYPE GRID ========== */
+.workoutGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.workoutBadge {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  background: var(--couleur-principale, #f7f6f2);
+  color: var(--muted, #6b7280);
+}
+
+:global(body.dark) .workoutBadge,
+:global(html.dark) .workoutBadge {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.workoutBadge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+:global(body.dark) .workoutBadge:hover,
+:global(html.dark) .workoutBadge:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.workoutBadge.selected {
+  background: var(--couleur-bouton-action, #f7b186);
+  border-color: var(--couleur-bouton-action, #f7b186);
+  color: white;
+}
+
+/* ========== LOCATION ========== */
+.locationButton {
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  color: var(--couleur-bouton-action, #f7b186);
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.3px;
+  margin-top: 8px;
+}
+
+:global(body.dark) .locationButton,
+:global(html.dark) .locationButton {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.locationButton:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+:global(body.dark) .locationButton:hover,
+:global(html.dark) .locationButton:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.locationBadge {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 6px 12px;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: white;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ========== AVAILABILITY ========== */
+.daySection {
+  padding: 20px;
+  background: var(--couleur-principale, #f7f6f2);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+:global(body.dark) .daySection,
+:global(html.dark) .daySection {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.daySectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.daySectionHeader strong {
+  font-size: 1rem;
+  color: var(--ink, #222325);
+  font-weight: 700;
+}
+
+:global(body.dark) .daySectionHeader strong,
+:global(html.dark) .daySectionHeader strong {
+  color: #f5f7fa;
+}
+
+.addSlotButton {
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  color: var(--couleur-bouton-action, #f7b186);
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:global(body.dark) .addSlotButton,
+:global(html.dark) .addSlotButton {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.addSlotButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+:global(body.dark) .addSlotButton:hover,
+:global(html.dark) .addSlotButton:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.timeSlot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 12px;
+}
+
+:global(body.dark) .timeSlot,
+:global(html.dark) .timeSlot {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.timeSlot input {
+  flex: 1;
+  max-width: 140px;
+  padding: 8px 12px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 8px;
+  background: var(--couleur-principale, #f7f6f2);
+  color: var(--ink, #222325);
+  font-size: 0.9rem;
+}
+
+:global(body.dark) .timeSlot input,
+:global(html.dark) .timeSlot input {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #f5f7fa;
+}
+
+.timeSlot input:focus {
+  outline: none;
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+.timeSlot span {
+  color: var(--muted, #6b7280);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.removeSlotButton {
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  color: #dc3545;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:global(body.dark) .removeSlotButton,
+:global(html.dark) .removeSlotButton {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.removeSlotButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
+  border-color: #dc3545;
+}
+
+:global(body.dark) .removeSlotButton:hover,
+:global(html.dark) .removeSlotButton:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.noSlots {
+  color: var(--muted, #6b7280);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* ========== RANGE ========== */
+.rangeLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.rangeLabel strong {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+:global(body.dark) .rangeLabel strong,
+:global(html.dark) .rangeLabel strong {
+  color: #f5f7fa;
+}
+
+.rangeLabel span {
+  font-size: 0.9rem;
+  color: var(--couleur-bouton-action, #f7b186);
+  font-weight: 700;
+}
+
+.formRange {
+  width: 100%;
+  height: 6px;
+  border-radius: 6px;
+  background: var(--line, rgba(0, 0, 0, 0.06));
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+:global(body.dark) .formRange,
+:global(html.dark) .formRange {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.formRange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--couleur-bouton-action, #f7b186);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.formRange::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.formRange::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--couleur-bouton-action, #f7b186);
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.formRange::-moz-range-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* ========== NAVIGATION ========== */
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.backButton,
+.nextButton {
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.backButton {
+  background: var(--paper, #ffffff);
+  color: var(--muted, #6b7280);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+:global(body.dark) .backButton,
+:global(html.dark) .backButton {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.backButton:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .backButton:hover,
+:global(html.dark) .backButton:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  color: #f5f7fa;
+}
+
+.nextButton {
+  background: var(--couleur-bouton-action, #f7b186);
+  color: white;
+  margin-left: auto;
+}
+
+.nextButton:hover:not(:disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(247, 177, 134, 0.3);
+}
+
+:global(body.dark) .nextButton:hover:not(:disabled),
+:global(html.dark) .nextButton:hover:not(:disabled) {
+  box-shadow: 0 8px 20px rgba(247, 177, 134, 0.4);
+}
+
+.nextButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .container {
+    padding: 80px 16px 32px;
+  }
+
+  .header h1 {
+    font-size: 1.75rem;
+  }
+
+  .progressBar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .levelGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .timeSlot {
+    flex-wrap: wrap;
+  }
+
+  .timeSlot input {
+    max-width: 100%;
+  }
+
+  .navigation {
+    flex-direction: column;
+  }
+
+  .nextButton {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .backButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 70px 12px 24px;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .card {
+    padding: 20px;
+  }
+}

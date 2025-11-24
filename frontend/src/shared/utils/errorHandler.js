@@ -9,7 +9,7 @@ export function safeLocalStorage(operation, key, value = null) {
       localStorage.removeItem(key);
       return true;
     }
-  } catch (error) {
+  } catch {
     return operation === 'get' ? null : false;
   }
 }
@@ -25,7 +25,7 @@ export function safeSessionStorage(operation, key, value = null) {
       sessionStorage.removeItem(key);
       return true;
     }
-  } catch (error) {
+  } catch {
     return operation === 'get' ? null : false;
   }
 }
@@ -33,7 +33,7 @@ export function safeSessionStorage(operation, key, value = null) {
 export function safeJsonParse(str, fallback = null) {
   try {
     return JSON.parse(str);
-  } catch (error) {
+  } catch {
     return fallback;
   }
 }
@@ -41,7 +41,7 @@ export function safeJsonParse(str, fallback = null) {
 export function safeJsonStringify(obj, fallback = '{}') {
   try {
     return JSON.stringify(obj);
-  } catch (error) {
+  } catch {
     return fallback;
   }
 }

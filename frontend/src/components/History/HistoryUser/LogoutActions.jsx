@@ -23,6 +23,7 @@ export default function LogoutActions({ onLogout }) {
         setIsAdmin(data.role === "admin");
       }
     } catch (err) {
+      console.error("Failed to check admin status:", err);
     }
   };
 

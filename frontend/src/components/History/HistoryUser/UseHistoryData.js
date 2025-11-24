@@ -39,7 +39,7 @@ export default function useHistoryData() {
             const userData = JSON.parse(userStr);
             const updatedUser = { ...userData, ...data };
             localStorage.setItem("user", JSON.stringify(updatedUser));
-          } catch (e) {
+          } catch {
             localStorage.setItem("user", JSON.stringify(data));
           }
         } else {
