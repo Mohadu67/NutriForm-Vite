@@ -21,11 +21,11 @@ import Pricing from "./pages/Pricing/Pricing.jsx";
 import SupportTickets from "./pages/Admin/SupportTickets.jsx";
 import ProfileSetup from "./pages/Profile/ProfileSetup.jsx";
 import MatchingPage from "./pages/Matching/MatchingPage.jsx";
+import Chat from "./pages/Chat/Chat.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
 import CanonicalLink from "./components/CanonicalLink/CanonicalLink.jsx";
-import ChatWidget from "./components/Chat/ChatWidget.jsx";
 import { ChatProvider } from "./contexts/ChatContext.jsx";
 import './i18n/config';
 
@@ -41,7 +41,6 @@ export default function App() {
       <ChatProvider>
         <UpdatePrompt />
         <CanonicalLink />
-        <ChatWidget />
         <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/imc" element={<ImcPage />} />
@@ -65,6 +64,7 @@ export default function App() {
       <Route path="/admin/support-tickets" element={<SupportTickets />} />
       <Route path="/profile/setup" element={<ProfileSetup />} />
       <Route path="/matching" element={<MatchingPage />} />
+      <Route path="/chat/:matchId" element={<Chat />} />
       <Route path="*" element={<NotFound />} />
       </Routes>
       </ChatProvider>
