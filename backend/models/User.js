@@ -57,6 +57,19 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user'
     },
+    subscriptionTier: {
+      type: String,
+      enum: ['free', 'premium'],
+      default: 'free'
+    },
+    stripeCustomerId: {
+      type: String,
+      default: null
+    },
+    trialEndsAt: {
+      type: Date,
+      default: null
+    },
     emailVerifie: { type: Boolean, default: false },
     verificationToken: { type: String, default: null, select: false },
     verificationExpires: { type: Date, default: null, select: false },

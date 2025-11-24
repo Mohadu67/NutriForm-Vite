@@ -27,6 +27,12 @@ const newsletterAdminRoutes = require('./routes/newsletter-admin.route.js');
 const reviewsRoutes = require('./routes/reviews.js');
 const uploadRoutes = require('./routes/upload.js');
 const leaderboardRoutes = require('./routes/leaderboard.route.js');
+const subscriptionRoutes = require('./routes/subscription.route.js');
+const chatRoutes = require('./routes/chat.route.js');
+const supportTicketRoutes = require('./routes/supportTicket.route.js');
+const profileRoutes = require('./routes/profile.route.js');
+const matchingRoutes = require('./routes/matching.route.js');
+const matchChatRoutes = require('./routes/matchChat.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 
@@ -42,7 +48,7 @@ console.log('📍 URI:', config.mongoUri.replace(/\/\/.*@/, '//*****@')); // Mas
 
 mongoose
   .connect(config.mongoUri, {
-    dbName: 'nutriform',
+    dbName: 'harmonith',
     authSource: 'admin',
     serverSelectionTimeoutMS: 10000, // Timeout après 10 secondes
     socketTimeoutMS: 45000,
@@ -118,6 +124,12 @@ app.use('/api/newsletter-admin', newsletterAdminRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/admin/support-tickets', supportTicketRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/matching', matchingRoutes);
+app.use('/api/match-chat', matchChatRoutes);
 
 app.get('/', (req, res) => {
   res.send('Bienvenue sur le backend de NutriForm 🚀');

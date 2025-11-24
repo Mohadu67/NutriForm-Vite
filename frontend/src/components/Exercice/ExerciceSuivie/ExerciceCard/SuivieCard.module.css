@@ -335,10 +335,6 @@
   border-color: var(--suivie-accent);
 }
 
-.yogaForm, .stretchForm, .muscuForm, .pdcForm, .cardioForm {
-  /* Styles uniforms pour tous les formulaires */
-}
-
 .yogaTextareaField textarea {
   font-weight: 500;
   line-height: 1.5;

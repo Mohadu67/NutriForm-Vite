@@ -12,16 +12,20 @@ const {
 const router = express.Router();
 
 const authMiddleware = require("../middlewares/auth.middleware");
+const { requirePremium } = require("../middlewares/subscription.middleware");
 const { enrichMuscles } = require("../middlewares/history.middleware");
+
+// Authentification requise pour toutes les routes
 router.use(authMiddleware);
 
-router.post("/sessions", enrichMuscles, createSession);
-router.get("/sessions", getSessions);
-router.get("/sessions/:id", getSessionById);
-router.patch("/sessions/:id", enrichMuscles, updateSession);
-router.delete("/sessions/:id", deleteSession);
+// Routes protégées - Premium requis pour sauvegarder et accéder aux séances
+router.post("/sessions", requirePremium, enrichMuscles, createSession);
+router.get("/sessions", requirePremium, getSessions);
+router.get("/sessions/:id", requirePremium, getSessionById);
+router.patch("/sessions/:id", requirePremium, enrichMuscles, updateSession);
+router.delete("/sessions/:id", requirePremium, deleteSession);
 
-router.get("/summary/daily", getDailySummary);
-router.get("/last-week-session", getLastWeekSession);
+router.get("/summary/daily", requirePremium, getDailySummary);
+router.get("/last-week-session", requirePremium, getLastWeekSession);
 
 module.exports = router;

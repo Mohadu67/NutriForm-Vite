@@ -189,6 +189,12 @@
   border-radius: 50% !important;
   box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3) !important;
   border: none !important;
+  /* Déplacé en bas à gauche pour ne pas gêner le chatbot */
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 24px !important;
+  right: auto !important;
+  z-index: 999 !important;
 }
 
 #tarteaucitronRoot #tarteaucitronIcon:hover {

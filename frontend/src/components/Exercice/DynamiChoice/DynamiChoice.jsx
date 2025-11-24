@@ -66,23 +66,33 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   }, [step, onStepChange]);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiStep", String(step)); } catch {}
+    try { localStorage.setItem("dynamiStep", String(step)); } catch (e) {
+      console.error("Failed to save dynamiStep:", e);
+    }
   }, [step]);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiType", JSON.stringify(typeId)); } catch {}
+    try { localStorage.setItem("dynamiType", JSON.stringify(typeId)); } catch (e) {
+      console.error("Failed to save dynamiType:", e);
+    }
   }, [typeId]);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiEquip", JSON.stringify(equipIds)); } catch {}
+    try { localStorage.setItem("dynamiEquip", JSON.stringify(equipIds)); } catch (e) {
+      console.error("Failed to save dynamiEquip:", e);
+    }
   }, [equipIds]);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiMuscle", JSON.stringify(muscleIds)); } catch {}
+    try { localStorage.setItem("dynamiMuscle", JSON.stringify(muscleIds)); } catch (e) {
+      console.error("Failed to save dynamiMuscle:", e);
+    }
   }, [muscleIds]);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiSelected", JSON.stringify(selectedExercises)); } catch {}
+    try { localStorage.setItem("dynamiSelected", JSON.stringify(selectedExercises)); } catch (e) {
+      console.error("Failed to save dynamiSelected:", e);
+    }
   }, [selectedExercises]);
 
   useEffect(() => {
@@ -117,10 +127,6 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
     return EQUIP_CARDS.map((c) => c.id);
   }, [typeId]);
 
-  const filteredEquipCards = useMemo(
-    () => EQUIP_CARDS.filter((c) => allowedEquipIds.includes(c.id)),
-    [allowedEquipIds]
-  );
 
   const disabledEquipIds = useMemo(
     () => EQUIP_CARDS.map(c => c.id).filter((id) => !allowedEquipIds.includes(id)),
@@ -179,7 +185,9 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
       localStorage.setItem("dynamiSelected", str);
       localStorage.setItem("formSelectedExercises", str);
       localStorage.setItem("dynamiHasTouched", "1");
-    } catch {}
+    } catch (e) {
+      console.error("Failed to save search selection:", e);
+    }
     setSelectedExercises(arr);
 
     onSearch(arr, (next, options = {}) => {
@@ -192,7 +200,9 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
           localStorage.setItem("dynamiSelected", s);
           localStorage.setItem("formSelectedExercises", s);
           localStorage.setItem("dynamiHasTouched", "1");
-        } catch {}
+        } catch (e) {
+          console.error("Failed to save merged selection:", e);
+        }
         window.dispatchEvent(new CustomEvent('dynami:selected:replace', { detail: { items: merged } }));
         return merged;
       });
@@ -220,7 +230,9 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
         const v = localStorage.getItem("dynamiSelected");
         const fromLS = v ? JSON.parse(v) : [];
         if (Array.isArray(fromLS) && fromLS.length) arr = fromLS;
-      } catch {}
+      } catch (e) {
+        console.error("Failed to load dynamiSelected from localStorage:", e);
+      }
       onComplete({ typeId, equipIds, muscleIds, exercises: arr });
     }
   }
