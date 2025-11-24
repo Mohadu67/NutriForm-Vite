@@ -30,7 +30,7 @@ export async function loadExercises(types = 'all') {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       return data.exercises || [];
-    } catch (error) {
+    } catch {
       return [];
     }
   });
@@ -48,7 +48,7 @@ export async function loadData(dataKey) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     return data[dataKey] || null;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

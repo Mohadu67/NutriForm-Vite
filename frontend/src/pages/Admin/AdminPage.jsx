@@ -130,7 +130,7 @@ export default function AdminPage() {
       } else {
         showMessage("error", data.message || "Erreur");
       }
-    } catch (err) {
+    } catch {
       showMessage("error", "Erreur lors de l'approbation");
     }
   };
@@ -147,7 +147,7 @@ export default function AdminPage() {
       } else {
         showMessage("error", data.message || "Erreur");
       }
-    } catch (err) {
+    } catch {
       showMessage("error", "Erreur lors de la suppression");
     }
   };
@@ -162,7 +162,7 @@ export default function AdminPage() {
       setSelectedReviews([]);
       fetchReviews();
       fetchStats();
-    } catch (err) {
+    } catch {
       showMessage("error", "Erreur lors de l'approbation en masse");
     }
   };
@@ -178,7 +178,7 @@ export default function AdminPage() {
       setSelectedReviews([]);
       fetchReviews();
       fetchStats();
-    } catch (err) {
+    } catch {
       showMessage("error", "Erreur lors de la suppression en masse");
     }
   };
@@ -208,7 +208,7 @@ export default function AdminPage() {
       } else {
         showMessage("error", data.message || "Erreur");
       }
-    } catch (err) {
+    } catch {
       showMessage("error", "Erreur lors de la suppression");
     }
   };
@@ -226,7 +226,7 @@ export default function AdminPage() {
       } else {
         showMessage("error", data.message || "Erreur");
       }
-    } catch (err) {
+    } catch {
       showMessage("error", "Erreur lors de l'envoi");
     } finally {
       setLoading(false);

@@ -461,7 +461,9 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
       const safeTs = Number.isNaN(ts) ? Date.now() : ts;
       setStartTs(safeTs);
       if (typeof onStart === "function") {
-        try { onStart(new Date(safeTs).toISOString()); } catch {}
+        try { onStart(new Date(safeTs).toISOString()); } catch (e) {
+          console.error("Failed to call onStart callback:", e);
+        }
       }
     }
     setRunning(true);
