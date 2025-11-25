@@ -63,7 +63,7 @@ export default function NewsletterAdmin() {
 
   const fetchNewsletters = useCallback(async () => {
     try {
-      const res = await secureApiCall('/api/newsletter-admin');
+      const res = await secureApiCall('/newsletter-admin');
 
       if (res.status === 401 || res.status === 403) {
         alert('Session expirée ou accès refusé');

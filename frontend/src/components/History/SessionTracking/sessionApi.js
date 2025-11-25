@@ -45,7 +45,7 @@ async function request(path, options = {}) {
 }
 
 function fetchHistorySummary() {
-  return request('/api/history/summary');
+  return request('/history/summary');
 }
 
 function mapItemsToEntries(items = []) {
@@ -188,7 +188,7 @@ function saveSession(payload) {
     e.status = 400;
     throw e;
   }
-  return request('/api/workouts/sessions', {
+  return request('/workouts/sessions', {
     method: 'POST',
     body
   });

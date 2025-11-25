@@ -95,7 +95,7 @@ export default function FormImc({ onCalculate }) {
     onCalculate?.(imc, categorie, description, conseil);
 
     try {
-      secureApiCall('/api/history', {
+      secureApiCall('/history', {
         method: 'POST',
         body: JSON.stringify({
           action: 'IMC_CALC',

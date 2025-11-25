@@ -46,7 +46,7 @@ export async function escalateChat(conversationId, reason = '') {
  */
 export async function getAllSupportTickets(filters = {}) {
   const params = new URLSearchParams(filters);
-  const response = await client.get(`/api/admin/support-tickets?${params}`);
+  const response = await client.get(`${endpoints.supportTickets.list}?${params}`);
   return response.data;
 }
 
@@ -56,7 +56,7 @@ export async function getAllSupportTickets(filters = {}) {
  * @returns {Promise<{ticket, messages}>}
  */
 export async function getSupportTicketById(ticketId) {
-  const response = await client.get(`/api/admin/support-tickets/${ticketId}`);
+  const response = await client.get(endpoints.supportTickets.byId(ticketId));
   return response.data;
 }
 
@@ -67,7 +67,7 @@ export async function getSupportTicketById(ticketId) {
  * @returns {Promise<{message, ticket}>}
  */
 export async function replyToSupportTicket(ticketId, message) {
-  const response = await client.post(`/api/admin/support-tickets/${ticketId}/reply`, {
+  const response = await client.post(endpoints.supportTickets.reply(ticketId), {
     message
   });
   return response.data;
@@ -81,7 +81,7 @@ export async function replyToSupportTicket(ticketId, message) {
  * @returns {Promise<{message, ticket, messagesDeleted}>}
  */
 export async function resolveSupportTicket(ticketId, notes = '', deleteMessages = false) {
-  const response = await client.post(`/api/admin/support-tickets/${ticketId}/resolve`, {
+  const response = await client.post(endpoints.supportTickets.resolve(ticketId), {
     notes,
     deleteMessages
   });
@@ -94,7 +94,7 @@ export async function resolveSupportTicket(ticketId, notes = '', deleteMessages 
  * @returns {Promise<{message, ticket}>}
  */
 export async function reopenSupportTicket(ticketId) {
-  const response = await client.post(`/api/admin/support-tickets/${ticketId}/reopen`);
+  const response = await client.post(endpoints.supportTickets.reopen(ticketId));
   return response.data;
 }
 
@@ -105,7 +105,7 @@ export async function reopenSupportTicket(ticketId) {
  * @returns {Promise<{message, ticket}>}
  */
 export async function assignSupportTicket(ticketId, adminId) {
-  const response = await client.post(`/api/admin/support-tickets/${ticketId}/assign`, {
+  const response = await client.post(endpoints.supportTickets.assign(ticketId), {
     adminId
   });
   return response.data;
@@ -116,7 +116,7 @@ export async function assignSupportTicket(ticketId, adminId) {
  * @returns {Promise<{totalOpen, totalResolved, totalClosed, highPriority, avgResolutionTimeHours}>}
  */
 export async function getSupportTicketStats() {
-  const response = await client.get('/api/admin/support-tickets/stats');
+  const response = await client.get(endpoints.supportTickets.stats);
   return response.data;
 }
 
@@ -125,7 +125,7 @@ export async function getSupportTicketStats() {
  * @returns {Promise<{conversations: Array}>}
  */
 export async function getAIConversations() {
-  const response = await client.get('/api/chat/ai-conversations');
+  const response = await client.get(endpoints.chat.aiConversations);
   return response.data;
 }
 
@@ -135,6 +135,6 @@ export async function getAIConversations() {
  * @returns {Promise<{message: string}>}
  */
 export async function deleteAIConversation(conversationId) {
-  const response = await client.delete(`/api/chat/ai-conversation/${conversationId}`);
+  const response = await client.delete(endpoints.chat.deleteAiConversation(conversationId));
   return response.data;
 }

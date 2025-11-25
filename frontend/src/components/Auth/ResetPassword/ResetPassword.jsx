@@ -47,7 +47,7 @@ export default function ResetPassword() {
       setLoading(true);
       setMsg("");
       const start = Date.now();
-      const res = await fetch(`${API_URL}/api/reset-password`, {
+      const res = await fetch(`${API_URL}/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password: cleanPwd }),
