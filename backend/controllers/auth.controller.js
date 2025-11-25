@@ -82,7 +82,6 @@ exports.login = async (req, res) => {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax', // 'none' requis pour cross-domain (Netlify previews)
-      domain: isProduction ? '.harmonith.fr' : undefined, // Partage cookie entre harmonith.fr et api.harmonith.fr
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
     });
@@ -294,7 +293,6 @@ exports.logout = async (req, res) => {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
-      domain: isProduction ? '.harmonith.fr' : undefined,
       path: '/',
     });
 
