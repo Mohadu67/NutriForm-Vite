@@ -1,18 +1,23 @@
 import { useEffect, useRef } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import usePageTitle from "../../hooks/usePageTitle.js";
+import { useChat } from "../../contexts/ChatContext";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import Faq from "./Faq/Faq.jsx";
-import FormContact from "./FormContact/FormContact.jsx";
 import styles from "./ContactPage.module.css";
 
 export default function ContactPage() {
-  usePageTitle("Contact");
+  usePageTitle("FAQ");
   const faqSectionRef = useRef(null);
+  const { openChat } = useChat();
 
   const scrollToFaq = () => {
     faqSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleOpenAiAssistant = () => {
+    openChat();
   };
 
   useEffect(() => {
@@ -35,24 +40,24 @@ export default function ContactPage() {
     return () => observer.disconnect();
   }, []);
 
-  const contactSchema = {
+  const faqSchema = {
     "@context": "https://schema.org",
-    "@type": "ContactPage",
-    "name": "Contact - Harmonith",
-    "description": "Contactez l'équipe Harmonith pour toute question sur nos outils fitness",
+    "@type": "FAQPage",
+    "name": "FAQ - Harmonith",
+    "description": "Toutes les réponses à tes questions sur le fitness, la nutrition et l'entraînement",
     "url": "https://harmonith.fr/contact"
   };
 
   return (
     <>
       <Helmet>
-        <title>Contact - Harmonith | Questions et Support</title>
-        <meta name="description" content="Contactez l'équipe Harmonith pour toute question sur nos outils fitness. FAQ complète et formulaire de contact disponibles." />
-        <meta property="og:title" content="Contact - Harmonith" />
-        <meta property="og:description" content="Questions sur Harmonith ? Consultez notre FAQ ou contactez-nous directement." />
+        <title>FAQ - Harmonith | Questions Fréquentes</title>
+        <meta name="description" content="Toutes les réponses à tes questions sur le fitness, la nutrition et l'entraînement. Des conseils pratiques avec une touche d'humour !" />
+        <meta property="og:title" content="FAQ - Harmonith" />
+        <meta property="og:description" content="Questions sur le fitness ? On a les réponses ! Consulte notre FAQ complète." />
         <meta property="og:url" content="https://harmonith.fr/contact" />
         <script type="application/ld+json">
-          {JSON.stringify(contactSchema)}
+          {JSON.stringify(faqSchema)}
         </script>
       </Helmet>
 
@@ -62,15 +67,15 @@ export default function ContactPage() {
         {/* Hero Section */}
         <section className={styles.hero}>
           <div className={styles.heroContent}>
-            <span className={styles.badge}>Support</span>
+            <span className={styles.badge}>FAQ</span>
             <h1 className={styles.heroTitle}>
               Une question ?
               <br />
-              <span className={styles.highlight}>On t'écoute.</span>
+              <span className={styles.highlight}>On a la réponse !</span>
             </h1>
             <p className={styles.heroSubtitle}>
-              Consulte notre FAQ ou contacte-nous directement.
-              Notre équipe répond généralement sous 24h.
+              Découvre nos réponses aux questions les plus fréquentes.
+              Des conseils pratiques avec une touche d'humour !
             </p>
           </div>
           <div className={styles.heroVisual}>
@@ -104,9 +109,23 @@ export default function ContactPage() {
           <Faq />
         </section>
 
-        {/* Contact Form Section */}
-        <section className={`${styles.formWrapper} ${styles.fadeIn}`}>
-          <FormContact />
+        {/* AI Assistant CTA */}
+        <section className={`${styles.aiAssistantCta} ${styles.fadeIn}`}>
+          <div className={styles.ctaContent}>
+            <h3>Cette page vous a été utile ?</h3>
+            <p>Si oui, tant mieux ! 🎉</p>
+            <p>Sinon, notre assistant IA est là pour répondre à toutes vos questions personnalisées.</p>
+            <button
+              className={styles.aiButton}
+              onClick={handleOpenAiAssistant}
+              aria-label="Ouvrir l'assistant IA"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
+              </svg>
+              Discuter avec l'Assistant IA
+            </button>
+          </div>
         </section>
       </main>
 
