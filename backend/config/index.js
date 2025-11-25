@@ -42,7 +42,7 @@ module.exports = {
   env: process.env.NODE_ENV || "development",
   isProd: process.env.NODE_ENV === "production",
   port: Number(process.env.PORT || 3000),
-  mongoUri: process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://localhost:27017/harmonith",
+  mongoUri: process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://localhost:27017/nutriform",
   jwtSecret: process.env.JWT_SECRET || "secret",
   frontUrl,
   allowedOrigins,
