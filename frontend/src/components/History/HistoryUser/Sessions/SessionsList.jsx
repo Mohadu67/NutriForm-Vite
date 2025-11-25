@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect, useState } from "react";
 import style from "../HistoryUser.module.css";
 import { API_BASE_URL } from "../../../../shared/config/api.js";
+import { confirmDialog, showSuccess, showError } from "../../../../utils/confirmDialog.js";
 
 function parseDate(raw) {
   if (!raw) return null;
@@ -65,7 +66,15 @@ export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
 
   async function handleDelete(id) {
     if (!id) return;
-    const ok = window.confirm("Supprimer cette séance ?");
+    const ok = await confirmDialog(
+      "Cette action est irréversible. Voulez-vous vraiment supprimer cette séance ?",
+      {
+        title: "Supprimer la séance",
+        confirmText: "Supprimer",
+        cancelText: "Annuler",
+        type: "error"
+      }
+    );
     if (!ok) return;
     try {
       setDeletingId(id);
@@ -81,8 +90,9 @@ export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
       setLocalRows(prev => prev.filter(r => r.id !== id));
       if (typeof onDeleteSuccess === 'function') onDeleteSuccess(id);
       if (typeof onData === 'function') onData(localRows.filter(r => r.id !== id));
+      showSuccess('Séance supprimée avec succès !');
     } catch (e) {
-      alert(e.message || 'Erreur lors de la suppression');
+      showError(e.message || 'Erreur lors de la suppression');
     } finally {
       setDeletingId(null);
     }
