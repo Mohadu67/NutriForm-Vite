@@ -20,7 +20,8 @@ import {
   MoonIcon,
   TrophyIcon,
   UserIcon,
-  UsersIcon
+  UsersIcon,
+  HelpCircleIcon
 } from "./NavIcons";
 
 export default function Navbar() {
@@ -222,7 +223,7 @@ export default function Navbar() {
     ] : []),
     { label: t('nav.tools'), path: "/outils", icon: <ToolsIcon size={28} /> },
     { label: t('nav.about'), path: "/about", icon: <InfoIcon size={28} /> },
-    { label: t('nav.contact'), path: "/contact", icon: <MessageIcon size={28} /> }
+    { label: 'FAQ', path: "/contact", icon: <HelpCircleIcon size={28} /> }
   ], [t, isLoggedIn, isPremium]);
 
   // Close menu handler
