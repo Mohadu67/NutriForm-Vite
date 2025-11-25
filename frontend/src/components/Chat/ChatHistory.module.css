@@ -247,11 +247,13 @@
   background: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
   color: white;
   text-decoration: none;
+  border: none;
   border-radius: var(--radius-xl);
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-sm);
   transition: all var(--transition-base);
   box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
+  cursor: pointer;
 }
 
 .loginLink:hover {

@@ -44,6 +44,17 @@ export const endpoints = {
     send: "/chat/send",
     history: "/chat/history",
     escalate: "/chat/escalate",
+    aiConversations: "/chat/ai-conversations",
+    deleteAiConversation: (conversationId) => `/chat/ai-conversation/${conversationId}`,
+  },
+  supportTickets: {
+    list: "/admin/support-tickets",
+    byId: (ticketId) => `/admin/support-tickets/${ticketId}`,
+    reply: (ticketId) => `/admin/support-tickets/${ticketId}/reply`,
+    resolve: (ticketId) => `/admin/support-tickets/${ticketId}/resolve`,
+    reopen: (ticketId) => `/admin/support-tickets/${ticketId}/reopen`,
+    assign: (ticketId) => `/admin/support-tickets/${ticketId}/assign`,
+    stats: "/admin/support-tickets/stats",
   }
 };
 export default endpoints;

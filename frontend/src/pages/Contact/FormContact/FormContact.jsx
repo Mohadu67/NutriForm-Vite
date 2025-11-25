@@ -42,7 +42,7 @@ export default function FormContact({ onSend }) {
       if (typeof onSend === "function") {
         await onSend({ ...form, captchaToken });
       } else {
-        const endpoint = API_URL ? `${API_URL}/api/contact` : "/api/contact";
+        const endpoint = API_URL ? `${API_URL}/contact` : "/contact";
         const res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

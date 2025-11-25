@@ -20,7 +20,7 @@ export default function useHistoryData() {
 
     setStatus("loading");
 
-    secureApiCall('/api/me')
+    secureApiCall('/me')
       .then((res) => res.json())
       .then((data) => {
         const name =
@@ -74,7 +74,7 @@ export default function useHistoryData() {
         setStatus("error");
       });
 
-    secureApiCall('/api/history')
+    secureApiCall('/history')
       .then((res) => res.json())
       .then((data) => {
         const src = Array.isArray(data)
@@ -164,7 +164,7 @@ export default function useHistoryData() {
         setStatus("error");
       });
 
-    secureApiCall('/api/workouts/sessions')
+    secureApiCall('/workouts/sessions')
       .then((res) => res.json())
       .then((data) => {
         const src = Array.isArray(data)

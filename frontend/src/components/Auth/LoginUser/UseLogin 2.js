@@ -22,7 +22,7 @@ export default function useLogin(onLoginSuccess, options = {}) {
         throw new Error("VITE_API_URL n'est pas défini côté frontend.");
       }
 
-      const endpoint = `${apiBase}/api/login`;
+      const endpoint = `${apiBase}/login`;
 
       const res = await fetch(endpoint, {
         method: "POST",

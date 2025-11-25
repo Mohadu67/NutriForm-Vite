@@ -7,7 +7,7 @@ import { getSubscriptionStatus } from '../../shared/api/subscription';
 import Avatar from '../shared/Avatar';
 import styles from './ChatHistory.module.css';
 
-export default function ChatHistory() {
+export default function ChatHistory({ onLogin }) {
   const { openAIChat, openMatchChat } = useChat();
   const [conversations, setConversations] = useState([]);
   const [matchConversations, setMatchConversations] = useState([]);
@@ -129,7 +129,7 @@ export default function ChatHistory() {
         {!isAuth ? (
           <div className={styles.emptyState}>
             <p>Connecte-toi pour voir tes conversations</p>
-            <a href="/" className={styles.loginLink}>Se connecter</a>
+            <button onClick={onLogin} className={styles.loginLink}>Se connecter</button>
           </div>
         ) : (
           <>

@@ -48,7 +48,7 @@ export default function ProfileUser({ onLogout }) {
 
   const fetchUserData = async () => {
     try {
-      const res = await secureApiCall('/api/me');
+      const res = await secureApiCall('/me');
 
       if (!res.ok) throw new Error("Erreur de récupération des données");
 
@@ -87,7 +87,7 @@ export default function ProfileUser({ onLogout }) {
     setError("");
 
     try {
-      const res = await secureApiCall('/api/update-profile', {
+      const res = await secureApiCall('/update-profile', {
         method: "PUT",
         body: JSON.stringify({ prenom, pseudo, email })
       });
@@ -121,7 +121,7 @@ export default function ProfileUser({ onLogout }) {
     }
 
     try {
-      const res = await secureApiCall('/api/change-password', {
+      const res = await secureApiCall('/change-password', {
         method: "PUT",
         body: JSON.stringify({ currentPassword, newPassword })
       });

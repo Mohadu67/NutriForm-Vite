@@ -126,7 +126,7 @@ export default function FormCalorie({ onResult, onCalculate }) {
           date: new Date().toISOString(),
         },
       };
-      secureApiCall('/api/history', {
+      secureApiCall('/history', {
         method: 'POST',
         body: JSON.stringify(body),
       })

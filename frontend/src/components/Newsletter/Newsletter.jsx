@@ -48,7 +48,7 @@ export default function Newsletter() {
         ? await executeRecaptcha('newsletter_subscribe')
         : null;
 
-      const endpoint = API_URL ? `${API_URL}/api/newsletter/subscribe` : "/api/newsletter/subscribe";
+      const endpoint = API_URL ? `${API_URL}/newsletter/subscribe` : "/newsletter/subscribe";
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {

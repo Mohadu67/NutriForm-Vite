@@ -30,7 +30,7 @@ export default function ProfilePhoto({ user }) {
       const formData = new FormData();
       formData.append('photo', file);
 
-      const response = await secureApiCall('/api/upload/profile-photo', {
+      const response = await secureApiCall('/upload/profile-photo', {
         method: "POST",
         body: formData
       });
@@ -75,7 +75,7 @@ export default function ProfilePhoto({ user }) {
     setMessage({ type: "", text: "" });
 
     try {
-      const response = await secureApiCall('/api/upload/profile-photo', {
+      const response = await secureApiCall('/upload/profile-photo', {
         method: "DELETE"
       });
 

@@ -16,7 +16,7 @@ export default function LogoutActions({ onLogout }) {
 
   const checkAdmin = async () => {
     try {
-      const response = await secureApiCall('/api/me');
+      const response = await secureApiCall('/me');
 
       if (response.ok) {
         const data = await response.json();

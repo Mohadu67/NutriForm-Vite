@@ -9,7 +9,7 @@ import client from './client';
  * @returns {Promise} Liste des conversations
  */
 export const getConversations = async () => {
-  const response = await client.get('/api/match-chat/conversations');
+  const response = await client.get('/match-chat/conversations');
   return response.data;
 };
 
@@ -19,7 +19,7 @@ export const getConversations = async () => {
  * @returns {Promise} Conversation
  */
 export const getOrCreateConversation = async (matchId) => {
-  const response = await client.get(`/api/match-chat/conversation/${matchId}`);
+  const response = await client.get(`/match-chat/conversation/${matchId}`);
   return response.data;
 };
 
@@ -30,7 +30,7 @@ export const getOrCreateConversation = async (matchId) => {
  * @returns {Promise} Message créé
  */
 export const sendMessage = async (conversationId, messageData) => {
-  const response = await client.post(`/api/match-chat/${conversationId}/messages`, messageData);
+  const response = await client.post(`/match-chat/${conversationId}/messages`, messageData);
   return response.data;
 };
 
@@ -41,7 +41,7 @@ export const sendMessage = async (conversationId, messageData) => {
  * @returns {Promise} Liste des messages
  */
 export const getMessages = async (conversationId, params = {}) => {
-  const response = await client.get(`/api/match-chat/${conversationId}/messages`, { params });
+  const response = await client.get(`/match-chat/${conversationId}/messages`, { params });
   return response.data;
 };
 
@@ -51,7 +51,7 @@ export const getMessages = async (conversationId, params = {}) => {
  * @returns {Promise} Résultat
  */
 export const markMessagesAsRead = async (conversationId) => {
-  const response = await client.put(`/api/match-chat/${conversationId}/read`);
+  const response = await client.put(`/match-chat/${conversationId}/read`);
   return response.data;
 };
 
@@ -61,7 +61,7 @@ export const markMessagesAsRead = async (conversationId) => {
  * @returns {Promise} Résultat
  */
 export const deleteMessage = async (messageId) => {
-  const response = await client.delete(`/api/match-chat/messages/${messageId}`);
+  const response = await client.delete(`/match-chat/messages/${messageId}`);
   return response.data;
 };
 
@@ -71,7 +71,7 @@ export const deleteMessage = async (messageId) => {
  * @returns {Promise} Résultat
  */
 export const blockConversation = async (conversationId) => {
-  const response = await client.post(`/api/match-chat/${conversationId}/block`);
+  const response = await client.post(`/match-chat/${conversationId}/block`);
   return response.data;
 };
 
@@ -81,7 +81,7 @@ export const blockConversation = async (conversationId) => {
  * @returns {Promise} Résultat
  */
 export const deleteConversation = async (conversationId) => {
-  const response = await client.delete(`/api/match-chat/conversation/${conversationId}`);
+  const response = await client.delete(`/match-chat/conversation/${conversationId}`);
   return response.data;
 };
 

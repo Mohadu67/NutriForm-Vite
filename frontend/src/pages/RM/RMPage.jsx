@@ -119,7 +119,7 @@ export default function RMPage() {
     };
 
     try {
-      const response = await secureApiCall('/api/history', {
+      const response = await secureApiCall('/history', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -34,7 +34,7 @@ export default function AdminPage() {
     }
 
     try {
-      const response = await secureApiCall('/api/me');
+      const response = await secureApiCall('/me');
       if (response.ok) {
         const data = await response.json();
         if (data.role !== "admin") {
@@ -56,8 +56,8 @@ export default function AdminPage() {
   const fetchStats = useCallback(async () => {
     try {
       const [reviewsRes, newsletterStatsRes] = await Promise.all([
-        secureApiCall('/api/reviews/users/all'),
-        secureApiCall('/api/newsletter/stats'),
+        secureApiCall('/reviews/users/all'),
+        secureApiCall('/newsletter/stats'),
       ]);
 
       const reviewsData = await reviewsRes.json();
@@ -82,7 +82,7 @@ export default function AdminPage() {
   const fetchReviews = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await secureApiCall('/api/reviews/users/all');
+      const response = await secureApiCall('/reviews/users/all');
       const data = await response.json();
       if (data.success) {
         setReviews(data.reviews);
@@ -97,7 +97,7 @@ export default function AdminPage() {
   const fetchNewsletters = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await secureApiCall('/api/newsletter-admin');
+      const response = await secureApiCall('/newsletter-admin');
       const data = await response.json();
       if (data.success) {
         setNewsletters(data.newsletters);
@@ -121,7 +121,7 @@ export default function AdminPage() {
 
   const handleApprove = async (id) => {
     try {
-      const response = await secureApiCall(`/api/reviews/users/${id}/approve`, { method: "PUT" });
+      const response = await secureApiCall(`/reviews/users/${id}/approve`, { method: "PUT" });
       const data = await response.json();
       if (data.success) {
         showMessage("success", "Avis approuvé !");
@@ -138,7 +138,7 @@ export default function AdminPage() {
   const handleDelete = async (id) => {
     if (!confirm("Voulez-vous vraiment supprimer cet avis ?")) return;
     try {
-      const response = await secureApiCall(`/api/reviews/users/${id}`, { method: "DELETE" });
+      const response = await secureApiCall(`/reviews/users/${id}`, { method: "DELETE" });
       const data = await response.json();
       if (data.success) {
         showMessage("success", "Avis supprimé !");
@@ -156,7 +156,7 @@ export default function AdminPage() {
     if (selectedReviews.length === 0) return;
     try {
       await Promise.all(
-        selectedReviews.map((id) => secureApiCall(`/api/reviews/users/${id}/approve`, { method: "PUT" }))
+        selectedReviews.map((id) => secureApiCall(`/reviews/users/${id}/approve`, { method: "PUT" }))
       );
       showMessage("success", `${selectedReviews.length} avis approuvés !`);
       setSelectedReviews([]);
@@ -172,7 +172,7 @@ export default function AdminPage() {
     if (!confirm(`Supprimer ${selectedReviews.length} avis ?`)) return;
     try {
       await Promise.all(
-        selectedReviews.map((id) => secureApiCall(`/api/reviews/users/${id}`, { method: "DELETE" }))
+        selectedReviews.map((id) => secureApiCall(`/reviews/users/${id}`, { method: "DELETE" }))
       );
       showMessage("success", `${selectedReviews.length} avis supprimés !`);
       setSelectedReviews([]);

@@ -23,7 +23,7 @@ export default function Salutation({ className = "", seedKey = "static" }) {
     // Ne pas appeler l'API si l'utilisateur n'est pas authentifié
     if (!isAuthenticated()) return;
 
-    secureApiCall('/api/me')
+    secureApiCall('/me')
       .then((res) =>
         res
           .json()

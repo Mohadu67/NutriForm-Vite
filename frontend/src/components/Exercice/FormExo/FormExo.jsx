@@ -52,7 +52,7 @@ export default function FormExo({ user: userProp }) {
       if (mode !== "builder" || currentStep !== 0) return;
 
       try {
-        const response = await secureApiCall("/api/workouts/last-week-session");
+        const response = await secureApiCall("/workouts/last-week-session");
         if (!response.ok) {
           setHasCheckedLastWeek(true);
           return;

@@ -73,7 +73,7 @@ export default function useLogin(onLoginSuccess, options = {}) {
 
     try {
       const API_URL = import.meta.env.VITE_API_URL || '';
-      const response = await fetch(`${API_URL}/api/resend-verification`, {
+      const response = await fetch(`${API_URL}/resend-verification`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: unverifiedEmail })

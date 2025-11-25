@@ -33,7 +33,7 @@ export default function Reviews() {
 
   
   useEffect(() => {
-    fetch(`${API_URL}/api/reviews/users`)
+    fetch(`${API_URL}/reviews/users`)
       .then((res) => res.json())
       .then((data) => {
         setUserReviews(data.reviews || []);
@@ -47,7 +47,7 @@ export default function Reviews() {
     e.preventDefault();
 
     try {
-      const response = await fetch(`${API_URL}/api/reviews/users`, {
+      const response = await fetch(`${API_URL}/reviews/users`, {
         method: "POST",
         credentials: "include", // Envoie le cookie httpOnly
         headers: {
