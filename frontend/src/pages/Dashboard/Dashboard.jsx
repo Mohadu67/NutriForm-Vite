@@ -9,6 +9,7 @@ import useHistoryData from "../../components/History/HistoryUser/UseHistoryData.
 import WeeklyGoalModal from "../../components/History/DashboardCards/WeeklyGoalModal.jsx";
 import { deleteSession, updateSession } from "../../components/History/SessionTracking/sessionApi.js";
 import { getSubscriptionStatus } from "../../shared/api/subscription.js";
+import { confirmDialog, showSuccess, showError } from "../../utils/confirmDialog.js";
 
 export default function Dashboard() {
   usePageTitle("Dashboard");
@@ -140,14 +141,24 @@ export default function Dashboard() {
   }, [weeklyGoal]);
 
   const handleDeleteSession = useCallback(async (sessionId) => {
-    if (!window.confirm("Supprimer cette séance ?")) return;
+    const ok = await confirmDialog(
+      "Cette action est irréversible. Voulez-vous vraiment supprimer cette séance ?",
+      {
+        title: "Supprimer la séance",
+        confirmText: "Supprimer",
+        cancelText: "Annuler",
+        type: "error"
+      }
+    );
+    if (!ok) return;
     try {
       await deleteSession(sessionId);
       // Mettre à jour la liste des séances en supprimant celle-ci
       setUserSessions(prev => prev.filter(s => s.id !== sessionId && s._id !== sessionId));
+      showSuccess('Séance supprimée avec succès !');
     } catch (err) {
       console.error("Erreur lors de la suppression de la séance:", err);
-      alert("Impossible de supprimer la séance");
+      showError("Impossible de supprimer la séance");
     }
   }, []);
 
@@ -172,9 +183,10 @@ export default function Dashboard() {
           : s
       ));
       setEditingSessionId(null);
+      showSuccess('Séance renommée avec succès !');
     } catch (err) {
       console.error("Erreur lors du renommage de la séance:", err);
-      alert("Impossible de renommer la séance");
+      showError("Impossible de renommer la séance");
       setEditingSessionId(null);
     }
   };
