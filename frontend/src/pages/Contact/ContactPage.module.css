@@ -223,6 +223,79 @@
   }
 }
 
+/* ========== AI ASSISTANT CTA ========== */
+.aiAssistantCta {
+  padding: 100px 24px;
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.05) 0%, rgba(184, 221, 209, 0.05) 100%);
+  text-align: center;
+  position: relative;
+}
+
+.ctaContent {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.ctaContent h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text, #2d3748);
+  margin-bottom: 16px;
+}
+
+.ctaContent p {
+  font-size: 1.125rem;
+  color: var(--muted, #6b7280);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.aiButton {
+  margin-top: 32px;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, #f7b186 0%, #f9c89f 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.25);
+}
+
+.aiButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(247, 177, 134, 0.35);
+  background: linear-gradient(135deg, #f9c89f 0%, #f7b186 100%);
+}
+
+.aiButton:active {
+  transform: translateY(0);
+}
+
+.aiButton svg {
+  flex-shrink: 0;
+}
+
+:global(body.dark) .ctaContent h3,
+:global(html.dark) .ctaContent h3 {
+  color: #f7fafc;
+}
+
+:global(body.dark) .ctaContent p,
+:global(html.dark) .ctaContent p {
+  color: #cbd5e0;
+}
+
+:global(body.dark) .aiAssistantCta,
+:global(html.dark) .aiAssistantCta {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.08) 0%, rgba(184, 221, 209, 0.08) 100%);
+}
+
 /* ========== REDUCED MOTION ========== */
 @media (prefers-reduced-motion: reduce) {
   .floatingOrb {
@@ -233,5 +306,9 @@
     opacity: 1;
     transform: none;
     transition: none;
+  }
+
+  .aiButton:hover {
+    transform: none;
   }
 }
