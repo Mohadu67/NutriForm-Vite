@@ -4,7 +4,7 @@ import { isAuthenticated } from '../../shared/api/auth';
 import { getConversations, deleteConversation as deleteMatchConv } from '../../shared/api/matchChat';
 import { getAIConversations, deleteAIConversation } from '../../shared/api/chat';
 import { getSubscriptionStatus } from '../../shared/api/subscription';
-import Avatar from '../shared/Avatar';
+import Avatar from '../Shared/Avatar';
 import styles from './ChatHistory.module.css';
 
 export default function ChatHistory({ onLogin }) {
