@@ -50,7 +50,36 @@ export default function ProfileUser({ onLogout }) {
     try {
       const res = await secureApiCall('/me');
 
-      if (!res.ok) throw new Error("Erreur de récupération des données");
+      if (!res.ok) {
+        // Si 401 Unauthorized, le token est invalide - déconnecter
+        if (res.status === 401) {
+          const weeklyGoal = localStorage.getItem('weeklyGoal');
+          const dynamiPrefs = {
+            dynamiStep: localStorage.getItem('dynamiStep'),
+            dynamiType: localStorage.getItem('dynamiType'),
+            dynamiEquip: localStorage.getItem('dynamiEquip'),
+            dynamiMuscle: localStorage.getItem('dynamiMuscle'),
+          };
+
+          await logout();
+          localStorage.clear();
+          sessionStorage.clear();
+
+          if (weeklyGoal) localStorage.setItem('weeklyGoal', weeklyGoal);
+          Object.entries(dynamiPrefs).forEach(([key, value]) => {
+            if (value) localStorage.setItem(key, value);
+          });
+
+          if (onLogout) onLogout();
+          window.location.href = '/';
+          return;
+        }
+
+        // Pour d'autres erreurs (500, 503, etc.), afficher un message
+        setError("Impossible de charger les données. Réessayez plus tard.");
+        setLoading(false);
+        return;
+      }
 
       const data = await res.json();
       setUser(data);
@@ -58,26 +87,11 @@ export default function ProfileUser({ onLogout }) {
       setPseudo(data.pseudo || "");
       setEmail(data.email || "");
       setLoading(false);
-    } catch {
-      const weeklyGoal = localStorage.getItem('weeklyGoal');
-      const dynamiPrefs = {
-        dynamiStep: localStorage.getItem('dynamiStep'),
-        dynamiType: localStorage.getItem('dynamiType'),
-        dynamiEquip: localStorage.getItem('dynamiEquip'),
-        dynamiMuscle: localStorage.getItem('dynamiMuscle'),
-      };
-
-      await logout();
-      localStorage.clear();
-      sessionStorage.clear();
-
-      if (weeklyGoal) localStorage.setItem('weeklyGoal', weeklyGoal);
-      Object.entries(dynamiPrefs).forEach(([key, value]) => {
-        if (value) localStorage.setItem(key, value);
-      });
-
-      if (onLogout) onLogout();
-      window.location.href = '/';
+    } catch (err) {
+      // Erreur réseau ou autre erreur inattendue
+      console.error('Erreur fetchUserData:', err);
+      setError("Erreur de connexion. Vérifiez votre connexion internet.");
+      setLoading(false);
     }
   };
 

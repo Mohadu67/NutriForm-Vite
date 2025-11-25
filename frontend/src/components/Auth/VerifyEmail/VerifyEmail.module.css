@@ -3,7 +3,7 @@
   --v-accent: var(--couleur-bouton-selection, #b8ddd1);
   --v-accent-2: var(--couleur-bouton-action, #f7b186);
   --v-text: var(--couleur-text-noir, #333);
-  --v-font-title: var(--font-titre, 'Merriweather', serif);
+  --v-font-title: var(--font-titre, sans-serif);
   --v-font-body: var(--font-p, 'Montserrat', sans-serif);
 }
 

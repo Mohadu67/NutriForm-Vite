@@ -82,7 +82,7 @@
   background: linear-gradient(135deg, var(--accent-soft), color-mix(in oklab, var(--accent-soft) 85%, white));
   border: 1px solid color-mix(in oklab, var(--accent-soft) 90%, var(--line));
   border-radius: 12px;
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-weight: 800;
   font-size: 1rem;
   padding: 0.8rem 1rem;
@@ -130,7 +130,7 @@
 }
 
 .link {
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   color: var(--accent);
   font-weight: 600;
 }

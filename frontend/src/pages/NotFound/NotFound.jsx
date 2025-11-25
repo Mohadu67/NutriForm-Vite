@@ -30,9 +30,9 @@ export default function NotFound() {
 
             {}
             <g className={styles.digits}>
-              <text x="20" y="42" fontSize="32" fontFamily="Merriweather, serif" fill="#2B2B2B">4</text>
-              <text x="90" y="38" fontSize="28" fontFamily="Merriweather, serif" fill="#2B2B2B">0</text>
-              <text x="155" y="42" fontSize="32" fontFamily="Merriweather, serif" fill="#2B2B2B">4</text>
+              <text x="20" y="42" fontSize="32" fontFamily="Montserrat, sans-serif" fill="#2B2B2B">4</text>
+              <text x="90" y="38" fontSize="28" fontFamily="Montserrat, sans-serif" fill="#2B2B2B">0</text>
+              <text x="155" y="42" fontSize="32" fontFamily="Montserrat, sans-serif" fill="#2B2B2B">4</text>
             </g>
           </svg>
         </div>
