@@ -4,6 +4,7 @@ import { isAuthenticated } from '../../shared/api/auth';
 import { getConversations, deleteConversation as deleteMatchConv } from '../../shared/api/matchChat';
 import { getAIConversations, deleteAIConversation } from '../../shared/api/chat';
 import { getSubscriptionStatus } from '../../shared/api/subscription';
+import Avatar from '../shared/Avatar';
 import styles from './ChatHistory.module.css';
 
 export default function ChatHistory() {
@@ -60,6 +61,7 @@ export default function ChatHistory() {
   const loadMatchConversations = async () => {
     try {
       const { conversations } = await getConversations();
+      console.log('Conversations Match chargées:', conversations);
       setMatchConversations(conversations || []);
     } catch (err) {
       console.error('Erreur chargement conversations matches:', err);
@@ -213,9 +215,10 @@ export default function ChatHistory() {
                     className={styles.conversationItem}
                     onClick={() => openMatchChat(conv)}
                   >
-                    <img
-                      src={conv.otherUser?.profile?.profilePicture || '/default-avatar.png'}
-                      alt={conv.otherUser?.pseudo || 'User'}
+                    <Avatar
+                      src={conv.otherUser?.profile?.profilePicture}
+                      name={conv.otherUser?.pseudo || conv.otherUser?.prenom || 'User'}
+                      size="md"
                       className={styles.convProfileImage}
                     />
                     <div className={styles.convContent}>
