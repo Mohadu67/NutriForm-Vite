@@ -29,9 +29,22 @@ async function request(path, options = {}) {
   });
 
   let data = null;
-  try { data = await res.json(); } catch (e) {
-    console.error("Failed to parse JSON response:", e);
+  // Ne parse JSON que si la réponse a du contenu
+  const contentType = res.headers.get('content-type');
+  const hasJsonContent = contentType && contentType.includes('application/json');
+  const hasContent = res.status !== 204 && res.headers.get('content-length') !== '0';
+
+  if (hasJsonContent || hasContent) {
+    try {
+      data = await res.json();
+    } catch (e) {
+      // Réponse vide ou pas du JSON, c'est OK pour 204 ou DELETE
+      if (res.status !== 204 && !res.url?.includes('DELETE')) {
+        console.error("Failed to parse JSON response:", e);
+      }
+    }
   }
+
   if (!res.ok) {
     const msg = (data && (data.error || data.message)) || `request_failed_${res.status}`;
     const err = new Error(msg);

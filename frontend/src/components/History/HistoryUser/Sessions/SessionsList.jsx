@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useState } from "react";
 import style from "../HistoryUser.module.css";
 import { API_BASE_URL } from "../../../../shared/config/api.js";
-import { confirmDialog, showSuccess, showError } from "../../../../utils/confirmDialog.js";
+import { confirmDialog, showSuccess, showError } from "../../../../utils/confirmDialog.jsx";
 
 function parseDate(raw) {
   if (!raw) return null;
