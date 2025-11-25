@@ -37,6 +37,10 @@ const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 
 const app = express();
+
+// ⚠️ IMPORTANT: Trust proxy pour Render/Netlify/Heroku (X-Forwarded-For)
+app.set('trust proxy', true);
+
 if (!config.mongoUri) {
   console.error("❌ MONGO_URI manquant dans la configuration.");
   process.exit(1);
@@ -86,8 +90,8 @@ const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    
-    const publicRoutes = ['/api/health', '/uploads'];
+
+    const publicRoutes = ['/api/health', '/uploads', '/api/subscriptions/webhook'];
     return publicRoutes.some(route => req.path.startsWith(route));
   }
 });
