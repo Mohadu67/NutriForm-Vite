@@ -20,7 +20,9 @@ import Leaderboard from "./pages/Leaderboard/Leaderboard.jsx";
 import Pricing from "./pages/Pricing/Pricing.jsx";
 import SupportTickets from "./pages/Admin/SupportTickets.jsx";
 import ProfileSetup from "./pages/Profile/ProfileSetup.jsx";
+import ProfileSetupFuturistic from "./pages/Profile/ProfileSetupFuturistic.jsx";
 import MatchingPage from "./pages/Matching/MatchingPage.jsx";
+import MatchingPageFuturistic from "./pages/Matching/MatchingPageFuturistic.jsx";
 import Chat from "./pages/Chat/Chat.jsx";
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
@@ -63,7 +65,9 @@ export default function App() {
       <Route path="/admin/newsletter/:id" element={<NewsletterAdmin />} />
       <Route path="/admin/support-tickets" element={<SupportTickets />} />
       <Route path="/profile/setup" element={<ProfileSetup />} />
+      <Route path="/profile/setup-futur" element={<ProfileSetupFuturistic />} />
       <Route path="/matching" element={<MatchingPage />} />
+      <Route path="/matching-futur" element={<MatchingPageFuturistic />} />
       <Route path="/chat/:matchId" element={<Chat />} />
       <Route path="*" element={<NotFound />} />
       </Routes>

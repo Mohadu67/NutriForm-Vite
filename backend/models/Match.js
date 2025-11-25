@@ -107,8 +107,6 @@ matchSchema.methods.addLike = function(userId) {
   } else if (this.user2Id.equals(userId)) {
     this.status = 'user2_liked';
   }
-
-  return this.save();
 };
 
 // Méthode pour vérifier si un utilisateur a déjà vu ce match

@@ -30,3 +30,9 @@ export async function blockUser(targetUserId) {
   const response = await client.post(endpoints.matching.block, { targetUserId });
   return response.data;
 }
+
+// Retirer un like (contrairement de liker)
+export async function unlikeProfile(targetUserId) {
+  const response = await client.post(endpoints.matching.unlike, { targetUserId });
+  return response.data;
+}

@@ -63,7 +63,7 @@
   padding: 0.5rem 1.2rem;
   background: linear-gradient(135deg, var(--orange), var(--orange-light));
   color: #fff;
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: 0.85rem;
   font-weight: 700;
   border-radius: 999px;
@@ -75,7 +75,7 @@
 }
 
 .titleh2 {
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: clamp(2rem, 5vw, 2.8rem);
   font-weight: 800;
   margin: 1rem 0;
@@ -238,7 +238,7 @@
 }
 
 .title {
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: 1.15rem;
   font-weight: 700;
   text-align: center;
@@ -253,7 +253,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--orange);
@@ -367,7 +367,7 @@
 
 /* Modal Title */
 .modalTitle {
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: 1.8rem;
   font-weight: 800;
   margin-bottom: 1.2rem;
@@ -423,7 +423,7 @@
   color: white;
   border: none;
   border-radius: 12px;
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -511,7 +511,7 @@
 }
 
 .articleTitle {
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: 2rem;
   font-weight: 800;
   color: var(--ink);
@@ -576,7 +576,7 @@
 }
 
 .articleText h4 {
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: 1.3rem;
   font-weight: 700;
   color: var(--ink);

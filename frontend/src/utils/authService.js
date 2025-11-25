@@ -62,9 +62,9 @@ export async function secureApiCall(endpoint, options = {}) {
     if (endpoint === '/me' && (!options || !options.method || options.method === 'GET')) {
       const now = Date.now();
 
-      // Si un appel est déjà en cours, attendre le résultat
+      // Si un appel est déjà en cours, attendre le résultat et retourner un clone
       if (authCheckInProgress) {
-        return authCheckInProgress;
+        return authCheckInProgress.then(res => res.clone());
       }
 
       // Si on a un résultat en cache récent, le retourner
