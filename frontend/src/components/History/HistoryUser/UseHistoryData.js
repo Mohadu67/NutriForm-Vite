@@ -217,7 +217,7 @@ export default function useHistoryData() {
     if (!id) return;
     if (!window.confirm("Supprimer cette mesure ?")) return;
     try {
-      const res = await secureApiCall(`/api/history/${id}`, {
+      const res = await secureApiCall(`/history/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {

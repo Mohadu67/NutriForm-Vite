@@ -97,8 +97,8 @@ export default function NewsletterAdmin() {
 
     try {
       const url = editingId
-        ? `/api/newsletter-admin/${editingId}`
-        : `/api/newsletter-admin`;
+        ? `/newsletter-admin/${editingId}`
+        : `/newsletter-admin`;
 
       const method = editingId ? "PUT" : "POST";
 
@@ -144,7 +144,7 @@ export default function NewsletterAdmin() {
     if (!confirm("Supprimer cette newsletter ?")) return;
 
     try {
-      const res = await secureApiCall(`/api/newsletter-admin/${id}`, {
+      const res = await secureApiCall(`/newsletter-admin/${id}`, {
         method: "DELETE"
       });
 
