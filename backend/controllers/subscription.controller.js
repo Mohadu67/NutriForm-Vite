@@ -71,8 +71,8 @@ async function createCheckoutSession(req, res) {
           userId: userId.toString()
         }
       },
-      success_url: `${process.env.FRONTEND_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}&success=true`,
-      cancel_url: `${process.env.FRONTEND_URL}/pricing?canceled=true`,
+      success_url: `${process.env.FRONTEND_BASE_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      cancel_url: `${process.env.FRONTEND_BASE_URL}/pricing?canceled=true`,
       metadata: {
         userId: userId.toString()
       }
@@ -96,6 +96,7 @@ async function createCheckoutSession(req, res) {
  * POST /api/subscriptions/webhook
  */
 async function handleWebhook(req, res) {
+  console.log('🎣 Webhook Stripe reçu');
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -104,8 +105,10 @@ async function handleWebhook(req, res) {
   try {
     // Vérifier la signature du webhook
     event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    console.log('✅ Signature webhook validée');
+    console.log('📦 Event type:', event.type);
   } catch (err) {
-    console.error('Erreur signature webhook:', err.message);
+    console.error('❌ Erreur signature webhook:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -113,34 +116,41 @@ async function handleWebhook(req, res) {
   try {
     switch (event.type) {
       case 'checkout.session.completed':
+        console.log('🎯 Traitement checkout.session.completed');
         await handleCheckoutCompleted(event.data.object);
         break;
 
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
+        console.log('🎯 Traitement subscription created/updated');
         await handleSubscriptionUpdated(event.data.object);
         break;
 
       case 'customer.subscription.deleted':
+        console.log('🎯 Traitement subscription deleted');
         await handleSubscriptionDeleted(event.data.object);
         break;
 
       case 'invoice.payment_succeeded':
+        console.log('🎯 Traitement payment succeeded');
         await handlePaymentSucceeded(event.data.object);
         break;
 
       case 'invoice.payment_failed':
+        console.log('🎯 Traitement payment failed');
         await handlePaymentFailed(event.data.object);
         break;
 
       default:
-        console.log(`Événement non géré: ${event.type}`);
+        console.log(`ℹ️ Événement non géré: ${event.type}`);
     }
 
+    console.log('✅ Webhook traité avec succès');
     res.status(200).json({ received: true });
   } catch (error) {
-    console.error('Erreur traitement webhook:', error);
-    res.status(500).json({ error: 'Erreur traitement webhook' });
+    console.error('❌ Erreur traitement webhook:', error);
+    console.error('Stack:', error.stack);
+    res.status(500).json({ error: 'Erreur traitement webhook', details: error.message });
   }
 }
 
@@ -148,29 +158,43 @@ async function handleWebhook(req, res) {
  * Handler: Checkout session complétée
  */
 async function handleCheckoutCompleted(session) {
+  console.log('🎯 handleCheckoutCompleted appelé');
+  console.log('📦 Session metadata:', session.metadata);
+  console.log('📦 Subscription ID:', session.subscription);
+
   const userId = session.metadata.userId;
   const subscriptionId = session.subscription;
 
   if (!userId || !subscriptionId) {
-    console.error('Métadonnées manquantes dans checkout.session.completed');
+    console.error('❌ Métadonnées manquantes dans checkout.session.completed', { userId, subscriptionId });
     return;
   }
 
-  // Récupérer les détails de la subscription depuis Stripe
-  const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+  try {
+    console.log(`🔍 Récupération subscription Stripe ${subscriptionId}...`);
+    // Récupérer les détails de la subscription depuis Stripe
+    const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+    console.log('✅ Subscription Stripe récupérée');
 
-  // Créer ou mettre à jour la subscription en DB
-  await upsertSubscription(userId, stripeSubscription);
+    console.log(`💾 Mise à jour DB pour user ${userId}...`);
+    // Créer ou mettre à jour la subscription en DB
+    await upsertSubscription(userId, stripeSubscription);
+    console.log('✅ Subscription DB mise à jour');
 
-  // Mettre à jour le User tier
-  await User.findByIdAndUpdate(userId, {
-    subscriptionTier: 'premium',
-    trialEndsAt: stripeSubscription.trial_end
-      ? new Date(stripeSubscription.trial_end * 1000)
-      : null
-  });
+    // Mettre à jour le User tier
+    await User.findByIdAndUpdate(userId, {
+      subscriptionTier: 'premium',
+      trialEndsAt: stripeSubscription.trial_end
+        ? new Date(stripeSubscription.trial_end * 1000)
+        : null
+    });
+    console.log('✅ User tier mis à jour');
 
-  console.log(`✅ Abonnement créé pour user ${userId}`);
+    console.log(`✅ Abonnement créé pour user ${userId}`);
+  } catch (error) {
+    console.error('❌ Erreur dans handleCheckoutCompleted:', error);
+    throw error;
+  }
 }
 
 /**
@@ -277,8 +301,12 @@ async function upsertSubscription(userId, stripeSubscription) {
     stripeSubscriptionId: stripeSubscription.id,
     stripePriceId: stripeSubscription.items.data[0].price.id,
     status: stripeSubscription.status,
-    currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-    currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+    currentPeriodStart: stripeSubscription.current_period_start
+      ? new Date(stripeSubscription.current_period_start * 1000)
+      : null,
+    currentPeriodEnd: stripeSubscription.current_period_end
+      ? new Date(stripeSubscription.current_period_end * 1000)
+      : null,
     cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
     trialStart: stripeSubscription.trial_start
       ? new Date(stripeSubscription.trial_start * 1000)
@@ -380,7 +408,7 @@ async function createCustomerPortalSession(req, res) {
 
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${process.env.FRONTEND_URL}/dashboard`
+      return_url: `${process.env.FRONTEND_BASE_URL}/dashboard`
     });
 
     res.status(200).json({ url: session.url });

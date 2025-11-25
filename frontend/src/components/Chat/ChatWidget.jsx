@@ -243,11 +243,12 @@ export default function ChatWidget() {
 
           {/* Input */}
           <div className={styles.chatInput}>
-            {!escalated && conversationId && (
+            {!escalated && isAuth && (
               <button
                 className={styles.escalateBtn}
                 onClick={handleEscalate}
                 title="Parler à un humain"
+                disabled={!conversationId}
               >
                 👤
               </button>
