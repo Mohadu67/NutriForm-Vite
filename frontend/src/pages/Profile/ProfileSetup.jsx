@@ -640,16 +640,6 @@ export default function ProfileSetup() {
                   <option value="other">Autre</option>
                 </select>
               </div>
-
-              <div className={styles.formCheck}>
-                <input
-                  type="checkbox"
-                  id="onlyVerified"
-                  checked={matchPreferences.onlyVerified}
-                  onChange={(e) => setMatchPreferences({ ...matchPreferences, onlyVerified: e.target.checked })}
-                />
-                <label htmlFor="onlyVerified">Uniquement les profils vérifiés</label>
-              </div>
             </div>
           )}
         </div>
