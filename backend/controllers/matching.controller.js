@@ -1,6 +1,7 @@
 const UserProfile = require('../models/UserProfile');
 const Match = require('../models/Match');
 const User = require('../models/User');
+const { notifyNewMatch } = require('../services/pushNotification.service');
 
 /**
  * Algorithme de matching intelligent avec scoring hyper-local
@@ -265,9 +266,35 @@ exports.likeProfile = async (req, res) => {
 
     if (match) {
       // Match existe déjà, ajouter le like
+      const wasMutual = match.isMutual();
       match.addLike(userId);
       await match.save();
       await match.populate('user1Id user2Id');
+
+      const isMutual = match.isMutual();
+
+      // Si le match devient mutuel, envoyer des notifications
+      if (!wasMutual && isMutual) {
+        // Récupérer les données des utilisateurs pour les notifications
+        const user1 = await User.findById(match.user1Id._id || match.user1Id);
+        const user2 = await User.findById(match.user2Id._id || match.user2Id);
+
+        if (user1 && user2) {
+          // Notifier l'utilisateur 1
+          notifyNewMatch(user1._id, {
+            username: user2.pseudo || 'Un utilisateur',
+            photo: user2.photo,
+            matchId: match._id
+          }).catch(err => console.error('Erreur notification user1:', err));
+
+          // Notifier l'utilisateur 2
+          notifyNewMatch(user2._id, {
+            username: user1.pseudo || 'Un utilisateur',
+            photo: user1.photo,
+            matchId: match._id
+          }).catch(err => console.error('Erreur notification user2:', err));
+        }
+      }
 
       return res.json({
         match: {
