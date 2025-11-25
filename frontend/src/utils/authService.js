@@ -25,7 +25,7 @@ async function apiCall(endpoint, options = {}) {
 }
 
 export async function login(identifier, password, remember = false) {
-  const response = await apiCall('/api/login', {
+  const response = await apiCall('/login', {
     method: 'POST',
     body: JSON.stringify({ identifier, password, remember }),
   });
@@ -58,8 +58,8 @@ export async function login(identifier, password, remember = false) {
 
 export async function secureApiCall(endpoint, options = {}) {
   try {
-    // Cache spécial pour /api/me pour éviter les appels multiples
-    if (endpoint === '/api/me' && (!options || !options.method || options.method === 'GET')) {
+    // Cache spécial pour /me pour éviter les appels multiples
+    if (endpoint === '/me' && (!options || !options.method || options.method === 'GET')) {
       const now = Date.now();
 
       // Si un appel est déjà en cours, attendre le résultat
@@ -116,7 +116,7 @@ export async function secureApiCall(endpoint, options = {}) {
 export async function logout() {
   try {
     // Appel API pour supprimer le cookie httpOnly côté serveur
-    await apiCall('/api/logout', { method: 'POST' });
+    await apiCall('/logout', { method: 'POST' });
   } catch (error) {
     console.error('Erreur lors de la déconnexion:', error);
   }

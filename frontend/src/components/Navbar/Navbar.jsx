@@ -25,7 +25,7 @@ import {
 
 export default function Navbar() {
   const { t, i18n } = useTranslation();
-  const { isChatOpen, chatView, activeConversation, openChat, openAIChat, closeChat, backToHistory } = useChat();
+  const { isChatOpen, chatView, activeConversation, openChat, closeChat, backToHistory } = useChat();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -130,7 +130,7 @@ export default function Navbar() {
       }
 
       try {
-        const response = await secureApiCall('/api/me');
+        const response = await secureApiCall('/me');
 
         if (!isMounted) return;
 
@@ -264,16 +264,11 @@ export default function Navbar() {
     }
   }, [isDesktop, openChat]);
 
-  // Handle messages button click - AI for non-premium, history for premium
+  // Handle messages button click - always open chat history
   const handleMessagesClick = useCallback(() => {
-    // Si l'utilisateur n'est pas connecté OU n'est pas premium → ouvrir le chat IA
-    if (!isLoggedIn || !isPremium) {
-      openAIChat(null, ''); // Ouvre directement le chat IA
-    } else {
-      // Si l'utilisateur est connecté ET premium → ouvrir l'historique normal
-      openChatHistory();
-    }
-  }, [isLoggedIn, isPremium, openAIChat, openChatHistory]);
+    // Toujours ouvrir l'historique qui montre IA + Matchs
+    openChatHistory();
+  }, [openChatHistory]);
 
   // Close chat history and go back to navigation
   const closeChatHistory = useCallback(() => {
@@ -411,7 +406,7 @@ export default function Navbar() {
                 </button>
                 <h3>💬 Messages</h3>
               </div>
-              <ChatHistory />
+              <ChatHistory onLogin={() => { closeChat(); openPopup('login'); }} />
               </div>
             )}
 
@@ -419,16 +414,14 @@ export default function Navbar() {
             {currentView === 'history' && chatView === 'conversation' && activeConversation && (
               <div className={styles.mobilePanel}>
                 <div className={styles.chatHistoryHeader}>
-                  {isLoggedIn && isPremium && (
-                    <button
-                      onClick={backToHistory}
-                      className={styles.chatCloseBtn}
-                      title="Retour"
-                      aria-label="Back to chat history"
-                    >
-                      ←
-                    </button>
-                  )}
+                  <button
+                    onClick={backToHistory}
+                    className={styles.chatCloseBtn}
+                    title="Retour"
+                    aria-label="Back to chat history"
+                  >
+                    ←
+                  </button>
                   <div className={styles.chatHeaderProfile}>
                     {activeConversation.type === 'match' ? (
                       <>
@@ -650,17 +643,15 @@ export default function Navbar() {
                   </button>
                 </div>
                 <div className={styles.chatPanelBody}>
-                  <ChatHistory />
+                  <ChatHistory onLogin={() => { closeChat(); openPopup('login'); }} />
                 </div>
               </>
             ) : chatView === 'conversation' && activeConversation ? (
               <>
                 <div className={styles.chatPanelHeader}>
-                  {isLoggedIn && isPremium && (
-                    <button onClick={backToHistory} className={styles.chatBackBtn}>
-                      ←
-                    </button>
-                  )}
+                  <button onClick={backToHistory} className={styles.chatBackBtn}>
+                    ←
+                  </button>
                   <div className={styles.chatHeaderProfile}>
                     {activeConversation.type === 'match' ? (
                       <>

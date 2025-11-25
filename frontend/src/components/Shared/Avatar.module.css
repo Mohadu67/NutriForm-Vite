@@ -1,0 +1,50 @@
+.avatar,
+.avatarFallback {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.avatarFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: white;
+  user-select: none;
+}
+
+/* Tailles */
+.avatar-sm,
+.avatarFallback.avatar-sm {
+  width: 32px;
+  height: 32px;
+}
+
+.avatar-sm .initials {
+  font-size: 12px;
+}
+
+.avatar-md,
+.avatarFallback.avatar-md {
+  width: 48px;
+  height: 48px;
+}
+
+.avatar-md .initials {
+  font-size: 16px;
+}
+
+.avatar-lg,
+.avatarFallback.avatar-lg {
+  width: 64px;
+  height: 64px;
+}
+
+.avatar-lg .initials {
+  font-size: 20px;
+}
+
+.initials {
+  line-height: 1;
+}
