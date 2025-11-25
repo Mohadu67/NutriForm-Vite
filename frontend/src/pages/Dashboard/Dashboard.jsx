@@ -7,7 +7,7 @@ import Footer from "../../components/Footer/Footer.jsx";
 import style from "./Dashboard.module.css";
 import useHistoryData from "../../components/History/HistoryUser/UseHistoryData.js";
 import WeeklyGoalModal from "../../components/History/DashboardCards/WeeklyGoalModal.jsx";
-import { deleteSession } from "../../components/History/SessionTracking/sessionApi.js";
+import { deleteSession, updateSession } from "../../components/History/SessionTracking/sessionApi.js";
 import { getSubscriptionStatus } from "../../shared/api/subscription.js";
 
 export default function Dashboard() {
@@ -28,11 +28,6 @@ export default function Dashboard() {
     const success = searchParams.get('success');
     if (success === 'true') {
       setShowSuccessMessage(true);
-      // Nettoyer l'URL après 5 secondes
-      setTimeout(() => {
-        setShowSuccessMessage(false);
-        setSearchParams({});
-      }, 5000);
     }
 
     // Vérifier le statut d'abonnement
@@ -73,6 +68,30 @@ export default function Dashboard() {
   const [tempGoal, setTempGoal] = useState(3);
   const [showBadgesPopup, setShowBadgesPopup] = useState(false);
   const [showSessionsPopup, setShowSessionsPopup] = useState(false);
+  const [editingSessionId, setEditingSessionId] = useState(null);
+  const [editingSessionName, setEditingSessionName] = useState("");
+  const saveSessionNameRef = React.useRef();
+
+  const editInputRef = useCallback((node) => {
+    if (node) {
+      node.focus();
+      node.select();
+    }
+  }, []);
+
+  // Gérer le clic en dehors de l'input pour sauvegarder
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (editingSessionId && !e.target.closest('input[type="text"]')) {
+        saveSessionNameRef.current?.(editingSessionId, editingSessionName);
+      }
+    };
+
+    if (editingSessionId) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [editingSessionId, editingSessionName]);
 
   useEffect(() => {
     const list = Array.isArray(sessions) ? sessions : [];
@@ -130,6 +149,53 @@ export default function Dashboard() {
       console.error("Erreur lors de la suppression de la séance:", err);
       alert("Impossible de supprimer la séance");
     }
+  }, []);
+
+  saveSessionNameRef.current = async (sessionId, nameToSave) => {
+    if (!nameToSave || !nameToSave.trim()) {
+      setEditingSessionId(null);
+      return;
+    }
+
+    // Si le nom n'a pas changé, on annule juste
+    const currentSession = userSessions.find(s => (s.id === sessionId || s._id === sessionId));
+    if (currentSession && currentSession.name === nameToSave.trim()) {
+      setEditingSessionId(null);
+      return;
+    }
+
+    try {
+      await updateSession(sessionId, { name: nameToSave.trim() });
+      setUserSessions(prev => prev.map(s =>
+        (s.id === sessionId || s._id === sessionId)
+          ? { ...s, name: nameToSave.trim() }
+          : s
+      ));
+      setEditingSessionId(null);
+    } catch (err) {
+      console.error("Erreur lors du renommage de la séance:", err);
+      alert("Impossible de renommer la séance");
+      setEditingSessionId(null);
+    }
+  };
+
+  const handleSaveSessionName = useCallback(async (sessionId) => {
+    await saveSessionNameRef.current(sessionId, editingSessionName);
+  }, [editingSessionName]);
+
+  const handleStartEditSessionName = useCallback(async (session, e) => {
+    e?.stopPropagation();
+    // Si on est déjà en train d'éditer une autre séance, on sauvegarde d'abord
+    if (editingSessionId && editingSessionId !== (session.id || session._id)) {
+      await saveSessionNameRef.current(editingSessionId, editingSessionName);
+    }
+    setEditingSessionId(session.id || session._id);
+    setEditingSessionName(session.name || "Séance");
+  }, [editingSessionId, editingSessionName]);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingSessionId(null);
+    setEditingSessionName("");
   }, []);
 
   // IMC & Weight data
@@ -555,10 +621,26 @@ export default function Dashboard() {
       <Header />
       <main className={style.dashboard}>
         <div className={style.container}>
-          {/* Success Message after Payment */}
+          {/* Success Message after Payment - Modal Popup */}
           {showSuccessMessage && (
-            <div className={style.successBanner}>
-              🎉 Bienvenue dans Premium ! Votre essai gratuit de 7 jours a commencé. Profitez de toutes les fonctionnalités !
+            <div className={style.modalOverlay} onClick={() => setShowSuccessMessage(false)}>
+              <div className={style.welcomeModal} onClick={(e) => e.stopPropagation()}>
+                <div className={style.modalIcon}>🎉</div>
+                <h2 className={style.modalTitle}>Bienvenue dans Premium !</h2>
+                <p className={style.modalMessage}>
+                  Votre essai gratuit de <strong>7 jours</strong> a commencé.<br />
+                  Profitez de toutes les fonctionnalités exclusives !
+                </p>
+                <button
+                  className={style.modalButton}
+                  onClick={() => {
+                    setShowSuccessMessage(false);
+                    setSearchParams({});
+                  }}
+                >
+                  C'est parti !
+                </button>
+              </div>
             </div>
           )}
 
@@ -742,7 +824,27 @@ export default function Dashboard() {
                       {formatDate(session?.endedAt || session?.date || session?.createdAt)}
                     </div>
                     <div className={style.sessionDetails}>
-                      <span className={style.sessionName}>{session?.name || "Séance"}</span>
+                      {editingSessionId === (session.id || session._id) ? (
+                        <input
+                          type="text"
+                          ref={editInputRef}
+                          className={style.sessionNameInput}
+                          value={editingSessionName}
+                          onChange={(e) => setEditingSessionName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveSessionName(session.id || session._id);
+                            if (e.key === 'Escape') handleCancelEdit();
+                          }}
+                        />
+                      ) : (
+                        <span
+                          className={style.sessionName}
+                          onClick={(e) => handleStartEditSessionName(session, e)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {session?.name || "Séance"}
+                        </span>
+                      )}
                       <span className={style.sessionMeta}>
                         {session?.durationMinutes ? `${session.durationMinutes} min` : ""}
                         {session?.entries?.length ? ` • ${session.entries.length} exo` : ""}
@@ -1014,7 +1116,27 @@ export default function Dashboard() {
                         </svg>
                       </button>
                     </div>
-                    <h4 className={style.sessionPopupName}>{session?.name || "Séance d'entraînement"}</h4>
+                    {editingSessionId === (session.id || session._id) ? (
+                      <input
+                        type="text"
+                        ref={editInputRef}
+                        className={style.sessionPopupNameInput}
+                        value={editingSessionName}
+                        onChange={(e) => setEditingSessionName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveSessionName(session.id || session._id);
+                          if (e.key === 'Escape') handleCancelEdit();
+                        }}
+                      />
+                    ) : (
+                      <h4
+                        className={style.sessionPopupName}
+                        onClick={(e) => handleStartEditSessionName(session, e)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {session?.name || "Séance d'entraînement"}
+                      </h4>
+                    )}
 
                     {hasDetails && (
                       <div className={style.sessionPopupStats}>

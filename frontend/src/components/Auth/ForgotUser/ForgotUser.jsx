@@ -46,12 +46,6 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
     setLoading(true);
     setError("");
 
-    if (!API_URL) {
-      setError("Configuration API manquante.");
-      setLoading(false);
-      return;
-    }
-
     const started = Date.now();
     const minDelay = 1200;
 

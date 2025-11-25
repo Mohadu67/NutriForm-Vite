@@ -80,10 +80,6 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
       setStatus("sending");
       setErrorMsg("");
 
-      if (!API_URL) {
-        throw new Error("Configuration API manquante (VITE_API_URL)");
-      }
-
       const captchaToken = RECAPTCHA_ENABLED && executeRecaptcha
         ? await executeRecaptcha('register')
         : null;

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useChat } from "../../contexts/ChatContext";
+import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
 import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
 import UnifiedChatPanel from "../Chat/UnifiedChatPanel.jsx";
@@ -24,7 +25,7 @@ import {
 
 export default function Navbar() {
   const { t, i18n } = useTranslation();
-  const { isChatOpen, chatView, activeConversation, openChat, closeChat, backToHistory } = useChat();
+  const { isChatOpen, chatView, activeConversation, openChat, openAIChat, closeChat, backToHistory } = useChat();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -73,15 +74,6 @@ export default function Navbar() {
 
   // Removed unused handleScroll function - can be re-added if needed for future features
 
-  // Get stored user
-  const getStoredUser = useCallback(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      return localStorage.getItem('user');
-    } catch {
-      return null;
-    }
-  }, []);
 
   // Apply theme to document
   const setDocumentTheme = useCallback((isDark) => {
@@ -124,31 +116,78 @@ export default function Navbar() {
     setDocumentTheme(isDark);
   }, [setDocumentTheme]);
 
-  // Monitor login state and premium status
+  // Monitor login state and premium status - avec httpOnly cookies
   useEffect(() => {
-    const updateLoginState = () => {
-      const user = getStoredUser();
-      setIsLoggedIn(Boolean(user));
+    let isMounted = true;
+    const retryCountRef = { current: 0 };
+    const MAX_RETRIES = 2;
+    let hasSucceeded = false;
 
-      // Check premium status from localStorage
+    const updateLoginState = async () => {
+      // Si déjà réussi ou trop d'essais échoués, ne plus essayer
+      if (hasSucceeded || retryCountRef.current >= MAX_RETRIES) {
+        return;
+      }
+
       try {
-        const subscriptionData = localStorage.getItem('subscriptionStatus');
-        if (subscriptionData) {
-          const subscription = JSON.parse(subscriptionData);
-          setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
-        } else {
+        const response = await secureApiCall('/api/me');
+
+        if (!isMounted) return;
+
+        if (response.ok) {
+          hasSucceeded = true;
+          retryCountRef.current = 0;
+          setIsLoggedIn(true);
+
+          // Vérifier le statut premium depuis localStorage
+          try {
+            const cachedSub = localStorage.getItem('subscriptionStatus');
+            if (cachedSub) {
+              const subscription = JSON.parse(cachedSub);
+              setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
+            } else {
+              setIsPremium(false);
+            }
+          } catch {
+            setIsPremium(false);
+          }
+        } else if (response.status === 401) {
+          hasSucceeded = true; // Arrêter les essais
+          setIsLoggedIn(false);
           setIsPremium(false);
         }
-      } catch {
-        setIsPremium(false);
+      } catch (err) {
+        retryCountRef.current++;
+        // Si erreur 'Not authenticated', arrêter immédiatement
+        if (err.message === 'Not authenticated') {
+          hasSucceeded = true;
+          setIsLoggedIn(false);
+          setIsPremium(false);
+        } else if (retryCountRef.current >= MAX_RETRIES) {
+          setIsLoggedIn(false);
+          setIsPremium(false);
+        }
       }
     };
 
+    // Premier appel au montage
     updateLoginState();
-    window.addEventListener('storage', updateLoginState);
 
-    return () => window.removeEventListener('storage', updateLoginState);
-  }, [getStoredUser]);
+    // Écouter les événements de connexion personnalisés
+    const handleLoginSuccess = () => {
+      hasSucceeded = false;
+      retryCountRef.current = 0;
+      invalidateAuthCache(); // Invalider le cache avant de refaire l'appel
+      updateLoginState();
+    };
+
+    window.addEventListener('userLoggedIn', handleLoginSuccess);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('userLoggedIn', handleLoginSuccess);
+    };
+  }, []);
 
   // Main navigation links (always visible on mobile bottom nav) - Les plus importants
   const mainLinks = useMemo(() => [
@@ -168,23 +207,23 @@ export default function Navbar() {
         path: "/dashboard",
         icon: <DashboardIcon size={20} />
       }
-    ] : []),
+    ] : [])
+  ], [t, isLoggedIn]);
+
+  // Secondary navigation links (in expanded menu) - Les moins importants
+  const secondaryLinks = useMemo(() => [
     ...(isLoggedIn && isPremium ? [
       {
         label: 'Partenaires',
         path: "/matching",
-        icon: <UsersIcon size={20} />,
+        icon: <UsersIcon size={28} />,
         isPremium: true
       }
-    ] : [])
-  ], [t, isLoggedIn, isPremium]);
-
-  // Secondary navigation links (in expanded menu) - Les moins importants
-  const secondaryLinks = useMemo(() => [
+    ] : []),
     { label: t('nav.tools'), path: "/outils", icon: <ToolsIcon size={28} /> },
     { label: t('nav.about'), path: "/about", icon: <InfoIcon size={28} /> },
     { label: t('nav.contact'), path: "/contact", icon: <MessageIcon size={28} /> }
-  ], [t]);
+  ], [t, isLoggedIn, isPremium]);
 
   // Close menu handler
   const closeMenu = useCallback(() => {
@@ -224,6 +263,17 @@ export default function Navbar() {
       setOpen(true);
     }
   }, [isDesktop, openChat]);
+
+  // Handle messages button click - AI for non-premium, history for premium
+  const handleMessagesClick = useCallback(() => {
+    // Si l'utilisateur n'est pas connecté OU n'est pas premium → ouvrir le chat IA
+    if (!isLoggedIn || !isPremium) {
+      openAIChat(null, ''); // Ouvre directement le chat IA
+    } else {
+      // Si l'utilisateur est connecté ET premium → ouvrir l'historique normal
+      openChatHistory();
+    }
+  }, [isLoggedIn, isPremium, openAIChat, openChatHistory]);
 
   // Close chat history and go back to navigation
   const closeChatHistory = useCallback(() => {
@@ -317,10 +367,10 @@ export default function Navbar() {
                   </button>
 
                   <button
-                    onClick={openChatHistory}
+                    onClick={handleMessagesClick}
                     className={styles.dockIconBtn}
-                    title="Messages"
-                    aria-label="Open messages"
+                    title={!isLoggedIn || !isPremium ? "Assistant IA" : "Messages"}
+                    aria-label={!isLoggedIn || !isPremium ? "Open AI assistant" : "Open messages"}
                   >
                     <MessageIcon size={20} />
                   </button>
@@ -369,14 +419,16 @@ export default function Navbar() {
             {currentView === 'history' && chatView === 'conversation' && activeConversation && (
               <div className={styles.mobilePanel}>
                 <div className={styles.chatHistoryHeader}>
-                  <button
-                    onClick={backToHistory}
-                    className={styles.chatCloseBtn}
-                    title="Retour"
-                    aria-label="Back to chat history"
-                  >
-                    ←
-                  </button>
+                  {isLoggedIn && isPremium && (
+                    <button
+                      onClick={backToHistory}
+                      className={styles.chatCloseBtn}
+                      title="Retour"
+                      aria-label="Back to chat history"
+                    >
+                      ←
+                    </button>
+                  )}
                   <div className={styles.chatHeaderProfile}>
                     {activeConversation.type === 'match' ? (
                       <>
@@ -482,10 +534,10 @@ export default function Navbar() {
                 </button>
 
                 <button
-                  onClick={openChatHistory}
+                  onClick={handleMessagesClick}
                   className={styles.dockIconBtn}
-                  title="Messages"
-                  aria-label="Open messages"
+                  title={!isLoggedIn || !isPremium ? "Assistant IA" : "Messages"}
+                  aria-label={!isLoggedIn || !isPremium ? "Open AI assistant" : "Open messages"}
                 >
                   <MessageIcon size={20} />
                 </button>
@@ -562,7 +614,18 @@ export default function Navbar() {
         onLoginSuccess={() => {
           setIsLoggedIn(true);
           setIsPopupOpen(false);
-          navigate('/dashboard');
+
+          // Dispatcher un événement pour recharger les infos utilisateur
+          window.dispatchEvent(new CustomEvent('userLoggedIn'));
+
+          // Si l'utilisateur était en train de s'abonner, ne pas le rediriger
+          const wasSubscribing = sessionStorage.getItem('pendingSubscription');
+          if (wasSubscribing) {
+            sessionStorage.removeItem('pendingSubscription');
+            // Ne pas naviguer, laisser le flux d'abonnement continuer
+          } else {
+            navigate('/dashboard');
+          }
         }}
         onLogout={() => {
           setIsLoggedIn(false);
@@ -593,9 +656,11 @@ export default function Navbar() {
             ) : chatView === 'conversation' && activeConversation ? (
               <>
                 <div className={styles.chatPanelHeader}>
-                  <button onClick={backToHistory} className={styles.chatBackBtn}>
-                    ←
-                  </button>
+                  {isLoggedIn && isPremium && (
+                    <button onClick={backToHistory} className={styles.chatBackBtn}>
+                      ←
+                    </button>
+                  )}
                   <div className={styles.chatHeaderProfile}>
                     {activeConversation.type === 'match' ? (
                       <>
