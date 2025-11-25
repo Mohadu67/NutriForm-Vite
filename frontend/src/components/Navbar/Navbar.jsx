@@ -117,7 +117,16 @@ export default function Navbar() {
 
   // Monitor login state and premium status - avec httpOnly cookies
   useEffect(() => {
+    let isMounted = true; // Pour éviter les updates après unmount
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
+
     const updateLoginState = async () => {
+      // Si déjà trop d'essais échoués, arrêter
+      if (retryCount >= MAX_RETRIES) {
+        return;
+      }
+
       // Avec httpOnly cookies, on ne peut pas vérifier via localStorage
       // On essaie de faire un appel API pour vérifier l'authentification
       try {
@@ -126,42 +135,83 @@ export default function Navbar() {
           credentials: 'include', // Important pour envoyer les cookies httpOnly
         });
 
+        if (!isMounted) return; // Component unmounted, arrêter
+
         if (response.ok) {
+          retryCount = 0; // Reset retry count on success
           setIsLoggedIn(true);
 
-          // Vérifier le statut premium
+          // Vérifier le statut premium - essayer d'abord depuis localStorage
           try {
+            const cachedSub = localStorage.getItem('subscriptionStatus');
+            if (cachedSub) {
+              const subscription = JSON.parse(cachedSub);
+              setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
+            }
+
+            // Essayer de récupérer depuis l'API (silencieux si échec)
             const subResponse = await fetch('/api/subscriptions/status', {
               method: 'GET',
               credentials: 'include',
             });
+
+            if (!isMounted) return;
+
             if (subResponse.ok) {
               const subscription = await subResponse.json();
               setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
-              // Sauvegarder dans localStorage pour accès rapide
               localStorage.setItem('subscriptionStatus', JSON.stringify(subscription));
+            } else if (subResponse.status === 404) {
+              // L'endpoint n'existe pas, garder la valeur du cache ou false
+              if (!cachedSub) {
+                setIsPremium(false);
+              }
             }
           } catch (err) {
-            console.error('Erreur récupération subscription:', err);
-            setIsPremium(false);
+            // Erreur silencieuse - on garde la valeur du cache si disponible
+            const cachedSub = localStorage.getItem('subscriptionStatus');
+            if (cachedSub) {
+              try {
+                const subscription = JSON.parse(cachedSub);
+                setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
+              } catch {
+                setIsPremium(false);
+              }
+            } else {
+              setIsPremium(false);
+            }
           }
-        } else {
+        } else if (response.status === 401) {
+          // Non authentifié - arrêter les tentatives
+          retryCount = MAX_RETRIES; // Stop retries
           setIsLoggedIn(false);
           setIsPremium(false);
         }
       } catch (err) {
-        console.error('Erreur vérification auth:', err);
-        setIsLoggedIn(false);
-        setIsPremium(false);
+        // Erreur réseau - incrémenter retry count
+        retryCount++;
+        if (retryCount >= MAX_RETRIES) {
+          // Trop d'erreurs, considérer comme non connecté
+          setIsLoggedIn(false);
+          setIsPremium(false);
+        }
       }
     };
 
     updateLoginState();
 
-    // Vérifier périodiquement (toutes les 30 secondes)
-    const interval = setInterval(updateLoginState, 30000);
+    // Vérifier périodiquement (toutes les 60 secondes)
+    // Et seulement si la page est visible
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible' && retryCount < MAX_RETRIES) {
+        updateLoginState();
+      }
+    }, 60000);
 
-    return () => clearInterval(interval);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   // Main navigation links (always visible on mobile bottom nav) - Les plus importants
