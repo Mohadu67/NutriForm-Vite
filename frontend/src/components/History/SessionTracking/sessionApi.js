@@ -200,27 +200,27 @@ function getSessions({ date, limit, cursor } = {}) {
   if (limit) params.set('limit', String(limit));
   if (cursor) params.set('cursor', String(cursor));
   const qs = params.toString() ? `?${params.toString()}` : '';
-  return request(`/api/workouts/sessions${qs}`);
+  return request(`/workouts/sessions${qs}`);
 }
 
 function getSessionById(id) {
-  return request(`/api/workouts/sessions/${id}`);
+  return request(`/workouts/sessions/${id}`);
 }
 
 function updateSession(id, patch) {
-  return request(`/api/workouts/sessions/${id}`, {
+  return request(`/workouts/sessions/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(patch)
   });
 }
 
 function deleteSession(id) {
-  return request(`/api/workouts/sessions/${id}`, { method: 'DELETE' });
+  return request(`/workouts/sessions/${id}`, { method: 'DELETE' });
 }
 
 function getDailySummary(from, to) {
   const params = new URLSearchParams({ from, to });
-  return request(`/api/summary/daily?${params.toString()}`);
+  return request(`/summary/daily?${params.toString()}`);
 }
 
 function buildSessionFromEntry(entry, { name, startedAt, endedAt, notes } = {}) {
