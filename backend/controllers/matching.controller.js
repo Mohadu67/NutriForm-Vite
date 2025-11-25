@@ -103,16 +103,16 @@ exports.getMatchSuggestions = async (req, res) => {
 
         scoredMatches.push({
           matchId: existingMatch?._id || null,
-          profile: {
-            userId: candidateUserId,
-            pseudo: candidateUser?.pseudo,
-            avatar: candidateUser?.photo,
+          user: {
+            _id: candidateUserId,
+            username: candidateUser?.pseudo || 'Utilisateur',
+            photo: candidateUser?.photo,
             bio: candidate.bio,
             age: candidate.age,
             gender: candidate.gender,
             fitnessLevel: candidate.fitnessLevel,
             workoutTypes: candidate.workoutTypes,
-            verified: candidate.verified,
+            isVerified: candidate.verified || false,
             stats: candidate.stats,
             location: {
               city: candidate.location?.city,
@@ -121,7 +121,7 @@ exports.getMatchSuggestions = async (req, res) => {
           },
           matchScore: score.total,
           scoreBreakdown: score.breakdown,
-          distance: parseFloat(distance.toFixed(2)),
+          distance: distance !== null ? parseFloat(distance.toFixed(2)) : 0,
           status: existingMatch?.status || 'new',
           hasLiked: existingMatch?.likedBy?.includes(userId) || false,
           isMutual: existingMatch?.isMutual() || false
@@ -278,7 +278,8 @@ exports.likeProfile = async (req, res) => {
 
     if (match) {
       // Match existe déjà, ajouter le like
-      await match.addLike(userId);
+      match.addLike(userId);
+      await match.save();
       await match.populate('user1Id user2Id');
 
       return res.json({
@@ -301,7 +302,7 @@ exports.likeProfile = async (req, res) => {
       user2Id: targetUserId,
       matchScore: score.total,
       scoreBreakdown: score.breakdown,
-      distance: parseFloat(distance.toFixed(2)),
+      distance: distance !== null ? parseFloat(distance.toFixed(2)) : 0,
       likedBy: [userId],
       status: 'user1_liked'
     });
@@ -320,6 +321,54 @@ exports.likeProfile = async (req, res) => {
   } catch (error) {
     console.error('Erreur likeProfile:', error);
     res.status(500).json({ error: 'Erreur lors du like.' });
+  }
+};
+
+// Retirer un like
+exports.unlikeProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { targetUserId } = req.body;
+
+    if (!targetUserId) {
+      return res.status(400).json({ error: 'targetUserId requis.' });
+    }
+
+    // Trouver le match existant
+    const match = await Match.findOne({
+      $or: [
+        { user1Id: userId, user2Id: targetUserId },
+        { user1Id: targetUserId, user2Id: userId }
+      ]
+    });
+
+    if (!match) {
+      return res.status(404).json({ error: 'Match non trouvé.' });
+    }
+
+    // Retirer le userId de likedBy
+    match.likedBy = match.likedBy.filter(id => !id.equals(userId));
+
+    // Mettre à jour le status en fonction du nombre de likes restants
+    if (match.likedBy.length === 0) {
+      // Plus personne n'a liké, supprimer le match
+      await Match.deleteOne({ _id: match._id });
+      return res.json({ message: 'Like retiré.' });
+    } else if (match.likedBy.length === 1) {
+      // Il reste un like, déterminer qui
+      const remainingLikerId = match.likedBy[0];
+      if (remainingLikerId.equals(match.user1Id)) {
+        match.status = 'user1_liked';
+      } else {
+        match.status = 'user2_liked';
+      }
+      await match.save();
+    }
+
+    res.json({ message: 'Like retiré.' });
+  } catch (error) {
+    console.error('Erreur unlikeProfile:', error);
+    res.status(500).json({ error: 'Erreur lors du retrait du like.' });
   }
 };
 
@@ -350,7 +399,7 @@ exports.rejectMatch = async (req, res) => {
           user2Id: targetUserId,
           matchScore: score.total,
           scoreBreakdown: score.breakdown,
-          distance: parseFloat(distance.toFixed(2)),
+          distance: distance !== null ? parseFloat(distance.toFixed(2)) : 0,
           status: 'rejected'
         });
 
@@ -386,21 +435,23 @@ exports.getMutualMatches = async (req, res) => {
       const partnerProfile = await UserProfile.findOne({ userId: partnerId });
 
       return {
-        matchId: match._id,
-        partner: {
-          userId: partnerId,
-          pseudo: partnerUser.pseudo,
+        _id: match._id,
+        user: {
+          _id: partnerId,
+          username: partnerUser.pseudo,
           email: partnerUser.email,
-          avatar: partnerUser.photo,
-          profile: partnerProfile ? {
-            bio: partnerProfile.bio,
-            age: partnerProfile.age,
-            gender: partnerProfile.gender,
-            fitnessLevel: partnerProfile.fitnessLevel,
-            workoutTypes: partnerProfile.workoutTypes,
-            verified: partnerProfile.verified,
-            stats: partnerProfile.stats
-          } : null
+          photo: partnerUser.photo,
+          bio: partnerProfile?.bio || '',
+          age: partnerProfile?.age || null,
+          gender: partnerProfile?.gender || null,
+          fitnessLevel: partnerProfile?.fitnessLevel || null,
+          workoutTypes: partnerProfile?.workoutTypes || [],
+          isVerified: partnerProfile?.verified || false,
+          stats: partnerProfile?.stats || null,
+          location: {
+            city: partnerProfile?.location?.city || null,
+            neighborhood: partnerProfile?.location?.neighborhood || null
+          }
         },
         matchScore: match.matchScore,
         distance: match.distance,

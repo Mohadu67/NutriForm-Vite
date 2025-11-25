@@ -121,7 +121,7 @@
   font-weight: 900;
   line-height: 1.2;
   text-align: center;
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   color: var(--ink);
   letter-spacing: -0.5px;
 }

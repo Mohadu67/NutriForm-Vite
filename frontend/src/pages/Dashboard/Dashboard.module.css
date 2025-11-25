@@ -139,7 +139,7 @@
 }
 
 .greeting {
-  font-family: 'Merriweather', serif;
+  font-family: sans-serif;
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--ink, #222325);
@@ -1475,7 +1475,7 @@
 }
 
 .paywallTitle {
-  font-family: 'Merriweather', serif;
+  font-family: sans-serif;
   font-size: 2.5rem;
   font-weight: 700;
   color: var(--ink, #222325);
@@ -1521,7 +1521,7 @@
 }
 
 .paywallCardTitle {
-  font-family: 'Merriweather', serif;
+  font-family: sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--ink, #222325);

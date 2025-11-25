@@ -4,10 +4,10 @@ import { toast } from 'sonner';
 import { useChat } from '../../contexts/ChatContext';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
-import { getMatchSuggestions, likeProfile, rejectProfile, getMutualMatches, unlikeProfile } from '../../shared/api/matching';
+import { getMatchSuggestions, likeProfile, rejectProfile, getMutualMatches } from '../../shared/api/matching';
 import { getMyProfile } from '../../shared/api/profile';
 import { getOrCreateConversation } from '../../shared/api/matchChat';
-import styles from './MatchingPage.module.css';
+import styles from './MatchingPageFuturistic.module.css';
 import {
   HeartIcon,
   SparklesIcon,
@@ -18,8 +18,7 @@ import {
   CalendarIcon,
   StarIcon,
   DumbbellIcon,
-  CheckCircleIcon,
-  TargetIcon
+  CheckCircleIcon
 } from './MatchingIcons';
 
 const WORKOUT_ICONS = {
@@ -110,7 +109,7 @@ const ProgressRing = ({ current, total }) => {
   );
 };
 
-export default function MatchingPage() {
+export default function MatchingPageFuturistic() {
   const navigate = useNavigate();
   const { openMatchChat } = useChat();
   const [loading, setLoading] = useState(true);
@@ -142,8 +141,8 @@ export default function MatchingPage() {
       setProfile(userProfile);
 
       if (!userProfile.location?.coordinates) {
-        setError('Veuillez configurer votre localisation pour trouver des partenaires près de chez vous.');
-        setLoading(false);
+        setError('Veuillez configurer votre localisation dans votre profil.');
+        setTimeout(() => navigate('/profile/setup'), 2000);
         return;
       }
 
@@ -168,6 +167,7 @@ export default function MatchingPage() {
       console.error('Erreur chargement matches:', err);
       if (err?.response?.data?.error === 'premium_required') {
         setError('Le matching est réservé aux membres Premium. Abonnez-vous pour débloquer cette fonctionnalité !');
+        setTimeout(() => navigate('/pricing'), 2000);
       } else {
         setError(err?.response?.data?.message || 'Erreur lors du chargement des matches.');
       }
@@ -189,33 +189,15 @@ export default function MatchingPage() {
       setSwipeDirection('right');
 
       const currentMatch = matches[currentIndex];
-      if (!currentMatch.user?._id) {
-        console.error('User ID manquant dans currentMatch:', currentMatch);
-        setActionLoading(false);
-        setCardAnimation('enter');
-        setSwipeDirection(null);
-        return;
-      }
       const response = await likeProfile(currentMatch.user._id);
 
       setTimeout(() => {
-        // Afficher la popup SEULEMENT si c'est un match mutuel
-        if (response.match && response.match.isMutual) {
-          const newMatch = {
-            _id: response.match._id,
-            user: currentMatch.user,
-            matchScore: currentMatch.matchScore,
-            distance: currentMatch.distance,
-            status: response.match.status,
-            createdAt: new Date()
-          };
-
+        if (response.match) {
           setMutualMatchData({
-            matchId: response.match._id,
             user: currentMatch.user,
             matchScore: currentMatch.matchScore
           });
-          setMutualMatches(prev => [...prev, newMatch]);
+          setMutualMatches(prev => [...prev, response.match]);
         }
         setCurrentIndex(prev => prev + 1);
         setCardAnimation('enter');
@@ -240,13 +222,6 @@ export default function MatchingPage() {
       setSwipeDirection('left');
 
       const currentMatch = matches[currentIndex];
-      if (!currentMatch.user?._id) {
-        console.error('User ID manquant dans currentMatch:', currentMatch);
-        setActionLoading(false);
-        setCardAnimation('enter');
-        setSwipeDirection(null);
-        return;
-      }
       await rejectProfile(currentMatch.user._id);
 
       setTimeout(() => {
@@ -266,17 +241,10 @@ export default function MatchingPage() {
 
   // Touch handlers pour swipe
   const handleTouchStart = (e) => {
-    // Ne pas déclencher le swipe sur les boutons
-    const target = e.target;
-    if (target.tagName === 'BUTTON' || target.closest('button')) {
-      return;
-    }
     setTouchStart(e.touches[0].clientX);
-    setTouchMove(e.touches[0].clientX);
   };
 
   const handleTouchMove = (e) => {
-    if (!touchStart) return;
     setTouchMove(e.touches[0].clientX);
   };
 
@@ -284,25 +252,22 @@ export default function MatchingPage() {
     if (!touchStart || !touchMove) return;
 
     const distance = touchMove - touchStart;
-    const threshold = 120; // Augmenté de 100 à 120 pour être moins sensible
+    const threshold = 100;
 
-    // S'assurer qu'il y a eu un vrai mouvement horizontal
-    if (Math.abs(distance) > threshold) {
-      if (distance > 0) {
-        handleLike();
-      } else {
-        handleReject();
-      }
+    if (distance > threshold) {
+      handleLike();
+    } else if (distance < -threshold) {
+      handleReject();
     }
 
     setTouchStart(null);
     setTouchMove(null);
   };
 
-  const handleStartChat = async (matchId, matchUserId) => {
+  const handleStartChat = async (matchUserId) => {
     try {
-      const { conversation } = await getOrCreateConversation(matchId);
-      openMatchChat(conversation);
+      const { conversation } = await getOrCreateConversation(matchUserId);
+      openMatchChat(conversation._id, matchUserId);
       setShowMatches(false);
       setMutualMatchData(null);
     } catch (err) {
@@ -311,19 +276,8 @@ export default function MatchingPage() {
     }
   };
 
-  const handleUnlikeMatch = async (matchId, targetUserId) => {
-    try {
-      await unlikeProfile(targetUserId);
-      setMutualMatches(prev => prev.filter(m => m._id !== matchId));
-      toast.success('Match retiré');
-    } catch (err) {
-      console.error('Erreur unlike:', err);
-      toast.error('Erreur lors du retrait du match');
-    }
-  };
-
   const currentMatch = matches[currentIndex];
-  const remainingMatches = Math.max(0, matches.length - currentIndex);
+  const remainingMatches = matches.length - currentIndex;
 
   if (loading) {
     return (
@@ -387,7 +341,7 @@ export default function MatchingPage() {
         )}
 
         {/* Card container 3D */}
-        {currentMatch && currentMatch.user ? (
+        {currentMatch ? (
           <div className={styles.cardContainer}>
             <div
               ref={cardRef}
@@ -403,7 +357,7 @@ export default function MatchingPage() {
                     <span className={styles.matchScoreValue}>{currentMatch.matchScore}%</span>
                     <span className={styles.matchScoreLabel}>Match</span>
                   </div>
-                  {currentMatch.user?.isVerified && (
+                  {currentMatch.user.isVerified && (
                     <div className={styles.verifiedBadge}>
                       <CheckCircleIcon size={16} /> Vérifié
                     </div>
@@ -511,36 +465,12 @@ export default function MatchingPage() {
           </div>
         ) : (
           <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>
-              <TargetIcon size={80} />
-            </div>
-            {!profile?.location?.coordinates ? (
-              <>
-                <h3>Configuration de votre profil</h3>
-                <p>Pour trouver des partenaires d'entraînement près de chez vous, configurez votre localisation dans votre profil.</p>
-                <div className={styles.emptyActions}>
-                  <button className={styles.emptyBtn} onClick={() => navigate('/profile/setup')}>
-                    Configurer mon profil
-                  </button>
-                  <button className={styles.emptyBtnSecondary} onClick={() => navigate('/dashboard')}>
-                    Retour au tableau de bord
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <h3>Plus de profils disponibles</h3>
-                <p>Revenez plus tard pour découvrir de nouveaux partenaires d'entraînement !</p>
-                <div className={styles.emptyActions}>
-                  <button className={styles.emptyBtn} onClick={() => navigate('/profile/setup')}>
-                    Modifier mon profil
-                  </button>
-                  <button className={styles.emptyBtnSecondary} onClick={() => navigate('/dashboard')}>
-                    Retour au tableau de bord
-                  </button>
-                </div>
-              </>
-            )}
+            <div className={styles.emptyIcon}>🎯</div>
+            <h3>Plus de profils disponibles</h3>
+            <p>Revenez plus tard pour découvrir de nouveaux partenaires d'entraînement !</p>
+            <button className={styles.emptyBtn} onClick={() => navigate('/dashboard')}>
+              Retour au tableau de bord
+            </button>
           </div>
         )}
 
@@ -561,25 +491,11 @@ export default function MatchingPage() {
                   <div className={styles.matchesGrid}>
                     {mutualMatches.map((match) => (
                       <div key={match._id} className={styles.mutualMatchCard}>
-                        <button
-                          className={styles.unlikeButton}
-                          onClick={() => handleUnlikeMatch(match._id, match.user?._id)}
-                          title="Retirer le match"
-                        >
-                          <XIcon size={18} />
-                        </button>
                         <div className={styles.matchCardHeader}>
                           <div className={styles.matchAvatar}>
-                            {match.user?.photo ? (
-                              <img
-                                src={match.user.photo}
-                                alt={match.user?.username || 'User'}
-                              />
-                            ) : (
-                              <div className={styles.avatarPlaceholder}>
-                                {match.user?.username?.[0]?.toUpperCase() || '?'}
-                              </div>
-                            )}
+                            <div className={styles.avatarPlaceholder}>
+                              {match.user?.username?.[0]?.toUpperCase() || '?'}
+                            </div>
                           </div>
                           <h5>{match.user?.username || 'Utilisateur'}</h5>
                         </div>
@@ -599,7 +515,7 @@ export default function MatchingPage() {
                         </div>
                         <button
                           className={styles.chatButton}
-                          onClick={() => handleStartChat(match._id, match.user?._id)}
+                          onClick={() => handleStartChat(match.user?._id)}
                         >
                           <MailIcon size={16} /> Discuter
                         </button>
@@ -653,7 +569,7 @@ export default function MatchingPage() {
                 <div className={styles.mutualMatchActions}>
                   <button
                     className={styles.mutualMatchChatBtn}
-                    onClick={() => handleStartChat(mutualMatchData.matchId, mutualMatchData.user._id)}
+                    onClick={() => handleStartChat(mutualMatchData.user._id)}
                   >
                     <MailIcon size={20} /> Envoyer un message
                   </button>

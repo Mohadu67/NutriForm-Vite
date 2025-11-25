@@ -13,7 +13,7 @@
 
 /* Title - Simple et élégant */
 .title {
-  font-family: 'Merriweather', serif;
+  font-family: sans-serif;
   font-size: clamp(24px, 4vw, 32px);
   font-weight: 700;
   color: var(--ink, #222325);

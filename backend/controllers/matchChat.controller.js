@@ -113,8 +113,6 @@ async function getOrCreateConversation(req, res) {
       p => p._id.toString() !== userId.toString()
     );
 
-    console.log('👤 otherUserId:', otherUserId);
-
     // Récupérer le User complet pour avoir la photo
     const otherUserFull = await User.findById(otherUserId._id)
       .select('photo')
@@ -123,9 +121,6 @@ async function getOrCreateConversation(req, res) {
     const otherUserProfile = await UserProfile.findOne({ userId: otherUserId._id })
       .select('age city fitnessLevel workoutTypes')
       .lean();
-
-    console.log('📸 otherUserPhoto:', otherUserFull?.photo);
-    console.log('📸 otherUserProfile:', otherUserProfile);
 
     const response = {
       conversation: {
@@ -140,8 +135,6 @@ async function getOrCreateConversation(req, res) {
         unreadCount: conversation.getUnreadCount(userId)
       }
     };
-
-    console.log('📤 Réponse envoyée:', JSON.stringify(response, null, 2));
 
     res.status(200).json(response);
   } catch (error) {
