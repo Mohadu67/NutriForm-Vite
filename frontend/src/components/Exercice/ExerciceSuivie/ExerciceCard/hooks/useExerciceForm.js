@@ -327,11 +327,15 @@ export default function useExerciceForm(exo, value, onChange) {
   }, [value, mode, lastExerciseData]);
 
   const [data, setData] = useState(initial);
+  const prevInitialRef = useRef(initial);
+
   useEffect(() => {
-    if (!isDeepEqual(data, initial)) {
+    // Ne mettre à jour que si `initial` a vraiment changé (pas data)
+    if (!isDeepEqual(prevInitialRef.current, initial)) {
+      prevInitialRef.current = initial;
       setData(initial);
     }
-  }, [initial, data]);
+  }, [initial]);
 
   const isCardio = mode === "cardio";
   const isPdc = mode === "pdc";
