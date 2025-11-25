@@ -301,8 +301,12 @@ async function upsertSubscription(userId, stripeSubscription) {
     stripeSubscriptionId: stripeSubscription.id,
     stripePriceId: stripeSubscription.items.data[0].price.id,
     status: stripeSubscription.status,
-    currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-    currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+    currentPeriodStart: stripeSubscription.current_period_start
+      ? new Date(stripeSubscription.current_period_start * 1000)
+      : null,
+    currentPeriodEnd: stripeSubscription.current_period_end
+      ? new Date(stripeSubscription.current_period_end * 1000)
+      : null,
     cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
     trialStart: stripeSubscription.trial_start
       ? new Date(stripeSubscription.trial_start * 1000)
