@@ -3,17 +3,15 @@ const router = express.Router();
 const auth = require('../middlewares/auth.middleware');
 const {
   createCheckoutSession,
-  handleWebhook,
   getSubscriptionStatus,
   cancelSubscription,
   createCustomerPortalSession
 } = require('../controllers/subscription.controller');
 
 /**
- * IMPORTANT: Le webhook doit recevoir le raw body (pas de JSON parsing)
- * Configuré dans server.js avec express.raw({ type: 'application/json' })
+ * IMPORTANT: La route webhook est définie directement dans server.js
+ * AVANT express.json() pour recevoir le raw body nécessaire à Stripe
  */
-router.post('/webhook', express.raw({ type: 'application/json' }), handleWebhook);
 
 /**
  * Routes protégées (authentification requise)
