@@ -3,6 +3,7 @@ const Conversation = require('../models/Conversation');
 const MatchMessage = require('../models/MatchMessage');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
+const { notifyNewMessage } = require('../services/pushNotification.service');
 
 /**
  * Récupérer toutes les conversations de l'utilisateur
@@ -201,6 +202,17 @@ async function sendMessage(req, res) {
 
     // Populate le message avec les infos de l'expéditeur
     await message.populate('senderId', 'pseudo prenom');
+
+    // Envoyer une notification push au destinataire
+    const senderUser = await User.findById(userId).select('pseudo photo');
+    if (senderUser) {
+      notifyNewMessage(receiverId, {
+        senderName: senderUser.pseudo || 'Un utilisateur',
+        senderPhoto: senderUser.photo,
+        message: content.trim().substring(0, 100), // Limiter à 100 caractères
+        conversationId: conversationId
+      }).catch(err => console.error('Erreur notification message:', err));
+    }
 
     res.status(201).json({ message });
   } catch (error) {
