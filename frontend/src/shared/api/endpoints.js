@@ -30,6 +30,7 @@ export const endpoints = {
   matching: {
     suggestions: "/matching/suggestions",
     like: "/matching/like",
+    unlike: "/matching/unlike",
     reject: "/matching/reject",
     mutual: "/matching/mutual",
     block: "/matching/block",

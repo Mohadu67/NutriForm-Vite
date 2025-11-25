@@ -19,7 +19,7 @@
 }
 
 .contentBlock h2 {
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--ink, #222325);

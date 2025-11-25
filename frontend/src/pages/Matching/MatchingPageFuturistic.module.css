@@ -936,11 +936,9 @@
 }
 
 .emptyIcon {
+  font-size: 5rem;
   margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #f7b186;
+  display: inline-block;
   animation: bounce 2s ease infinite;
 }
 
@@ -967,15 +965,6 @@
   color: #a0aec0;
 }
 
-.emptyActions {
-  display: flex;
-  gap: 12px;
-  flex-direction: column;
-  width: 100%;
-  max-width: 320px;
-  margin: 0 auto;
-}
-
 .emptyBtn {
   background: linear-gradient(135deg, #f7b186 0%, #ff9a76 100%);
   color: white;
@@ -992,33 +981,6 @@
 .emptyBtn:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 32px rgba(247, 177, 134, 0.4);
-}
-
-.emptyBtnSecondary {
-  background: rgba(255, 255, 255, 0.8);
-  color: #2d3748;
-  border: 2px solid rgba(247, 177, 134, 0.2);
-  padding: 14px 28px;
-  border-radius: 16px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s ease;
-}
-
-.emptyBtnSecondary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  border-color: rgba(247, 177, 134, 0.4);
-}
-
-:global(body.dark) .emptyBtnSecondary,
-:global(html.dark) .emptyBtnSecondary {
-  background: rgba(45, 55, 72, 0.8);
-  color: #f7fafc;
-  border-color: rgba(247, 177, 134, 0.3);
 }
 
 /* ========== MODAL (inchangé du précédent) ========== */
@@ -1187,7 +1149,6 @@
 }
 
 .mutualMatchCard {
-  position: relative;
   padding: 20px;
   border-radius: 18px;
   border: 1px solid rgba(247, 177, 134, 0.12);
@@ -1215,39 +1176,6 @@
 :global(html.dark) .mutualMatchCard:hover {
   background: rgba(45, 55, 72, 0.6);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-}
-
-.unlikeButton {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  z-index: 10;
-}
-
-.unlikeButton:hover {
-  background: rgba(239, 68, 68, 0.2);
-  transform: scale(1.1);
-}
-
-:global(body.dark) .unlikeButton,
-:global(html.dark) .unlikeButton {
-  background: rgba(239, 68, 68, 0.15);
-}
-
-:global(body.dark) .unlikeButton:hover,
-:global(html.dark) .unlikeButton:hover {
-  background: rgba(239, 68, 68, 0.25);
 }
 
 .matchCardHeader {

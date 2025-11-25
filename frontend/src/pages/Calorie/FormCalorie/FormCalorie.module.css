@@ -61,7 +61,7 @@
 .title {
   font-size: 1.8rem;
   font-weight: 800;
-  font-family: "Merriweather", serif;
+  font-family: sans-serif;
   background: var(--couleur-bouton-action, #f7b186);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -89,7 +89,7 @@
 }
 
 .groupLabel {
-  font-family: "Merriweather", serif;
+  font-family: sans-serif;
   font-weight: 700;
   font-size: 1.05rem;
   color: var(--fg-form);
@@ -104,7 +104,7 @@
 }
 
 .sectionTitle {
-  font-family: "Merriweather", serif;
+  font-family: sans-serif;
   font-weight: 700;
   font-size: 1.05rem;
   margin-bottom: 0.75rem;

@@ -30,7 +30,7 @@ button {
   --couleur-text-noir: #222325;
   --couleur-text-bouton: #111111;
   --couleur-accent-light: #fef3eb;
-  --font-titre: 'Merriweather', serif;
+  --font-titre: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   --font-p: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 
   --paper: #ffffff;
