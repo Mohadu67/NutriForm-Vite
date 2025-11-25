@@ -117,100 +117,71 @@ export default function Navbar() {
 
   // Monitor login state and premium status - avec httpOnly cookies
   useEffect(() => {
-    let isMounted = true; // Pour éviter les updates après unmount
-    let retryCount = 0;
-    const MAX_RETRIES = 3;
+    let isMounted = true;
+    const retryCountRef = { current: 0 };
+    const MAX_RETRIES = 2;
+    let hasSucceeded = false;
 
     const updateLoginState = async () => {
-      // Si déjà trop d'essais échoués, arrêter
-      if (retryCount >= MAX_RETRIES) {
+      // Si déjà réussi ou trop d'essais échoués, ne plus essayer
+      if (hasSucceeded || retryCountRef.current >= MAX_RETRIES) {
         return;
       }
 
-      // Avec httpOnly cookies, on ne peut pas vérifier via localStorage
-      // On essaie de faire un appel API pour vérifier l'authentification
       try {
         const response = await fetch('/api/me', {
           method: 'GET',
-          credentials: 'include', // Important pour envoyer les cookies httpOnly
+          credentials: 'include',
         });
 
-        if (!isMounted) return; // Component unmounted, arrêter
+        if (!isMounted) return;
 
         if (response.ok) {
-          retryCount = 0; // Reset retry count on success
+          hasSucceeded = true;
+          retryCountRef.current = 0;
           setIsLoggedIn(true);
 
-          // Vérifier le statut premium - essayer d'abord depuis localStorage
+          // Vérifier le statut premium depuis localStorage
           try {
             const cachedSub = localStorage.getItem('subscriptionStatus');
             if (cachedSub) {
               const subscription = JSON.parse(cachedSub);
               setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
-            }
-
-            // Essayer de récupérer depuis l'API (silencieux si échec)
-            const subResponse = await fetch('/api/subscriptions/status', {
-              method: 'GET',
-              credentials: 'include',
-            });
-
-            if (!isMounted) return;
-
-            if (subResponse.ok) {
-              const subscription = await subResponse.json();
-              setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
-              localStorage.setItem('subscriptionStatus', JSON.stringify(subscription));
-            } else if (subResponse.status === 404) {
-              // L'endpoint n'existe pas, garder la valeur du cache ou false
-              if (!cachedSub) {
-                setIsPremium(false);
-              }
-            }
-          } catch (err) {
-            // Erreur silencieuse - on garde la valeur du cache si disponible
-            const cachedSub = localStorage.getItem('subscriptionStatus');
-            if (cachedSub) {
-              try {
-                const subscription = JSON.parse(cachedSub);
-                setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
-              } catch {
-                setIsPremium(false);
-              }
             } else {
               setIsPremium(false);
             }
+          } catch {
+            setIsPremium(false);
           }
         } else if (response.status === 401) {
-          // Non authentifié - arrêter les tentatives
-          retryCount = MAX_RETRIES; // Stop retries
+          hasSucceeded = true; // Arrêter les essais
           setIsLoggedIn(false);
           setIsPremium(false);
         }
       } catch (err) {
-        // Erreur réseau - incrémenter retry count
-        retryCount++;
-        if (retryCount >= MAX_RETRIES) {
-          // Trop d'erreurs, considérer comme non connecté
+        retryCountRef.current++;
+        if (retryCountRef.current >= MAX_RETRIES) {
           setIsLoggedIn(false);
           setIsPremium(false);
         }
       }
     };
 
+    // Premier appel au montage
     updateLoginState();
 
-    // Vérifier périodiquement (toutes les 60 secondes)
-    // Et seulement si la page est visible
-    const interval = setInterval(() => {
-      if (document.visibilityState === 'visible' && retryCount < MAX_RETRIES) {
-        updateLoginState();
-      }
-    }, 60000);
+    // Écouter les événements de connexion personnalisés
+    const handleLoginSuccess = () => {
+      hasSucceeded = false;
+      retryCountRef.current = 0;
+      updateLoginState();
+    };
+
+    window.addEventListener('userLoggedIn', handleLoginSuccess);
 
     return () => {
       isMounted = false;
-      clearInterval(interval);
+      window.removeEventListener('userLoggedIn', handleLoginSuccess);
     };
   }, []);
 
@@ -639,7 +610,18 @@ export default function Navbar() {
         onLoginSuccess={() => {
           setIsLoggedIn(true);
           setIsPopupOpen(false);
-          navigate('/dashboard');
+
+          // Dispatcher un événement pour recharger les infos utilisateur
+          window.dispatchEvent(new CustomEvent('userLoggedIn'));
+
+          // Si l'utilisateur était en train de s'abonner, ne pas le rediriger
+          const wasSubscribing = sessionStorage.getItem('pendingSubscription');
+          if (wasSubscribing) {
+            sessionStorage.removeItem('pendingSubscription');
+            // Ne pas naviguer, laisser le flux d'abonnement continuer
+          } else {
+            navigate('/dashboard');
+          }
         }}
         onLogout={() => {
           setIsLoggedIn(false);
