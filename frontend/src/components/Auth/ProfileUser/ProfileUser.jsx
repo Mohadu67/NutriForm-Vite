@@ -7,6 +7,7 @@ import NotificationSettings from "../../Notifications/NotificationSettings.jsx";
 import { secureApiCall, logout, isAuthenticated } from "../../../utils/authService.js";
 import { getSubscriptionStatus, createCustomerPortalSession } from "../../../shared/api/subscription.js";
 import { getMyProfile, updateProfile } from "../../../shared/api/profile.js";
+import { UserIcon, DiamondIcon, HeartIcon, SettingsIcon } from './ProfileIcons';
 
 const WORKOUT_TYPES = [
   { value: 'musculation', label: 'Musculation', icon: '💪' },
@@ -34,6 +35,7 @@ export default function ProfileUser({ onLogout }) {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('profile'); // profile, premium, matching, settings
   const [editing, setEditing] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [editingMatching, setEditingMatching] = useState(false);
@@ -105,7 +107,6 @@ export default function ProfileUser({ onLogout }) {
       const res = await secureApiCall('/me');
 
       if (!res.ok) {
-        // Si 401 Unauthorized, le token est invalide - déconnecter
         if (res.status === 401) {
           const weeklyGoal = localStorage.getItem('weeklyGoal');
           const dynamiPrefs = {
@@ -129,7 +130,6 @@ export default function ProfileUser({ onLogout }) {
           return;
         }
 
-        // Pour d'autres erreurs (500, 503, etc.), afficher un message
         setError("Impossible de charger les données. Réessayez plus tard.");
         setLoading(false);
         return;
@@ -142,7 +142,6 @@ export default function ProfileUser({ onLogout }) {
       setEmail(data.email || "");
       setLoading(false);
     } catch (err) {
-      // Erreur réseau ou autre erreur inattendue
       console.error('Erreur fetchUserData:', err);
       setError("Erreur de connexion. Vérifiez votre connexion internet.");
       setLoading(false);
@@ -215,7 +214,6 @@ export default function ProfileUser({ onLogout }) {
     setError("");
 
     try {
-      // Préparer les données avec location au bon format
       const updateData = {
         bio: matchingData.bio,
         age: matchingData.age,
@@ -276,7 +274,10 @@ export default function ProfileUser({ onLogout }) {
   if (loading) {
     return (
       <div className={styles.body}>
-        <p className={styles.loading}>Chargement...</p>
+        <div className={styles.loader}>
+          <div className={styles.spinner}></div>
+          <p>Chargement...</p>
+        </div>
       </div>
     );
   }
@@ -291,81 +292,194 @@ export default function ProfileUser({ onLogout }) {
 
   return (
     <div className={styles.body}>
-      {}
-      <div className={styles.header}>
-        <h3 className={styles.title}>Mon Profil</h3>
-        <div className={styles.photoWrapper}>
-          <ProfilePhoto user={user} />
+      {/* Hero Header avec Photo */}
+      <div className={styles.hero}>
+        <div className={styles.heroGradient}></div>
+        <div className={styles.heroContent}>
+          <div className={styles.photoContainer}>
+            <ProfilePhoto user={user} />
+          </div>
+          <h2 className={styles.userName}>{user?.pseudo || user?.prenom || 'Utilisateur'}</h2>
+          <p className={styles.userEmail}>{user?.email}</p>
         </div>
       </div>
 
-      {}
-      <div className={styles.content}>
-        {message && <p className={styles.success}>{message}</p>}
-        {error && <p className={styles.error}>{error}</p>}
+      {/* Navigation Tabs */}
+      <div className={styles.tabs}>
+        <button
+          className={`${styles.tab} ${activeTab === 'profile' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('profile')}
+        >
+          <UserIcon size={20} />
+          <span>Profil</span>
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'premium' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('premium')}
+        >
+          <DiamondIcon size={20} />
+          <span>Premium</span>
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'matching' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('matching')}
+        >
+          <HeartIcon size={20} />
+          <span>Matching</span>
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'settings' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('settings')}
+        >
+          <SettingsIcon size={20} />
+          <span>Réglages</span>
+        </button>
+      </div>
 
-        {!editing && !changingPassword && !editingMatching && (
-          <div className={styles.infoSection}>
-            <div className={styles.infoCard}>
-              <div className={styles.infoRow}>
-                <span className={styles.label}>Prénom</span>
-                <span className={styles.value}>{user?.prenom || "Non renseigné"}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.label}>Pseudo</span>
-                <span className={styles.value}>{user?.pseudo || "Non renseigné"}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.label}>Email</span>
-                <span className={styles.value}>{user?.email || "Non renseigné"}</span>
-              </div>
-            </div>
+      {/* Content Area */}
+      <div className={styles.contentArea}>
+        {message && <div className={styles.success}>{message}</div>}
+        {error && <div className={styles.errorBanner}>{error}</div>}
 
-            {/* Subscription Section */}
-            <div className={styles.subscriptionCard}>
-              <h4 className={styles.subscriptionTitle}>Abonnement</h4>
+        {/* TAB: PROFILE */}
+        {activeTab === 'profile' && (
+          <div className={styles.tabContent}>
+            {!editing ? (
+              <>
+                <div className={styles.section}>
+                  <h3 className={styles.sectionTitle}>Informations personnelles</h3>
+                  <div className={styles.dataGrid}>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>Prénom</span>
+                      <span className={styles.dataValue}>{user?.prenom || "Non renseigné"}</span>
+                    </div>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>Pseudo</span>
+                      <span className={styles.dataValue}>{user?.pseudo || "Non renseigné"}</span>
+                    </div>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>Email</span>
+                      <span className={styles.dataValue}>{user?.email || "Non renseigné"}</span>
+                    </div>
+                  </div>
+                  <button
+                    className={styles.editBtn}
+                    onClick={() => setEditing(true)}
+                  >
+                    ✏️ Modifier mes informations
+                  </button>
+                </div>
+
+                {isAdmin && (
+                  <div className={styles.section}>
+                    <button
+                      className={styles.adminBtn}
+                      onClick={handleAdminClick}
+                    >
+                      🛡️ Accès Administrateur
+                    </button>
+                  </div>
+                )}
+
+                <div className={styles.section}>
+                  <button
+                    className={styles.logoutBtn}
+                    onClick={handleLogout}
+                  >
+                    Se déconnecter
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Modifier mon profil</h3>
+                <form onSubmit={handleUpdateInfo} className={styles.form}>
+                  <div className={styles.formField}>
+                    <label>Prénom</label>
+                    <input
+                      type="text"
+                      value={prenom}
+                      onChange={(e) => setPrenom(e.target.value)}
+                      className={styles.input}
+                    />
+                  </div>
+                  <div className={styles.formField}>
+                    <label>Pseudo</label>
+                    <input
+                      type="text"
+                      value={pseudo}
+                      onChange={(e) => setPseudo(e.target.value)}
+                      className={styles.input}
+                    />
+                  </div>
+                  <div className={styles.formField}>
+                    <label>Email</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={styles.input}
+                    />
+                  </div>
+                  <div className={styles.formActions}>
+                    <button type="submit" className={styles.saveBtn}>
+                      Enregistrer
+                    </button>
+                    <button type="button" onClick={() => setEditing(false)} className={styles.cancelBtn}>
+                      Annuler
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB: PREMIUM */}
+        {activeTab === 'premium' && (
+          <div className={styles.tabContent}>
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>Mon abonnement</h3>
               {subscriptionInfo ? (
                 <>
-                  <div className={styles.infoRow}>
-                    <span className={styles.label}>Formule</span>
-                    <span className={`${styles.value} ${styles.tier} ${styles[subscriptionInfo.tier]}`}>
-                      {subscriptionInfo.tier === 'premium' ? '✨ Premium' : 'Gratuit'}
-                    </span>
+                  <div className={styles.premiumCard}>
+                    <div className={styles.premiumBadge}>
+                      {subscriptionInfo.tier === 'premium' ? (
+                        <span className={styles.badgePremium}>✨ Premium</span>
+                      ) : (
+                        <span className={styles.badgeFree}>Gratuit</span>
+                      )}
+                    </div>
+
+                    {subscriptionInfo.tier === 'premium' && subscriptionInfo.isInTrial && subscriptionInfo.trialEnd && (
+                      <div className={styles.premiumInfo}>
+                        <p>Période d'essai expire le {new Date(subscriptionInfo.trialEnd).toLocaleDateString('fr-FR')}</p>
+                      </div>
+                    )}
+
+                    {subscriptionInfo.tier === 'premium' && !subscriptionInfo.isInTrial && subscriptionInfo.currentPeriodEnd && (
+                      <div className={styles.premiumInfo}>
+                        <p>
+                          {subscriptionInfo.cancelAtPeriodEnd ? 'Annulé - ' : 'Renouvellement le '}
+                          {new Date(subscriptionInfo.currentPeriodEnd).toLocaleDateString('fr-FR')}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
-                  {subscriptionInfo.tier === 'premium' && subscriptionInfo.isInTrial && subscriptionInfo.trialEnd && (
-                    <div className={styles.infoRow}>
-                      <span className={styles.label}>Période d'essai</span>
-                      <span className={styles.value}>
-                        Expire le {new Date(subscriptionInfo.trialEnd).toLocaleDateString('fr-FR')}
-                      </span>
-                    </div>
-                  )}
-
-                  {subscriptionInfo.tier === 'premium' && !subscriptionInfo.isInTrial && subscriptionInfo.currentPeriodEnd && (
-                    <div className={styles.infoRow}>
-                      <span className={styles.label}>Renouvellement</span>
-                      <span className={styles.value}>
-                        {subscriptionInfo.cancelAtPeriodEnd ? 'Annulé - ' : ''}
-                        {new Date(subscriptionInfo.currentPeriodEnd).toLocaleDateString('fr-FR')}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className={styles.subscriptionActions}>
+                  <div className={styles.premiumActions}>
                     {subscriptionInfo.tier === 'free' ? (
-                      <BoutonAction type="button" onClick={handleUpgrade} variant="primary">
+                      <button className={styles.upgradeBtn} onClick={handleUpgrade}>
                         🚀 Passer à Premium
-                      </BoutonAction>
+                      </button>
                     ) : (
-                      <BoutonAction
-                        type="button"
+                      <button
+                        className={styles.manageBtn}
                         onClick={handleManageSubscription}
-                        variant="secondary"
                         disabled={loadingSubscription}
                       >
                         {loadingSubscription ? 'Chargement...' : 'Gérer mon abonnement'}
-                      </BoutonAction>
+                      </button>
                     )}
                   </div>
                 </>
@@ -373,352 +487,217 @@ export default function ProfileUser({ onLogout }) {
                 <p className={styles.loadingText}>Chargement...</p>
               )}
             </div>
-
-            {/* Notifications Section */}
-            <NotificationSettings />
-
-            {/* Matching Profile Section */}
-            {matchingProfile && (
-              <div className={styles.matchingCard}>
-                <div className={styles.matchingHeader}>
-                  <h4 className={styles.subscriptionTitle}>Profil de matching</h4>
-                  {!editingMatching && (
-                    <button
-                      className={styles.editMatchingBtn}
-                      onClick={() => setEditingMatching(true)}
-                    >
-                      ✏️ Modifier
-                    </button>
-                  )}
-                </div>
-
-                {!editingMatching ? (
-                  <div className={styles.matchingInfo}>
-                    <div className={styles.infoRow}>
-                      <span className={styles.label}>Bio</span>
-                      <span className={styles.value}>{matchingProfile.bio || 'Non renseignée'}</span>
-                    </div>
-                    <div className={styles.infoRow}>
-                      <span className={styles.label}>Âge</span>
-                      <span className={styles.value}>{matchingProfile.age || 'Non renseigné'}</span>
-                    </div>
-                    <div className={styles.infoRow}>
-                      <span className={styles.label}>Niveau</span>
-                      <span className={styles.value}>
-                        {FITNESS_LEVELS.find(l => l.value === matchingProfile.fitnessLevel)?.label || 'Non renseigné'}
-                      </span>
-                    </div>
-                    <div className={styles.infoRow}>
-                      <span className={styles.label}>Ville</span>
-                      <span className={styles.value}>{matchingProfile.location?.city || 'Non renseignée'}</span>
-                    </div>
-                    <div className={styles.infoRow}>
-                      <span className={styles.label}>Activités</span>
-                      <span className={styles.value}>
-                        {matchingProfile.workoutTypes?.length > 0
-                          ? matchingProfile.workoutTypes
-                              .map(type => WORKOUT_TYPES.find(w => w.value === type)?.label || type)
-                              .join(', ')
-                          : 'Aucune'}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <form className={styles.form} onSubmit={handleUpdateMatchingProfile}>
-                    <div className={styles.field}>
-                      <label className={styles.fieldLabel}>Bio</label>
-                      <textarea
-                        className={styles.textarea}
-                        value={matchingData.bio}
-                        onChange={(e) => setMatchingData({ ...matchingData, bio: e.target.value })}
-                        rows={3}
-                        placeholder="Présentez-vous en quelques mots..."
-                      />
-                    </div>
-
-                    <div className={styles.formRow}>
-                      <div className={styles.field}>
-                        <label className={styles.fieldLabel}>Âge</label>
-                        <input
-                          type="number"
-                          className={styles.input}
-                          value={matchingData.age}
-                          onChange={(e) => setMatchingData({ ...matchingData, age: e.target.value })}
-                          min={13}
-                          max={120}
-                        />
-                      </div>
-                      <div className={styles.field}>
-                        <label className={styles.fieldLabel}>Genre</label>
-                        <select
-                          className={styles.input}
-                          value={matchingData.gender}
-                          onChange={(e) => setMatchingData({ ...matchingData, gender: e.target.value })}
-                        >
-                          <option value="male">Homme</option>
-                          <option value="female">Femme</option>
-                          <option value="other">Autre</option>
-                          <option value="prefer_not_say">Ne pas préciser</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className={styles.field}>
-                      <label className={styles.fieldLabel}>Niveau de fitness</label>
-                      <select
-                        className={styles.input}
-                        value={matchingData.fitnessLevel}
-                        onChange={(e) => setMatchingData({ ...matchingData, fitnessLevel: e.target.value })}
-                      >
-                        {FITNESS_LEVELS.map(level => (
-                          <option key={level.value} value={level.value}>{level.label}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className={styles.field}>
-                      <label className={styles.fieldLabel}>Ville</label>
-                      <input
-                        type="text"
-                        className={styles.input}
-                        value={matchingData.city}
-                        onChange={(e) => setMatchingData({ ...matchingData, city: e.target.value })}
-                        placeholder="Votre ville"
-                      />
-                    </div>
-
-                    <div className={styles.field}>
-                      <label className={styles.fieldLabel}>Types d'entraînement ({matchingData.workoutTypes.length})</label>
-                      <div className={styles.workoutGrid}>
-                        {WORKOUT_TYPES.map(type => (
-                          <span
-                            key={type.value}
-                            className={`${styles.workoutBadge} ${matchingData.workoutTypes.includes(type.value) ? styles.selected : ''}`}
-                            onClick={() => toggleWorkoutType(type.value)}
-                          >
-                            {type.icon} {type.label}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className={styles.actions}>
-                      <BoutonAction type="submit">
-                        Enregistrer
-                      </BoutonAction>
-                      <BoutonAction type="button" onClick={() => setEditingMatching(false)} variant="secondary">
-                        Annuler
-                      </BoutonAction>
-                    </div>
-                  </form>
-                )}
-              </div>
-            )}
-
-            <div className={styles.actions}>
-              {isAdmin && (
-                <BoutonAction type="button" onClick={handleAdminClick} variant="admin">
-                  🛡️ Administrateur
-                </BoutonAction>
-              )}
-              <BoutonAction type="button" onClick={() => setEditing(true)} variant="secondary">
-                Modifier mes informations
-              </BoutonAction>
-              <BoutonAction type="button" onClick={() => setChangingPassword(true)} variant="secondary">
-                Changer mon mot de passe
-              </BoutonAction>
-              <BoutonAction type="button" onClick={handleLogout} variant="logout">
-                Se déconnecter
-              </BoutonAction>
-            </div>
           </div>
         )}
 
-        {editing && (
-          <form className={styles.form} onSubmit={handleUpdateInfo}>
-            <div className={styles.field}>
-              <label className={styles.fieldLabel} htmlFor="prenom">Prénom</label>
-              <input
-                id="prenom"
-                type="text"
-                className={styles.input}
-                value={prenom}
-                onChange={(e) => setPrenom(e.target.value)}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.fieldLabel} htmlFor="pseudo">Pseudo</label>
-              <input
-                id="pseudo"
-                type="text"
-                className={styles.input}
-                value={pseudo}
-                onChange={(e) => setPseudo(e.target.value)}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.fieldLabel} htmlFor="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                className={styles.input}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            <div className={styles.actions}>
-              <BoutonAction type="submit">
-                Enregistrer
-              </BoutonAction>
-              <BoutonAction type="button" onClick={() => setEditing(false)} variant="secondary">
-                Annuler
-              </BoutonAction>
-            </div>
-          </form>
-        )}
-
-        {changingPassword && (
-          <form className={styles.form} onSubmit={handleChangePassword}>
-            <div className={styles.field}>
-              <label className={styles.fieldLabel} htmlFor="currentPassword">Mot de passe actuel</label>
-              <input
-                id="currentPassword"
-                type="password"
-                className={styles.input}
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.fieldLabel} htmlFor="newPassword">Nouveau mot de passe</label>
-              <input
-                id="newPassword"
-                type="password"
-                className={styles.input}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.fieldLabel} htmlFor="confirmPassword">Confirmer le mot de passe</label>
-              <input
-                id="confirmPassword"
-                type="password"
-                className={styles.input}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className={styles.actions}>
-              <BoutonAction type="submit">
-                Changer le mot de passe
-              </BoutonAction>
-              <BoutonAction type="button" onClick={() => setChangingPassword(false)} variant="secondary">
-                Annuler
-              </BoutonAction>
-            </div>
-          </form>
-        )}
-
-        {editingMatching && (
-          <form className={styles.form} onSubmit={handleUpdateMatchingProfile}>
-            <h4 className={styles.formTitle}>Modifier mon profil de matching</h4>
-
-            <div className={styles.field}>
-              <label className={styles.fieldLabel}>Bio</label>
-              <textarea
-                className={styles.textarea}
-                value={matchingData.bio}
-                onChange={(e) => setMatchingData({ ...matchingData, bio: e.target.value })}
-                rows={3}
-                placeholder="Présentez-vous en quelques mots..."
-              />
-            </div>
-
-            <div className={styles.formRow}>
-              <div className={styles.field}>
-                <label className={styles.fieldLabel}>Âge</label>
-                <input
-                  type="number"
-                  className={styles.input}
-                  value={matchingData.age}
-                  onChange={(e) => setMatchingData({ ...matchingData, age: e.target.value })}
-                  min={13}
-                  max={120}
-                />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.fieldLabel}>Genre</label>
-                <select
-                  className={styles.input}
-                  value={matchingData.gender}
-                  onChange={(e) => setMatchingData({ ...matchingData, gender: e.target.value })}
-                >
-                  <option value="male">Homme</option>
-                  <option value="female">Femme</option>
-                  <option value="other">Autre</option>
-                  <option value="prefer_not_say">Ne pas préciser</option>
-                </select>
-              </div>
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.fieldLabel}>Niveau de fitness</label>
-              <select
-                className={styles.input}
-                value={matchingData.fitnessLevel}
-                onChange={(e) => setMatchingData({ ...matchingData, fitnessLevel: e.target.value })}
-              >
-                {FITNESS_LEVELS.map(level => (
-                  <option key={level.value} value={level.value}>{level.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.fieldLabel}>Ville</label>
-              <input
-                type="text"
-                className={styles.input}
-                value={matchingData.city}
-                onChange={(e) => setMatchingData({ ...matchingData, city: e.target.value })}
-                placeholder="Votre ville"
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.fieldLabel}>Types d'entraînement ({matchingData.workoutTypes.length})</label>
-              <div className={styles.workoutGrid}>
-                {WORKOUT_TYPES.map(type => (
-                  <span
-                    key={type.value}
-                    className={`${styles.workoutBadge} ${matchingData.workoutTypes.includes(type.value) ? styles.selected : ''}`}
-                    onClick={() => toggleWorkoutType(type.value)}
+        {/* TAB: MATCHING */}
+        {activeTab === 'matching' && (
+          <div className={styles.tabContent}>
+            {!editingMatching && matchingProfile ? (
+              <>
+                <div className={styles.section}>
+                  <h3 className={styles.sectionTitle}>Profil de matching</h3>
+                  <div className={styles.dataGrid}>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>Bio</span>
+                      <span className={styles.dataValue}>{matchingProfile.bio || 'Non renseignée'}</span>
+                    </div>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>Âge</span>
+                      <span className={styles.dataValue}>{matchingProfile.age || 'Non renseigné'}</span>
+                    </div>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>Niveau</span>
+                      <span className={styles.dataValue}>
+                        {FITNESS_LEVELS.find(l => l.value === matchingProfile.fitnessLevel)?.label || 'Non renseigné'}
+                      </span>
+                    </div>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>Ville</span>
+                      <span className={styles.dataValue}>{matchingProfile.location?.city || 'Non renseignée'}</span>
+                    </div>
+                    <div className={styles.dataItemFull}>
+                      <span className={styles.dataLabel}>Activités</span>
+                      <div className={styles.badgeList}>
+                        {matchingProfile.workoutTypes?.length > 0 ? (
+                          matchingProfile.workoutTypes.map(type => {
+                            const workoutType = WORKOUT_TYPES.find(w => w.value === type);
+                            return workoutType ? (
+                              <span key={type} className={styles.badge}>
+                                {workoutType.icon} {workoutType.label}
+                              </span>
+                            ) : null;
+                          })
+                        ) : (
+                          <span className={styles.dataValue}>Aucune</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    className={styles.editBtn}
+                    onClick={() => setEditingMatching(true)}
                   >
-                    {type.icon} {type.label}
-                  </span>
-                ))}
+                    ✏️ Modifier mon profil matching
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Modifier mon profil matching</h3>
+                <form onSubmit={handleUpdateMatchingProfile} className={styles.form}>
+                  <div className={styles.formField}>
+                    <label>Bio</label>
+                    <textarea
+                      value={matchingData.bio}
+                      onChange={(e) => setMatchingData({ ...matchingData, bio: e.target.value })}
+                      className={styles.textarea}
+                      rows={3}
+                      placeholder="Présentez-vous en quelques mots..."
+                    />
+                  </div>
+
+                  <div className={styles.formRow}>
+                    <div className={styles.formField}>
+                      <label>Âge</label>
+                      <input
+                        type="number"
+                        value={matchingData.age}
+                        onChange={(e) => setMatchingData({ ...matchingData, age: e.target.value })}
+                        className={styles.input}
+                        min={13}
+                        max={120}
+                      />
+                    </div>
+                    <div className={styles.formField}>
+                      <label>Genre</label>
+                      <select
+                        value={matchingData.gender}
+                        onChange={(e) => setMatchingData({ ...matchingData, gender: e.target.value })}
+                        className={styles.input}
+                      >
+                        <option value="male">Homme</option>
+                        <option value="female">Femme</option>
+                        <option value="other">Autre</option>
+                        <option value="prefer_not_say">Ne pas préciser</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className={styles.formField}>
+                    <label>Niveau de fitness</label>
+                    <select
+                      value={matchingData.fitnessLevel}
+                      onChange={(e) => setMatchingData({ ...matchingData, fitnessLevel: e.target.value })}
+                      className={styles.input}
+                    >
+                      {FITNESS_LEVELS.map(level => (
+                        <option key={level.value} value={level.value}>{level.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className={styles.formField}>
+                    <label>Ville</label>
+                    <input
+                      type="text"
+                      value={matchingData.city}
+                      onChange={(e) => setMatchingData({ ...matchingData, city: e.target.value })}
+                      className={styles.input}
+                      placeholder="Votre ville"
+                    />
+                  </div>
+
+                  <div className={styles.formField}>
+                    <label>Types d'entraînement ({matchingData.workoutTypes.length})</label>
+                    <div className={styles.workoutGrid}>
+                      {WORKOUT_TYPES.map(type => (
+                        <span
+                          key={type.value}
+                          className={`${styles.workoutBadge} ${matchingData.workoutTypes.includes(type.value) ? styles.selected : ''}`}
+                          onClick={() => toggleWorkoutType(type.value)}
+                        >
+                          {type.icon} {type.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className={styles.formActions}>
+                    <button type="submit" className={styles.saveBtn}>
+                      Enregistrer
+                    </button>
+                    <button type="button" onClick={() => setEditingMatching(false)} className={styles.cancelBtn}>
+                      Annuler
+                    </button>
+                  </div>
+                </form>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB: SETTINGS */}
+        {activeTab === 'settings' && (
+          <div className={styles.tabContent}>
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>Notifications</h3>
+              <NotificationSettings />
             </div>
 
-            <div className={styles.actions}>
-              <BoutonAction type="submit">
-                Enregistrer
-              </BoutonAction>
-              <BoutonAction type="button" onClick={() => setEditingMatching(false)} variant="secondary">
-                Annuler
-              </BoutonAction>
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>Sécurité</h3>
+              {!changingPassword ? (
+                <button
+                  className={styles.editBtn}
+                  onClick={() => setChangingPassword(true)}
+                >
+                  🔒 Changer mon mot de passe
+                </button>
+              ) : (
+                <form onSubmit={handleChangePassword} className={styles.form}>
+                  <div className={styles.formField}>
+                    <label>Mot de passe actuel</label>
+                    <input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className={styles.input}
+                      required
+                    />
+                  </div>
+                  <div className={styles.formField}>
+                    <label>Nouveau mot de passe</label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className={styles.input}
+                      required
+                    />
+                  </div>
+                  <div className={styles.formField}>
+                    <label>Confirmer le mot de passe</label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={styles.input}
+                      required
+                    />
+                  </div>
+                  <div className={styles.formActions}>
+                    <button type="submit" className={styles.saveBtn}>
+                      Changer le mot de passe
+                    </button>
+                    <button type="button" onClick={() => setChangingPassword(false)} className={styles.cancelBtn}>
+                      Annuler
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
-          </form>
+          </div>
         )}
       </div>
     </div>
