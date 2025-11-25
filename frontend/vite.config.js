@@ -32,10 +32,14 @@ export default defineConfig(({ mode }) => ({
     svgr(),
     // Désactiver PWA en mode dev pour améliorer les performances
     ...(mode === 'production' ? [VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}'],
         globIgnores: ['**/assets/icons/**'],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/harmonith\.fr\/.*/i,
@@ -45,10 +49,14 @@ export default defineConfig(({ mode }) => ({
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 7 // 7 jours
-              }
+              },
+              networkTimeoutSeconds: 10
             }
           }
         ]
+      },
+      devOptions: {
+        enabled: false
       },
       manifest: {
         name: 'Harmonith - Coach Sportif en Ligne',
