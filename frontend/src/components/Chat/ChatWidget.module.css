@@ -186,9 +186,15 @@
   flex-shrink: 0;
 }
 
-.escalateBtn:hover {
+.escalateBtn:hover:not(:disabled) {
   background: #ffb300;
   transform: scale(1.1);
+}
+
+.escalateBtn:disabled {
+  background: #e0e0e0;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .inputForm {
