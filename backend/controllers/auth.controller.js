@@ -75,13 +75,14 @@ exports.login = async (req, res) => {
     }
 
     // Envoi du token via cookie httpOnly (protection XSS)
-    // sameSite: 'none' permet les cookies cross-domain (Netlify <-> api.harmonith.fr)
+    // sameSite: 'lax' fonctionne avec proxy Netlify (même domaine via /api)
     // En dev local: sameSite 'lax' car même domaine (localhost)
     const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('token', token, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? 'none' : 'lax', // 'none' requis pour cross-domain (Netlify previews)
+      sameSite: 'lax',
+      domain: isProduction ? '.harmonith.fr' : undefined,
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
     });
@@ -292,7 +293,8 @@ exports.logout = async (req, res) => {
     res.clearCookie('token', {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? 'none' : 'lax',
+      sameSite: 'lax',
+      domain: isProduction ? '.harmonith.fr' : undefined,
       path: '/',
     });
 
