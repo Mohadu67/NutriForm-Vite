@@ -30,7 +30,8 @@ import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
 import CanonicalLink from "./components/CanonicalLink/CanonicalLink.jsx";
 import NotificationPrompt from "./components/Notifications/NotificationPrompt.jsx";
 import { ChatProvider } from "./contexts/ChatContext.jsx";
-import { initializeNotifications } from "./services/notificationService.js";
+import { initializeNotifications, checkUnreadMessagesOnLoad } from "./services/notificationService.js";
+import { Toaster } from 'sonner';
 import './i18n/config';
 
 export default function App() {
@@ -39,13 +40,29 @@ export default function App() {
     // Note: Session management is now handled server-side via httpOnly cookies
     // No need for client-side session checks anymore
 
-    // Initialiser les notifications push
+    // En mode dev, désinstaller tous les service workers pour éviter les conflits avec HMR
+    if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => {
+          registration.unregister();
+        });
+      });
+    }
+
+    // Initialiser les notifications push (uniquement en production)
     initializeNotifications();
+
+    // Vérifier les messages non lus au chargement
+    // Attendre 2 secondes pour laisser le temps à l'app de charger
+    setTimeout(() => {
+      checkUnreadMessagesOnLoad();
+    }, 2000);
   }, []);
 
   return (
     <ErrorBoundary>
       <ChatProvider>
+        <Toaster position="top-center" richColors />
         <UpdatePrompt />
         <CanonicalLink />
         <NotificationPrompt />

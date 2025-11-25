@@ -26,7 +26,6 @@ export default function ChatHistory({ onLogin }) {
           const subscription = await getSubscriptionStatus();
           setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
         } catch (err) {
-          console.error('Erreur récupération subscription:', err);
           setIsPremium(false);
         }
       }
@@ -46,7 +45,7 @@ export default function ChatHistory({ onLogin }) {
       const { conversations: aiConvs } = await getAIConversations();
       setConversations(aiConvs || []);
     } catch (err) {
-      console.error('Erreur chargement conversations IA:', err);
+      // Silencieux
     }
   };
 
@@ -62,7 +61,7 @@ export default function ChatHistory({ onLogin }) {
       const { conversations } = await getConversations();
       setMatchConversations(conversations || []);
     } catch (err) {
-      console.error('Erreur chargement conversations matches:', err);
+      // Silencieux
     }
   };
 
@@ -101,7 +100,6 @@ export default function ChatHistory({ onLogin }) {
       // Recharger les conversations
       await loadAIConversations();
     } catch (err) {
-      console.error('Erreur suppression conversation IA:', err);
       alert('Erreur lors de la suppression de la conversation.');
     }
   };
@@ -115,7 +113,6 @@ export default function ChatHistory({ onLogin }) {
       // Recharger les conversations
       await loadMatchConversations();
     } catch (err) {
-      console.error('Erreur suppression conversation match:', err);
       alert('Erreur lors de la suppression de la conversation.');
     }
   };
@@ -213,12 +210,17 @@ export default function ChatHistory({ onLogin }) {
                     className={styles.conversationItem}
                     onClick={() => openMatchChat(conv)}
                   >
-                    <Avatar
-                      src={conv.otherUser?.profile?.profilePicture}
-                      name={conv.otherUser?.pseudo || conv.otherUser?.prenom || 'User'}
-                      size="md"
-                      className={styles.convProfileImage}
-                    />
+                    <div className={styles.avatarWrapper}>
+                      <Avatar
+                        src={conv.otherUser?.profile?.profilePicture}
+                        name={conv.otherUser?.pseudo || conv.otherUser?.prenom || 'User'}
+                        size="md"
+                        className={styles.convProfileImage}
+                      />
+                      {conv.unreadCount > 0 && (
+                        <div className={styles.unreadDot}></div>
+                      )}
+                    </div>
                     <div className={styles.convContent}>
                       <div className={styles.convHeader}>
                         <span className={styles.convTitle}>
@@ -232,9 +234,6 @@ export default function ChatHistory({ onLogin }) {
                         {conv.lastMessage?.content?.substring(0, 50) || 'Nouvelle conversation'}
                         {conv.lastMessage?.content?.length > 50 && '...'}
                       </p>
-                      {conv.unreadCount > 0 && (
-                        <span className={styles.unreadBadge}>{conv.unreadCount}</span>
-                      )}
                     </div>
                     <button
                       className={styles.deleteBtn}
