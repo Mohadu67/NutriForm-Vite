@@ -25,7 +25,7 @@ export default function VerifyEmail() {
       }
       setStatus("loading");
       try {
-        const endpoint = API_URL ? `${API_URL}/api/verify-email` : "/api/verify-email";
+        const endpoint = API_URL ? `${API_URL}/verify-email` : "/verify-email";
         let res = await fetch(`${endpoint}?token=${encodeURIComponent(token)}`);
         if (res.status === 404) {
           const fallbackEndpoint = API_URL ? `${API_URL}/verify-email` : "/verify-email";

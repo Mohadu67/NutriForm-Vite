@@ -84,7 +84,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
         ? await executeRecaptcha('register')
         : null;
 
-      const res = await fetch(`${API_URL}/api/register`, {
+      const res = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: emailNorm, motdepasse: password, pseudo: pseudo.trim(), captchaToken })
@@ -105,7 +105,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
           const newsletterCaptchaToken = RECAPTCHA_ENABLED && executeRecaptcha
             ? await executeRecaptcha('newsletter_subscribe')
             : null;
-          await fetch(`${API_URL}/api/newsletter/subscribe`, {
+          await fetch(`${API_URL}/newsletter/subscribe`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: emailNorm, captchaToken: newsletterCaptchaToken })

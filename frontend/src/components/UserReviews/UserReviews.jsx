@@ -22,7 +22,7 @@ export default function UserReviews() {
     }
 
     try {
-      const response = await secureApiCall('/api/me');
+      const response = await secureApiCall('/me');
 
       if (response.ok) {
         const data = await response.json();
@@ -41,7 +41,7 @@ export default function UserReviews() {
 
   const fetchReviews = useCallback(async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/reviews/users`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/reviews/users`);
       const data = await response.json();
       if (data.success) {
         setReviews(data.reviews);
@@ -63,7 +63,7 @@ export default function UserReviews() {
     setMessage({ type: "", text: "" });
 
     try {
-      const response = await secureApiCall('/api/reviews/users', {
+      const response = await secureApiCall('/reviews/users', {
         method: "POST",
         body: JSON.stringify(formData),
       });

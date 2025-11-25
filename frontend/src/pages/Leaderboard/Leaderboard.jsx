@@ -57,7 +57,7 @@ const Leaderboard = () => {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/leaderboard?period=${period}&type=${category}&limit=50`
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/leaderboard?period=${period}&type=${category}&limit=50`
       );
       const data = await response.json();
 
@@ -80,7 +80,7 @@ const Leaderboard = () => {
     if (!isLoggedIn) return;
 
     try {
-      const response = await secureApiCall('/api/leaderboard/status', { method: 'GET' });
+      const response = await secureApiCall('/leaderboard/status', { method: 'GET' });
       const data = await response.json();
 
       if (data.success) {
@@ -88,7 +88,7 @@ const Leaderboard = () => {
         if (data.isOptedIn && data.data) {
           const userId = data.data.userId;
           const rankResponse = await fetch(
-            `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/leaderboard/user/${userId}/rank?period=${period}&type=${category}`
+            `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/leaderboard/user/${userId}/rank?period=${period}&type=${category}`
           );
           const rankData = await rankResponse.json();
           if (rankData.success) {
@@ -113,7 +113,7 @@ const Leaderboard = () => {
     setOptInLoading(true);
 
     try {
-      const response = await secureApiCall('/api/leaderboard/opt-in', { method: 'POST' });
+      const response = await secureApiCall('/leaderboard/opt-in', { method: 'POST' });
       const data = await response.json();
 
       if (data.success) {
@@ -133,7 +133,7 @@ const Leaderboard = () => {
     setOptInLoading(true);
 
     try {
-      const response = await secureApiCall('/api/leaderboard/opt-out', { method: 'POST' });
+      const response = await secureApiCall('/leaderboard/opt-out', { method: 'POST' });
       const data = await response.json();
 
       if (data.success) {
@@ -153,7 +153,7 @@ const Leaderboard = () => {
     setRefreshLoading(true);
 
     try {
-      const response = await secureApiCall('/api/leaderboard/refresh-profile', { method: 'POST' });
+      const response = await secureApiCall('/leaderboard/refresh-profile', { method: 'POST' });
       const data = await response.json();
 
       if (data.success) {
