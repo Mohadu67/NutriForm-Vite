@@ -200,7 +200,7 @@ export default function AdminPage() {
   const handleDeleteNewsletter = async (id) => {
     if (!confirm("Voulez-vous vraiment supprimer cette newsletter ?")) return;
     try {
-      const response = await secureApiCall(`/api/newsletter-admin/${id}`, { method: "DELETE" });
+      const response = await secureApiCall(`/newsletter-admin/${id}`, { method: "DELETE" });
       const data = await response.json();
       if (data.success) {
         showMessage("success", "Newsletter supprimée !");
@@ -217,7 +217,7 @@ export default function AdminPage() {
     if (!confirm(`Voulez-vous vraiment envoyer "${title}" ?`)) return;
     try {
       setLoading(true);
-      const response = await secureApiCall(`/api/newsletter-admin/${id}/send-now`, { method: "POST" });
+      const response = await secureApiCall(`/newsletter-admin/${id}/send-now`, { method: "POST" });
       const data = await response.json();
       if (data.success) {
         showMessage("success", `Newsletter envoyée à ${data.stats?.successCount || 0} abonnés !`);
