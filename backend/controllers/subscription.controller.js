@@ -71,8 +71,8 @@ async function createCheckoutSession(req, res) {
           userId: userId.toString()
         }
       },
-      success_url: `${process.env.FRONTEND_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}&success=true`,
-      cancel_url: `${process.env.FRONTEND_URL}/pricing?canceled=true`,
+      success_url: `${process.env.FRONTEND_BASE_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      cancel_url: `${process.env.FRONTEND_BASE_URL}/pricing?canceled=true`,
       metadata: {
         userId: userId.toString()
       }
@@ -380,7 +380,7 @@ async function createCustomerPortalSession(req, res) {
 
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${process.env.FRONTEND_URL}/dashboard`
+      return_url: `${process.env.FRONTEND_BASE_URL}/dashboard`
     });
 
     res.status(200).json({ url: session.url });

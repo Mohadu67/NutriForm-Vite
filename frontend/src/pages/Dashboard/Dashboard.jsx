@@ -28,11 +28,6 @@ export default function Dashboard() {
     const success = searchParams.get('success');
     if (success === 'true') {
       setShowSuccessMessage(true);
-      // Nettoyer l'URL après 5 secondes
-      setTimeout(() => {
-        setShowSuccessMessage(false);
-        setSearchParams({});
-      }, 5000);
     }
 
     // Vérifier le statut d'abonnement
@@ -626,10 +621,26 @@ export default function Dashboard() {
       <Header />
       <main className={style.dashboard}>
         <div className={style.container}>
-          {/* Success Message after Payment */}
+          {/* Success Message after Payment - Modal Popup */}
           {showSuccessMessage && (
-            <div className={style.successBanner}>
-              🎉 Bienvenue dans Premium ! Votre essai gratuit de 7 jours a commencé. Profitez de toutes les fonctionnalités !
+            <div className={style.modalOverlay} onClick={() => setShowSuccessMessage(false)}>
+              <div className={style.welcomeModal} onClick={(e) => e.stopPropagation()}>
+                <div className={style.modalIcon}>🎉</div>
+                <h2 className={style.modalTitle}>Bienvenue dans Premium !</h2>
+                <p className={style.modalMessage}>
+                  Votre essai gratuit de <strong>7 jours</strong> a commencé.<br />
+                  Profitez de toutes les fonctionnalités exclusives !
+                </p>
+                <button
+                  className={style.modalButton}
+                  onClick={() => {
+                    setShowSuccessMessage(false);
+                    setSearchParams({});
+                  }}
+                >
+                  C'est parti !
+                </button>
+              </div>
             </div>
           )}
 
