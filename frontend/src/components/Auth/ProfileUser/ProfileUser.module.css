@@ -539,3 +539,202 @@
 :global(html.dark) .subscriptionActions {
   border-top-color: rgba(255, 255, 255, 0.08);
 }
+
+/* === MATCHING PROFILE SECTION === */
+.matchingCard {
+  background: linear-gradient(145deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(248, 250, 252, 0.90) 100%
+  );
+  border: 1px solid rgba(184, 221, 209, 0.15);
+  border-radius: 18px;
+  padding: 24px;
+  margin-top: 20px;
+  box-shadow:
+    0 4px 12px rgba(184, 221, 209, 0.08),
+    0 0 0 1px rgba(184, 221, 209, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.matchingCard:hover {
+  box-shadow:
+    0 8px 24px rgba(184, 221, 209, 0.12),
+    0 0 0 1px rgba(184, 221, 209, 0.1);
+  transform: translateY(-2px);
+}
+
+.matchingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.editMatchingBtn {
+  background: linear-gradient(135deg, var(--nf-green, #b8ddd1), color-mix(in srgb, var(--nf-green, #b8ddd1) 85%, #66ccaa 15%));
+  color: #0a0a0a;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(184, 221, 209, 0.3);
+}
+
+.editMatchingBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(184, 221, 209, 0.4);
+}
+
+.matchingInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(184, 221, 209, 0.2);
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--nf-green, #b8ddd1);
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 0 3px rgba(184, 221, 209, 0.1);
+}
+
+.workoutGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.workoutBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1.5px solid rgba(184, 221, 209, 0.3);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.8);
+  user-select: none;
+}
+
+.workoutBadge:hover {
+  border-color: var(--nf-green, #b8ddd1);
+  background: rgba(184, 221, 209, 0.1);
+  transform: translateY(-1px);
+}
+
+.workoutBadge.selected {
+  background: linear-gradient(135deg, var(--nf-green, #b8ddd1), rgba(184, 221, 209, 0.8));
+  border-color: var(--nf-green, #b8ddd1);
+  color: #0a0a0a;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(184, 221, 209, 0.3);
+}
+
+/* Dark mode for matching profile */
+:global(body.dark) .matchingCard,
+:global(html.dark) .matchingCard {
+  background: linear-gradient(145deg,
+    rgba(30, 41, 59, 0.95) 0%,
+    rgba(15, 23, 42, 0.90) 100%
+  );
+  border-color: rgba(123, 196, 168, 0.2);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(123, 196, 168, 0.1);
+}
+
+:global(body.dark) .matchingCard:hover,
+:global(html.dark) .matchingCard:hover {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(123, 196, 168, 0.15);
+}
+
+:global(body.dark) .textarea,
+:global(html.dark) .textarea {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(123, 196, 168, 0.2);
+  color: #e2e8f0;
+}
+
+:global(body.dark) .textarea:focus,
+:global(html.dark) .textarea:focus {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: var(--nf-green, #7bc4a8);
+}
+
+:global(body.dark) .workoutBadge,
+:global(html.dark) .workoutBadge {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(123, 196, 168, 0.3);
+  color: #cbd5e1;
+}
+
+:global(body.dark) .workoutBadge:hover,
+:global(html.dark) .workoutBadge:hover {
+  background: rgba(123, 196, 168, 0.15);
+  border-color: var(--nf-green, #7bc4a8);
+}
+
+:global(body.dark) .workoutBadge.selected,
+:global(html.dark) .workoutBadge.selected {
+  background: linear-gradient(135deg, var(--nf-green, #7bc4a8), rgba(123, 196, 168, 0.8));
+  border-color: var(--nf-green, #7bc4a8);
+  color: #0d1f17;
+}
+
+.formTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(184, 221, 209, 0.2);
+}
+
+:global(body.dark) .formTitle,
+:global(html.dark) .formTitle {
+  color: #e2e8f0;
+  border-bottom-color: rgba(123, 196, 168, 0.2);
+}
+
+@media (max-width: 640px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .matchingHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .editMatchingBtn {
+    width: 100%;
+  }
+}
