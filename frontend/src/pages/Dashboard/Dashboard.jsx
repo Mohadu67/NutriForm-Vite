@@ -9,7 +9,7 @@ import useHistoryData from "../../components/History/HistoryUser/UseHistoryData.
 import WeeklyGoalModal from "../../components/History/DashboardCards/WeeklyGoalModal.jsx";
 import { deleteSession, updateSession } from "../../components/History/SessionTracking/sessionApi.js";
 import { getSubscriptionStatus } from "../../shared/api/subscription.js";
-import { confirmDialog, showSuccess, showError } from "../../utils/confirmDialog.js";
+import { confirmDialog, showSuccess, showError } from "../../utils/confirmDialog.jsx";
 
 export default function Dashboard() {
   usePageTitle("Dashboard");
