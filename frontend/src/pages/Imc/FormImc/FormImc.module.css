@@ -59,7 +59,7 @@
 .title {
   font-size: 1.8rem;
   font-weight: 800;
-  font-family: "Merriweather", serif;
+  font-family: sans-serif;
   background: var(--couleur-bouton-action, #f7b186);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

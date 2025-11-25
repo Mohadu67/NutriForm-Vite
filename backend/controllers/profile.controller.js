@@ -12,8 +12,30 @@ exports.getMyProfile = async (req, res) => {
       // Créer un profil par défaut si n'existe pas
       profile = new UserProfile({
         userId,
+        bio: '',
+        gender: 'prefer_not_say',
+        fitnessLevel: 'beginner',
         workoutTypes: [],
-        availability: {}
+        availability: {
+          monday: [],
+          tuesday: [],
+          wednesday: [],
+          thursday: [],
+          friday: [],
+          saturday: [],
+          sunday: []
+        },
+        matchPreferences: {
+          maxDistance: 5,
+          preferredGender: 'any',
+          preferredFitnessLevels: [],
+          preferredWorkoutTypes: [],
+          preferredAgeRange: { min: 18, max: 99 },
+          onlyVerified: false
+        },
+        isVisible: false,
+        verified: false,
+        blockedUsers: []
       });
       await profile.save();
     }
@@ -55,9 +77,33 @@ exports.updateProfile = async (req, res) => {
     let profile = await UserProfile.findOne({ userId });
 
     if (!profile) {
-      // Créer le profil si n'existe pas
+      // Créer le profil si n'existe pas avec des valeurs par défaut
       profile = new UserProfile({
         userId,
+        bio: '',
+        gender: 'prefer_not_say',
+        fitnessLevel: 'beginner',
+        workoutTypes: [],
+        availability: {
+          monday: [],
+          tuesday: [],
+          wednesday: [],
+          thursday: [],
+          friday: [],
+          saturday: [],
+          sunday: []
+        },
+        matchPreferences: {
+          maxDistance: 5,
+          preferredGender: 'any',
+          preferredFitnessLevels: [],
+          preferredWorkoutTypes: [],
+          preferredAgeRange: { min: 18, max: 99 },
+          onlyVerified: false
+        },
+        isVisible: false,
+        verified: false,
+        blockedUsers: [],
         ...filteredUpdates
       });
     } else {

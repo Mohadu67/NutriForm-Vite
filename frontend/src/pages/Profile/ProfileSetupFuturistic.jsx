@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import { getMyProfile, updateProfile, updateLocation, updateAvailability, updateMatchPreferences } from '../../shared/api/profile';
-import styles from './ProfileSetup.module.css';
+import styles from './ProfileSetupFuturistic.module.css';
 import { MapPinIcon, XIcon } from './SetupIcons';
 
 const WORKOUT_TYPES = [
@@ -105,13 +105,15 @@ const ProgressRing = ({ step, totalSteps }) => {
   );
 };
 
-export default function ProfileSetup() {
+export default function ProfileSetupFuturistic() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [step, setStep] = useState(1);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   const [profile, setProfile] = useState({
     bio: '',
@@ -286,7 +288,7 @@ export default function ProfileSetup() {
       setStep(step - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      navigate('/matching');
+      navigate('/matching-futur');
     }
   };
 
@@ -313,7 +315,7 @@ export default function ProfileSetup() {
       } else if (step === 3) {
         await updateMatchPreferences(matchPreferences);
         setSuccess('Préférences sauvegardées ! Redirection...');
-        setTimeout(() => navigate('/matching'), 800);
+        setTimeout(() => navigate('/matching-futur'), 800);
       }
     } catch (err) {
       console.error('Erreur sauvegarde:', err);
@@ -322,6 +324,30 @@ export default function ProfileSetup() {
       setSaving(false);
     }
   };
+
+  // Touch swipe handlers
+  const handleTouchStart = useCallback((e) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    touchEndX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    const swipeDistance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(swipeDistance) > minSwipeDistance) {
+      if (swipeDistance > 0 && step < 3 && !saving) {
+        // Swipe left - Next
+        handleSaveProfile();
+      } else if (swipeDistance < 0 && step > 1) {
+        // Swipe right - Previous
+        handleBack();
+      }
+    }
+  }, [step, saving]);
 
   if (loading) {
     return (
@@ -380,7 +406,12 @@ export default function ProfileSetup() {
           </div>
         )}
 
-        <div className={styles.formWrapper}>
+        <div
+          className={styles.formWrapper}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           {/* Step 1: Profil de base */}
           {step === 1 && (
             <div className={`${styles.card} ${styles.fadeIn}`}>

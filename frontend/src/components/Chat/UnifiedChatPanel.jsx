@@ -61,7 +61,6 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     try {
       setLoading(true);
       const { messages: history } = await getChatHistory(convId);
-      console.log('Messages chargés:', history);
       setMessages(history || []);
 
       // Vérifier si la conversation est déjà escaladée (chercher dans les messages)
@@ -121,7 +120,6 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
         setMessages(prev => [...prev, userMessage]);
 
         const response = await sendChatMessage(content, conversationId);
-        console.log('Chat API Response:', response);
 
         // Gérer différents formats de réponse
         let botContent = '';

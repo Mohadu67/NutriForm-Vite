@@ -109,7 +109,7 @@
 }
 
 .successTitle {
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: 1.75rem;
   font-weight: 800;
   margin: 0;
@@ -202,7 +202,7 @@
 }
 
 .title {
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: 1.75rem;
   font-weight: 800;
   margin: 0 0 8px;

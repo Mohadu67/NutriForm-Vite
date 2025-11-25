@@ -290,7 +290,7 @@
    TITRE - MOBILE FIRST
    ============================================ */
 .cardTitle {
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: 1.3rem;
   font-weight: 800;
   margin: 0 0 1rem 0;
@@ -415,7 +415,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--orange);

@@ -44,7 +44,7 @@
 }
 
 .title {
-  font-family: var(--font-titre, 'Merriweather', serif);
+  font-family: var(--font-titre, sans-serif);
   font-size: 2.5rem;
   color: var(--ink);
   margin: 0 0 0.5rem;

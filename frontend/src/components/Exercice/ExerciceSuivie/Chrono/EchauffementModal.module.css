@@ -70,7 +70,7 @@
 }
 
 .title {
-  font-family: "Merriweather", serif;
+  font-family: sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--noir);
@@ -94,7 +94,7 @@
 }
 
 .suggestions h3 {
-  font-family: "Merriweather", serif;
+  font-family: sans-serif;
   font-size: 1rem;
   font-weight: 600;
   color: var(--noir);
@@ -213,7 +213,7 @@
 }
 
 .timerText {
-  font-family: "Merriweather", serif;
+  font-family: sans-serif;
   font-size: 2.5rem;
   font-weight: 700;
   color: #fff;

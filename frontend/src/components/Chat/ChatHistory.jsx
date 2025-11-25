@@ -44,7 +44,6 @@ export default function ChatHistory({ onLogin }) {
   const loadAIConversations = async () => {
     try {
       const { conversations: aiConvs } = await getAIConversations();
-      console.log('Conversations IA chargées:', aiConvs);
       setConversations(aiConvs || []);
     } catch (err) {
       console.error('Erreur chargement conversations IA:', err);
@@ -61,7 +60,6 @@ export default function ChatHistory({ onLogin }) {
   const loadMatchConversations = async () => {
     try {
       const { conversations } = await getConversations();
-      console.log('Conversations Match chargées:', conversations);
       setMatchConversations(conversations || []);
     } catch (err) {
       console.error('Erreur chargement conversations matches:', err);

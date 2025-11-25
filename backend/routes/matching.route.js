@@ -23,6 +23,13 @@ router.get('/suggestions', matchingController.getMatchSuggestions);
 router.post('/like', matchingController.likeProfile);
 
 /**
+ * @route   POST /api/matching/unlike
+ * @desc    Retirer un like
+ * @access  Premium
+ */
+router.post('/unlike', matchingController.unlikeProfile);
+
+/**
  * @route   POST /api/matching/reject
  * @desc    Rejeter un profil
  * @access  Premium
