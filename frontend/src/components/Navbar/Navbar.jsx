@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useChat } from "../../contexts/ChatContext";
+import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
 import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
 import UnifiedChatPanel from "../Chat/UnifiedChatPanel.jsx";
@@ -129,10 +130,7 @@ export default function Navbar() {
       }
 
       try {
-        const response = await fetch('/api/me', {
-          method: 'GET',
-          credentials: 'include',
-        });
+        const response = await secureApiCall('/api/me');
 
         if (!isMounted) return;
 
@@ -160,7 +158,12 @@ export default function Navbar() {
         }
       } catch (err) {
         retryCountRef.current++;
-        if (retryCountRef.current >= MAX_RETRIES) {
+        // Si erreur 'Not authenticated', arrêter immédiatement
+        if (err.message === 'Not authenticated') {
+          hasSucceeded = true;
+          setIsLoggedIn(false);
+          setIsPremium(false);
+        } else if (retryCountRef.current >= MAX_RETRIES) {
           setIsLoggedIn(false);
           setIsPremium(false);
         }
@@ -174,6 +177,7 @@ export default function Navbar() {
     const handleLoginSuccess = () => {
       hasSucceeded = false;
       retryCountRef.current = 0;
+      invalidateAuthCache(); // Invalider le cache avant de refaire l'appel
       updateLoginState();
     };
 
