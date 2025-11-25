@@ -96,6 +96,13 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true,
 }));
+
+// ⚠️ IMPORTANT: Webhook Stripe AVANT express.json() pour recevoir raw body
+app.post('/api/subscriptions/webhook',
+  express.raw({ type: 'application/json' }),
+  require('./controllers/subscription.controller').handleWebhook
+);
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
