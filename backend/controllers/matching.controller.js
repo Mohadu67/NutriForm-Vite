@@ -28,26 +28,8 @@ exports.getMatchSuggestions = async (req, res) => {
       });
     }
 
-    if (!myProfile.location?.coordinates) {
-      return res.status(400).json({
-        error: 'location_required',
-        message: 'Veuillez activer la géolocalisation pour trouver des partenaires.'
-      });
-    }
-
-    // Construire la query de recherche géographique
-    const maxDistance = myProfile.matchPreferences.maxDistance * 1000; // Convertir km en mètres
-
-    const geoQuery = {
-      'location.coordinates': {
-        $near: {
-          $geometry: {
-            type: 'Point',
-            coordinates: myProfile.location.coordinates
-          },
-          $maxDistance: maxDistance
-        }
-      },
+    // Construire la query de recherche (sans $near pour inclure profils sans localisation)
+    let baseQuery = {
       userId: {
         $ne: userId,
         $nin: myProfile.blockedUsers || []
@@ -56,26 +38,31 @@ exports.getMatchSuggestions = async (req, res) => {
     };
 
     // Filtres supplémentaires basés sur les préférences
-    if (myProfile.matchPreferences.onlyVerified) {
-      geoQuery.verified = true;
-    }
-
     if (myProfile.matchPreferences.preferredGender !== 'any') {
-      geoQuery.gender = myProfile.matchPreferences.preferredGender;
+      baseQuery.gender = myProfile.matchPreferences.preferredGender;
     }
 
     if (myProfile.matchPreferences.preferredAgeRange?.min || myProfile.matchPreferences.preferredAgeRange?.max) {
-      geoQuery.age = {};
+      baseQuery.age = {};
       if (myProfile.matchPreferences.preferredAgeRange.min) {
-        geoQuery.age.$gte = myProfile.matchPreferences.preferredAgeRange.min;
+        baseQuery.age.$gte = myProfile.matchPreferences.preferredAgeRange.min;
       }
       if (myProfile.matchPreferences.preferredAgeRange.max) {
-        geoQuery.age.$lte = myProfile.matchPreferences.preferredAgeRange.max;
+        baseQuery.age.$lte = myProfile.matchPreferences.preferredAgeRange.max;
       }
     }
 
-    // Récupérer les profils candidats
-    const candidates = await UserProfile.find(geoQuery).limit(100).populate('userId');
+    // Récupérer les profils candidats (sans limite de distance dans la query)
+    let candidates = await UserProfile.find(baseQuery).limit(200).populate('userId');
+
+    // Si l'utilisateur a une localisation, filtrer par distance
+    if (myProfile.location?.coordinates) {
+      const maxDistanceKm = myProfile.matchPreferences.maxDistance;
+      candidates = candidates.filter(candidate => {
+        const distance = myProfile.distanceTo(candidate);
+        return distance === null || distance <= maxDistanceKm;
+      });
+    }
 
     // Calculer le score pour chaque candidat
     const scoredMatches = [];
