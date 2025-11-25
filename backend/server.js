@@ -38,8 +38,8 @@ const { startLeaderboardCron } = require('./cron/leaderboardCron');
 
 const app = express();
 
-// ⚠️ IMPORTANT: Trust proxy pour Render/Netlify/Heroku (X-Forwarded-For)
-app.set('trust proxy', true);
+// ⚠️ IMPORTANT: Trust proxy pour Render (1 seul proxy en amont)
+app.set('trust proxy', 1);
 
 if (!config.mongoUri) {
   console.error("❌ MONGO_URI manquant dans la configuration.");
