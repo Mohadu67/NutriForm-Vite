@@ -28,7 +28,9 @@ import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
 import CanonicalLink from "./components/CanonicalLink/CanonicalLink.jsx";
+import NotificationPrompt from "./components/Notifications/NotificationPrompt.jsx";
 import { ChatProvider } from "./contexts/ChatContext.jsx";
+import { initializeNotifications } from "./services/notificationService.js";
 import './i18n/config';
 
 export default function App() {
@@ -36,6 +38,9 @@ export default function App() {
     Clarity.init("thd0hih6t5");
     // Note: Session management is now handled server-side via httpOnly cookies
     // No need for client-side session checks anymore
+
+    // Initialiser les notifications push
+    initializeNotifications();
   }, []);
 
   return (
@@ -43,6 +48,7 @@ export default function App() {
       <ChatProvider>
         <UpdatePrompt />
         <CanonicalLink />
+        <NotificationPrompt />
         <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/imc" element={<ImcPage />} />

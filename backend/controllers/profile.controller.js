@@ -107,7 +107,31 @@ exports.updateProfile = async (req, res) => {
         ...filteredUpdates
       });
     } else {
-      // Mettre à jour les champs
+      // Fusionner location correctement pour ne pas écraser les coordonnées
+      if (filteredUpdates.location) {
+        if (profile.location) {
+          // Merge avec location existante
+          profile.location = {
+            type: profile.location.type || 'Point',
+            coordinates: filteredUpdates.location.coordinates || profile.location.coordinates,
+            city: filteredUpdates.location.city !== undefined ? filteredUpdates.location.city : profile.location.city,
+            neighborhood: filteredUpdates.location.neighborhood !== undefined ? filteredUpdates.location.neighborhood : profile.location.neighborhood,
+            postalCode: filteredUpdates.location.postalCode !== undefined ? filteredUpdates.location.postalCode : profile.location.postalCode
+          };
+        } else {
+          // Pas de location existante, on la crée
+          profile.location = {
+            type: 'Point',
+            coordinates: filteredUpdates.location.coordinates,
+            city: filteredUpdates.location.city,
+            neighborhood: filteredUpdates.location.neighborhood,
+            postalCode: filteredUpdates.location.postalCode
+          };
+        }
+        delete filteredUpdates.location;
+      }
+
+      // Mettre à jour les autres champs
       Object.assign(profile, filteredUpdates);
     }
 
