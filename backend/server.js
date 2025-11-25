@@ -37,6 +37,10 @@ const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 
 const app = express();
+
+// ⚠️ IMPORTANT: Trust proxy pour Render (1 seul proxy en amont)
+app.set('trust proxy', 1);
+
 if (!config.mongoUri) {
   console.error("❌ MONGO_URI manquant dans la configuration.");
   process.exit(1);
@@ -86,8 +90,8 @@ const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    
-    const publicRoutes = ['/api/health', '/uploads'];
+
+    const publicRoutes = ['/api/health', '/uploads', '/api/subscriptions/webhook'];
     return publicRoutes.some(route => req.path.startsWith(route));
   }
 });
@@ -96,6 +100,13 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true,
 }));
+
+// ⚠️ IMPORTANT: Webhook Stripe AVANT express.json() pour recevoir raw body
+app.post('/api/subscriptions/webhook',
+  express.raw({ type: 'application/json' }),
+  require('./controllers/subscription.controller').handleWebhook
+);
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());

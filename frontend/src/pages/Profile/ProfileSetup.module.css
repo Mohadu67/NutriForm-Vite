@@ -1,41 +1,88 @@
-/* ========== BASE ========== */
+/* ========== BASE MAGIQUE ========== */
 .container {
   min-height: calc(100vh - 200px);
   max-width: 800px;
   margin: 0 auto;
   padding: 100px 20px 40px;
-  background: var(--couleur-principale, #f7f6f2);
+  background: linear-gradient(135deg, #f8f9ff 0%, #fff5f8 50%, #f0f8ff 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(247, 177, 134, 0.08) 0%, transparent 70%);
+  animation: floatBubble 20s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.container::after {
+  content: '';
+  position: absolute;
+  bottom: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(184, 221, 209, 0.08) 0%, transparent 70%);
+  animation: floatBubble 25s ease-in-out infinite reverse;
+  pointer-events: none;
+}
+
+@keyframes floatBubble {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -30px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
 }
 
 :global(body.dark) .container,
 :global(html.dark) .container {
-  background: #0c0e12;
+  background: linear-gradient(135deg, #0a0e1a 0%, #1a0e1a 50%, #0e1a1a 100%);
 }
 
 /* ========== HEADER ========== */
 .header {
   text-align: center;
   margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
 }
 
 .header h1 {
   font-family: 'Merriweather', serif;
   font-size: 2rem;
   font-weight: 700;
-  color: var(--ink, #222325);
+  background: linear-gradient(135deg, #f7b186 0%, #b8ddd1 50%, #a5d4c3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin: 0 0 8px;
   letter-spacing: -0.5px;
+  animation: titleGlow 3s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(247, 177, 134, 0.3)); }
+  50% { filter: drop-shadow(0 0 20px rgba(184, 221, 209, 0.5)); }
 }
 
 :global(body.dark) .header h1,
 :global(html.dark) .header h1 {
-  color: #f5f7fa;
+  background: linear-gradient(135deg, #f9c89f 0%, #b8ddd1 50%, #a5d4c3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .header p {
   font-size: 0.95rem;
-  color: var(--muted, #6b7280);
+  color: rgba(107, 114, 128, 0.9);
   margin: 0;
+  opacity: 0.8;
 }
 
 /* ========== LOADING ========== */
@@ -46,32 +93,34 @@
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(0, 0, 0, 0.1);
-  border-top-color: var(--couleur-bouton-action, #f7b186);
+  border: 3px solid rgba(247, 177, 134, 0.1);
+  border-top-color: #f7b186;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 16px;
+  box-shadow: 0 0 20px rgba(247, 177, 134, 0.3);
 }
 
 :global(body.dark) .spinner,
 :global(html.dark) .spinner {
-  border-color: rgba(255, 255, 255, 0.1);
-  border-top-color: var(--couleur-bouton-action, #f7b186);
+  border-color: rgba(247, 177, 134, 0.15);
+  border-top-color: #f9c89f;
+  box-shadow: 0 0 20px rgba(247, 177, 134, 0.4);
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .loadingContainer p {
-  color: var(--muted, #6b7280);
+  color: rgba(107, 114, 128, 0.9);
   font-size: 1rem;
 }
 
@@ -80,44 +129,67 @@
   display: flex;
   gap: 12px;
   margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
 }
 
 .progressStep {
   flex: 1;
   padding: 16px 12px;
   text-align: center;
-  background: var(--paper, #ffffff);
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  border-radius: 18px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--muted, #6b7280);
+  color: rgba(107, 114, 128, 0.9);
   letter-spacing: 0.3px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.progressStep::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
 :global(body.dark) .progressStep,
 :global(html.dark) .progressStep {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(26, 29, 36, 0.6);
+  border-color: rgba(247, 177, 134, 0.3);
 }
 
 .progressStep.active {
-  background: var(--couleur-bouton-action, #f7b186);
+  background: linear-gradient(135deg, #f7b186 0%, #f9c89f 100%);
   color: white;
-  border-color: var(--couleur-bouton-action, #f7b186);
+  border-color: #f7b186;
+  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.4);
+  transform: translateY(-2px);
+}
+
+.progressStep.active::before {
+  opacity: 1;
 }
 
 /* ========== ALERTS ========== */
 .alert {
   padding: 16px 20px;
-  border-radius: 16px;
+  border-radius: 18px;
   margin-bottom: 24px;
   font-size: 0.9rem;
   font-weight: 500;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
 }
 
 .alert button {
@@ -132,19 +204,19 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .alertError {
-  background: var(--paper, #ffffff);
-  border: 1px solid rgba(220, 53, 69, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(220, 53, 69, 0.3);
   color: #dc3545;
 }
 
 :global(body.dark) .alertError,
 :global(html.dark) .alertError {
-  background: #1a1d24;
-  border-color: rgba(220, 53, 69, 0.3);
+  background: rgba(26, 29, 36, 0.8);
+  border-color: rgba(220, 53, 69, 0.4);
 }
 
 .alertError button {
@@ -153,18 +225,19 @@
 
 .alertError button:hover {
   background: rgba(220, 53, 69, 0.1);
+  transform: rotate(90deg);
 }
 
 .alertSuccess {
-  background: var(--paper, #ffffff);
-  border: 1px solid rgba(40, 167, 69, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(40, 167, 69, 0.3);
   color: #28a745;
 }
 
 :global(body.dark) .alertSuccess,
 :global(html.dark) .alertSuccess {
-  background: #1a1d24;
-  border-color: rgba(40, 167, 69, 0.3);
+  background: rgba(26, 29, 36, 0.8);
+  border-color: rgba(40, 167, 69, 0.4);
 }
 
 .alertSuccess button {
@@ -173,28 +246,48 @@
 
 .alertSuccess button:hover {
   background: rgba(40, 167, 69, 0.1);
+  transform: rotate(90deg);
 }
 
 /* ========== CARD ========== */
 .card {
-  background: var(--paper, #ffffff);
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  border-radius: 24px;
   padding: 28px;
   margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 8px 30px rgba(247, 177, 134, 0.15);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  padding: 2px;
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.3), rgba(184, 221, 209, 0.3));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 :global(body.dark) .card,
 :global(html.dark) .card {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(26, 29, 36, 0.8);
+  border-color: rgba(247, 177, 134, 0.3);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 
 .card h3 {
   font-family: 'Merriweather', serif;
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--ink, #222325);
+  color: #222325;
   margin: 0 0 8px;
   letter-spacing: -0.5px;
 }
@@ -205,7 +298,7 @@
 }
 
 .card > p {
-  color: var(--muted, #6b7280);
+  color: rgba(107, 114, 128, 0.9);
   font-size: 0.9rem;
   margin: 0 0 24px;
 }
@@ -219,7 +312,7 @@
   display: block;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--ink, #222325);
+  color: #222325;
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -233,28 +326,31 @@
 .formControl {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
-  border-radius: 12px;
-  background: var(--couleur-principale, #f7f6f2);
-  color: var(--ink, #222325);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  border-radius: 14px;
+  background: rgba(247, 246, 242, 0.5);
+  backdrop-filter: blur(5px);
+  color: #222325;
   font-size: 0.95rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 :global(body.dark) .formControl,
 :global(html.dark) .formControl {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(247, 177, 134, 0.3);
   color: #f5f7fa;
 }
 
 .formControl:focus {
   outline: none;
-  border-color: var(--couleur-bouton-action, #f7b186);
+  border-color: #f7b186;
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.1);
+  transform: translateY(-1px);
 }
 
 .formControl::placeholder {
-  color: var(--muted, #6b7280);
+  color: rgba(107, 114, 128, 0.6);
 }
 
 textarea.formControl {
@@ -267,7 +363,7 @@ textarea.formControl {
   display: block;
   margin-top: 6px;
   font-size: 0.8rem;
-  color: var(--muted, #6b7280);
+  color: rgba(107, 114, 128, 0.9);
 }
 
 .formRow {
@@ -288,12 +384,12 @@ textarea.formControl {
   width: 20px;
   height: 20px;
   cursor: pointer;
-  accent-color: var(--couleur-bouton-action, #f7b186);
+  accent-color: #f7b186;
 }
 
 .formCheck label {
   font-size: 0.95rem;
-  color: var(--ink, #222325);
+  color: #222325;
   cursor: pointer;
   flex: 1;
 }
@@ -313,35 +409,57 @@ textarea.formControl {
 
 .levelCard {
   padding: 16px;
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
-  border-radius: 12px;
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  border-radius: 16px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s ease;
   text-align: center;
-  background: var(--paper, #ffffff);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.levelCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(247, 177, 134, 0.1));
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
 :global(body.dark) .levelCard,
 :global(html.dark) .levelCard {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(26, 29, 36, 0.5);
+  border-color: rgba(247, 177, 134, 0.3);
 }
 
 .levelCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  border-color: var(--couleur-bouton-action, #f7b186);
+  box-shadow: 0 8px 25px rgba(247, 177, 134, 0.2);
+  border-color: #f7b186;
+}
+
+.levelCard:hover::before {
+  opacity: 1;
 }
 
 :global(body.dark) .levelCard:hover,
 :global(html.dark) .levelCard:hover {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
 .levelCard.selected {
-  background: var(--couleur-bouton-action, #f7b186);
-  border-color: var(--couleur-bouton-action, #f7b186);
+  background: linear-gradient(135deg, #f7b186 0%, #f9c89f 100%);
+  border-color: #f7b186;
   color: white;
+  box-shadow: 0 8px 25px rgba(247, 177, 134, 0.4);
+  transform: translateY(-4px);
+}
+
+.levelCard.selected::before {
+  opacity: 0;
 }
 
 .levelCard strong {
@@ -349,6 +467,8 @@ textarea.formControl {
   font-size: 1rem;
   font-weight: 700;
   margin-bottom: 4px;
+  position: relative;
+  z-index: 1;
 }
 
 .levelCard.selected strong {
@@ -357,7 +477,9 @@ textarea.formControl {
 
 .levelCard small {
   font-size: 0.8rem;
-  color: var(--muted, #6b7280);
+  color: rgba(107, 114, 128, 0.9);
+  position: relative;
+  z-index: 1;
 }
 
 .levelCard.selected small {
@@ -373,97 +495,142 @@ textarea.formControl {
 }
 
 .workoutBadge {
-  padding: 8px 14px;
+  padding: 10px 16px;
   font-size: 0.85rem;
-  border-radius: 10px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s ease;
   font-weight: 600;
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
-  background: var(--couleur-principale, #f7f6f2);
-  color: var(--muted, #6b7280);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  background: rgba(247, 246, 242, 0.5);
+  backdrop-filter: blur(10px);
+  color: rgba(107, 114, 128, 0.9);
+  position: relative;
+  overflow: hidden;
+}
+
+.workoutBadge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(247, 177, 134, 0.1));
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
 :global(body.dark) .workoutBadge,
 :global(html.dark) .workoutBadge {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(247, 177, 134, 0.3);
   color: rgba(255, 255, 255, 0.7);
 }
 
 .workoutBadge:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-color: var(--couleur-bouton-action, #f7b186);
+  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.2);
+  border-color: #f7b186;
+}
+
+.workoutBadge:hover::before {
+  opacity: 1;
 }
 
 :global(body.dark) .workoutBadge:hover,
 :global(html.dark) .workoutBadge:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .workoutBadge.selected {
-  background: var(--couleur-bouton-action, #f7b186);
-  border-color: var(--couleur-bouton-action, #f7b186);
+  background: linear-gradient(135deg, #f7b186 0%, #f9c89f 100%);
+  border-color: #f7b186;
   color: white;
+  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.3);
+  transform: translateY(-2px);
+}
+
+.workoutBadge.selected::before {
+  opacity: 0;
 }
 
 /* ========== LOCATION ========== */
 .locationButton {
-  background: var(--paper, #ffffff);
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
-  color: var(--couleur-bouton-action, #f7b186);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  color: #f7b186;
   padding: 10px 20px;
-  border-radius: 12px;
+  border-radius: 14px;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s ease;
   letter-spacing: 0.3px;
   margin-top: 8px;
 }
 
 :global(body.dark) .locationButton,
 :global(html.dark) .locationButton {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(26, 29, 36, 0.6);
+  border-color: rgba(247, 177, 134, 0.3);
 }
 
 .locationButton:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  border-color: var(--couleur-bouton-action, #f7b186);
+  box-shadow: 0 8px 25px rgba(247, 177, 134, 0.2);
+  border-color: #f7b186;
+  background: rgba(247, 177, 134, 0.1);
 }
 
 :global(body.dark) .locationButton:hover,
 :global(html.dark) .locationButton:hover {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
 .locationBadge {
   display: inline-block;
   margin-top: 12px;
-  padding: 6px 12px;
-  background: var(--couleur-bouton-action, #f7b186);
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #f7b186 0%, #f9c89f 100%);
   color: white;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 0.85rem;
   font-weight: 600;
+  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.3);
+  animation: badgeFloat 3s ease-in-out infinite;
+}
+
+@keyframes badgeFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
 /* ========== AVAILABILITY ========== */
 .daySection {
   padding: 20px;
-  background: var(--couleur-principale, #f7f6f2);
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
-  border-radius: 16px;
+  background: rgba(247, 246, 242, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  border-radius: 18px;
   margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.daySection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #f7b186, transparent);
+  opacity: 0.3;
 }
 
 :global(body.dark) .daySection,
 :global(html.dark) .daySection {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(247, 177, 134, 0.3);
 }
 
 .daySectionHeader {
@@ -475,7 +642,7 @@ textarea.formControl {
 
 .daySectionHeader strong {
   font-size: 1rem;
-  color: var(--ink, #222325);
+  color: #222325;
   font-weight: 700;
 }
 
@@ -485,32 +652,34 @@ textarea.formControl {
 }
 
 .addSlotButton {
-  background: var(--paper, #ffffff);
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
-  color: var(--couleur-bouton-action, #f7b186);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  color: #f7b186;
   padding: 6px 14px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s ease;
 }
 
 :global(body.dark) .addSlotButton,
 :global(html.dark) .addSlotButton {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(26, 29, 36, 0.6);
+  border-color: rgba(247, 177, 134, 0.3);
 }
 
 .addSlotButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-color: var(--couleur-bouton-action, #f7b186);
+  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.2);
+  border-color: #f7b186;
+  background: rgba(247, 177, 134, 0.1);
 }
 
 :global(body.dark) .addSlotButton:hover,
 :global(html.dark) .addSlotButton:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .timeSlot {
@@ -519,77 +688,88 @@ textarea.formControl {
   gap: 12px;
   margin-bottom: 12px;
   padding: 12px;
-  background: var(--paper, #ffffff);
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  border-radius: 14px;
+  transition: all 0.3s ease;
+}
+
+.timeSlot:hover {
+  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.1);
 }
 
 :global(body.dark) .timeSlot,
 :global(html.dark) .timeSlot {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(26, 29, 36, 0.6);
+  border-color: rgba(247, 177, 134, 0.3);
 }
 
 .timeSlot input {
   flex: 1;
   max-width: 140px;
   padding: 8px 12px;
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
-  border-radius: 8px;
-  background: var(--couleur-principale, #f7f6f2);
-  color: var(--ink, #222325);
+  border: 1px solid rgba(247, 177, 134, 0.2);
+  border-radius: 10px;
+  background: rgba(247, 246, 242, 0.5);
+  backdrop-filter: blur(5px);
+  color: #222325;
   font-size: 0.9rem;
+  transition: all 0.3s ease;
 }
 
 :global(body.dark) .timeSlot input,
 :global(html.dark) .timeSlot input {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(247, 177, 134, 0.3);
   color: #f5f7fa;
 }
 
 .timeSlot input:focus {
   outline: none;
-  border-color: var(--couleur-bouton-action, #f7b186);
+  border-color: #f7b186;
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.1);
 }
 
 .timeSlot span {
-  color: var(--muted, #6b7280);
+  color: rgba(107, 114, 128, 0.9);
   font-weight: 500;
   font-size: 0.9rem;
 }
 
 .removeSlotButton {
-  background: var(--paper, #ffffff);
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(220, 53, 69, 0.2);
   color: #dc3545;
   padding: 6px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
 }
 
 :global(body.dark) .removeSlotButton,
 :global(html.dark) .removeSlotButton {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(26, 29, 36, 0.6);
+  border-color: rgba(220, 53, 69, 0.3);
 }
 
 .removeSlotButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
   border-color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
 }
 
 :global(body.dark) .removeSlotButton:hover,
 :global(html.dark) .removeSlotButton:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .noSlots {
-  color: var(--muted, #6b7280);
+  color: rgba(107, 114, 128, 0.7);
   font-size: 0.85rem;
   font-style: italic;
 }
@@ -605,7 +785,7 @@ textarea.formControl {
 .rangeLabel strong {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--ink, #222325);
+  color: #222325;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -617,15 +797,19 @@ textarea.formControl {
 
 .rangeLabel span {
   font-size: 0.9rem;
-  color: var(--couleur-bouton-action, #f7b186);
+  color: #f7b186;
   font-weight: 700;
+  padding: 4px 12px;
+  background: rgba(247, 177, 134, 0.15);
+  backdrop-filter: blur(5px);
+  border-radius: 10px;
 }
 
 .formRange {
   width: 100%;
   height: 6px;
   border-radius: 6px;
-  background: var(--line, rgba(0, 0, 0, 0.06));
+  background: rgba(247, 177, 134, 0.2);
   outline: none;
   -webkit-appearance: none;
   appearance: none;
@@ -633,7 +817,7 @@ textarea.formControl {
 
 :global(body.dark) .formRange,
 :global(html.dark) .formRange {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(247, 177, 134, 0.3);
 }
 
 .formRange::-webkit-slider-thumb {
@@ -642,27 +826,31 @@ textarea.formControl {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--couleur-bouton-action, #f7b186);
+  background: linear-gradient(135deg, #f7b186 0%, #f9c89f 100%);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
 }
 
 .formRange::-webkit-slider-thumb:hover {
   transform: scale(1.2);
+  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.5);
 }
 
 .formRange::-moz-range-thumb {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--couleur-bouton-action, #f7b186);
+  background: linear-gradient(135deg, #f7b186 0%, #f9c89f 100%);
   cursor: pointer;
   border: none;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
 }
 
 .formRange::-moz-range-thumb:hover {
   transform: scale(1.2);
+  box-shadow: 0 4px 15px rgba(247, 177, 134, 0.5);
 }
 
 /* ========== NAVIGATION ========== */
@@ -672,61 +860,81 @@ textarea.formControl {
   align-items: center;
   gap: 12px;
   margin-top: 32px;
+  position: relative;
+  z-index: 1;
 }
 
 .backButton,
 .nextButton {
   padding: 14px 28px;
-  border-radius: 14px;
+  border-radius: 16px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s ease;
   border: none;
   letter-spacing: 0.3px;
   display: flex;
   align-items: center;
   gap: 8px;
+  backdrop-filter: blur(10px);
 }
 
 .backButton {
-  background: var(--paper, #ffffff);
-  color: var(--muted, #6b7280);
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  background: rgba(255, 255, 255, 0.6);
+  color: rgba(107, 114, 128, 0.9);
+  border: 1px solid rgba(247, 177, 134, 0.2);
 }
 
 :global(body.dark) .backButton,
 :global(html.dark) .backButton {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(26, 29, 36, 0.6);
+  border-color: rgba(247, 177, 134, 0.3);
 }
 
 .backButton:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  color: var(--ink, #222325);
+  box-shadow: 0 8px 25px rgba(247, 177, 134, 0.2);
+  color: #222325;
+  border-color: #f7b186;
 }
 
 :global(body.dark) .backButton:hover,
 :global(html.dark) .backButton:hover {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
   color: #f5f7fa;
 }
 
 .nextButton {
-  background: var(--couleur-bouton-action, #f7b186);
+  background: linear-gradient(135deg, #f7b186 0%, #f9c89f 100%);
   color: white;
   margin-left: auto;
+  box-shadow: 0 4px 20px rgba(247, 177, 134, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.nextButton::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.nextButton:hover:not(:disabled)::before {
+  transform: translateX(100%);
 }
 
 .nextButton:hover:not(:disabled) {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(247, 177, 134, 0.3);
+  box-shadow: 0 8px 30px rgba(247, 177, 134, 0.6);
 }
 
 :global(body.dark) .nextButton:hover:not(:disabled),
 :global(html.dark) .nextButton:hover:not(:disabled) {
-  box-shadow: 0 8px 20px rgba(247, 177, 134, 0.4);
+  box-shadow: 0 8px 30px rgba(247, 177, 134, 0.7);
 }
 
 .nextButton:disabled {
