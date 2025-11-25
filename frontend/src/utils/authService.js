@@ -1,5 +1,11 @@
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
+// Cache global pour éviter les appels multiples à /api/me
+let authCheckInProgress = null;
+let authCheckResult = null;
+let authCheckTimestamp = 0;
+const AUTH_CACHE_DURATION = 30000; // 30 secondes
+
 async function apiCall(endpoint, options = {}) {
   const url = `${API_URL}${endpoint}`;
   const isFormData = options.body instanceof FormData;
@@ -32,6 +38,10 @@ export async function login(identifier, password, remember = false) {
     localStorage.setItem("user", JSON.stringify(data.user));
     localStorage.setItem("userId", data.user.id);
 
+    // Invalider le cache auth pour forcer un refresh
+    authCheckResult = null;
+    authCheckTimestamp = 0;
+
     if (remember) {
       localStorage.setItem("rememberMe", "true");
       localStorage.removeItem("lastActivity");
@@ -48,12 +58,52 @@ export async function login(identifier, password, remember = false) {
 
 export async function secureApiCall(endpoint, options = {}) {
   try {
+    // Cache spécial pour /api/me pour éviter les appels multiples
+    if (endpoint === '/api/me' && (!options || !options.method || options.method === 'GET')) {
+      const now = Date.now();
+
+      // Si un appel est déjà en cours, attendre le résultat
+      if (authCheckInProgress) {
+        return authCheckInProgress;
+      }
+
+      // Si on a un résultat en cache récent, le retourner
+      if (authCheckResult && (now - authCheckTimestamp) < AUTH_CACHE_DURATION) {
+        return Promise.resolve(authCheckResult.clone());
+      }
+
+      // Faire l'appel et le mettre en cache
+      authCheckInProgress = apiCall(endpoint, options).then(response => {
+        authCheckInProgress = null;
+        authCheckTimestamp = Date.now();
+
+        if (response.status === 401) {
+          authCheckResult = null;
+          localStorage.removeItem("user");
+          localStorage.removeItem("userId");
+          throw new Error('Not authenticated');
+        }
+
+        // Cloner la réponse pour la mettre en cache
+        authCheckResult = response.clone();
+        return response;
+      }).catch(err => {
+        authCheckInProgress = null;
+        authCheckResult = null;
+        throw err;
+      });
+
+      return authCheckInProgress;
+    }
+
+    // Pour les autres endpoints, appel normal
     const response = await apiCall(endpoint, options);
 
     if (response.status === 401) {
       // Cookie expiré ou invalide, nettoyer les données locales
       localStorage.removeItem("user");
       localStorage.removeItem("userId");
+      authCheckResult = null; // Invalider le cache
       throw new Error('Not authenticated');
     }
 
@@ -70,6 +120,11 @@ export async function logout() {
   } catch (error) {
     console.error('Erreur lors de la déconnexion:', error);
   }
+
+  // Invalider le cache auth
+  authCheckResult = null;
+  authCheckTimestamp = 0;
+  authCheckInProgress = null;
 
   // Nettoyage des données locales
   localStorage.removeItem("user");
@@ -97,4 +152,11 @@ export function getCurrentUser() {
   } catch (e) {
     return null;
   }
+}
+
+// Invalider le cache auth manuellement (utile après login/logout)
+export function invalidateAuthCache() {
+  authCheckResult = null;
+  authCheckTimestamp = 0;
+  authCheckInProgress = null;
 }
