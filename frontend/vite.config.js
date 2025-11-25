@@ -117,6 +117,10 @@ export default defineConfig(({ mode }) => ({
         cookieDomainRewrite: 'localhost'
       }
     },
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost'
+    },
     warmup: {
       clientFiles: ['./src/main.jsx', './src/App.jsx']
     }

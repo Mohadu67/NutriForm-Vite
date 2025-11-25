@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./ProfilePhoto.module.css";
 import { secureApiCall } from "../../../../utils/authService.js";
+import { confirmDialog } from "../../../../utils/confirmDialog.jsx";
 
 export default function ProfilePhoto({ user }) {
   const [photo, setPhoto] = useState(user?.photo || null);
@@ -69,7 +70,17 @@ export default function ProfilePhoto({ user }) {
   };
 
   const handleDeletePhoto = async () => {
-    if (!confirm("Voulez-vous vraiment supprimer votre photo de profil ?")) return;
+    const confirmed = await confirmDialog(
+      "Cette action est irréversible. Votre photo de profil sera définitivement supprimée.",
+      {
+        title: "Supprimer la photo de profil ?",
+        confirmText: "Supprimer",
+        cancelText: "Annuler",
+        type: "error"
+      }
+    );
+
+    if (!confirmed) return;
 
     setUploading(true);
     setMessage({ type: "", text: "" });

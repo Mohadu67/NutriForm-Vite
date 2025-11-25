@@ -38,9 +38,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     if (isAuth) {
       if (isMatchChat && matchConversation?._id) {
         loadMatchMessages();
-        markMessagesAsRead(matchConversation._id).catch(err =>
-          console.error('Erreur marquage lu:', err)
-        );
+        markMessagesAsRead(matchConversation._id).catch(() => {});
       } else if (conversationId) {
         loadHistory(conversationId);
       } else if (initialMessage && !initialMessageSentRef.current) {

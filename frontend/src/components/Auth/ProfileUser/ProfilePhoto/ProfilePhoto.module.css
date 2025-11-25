@@ -98,21 +98,23 @@
 }
 
 .uploadButton {
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.25), rgba(184, 221, 209, 0.2));
+  background: linear-gradient(135deg, #b8ddd1, #9fc9ba);
   color: #1e293b;
-  border: 1px solid rgba(184, 221, 209, 0.3);
+  border: 1px solid #7bc4a8;
+  font-weight: 700;
 }
 
 .uploadButton:hover {
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.35), rgba(184, 221, 209, 0.3));
+  background: linear-gradient(135deg, #9fc9ba, #7bc4a8);
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(184, 221, 209, 0.2);
+  box-shadow: 0 2px 8px rgba(123, 196, 168, 0.4);
 }
 
 .deleteButton {
-  background: rgba(248, 250, 252, 0.8);
-  color: #64748b;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: #e2e8f0;
+  color: #334155;
+  border: 1px solid #94a3b8;
+  font-weight: 700;
 }
 
 .deleteButton:hover {
@@ -232,7 +234,6 @@
 
   .uploadButton {
     background: linear-gradient(135deg, rgba(123, 196, 168, 0.2), rgba(123, 196, 168, 0.15));
-    color: #e2e8f0;
     border-color: rgba(123, 196, 168, 0.3);
   }
 
