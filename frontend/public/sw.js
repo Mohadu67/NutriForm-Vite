@@ -35,15 +35,6 @@ self.addEventListener('fetch', (event) => {
   // Ignorer les requêtes non-GET
   if (request.method !== 'GET') return;
 
-  // Ignorer les WebSockets (Vite HMR)
-  if (request.headers.get('upgrade') === 'websocket') return;
-
-  // Ignorer les requêtes Vite en dev (HMR, /@vite/, etc.)
-  if (url.pathname.startsWith('/@vite') ||
-      url.pathname.startsWith('/@fs') ||
-      url.pathname.includes('?t=') ||
-      url.searchParams.has('import')) return;
-
   // API: Network First avec fallback cache
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(

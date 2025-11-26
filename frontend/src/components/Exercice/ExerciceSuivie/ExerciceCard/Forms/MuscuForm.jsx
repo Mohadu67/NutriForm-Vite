@@ -58,6 +58,11 @@ export default function MuscuForm({ sets = [], onAdd, onRemove, onPatch, progres
               <div className={styles.serieHeader}>
                 <div className={styles.serieHeaderLeft}>
                   <span className={styles.serieNumber}>Série {idx + 1}</span>
+                  {s?.isSuggested && (
+                    <span className={styles.suggestedBadge}>
+                      💡 Suggéré
+                    </span>
+                  )}
                   {record && (
                     <span className={styles.recordBadge}>
                       🔥 {record.type === 'weight' ? `+${record.diff}kg` :

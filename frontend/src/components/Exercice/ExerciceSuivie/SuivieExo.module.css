@@ -43,10 +43,6 @@
 
   border-radius: 24px;
   padding: 1.5rem 1.25rem;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    0 2px 12px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   margin-top: 1.5rem;
   border: 1px solid rgba(0, 0, 0, 0.08);
 
@@ -59,10 +55,6 @@
 :global(.dark) .wrapper {
   background: rgba(18, 21, 27, 0.88);
   border-color: rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.6),
-    0 2px 12px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* Decorative gradient border */
@@ -136,9 +128,6 @@
   backdrop-filter: blur(12px);
   border: 1px solid rgba(247, 177, 134, 0.2);
   border-radius: 16px;
-  box-shadow:
-    0 4px 16px rgba(247, 177, 134, 0.1),
-    inset 0 1px 0 rgba(255,255,255,.3);
   padding: 1rem;
   transition: all 0.3s ease;
 }
@@ -173,7 +162,6 @@
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(12px);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -227,9 +215,6 @@
   width: 100%;
   margin-top: 1.5rem;
   font-family: var(--font-titre);
-  box-shadow:
-    0 8px 24px rgba(247, 177, 134, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
   overflow: hidden;
@@ -246,9 +231,6 @@
 
 .finishBtn:hover {
   transform: translateY(-3px) scale(1.02);
-  box-shadow:
-    0 12px 32px rgba(247, 177, 134, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
   filter: brightness(1.05);
 }
 
@@ -312,7 +294,7 @@
 @media (min-width: 768px) {
   .wrapper {
     padding: 2.5rem 2rem;
-    max-width: 900px;
+    max-width: 960px;
     margin-left: auto;
     margin-right: auto;
   }

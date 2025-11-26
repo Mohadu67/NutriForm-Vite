@@ -69,7 +69,7 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
           suggestion.reps = 8;
           suggestion.isProgression = true;
           suggestion.progressionType = 'hypertrophy_weight_increase';
-          suggestion.message = `🎯 Hypertrophie: ${lastBest.reps} reps atteints ! Monte à ${lastBest.weightKg + increment}kg et redescend à 8-10 reps`;
+          suggestion.message = `🎯 ${lastBest.reps} reps ! → ${lastBest.weightKg + increment}kg × 8-10`;
           return suggestion;
         }
 
@@ -77,7 +77,7 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
         if (weightDiff === 0 && repsDiff >= 1 && lastBest.reps < 12) {
           suggestion.weight = lastBest.weightKg;
           suggestion.reps = lastBest.reps;
-          suggestion.message = `💪 +${repsDiff} rep${repsDiff > 1 ? 's' : ''} ! Continue jusqu'à 12 reps pour débloquer la progression`;
+          suggestion.message = `💪 +${repsDiff} rep${repsDiff > 1 ? 's' : ''} ! Vise 12 pour progresser`;
           return suggestion;
         }
 
@@ -85,7 +85,7 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
         if (weightDiff > 0) {
           suggestion.weight = lastBest.weightKg;
           suggestion.reps = lastBest.reps;
-          suggestion.message = `🔥 Bon travail ! Stabilise ce poids et pousse jusqu'à 12 reps`;
+          suggestion.message = `🔥 Stabilise et pousse jusqu'à 12 reps`;
           return suggestion;
         }
       }
@@ -96,13 +96,13 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
         if (weightDiff === 0 && repsDiff >= 2) {
           suggestion.weight = lastBest.weightKg;
           suggestion.reps = lastBest.reps + 3;
-          suggestion.message = `🔋 Endurance ! +${repsDiff} reps. Objectif: ${lastBest.reps + 3} reps aujourd'hui !`;
+          suggestion.message = `🔋 +${repsDiff} reps ! Vise ${lastBest.reps + 3}`;
           return suggestion;
         }
 
         suggestion.weight = lastBest.weightKg;
         suggestion.reps = lastBest.reps;
-        suggestion.message = `🔋 Mode endurance ! Dernier record: ${lastBest.reps} reps. Essaie de faire mieux !`;
+        suggestion.message = `🔋 Record: ${lastBest.reps} reps. Fais mieux !`;
         return suggestion;
       }
 
@@ -114,13 +114,13 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
           suggestion.reps = 3;
           suggestion.isProgression = true;
           suggestion.progressionType = 'strength_increase';
-          suggestion.message = `⚡ Force ! ${lastBest.reps} reps → monte à ${lastBest.weightKg + increment}kg pour 3-5 reps max`;
+          suggestion.message = `⚡ ${lastBest.reps} reps → ${lastBest.weightKg + increment}kg × 3-5`;
           return suggestion;
         }
 
         suggestion.weight = lastBest.weightKg;
         suggestion.reps = 5;
-        suggestion.message = `💪 Travaille jusqu'à 5 reps propres sur ${lastBest.weightKg}kg`;
+        suggestion.message = `💪 Vise 5 reps sur ${lastBest.weightKg}kg`;
         return suggestion;
       }
 
@@ -130,14 +130,14 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
         suggestion.reps = Math.max(8, lastBest.reps - 4);
         suggestion.isProgression = true;
         suggestion.progressionType = 'weight_increase';
-        suggestion.message = `Tu as progressé de ${repsDiff} reps ! Essaie +${increment}kg`;
+        suggestion.message = `+${repsDiff} reps ! Essaie +${increment}kg`;
         return suggestion;
       }
 
       if (weightDiff > 0 && repsDiff >= -2) {
         suggestion.weight = lastBest.weightKg;
         suggestion.reps = lastBest.reps;
-        suggestion.message = `Continue comme ça ! Dernier PR: ${lastBest.weightKg}kg × ${lastBest.reps}`;
+        suggestion.message = `PR: ${lastBest.weightKg}kg × ${lastBest.reps}. Continue !`;
         return suggestion;
       }
 
@@ -147,7 +147,7 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
         if (repsDiff < -2) {
           suggestion.weight = lastBest.weightKg;
           suggestion.reps = lastBest.reps;
-          suggestion.message = `💭 Régression détectée (-${Math.abs(repsDiff)} reps). Considère une semaine de décharge (-20% poids) pour récupérer`;
+          suggestion.message = `💭 -${Math.abs(repsDiff)} reps. Décharge -20% ?`;
           suggestion.isDeload = true;
           return suggestion;
         }
@@ -155,13 +155,13 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
         // Stagnation simple
         suggestion.weight = lastBest.weightKg;
         suggestion.reps = lastBest.reps;
-        suggestion.message = `Même charge qu'avant. Essaie de battre ${lastBest.reps} reps !`;
+        suggestion.message = `Bats ${lastBest.reps} reps !`;
         return suggestion;
       }
 
       // Détection de grande variation (possible erreur de saisie)
       if (Math.abs(weightDiff) > increment * 3 || Math.abs(repsDiff) > 10) {
-        suggestion.message = `⚠️ Grande variation détectée (${weightDiff > 0 ? '+' : ''}${weightDiff}kg, ${repsDiff > 0 ? '+' : ''}${repsDiff} reps). Vérifie ta saisie !`;
+        suggestion.message = `⚠️ ${weightDiff > 0 ? '+' : ''}${weightDiff}kg, ${repsDiff > 0 ? '+' : ''}${repsDiff} reps. Vérifie !`;
         return suggestion;
       }
     }
@@ -172,12 +172,12 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
     suggestion.weight = lastBest.weightKg + increment;
     suggestion.reps = 8;
     suggestion.isProgression = true;
-    suggestion.message = `🎯 ${lastBest.reps} reps ! Tente ${lastBest.weightKg + increment}kg pour 8-10 reps`;
+    suggestion.message = `🎯 ${lastBest.reps} reps ! → ${lastBest.weightKg + increment}kg × 8-10`;
     return suggestion;
   }
 
   if (goal === 'endurance') {
-    suggestion.message = `🔋 Dernière: ${lastBest.reps} reps. Vise encore plus haut !`;
+    suggestion.message = `🔋 ${lastBest.reps} reps. Fais mieux !`;
     return suggestion;
   }
 
@@ -185,11 +185,11 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
     suggestion.weight = lastBest.weightKg + increment;
     suggestion.reps = 3;
     suggestion.isProgression = true;
-    suggestion.message = `⚡ Monte à ${lastBest.weightKg + increment}kg pour la force !`;
+    suggestion.message = `⚡ ${lastBest.weightKg + increment}kg × 3-5 !`;
     return suggestion;
   }
 
-  suggestion.message = `Dernière séance: ${lastBest.weightKg}kg × ${lastBest.reps}`;
+  suggestion.message = `${lastBest.weightKg}kg × ${lastBest.reps}`;
   return suggestion;
 }
 
@@ -408,10 +408,10 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
   if (fatigue) {
     if (fatigue.isNormalFatigue) {
       const messages = [
-        `✅ Normal ! ${currentReps} reps après ${fatigue.previousReps}, c'est la fatigue musculaire qui travaille`,
-        `💪 Bien ! Passer de ${fatigue.previousReps} à ${currentReps} reps, c'est attendu. Continue !`,
-        `👍 C'est bon ! La baisse de ${fatigue.repsDrop} rep${fatigue.repsDrop > 1 ? 's' : ''} est normale, tu bosses bien`,
-        `🔥 Top ! ${currentReps} reps, c'est parfait pour cette série. Tu progresses bien !`
+        `✅ ${fatigue.previousReps} → ${currentReps} reps, normal !`,
+        `💪 -${fatigue.repsDrop} rep${fatigue.repsDrop > 1 ? 's' : ''}, bien !`,
+        `👍 ${currentReps} reps, c'est parfait !`,
+        `🔥 Top ! Tu bosses bien`
       ];
       const randomMsg = messages[Math.floor(Math.random() * messages.length)];
       return {
@@ -426,7 +426,7 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
         type: 'fatigue_big',
         currentReps,
         previousReps: fatigue.previousReps,
-        message: `💭 ${currentReps} après ${fatigue.previousReps} ? Peut-être prendre un peu plus de repos entre les séries`,
+        message: `💭 ${fatigue.previousReps} → ${currentReps}. Repos+ ?`,
         isFatigueMessage: true
       };
     }
@@ -457,7 +457,7 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
           targetWeight: currentWeight + increment,
           currentReps,
           goal: 'hypertrophy',
-          message: `🔥 ${currentReps} reps ! Parfait pour l'hypertrophie. Passe à ${currentWeight + increment}kg et redescend à 8-10 reps pour progresser !`
+          message: `🔥 ${currentReps} reps ! → ${currentWeight + increment}kg × 8-10`
         };
       }
 
@@ -471,8 +471,8 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
           remaining,
           goal: 'hypertrophy',
           message: remaining === 1
-            ? `💪 Encore 1 rep pour atteindre 12 et débloquer une progression !`
-            : `💪 Top zone hypertrophie ! Vise les 12 reps pour maximiser la croissance musculaire !`
+            ? `💪 Encore 1 rep pour progresser !`
+            : `💪 Vise 12 reps !`
         };
       }
 
@@ -483,7 +483,7 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
           targetReps: 10,
           currentReps,
           goal: 'hypertrophy',
-          message: `⚠️ Pour l'hypertrophie, vise 8-12 reps. Peut-être baisser un peu la charge ?`
+          message: `⚠️ Hypertrophie = 8-12 reps. Baisse ?`
         };
       }
     }
@@ -495,14 +495,14 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
           type: 'hypertrophy_new_weight_good',
           currentReps,
           goal: 'hypertrophy',
-          message: `🎯 Excellent ! ${currentReps} reps avec ce poids. Continue jusqu'à 12 puis monte encore !`
+          message: `🎯 ${currentReps} reps ! Pousse jusqu'à 12`
         };
       } else {
         return {
           type: 'hypertrophy_new_weight_low',
           currentReps,
           goal: 'hypertrophy',
-          message: `💪 ${currentReps} reps, c'est un bon début ! Travaille jusqu'à 8-12 reps sur ce poids.`
+          message: `💪 ${currentReps} reps. Vise 8-12`
         };
       }
     }
@@ -524,7 +524,7 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
             currentReps,
             remaining,
             goal: 'endurance',
-            message: `🔋 Endurance ! Encore ${remaining} rep${remaining > 1 ? 's' : ''} pour les ${nextGoal} !`
+            message: `🔋 ${remaining} rep${remaining > 1 ? 's' : ''} → ${nextGoal} !`
           };
         }
         return {
@@ -532,7 +532,7 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
           targetReps: nextGoal,
           currentReps,
           goal: 'endurance',
-          message: `🔋 Mode endurance activé ! Objectif : ${nextGoal} reps. Continue !`
+          message: `🔋 Objectif : ${nextGoal} reps`
         };
       }
 
@@ -542,7 +542,7 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
           type: 'endurance_beast',
           currentReps,
           goal: 'endurance',
-          message: `🔥 Beast mode ! ${currentReps} reps ! Ton endurance est incroyable !`
+          message: `🔥 ${currentReps} reps ! Beast mode !`
         };
       }
     }
@@ -553,7 +553,7 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
         type: 'endurance_new_weight',
         currentReps,
         goal: 'endurance',
-        message: `💪 Plus lourd ET ${currentReps} reps ! Continue à viser 20+ reps !`
+        message: `💪 +Poids ET ${currentReps} reps ! Vise 20+`
       };
     }
   }
@@ -571,7 +571,7 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
           targetWeight: currentWeight + increment,
           currentReps,
           goal: 'strength',
-          message: `💪 ${currentReps} reps ! Pour travailler la force, monte à ${currentWeight + increment}kg et reste entre 3-5 reps !`
+          message: `💪 ${currentReps} reps ! → ${currentWeight + increment}kg × 3-5`
         };
       }
 
@@ -582,7 +582,7 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
           targetReps: nextGoal,
           currentReps,
           goal: 'strength',
-          message: `⚡ Force pure ! Vise les ${nextGoal} reps puis monte la charge !`
+          message: `⚡ Vise ${nextGoal} reps puis monte !`
         };
       }
     }
@@ -592,7 +592,7 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
         type: 'strength_new_pr',
         currentReps,
         goal: 'strength',
-        message: `🏆 Nouveau PR de force ! ${currentWeight}kg × ${currentReps}. Continue à progresser !`
+        message: `🏆 PR ! ${currentWeight}kg × ${currentReps}`
       };
     }
   }

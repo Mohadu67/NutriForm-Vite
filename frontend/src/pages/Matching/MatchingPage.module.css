@@ -1268,47 +1268,11 @@
   border: 2px solid rgba(247, 177, 134, 0.25);
   box-shadow: 0 4px 12px rgba(247, 177, 134, 0.15);
   transition: all 0.3s ease;
-  position: relative;
 }
 
 .mutualMatchCard:hover .matchAvatar {
   border-color: rgba(247, 177, 134, 0.4);
   transform: scale(1.05);
-}
-
-.unreadBadge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  color: white;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  min-width: 20px;
-  height: 20px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 6px;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
-  border: 2px solid white;
-  animation: pulse 2s infinite;
-  z-index: 10;
-}
-
-:global(body.dark) .unreadBadge,
-:global(html.dark) .unreadBadge {
-  border-color: #1a202c;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
 }
 
 .matchAvatar img {
