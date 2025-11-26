@@ -3,7 +3,35 @@
  * Remplace les console.log dispersés dans le code
  */
 
-const isDev = import.meta.env.DEV;
+// Détection sûre du mode développement — compatible avec Node (CI) et navigateur
+function getIsDev() {
+  // 1) check Node/CI
+  if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development') {
+    return true
+  }
+
+  // 2) try to read import.meta.env if available (wrapped in try/catch to avoid static analysis/runtime issues)
+  try {
+    // import.meta may not exist in some environments; accessing it can throw in certain parsers — guard with try/catch
+    // eslint-disable-next-line no-undef
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV) {
+      return true
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  // 3) fallback to a VITE_ flag exposed via process.env (after loadEnv)
+  if (typeof process !== 'undefined' && process.env && process.env.VITE_DEV === 'true') {
+    return true
+  }
+
+  return false
+}
+
+const isDev = getIsDev()
+
+// debug (depends du localStorage, protégé par typeof window)
 const isDebug = typeof window !== 'undefined' && localStorage.getItem('debug') === 'true';
 
 class Logger {
