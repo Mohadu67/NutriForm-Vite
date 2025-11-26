@@ -4,24 +4,25 @@ import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import { getMyProfile, updateProfile, updateLocation, updateAvailability, updateMatchPreferences } from '../../shared/api/profile';
 import styles from './ProfileSetup.module.css';
-import { MapPinIcon, XIcon } from './SetupIcons';
+import { MapPinIcon, XIcon } from '../../components/Icons/GlobalIcons';
+import { WORKOUT_ICONS } from '../../components/Icons/WorkoutIcons';
 import logger from '../../shared/utils/logger.js';
 
 const WORKOUT_TYPES = [
-  { value: 'musculation', label: 'Musculation', icon: '💪' },
-  { value: 'cardio', label: 'Cardio', icon: '🏃' },
-  { value: 'crossfit', label: 'CrossFit', icon: '🏋️' },
-  { value: 'yoga', label: 'Yoga', icon: '🧘' },
-  { value: 'pilates', label: 'Pilates', icon: '🤸' },
-  { value: 'running', label: 'Course', icon: '👟' },
-  { value: 'cycling', label: 'Vélo', icon: '🚴' },
-  { value: 'swimming', label: 'Natation', icon: '🏊' },
-  { value: 'boxing', label: 'Boxe', icon: '🥊' },
-  { value: 'dance', label: 'Danse', icon: '💃' },
-  { value: 'functional', label: 'Functional', icon: '⚡' },
-  { value: 'hiit', label: 'HIIT', icon: '🔥' },
-  { value: 'stretching', label: 'Stretching', icon: '🤲' },
-  { value: 'other', label: 'Autre', icon: '🎯' }
+  { value: 'musculation', label: 'Musculation' },
+  { value: 'cardio', label: 'Cardio' },
+  { value: 'crossfit', label: 'CrossFit' },
+  { value: 'yoga', label: 'Yoga' },
+  { value: 'pilates', label: 'Pilates' },
+  { value: 'running', label: 'Course' },
+  { value: 'cycling', label: 'Vélo' },
+  { value: 'swimming', label: 'Natation' },
+  { value: 'boxing', label: 'Boxe' },
+  { value: 'dance', label: 'Danse' },
+  { value: 'functional', label: 'Functional' },
+  { value: 'hiit', label: 'HIIT' },
+  { value: 'stretching', label: 'Stretching' },
+  { value: 'other', label: 'Autre' }
 ];
 
 const FITNESS_LEVELS = [
@@ -446,15 +447,18 @@ export default function ProfileSetup() {
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Types d'entraînement ({profile.workoutTypes.length} sélectionnés)</label>
                 <div className={styles.workoutGrid}>
-                  {WORKOUT_TYPES.map((type) => (
-                    <span
-                      key={type.value}
-                      className={`${styles.workoutBadge} ${profile.workoutTypes.includes(type.value) ? styles.selected : ''}`}
-                      onClick={() => toggleWorkoutType(type.value)}
-                    >
-                      {type.icon} {type.label}
-                    </span>
-                  ))}
+                  {WORKOUT_TYPES.map((type) => {
+                    const Icon = WORKOUT_ICONS[type.value];
+                    return (
+                      <span
+                        key={type.value}
+                        className={`${styles.workoutBadge} ${profile.workoutTypes.includes(type.value) ? styles.selected : ''}`}
+                        onClick={() => toggleWorkoutType(type.value)}
+                      >
+                        <Icon size={16} /> {type.label}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
 
