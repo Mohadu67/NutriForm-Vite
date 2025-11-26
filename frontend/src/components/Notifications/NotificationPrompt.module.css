@@ -374,12 +374,6 @@
   border-radius: 16px;
   padding: 20px;
   margin: 20px 0;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-}
-
-:global(.dark) .statusContainer,
-:root:not(.light) .statusContainer {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .statusHeader {

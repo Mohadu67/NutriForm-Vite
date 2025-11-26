@@ -35,6 +35,11 @@ export default function PdcForm({ sets = [], onAdd, onRemove, onPatch, progressi
               <div className={styles.serieHeader}>
                 <div className={styles.serieHeaderLeft}>
                   <span className={styles.serieNumber}>Série {idx + 1}</span>
+                  {s?.isSuggested && (
+                    <span className={styles.suggestedBadge}>
+                      💡 Suggéré
+                    </span>
+                  )}
                   {isRecord && (
                     <span className={styles.recordBadge}>
                       🔥 +{diff.repsDiff} reps
