@@ -8,6 +8,8 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     process.env.VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY
   );
+} else {
+  console.warn('⚠️  Clés VAPID manquantes - Notifications push désactivées');
 }
 
 /**
@@ -21,6 +23,7 @@ async function sendNotificationToUser(userId, payload) {
     });
 
     if (subscriptions.length === 0) {
+      console.log(`Aucune subscription pour userId: ${userId}`);
       return { success: false, message: 'No subscriptions' };
     }
 
@@ -51,6 +54,7 @@ async function sendNotificationToUser(userId, payload) {
       total: subscriptions.length
     };
   } catch (error) {
+    console.error('Erreur sendNotificationToUser:', error);
     throw error;
   }
 }

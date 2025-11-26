@@ -26,6 +26,7 @@ export default function ChatHistory({ onLogin }) {
           const subscription = await getSubscriptionStatus();
           setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
         } catch (err) {
+          console.error('Erreur récupération subscription:', err);
           setIsPremium(false);
         }
       }
@@ -45,7 +46,7 @@ export default function ChatHistory({ onLogin }) {
       const { conversations: aiConvs } = await getAIConversations();
       setConversations(aiConvs || []);
     } catch (err) {
-      // Silencieux
+      console.error('Erreur chargement conversations IA:', err);
     }
   };
 
@@ -61,7 +62,7 @@ export default function ChatHistory({ onLogin }) {
       const { conversations } = await getConversations();
       setMatchConversations(conversations || []);
     } catch (err) {
-      // Silencieux
+      console.error('Erreur chargement conversations matches:', err);
     }
   };
 
@@ -100,6 +101,7 @@ export default function ChatHistory({ onLogin }) {
       // Recharger les conversations
       await loadAIConversations();
     } catch (err) {
+      console.error('Erreur suppression conversation IA:', err);
       alert('Erreur lors de la suppression de la conversation.');
     }
   };
@@ -113,6 +115,7 @@ export default function ChatHistory({ onLogin }) {
       // Recharger les conversations
       await loadMatchConversations();
     } catch (err) {
+      console.error('Erreur suppression conversation match:', err);
       alert('Erreur lors de la suppression de la conversation.');
     }
   };
@@ -210,7 +213,7 @@ export default function ChatHistory({ onLogin }) {
                     className={styles.conversationItem}
                     onClick={() => openMatchChat(conv)}
                   >
-                    <div className={styles.avatarWrapper}>
+                    <div className={styles.avatarContainer}>
                       <Avatar
                         src={conv.otherUser?.profile?.profilePicture}
                         name={conv.otherUser?.pseudo || conv.otherUser?.prenom || 'User'}
@@ -218,7 +221,9 @@ export default function ChatHistory({ onLogin }) {
                         className={styles.convProfileImage}
                       />
                       {conv.unreadCount > 0 && (
-                        <div className={styles.unreadDot}></div>
+                        <span className={styles.unreadBadge}>
+                          {conv.unreadCount > 1 ? conv.unreadCount : ''}
+                        </span>
                       )}
                     </div>
                     <div className={styles.convContent}>

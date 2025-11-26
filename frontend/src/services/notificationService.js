@@ -1,6 +1,4 @@
 import { secureApiCall } from '../utils/authService';
-import { isAuthenticated } from '../shared/api/auth';
-import { getConversations } from '../shared/api/matchChat';
 
 let swRegistration = null;
 
@@ -9,19 +7,18 @@ let swRegistration = null;
  */
 export async function initializeNotifications() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    console.warn('Notifications push non supportées');
     return { supported: false };
   }
 
-  // Ne pas enregistrer le service worker en mode dev pour éviter les conflits avec Vite HMR
-  if (import.meta.env.DEV) {
-    return { supported: false, reason: 'dev-mode' };
-  }
-
   try {
-    // Enregistrer le service worker (production uniquement)
+    // Enregistrer le service worker
     swRegistration = await navigator.serviceWorker.register('/sw.js');
+    console.log('Service Worker enregistré');
+
     return { supported: true, registration: swRegistration };
   } catch (error) {
+    console.error('Erreur initialisation notifications:', error);
     return { supported: false, error };
   }
 }
@@ -94,6 +91,7 @@ export async function subscribeToNotifications() {
 
     return { success: true, subscription };
   } catch (error) {
+    console.error('Erreur subscription:', error);
     return { success: false, error };
   }
 }
@@ -116,6 +114,7 @@ export async function unsubscribeFromNotifications() {
 
     return { success: true };
   } catch (error) {
+    console.error('Erreur unsubscribe:', error);
     return { success: false, error };
   }
 }
@@ -153,43 +152,4 @@ function arrayBufferToBase64(buffer) {
     binary += String.fromCharCode(bytes[i]);
   }
   return window.btoa(binary);
-}
-
-/**
- * Vérifier les messages non lus au chargement de l'app
- * et afficher une notification locale si nécessaire
- */
-export async function checkUnreadMessagesOnLoad() {
-  try {
-    // Vérifier si l'utilisateur est connecté
-    const auth = await isAuthenticated();
-    if (!auth) return;
-
-    // Vérifier la permission de notifications
-    if (!('Notification' in window)) return;
-    if (Notification.permission !== 'granted') return;
-
-    // Récupérer les conversations
-    const { conversations } = await getConversations();
-    if (!conversations || conversations.length === 0) return;
-
-    // Compter le total de messages non lus
-    const totalUnread = conversations.reduce((sum, conv) => {
-      const count = conv.unreadCount || 0;
-      return sum + count;
-    }, 0);
-
-    // Si des messages non lus, afficher une notification locale
-    if (totalUnread > 0) {
-      new Notification('💬 Nouveaux messages', {
-        body: `Vous avez ${totalUnread} message${totalUnread > 1 ? 's' : ''} non lu${totalUnread > 1 ? 's' : ''}`,
-        icon: '/icon-192x192.png',
-        badge: '/badge-72x72.png',
-        tag: 'unread-messages',
-        requireInteraction: false
-      });
-    }
-  } catch (error) {
-    // Silencieux
-  }
 }

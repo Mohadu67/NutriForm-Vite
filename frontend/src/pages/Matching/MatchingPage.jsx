@@ -6,7 +6,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import { getMatchSuggestions, likeProfile, rejectProfile, getMutualMatches, unlikeProfile } from '../../shared/api/matching';
 import { getMyProfile } from '../../shared/api/profile';
-import { getOrCreateConversation, getConversations } from '../../shared/api/matchChat';
+import { getOrCreateConversation } from '../../shared/api/matchChat';
 import styles from './MatchingPage.module.css';
 import {
   HeartIcon,
@@ -124,7 +124,6 @@ export default function MatchingPage() {
   const [cardAnimation, setCardAnimation] = useState('enter');
   const [mutualMatchData, setMutualMatchData] = useState(null);
   const [swipeDirection, setSwipeDirection] = useState(null);
-  const [conversations, setConversations] = useState([]);
 
   const cardRef = useRef(null);
   const [touchStart, setTouchStart] = useState(null);
@@ -161,15 +160,6 @@ export default function MatchingPage() {
 
       const { matches: mutuals } = await getMutualMatches();
       setMutualMatches(mutuals);
-
-      // Récupérer les conversations pour afficher les messages non lus
-      try {
-        const { conversations: convs } = await getConversations();
-        console.log('📬 Conversations chargées:', convs);
-        setConversations(convs || []);
-      } catch (err) {
-        console.error('Erreur chargement conversations:', err);
-      }
 
       if (newMatches.length === 0) {
         setError('Aucun nouveau match trouvé pour le moment. Revenez plus tard !');
@@ -330,16 +320,6 @@ export default function MatchingPage() {
       console.error('Erreur unlike:', err);
       toast.error('Erreur lors du retrait du match');
     }
-  };
-
-  // Helper pour récupérer le nombre de messages non lus pour un match
-  const getUnreadCount = (matchId) => {
-    const conversation = conversations.find(conv => conv.matchId?._id === matchId || conv.matchId === matchId);
-    const count = conversation?.unreadCount || 0;
-    if (count > 0) {
-      console.log(`📨 Match ${matchId} a ${count} messages non lus`, conversation);
-    }
-    return count;
   };
 
   const currentMatch = matches[currentIndex];
@@ -598,11 +578,6 @@ export default function MatchingPage() {
                             ) : (
                               <div className={styles.avatarPlaceholder}>
                                 {match.user?.username?.[0]?.toUpperCase() || '?'}
-                              </div>
-                            )}
-                            {getUnreadCount(match._id) > 0 && (
-                              <div className={styles.unreadBadge}>
-                                {getUnreadCount(match._id)}
                               </div>
                             )}
                           </div>

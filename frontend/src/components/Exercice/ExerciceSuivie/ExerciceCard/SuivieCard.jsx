@@ -77,6 +77,17 @@ export default function SuivieCard({ exo, value, onChange }) {
   const imgSrc = Array.isArray(exo?.images) && exo.images.length ? exo.images[0] : null;
   const initialLetter = exo?.name?.trim()?.[0]?.toUpperCase() || "?";
 
+  // Déterminer si l'exercice est commencé
+  const isStarted = value && (
+    value.done ||
+    (Array.isArray(value.sets) && value.sets.length > 0) ||
+    (Array.isArray(value.cardioSets) && value.cardioSets.length > 0) ||
+    value.swim ||
+    value.yoga ||
+    value.stretch ||
+    value.walkRun
+  );
+
   function isExerciseDone(nextData) {
     if (!nextData) return false;
     if (nextData.swim) {
@@ -184,11 +195,14 @@ export default function SuivieCard({ exo, value, onChange }) {
   return (
     <>
       <div className={styles.card}>
-        <button type="button" className={styles.row} onClick={() => setOpen(true)}>
+        <button type="button" className={`${styles.row} ${isStarted ? styles.isStarted : ''}`} onClick={() => setOpen(true)}>
           <div className={styles.thumb} aria-hidden>
             {imgSrc ? <img src={imgSrc} alt="" /> : <div className={styles.initial}>{initialLetter}</div>}
           </div>
-          <div className={styles.title}>{exo?.name || "Exercice"}</div>
+          <div className={styles.title}>
+            {isStarted && <span className={styles.statusDot} aria-label="En cours" />}
+            {exo?.name || "Exercice"}
+          </div>
         </button>
       </div>
 

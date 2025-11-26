@@ -1,4 +1,5 @@
-import React, { useState, useId } from "react";
+import React, { useState, useEffect, useId, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import styles from "./ExerciceCard.module.css";
@@ -12,6 +13,7 @@ export default function ExerciceCard({
 }) {
   const [open, setOpen] = useState(false);
   const dialogId = useId();
+  const overlayRef = useRef(null);
 
   if (!exo) return null;
 
@@ -43,6 +45,39 @@ export default function ExerciceCard({
     opacity: isDragging ? 0.5 : 1,
   } : {};
 
+  // Gestion de la fermeture de la popup
+  useEffect(() => {
+    if (!open) return;
+
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+
+    const handleClickOutside = (e) => {
+      if (overlayRef.current === e.target) {
+        setOpen(false);
+      }
+    };
+
+    // Bloquer le scroll du body
+    document.body.style.overflow = 'hidden';
+
+    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [open]);
+
+  const handleClose = (e) => {
+    e?.stopPropagation();
+    setOpen(false);
+  };
 
   return (
     <>
@@ -123,19 +158,28 @@ export default function ExerciceCard({
         )}
       </div>
 
-      {open && (
+      {open && createPortal(
         <div
-          className={`${styles.overlay} ${open ? styles.isOpen : ''}`}
+          ref={overlayRef}
+          className={styles.overlay}
           role="dialog"
           aria-modal="true"
-          aria-hidden={!open}
+          aria-labelledby={`${dialogId}-title`}
           id={dialogId}
-          onClick={() => setOpen(false)}
         >
-          <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.popup}>
             <header className={styles.popupHeader}>
-              <h3 className={styles.popupTitle}>{exo.name}</h3>
-              <button type="button" className={styles.closeBtn} onClick={() => setOpen(false)} aria-label="Fermer">×</button>
+              <h3 id={`${dialogId}-title`} className={styles.popupTitle}>
+                {exo.name}
+              </h3>
+              <button
+                type="button"
+                className={styles.closeBtn}
+                onClick={handleClose}
+                aria-label="Fermer"
+              >
+                ×
+              </button>
             </header>
 
             <div className={styles.popupBody}>
@@ -149,20 +193,20 @@ export default function ExerciceCard({
 
               <div className={styles.metaGrid}>
                 <div>
-                  <strong >Type</strong>
-                  <div >{Array.isArray(exo.type) ? exo.type.join(", ") : (exo.type || "—")}</div>
+                  <strong>Type</strong>
+                  <div>{Array.isArray(exo.type) ? exo.type.join(", ") : (exo.type || "—")}</div>
                 </div>
                 <div>
                   <strong>Objectifs</strong>
-                  <div >{Array.isArray(exo.objectives) ? exo.objectives.join(", ") : (exo.objectives || "—")}</div>
+                  <div>{Array.isArray(exo.objectives) ? exo.objectives.join(", ") : (exo.objectives || "—")}</div>
                 </div>
                 <div>
                   <strong>Muscles</strong>
-                  <div >{Array.isArray(exo.muscles) ? exo.muscles.join(", ") : (exo.muscles || "—")}</div>
+                  <div>{Array.isArray(exo.muscles) ? exo.muscles.join(", ") : (exo.muscles || "—")}</div>
                 </div>
                 <div>
                   <strong>Équipement</strong>
-                  <div >{Array.isArray(exo.equipment) ? exo.equipment.join(", ") : (exo.equipment || "—")}</div>
+                  <div>{Array.isArray(exo.equipment) ? exo.equipment.join(", ") : (exo.equipment || "—")}</div>
                 </div>
               </div>
 
@@ -173,9 +217,9 @@ export default function ExerciceCard({
                 </div>
               )}
             </div>
-
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

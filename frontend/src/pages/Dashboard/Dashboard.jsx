@@ -1100,12 +1100,7 @@ export default function Dashboard() {
             <div className={style.popupHeader}>
               <div>
                 <h3 className={style.popupTitle}>Historique des séances</h3>
-                <p className={style.popupSubtitle}>
-                  {stats.totalSessions} séance{stats.totalSessions > 1 ? 's' : ''}
-                  {stats.totalMinutes > 0 && (
-                    <> • {stats.totalHours}h{stats.totalMinutes % 60 > 0 ? String(stats.totalMinutes % 60).padStart(2, '0') : ''} total</>
-                  )}
-                </p>
+                <p className={style.popupSubtitle}>{stats.totalSessions} séance{stats.totalSessions > 1 ? 's' : ''} • {stats.totalHours}h{stats.totalMinutes % 60 > 0 ? String(stats.totalMinutes % 60).padStart(2, '0') : ''} total</p>
               </div>
               <button className={style.popupClose} onClick={() => setShowSessionsPopup(false)}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1125,10 +1120,7 @@ export default function Dashboard() {
                       </div>
                       <button
                         className={style.sessionPopupDelete}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteSession(session.id || session._id);
-                        }}
+                        onClick={() => handleDeleteSession(session.id || session._id)}
                         title="Supprimer cette séance"
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
