@@ -11,6 +11,7 @@ import {
   getSupportTicketStats
 } from '../../shared/api/chat';
 import styles from './SupportTickets.module.css';
+import logger from '../../shared/utils/logger.js';
 
 export default function SupportTickets() {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ export default function SupportTickets() {
       const data = await getAllSupportTickets(filters);
       setTickets(data.tickets);
     } catch (err) {
-      console.error('Erreur chargement tickets:', err);
+      logger.error('Erreur chargement tickets:', err);
       setError('Impossible de charger les tickets.');
     } finally {
       setLoading(false);
@@ -43,7 +44,7 @@ export default function SupportTickets() {
       const data = await getSupportTicketStats();
       setStats(data);
     } catch (err) {
-      console.error('Erreur chargement stats:', err);
+      logger.error('Erreur chargement stats:', err);
     }
   }, []);
 
@@ -59,7 +60,7 @@ export default function SupportTickets() {
       setMessages(msgs);
       setReplyMessage('');
     } catch (err) {
-      console.error('Erreur chargement ticket:', err);
+      logger.error('Erreur chargement ticket:', err);
       setError('Impossible de charger le ticket.');
     }
   };
@@ -78,7 +79,7 @@ export default function SupportTickets() {
         prev.map(t => (t._id === selectedTicket._id ? { ...t, status: 'in_progress' } : t))
       );
     } catch (err) {
-      console.error('Erreur envoi réponse:', err);
+      logger.error('Erreur envoi réponse:', err);
       setError('Impossible d\'envoyer la réponse.');
     } finally {
       setSending(false);
@@ -108,7 +109,7 @@ export default function SupportTickets() {
         setTimeout(() => setError(null), 3000);
       }
     } catch (err) {
-      console.error('Erreur résolution ticket:', err);
+      logger.error('Erreur résolution ticket:', err);
       setError('Impossible de résoudre le ticket.');
     }
   };

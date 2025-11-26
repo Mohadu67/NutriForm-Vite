@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import styles from "./Rgpd.module.css";
+import logger from '../../shared/utils/logger.js';
 
 export default function CookiesPolicy() {
   const openConsentPanel = useCallback(() => {
@@ -13,7 +14,7 @@ export default function CookiesPolicy() {
         );
       }
     } catch (e) {
-      console.error("Failed to open consent panel:", e);
+      logger.error("Failed to open consent panel:", e);
     }
   }, []);
 

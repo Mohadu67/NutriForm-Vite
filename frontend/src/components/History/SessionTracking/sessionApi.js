@@ -1,4 +1,5 @@
 import { secureApiCall } from '../../../utils/authService.js';
+import logger from '../../../shared/utils/logger.js';
 
 function safeStringify(obj) {
   try {
@@ -40,7 +41,7 @@ async function request(path, options = {}) {
     } catch (e) {
       // Réponse vide ou pas du JSON, c'est OK pour 204 ou DELETE
       if (res.status !== 204 && !res.url?.includes('DELETE')) {
-        console.error("Failed to parse JSON response:", e);
+        logger.error("Failed to parse JSON response:", e);
       }
     }
   }

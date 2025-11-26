@@ -1,4 +1,5 @@
 import { memo, useMemo, useState } from "react";
+import { storage } from '../../../shared/utils/storage';
 import { Link } from "react-router-dom";
 import Alert from "../Alert/Alert";
 import PopupUser from "../../Auth/PopupUser";
@@ -15,7 +16,7 @@ function ConnectReminder({
   const isAuthed = useMemo(() => {
     if (typeof window === "undefined") return false;
     try {
-      const raw = localStorage.getItem("user") || sessionStorage.getItem("user");
+      const raw = storage.get("user") || sessionStorage.getItem("user");
       if (!raw) return false;
       const parsed = JSON.parse(raw);
       return Boolean(parsed && (parsed.id || parsed._id));

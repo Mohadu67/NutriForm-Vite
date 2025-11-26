@@ -1,3 +1,4 @@
+const logger = require('../utils/logger.js');
 const base = (process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
 if (!base && process.env.NODE_ENV === 'production') {
   throw new Error('FRONTEND_BASE_URL manquant en production pour les emails.');
@@ -13,7 +14,7 @@ module.exports = function verifyEmailTemplate({ toName = 'utilisateur', verifyUr
     ? verifyUrl
     : `${brand.url.replace(/\/$/, '')}${verifyUrl.startsWith('/') ? '' : '/'}${verifyUrl}`;
 
-  console.log('[VERIFY_EMAIL_TEMPLATE] Generated verification URL:', safeVerifyUrl);
+  logger.info('[VERIFY_EMAIL_TEMPLATE] Generated verification URL:', safeVerifyUrl);
 
   const subject = `Confirme ton email • ${brand.name}`;
   const text = `Salut ${toName},

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { storage } from '../../../../shared/utils/storage';
 import { createPortal } from "react-dom";
 import { mapItemsToEntries } from "../../../History/SessionTracking/sessionApi";
 import styles from "./Chrono.module.css";
@@ -7,6 +8,7 @@ import useChronoCore from "./useChronoCore";
 import EchauffementModal from "./EchauffementModal";
 import SaveLoadingAnimation from "./SaveLoadingAnimation";
 import ShareModal from "../../../Share/ShareModal";
+import logger from '../../../../shared/utils/logger.js';
 
 function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onStart = null, onFinish = () => {} }) {
   const { save, saving } = useSaveSession();
@@ -397,7 +399,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
         stopAndReset();
       }
     } catch (err) {
-      console.error('[Chrono] save failed', err);
+      logger.error('[Chrono] save failed', err);
       if (typeof onFinish === 'function') {
         onFinish({ durationSec: finalSec, savedCount: 0, calories, doneExercises, totalExercises, summary });
       }
@@ -462,7 +464,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
       setStartTs(safeTs);
       if (typeof onStart === "function") {
         try { onStart(new Date(safeTs).toISOString()); } catch (e) {
-          console.error("Failed to call onStart callback:", e);
+          logger.error("Failed to call onStart callback:", e);
         }
       }
     }
@@ -583,7 +585,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
             stopAndReset();
           }}
           session={savedSession}
-          user={JSON.parse(localStorage.getItem('user') || '{}')}
+          user={JSON.parse(storage.get('user') || '{}')}
         />
       )}
     </>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from 'sonner';
+import logger from '../../../shared/utils/logger.js';
 
 export default function useLogin(onLoginSuccess, options = {}) {
   const { minDurationMs = 2500 } = options;
@@ -61,11 +62,11 @@ export default function useLogin(onLoginSuccess, options = {}) {
       try {
         const storage = remember ? localStorage : sessionStorage;
         const other = remember ? sessionStorage : localStorage;
-        if (token) storage.setItem("token", token);
-        if (user) storage.setItem("user", JSON.stringify(user));
-        try { other.removeItem("token"); } catch (e) { console.error("Failed to remove token from other storage:", e); }
-        try { other.removeItem("user"); } catch (e) { console.error("Failed to remove user from other storage:", e); }
-      } catch (e) { console.error("Failed to save token and user to storage:", e); }
+        if (token) storage.set("token", token);
+        if (user) storage.set("user", JSON.stringify(user));
+        try { other.removeItem("token"); } catch (e) { logger.error("Failed to remove token from other storage:", e); }
+        try { other.removeItem("user"); } catch (e) { logger.error("Failed to remove user from other storage:", e); }
+      } catch (e) { logger.error("Failed to save token and user to storage:", e); }
 
       const end = (typeof performance !== "undefined" ? performance.now() : Date.now());
       const elapsed = end - start;

@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { getMessages, sendMessage as sendMatchMessage, markMessagesAsRead } from '../../shared/api/matchChat';
 import { isAuthenticated } from '../../shared/api/auth';
+import { storage } from '../../shared/utils/storage';
+import logger from '../../shared/utils/logger';
 import styles from './UnifiedChatPanel.module.css';
 
 export default function UnifiedChatPanel({ conversationId, matchConversation, initialMessage }) {
@@ -39,7 +41,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       if (isMatchChat && matchConversation?._id) {
         loadMatchMessages();
         markMessagesAsRead(matchConversation._id).catch(err =>
-          console.error('Erreur marquage lu:', err)
+          logger.error('Erreur marquage lu:', err)
         );
       } else if (conversationId) {
         loadHistory(conversationId);
@@ -71,7 +73,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
         }
       }
     } catch (err) {
-      console.error('Erreur chargement historique:', err);
+      logger.error('Erreur chargement historique:', err);
     } finally {
       setLoading(false);
     }
@@ -88,7 +90,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       const myUserId = participants.find(p => p._id !== otherUserId)?._id || participants.find(p => p !== otherUserId);
       setCurrentUserId(myUserId);
     } catch (err) {
-      console.error('Erreur chargement messages match:', err);
+      logger.error('Erreur chargement messages match:', err);
     } finally {
       setLoading(false);
     }
@@ -144,9 +146,9 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
         const newConvId = response.conversationId;
 
-        // Mettre à jour localStorage
+        // Mettre à jour storage
         if (newConvId) {
-          const savedConversations = JSON.parse(localStorage.getItem('chatConversations') || '[]');
+          const savedConversations = JSON.parse(storage.get('chatConversations') || '[]');
           const convIndex = savedConversations.findIndex(c => c.id === newConvId);
           if (convIndex >= 0) {
             savedConversations[convIndex].lastMessage = content;
@@ -159,13 +161,13 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
               updatedAt: new Date()
             });
           }
-          localStorage.setItem('chatConversations', JSON.stringify(savedConversations));
+          storage.set('chatConversations', JSON.stringify(savedConversations));
         }
       }
 
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     } catch (err) {
-      console.error('Erreur envoi message:', err);
+      logger.error('Erreur envoi message:', err);
       // Remettre le message dans l'input en cas d'erreur
       setInputMessage(content);
     } finally {
@@ -188,15 +190,15 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
         createdAt: new Date()
       }]);
 
-      // Mettre à jour localStorage
-      const savedConversations = JSON.parse(localStorage.getItem('chatConversations') || '[]');
+      // Mettre à jour storage
+      const savedConversations = JSON.parse(storage.get('chatConversations') || '[]');
       const convIndex = savedConversations.findIndex(c => c.id === conversationId);
       if (convIndex >= 0) {
         savedConversations[convIndex].escalated = true;
-        localStorage.setItem('chatConversations', JSON.stringify(savedConversations));
+        storage.set('chatConversations', JSON.stringify(savedConversations));
       }
     } catch (err) {
-      console.error('Erreur escalade:', err);
+      logger.error('Erreur escalade:', err);
       setMessages(prev => [...prev, {
         role: 'bot',
         content: "❌ Erreur lors de la transmission au support. Veuillez réessayer.",

@@ -2,6 +2,7 @@ const History = require('../models/History');
 const WorkoutSession = require('../models/WorkoutSession');
 const { deriveFromHistory, deriveFromSessions } = require('../services/stats.service');
 const { computeSessionFromEntries } = require('../services/calorie.service');
+const logger = require('../utils/logger.js');
 
 function numOrNull(v) {
   const n = Number(v);
@@ -15,9 +16,9 @@ function pickWeight(meta = {}) {
 async function addHistory(req, res) {
   try {
     if (process.env.NODE_ENV !== 'production') {
-      console.log('[addHistory] authHeader =', req.headers?.authorization);
-      console.log('[addHistory] userId =', req.userId);
-      console.log('[addHistory] body =', req.body);
+      logger.info('[addHistory] authHeader =', req.headers?.authorization);
+      logger.info('[addHistory] userId =', req.userId);
+      logger.info('[addHistory] body =', req.body);
     }
 
     const userId = req.userId;
@@ -31,7 +32,7 @@ async function addHistory(req, res) {
 
     return res.status(201).json(doc);
   } catch (error) {
-    console.error('Erreur addHistory:', error);
+    logger.error('Erreur addHistory:', error);
     return res.status(500).json({ message: "Erreur lors de l'ajout de l'historique" });
   }
 }
@@ -47,7 +48,7 @@ async function getHistory(req, res) {
 
     return res.status(200).json(history);
   } catch (error) {
-    console.error('Erreur getHistory:', error);
+    logger.error('Erreur getHistory:', error);
     return res.status(500).json({ message: "Erreur lors de la récupération de l'historique" });
   }
 }
@@ -68,7 +69,7 @@ async function deleteHistory(req, res) {
     await doc.deleteOne();
     return res.status(204).send();
   } catch (error) {
-    console.error('Erreur deleteHistory:', error);
+    logger.error('Erreur deleteHistory:', error);
     return res.status(500).json({ message: 'Erreur lors de la suppression' });
   }
 }
@@ -245,7 +246,7 @@ async function getUserSummary(req, res) {
         }
       }
     } catch (err) {
-      console.error('Erreur lors de la récupération des sessions d\'entraînement:', err);
+      logger.error('Erreur lors de la récupération des sessions d\'entraînement:', err);
     }
 
     if (workoutDaysSet.size > 0) {
@@ -306,7 +307,7 @@ async function getUserSummary(req, res) {
       lastWorkoutAt: derived.lastWorkoutAt ?? null,
     });
   } catch (error) {
-    console.error('Erreur getUserSummary:', error);
+    logger.error('Erreur getUserSummary:', error);
     return res.status(500).json({ message: "Erreur lors de la récupération du résumé utilisateur" });
   }
 }

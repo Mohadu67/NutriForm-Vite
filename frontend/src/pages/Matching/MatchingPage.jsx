@@ -7,6 +7,7 @@ import Footer from '../../components/Footer/Footer';
 import { getMatchSuggestions, likeProfile, rejectProfile, getMutualMatches, unlikeProfile } from '../../shared/api/matching';
 import { getMyProfile } from '../../shared/api/profile';
 import { getOrCreateConversation } from '../../shared/api/matchChat';
+import logger from '../../shared/utils/logger';
 import styles from './MatchingPage.module.css';
 import {
   HeartIcon,
@@ -165,7 +166,7 @@ export default function MatchingPage() {
         setError('Aucun nouveau match trouvé pour le moment. Revenez plus tard !');
       }
     } catch (err) {
-      console.error('Erreur chargement matches:', err);
+      logger.error('Erreur chargement matches:', err);
       if (err?.response?.data?.error === 'premium_required') {
         setError('Le matching est réservé aux membres Premium. Abonnez-vous pour débloquer cette fonctionnalité !');
       } else {
@@ -190,7 +191,7 @@ export default function MatchingPage() {
 
       const currentMatch = matches[currentIndex];
       if (!currentMatch.user?._id) {
-        console.error('User ID manquant dans currentMatch:', currentMatch);
+        logger.error('User ID manquant dans currentMatch:', currentMatch);
         setActionLoading(false);
         setCardAnimation('enter');
         setSwipeDirection(null);
@@ -223,7 +224,7 @@ export default function MatchingPage() {
         setActionLoading(false);
       }, 400);
     } catch (err) {
-      console.error('Erreur like:', err);
+      logger.error('Erreur like:', err);
       toast.error('Erreur lors du like');
       setActionLoading(false);
       setCardAnimation('enter');
@@ -241,7 +242,7 @@ export default function MatchingPage() {
 
       const currentMatch = matches[currentIndex];
       if (!currentMatch.user?._id) {
-        console.error('User ID manquant dans currentMatch:', currentMatch);
+        logger.error('User ID manquant dans currentMatch:', currentMatch);
         setActionLoading(false);
         setCardAnimation('enter');
         setSwipeDirection(null);
@@ -256,7 +257,7 @@ export default function MatchingPage() {
         setActionLoading(false);
       }, 400);
     } catch (err) {
-      console.error('Erreur reject:', err);
+      logger.error('Erreur reject:', err);
       toast.error('Erreur lors du rejet');
       setActionLoading(false);
       setCardAnimation('enter');
@@ -306,7 +307,7 @@ export default function MatchingPage() {
       setShowMatches(false);
       setMutualMatchData(null);
     } catch (err) {
-      console.error('Erreur création conversation:', err);
+      logger.error('Erreur création conversation:', err);
       toast.error('Erreur lors de l\'ouverture du chat');
     }
   };
@@ -317,7 +318,7 @@ export default function MatchingPage() {
       setMutualMatches(prev => prev.filter(m => m._id !== matchId));
       toast.success('Match retiré');
     } catch (err) {
-      console.error('Erreur unlike:', err);
+      logger.error('Erreur unlike:', err);
       toast.error('Erreur lors du retrait du match');
     }
   };

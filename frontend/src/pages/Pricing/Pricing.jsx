@@ -5,6 +5,7 @@ import Footer from '../../components/Footer/Footer.jsx';
 import { createCheckoutSession, getSubscriptionStatus } from '../../shared/api/subscription';
 import { isAuthenticated } from '../../shared/api/auth';
 import styles from './Pricing.module.css';
+import logger from '../../shared/utils/logger.js';
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ export default function Pricing() {
           const status = await getSubscriptionStatus();
           setSubscriptionStatus(status);
         } catch (err) {
-          console.error('Erreur récupération statut:', err);
+          logger.error('Erreur récupération statut:', err);
         }
       }
     };
@@ -53,7 +54,7 @@ export default function Pricing() {
       const { url } = await createCheckoutSession();
       window.location.href = url;
     } catch (err) {
-      console.error('Erreur création checkout:', err);
+      logger.error('Erreur création checkout:', err);
       setError(err.response?.data?.error || 'Une erreur est survenue.');
       setLoading(false);
     }

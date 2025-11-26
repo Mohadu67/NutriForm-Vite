@@ -9,6 +9,7 @@ import { getMyProfile } from '../../shared/api/profile';
 import { getOrCreateConversation } from '../../shared/api/matchChat';
 import styles from './MatchingPageFuturistic.module.css';
 import {
+import logger from '../../shared/utils/logger.js';
   HeartIcon,
   SparklesIcon,
   GlobeIcon,
@@ -164,7 +165,7 @@ export default function MatchingPageFuturistic() {
         setError('Aucun nouveau match trouvé pour le moment. Revenez plus tard !');
       }
     } catch (err) {
-      console.error('Erreur chargement matches:', err);
+      logger.error('Erreur chargement matches:', err);
       if (err?.response?.data?.error === 'premium_required') {
         setError('Le matching est réservé aux membres Premium. Abonnez-vous pour débloquer cette fonctionnalité !');
         setTimeout(() => navigate('/pricing'), 2000);
@@ -205,7 +206,7 @@ export default function MatchingPageFuturistic() {
         setActionLoading(false);
       }, 400);
     } catch (err) {
-      console.error('Erreur like:', err);
+      logger.error('Erreur like:', err);
       toast.error('Erreur lors du like');
       setActionLoading(false);
       setCardAnimation('enter');
@@ -231,7 +232,7 @@ export default function MatchingPageFuturistic() {
         setActionLoading(false);
       }, 400);
     } catch (err) {
-      console.error('Erreur reject:', err);
+      logger.error('Erreur reject:', err);
       toast.error('Erreur lors du rejet');
       setActionLoading(false);
       setCardAnimation('enter');
@@ -271,7 +272,7 @@ export default function MatchingPageFuturistic() {
       setShowMatches(false);
       setMutualMatchData(null);
     } catch (err) {
-      console.error('Erreur création conversation:', err);
+      logger.error('Erreur création conversation:', err);
       toast.error('Erreur lors de l\'ouverture du chat');
     }
   };

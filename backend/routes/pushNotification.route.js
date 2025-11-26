@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/auth.middleware');
 const PushSubscription = require('../models/PushSubscription');
+const logger = require('../utils/logger.js');
 
 // S'abonner aux notifications
 router.post('/subscribe', authMiddleware, async (req, res) => {
@@ -40,7 +41,7 @@ router.post('/subscribe', authMiddleware, async (req, res) => {
       message: 'Abonnement enregistré'
     });
   } catch (error) {
-    console.error('Erreur subscribe:', error);
+    logger.error('Erreur subscribe:', error);
     res.status(500).json({ error: 'Erreur lors de l\'abonnement' });
   }
 });
@@ -61,7 +62,7 @@ router.post('/unsubscribe', authMiddleware, async (req, res) => {
       message: 'Désabonnement réussi'
     });
   } catch (error) {
-    console.error('Erreur unsubscribe:', error);
+    logger.error('Erreur unsubscribe:', error);
     res.status(500).json({ error: 'Erreur lors du désabonnement' });
   }
 });

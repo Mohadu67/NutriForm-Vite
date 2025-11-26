@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { sendVerifyEmail } = require('../services/mailer.service');
 const { validatePassword } = require('../utils/passwordValidator');
+const logger = require('../utils/logger.js');
 
 function frontBase() {
   const base = process.env.FRONTEND_BASE_URL || 'http://localhost:5173';
@@ -99,7 +100,7 @@ exports.login = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('POST /login', err);
+    logger.error('POST /login', err);
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
@@ -142,8 +143,8 @@ exports.register = async (req, res) => {
 
     const verifyUrl = `${frontBase()}/verify-email?token=${encodeURIComponent(token)}`;
 
-    console.log('[AUTH] Registration: sending verification email to', emailNorm);
-    console.log('[AUTH] Verification URL:', verifyUrl);
+    logger.info('[AUTH] Registration: sending verification email to', emailNorm);
+    logger.info('[AUTH] Verification URL:', verifyUrl);
 
     try {
       const result = await sendVerifyEmail({
@@ -151,18 +152,18 @@ exports.register = async (req, res) => {
         toName: user.prenom || user.pseudo || emailNorm,
         verifyUrl
       });
-      console.log('[AUTH] ✅ Verification email sent successfully:', result?.messageId || 'no messageId');
+      logger.info('[AUTH] ✅ Verification email sent successfully:', result?.messageId || 'no messageId');
     } catch (mailErr) {
       await User.deleteOne({ _id: user._id });
-      console.error('[AUTH] ❌ MAIL_ERROR register:', mailErr.message);
-      console.error('[AUTH] Mail error code:', mailErr.code);
-      console.error('[AUTH] Full mail error:', mailErr);
+      logger.error('[AUTH] ❌ MAIL_ERROR register:', mailErr.message);
+      logger.error('[AUTH] Mail error code:', mailErr.code);
+      logger.error('[AUTH] Full mail error:', mailErr);
       return res.status(502).json({ message: "Impossible d'envoyer l'email de vérification. Vérifie ton adresse email." });
     }
 
     return res.status(201).json({ message: 'Compte créé. Vérifie ta boîte mail ✉️' });
   } catch (err) {
-    console.error('REGISTER_ERROR', err);
+    logger.error('REGISTER_ERROR', err);
     if (err?.code === 11000) return res.status(409).json({ message: 'Conflit (email/pseudo déjà pris).' });
     return res.status(500).json({ message: 'Erreur serveur ❌' });
   }
@@ -191,7 +192,7 @@ exports.me = async (req, res) => {
       displayName,
     });
   } catch (e) {
-    console.error('GET /me', e);
+    logger.error('GET /me', e);
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
@@ -246,7 +247,7 @@ exports.updateProfile = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('PUT /update-profile', err);
+    logger.error('PUT /update-profile', err);
     if (err?.code === 11000) return res.status(409).json({ message: 'Conflit (email/pseudo déjà pris).' });
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
@@ -280,7 +281,7 @@ exports.changePassword = async (req, res) => {
 
     return res.json({ message: 'Mot de passe modifié avec succès.' });
   } catch (err) {
-    console.error('PUT /change-password', err);
+    logger.error('PUT /change-password', err);
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
@@ -298,7 +299,7 @@ exports.logout = async (req, res) => {
 
     return res.json({ message: 'Déconnexion réussie.' });
   } catch (err) {
-    console.error('POST /logout', err);
+    logger.error('POST /logout', err);
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
@@ -334,8 +335,8 @@ exports.resendVerificationEmail = async (req, res) => {
 
     const verifyUrl = `${frontBase()}/verify-email?token=${encodeURIComponent(token)}`;
 
-    console.log('[AUTH] Resend verification: sending email to', emailNorm);
-    console.log('[AUTH] Verification URL:', verifyUrl);
+    logger.info('[AUTH] Resend verification: sending email to', emailNorm);
+    logger.info('[AUTH] Verification URL:', verifyUrl);
 
     try {
       const result = await sendVerifyEmail({
@@ -343,15 +344,15 @@ exports.resendVerificationEmail = async (req, res) => {
         toName: user.prenom || user.pseudo || emailNorm,
         verifyUrl
       });
-      console.log('[AUTH] ✅ Verification email resent successfully:', result?.messageId || 'no messageId');
+      logger.info('[AUTH] ✅ Verification email resent successfully:', result?.messageId || 'no messageId');
 
       return res.json({ message: 'Email de vérification renvoyé. Vérifie ta boîte mail ✉️' });
     } catch (mailErr) {
-      console.error('[AUTH] ❌ MAIL_ERROR resend:', mailErr.message);
+      logger.error('[AUTH] ❌ MAIL_ERROR resend:', mailErr.message);
       return res.status(502).json({ message: "Impossible d'envoyer l'email. Réessaie plus tard." });
     }
   } catch (err) {
-    console.error('POST /resend-verification', err);
+    logger.error('POST /resend-verification', err);
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };

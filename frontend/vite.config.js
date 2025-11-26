@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import svgr from "vite-plugin-svgr";
 import { VitePWA } from 'vite-plugin-pwa'
+import logger from './src/shared/utils/logger.js';
 
 export default defineConfig(({ mode }) => ({
   test: {
@@ -26,6 +27,48 @@ export default defineConfig(({ mode }) => ({
         statements: 60,
       },
     },
+  },
+  build: {
+    // Optimisation du bundle
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React core et routing
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // UI libraries
+          'ui-vendor': ['react-bootstrap', 'sonner', 'react-icons'],
+          // Utilities
+          'utils': ['axios', 'dompurify', 'i18next', 'react-i18next'],
+          // Maps
+          'leaflet': ['leaflet', 'react-leaflet'],
+          // DnD
+          'dnd': ['@dnd-kit/core', '@dnd-kit/sortable'],
+        }
+      }
+    },
+    // Suppression des logger.info en production
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: mode === 'production',
+      }
+    },
+    // Limite de taille des chunks
+    chunkSizeWarningLimit: 500,
+  },
+  // Aliases pour imports plus propres
+  resolve: {
+    alias: {
+      '@': '/src',
+      '@components': '/src/components',
+      '@pages': '/src/pages',
+      '@utils': '/src/utils',
+      '@api': '/src/shared/api',
+      '@hooks': '/src/hooks',
+      '@services': '/src/services',
+      '@contexts': '/src/contexts',
+    }
   },
   plugins: [
     react(),

@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { storage } from '../../../shared/utils/storage';
 import { useTranslation } from "react-i18next";
 import { secureApiCall, isAuthenticated } from "../../../utils/authService.js";
+import logger from '../../../shared/utils/logger.js';
 
 export default function Salutation({ className = "", seedKey = "static" }) {
   const { t } = useTranslation();
@@ -9,7 +11,7 @@ export default function Salutation({ className = "", seedKey = "static" }) {
 
   useEffect(() => {
     try {
-      const cached = JSON.parse(localStorage.getItem("user") || "null");
+      const cached = JSON.parse(storage.get("user") || "null");
       const cachedName =
         cached?.prenom ||
         cached?.pseudo ||
@@ -17,7 +19,7 @@ export default function Salutation({ className = "", seedKey = "static" }) {
         (cached?.email ? String(cached.email).split("@")[0] : "");
       if (cachedName) setDisplayName(cachedName);
     } catch (e) {
-      console.error("Failed to load cached user name from localStorage:", e);
+      logger.error("Failed to load cached user name from localStorage:", e);
     }
 
     // Ne pas appeler l'API si l'utilisateur n'est pas authentifié

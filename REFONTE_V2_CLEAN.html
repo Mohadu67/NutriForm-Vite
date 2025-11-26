@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmonith - Refonte V2 Clean & Épurée</title>
+    <style>
+        /* ========================================
+           CHARTE GRAPHIQUE HARMONITH - VERSION ÉPURÉE
+           ======================================== */
+
+        :root {
+            /* VOS VRAIES COULEURS */
+            --mint: #B5EAD7;
+            --mint-light: #D4F1E8;
+            --mint-extra-light: #E8F9F3;
+            --mint-dark: #8EDBB9;
+
+            --cream: #F7F6F2;
+            --cream-light: #FDFCFA;
+            --sand: #E8E6DF;
+
+            --text-primary: #2C3E50;
+            --text-secondary: #5A6C7D;
+            --text-light: #7A8A9A;
+
+            /* Accents doux */
+            --accent-coral: #FFB4B4;
+            --accent-peach: #FFDAB4;
+            --accent-gold: #F4D03F;
+
+            /* Ombres douces */
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+            --shadow-mint: 0 4px 16px rgba(181, 234, 215, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--cream);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* ========================================
+           NAVIGATION PROPRE
+           ======================================== */
+
+        .navbar {
+            background: white;
+            box-shadow: var(--shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--mint);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 0.5rem 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+            border-bottom-color: var(--mint);
+        }
+
+        .nav-cta {
+            background: var(--mint);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-cta:hover {
+            background: var(--mint-dark);
+            box-shadow: var(--shadow-mint);
+            transform: translateY(-2px);
+        }
+
+        /* ========================================
+           HERO SECTION CLEAN
+           ======================================== */
+
+        .hero {
+            background: linear-gradient(135deg, var(--cream) 0%, var(--mint-extra-light) 100%);
+            padding: 8rem 2rem 4rem;
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title .accent {
+            color: var(--mint-dark);
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero-title .accent::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 12px;
+            background: var(--mint);
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        .hero-description {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--mint);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--mint-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--sand);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--mint);
+            background: var(--mint-extra-light);
+        }
+
+        .hero-visual {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .hero-visual-bg {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 100%;
+            height: 100%;
+            background: var(--mint);
+            opacity: 0.1;
+            border-radius: 20px;
+            z-index: -1;
+        }
+
+        /* ========================================
+           FEATURES SECTION PROPRE
+           ======================================== */
+
+        .features {
+            padding: 4rem 2rem;
+            background: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--cream-light);
+            border: 1px solid var(--sand);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--mint);
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--mint-extra-light);
+            border: 2px solid var(--mint);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .feature-link {
+            color: var(--mint-dark);
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: gap 0.3s ease;
+        }
+
+        .feature-link:hover {
+            gap: 1rem;
+        }
+
+        /* ========================================
+           DASHBOARD SECTION CLEAN
+           ======================================== */
+
+        .dashboard {
+            padding: 4rem 2rem;
+            background: var(--cream);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--mint-extra-light);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .stat-change {
+            font-size: 0.875rem;
+            color: var(--mint-dark);
+            font-weight: 500;
+        }
+
+        /* ========================================
+           CHART SECTION
+           ======================================== */
+
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chart-nav-btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid var(--sand);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .chart-nav-btn.active,
+        .chart-nav-btn:hover {
+            background: var(--mint);
+            color: white;
+            border-color: var(--mint);
+        }
+
+        .chart-area {
+            background: var(--mint-extra-light);
+            border-radius: 12px;
+            height: 300px;
+            display: flex;
+            align-items: flex-end;
+            padding: 2rem;
+            gap: 1rem;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: var(--mint);
+            border-radius: 6px 6px 0 0;
+            min-height: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .chart-bar:hover {
+            background: var(--mint-dark);
+            transform: scaleY(1.05);
+        }
+
+        .chart-bar-1 { height: 60%; }
+        .chart-bar-2 { height: 80%; }
+        .chart-bar-3 { height: 45%; }
+        .chart-bar-4 { height: 90%; }
+        .chart-bar-5 { height: 70%; }
+        .chart-bar-6 { height: 85%; }
+        .chart-bar-7 { height: 65%; }
+
+        /* ========================================
+           EXERCISES SECTION PROPRE
+           ======================================== */
+
+        .exercises {
+            padding: 4rem 2rem;
+            background: white;
+        }
+
+        .exercise-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .exercise-card {
+            background: white;
+            border: 1px solid var(--sand);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .exercise-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--mint);
+        }
+
+        .exercise-image {
+            height: 200px;
+            background: linear-gradient(135deg, var(--mint-extra-light) 0%, var(--mint-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .exercise-card.premium .exercise-image {
+            background: linear-gradient(135deg, var(--accent-peach) 0%, var(--accent-gold) 100%);
+            position: relative;
+        }
+
+        .premium-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: white;
+            color: var(--accent-gold);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+        }
+
+        .exercise-content {
+            padding: 1.5rem;
+        }
+
+        .exercise-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .exercise-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .exercise-tag {
+            padding: 0.25rem 0.5rem;
+            background: var(--mint-extra-light);
+            color: var(--mint-dark);
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .exercise-stats {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 1rem;
+            border-top: 1px solid var(--sand);
+        }
+
+        .exercise-stat {
+            text-align: center;
+        }
+
+        .exercise-stat-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .exercise-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+        }
+
+        /* ========================================
+           PRICING SECTION MINT
+           ======================================== */
+
+        .pricing {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--cream) 0%, white 100%);
+        }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: white;
+            border: 2px solid var(--sand);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--mint);
+            transform: scale(1.05);
+            box-shadow: var(--shadow-mint);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-4px);
+        }
+
+        .pricing-plan {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-price span {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .pricing-description {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .pricing-features li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--sand);
+            color: var(--text-secondary);
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card.featured .pricing-btn {
+            background: var(--mint);
+            color: white;
+        }
+
+        .pricing-card.featured .pricing-btn:hover {
+            background: var(--mint-dark);
+            transform: translateY(-2px);
+        }
+
+        /* ========================================
+           FOOTER MINT
+           ======================================== */
+
+        .footer {
+            background: var(--text-primary);
+            color: white;
+            padding: 3rem 2rem 1rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-logo {
+            width: 40px;
+            height: 40px;
+            background: var(--mint);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer h3 {
+            margin-bottom: 1rem;
+            color: var(--mint);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--mint);
+        }
+
+        .footer-bottom {
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* ========================================
+           RESPONSIVE
+           ======================================== */
+
+        @media (max-width: 768px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .features-grid,
+            .exercise-grid,
+            .pricing-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">🌿</div>
+                <span>Harmonith</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="nav-link">Accueil</a></li>
+                <li><a href="#" class="nav-link">Outils</a></li>
+                <li><a href="#" class="nav-link">Exercices</a></li>
+                <li><a href="#" class="nav-link">Dashboard</a></li>
+                <li><a href="#" class="nav-link">Contact</a></li>
+            </ul>
+            <button class="nav-cta">Connexion</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Votre Coach <span class="accent">Bien-être</span> Personnel
+                </h1>
+                <p class="hero-description">
+                    Calculez votre IMC, suivez vos calories, créez des programmes d'exercices personnalisés.
+                    Tout ce dont vous avez besoin pour atteindre vos objectifs santé.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary">Commencer Gratuitement</button>
+                    <button class="btn btn-secondary">En Savoir Plus</button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="hero-visual-bg"></div>
+                <div style="text-align: center;">
+                    <div style="font-size: 5rem; margin-bottom: 1rem;">💪</div>
+                    <h3 style="color: var(--text-primary); margin-bottom: 1rem;">Prêt à transformer votre vie ?</h3>
+                    <p style="color: var(--text-secondary);">Rejoignez +10,000 utilisateurs actifs</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Outils Complets pour votre Santé</h2>
+                <p class="section-subtitle">Des fonctionnalités pensées pour simplifier votre parcours bien-être</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Calculateur IMC</h3>
+                    <p class="feature-description">
+                        Analysez votre indice de masse corporelle et recevez des conseils personnalisés adaptés à votre profil.
+                    </p>
+                    <a href="#" class="feature-link">Calculer mon IMC →</a>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔥</div>
+                    <h3 class="feature-title">Compteur de Calories</h3>
+                    <p class="feature-description">
+                        Suivez facilement vos apports caloriques quotidiens et atteignez vos objectifs nutritionnels.
+                    </p>
+                    <a href="#" class="feature-link">Commencer le suivi →</a>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🏃</div>
+                    <h3 class="feature-title">Programmes d'Exercices</h3>
+                    <p class="feature-description">
+                        Accédez à des centaines d'exercices adaptés à votre niveau et vos objectifs personnels.
+                    </p>
+                    <a href="#" class="feature-link">Explorer les exercices →</a>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3 class="feature-title">Suivi de Progression</h3>
+                    <p class="feature-description">
+                        Visualisez votre évolution avec des graphiques détaillés et restez motivé jour après jour.
+                    </p>
+                    <a href="#" class="feature-link">Voir mon dashboard →</a>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🥗</div>
+                    <h3 class="feature-title">Plans Nutritionnels</h3>
+                    <p class="feature-description">
+                        Découvrez des recettes saines et équilibrées pour accompagner votre transformation.
+                    </p>
+                    <a href="#" class="feature-link">Découvrir les recettes →</a>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3 class="feature-title">Communauté Active</h3>
+                    <p class="feature-description">
+                        Partagez vos progrès et trouvez du soutien auprès de notre communauté bienveillante.
+                    </p>
+                    <a href="#" class="feature-link">Rejoindre la communauté →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section class="dashboard">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Dashboard Intelligent</h2>
+                <p class="section-subtitle">Toutes vos statistiques en un coup d'œil</p>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-content">
+                        <div class="stat-value">1,847</div>
+                        <div class="stat-label">Calories brûlées</div>
+                        <div class="stat-change">↑ +12% cette semaine</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">💪</div>
+                    <div class="stat-content">
+                        <div class="stat-value">24</div>
+                        <div class="stat-label">Séances complétées</div>
+                        <div class="stat-change">↑ +3 ce mois</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🏃</div>
+                    <div class="stat-content">
+                        <div class="stat-value">45.2</div>
+                        <div class="stat-label">Kilomètres parcourus</div>
+                        <div class="stat-change">↑ +8.5km</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">⚖️</div>
+                    <div class="stat-content">
+                        <div class="stat-value">-2.3</div>
+                        <div class="stat-label">Kg perdus</div>
+                        <div class="stat-change">Objectif : -5kg</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">Activité Hebdomadaire</h3>
+                    <div class="chart-nav">
+                        <button class="chart-nav-btn active">Semaine</button>
+                        <button class="chart-nav-btn">Mois</button>
+                        <button class="chart-nav-btn">Année</button>
+                    </div>
+                </div>
+                <div class="chart-area">
+                    <div class="chart-bar chart-bar-1"></div>
+                    <div class="chart-bar chart-bar-2"></div>
+                    <div class="chart-bar chart-bar-3"></div>
+                    <div class="chart-bar chart-bar-4"></div>
+                    <div class="chart-bar chart-bar-5"></div>
+                    <div class="chart-bar chart-bar-6"></div>
+                    <div class="chart-bar chart-bar-7"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Exercises Section -->
+    <section class="exercises">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Programmes d'Entraînement</h2>
+                <p class="section-subtitle">Choisissez parmi nos séances adaptées à tous les niveaux</p>
+            </div>
+
+            <div class="exercise-grid">
+                <div class="exercise-card">
+                    <div class="exercise-image">🏃‍♀️</div>
+                    <div class="exercise-content">
+                        <h3 class="exercise-title">Cardio Débutant</h3>
+                        <div class="exercise-meta">
+                            <span class="exercise-tag">20 min</span>
+                            <span class="exercise-tag">Facile</span>
+                        </div>
+                        <div class="exercise-stats">
+                            <div class="exercise-stat">
+                                <div class="exercise-stat-value">180</div>
+                                <div class="exercise-stat-label">kcal</div>
+                            </div>
+                            <div class="exercise-stat">
+                                <div class="exercise-stat-value">4.7</div>
+                                <div class="exercise-stat-label">Note</div>
+                            </div>
+                            <div class="exercise-stat">
+                                <div class="exercise-stat-value">2.4k</div>
+                                <div class="exercise-stat-label">Fait</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="exercise-card premium">
+                    <div class="exercise-image">
+                        💪
+                        <span class="premium-badge">⭐ Premium</span>
+                    </div>
+                    <div class="exercise-content">
+                        <h3 class="exercise-title">Full Body Intense</h3>
+                        <div class="exercise-meta">
+                            <span class="exercise-tag">45 min</span>
+                            <span class="exercise-tag">Difficile</span>
+                        </div>
+                        <div class="exercise-stats">
+                            <div class="exercise-stat">
+                                <div class="exercise-stat-value">420</div>
+                                <div class="exercise-stat-label">kcal</div>
+                            </div>
+                            <div class="exercise-stat">
+                                <div class="exercise-stat-value">5.0</div>
+                                <div class="exercise-stat-label">Note</div>
+                            </div>
+                            <div class="exercise-stat">
+                                <div class="exercise-stat-value">Elite</div>
+                                <div class="exercise-stat-label">Niveau</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="exercise-card">
+                    <div class="exercise-image">🧘‍♀️</div>
+                    <div class="exercise-content">
+                        <h3 class="exercise-title">Yoga Relaxation</h3>
+                        <div class="exercise-meta">
+                            <span class="exercise-tag">30 min</span>
+                            <span class="exercise-tag">Tous niveaux</span>
+                        </div>
+                        <div class="exercise-stats">
+                            <div class="exercise-stat">
+                                <div class="exercise-stat-value">90</div>
+                                <div class="exercise-stat-label">kcal</div>
+                            </div>
+                            <div class="exercise-stat">
+                                <div class="exercise-stat-value">4.8</div>
+                                <div class="exercise-stat-label">Note</div>
+                            </div>
+                            <div class="exercise-stat">
+                                <div class="exercise-stat-value">3.1k</div>
+                                <div class="exercise-stat-label">Fait</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Choisissez votre Plan</h2>
+                <p class="section-subtitle">Commencez gratuitement ou passez au niveau supérieur</p>
+            </div>
+
+            <div class="pricing-cards">
+                <div class="pricing-card">
+                    <h3 class="pricing-plan">Gratuit</h3>
+                    <div class="pricing-price">0€ <span>/mois</span></div>
+                    <p class="pricing-description">Parfait pour commencer</p>
+                    <ul class="pricing-features">
+                        <li>✓ Calculateur IMC</li>
+                        <li>✓ Compteur de calories basique</li>
+                        <li>✓ 10 exercices par mois</li>
+                        <li>✓ Dashboard simple</li>
+                    </ul>
+                    <button class="btn btn-secondary pricing-btn">Commencer</button>
+                </div>
+
+                <div class="pricing-card featured">
+                    <h3 class="pricing-plan">Premium</h3>
+                    <div class="pricing-price">9€ <span>/mois</span></div>
+                    <p class="pricing-description">Pour des résultats optimaux</p>
+                    <ul class="pricing-features">
+                        <li>✓ Tout du plan Gratuit</li>
+                        <li>✓ Exercices illimités</li>
+                        <li>✓ Plans nutritionnels personnalisés</li>
+                        <li>✓ Coach IA</li>
+                        <li>✓ Analytics avancées</li>
+                        <li>✓ Support prioritaire</li>
+                    </ul>
+                    <button class="pricing-btn">Essai Gratuit 7 jours</button>
+                </div>
+
+                <div class="pricing-card">
+                    <h3 class="pricing-plan">Équipe</h3>
+                    <div class="pricing-price">29€ <span>/mois</span></div>
+                    <p class="pricing-description">Pour les professionnels</p>
+                    <ul class="pricing-features">
+                        <li>✓ Tout du plan Premium</li>
+                        <li>✓ Jusqu'à 10 utilisateurs</li>
+                        <li>✓ Tableau de bord coach</li>
+                        <li>✓ API access</li>
+                        <li>✓ Support dédié</li>
+                    </ul>
+                    <button class="btn btn-secondary pricing-btn">Nous Contacter</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div>
+                <div class="footer-brand">
+                    <div class="footer-logo">🌿</div>
+                    <div>
+                        <h3>Harmonith</h3>
+                        <p style="color: rgba(255,255,255,0.7); margin-top: 0.5rem;">
+                            Votre partenaire santé au quotidien
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3>Outils</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Calculateur IMC</a></li>
+                    <li><a href="#">Compteur Calories</a></li>
+                    <li><a href="#">Programmes</a></li>
+                    <li><a href="#">Nutrition</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3>Entreprise</h3>
+                <ul class="footer-links">
+                    <li><a href="#">À propos</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Carrières</a></li>
+                    <li><a href="#">Presse</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3>Support</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Centre d'aide</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Confidentialité</a></li>
+                    <li><a href="#">Conditions</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>© 2024 Harmonith. Tous droits réservés.</p>
+        </div>
+    </footer>
+</body>
+</html>

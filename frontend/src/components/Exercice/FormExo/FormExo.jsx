@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { storage } from '../../../shared/utils/storage';
 import { useTranslation } from "react-i18next";
 import styles from "./FormExo.module.css";
 import DynamiChoice from "../DynamiChoice/DynamiChoice.jsx";
@@ -13,24 +14,25 @@ import { idOf } from "../Shared/idOf.js";
 import RepeatSessionModal from "../RepeatSessionModal/RepeatSessionModal.jsx";
 import { secureApiCall, getCurrentUser } from "../../../utils/authService.js";
 import { loadExercises } from "../../../utils/exercisesLoader.js";
+import logger from '../../../shared/utils/logger.js';
 
 export default function FormExo({ user: userProp }) {
   const user = userProp || getCurrentUser();
   const { t } = useTranslation();
   const [sessionName, setSessionName] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("formSessionName")) || ""; } catch { return ""; }
+    try { return JSON.parse(storage.get("formSessionName")) || ""; } catch { return ""; }
   });
   const [currentStep, setCurrentStep] = useState(() => {
-    try { return parseInt(localStorage.getItem("formCurrentStep"), 10) || 0; } catch { return 0; }
+    try { return parseInt(storage.get("formCurrentStep"), 10) || 0; } catch { return 0; }
   });
   const [mode, setMode] = useState(() => {
-    try { return localStorage.getItem("formMode") || "builder"; } catch { return "builder"; }
+    try { return storage.get("formMode") || "builder"; } catch { return "builder"; }
   });
   const [selectedExercises, setSelectedExercises] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("formSelectedExercises")) || []; } catch { return []; }
+    try { return JSON.parse(storage.get("formSelectedExercises")) || []; } catch { return []; }
   });
   const [searchDraft, setSearchDraft] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("dynamiSelected")) || []; } catch { return []; }
+    try { return JSON.parse(storage.get("dynamiSelected")) || []; } catch { return []; }
   });
   const [showSummary, setShowSummary] = useState(false);
   const [lastStats, setLastStats] = useState(null);
@@ -41,10 +43,10 @@ export default function FormExo({ user: userProp }) {
   const [lastWeekSession, setLastWeekSession] = useState(null);
   const [hasCheckedLastWeek, setHasCheckedLastWeek] = useState(false);
   const [dynamiKey, setDynamiKey] = useState(0);
-  useEffect(() => { try { localStorage.setItem("formSessionName", JSON.stringify(sessionName)); } catch (e) { console.error("Failed to save sessionName:", e); } }, [sessionName]);
-  useEffect(() => { try { localStorage.setItem("formCurrentStep", String(currentStep)); } catch (e) { console.error("Failed to save currentStep:", e); } }, [currentStep]);
-  useEffect(() => { try { localStorage.setItem("formMode", mode); } catch (e) { console.error("Failed to save mode:", e); } }, [mode]);
-  useEffect(() => { try { localStorage.setItem("formSelectedExercises", JSON.stringify(selectedExercises)); } catch (e) { console.error("Failed to save selectedExercises:", e); } }, [selectedExercises]);
+  useEffect(() => { try { storage.set("formSessionName", JSON.stringify(sessionName)); } catch (e) { logger.error("Failed to save sessionName:", e); } }, [sessionName]);
+  useEffect(() => { try { storage.set("formCurrentStep", String(currentStep)); } catch (e) { logger.error("Failed to save currentStep:", e); } }, [currentStep]);
+  useEffect(() => { try { storage.set("formMode", mode); } catch (e) { logger.error("Failed to save mode:", e); } }, [mode]);
+  useEffect(() => { try { storage.set("formSelectedExercises", JSON.stringify(selectedExercises)); } catch (e) { logger.error("Failed to save selectedExercises:", e); } }, [selectedExercises]);
   useEffect(() => {
     const checkLastWeekSession = async () => {
       if (hasCheckedLastWeek) return;
@@ -65,7 +67,7 @@ export default function FormExo({ user: userProp }) {
         }
         setHasCheckedLastWeek(true);
       } catch (error) {
-        console.error("Erreur lors de la récupération de la séance:", error);
+        logger.error("Erreur lors de la récupération de la séance:", error);
         setHasCheckedLastWeek(true);
       }
     };
@@ -179,23 +181,23 @@ export default function FormExo({ user: userProp }) {
                 "DRAFT_KEY",
                 "forceDynamiStart"
               ];
-              KEYS.forEach(k => localStorage.removeItem(k));
+              KEYS.forEach(k => storage.remove(k));
             } catch (e) {
-              console.error("Failed to clear localStorage keys:", e);
+              logger.error("Failed to clear localStorage keys:", e);
             }
             try {
               const NS = "suivie_exo_inputs:";
               const toDelete = [];
-              for (let i = 0; i < localStorage.length; i++) {
-                const k = localStorage.key(i);
+              for (let i = 0; i < storage.length; i++) {
+                const k = storage.key(i);
                 if (k && k.startsWith(NS)) toDelete.push(k);
               }
-              toDelete.forEach(k => localStorage.removeItem(k));
+              toDelete.forEach(k => storage.remove(k));
             } catch (e) {
-              console.error("Failed to clear suivie_exo_inputs:", e);
+              logger.error("Failed to clear suivie_exo_inputs:", e);
             }
             try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) {
-              console.error("Failed to scroll:", e);
+              logger.error("Failed to scroll:", e);
             }
           }}>
             {t("exercise.form.actions.restart")}
@@ -271,7 +273,7 @@ export default function FormExo({ user: userProp }) {
             order: entry.order ?? index,
           };
         } else {
-          console.warn(`❌ Aucun match trouvé pour: "${entry.exerciseName}" (ID: ${entry.exerciseId || 'N/A'})`);
+          logger.warn(`❌ Aucun match trouvé pour: "${entry.exerciseName}" (ID: ${entry.exerciseId || 'N/A'})`);
           // Fallback : utiliser un exercice minimal
           return {
             id: entry.exerciseId || `repeat-${index}`,
@@ -310,21 +312,21 @@ export default function FormExo({ user: userProp }) {
       setDynamiKey(prev => prev + 1); // Force le remontage de DynamiChoice
 
       try {
-        localStorage.setItem("formSelectedExercises", JSON.stringify(exercises));
-        localStorage.setItem("dynamiSelected", JSON.stringify(exercises));
-        localStorage.setItem("formSessionName", JSON.stringify(lastWeekSession.name || ""));
-        localStorage.setItem("formCurrentStep", "3");
+        storage.set("formSelectedExercises", JSON.stringify(exercises));
+        storage.set("dynamiSelected", JSON.stringify(exercises));
+        storage.set("formSessionName", JSON.stringify(lastWeekSession.name || ""));
+        storage.set("formCurrentStep", "3");
         // Sauvegarder les muscles pour filtrer les exercices proposés
         if (muscleIds.length > 0) {
-          localStorage.setItem("dynamiMuscle", JSON.stringify(muscleIds));
-          localStorage.setItem("dynamiType", JSON.stringify("muscu"));
-          localStorage.setItem("dynamiStep", "3");
+          storage.set("dynamiMuscle", JSON.stringify(muscleIds));
+          storage.set("dynamiType", JSON.stringify("muscu"));
+          storage.set("dynamiStep", "3");
         }
       } catch (e) {
-        console.error("Failed to save repeat session to localStorage:", e);
+        logger.error("Failed to save repeat session to localStorage:", e);
       }
     } catch (error) {
-      console.error("Erreur lors du chargement des exercices:", error);
+      logger.error("Erreur lors du chargement des exercices:", error);
       // En cas d'erreur, utiliser quand même les données basiques
       const exercises = lastWeekSession.entries.map((entry, index) => ({
         id: entry._id || `repeat-${index}`,
@@ -359,17 +361,17 @@ export default function FormExo({ user: userProp }) {
       setDynamiKey(prev => prev + 1); // Force le remontage de DynamiChoice
 
       try {
-        localStorage.setItem("formSelectedExercises", JSON.stringify(exercises));
-        localStorage.setItem("dynamiSelected", JSON.stringify(exercises));
-        localStorage.setItem("formSessionName", JSON.stringify(lastWeekSession.name || ""));
-        localStorage.setItem("formCurrentStep", "3");
+        storage.set("formSelectedExercises", JSON.stringify(exercises));
+        storage.set("dynamiSelected", JSON.stringify(exercises));
+        storage.set("formSessionName", JSON.stringify(lastWeekSession.name || ""));
+        storage.set("formCurrentStep", "3");
         if (muscleIds.length > 0) {
-          localStorage.setItem("dynamiMuscle", JSON.stringify(muscleIds));
-          localStorage.setItem("dynamiType", JSON.stringify("muscu"));
-          localStorage.setItem("dynamiStep", "3");
+          storage.set("dynamiMuscle", JSON.stringify(muscleIds));
+          storage.set("dynamiType", JSON.stringify("muscu"));
+          storage.set("dynamiStep", "3");
         }
       } catch (e) {
-        console.error("Failed to save fallback repeat session to localStorage:", e);
+        logger.error("Failed to save fallback repeat session to localStorage:", e);
       }
     }
   };
@@ -418,22 +420,22 @@ export default function FormExo({ user: userProp }) {
               const next = Array.isArray(arr) ? arr : [];
               setSelectedExercises(next);
               try {
-                localStorage.setItem("formSelectedExercises", JSON.stringify(next));
-                localStorage.setItem("dynamiSelected", JSON.stringify(next));
-                localStorage.setItem("dynamiHasTouched", "1");
+                storage.set("formSelectedExercises", JSON.stringify(next));
+                storage.set("dynamiSelected", JSON.stringify(next));
+                storage.set("dynamiHasTouched", "1");
               } catch (e) {
-                console.error("Failed to save results to localStorage:", e);
+                logger.error("Failed to save results to localStorage:", e);
               }
             }}
             onChange={(arr) => {
               const next = Array.isArray(arr) ? arr : [];
               setSelectedExercises(next);
               try {
-                localStorage.setItem("formSelectedExercises", JSON.stringify(next));
-                localStorage.setItem("dynamiSelected", JSON.stringify(next));
-                localStorage.setItem("dynamiHasTouched", "1");
+                storage.set("formSelectedExercises", JSON.stringify(next));
+                storage.set("dynamiSelected", JSON.stringify(next));
+                storage.set("dynamiHasTouched", "1");
               } catch (e) {
-                console.error("Failed to save changes to localStorage:", e);
+                logger.error("Failed to save changes to localStorage:", e);
               }
             }}
             onComplete={(selection) => {
@@ -448,10 +450,10 @@ export default function FormExo({ user: userProp }) {
               setSearchDraft(safe);
               setSearchCb(() => cb);
               try {
-                localStorage.setItem("dynamiSelected", JSON.stringify(safe));
-                localStorage.setItem("dynamiHasTouched", "1");
+                storage.set("dynamiSelected", JSON.stringify(safe));
+                storage.set("dynamiHasTouched", "1");
               } catch (e) {
-                console.error("Failed to save search draft to localStorage:", e);
+                logger.error("Failed to save search draft to localStorage:", e);
               }
               setMode("search");
             }}
@@ -466,8 +468,8 @@ export default function FormExo({ user: userProp }) {
             onBack={(updated) => {
               if (Array.isArray(updated)) {
                 setSelectedExercises(updated);
-                try { localStorage.setItem("formSelectedExercises", JSON.stringify(updated)); } catch (e) {
-                  console.error("Failed to save updated exercises:", e);
+                try { storage.set("formSelectedExercises", JSON.stringify(updated)); } catch (e) {
+                  logger.error("Failed to save updated exercises:", e);
                 }
               }
               setMode("builder");
@@ -535,7 +537,7 @@ export default function FormExo({ user: userProp }) {
                   stats.savedId = payload.savedSessionId;
                 }
               } catch (e) {
-                console.warn("Get saved session ID failed:", e?.message || e);
+                logger.warn("Get saved session ID failed:", e?.message || e);
               }
 
               setLastStats(stats);
@@ -561,18 +563,18 @@ export default function FormExo({ user: userProp }) {
                   "SuivieExoDraft",
                   "suivie_exo_draft",
                 ];
-                KEYS.forEach(k => localStorage.removeItem(k));
+                KEYS.forEach(k => storage.remove(k));
 
                 // Nettoyer les inputs de chaque exercice
                 const NS = "suivie_exo_inputs:";
                 const toDelete = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                  const k = localStorage.key(i);
+                for (let i = 0; i < storage.length; i++) {
+                  const k = storage.key(i);
                   if (k && k.startsWith(NS)) toDelete.push(k);
                 }
-                toDelete.forEach(k => localStorage.removeItem(k));
+                toDelete.forEach(k => storage.remove(k));
               } catch (e) {
-                console.warn("Failed to clean localStorage:", e);
+                logger.warn("Failed to clean localStorage:", e);
               }
             }}
           />
@@ -592,14 +594,14 @@ export default function FormExo({ user: userProp }) {
             setSelectedExercises(merged);
             setSearchDraft(merged);
             try {
-              localStorage.setItem("dynamiSelected", JSON.stringify(merged));
-              localStorage.setItem("formSelectedExercises", JSON.stringify(merged));
+              storage.set("dynamiSelected", JSON.stringify(merged));
+              storage.set("formSelectedExercises", JSON.stringify(merged));
             } catch (e) {
-              console.error("Failed to save merged exercises:", e);
+              logger.error("Failed to save merged exercises:", e);
             }
             if (typeof searchCb === 'function') {
               try { searchCb(merged, { mode: 'replace' }); } catch (e) {
-                console.error("Failed to call searchCb:", e);
+                logger.error("Failed to call searchCb:", e);
               }
               setSearchCb(null);
             }
@@ -610,7 +612,7 @@ export default function FormExo({ user: userProp }) {
               try {
                 window.dispatchEvent(new CustomEvent('dynami:selected:replace', { detail: { items: merged } }));
               } catch (e) {
-                console.error("Failed to dispatch dynami:selected:replace event:", e);
+                logger.error("Failed to dispatch dynami:selected:replace event:", e);
               }
             }, 100);
           }}

@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 const config = require('../config');
 const WorkoutSession = require('../models/WorkoutSession');
+const logger = require('../utils/logger.js');
 
 async function createTestSession() {
   try {
     await mongoose.connect(config.mongoUri, {
       authSource: 'admin',
     });
-    console.log('✅ Connected to MongoDB');
+    logger.info('✅ Connected to MongoDB');
 
     // Calculer la date du lundi dernier (il y a 7 jours)
     const today = new Date();
@@ -23,11 +24,11 @@ async function createTestSession() {
     const user = await User.findOne();
 
     if (!user) {
-      console.error('❌ Aucun utilisateur trouvé. Créez un compte d\'abord.');
+      logger.error('❌ Aucun utilisateur trouvé. Créez un compte d\'abord.');
       process.exit(1);
     }
 
-    console.log(`📝 Utilisateur trouvé: ${user.username || user.email}`);
+    logger.info(`📝 Utilisateur trouvé: ${user.username || user.email}`);
 
     // Créer la séance de test
     const testSession = new WorkoutSession({
@@ -92,19 +93,19 @@ async function createTestSession() {
 
     await testSession.save();
 
-    console.log('✅ Séance de test créée avec succès !');
-    console.log(`📅 Date: ${lastMonday.toLocaleString('fr-FR')}`);
-    console.log(`👤 User ID: ${user._id}`);
-    console.log(`🆔 Session ID: ${testSession._id}`);
-    console.log(`💪 ${testSession.entries.length} exercices`);
-    console.log(`⏱️  Durée: ${Math.round(testSession.durationSec / 60)} minutes`);
-    console.log(`🔥 Calories: ${testSession.calories} kcal`);
+    logger.info('✅ Séance de test créée avec succès !');
+    logger.info(`📅 Date: ${lastMonday.toLocaleString('fr-FR')}`);
+    logger.info(`👤 User ID: ${user._id}`);
+    logger.info(`🆔 Session ID: ${testSession._id}`);
+    logger.info(`💪 ${testSession.entries.length} exercices`);
+    logger.info(`⏱️  Durée: ${Math.round(testSession.durationSec / 60)} minutes`);
+    logger.info(`🔥 Calories: ${testSession.calories} kcal`);
 
     await mongoose.disconnect();
-    console.log('✅ Déconnecté de MongoDB');
+    logger.info('✅ Déconnecté de MongoDB');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Erreur:', error);
+    logger.error('❌ Erreur:', error);
     process.exit(1);
   }
 }

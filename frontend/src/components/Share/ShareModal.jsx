@@ -4,6 +4,7 @@ import { FaWhatsapp, FaFacebook, FaTwitter, FaDownload, FaLink, FaTimes, FaCheck
 import html2canvas from 'html2canvas';
 import ShareSessionCard from './ShareSessionCard';
 import styles from './ShareModal.module.css';
+import logger from '../../shared/utils/logger.js';
 
 const ShareModal = ({ show, onHide, session, user }) => {
   const [generating, setGenerating] = useState(false);
@@ -64,7 +65,7 @@ const ShareModal = ({ show, onHide, session, user }) => {
 
       return canvas;
     } catch (error) {
-      console.error('Erreur lors de la génération de l\'image:', error);
+      logger.error('Erreur lors de la génération de l\'image:', error);
       throw error;
     } finally {
       setGenerating(false);

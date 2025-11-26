@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { storage } from '../../shared/utils/storage';
 import { useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import styles from "./NewsletterAdmin.module.css";
@@ -37,7 +38,7 @@ export default function NewsletterAdmin() {
   const checkAdminAccess = useCallback(() => {
     try {
 
-      const userFromLocal = localStorage.getItem('user');
+      const userFromLocal = storage.get('user');
       const userFromSession = sessionStorage.getItem('user');
       const userStr = userFromLocal || userFromSession;
 

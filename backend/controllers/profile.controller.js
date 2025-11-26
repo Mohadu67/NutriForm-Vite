@@ -1,5 +1,6 @@
 const UserProfile = require('../models/UserProfile');
 const User = require('../models/User');
+const logger = require('../utils/logger.js');
 
 // Récupérer le profil de l'utilisateur connecté
 exports.getMyProfile = async (req, res) => {
@@ -42,7 +43,7 @@ exports.getMyProfile = async (req, res) => {
 
     res.json({ profile });
   } catch (error) {
-    console.error('Erreur getMyProfile:', error);
+    logger.error('Erreur getMyProfile:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération du profil.' });
   }
 };
@@ -145,7 +146,7 @@ exports.updateProfile = async (req, res) => {
       message: 'Profil mis à jour avec succès.'
     });
   } catch (error) {
-    console.error('Erreur updateProfile:', error);
+    logger.error('Erreur updateProfile:', error);
     res.status(500).json({ error: 'Erreur lors de la mise à jour du profil.' });
   }
 };
@@ -188,7 +189,7 @@ exports.updateLocation = async (req, res) => {
       message: 'Localisation mise à jour.'
     });
   } catch (error) {
-    console.error('Erreur updateLocation:', error);
+    logger.error('Erreur updateLocation:', error);
     res.status(500).json({ error: 'Erreur lors de la mise à jour de la localisation.' });
   }
 };
@@ -216,7 +217,7 @@ exports.getProfileById = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Erreur getProfileById:', error);
+    logger.error('Erreur getProfileById:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération du profil.' });
   }
 };
@@ -267,7 +268,7 @@ exports.updateAvailability = async (req, res) => {
       message: 'Disponibilités mises à jour.'
     });
   } catch (error) {
-    console.error('Erreur updateAvailability:', error);
+    logger.error('Erreur updateAvailability:', error);
     res.status(500).json({ error: 'Erreur lors de la mise à jour des disponibilités.' });
   }
 };
@@ -278,7 +279,7 @@ exports.updateMatchPreferences = async (req, res) => {
     const userId = req.user._id;
     const { matchPreferences } = req.body;
 
-    console.log('[updateMatchPreferences] Reçu:', JSON.stringify(matchPreferences, null, 2));
+    logger.info('[updateMatchPreferences] Reçu:', JSON.stringify(matchPreferences, null, 2));
 
     if (!matchPreferences || typeof matchPreferences !== 'object') {
       return res.status(400).json({ error: 'Format de préférences invalide.' });
@@ -322,7 +323,7 @@ exports.updateMatchPreferences = async (req, res) => {
 
     profile.lastActive = new Date();
 
-    console.log('[updateMatchPreferences] Avant sauvegarde:', JSON.stringify(profile.matchPreferences, null, 2));
+    logger.info('[updateMatchPreferences] Avant sauvegarde:', JSON.stringify(profile.matchPreferences, null, 2));
     await profile.save();
 
     res.json({
@@ -330,8 +331,8 @@ exports.updateMatchPreferences = async (req, res) => {
       message: 'Préférences de matching mises à jour.'
     });
   } catch (error) {
-    console.error('Erreur updateMatchPreferences:', error);
-    console.error('Stack:', error.stack);
+    logger.error('Erreur updateMatchPreferences:', error);
+    logger.error('Stack:', error.stack);
     res.status(500).json({ error: error.message || 'Erreur lors de la mise à jour des préférences.' });
   }
 };

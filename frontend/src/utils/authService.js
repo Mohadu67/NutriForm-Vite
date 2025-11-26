@@ -1,3 +1,6 @@
+import { storage, sessionStorage as sessionStore } from "../shared/utils/storage.js";
+import { authLogger } from "../shared/utils/logger.js";
+
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
 // Cache global pour éviter les appels multiples à /api/me
@@ -35,19 +38,19 @@ export async function login(identifier, password, remember = false) {
   if (response.ok && data.user) {
     // Token envoyé via cookie httpOnly (sécurisé contre XSS)
     // On stocke uniquement les données utilisateur non sensibles
-    localStorage.setItem("user", JSON.stringify(data.user));
-    localStorage.setItem("userId", data.user.id);
+    storage.set("user", data.user);
+    storage.set("userId", data.user.id);
 
     // Invalider le cache auth pour forcer un refresh
     authCheckResult = null;
     authCheckTimestamp = 0;
 
     if (remember) {
-      localStorage.setItem("rememberMe", "true");
-      localStorage.removeItem("lastActivity");
+      storage.set("rememberMe", true);
+      storage.remove("lastActivity");
     } else {
-      localStorage.removeItem("rememberMe");
-      localStorage.setItem("lastActivity", Date.now().toString());
+      storage.remove("rememberMe");
+      storage.set("lastActivity", Date.now());
     }
 
     return { success: true, user: data.user };
@@ -79,8 +82,8 @@ export async function secureApiCall(endpoint, options = {}) {
 
         if (response.status === 401) {
           authCheckResult = null;
-          localStorage.removeItem("user");
-          localStorage.removeItem("userId");
+          storage.remove("user");
+          storage.remove("userId");
           throw new Error('Not authenticated');
         }
 
@@ -101,8 +104,8 @@ export async function secureApiCall(endpoint, options = {}) {
 
     if (response.status === 401) {
       // Cookie expiré ou invalide, nettoyer les données locales
-      localStorage.removeItem("user");
-      localStorage.removeItem("userId");
+      storage.remove("user");
+      storage.remove("userId");
       authCheckResult = null; // Invalider le cache
       throw new Error('Not authenticated');
     }
@@ -118,7 +121,7 @@ export async function logout() {
     // Appel API pour supprimer le cookie httpOnly côté serveur
     await apiCall('/logout', { method: 'POST' });
   } catch (error) {
-    console.error('Erreur lors de la déconnexion:', error);
+    authLogger.error('Erreur lors de la déconnexion:', error);
   }
 
   // Invalider le cache auth
@@ -127,31 +130,25 @@ export async function logout() {
   authCheckInProgress = null;
 
   // Nettoyage des données locales
-  localStorage.removeItem("user");
-  localStorage.removeItem("userId");
-  localStorage.removeItem("lastActivity");
-  localStorage.removeItem("rememberMe");
-  localStorage.removeItem("cachedDisplayName");
+  storage.remove("user");
+  storage.remove("userId");
+  storage.remove("lastActivity");
+  storage.remove("rememberMe");
+  storage.remove("cachedDisplayName");
 
-  sessionStorage.removeItem("user");
-  sessionStorage.removeItem("userId");
+  sessionStore.remove("user");
+  sessionStore.remove("userId");
 }
 
 export function isAuthenticated() {
   // Vérifier si on a les données utilisateur (le token est dans un cookie httpOnly)
-  const user = localStorage.getItem("user");
+  const user = storage.get("user");
   return Boolean(user);
 }
 
 export function getCurrentUser() {
-  const userStr = localStorage.getItem("user");
-  if (!userStr) return null;
-
-  try {
-    return JSON.parse(userStr);
-  } catch (e) {
-    return null;
-  }
+  const user = storage.get("user");
+  return user || null;
 }
 
 // Invalider le cache auth manuellement (utile après login/logout)

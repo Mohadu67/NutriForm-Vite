@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { storage } from '../../../shared/utils/storage';
 import { useTranslation } from "react-i18next";
 import styles from "./SuivieExo.module.css";
 import SuivieCard from "./ExerciceCard/SuivieCard.jsx";
 import Chrono from "./Chrono/Chrono.jsx";
 import { idOf } from "../Shared/idOf.js";
+import logger from '../../../shared/utils/logger.js';
 
 
 const STARTED_KEY = "suivieStartedAt";
@@ -14,15 +16,15 @@ function storageKey(it) {
 }
 function saveSaved(it, data) {
   try {
-    localStorage.setItem(storageKey(it), JSON.stringify(data ?? null));
+    storage.set(storageKey(it), JSON.stringify(data ?? null));
   } catch (e) {
-    console.error("Failed to save exercise data:", e);
+    logger.error("Failed to save exercise data:", e);
   }
 }
 
 function loadSaved(it) {
   try {
-    const raw = localStorage.getItem(storageKey(it));
+    const raw = storage.get(storageKey(it));
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -36,16 +38,16 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onFinis
 
   function getPersistedSelection() {
     try {
-      const a = JSON.parse(localStorage.getItem("formSelectedExercises"));
+      const a = JSON.parse(storage.get("formSelectedExercises"));
       if (Array.isArray(a) && a.length) return a;
     } catch (e) {
-      console.error("Failed to load formSelectedExercises:", e);
+      logger.error("Failed to load formSelectedExercises:", e);
     }
     try {
-      const b = JSON.parse(localStorage.getItem("dynamiSelected"));
+      const b = JSON.parse(storage.get("dynamiSelected"));
       if (Array.isArray(b) && b.length) return b;
     } catch (e) {
-      console.error("Failed to load dynamiSelected:", e);
+      logger.error("Failed to load dynamiSelected:", e);
     }
     return [];
   }
@@ -58,7 +60,7 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onFinis
   const [touched, setTouched] = useState(false);
   const [startedAt, setStartedAt] = useState(() => {
     try {
-      const s = localStorage.getItem(STARTED_KEY);
+      const s = storage.get(STARTED_KEY);
       return s && s !== "null" ? s : null;
     } catch {
       return null;
@@ -66,10 +68,10 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onFinis
   });
   useEffect(() => {
     try {
-      if (startedAt) localStorage.setItem(STARTED_KEY, startedAt);
-      else localStorage.removeItem(STARTED_KEY);
+      if (startedAt) storage.set(STARTED_KEY, startedAt);
+      else storage.remove(STARTED_KEY);
     } catch (e) {
-      console.error("Failed to save startedAt:", e);
+      logger.error("Failed to save startedAt:", e);
     }
   }, [startedAt]);
 
@@ -175,7 +177,7 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onFinis
       try {
         saveSaved(copy[idx], nextData);
       } catch (e) {
-        console.error("Failed to save updated exercise:", e);
+        logger.error("Failed to save updated exercise:", e);
       }
       return copy;
     });

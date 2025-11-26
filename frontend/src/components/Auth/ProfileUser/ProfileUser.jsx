@@ -8,6 +8,8 @@ import { secureApiCall, logout, isAuthenticated } from "../../../utils/authServi
 import { getSubscriptionStatus, createCustomerPortalSession } from "../../../shared/api/subscription.js";
 import { getMyProfile, updateProfile } from "../../../shared/api/profile.js";
 import { UserIcon, DiamondIcon, HeartIcon, SettingsIcon } from './ProfileIcons';
+import { storage } from "../../../shared/utils/storage";
+import logger from '../../../shared/utils/logger.js';
 
 const WORKOUT_TYPES = [
   { value: 'musculation', label: 'Musculation', icon: '💪' },
@@ -81,7 +83,7 @@ export default function ProfileUser({ onLogout }) {
       const status = await getSubscriptionStatus();
       setSubscriptionInfo(status);
     } catch (err) {
-      console.error('Erreur récupération subscription:', err);
+      logger.error('Erreur récupération subscription:', err);
     }
   };
 
@@ -98,7 +100,7 @@ export default function ProfileUser({ onLogout }) {
         city: profile.location?.city || ''
       });
     } catch (err) {
-      console.error('Erreur récupération profil matching:', err);
+      logger.error('Erreur récupération profil matching:', err);
     }
   };
 
@@ -108,21 +110,21 @@ export default function ProfileUser({ onLogout }) {
 
       if (!res.ok) {
         if (res.status === 401) {
-          const weeklyGoal = localStorage.getItem('weeklyGoal');
+          const weeklyGoal = storage.get('weeklyGoal');
           const dynamiPrefs = {
-            dynamiStep: localStorage.getItem('dynamiStep'),
-            dynamiType: localStorage.getItem('dynamiType'),
-            dynamiEquip: localStorage.getItem('dynamiEquip'),
-            dynamiMuscle: localStorage.getItem('dynamiMuscle'),
+            dynamiStep: storage.get('dynamiStep'),
+            dynamiType: storage.get('dynamiType'),
+            dynamiEquip: storage.get('dynamiEquip'),
+            dynamiMuscle: storage.get('dynamiMuscle'),
           };
 
           await logout();
-          localStorage.clear();
+          storage.clear();
           sessionStorage.clear();
 
-          if (weeklyGoal) localStorage.setItem('weeklyGoal', weeklyGoal);
+          if (weeklyGoal) storage.set('weeklyGoal', weeklyGoal);
           Object.entries(dynamiPrefs).forEach(([key, value]) => {
-            if (value) localStorage.setItem(key, value);
+            if (value) storage.set(key, value);
           });
 
           if (onLogout) onLogout();
@@ -142,7 +144,7 @@ export default function ProfileUser({ onLogout }) {
       setEmail(data.email || "");
       setLoading(false);
     } catch (err) {
-      console.error('Erreur fetchUserData:', err);
+      logger.error('Erreur fetchUserData:', err);
       setError("Erreur de connexion. Vérifiez votre connexion internet.");
       setLoading(false);
     }

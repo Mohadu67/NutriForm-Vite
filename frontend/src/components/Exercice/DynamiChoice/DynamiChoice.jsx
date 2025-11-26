@@ -1,10 +1,12 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import { storage } from '../../../shared/utils/storage';
 import { useTranslation } from "react-i18next";
 import { mergeById } from "../Shared/selectionUtils";
 import CardChoice, { TYPE_CARDS, EQUIP_CARDS } from "./CardChoice/CardChoice.jsx";
 import { useStepSubtitle, buildFunnyMessage } from "../subtitlePools";
 import ExerciseResults from "../ExerciceResults/ExerciseResults.jsx";
 import styles from "./DynamiChoice.module.css";
+import logger from '../../../shared/utils/logger.js';
 
 const MUSCLE_CARDS = [
   { id: "pectoraux", icon: "💥", label: "Pectoraux" },
@@ -20,7 +22,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   const containerRef = useRef(null);
   const [step, setStep] = useState(() => {
     try {
-      const v = localStorage.getItem("dynamiStep");
+      const v = storage.get("dynamiStep");
       return v !== null ? parseInt(v, 10) : 0;
     } catch {
       return 0;
@@ -28,7 +30,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   });
   const [typeId, setTypeId] = useState(() => {
     try {
-      const v = localStorage.getItem("dynamiType");
+      const v = storage.get("dynamiType");
       return v ? JSON.parse(v) : null;
     } catch {
       return null;
@@ -36,7 +38,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   });
   const [equipIds, setEquipIds] = useState(() => {
     try {
-      const v = localStorage.getItem("dynamiEquip");
+      const v = storage.get("dynamiEquip");
       return v ? JSON.parse(v) : [];
     } catch {
       return [];
@@ -44,7 +46,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   });
   const [muscleIds, setMuscleIds] = useState(() => {
     try {
-      const v = localStorage.getItem("dynamiMuscle");
+      const v = storage.get("dynamiMuscle");
       return v ? JSON.parse(v) : [];
     } catch {
       return [];
@@ -53,7 +55,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   const [funnyMessage, setFunnyMessage] = useState(null);
   const [selectedExercises, setSelectedExercises] = useState(() => {
     try {
-      const v = localStorage.getItem("dynamiSelected");
+      const v = storage.get("dynamiSelected");
       return v ? JSON.parse(v) : [];
     } catch {
       return [];
@@ -66,32 +68,32 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   }, [step, onStepChange]);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiStep", String(step)); } catch (e) {
-      console.error("Failed to save dynamiStep:", e);
+    try { storage.set("dynamiStep", String(step)); } catch (e) {
+      logger.error("Failed to save dynamiStep:", e);
     }
   }, [step]);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiType", JSON.stringify(typeId)); } catch (e) {
-      console.error("Failed to save dynamiType:", e);
+    try { storage.set("dynamiType", JSON.stringify(typeId)); } catch (e) {
+      logger.error("Failed to save dynamiType:", e);
     }
   }, [typeId]);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiEquip", JSON.stringify(equipIds)); } catch (e) {
-      console.error("Failed to save dynamiEquip:", e);
+    try { storage.set("dynamiEquip", JSON.stringify(equipIds)); } catch (e) {
+      logger.error("Failed to save dynamiEquip:", e);
     }
   }, [equipIds]);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiMuscle", JSON.stringify(muscleIds)); } catch (e) {
-      console.error("Failed to save dynamiMuscle:", e);
+    try { storage.set("dynamiMuscle", JSON.stringify(muscleIds)); } catch (e) {
+      logger.error("Failed to save dynamiMuscle:", e);
     }
   }, [muscleIds]);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiSelected", JSON.stringify(selectedExercises)); } catch (e) {
-      console.error("Failed to save dynamiSelected:", e);
+    try { storage.set("dynamiSelected", JSON.stringify(selectedExercises)); } catch (e) {
+      logger.error("Failed to save dynamiSelected:", e);
     }
   }, [selectedExercises]);
 
@@ -182,11 +184,11 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
     const arr = Array.isArray(currentSelection) ? currentSelection : (Array.isArray(selectedExercises) ? selectedExercises : []);
     try {
       const str = JSON.stringify(arr);
-      localStorage.setItem("dynamiSelected", str);
-      localStorage.setItem("formSelectedExercises", str);
-      localStorage.setItem("dynamiHasTouched", "1");
+      storage.set("dynamiSelected", str);
+      storage.set("formSelectedExercises", str);
+      storage.set("dynamiHasTouched", "1");
     } catch (e) {
-      console.error("Failed to save search selection:", e);
+      logger.error("Failed to save search selection:", e);
     }
     setSelectedExercises(arr);
 
@@ -197,11 +199,11 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
         const merged = mode === 'merge' ? mergeById(prev, nextArr) : nextArr;
         try {
           const s = JSON.stringify(merged);
-          localStorage.setItem("dynamiSelected", s);
-          localStorage.setItem("formSelectedExercises", s);
-          localStorage.setItem("dynamiHasTouched", "1");
+          storage.set("dynamiSelected", s);
+          storage.set("formSelectedExercises", s);
+          storage.set("dynamiHasTouched", "1");
         } catch (e) {
-          console.error("Failed to save merged selection:", e);
+          logger.error("Failed to save merged selection:", e);
         }
         window.dispatchEvent(new CustomEvent('dynami:selected:replace', { detail: { items: merged } }));
         return merged;
@@ -227,11 +229,11 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
     } else {
       let arr = Array.isArray(selectedExercises) ? selectedExercises : [];
       try {
-        const v = localStorage.getItem("dynamiSelected");
+        const v = storage.get("dynamiSelected");
         const fromLS = v ? JSON.parse(v) : [];
         if (Array.isArray(fromLS) && fromLS.length) arr = fromLS;
       } catch (e) {
-        console.error("Failed to load dynamiSelected from localStorage:", e);
+        logger.error("Failed to load dynamiSelected from localStorage:", e);
       }
       onComplete({ typeId, equipIds, muscleIds, exercises: arr });
     }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import style from "./HistoryUser.module.css";
 import { secureApiCall, isAuthenticated } from "../../../utils/authService";
+import logger from '../../../shared/utils/logger.js';
 
 export default function LogoutActions({ onLogout }) {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export default function LogoutActions({ onLogout }) {
         setIsAdmin(data.role === "admin");
       }
     } catch (err) {
-      console.error("Failed to check admin status:", err);
+      logger.error("Failed to check admin status:", err);
     }
   };
 

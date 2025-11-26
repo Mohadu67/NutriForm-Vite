@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import * as assets from "./figureAssets";
 import cls from "./BodyPicker.module.css";
 import bodySvgMarkup from "./body.svg?raw";
+import logger from '../../../../shared/utils/logger.js';
 const FRONT_ZONE_LABELS = assets.FRONT_ZONE_LABELS || {};
 const FRONT_ZONE_METADATA = assets.FRONT_ZONE_METADATA || [];
 const FRONT_SVG_ZONE_MAP = assets.FRONT_SVG_ZONE_MAP || {};
@@ -239,7 +240,7 @@ function BodyPicker({ value, onChange, multiple = false }) {
           if (b && b.width && b.height) svg.setAttribute("viewBox", `0 0 ${b.width} ${b.height}`);
         }
       } catch (e) {
-        console.error("Failed to adjust SVG viewBox:", e);
+        logger.error("Failed to adjust SVG viewBox:", e);
       }
       svg.removeAttribute("width");
       svg.removeAttribute("height");

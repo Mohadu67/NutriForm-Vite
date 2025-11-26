@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { storage } from '../../../../shared/utils/storage';
 import { useTranslation } from "react-i18next";
 import { FaShare } from "react-icons/fa";
 import styles from "./FinSeance.module.css";
@@ -59,7 +60,7 @@ export default function FinSeance({ items = [], onFinish, sessionData }) {
     if (onFinish) onFinish({ ok: failCount === 0, okCount, failCount, errors: errs });
   }
 
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = JSON.parse(storage.get('user') || '{}');
 
   if (done) {
     return (

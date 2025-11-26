@@ -1,4 +1,5 @@
 const Subscription = require('../models/Subscription');
+const logger = require('../utils/logger.js');
 
 /**
  * Middleware pour vérifier que l'utilisateur a un abonnement Premium actif
@@ -39,7 +40,7 @@ async function requirePremium(req, res, next) {
       upgradeUrl: '/pricing'
     });
   } catch (error) {
-    console.error('Erreur requirePremium middleware:', error);
+    logger.error('Erreur requirePremium middleware:', error);
     return res.status(500).json({
       error: 'server_error',
       message: 'Erreur lors de la vérification de l\'abonnement.'
@@ -59,7 +60,7 @@ async function attachSubscription(req, res, next) {
     }
     next();
   } catch (error) {
-    console.error('Erreur attachSubscription middleware:', error);
+    logger.error('Erreur attachSubscription middleware:', error);
     next(); // Ne pas bloquer en cas d'erreur
   }
 }
