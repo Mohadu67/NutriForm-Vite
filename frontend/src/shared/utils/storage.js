@@ -44,7 +44,7 @@ class StorageService {
    * @param {string} key - Clé à supprimer
    */
   remove(key) {
-    this.storage.remove(key);
+    this.storage.removeItem(key);
   }
 
   /**
@@ -60,7 +60,7 @@ class StorageService {
    * @returns {boolean}
    */
   has(key) {
-    return this.storage.get(key) !== null;
+    return this.storage.getItem(key) !== null;
   }
 }
 

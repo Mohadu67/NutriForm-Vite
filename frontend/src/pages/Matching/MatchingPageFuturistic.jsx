@@ -8,8 +8,8 @@ import { getMatchSuggestions, likeProfile, rejectProfile, getMutualMatches } fro
 import { getMyProfile } from '../../shared/api/profile';
 import { getOrCreateConversation } from '../../shared/api/matchChat';
 import styles from './MatchingPageFuturistic.module.css';
-import {
 import logger from '../../shared/utils/logger.js';
+import {
   HeartIcon,
   SparklesIcon,
   GlobeIcon,
@@ -20,7 +20,7 @@ import logger from '../../shared/utils/logger.js';
   StarIcon,
   DumbbellIcon,
   CheckCircleIcon
-} from './MatchingIcons';
+} from '../../components/Icons/GlobalIcons';
 
 const WORKOUT_ICONS = {
   musculation: '🏋️‍♂️',

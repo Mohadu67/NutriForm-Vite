@@ -1,9 +1,46 @@
+/* ===== DARK MODE VARIABLES ===== */
+:root {
+  /* Light mode colors */
+  --profile-bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+  --profile-card-bg: rgba(255, 255, 255, 0.7);
+  --profile-card-border: rgba(255, 255, 255, 0.8);
+  --profile-text-primary: #2d3436;
+  --profile-text-secondary: #636e72;
+  --profile-text-muted: #b2bec3;
+  --profile-input-bg: rgba(255, 255, 255, 0.9);
+  --profile-input-border: rgba(247, 177, 134, 0.15);
+  --profile-level-bg: rgba(255, 255, 255, 0.8);
+  --profile-day-bg: rgba(247, 247, 250, 0.5);
+  --profile-day-hover: rgba(247, 247, 250, 0.8);
+  --profile-shadow: rgba(0, 0, 0, 0.06);
+  --profile-shadow-deep: rgba(0, 0, 0, 0.08);
+}
+
+:root.dark,
+:global(html.dark),
+:global(body.dark) {
+  /* Dark mode colors */
+  --profile-bg-gradient: linear-gradient(135deg, #0f1117 0%, #1a1d24 100%);
+  --profile-card-bg: rgba(26, 29, 36, 0.9);
+  --profile-card-border: rgba(255, 255, 255, 0.1);
+  --profile-text-primary: #e5e7eb;
+  --profile-text-secondary: #9ca3af;
+  --profile-text-muted: #6b7280;
+  --profile-input-bg: rgba(15, 17, 23, 0.9);
+  --profile-input-border: rgba(247, 177, 134, 0.2);
+  --profile-level-bg: rgba(26, 29, 36, 0.8);
+  --profile-day-bg: rgba(26, 29, 36, 0.5);
+  --profile-day-hover: rgba(26, 29, 36, 0.8);
+  --profile-shadow: rgba(0, 0, 0, 0.3);
+  --profile-shadow-deep: rgba(0, 0, 0, 0.4);
+}
+
 /* ===== CONTAINER & LAYOUT ===== */
 .container {
   position: relative;
   min-height: 100vh;
   padding: 80px 16px 40px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+  background: var(--profile-bg-gradient);
   overflow: hidden;
 }
 
@@ -67,7 +104,7 @@
 
 .subtitle {
   font-size: 15px;
-  color: #636e72;
+  color: var(--profile-text-secondary);
   margin-bottom: 24px;
 }
 
@@ -157,7 +194,7 @@
 
 .progressRingTotal {
   font-size: 16px;
-  color: #b2bec3;
+  color: var(--profile-text-muted);
   margin-left: 2px;
 }
 
@@ -184,14 +221,14 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--profile-card-bg);
   backdrop-filter: blur(10px);
-  border: 2px solid rgba(247, 177, 134, 0.2);
+  border: 2px solid var(--profile-input-border);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  color: #b2bec3;
+  color: var(--profile-text-muted);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -205,7 +242,7 @@
 
 .stepLabel {
   font-size: 12px;
-  color: #b2bec3;
+  color: var(--profile-text-muted);
   font-weight: 500;
   transition: all 0.3s ease;
 }
@@ -299,14 +336,14 @@
 
 /* ===== CARD ===== */
 .card {
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--profile-card-bg);
   backdrop-filter: blur(30px) saturate(180%);
   border-radius: 24px;
   padding: 28px;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.06),
-    0 0 1px rgba(255, 255, 255, 0.8) inset;
-  border: 1px solid rgba(255, 255, 255, 0.8);
+    0 8px 32px var(--profile-shadow),
+    0 0 1px var(--profile-card-border) inset;
+  border: 1px solid var(--profile-card-border);
   margin-bottom: 24px;
   position: relative;
   overflow: hidden;
@@ -347,13 +384,13 @@
 .cardTitle {
   font-size: 22px;
   font-weight: 700;
-  color: #2d3436;
+  color: var(--profile-text-primary);
   margin-bottom: 8px;
 }
 
 .cardSubtitle {
   font-size: 14px;
-  color: #636e72;
+  color: var(--profile-text-secondary);
   margin-bottom: 24px;
 }
 
@@ -366,18 +403,18 @@
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: #2d3436;
+  color: var(--profile-text-primary);
   margin-bottom: 8px;
 }
 
 .formControl {
   width: 100%;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(247, 177, 134, 0.15);
+  background: var(--profile-input-bg);
+  border: 2px solid var(--profile-input-border);
   border-radius: 12px;
   font-size: 15px;
-  color: #2d3436;
+  color: var(--profile-text-primary);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
 }
@@ -390,7 +427,7 @@
 }
 
 .formControl::placeholder {
-  color: #b2bec3;
+  color: var(--profile-text-muted);
 }
 
 textarea.formControl {
@@ -402,7 +439,7 @@ textarea.formControl {
 .formText {
   display: block;
   font-size: 12px;
-  color: #b2bec3;
+  color: var(--profile-text-muted);
   margin-top: 6px;
 }
 
@@ -421,8 +458,8 @@ textarea.formControl {
 
 .levelCard {
   padding: 16px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 2px solid rgba(247, 177, 134, 0.15);
+  background: var(--profile-level-bg);
+  border: 2px solid var(--profile-input-border);
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -431,6 +468,7 @@ textarea.formControl {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  color: var(--profile-text-primary);
 }
 
 .levelCard:hover {
@@ -469,14 +507,15 @@ textarea.formControl {
   align-items: center;
   gap: 6px;
   padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 2px solid rgba(247, 177, 134, 0.15);
+  background: var(--profile-level-bg);
+  border: 2px solid var(--profile-input-border);
   border-radius: 20px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
+  color: var(--profile-text-primary);
 }
 
 .workoutBadge:hover {
@@ -552,7 +591,7 @@ textarea.formControl {
 
 .formCheck label {
   font-size: 14px;
-  color: #2d3436;
+  color: var(--profile-text-primary);
   cursor: pointer;
   user-select: none;
 }
@@ -560,14 +599,14 @@ textarea.formControl {
 /* ===== DAY SECTION ===== */
 .daySection {
   padding: 16px;
-  background: rgba(247, 247, 250, 0.5);
+  background: var(--profile-day-bg);
   border-radius: 16px;
   margin-bottom: 16px;
   transition: all 0.3s ease;
 }
 
 .daySection:hover {
-  background: rgba(247, 247, 250, 0.8);
+  background: var(--profile-day-hover);
   transform: translateX(4px);
 }
 
@@ -580,7 +619,7 @@ textarea.formControl {
 
 .daySectionHeader strong {
   font-size: 15px;
-  color: #2d3436;
+  color: var(--profile-text-primary);
 }
 
 .addSlotButton {
@@ -623,11 +662,11 @@ textarea.formControl {
 .timeInput {
   flex: 1;
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(247, 177, 134, 0.15);
+  background: var(--profile-input-bg);
+  border: 2px solid var(--profile-input-border);
   border-radius: 10px;
   font-size: 14px;
-  color: #2d3436;
+  color: var(--profile-text-primary);
   transition: all 0.3s ease;
 }
 
@@ -639,7 +678,7 @@ textarea.formControl {
 
 .timeSeparator {
   font-size: 13px;
-  color: #636e72;
+  color: var(--profile-text-secondary);
   font-weight: 500;
 }
 
@@ -665,7 +704,7 @@ textarea.formControl {
 
 .noSlots {
   font-size: 13px;
-  color: #b2bec3;
+  color: var(--profile-text-muted);
   font-style: italic;
   margin: 8px 0;
 }
@@ -680,7 +719,7 @@ textarea.formControl {
 
 .rangeLabel strong {
   font-size: 14px;
-  color: #2d3436;
+  color: var(--profile-text-primary);
 }
 
 .rangeValue {
@@ -759,21 +798,21 @@ textarea.formControl {
 .backButton {
   flex: 1;
   padding: 14px 20px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 2px solid rgba(247, 177, 134, 0.2);
+  background: var(--profile-level-bg);
+  border: 2px solid var(--profile-input-border);
   border-radius: 14px;
   font-size: 15px;
   font-weight: 600;
-  color: #2d3436;
+  color: var(--profile-text-primary);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 16px var(--profile-shadow);
 }
 
 .backButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 20px var(--profile-shadow-deep);
   border-color: rgba(247, 177, 134, 0.4);
 }
 
@@ -833,7 +872,7 @@ textarea.formControl {
 
 .loadingText {
   font-size: 15px;
-  color: #636e72;
+  color: var(--profile-text-secondary);
   font-weight: 500;
 }
 

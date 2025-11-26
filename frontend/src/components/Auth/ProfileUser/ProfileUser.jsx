@@ -7,7 +7,7 @@ import NotificationSettings from "../../Notifications/NotificationSettings.jsx";
 import { secureApiCall, logout, isAuthenticated } from "../../../utils/authService.js";
 import { getSubscriptionStatus, createCustomerPortalSession } from "../../../shared/api/subscription.js";
 import { getMyProfile, updateProfile } from "../../../shared/api/profile.js";
-import { UserIcon, DiamondIcon, HeartIcon, SettingsIcon } from './ProfileIcons';
+import { UserIcon, DiamondIcon, HeartIcon, SettingsIcon } from '../../Icons/GlobalIcons';
 import { storage } from "../../../shared/utils/storage";
 import logger from '../../../shared/utils/logger.js';
 

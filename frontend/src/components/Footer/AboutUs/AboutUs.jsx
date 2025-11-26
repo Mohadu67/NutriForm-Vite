@@ -1,6 +1,43 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./AboutUs.module.css";
+import {
+  DumbbellIcon,
+  TargetIcon,
+  TrendingUpIcon,
+  SettingsIcon,
+  ZapIcon
+} from "../../Icons/GlobalIcons";
+
+// Icône pour les programmes (clipboard)
+const ProgramIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+  </svg>
+);
+
+// Icône cadeau
+const GiftIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 12 20 22 4 22 4 12"/>
+    <rect x="2" y="7" width="20" height="5"/>
+    <line x1="12" y1="22" x2="12" y2="7"/>
+    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+  </svg>
+);
+
+// Map d'icônes par type
+const iconMap = {
+  '💪': DumbbellIcon,
+  '📋': ProgramIcon,
+  '⚡': ZapIcon,
+  '🎁': GiftIcon,
+  '🎯': TargetIcon,
+  '📈': TrendingUpIcon,
+  '⚙️': SettingsIcon
+};
 
 const resolveLocaleContent = (data, language) => {
   if (!data || typeof data !== "object") return null;
@@ -82,19 +119,22 @@ export default function AboutUs() {
           <div className={styles.statsGrid}>
             {stats
               .filter((stat) => stat?.value)
-              .map((stat, idx) => (
-                <div key={`${stat.label}-${idx}`} className={styles.statCard}>
-                  {stat.icon && (
-                    <span className={styles.statIcon} aria-hidden="true">
-                      {stat.icon}
-                    </span>
-                  )}
-                  <div className={styles.statValue}>{stat.value}</div>
-                  {stat.label && (
-                    <div className={styles.statLabel}>{stat.label}</div>
-                  )}
-                </div>
-              ))}
+              .map((stat, idx) => {
+                const IconComponent = stat.icon && iconMap[stat.icon];
+                return (
+                  <div key={`${stat.label}-${idx}`} className={styles.statCard}>
+                    {IconComponent && (
+                      <span className={styles.statIcon} aria-hidden="true">
+                        <IconComponent size={24} />
+                      </span>
+                    )}
+                    <div className={styles.statValue}>{stat.value}</div>
+                    {stat.label && (
+                      <div className={styles.statLabel}>{stat.label}</div>
+                    )}
+                  </div>
+                );
+              })}
           </div>
         )}
 
@@ -102,19 +142,22 @@ export default function AboutUs() {
           <div className={styles.valuesGrid}>
             {values
               .filter((value) => value?.title)
-              .map((value, idx) => (
-                <div key={`${value.title}-${idx}`} className={styles.valueCard}>
-                  {value.icon && (
-                    <span className={styles.valueIcon} aria-hidden="true">
-                      {value.icon}
-                    </span>
-                  )}
-                  <h3 className={styles.valueTitle}>{value.title}</h3>
-                  {value.description && (
-                    <p className={styles.valueDescription}>{value.description}</p>
-                  )}
-                </div>
-              ))}
+              .map((value, idx) => {
+                const IconComponent = value.icon && iconMap[value.icon];
+                return (
+                  <div key={`${value.title}-${idx}`} className={styles.valueCard}>
+                    {IconComponent && (
+                      <span className={styles.valueIcon} aria-hidden="true">
+                        <IconComponent size={24} />
+                      </span>
+                    )}
+                    <h3 className={styles.valueTitle}>{value.title}</h3>
+                    {value.description && (
+                      <p className={styles.valueDescription}>{value.description}</p>
+                    )}
+                  </div>
+                );
+              })}
           </div>
         )}
 

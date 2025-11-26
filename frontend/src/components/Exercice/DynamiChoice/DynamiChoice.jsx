@@ -2,19 +2,80 @@ import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { storage } from '../../../shared/utils/storage';
 import { useTranslation } from "react-i18next";
 import { mergeById } from "../Shared/selectionUtils";
-import CardChoice, { TYPE_CARDS, EQUIP_CARDS } from "./CardChoice/CardChoice.jsx";
+import CardChoice, { TYPE_CARDS, EQUIP_CARDS, TYPE_ICONS, EQUIP_ICONS } from "./CardChoice/CardChoice.jsx";
 import { useStepSubtitle, buildFunnyMessage } from "../subtitlePools";
 import ExerciseResults from "../ExerciceResults/ExerciseResults.jsx";
 import styles from "./DynamiChoice.module.css";
 import logger from '../../../shared/utils/logger.js';
 
+// Icône Pectoraux
+const ChestIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 7c0-2 2-2 4-2s4 0 4 2v10c0 2-2 4-4 4s-4-2-4-4V7z"/>
+    <path d="M21 7c0-2-2-2-4-2s-4 0-4 2v10c0 2 2 4 4 4s4-2 4-4V7z"/>
+    <path d="M11 7h2"/>
+  </svg>
+);
+
+// Icône Dos
+const BackIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12s2.545-5 7-5c4.454 0 7 5 7 5s-2.546 5-7 5c-4.455 0-7-5-7-5z"/>
+    <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+    <path d="M12 3v4M12 17v4"/>
+  </svg>
+);
+
+// Icône Épaules
+const ShoulderIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="8" r="3"/>
+    <path d="M5 20c0-4 3-7 7-7s7 3 7 7"/>
+    <path d="M5 12l-2-2M19 12l2-2"/>
+  </svg>
+);
+
+// Icône Bras
+const ArmIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M15 3l4 4-4 4"/>
+    <path d="M19 7H9a4 4 0 0 0-4 4v8"/>
+    <circle cx="5" cy="19" r="2"/>
+  </svg>
+);
+
+// Icône Jambes
+const LegIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 2v10l-2 8M14 2v10l2 8"/>
+    <path d="M10 12h4"/>
+  </svg>
+);
+
+// Icône Core/Abdos
+const CoreIcon = ({ size = 20 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="8" y="3" width="8" height="18" rx="2"/>
+    <path d="M8 8h8M8 12h8M8 16h8"/>
+  </svg>
+);
+
+export const MUSCLE_ICONS = {
+  pectoraux: ChestIcon,
+  dos: BackIcon,
+  epaules: ShoulderIcon,
+  bras: ArmIcon,
+  jambes: LegIcon,
+  core: CoreIcon
+};
+
 const MUSCLE_CARDS = [
-  { id: "pectoraux", icon: "💥", label: "Pectoraux" },
-  { id: "dos", icon: "🕸️", label: "Dos" },
-  { id: "epaules", icon: "🏹", label: "Épaules" },
-  { id: "bras", icon: "💪", label: "Bras" },
-  { id: "jambes", icon: "🦵", label: "Jambes" },
-  { id: "core", icon: "🎛️", label: "Core" },
+  { id: "pectoraux", label: "Pectoraux" },
+  { id: "dos", label: "Dos" },
+  { id: "epaules", label: "Épaules" },
+  { id: "bras", label: "Bras" },
+  { id: "jambes", label: "Jambes" },
+  { id: "core", label: "Core" },
 ];
 
 export default function DynamiChoice({ onComplete = () => {}, onStepChange, requestedStep, onSearch }) {
@@ -252,7 +313,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   function renderCards() {
     if (step === 0) {
-      return <CardChoice value={typeId} onChange={setTypeId} cards={TYPE_CARDS} multiple={false} />;
+      return <CardChoice value={typeId} onChange={setTypeId} cards={TYPE_CARDS} multiple={false} iconMap={TYPE_ICONS} />;
     }
     if (step === 1) {
       return (
@@ -262,11 +323,12 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
           cards={EQUIP_CARDS}
           multiple
           disabledIds={disabledEquipIds}
+          iconMap={EQUIP_ICONS}
         />
       );
     }
     if (step === 2) {
-      return <CardChoice value={muscleIds} onChange={setMuscleIds} cards={MUSCLE_CARDS} multiple />;
+      return <CardChoice value={muscleIds} onChange={setMuscleIds} cards={MUSCLE_CARDS} multiple iconMap={MUSCLE_ICONS} />;
     }
     if (step === 3) {
       return (

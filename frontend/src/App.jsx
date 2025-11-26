@@ -8,6 +8,7 @@ import NotificationPrompt from "./components/Notifications/NotificationPrompt.js
 import LoadingSpinner from "./components/Shared/LoadingSpinner.jsx";
 import { ChatProvider } from "./contexts/ChatContext.jsx";
 import { initializeNotifications } from "./services/notificationService.js";
+import MessageNotificationManager from "./components/Chat/MessageNotificationManager.jsx";
 import './i18n/config';
 
 // Pages principales - chargées immédiatement (pour SEO et performance initiale)
@@ -64,6 +65,7 @@ export default function App() {
         <UpdatePrompt />
         <CanonicalLink />
         <NotificationPrompt />
+        <MessageNotificationManager />
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             {/* Pages principales - chargées immédiatement */}
