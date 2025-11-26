@@ -2,6 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getLastExerciseData } from "../../../../History/SessionTracking/sessionApi.js";
 import { calculateProgression } from "../helpers/progressionHelper.js";
 
+// Cache client pour éviter les requêtes API répétées
+// Expiration: 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
+const lastExerciseDataCache = new Map();
+
 export function isSimpleCardioExo(exo) {
   const name = String(exo?.name ?? "").toLowerCase();
   return /(marche plein air|course plein air|plein air)/.test(name);
@@ -158,13 +163,26 @@ export default function useExerciceForm(exo, value, onChange) {
   useEffect(() => {
     // Cherche d'abord par nom (priorité), puis par ID en fallback
     const searchKey = exoName || exoId;
-    if (searchKey) {
-      getLastExerciseData(searchKey).then(data => {
-        if (data) {
-          setLastExerciseData(data);
-        }
-      });
+    if (!searchKey) return;
+
+    // Vérifie le cache
+    const cached = lastExerciseDataCache.get(searchKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      setLastExerciseData(cached.data);
+      return;
     }
+
+    // Si pas de cache ou expiré, appelle l'API
+    getLastExerciseData(searchKey).then(data => {
+      if (data) {
+        // Met en cache
+        lastExerciseDataCache.set(searchKey, {
+          data,
+          timestamp: Date.now()
+        });
+        setLastExerciseData(data);
+      }
+    });
   }, [exoId, exoName]);
 
   const availableModes = useMemo(() => detectAvailableModes(exo), [exo, exoId]);
@@ -313,24 +331,64 @@ export default function useExerciceForm(exo, value, onChange) {
       };
     }
     if (mode === "pdc") {
-      // Ne créer aucune série par défaut, laisser l'utilisateur cliquer sur "Ajouter"
+      // Auto-remplissage intelligent pour PDC
+      if (Array.isArray(base.sets) && base.sets.length > 0) {
+        return { sets: base.sets, notes: base.notes || "" };
+      }
+
+      // Si pas de série et qu'on a des données historiques, pré-remplir
+      if (lastExerciseData?.last) {
+        const lastSet = lastExerciseData.last.lastSet;
+        return {
+          sets: [{ reps: lastSet.reps || "", restSec: "", isSuggested: true }],
+          notes: base.notes || ""
+        };
+      }
+
+      return { sets: [], notes: base.notes || "" };
+    }
+
+    // Muscu : Auto-remplissage intelligent
+    if (Array.isArray(base.sets) && base.sets.length > 0) {
+      return { sets: base.sets, notes: base.notes || "" };
+    }
+
+    // Si pas de série et qu'on a une progression suggérée, pré-remplir
+    const prog = calculateProgression(lastExerciseData, false, exoName);
+    if (prog?.isProgression && prog.weight && prog.reps) {
       return {
-        sets: (Array.isArray(base.sets) && base.sets.length > 0) ? base.sets : [],
+        sets: [{
+          weight: prog.weight,
+          reps: prog.reps,
+          restSec: "",
+          isSuggested: true
+        }],
         notes: base.notes || ""
       };
     }
-    // Muscu : Ne créer aucune série par défaut
-    return {
-      sets: (Array.isArray(base.sets) && base.sets.length > 0) ? base.sets : [],
-      notes: base.notes || ""
-    };
-  }, [value, mode, lastExerciseData]);
+
+    // Sinon, si on a des données historiques, pré-remplir avec la dernière séance
+    if (lastExerciseData?.last) {
+      const lastSet = lastExerciseData.last.lastSet;
+      return {
+        sets: [{
+          weight: lastSet.weightKg || "",
+          reps: lastSet.reps || "",
+          restSec: "",
+          isSuggested: true
+        }],
+        notes: base.notes || ""
+      };
+    }
+
+    return { sets: [], notes: base.notes || "" };
+  }, [value, mode, lastExerciseData, exoName]);
 
   const [data, setData] = useState(initial);
-  const prevInitialRef = useRef(initial);
 
+  // Synchroniser data avec initial UNIQUEMENT quand initial change (pas quand data change localement)
+  const prevInitialRef = useRef(initial);
   useEffect(() => {
-    // Ne mettre à jour que si `initial` a vraiment changé (pas data)
     if (!isDeepEqual(prevInitialRef.current, initial)) {
       prevInitialRef.current = initial;
       setData(initial);
@@ -405,7 +463,6 @@ export default function useExerciceForm(exo, value, onChange) {
 
   function addSet() {
     let tpl;
-
     const currentSets = data.sets || [];
 
     if (currentSets.length > 0) {
@@ -433,7 +490,9 @@ export default function useExerciceForm(exo, value, onChange) {
 
   function patchSet(index, patch) {
     const arr = [...(data.sets || [])];
-    arr[index] = { ...arr[index], ...patch };
+    // Retire le flag "suggéré" dès que l'utilisateur modifie une valeur
+    const { isSuggested, ...cleanSet } = arr[index] || {};
+    arr[index] = { ...cleanSet, ...patch };
     emit({ ...data, sets: arr });
   }
 
