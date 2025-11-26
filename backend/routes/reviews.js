@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Review = require('../models/Review');
 const adminMiddleware = require('../middlewares/admin.middleware');
+const logger = require('../utils/logger.js');
 
 
 const optionalAuth = (req, res, next) => {
@@ -49,7 +50,7 @@ router.get('/users', async (req, res) => {
       reviews: reviewsWithPhotos
     });
   } catch (error) {
-    console.error('Erreur récupération avis:', error);
+    logger.error('Erreur récupération avis:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération des avis'
@@ -105,7 +106,7 @@ router.post('/users', optionalAuth, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Erreur création avis:', error);
+    logger.error('Erreur création avis:', error);
 
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
@@ -138,7 +139,7 @@ router.put('/users/:id/approve', adminMiddleware, async (req, res) => {
       });
     }
 
-    console.log(`[ADMIN] Review approved by ${req.user?.email || 'unknown'}: ${req.params.id}`);
+    logger.info(`[ADMIN] Review approved by ${req.user?.email || 'unknown'}: ${req.params.id}`);
 
     res.status(200).json({
       success: true,
@@ -146,7 +147,7 @@ router.put('/users/:id/approve', adminMiddleware, async (req, res) => {
       review
     });
   } catch (error) {
-    console.error('Erreur approbation avis:', error);
+    logger.error('Erreur approbation avis:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de l\'approbation'
@@ -166,14 +167,14 @@ router.delete('/users/:id', adminMiddleware, async (req, res) => {
       });
     }
 
-    console.log(`[ADMIN] Review deleted by ${req.user?.email || 'unknown'}: ${req.params.id}`);
+    logger.info(`[ADMIN] Review deleted by ${req.user?.email || 'unknown'}: ${req.params.id}`);
 
     res.status(200).json({
       success: true,
       message: 'Avis supprimé'
     });
   } catch (error) {
-    console.error('Erreur suppression avis:', error);
+    logger.error('Erreur suppression avis:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la suppression'
@@ -194,7 +195,7 @@ router.get('/users/pending', async (req, res) => {
       reviews
     });
   } catch (error) {
-    console.error('Erreur récupération avis en attente:', error);
+    logger.error('Erreur récupération avis en attente:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération'
@@ -209,7 +210,7 @@ router.get('/users/all', adminMiddleware, async (req, res) => {
       .sort({ createdAt: -1 })
       .select('-isReported -__v');
 
-    console.log(`[ADMIN] All reviews requested by ${req.user?.email || 'unknown'}`);
+    logger.info(`[ADMIN] All reviews requested by ${req.user?.email || 'unknown'}`);
 
     res.status(200).json({
       success: true,
@@ -217,7 +218,7 @@ router.get('/users/all', adminMiddleware, async (req, res) => {
       reviews
     });
   } catch (error) {
-    console.error('Erreur récupération tous les avis:', error);
+    logger.error('Erreur récupération tous les avis:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération'

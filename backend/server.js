@@ -1,12 +1,13 @@
 const fs = require('fs');
+const logger = require('./utils/logger.js');
 if (fs.existsSync('.env.local')) {
   require('dotenv').config({ path: '.env.local' });
-  console.log('📁 Chargement de .env.local');
+  logger.info('📁 Chargement de .env.local');
 } else {
   require('dotenv').config();
-  console.log('📁 Chargement de .env');
+  logger.info('📁 Chargement de .env');
 }
-console.log('🔑 JWT_SECRET:', process.env.JWT_SECRET ? '✅ Défini' : '❌ NON DÉFINI');
+logger.info('🔑 JWT_SECRET:', process.env.JWT_SECRET ? '✅ Défini' : '❌ NON DÉFINI');
 const cookieParser = require('cookie-parser');
 const config = require('./config');
 const { allowedOrigins } = config;
@@ -43,13 +44,13 @@ const app = express();
 app.set('trust proxy', 1);
 
 if (!config.mongoUri) {
-  console.error("❌ MONGO_URI manquant dans la configuration.");
+  logger.error("❌ MONGO_URI manquant dans la configuration.");
   process.exit(1);
 }
 
 // Connexion MongoDB en arrière-plan (non bloquante)
-console.log('🔄 Tentative de connexion à MongoDB...');
-console.log('📍 URI:', config.mongoUri.replace(/\/\/.*@/, '//*****@')); // Masquer le mot de passe
+logger.info('🔄 Tentative de connexion à MongoDB...');
+logger.info('📍 URI:', config.mongoUri.replace(/\/\/.*@/, '//*****@')); // Masquer le mot de passe
 
 mongoose
   .connect(config.mongoUri, {
@@ -58,11 +59,11 @@ mongoose
     serverSelectionTimeoutMS: 10000, // Timeout après 10 secondes
     socketTimeoutMS: 45000,
   })
-  .then(() => console.info('🟢 Connecté à MongoDB'))
+  .then(() => logger.info('🟢 Connecté à MongoDB'))
   .catch(err => {
-    console.error('❌ Erreur MongoDB :', err.message || err);
-    console.error('💡 Vérifiez que MongoDB est accessible et que vos identifiants sont corrects');
-    console.error('⚠️  Le serveur continue de tourner mais certaines fonctionnalités ne seront pas disponibles');
+    logger.error('❌ Erreur MongoDB :', err.message || err);
+    logger.error('💡 Vérifiez que MongoDB est accessible et que vos identifiants sont corrects');
+    logger.error('⚠️  Le serveur continue de tourner mais certaines fonctionnalités ne seront pas disponibles');
   });
 
 
@@ -150,20 +151,20 @@ app.get('/', (req, res) => {
 
 // Démarrer le serveur sans attendre MongoDB
 app.listen(config.port, () => {
-  console.info(`🚀 Serveur en ligne sur http://localhost:${config.port}`);
-  console.info(`📋 Environnement: ${config.env}`);
-  console.info(`🌐 Frontend URL: ${config.frontUrl}`);
+  logger.info(`🚀 Serveur en ligne sur http://localhost:${config.port}`);
+  logger.info(`📋 Environnement: ${config.env}`);
+  logger.info(`🌐 Frontend URL: ${config.frontUrl}`);
 
   // Démarrer les crons uniquement si MongoDB est connecté
   if (mongoose.connection.readyState === 1) {
-    console.log('⏰ Démarrage des tâches planifiées...');
+    logger.info('⏰ Démarrage des tâches planifiées...');
     startNewsletterCron();
     startLeaderboardCron();
   } else {
-    console.warn('⚠️  Tâches planifiées désactivées - MongoDB non connecté');
+    logger.warn('⚠️  Tâches planifiées désactivées - MongoDB non connecté');
     // Réessayer après connexion
     mongoose.connection.once('open', () => {
-      console.log('⏰ Démarrage des tâches planifiées (après connexion MongoDB)...');
+      logger.info('⏰ Démarrage des tâches planifiées (après connexion MongoDB)...');
       startNewsletterCron();
       startLeaderboardCron();
     });

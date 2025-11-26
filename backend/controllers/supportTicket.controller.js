@@ -1,6 +1,7 @@
 const SupportTicket = require('../models/SupportTicket');
 const ChatMessage = require('../models/ChatMessage');
 const User = require('../models/User');
+const logger = require('../utils/logger.js');
 
 /**
  * Récupérer tous les tickets (admin)
@@ -31,7 +32,7 @@ async function getAllTickets(req, res) {
       offset: parseInt(offset)
     });
   } catch (error) {
-    console.error('Erreur getAllTickets:', error);
+    logger.error('Erreur getAllTickets:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des tickets.' });
   }
 }
@@ -65,7 +66,7 @@ async function getTicketById(req, res) {
       messages
     });
   } catch (error) {
-    console.error('Erreur getTicketById:', error);
+    logger.error('Erreur getTicketById:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération du ticket.' });
   }
 }
@@ -116,7 +117,7 @@ async function replyToTicket(req, res) {
       ticket
     });
   } catch (error) {
-    console.error('Erreur replyToTicket:', error);
+    logger.error('Erreur replyToTicket:', error);
     res.status(500).json({ error: 'Erreur lors de la réponse au ticket.' });
   }
 }
@@ -155,7 +156,7 @@ async function resolveTicket(req, res) {
       // Supprimer tous les messages
       await ChatMessage.deleteMany({ conversationId: ticket.conversationId });
 
-      console.log(`🗑️ Messages supprimés pour le ticket ${id} (conversation ${ticket.conversationId})`);
+      logger.info(`🗑️ Messages supprimés pour le ticket ${id} (conversation ${ticket.conversationId})`);
     }
 
     res.status(200).json({
@@ -166,7 +167,7 @@ async function resolveTicket(req, res) {
       messagesDeleted: deleteMessages || false
     });
   } catch (error) {
-    console.error('Erreur resolveTicket:', error);
+    logger.error('Erreur resolveTicket:', error);
     res.status(500).json({ error: 'Erreur lors de la résolution du ticket.' });
   }
 }
@@ -194,7 +195,7 @@ async function reopenTicket(req, res) {
       ticket
     });
   } catch (error) {
-    console.error('Erreur reopenTicket:', error);
+    logger.error('Erreur reopenTicket:', error);
     res.status(500).json({ error: 'Erreur lors de la réouverture du ticket.' });
   }
 }
@@ -229,7 +230,7 @@ async function assignTicket(req, res) {
       ticket
     });
   } catch (error) {
-    console.error('Erreur assignTicket:', error);
+    logger.error('Erreur assignTicket:', error);
     res.status(500).json({ error: 'Erreur lors de l\'assignation du ticket.' });
   }
 }
@@ -275,7 +276,7 @@ async function getTicketStats(req, res) {
       avgResolutionTimeHours: avgResolutionTime
     });
   } catch (error) {
-    console.error('Erreur getTicketStats:', error);
+    logger.error('Erreur getTicketStats:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des stats.' });
   }
 }

@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const WorkoutSession = require("../models/WorkoutSession");
 const { computeSessionFromEntries } = require("../services/calorie.service");
+const logger = require('../utils/logger.js');
 let HistoryModel = null;
 try { HistoryModel = require("../models/History"); } catch (_) { HistoryModel = null; }
 
@@ -228,7 +229,7 @@ async function createSession(req, res) {
         }
       }
     } catch (err) {
-      console.error('Erreur lors de la répartition de la durée sur les exercices cardio:', err);
+      logger.error('Erreur lors de la répartition de la durée sur les exercices cardio:', err);
     }
 
     const userWeight = await getLatestWeight(userId);
@@ -265,7 +266,7 @@ async function createSession(req, res) {
 
     return res.status(201).json(doc);
   } catch (err) {
-    console.error("createSession error:", err);
+    logger.error("createSession error:", err);
     return res.status(500).json({ error: "server_error" });
   }
 }
@@ -312,7 +313,7 @@ async function getSessions(req, res) {
 
     return res.json({ items: normalizedDocs, points, nextCursor });
   } catch (err) {
-    console.error("getSessions error:", err);
+    logger.error("getSessions error:", err);
     return res.status(500).json({ error: "server_error" });
   }
 }
@@ -336,7 +337,7 @@ async function getSessionById(req, res) {
 
     return res.json(doc);
   } catch (err) {
-    console.error("getSessionById error:", err);
+    logger.error("getSessionById error:", err);
     return res.status(500).json({ error: "server_error" });
   }
 }
@@ -402,7 +403,7 @@ async function updateSession(req, res) {
 
     return res.json(doc);
   } catch (err) {
-    console.error("updateSession error:", err);
+    logger.error("updateSession error:", err);
     return res.status(500).json({ error: "server_error" });
   }
 }
@@ -428,7 +429,7 @@ async function deleteSession(req, res) {
 
     return res.status(204).send();
   } catch (err) {
-    console.error("deleteSession error:", err);
+    logger.error("deleteSession error:", err);
     return res.status(500).json({ error: "server_error" });
   }
 }
@@ -506,7 +507,7 @@ async function getDailySummary(req, res) {
     const rows = await WorkoutSession.aggregate(pipeline);
     return res.json({ items: rows });
   } catch (err) {
-    console.error("getDailySummary error:", err);
+    logger.error("getDailySummary error:", err);
     return res.status(500).json({ error: "server_error" });
   }
 }
@@ -570,7 +571,7 @@ async function getLastWeekSession(req, res) {
       }
     });
   } catch (err) {
-    console.error("getLastWeekSession error:", err);
+    logger.error("getLastWeekSession error:", err);
     return res.status(500).json({ error: "server_error" });
   }
 }

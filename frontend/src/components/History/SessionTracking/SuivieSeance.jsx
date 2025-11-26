@@ -5,6 +5,7 @@ import Stat from "./stats/Stat.jsx";
 import { computeSessionStats } from "./stats/computeSessionStats";
 import { loadExercises } from "../../../utils/exercisesLoader";
 import { secureApiCall } from "../../../utils/authService.js";
+import logger from '../../../shared/utils/logger.js';
 
 const DEFAULT_EMPTY = "Aucune donnée";
 
@@ -181,7 +182,7 @@ export default function SuivieSeance({
         const exercises = await loadExercises("all");
         if (!cancelled) setExercisesDb(exercises);
       } catch (err) {
-        console.error("Failed to load exercises database:", err);
+        logger.error("Failed to load exercises database:", err);
       }
     })();
 

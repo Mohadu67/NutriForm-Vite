@@ -3,6 +3,7 @@ import { secureApiCall, isAuthenticated } from '../../utils/authService';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import styles from './Leaderboard.module.css';
+import logger from '../../shared/utils/logger.js';
 
 // Icons
 const TrophyIcon = ({ size = 24 }) => (
@@ -67,7 +68,7 @@ const Leaderboard = () => {
         setLeaderboard([]);
       }
     } catch (err) {
-      console.error('Erreur lors du chargement:', err);
+      logger.error('Erreur lors du chargement:', err);
       setError('Impossible de charger le classement');
       setLeaderboard([]);
     } finally {
@@ -95,11 +96,11 @@ const Leaderboard = () => {
             setUserRank(rankData.rank);
           }
         } else {
-          console.error("User is not opted in to leaderboard");
+          logger.error("User is not opted in to leaderboard");
         }
       }
     } catch (err) {
-      console.error('Erreur statut:', err);
+      logger.error('Erreur statut:', err);
     }
   }, [isLoggedIn, period, category]);
 
@@ -122,7 +123,7 @@ const Leaderboard = () => {
         checkOptInStatus();
       }
     } catch (err) {
-      console.error('Erreur opt-in:', err);
+      logger.error('Erreur opt-in:', err);
     } finally {
       setOptInLoading(false);
     }
@@ -142,7 +143,7 @@ const Leaderboard = () => {
         fetchLeaderboard();
       }
     } catch (err) {
-      console.error('Erreur opt-out:', err);
+      logger.error('Erreur opt-out:', err);
     } finally {
       setOptInLoading(false);
     }
@@ -162,7 +163,7 @@ const Leaderboard = () => {
         await checkOptInStatus();
       }
     } catch (err) {
-      console.error('Erreur lors du rafraîchissement:', err);
+      logger.error('Erreur lors du rafraîchissement:', err);
     } finally {
       setRefreshLoading(false);
     }

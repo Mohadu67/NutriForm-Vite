@@ -1,6 +1,7 @@
 
 
 const { sendMail } = require('../services/mailer.service');
+const logger = require('../utils/logger.js');
 
 function escapeHtml(str = '') {
   return String(str)
@@ -42,7 +43,7 @@ exports.handleContact = async (req, res) => {
 
     const TO = process.env.CONTACT_EMAIL || process.env.SMTP_USER;
     if (!TO) {
-      console.error('[contact] CONTACT_EMAIL/SMTP_USER manquant dans .env');
+      logger.error('[contact] CONTACT_EMAIL/SMTP_USER manquant dans .env');
       return res.status(500).json({ message: "Configuration email absente côté serveur." });
     }
 
@@ -83,7 +84,7 @@ exports.handleContact = async (req, res) => {
 
     return res.json({ message: 'Message envoyé ✅' });
   } catch (err) {
-    console.error('CONTACT_ERROR', err);
+    logger.error('CONTACT_ERROR', err);
     return res.status(502).json({ message: "Impossible d'envoyer le message pour le moment." });
   }
 };

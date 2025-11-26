@@ -1,32 +1,34 @@
+import { storage } from '../shared/utils/storage';
+
 // Durée de session par défaut : 24 heures (en millisecondes)
 const SESSION_DURATION = 24 * 60 * 60 * 1000;
 
 // Met à jour le timestamp de dernière activité
 export function updateActivity() {
-  const rememberMe = localStorage.getItem("rememberMe");
+  const rememberMe = storage.get("rememberMe");
   // Ne pas gérer le timestamp si "remember me" est activé
   if (rememberMe === "true") return;
 
-  const token = localStorage.getItem("token");
+  const token = storage.get("token");
   if (token) {
-    localStorage.setItem("lastActivity", Date.now().toString());
+    storage.set("lastActivity", Date.now().toString());
   }
 }
 
 // Vérifie si la session est encore valide
 export function checkSession() {
-  const token = localStorage.getItem("token");
+  const token = storage.get("token");
   // Sans jeton, on considère la session comme "neutre" pour éviter les redirections intempestives
   if (!token) return true;
 
-  const rememberMe = localStorage.getItem("rememberMe");
+  const rememberMe = storage.get("rememberMe");
   // Si "remember me" est activé, la session est toujours valide
   if (rememberMe === "true") return true;
 
-  const lastActivity = localStorage.getItem("lastActivity");
+  const lastActivity = storage.get("lastActivity");
   if (!lastActivity) {
     // Pas de timestamp : probablement une ancienne session, on la valide mais on crée le timestamp
-    localStorage.setItem("lastActivity", Date.now().toString());
+    storage.set("lastActivity", Date.now().toString());
     return true;
   }
 
@@ -40,18 +42,18 @@ export function checkSession() {
   }
 
   // Sinon, mettre à jour le timestamp
-  localStorage.setItem("lastActivity", now.toString());
+  storage.set("lastActivity", now.toString());
   return true;
 }
 
 // Déconnecte l'utilisateur
 export function logout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  localStorage.removeItem("userId"); // Important pour réafficher le message d'invitation
-  localStorage.removeItem("lastActivity");
-  localStorage.removeItem("rememberMe");
-  localStorage.removeItem("cachedDisplayName");
+  storage.remove("token");
+  storage.remove("user");
+  storage.remove("userId"); // Important pour réafficher le message d'invitation
+  storage.remove("lastActivity");
+  storage.remove("rememberMe");
+  storage.remove("cachedDisplayName");
   sessionStorage.removeItem("token");
   sessionStorage.removeItem("user");
   sessionStorage.removeItem("userId");

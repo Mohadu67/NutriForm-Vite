@@ -4,6 +4,7 @@ const MatchMessage = require('../models/MatchMessage');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
 const { notifyNewMessage } = require('../services/pushNotification.service');
+const logger = require('../utils/logger.js');
 
 /**
  * Récupérer toutes les conversations de l'utilisateur
@@ -62,7 +63,7 @@ async function getConversations(req, res) {
 
     res.status(200).json({ conversations: conversationsWithProfiles });
   } catch (error) {
-    console.error('Erreur getConversations:', error);
+    logger.error('Erreur getConversations:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des conversations.' });
   }
 }
@@ -147,7 +148,7 @@ async function getOrCreateConversation(req, res) {
 
     res.status(200).json(response);
   } catch (error) {
-    console.error('Erreur getOrCreateConversation:', error);
+    logger.error('Erreur getOrCreateConversation:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération de la conversation.' });
   }
 }
@@ -219,12 +220,12 @@ async function sendMessage(req, res) {
         senderPhoto: senderUser.photo,
         message: content.trim().substring(0, 100), // Limiter à 100 caractères
         conversationId: conversationId
-      }).catch(err => console.error('Erreur notification message:', err));
+      }).catch(err => logger.error('Erreur notification message:', err));
     }
 
     res.status(201).json({ message });
   } catch (error) {
-    console.error('Erreur sendMessage:', error);
+    logger.error('Erreur sendMessage:', error);
     res.status(500).json({ error: 'Erreur lors de l\'envoi du message.' });
   }
 }
@@ -274,7 +275,7 @@ async function getMessages(req, res) {
 
     res.status(200).json({ messages });
   } catch (error) {
-    console.error('Erreur getMessages:', error);
+    logger.error('Erreur getMessages:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des messages.' });
   }
 }
@@ -322,7 +323,7 @@ async function markAsRead(req, res) {
       updatedCount: result.modifiedCount
     });
   } catch (error) {
-    console.error('Erreur markAsRead:', error);
+    logger.error('Erreur markAsRead:', error);
     res.status(500).json({ error: 'Erreur lors du marquage des messages.' });
   }
 }
@@ -351,7 +352,7 @@ async function deleteMessage(req, res) {
 
     res.status(200).json({ message: 'Message supprimé.' });
   } catch (error) {
-    console.error('Erreur deleteMessage:', error);
+    logger.error('Erreur deleteMessage:', error);
     res.status(500).json({ error: 'Erreur lors de la suppression du message.' });
   }
 }
@@ -380,7 +381,7 @@ async function blockConversation(req, res) {
 
     res.status(200).json({ message: 'Conversation bloquée.' });
   } catch (error) {
-    console.error('Erreur blockConversation:', error);
+    logger.error('Erreur blockConversation:', error);
     res.status(500).json({ error: 'Erreur lors du blocage de la conversation.' });
   }
 }
@@ -414,7 +415,7 @@ async function deleteConversation(req, res) {
 
     res.status(200).json({ message: 'Conversation supprimée avec succès.' });
   } catch (error) {
-    console.error('Erreur deleteConversation:', error);
+    logger.error('Erreur deleteConversation:', error);
     res.status(500).json({ error: 'Erreur lors de la suppression de la conversation.' });
   }
 }

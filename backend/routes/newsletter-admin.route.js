@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Newsletter = require('../models/Newsletter');
 const adminMiddleware = require('../middlewares/admin.middleware');
+const logger = require('../utils/logger.js');
 
 
 router.use(adminMiddleware);
@@ -26,7 +27,7 @@ router.get('/', async (req, res) => {
       newsletters
     });
   } catch (error) {
-    console.error('Get newsletters error:', error);
+    logger.error('Get newsletters error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération des newsletters'
@@ -51,7 +52,7 @@ router.get('/:id', async (req, res) => {
       newsletter
     });
   } catch (error) {
-    console.error('Get newsletter error:', error);
+    logger.error('Get newsletter error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération de la newsletter'
@@ -93,7 +94,7 @@ router.post('/', async (req, res) => {
       newsletter
     });
   } catch (error) {
-    console.error('Create newsletter error:', error);
+    logger.error('Create newsletter error:', error);
 
     if (error.name === 'ValidationError') {
       return res.status(400).json({
@@ -146,7 +147,7 @@ router.put('/:id', async (req, res) => {
       newsletter
     });
   } catch (error) {
-    console.error('Update newsletter error:', error);
+    logger.error('Update newsletter error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la mise à jour'
@@ -181,7 +182,7 @@ router.delete('/:id', async (req, res) => {
       message: 'Newsletter supprimée avec succès'
     });
   } catch (error) {
-    console.error('Delete newsletter error:', error);
+    logger.error('Delete newsletter error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la suppression'
@@ -230,7 +231,7 @@ router.post('/:id/test', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Test newsletter error:', error);
+    logger.error('Test newsletter error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de l\'envoi du test'
@@ -243,7 +244,7 @@ router.post('/force-send', async (req, res) => {
   try {
     const { checkAndSendNewsletters } = require('../cron/newsletterCron');
 
-    console.log('🔥 Envoi forcé des newsletters...');
+    logger.info('🔥 Envoi forcé des newsletters...');
     await checkAndSendNewsletters();
 
     res.status(200).json({
@@ -251,7 +252,7 @@ router.post('/force-send', async (req, res) => {
       message: 'Vérification et envoi des newsletters lancés'
     });
   } catch (error) {
-    console.error('Force send error:', error);
+    logger.error('Force send error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de l\'envoi forcé'
@@ -279,7 +280,7 @@ router.post('/:id/send-now', async (req, res) => {
       });
     }
 
-    console.log(`📨 Envoi immédiat de la newsletter: ${newsletter.title}`);
+    logger.info(`📨 Envoi immédiat de la newsletter: ${newsletter.title}`);
 
     const { sendNewsletterToAll } = require('../services/emailService');
     const result = await sendNewsletterToAll(newsletter);
@@ -293,8 +294,8 @@ router.post('/:id/send-now', async (req, res) => {
       newsletter.sentAt = new Date();
       await newsletter.save();
 
-      console.log(`✅ Newsletter "${newsletter.title}" envoyée avec succès`);
-      console.log(`   📊 Succès: ${result.successCount}, Échecs: ${result.failedCount}`);
+      logger.info(`✅ Newsletter "${newsletter.title}" envoyée avec succès`);
+      logger.info(`   📊 Succès: ${result.successCount}, Échecs: ${result.failedCount}`);
 
       res.status(200).json({
         success: true,
@@ -309,7 +310,7 @@ router.post('/:id/send-now', async (req, res) => {
       newsletter.status = 'failed';
       await newsletter.save();
 
-      console.error(`❌ Échec de l'envoi de la newsletter "${newsletter.title}"`);
+      logger.error(`❌ Échec de l'envoi de la newsletter "${newsletter.title}"`);
 
       res.status(500).json({
         success: false,
@@ -321,7 +322,7 @@ router.post('/:id/send-now', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Send now error:', error);
+    logger.error('Send now error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de l\'envoi immédiat'

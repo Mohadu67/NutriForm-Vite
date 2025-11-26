@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { storage } from '../../../shared/utils/storage';
 import { secureApiCall, isAuthenticated } from "../../../utils/authService";
+import logger from '../../../shared/utils/logger.js';
 
 export default function useHistoryData() {
   const [records, setRecords] = useState([]);
@@ -8,7 +10,7 @@ export default function useHistoryData() {
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
 
-  const [displayName, setDisplayName] = useState(localStorage.getItem("cachedDisplayName") || "");
+  const [displayName, setDisplayName] = useState(storage.get("cachedDisplayName") || "");
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -31,19 +33,19 @@ export default function useHistoryData() {
         const finalName = name || "Utilisateur";
         setDisplayName(finalName);
         setUser(data);
-        localStorage.setItem("cachedDisplayName", finalName);
+        storage.set("cachedDisplayName", finalName);
 
-        const userStr = localStorage.getItem("user");
+        const userStr = storage.get("user");
         if (userStr) {
           try {
             const userData = JSON.parse(userStr);
             const updatedUser = { ...userData, ...data };
-            localStorage.setItem("user", JSON.stringify(updatedUser));
+            storage.set("user", JSON.stringify(updatedUser));
           } catch {
-            localStorage.setItem("user", JSON.stringify(data));
+            storage.set("user", JSON.stringify(data));
           }
         } else {
-          localStorage.setItem("user", JSON.stringify(data));
+          storage.set("user", JSON.stringify(data));
         }
       })
       .catch((err) => {
@@ -54,20 +56,20 @@ export default function useHistoryData() {
           return;
         }
 
-        const weeklyGoal = localStorage.getItem('weeklyGoal');
+        const weeklyGoal = storage.get('weeklyGoal');
         const dynamiPrefs = {
-          dynamiStep: localStorage.getItem('dynamiStep'),
-          dynamiType: localStorage.getItem('dynamiType'),
-          dynamiEquip: localStorage.getItem('dynamiEquip'),
-          dynamiMuscle: localStorage.getItem('dynamiMuscle'),
+          dynamiStep: storage.get('dynamiStep'),
+          dynamiType: storage.get('dynamiType'),
+          dynamiEquip: storage.get('dynamiEquip'),
+          dynamiMuscle: storage.get('dynamiMuscle'),
         };
 
-        localStorage.clear();
+        storage.clear();
         sessionStorage.clear();
 
-        if (weeklyGoal) localStorage.setItem('weeklyGoal', weeklyGoal);
+        if (weeklyGoal) storage.set('weeklyGoal', weeklyGoal);
         Object.entries(dynamiPrefs).forEach(([key, value]) => {
-          if (value) localStorage.setItem(key, value);
+          if (value) storage.set(key, value);
         });
 
         setError("Session expirée. Reconnecte-toi.");
@@ -224,7 +226,7 @@ export default function useHistoryData() {
         setRecords((prev) => prev.filter((r) => r.id !== id));
       }
     } catch (e) {
-      console.error("Erreur lors de la suppression", e);
+      logger.error("Erreur lors de la suppression", e);
     }
   };
 

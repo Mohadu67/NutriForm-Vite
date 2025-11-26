@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const LeaderboardEntry = require('../models/LeaderboardEntry');
 const User = require('../models/User');
 const { calculateUserStats } = require('../controllers/leaderboard.controller');
+const logger = require('../utils/logger.js');
 
 /**
  * Mise à jour automatique des stats du leaderboard
@@ -10,7 +11,7 @@ const { calculateUserStats } = require('../controllers/leaderboard.controller');
 function startLeaderboardCron() {
   // Tous les jours à 3h du matin
   cron.schedule('0 3 * * *', async () => {
-    console.log('🏆 [CRON] Mise à jour des stats du leaderboard...');
+    logger.info('🏆 [CRON] Mise à jour des stats du leaderboard...');
 
     try {
       const entries = await LeaderboardEntry.find({}).lean();
@@ -35,20 +36,20 @@ function startLeaderboardCron() {
 
           updated++;
         } catch (err) {
-          console.error(`❌ Erreur pour userId ${entry.userId}:`, err.message);
+          logger.error(`❌ Erreur pour userId ${entry.userId}:`, err.message);
           errors++;
         }
       }
 
-      console.log(
+      logger.info(
         `✅ [CRON] Leaderboard mis à jour: ${updated} entrées mises à jour, ${errors} erreurs`
       );
     } catch (error) {
-      console.error('❌ [CRON] Erreur lors de la mise à jour du leaderboard:', error);
+      logger.error('❌ [CRON] Erreur lors de la mise à jour du leaderboard:', error);
     }
   });
 
-  console.log('🏆 Cron job leaderboard démarré (tous les jours à 3h)');
+  logger.info('🏆 Cron job leaderboard démarré (tous les jours à 3h)');
 }
 
 module.exports = { startLeaderboardCron };

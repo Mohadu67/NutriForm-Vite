@@ -6,6 +6,7 @@ import {
   unsubscribeFromNotifications,
   isSubscribed
 } from '../../services/notificationService';
+import { storage } from '../../shared/utils/storage';
 import styles from './NotificationPrompt.module.css';
 
 const NotificationPrompt = () => {
@@ -87,7 +88,7 @@ const NotificationPrompt = () => {
   const handleDismiss = () => {
     setShowPrompt(false);
     // Réafficher dans 24h
-    localStorage.setItem('notificationPromptDismissed', Date.now().toString());
+    storage.set('notificationPromptDismissed', Date.now().toString());
   };
 
   // Ne rien afficher si pas supporté

@@ -4,6 +4,7 @@ import { isAuthenticated } from '../../shared/api/auth';
 import { getConversations, deleteConversation as deleteMatchConv } from '../../shared/api/matchChat';
 import { getAIConversations, deleteAIConversation } from '../../shared/api/chat';
 import { getSubscriptionStatus } from '../../shared/api/subscription';
+import logger from '../../shared/utils/logger';
 import Avatar from '../Shared/Avatar';
 import styles from './ChatHistory.module.css';
 
@@ -26,7 +27,7 @@ export default function ChatHistory({ onLogin }) {
           const subscription = await getSubscriptionStatus();
           setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
         } catch (err) {
-          console.error('Erreur récupération subscription:', err);
+          logger.error('Erreur récupération subscription:', err);
           setIsPremium(false);
         }
       }
@@ -46,7 +47,7 @@ export default function ChatHistory({ onLogin }) {
       const { conversations: aiConvs } = await getAIConversations();
       setConversations(aiConvs || []);
     } catch (err) {
-      console.error('Erreur chargement conversations IA:', err);
+      logger.error('Erreur chargement conversations IA:', err);
     }
   };
 
@@ -62,7 +63,7 @@ export default function ChatHistory({ onLogin }) {
       const { conversations } = await getConversations();
       setMatchConversations(conversations || []);
     } catch (err) {
-      console.error('Erreur chargement conversations matches:', err);
+      logger.error('Erreur chargement conversations matches:', err);
     }
   };
 
@@ -101,7 +102,7 @@ export default function ChatHistory({ onLogin }) {
       // Recharger les conversations
       await loadAIConversations();
     } catch (err) {
-      console.error('Erreur suppression conversation IA:', err);
+      logger.error('Erreur suppression conversation IA:', err);
       alert('Erreur lors de la suppression de la conversation.');
     }
   };
@@ -115,7 +116,7 @@ export default function ChatHistory({ onLogin }) {
       // Recharger les conversations
       await loadMatchConversations();
     } catch (err) {
-      console.error('Erreur suppression conversation match:', err);
+      logger.error('Erreur suppression conversation match:', err);
       alert('Erreur lors de la suppression de la conversation.');
     }
   };

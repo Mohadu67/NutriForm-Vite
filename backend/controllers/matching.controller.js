@@ -2,6 +2,7 @@ const UserProfile = require('../models/UserProfile');
 const Match = require('../models/Match');
 const User = require('../models/User');
 const { notifyNewMatch } = require('../services/pushNotification.service');
+const logger = require('../utils/logger.js');
 
 /**
  * Algorithme de matching intelligent avec scoring hyper-local
@@ -132,7 +133,7 @@ exports.getMatchSuggestions = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Erreur getMatchSuggestions:', error);
+    logger.error('Erreur getMatchSuggestions:', error);
     res.status(500).json({ error: 'Erreur lors de la recherche de matches.' });
   }
 };
@@ -285,14 +286,14 @@ exports.likeProfile = async (req, res) => {
             username: user2.pseudo || 'Un utilisateur',
             photo: user2.photo,
             matchId: match._id
-          }).catch(err => console.error('Erreur notification user1:', err));
+          }).catch(err => logger.error('Erreur notification user1:', err));
 
           // Notifier l'utilisateur 2
           notifyNewMatch(user2._id, {
             username: user1.pseudo || 'Un utilisateur',
             photo: user1.photo,
             matchId: match._id
-          }).catch(err => console.error('Erreur notification user2:', err));
+          }).catch(err => logger.error('Erreur notification user2:', err));
         }
       }
 
@@ -333,7 +334,7 @@ exports.likeProfile = async (req, res) => {
       message: 'Like enregistré.'
     });
   } catch (error) {
-    console.error('Erreur likeProfile:', error);
+    logger.error('Erreur likeProfile:', error);
     res.status(500).json({ error: 'Erreur lors du like.' });
   }
 };
@@ -381,7 +382,7 @@ exports.unlikeProfile = async (req, res) => {
 
     res.json({ message: 'Like retiré.' });
   } catch (error) {
-    console.error('Erreur unlikeProfile:', error);
+    logger.error('Erreur unlikeProfile:', error);
     res.status(500).json({ error: 'Erreur lors du retrait du like.' });
   }
 };
@@ -426,7 +427,7 @@ exports.rejectMatch = async (req, res) => {
 
     res.json({ message: 'Profil rejeté.' });
   } catch (error) {
-    console.error('Erreur rejectMatch:', error);
+    logger.error('Erreur rejectMatch:', error);
     res.status(500).json({ error: 'Erreur lors du rejet.' });
   }
 };
@@ -476,7 +477,7 @@ exports.getMutualMatches = async (req, res) => {
 
     res.json({ matches: formattedMatches });
   } catch (error) {
-    console.error('Erreur getMutualMatches:', error);
+    logger.error('Erreur getMutualMatches:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des matches.' });
   }
 };
@@ -507,7 +508,7 @@ exports.blockUser = async (req, res) => {
 
     res.json({ message: 'Utilisateur bloqué.' });
   } catch (error) {
-    console.error('Erreur blockUser:', error);
+    logger.error('Erreur blockUser:', error);
     res.status(500).json({ error: 'Erreur lors du blocage.' });
   }
 };

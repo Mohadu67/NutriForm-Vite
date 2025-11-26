@@ -1,4 +1,5 @@
 import axios from "axios";
+import storage from "../utils/storage";
 
 const baseURL = import.meta.env.VITE_API_URL || "/api";
 
@@ -12,7 +13,7 @@ client.interceptors.response.use(
   (err) => {
     const status = err?.response?.status;
     if (status === 401) {
-      localStorage.removeItem('token');
+      storage.remove('token');
       sessionStorage.removeItem('token');
       window.dispatchEvent(new Event('storage'));
       // Ne rediriger que depuis les pages protégées (dashboard, admin, etc.)

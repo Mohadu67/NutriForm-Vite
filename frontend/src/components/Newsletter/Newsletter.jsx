@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { storage } from '../../shared/utils/storage';
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useTranslation } from "react-i18next";
 import styles from "./Newsletter.module.css";
@@ -14,7 +15,7 @@ export default function Newsletter() {
   const [message, setMessage] = useState("");
   const [captchaReady, setCaptchaReady] = useState(false);
   const [isHidden, setIsHidden] = useState(() => {
-    return localStorage.getItem("hideNewsletter") === "true";
+    return storage.get("hideNewsletter") === "true";
   });
 
   useEffect(() => {
@@ -63,7 +64,7 @@ export default function Newsletter() {
         setStatus("success");
         setMessage(t('newsletter.successMessage'));
         setEmail("");
-        localStorage.setItem("hideNewsletter", "true");
+        storage.set("hideNewsletter", "true");
 
         setTimeout(() => {
           setStatus("idle");

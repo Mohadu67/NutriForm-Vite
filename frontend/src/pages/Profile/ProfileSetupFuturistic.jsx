@@ -5,6 +5,7 @@ import Footer from '../../components/Footer/Footer';
 import { getMyProfile, updateProfile, updateLocation, updateAvailability, updateMatchPreferences } from '../../shared/api/profile';
 import styles from './ProfileSetupFuturistic.module.css';
 import { MapPinIcon, XIcon } from './SetupIcons';
+import logger from '../../shared/utils/logger.js';
 
 const WORKOUT_TYPES = [
   { value: 'musculation', label: 'Musculation', icon: '💪' },
@@ -204,7 +205,7 @@ export default function ProfileSetupFuturistic() {
         });
       }
     } catch (err) {
-      console.error('Erreur chargement profil:', err);
+      logger.error('Erreur chargement profil:', err);
       setError('Impossible de charger votre profil.');
     } finally {
       setLoading(false);
@@ -227,7 +228,7 @@ export default function ProfileSetupFuturistic() {
         setSuccess('Localisation récupérée avec succès !');
       },
       (error) => {
-        console.error('Erreur géolocalisation:', error);
+        logger.error('Erreur géolocalisation:', error);
         setError('Impossible d\'obtenir votre position. Vérifiez les autorisations.');
       }
     );
@@ -318,7 +319,7 @@ export default function ProfileSetupFuturistic() {
         setTimeout(() => navigate('/matching-futur'), 800);
       }
     } catch (err) {
-      console.error('Erreur sauvegarde:', err);
+      logger.error('Erreur sauvegarde:', err);
       setError(err.response?.data?.error || 'Erreur lors de la sauvegarde.');
     } finally {
       setSaving(false);

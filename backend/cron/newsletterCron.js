@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const Newsletter = require('../models/Newsletter');
 const { sendNewsletterToAll } = require('../services/emailService');
+const logger = require('../utils/logger.js');
 
 const checkAndSendNewsletters = async () => {
   try {
@@ -12,14 +13,14 @@ const checkAndSendNewsletters = async () => {
     });
 
     if (newslettersToSend.length === 0) {
-      console.log('📭 Aucune newsletter à envoyer pour le moment');
+      logger.info('📭 Aucune newsletter à envoyer pour le moment');
       return;
     }
 
-    console.log(`📬 ${newslettersToSend.length} newsletter(s) à envoyer`);
+    logger.info(`📬 ${newslettersToSend.length} newsletter(s) à envoyer`);
 
     for (const newsletter of newslettersToSend) {
-      console.log(`📨 Envoi de la newsletter: ${newsletter.title}`);
+      logger.info(`📨 Envoi de la newsletter: ${newsletter.title}`);
 
       const result = await sendNewsletterToAll(newsletter);
 
@@ -31,8 +32,8 @@ const checkAndSendNewsletters = async () => {
         newsletter.status = 'sent';
         newsletter.sentAt = new Date();
 
-        console.log(`✅ Newsletter "${newsletter.title}" envoyée avec succès`);
-        console.log(`   📊 Succès: ${result.successCount}, Échecs: ${result.failedCount}`);
+        logger.info(`✅ Newsletter "${newsletter.title}" envoyée avec succès`);
+        logger.info(`   📊 Succès: ${result.successCount}, Échecs: ${result.failedCount}`);
       } else {
         
         newsletter.status = 'failed';
@@ -41,13 +42,13 @@ const checkAndSendNewsletters = async () => {
         const partialInfo = newsletter.successCount > 0
           ? ` (succès: ${newsletter.successCount}, échecs: ${newsletter.failedCount})`
           : '';
-        console.error(`❌ Échec de l'envoi de la newsletter "${newsletter.title}"${partialInfo}`);
+        logger.error(`❌ Échec de l'envoi de la newsletter "${newsletter.title}"${partialInfo}`);
       }
 
       await newsletter.save();
     }
   } catch (error) {
-    console.error('❌ Erreur dans le cron de newsletter:', error);
+    logger.error('❌ Erreur dans le cron de newsletter:', error);
   }
 };
 
@@ -56,16 +57,16 @@ const startNewsletterCron = () => {
   
   
   cron.schedule('0 9 * * *', async () => {
-    console.log('🔄 Vérification quotidienne des newsletters programmées...');
+    logger.info('🔄 Vérification quotidienne des newsletters programmées...');
     await checkAndSendNewsletters();
   });
 
-  console.log('✅ Cron job newsletter démarré (tous les jours à 9h00)');
+  logger.info('✅ Cron job newsletter démarré (tous les jours à 9h00)');
 };
 
 
 const testNewsletterCron = async () => {
-  console.log('🧪 Test manuel du cron newsletter...');
+  logger.info('🧪 Test manuel du cron newsletter...');
   await checkAndSendNewsletters();
 };
 

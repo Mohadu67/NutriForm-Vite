@@ -1,4 +1,5 @@
 const axios = require('axios');
+const logger = require('../utils/logger.js');
 
 
 async function verifyCaptcha(req, res, next) {
@@ -7,14 +8,14 @@ async function verifyCaptcha(req, res, next) {
 
   if (process.env.RECAPTCHA_DISABLED === 'true') {
     if (process.env.NODE_ENV === 'production') {
-      console.warn('⚠️ reCAPTCHA désactivé via RECAPTCHA_DISABLED=true');
+      logger.warn('⚠️ reCAPTCHA désactivé via RECAPTCHA_DISABLED=true');
     }
     return next();
   }
 
   
   if (!secretKey) {
-    console.warn('⚠️ RECAPTCHA_SECRET_KEY manquante dans .env');
+    logger.warn('⚠️ RECAPTCHA_SECRET_KEY manquante dans .env');
     
     if (process.env.NODE_ENV === 'production') {
       return res.status(500).json({
@@ -23,7 +24,7 @@ async function verifyCaptcha(req, res, next) {
       });
     }
     
-    console.log('🔓 Mode dev: reCAPTCHA bypass');
+    logger.info('🔓 Mode dev: reCAPTCHA bypass');
     return next();
   }
 
@@ -60,7 +61,7 @@ async function verifyCaptcha(req, res, next) {
     
     
     if (score < 0.5) {
-      console.warn(`⚠️ Score reCAPTCHA faible: ${score} pour action: ${action}`);
+      logger.warn(`⚠️ Score reCAPTCHA faible: ${score} pour action: ${action}`);
       return res.status(403).json({
         success: false,
         message: 'Activité suspecte détectée'
@@ -71,7 +72,7 @@ async function verifyCaptcha(req, res, next) {
     req.recaptchaScore = score;
     next();
   } catch (error) {
-    console.error('Erreur vérification reCAPTCHA:', error.message);
+    logger.error('Erreur vérification reCAPTCHA:', error.message);
     return res.status(500).json({
       success: false,
       message: 'Erreur lors de la vérification anti-bot'

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { storage } from '../../shared/utils/storage';
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 
@@ -20,7 +21,7 @@ export default function Footer() {
     if (typeof window === "undefined") {
       return false;
     }
-    return !!localStorage.getItem("user");
+    return !!storage.get("user");
   });
   const location = useLocation();
 
@@ -31,7 +32,7 @@ export default function Footer() {
   ];
 
   useEffect(() => {
-    const onStorage = () => setIsLoggedIn(!!localStorage.getItem("user"));
+    const onStorage = () => setIsLoggedIn(!!storage.get("user"));
     window.addEventListener("storage", onStorage);
 
     onStorage();
