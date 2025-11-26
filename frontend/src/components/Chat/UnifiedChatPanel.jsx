@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { getMessages, sendMessage as sendMatchMessage, markMessagesAsRead } from '../../shared/api/matchChat';
 import { isAuthenticated } from '../../shared/api/auth';
 import { storage } from '../../shared/utils/storage';
 import logger from '../../shared/utils/logger';
+import { useMessageSync } from '../../hooks/useMessageSync';
 import styles from './UnifiedChatPanel.module.css';
 
 export default function UnifiedChatPanel({ conversationId, matchConversation, initialMessage }) {
@@ -18,8 +19,54 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
   const messagesEndRef = useRef(null);
   const initialMessageSentRef = useRef(false);
+  const hasLoadedInitialMessages = useRef(false);
 
   const isMatchChat = !!matchConversation;
+  const conversationIdToUse = isMatchChat ? matchConversation?._id : conversationId;
+  const conversationType = isMatchChat ? 'match' : 'ai';
+
+  // Callback pour gérer les nouveaux messages
+  const handleNewMessages = useCallback((newMessages, hasNew) => {
+    setMessages(newMessages);
+
+    // Si c'est la première charge, vérifier l'escalation
+    if (!hasLoadedInitialMessages.current && newMessages.length > 0) {
+      hasLoadedInitialMessages.current = true;
+
+      if (!isMatchChat) {
+        const hasEscalated = newMessages.some(msg => msg.escalated === true);
+        if (hasEscalated) {
+          setEscalated(true);
+        }
+      } else {
+        // Trouver l'ID de l'utilisateur courant pour les chats match
+        const participants = matchConversation?.participants || [];
+        const otherUserId = matchConversation?.otherUser?._id;
+        const myUserId = participants.find(p => p._id !== otherUserId)?._id || participants.find(p => p !== otherUserId);
+        setCurrentUserId(myUserId);
+      }
+    }
+
+    // Marquer comme lus si c'est un chat match et qu'il y a de nouveaux messages
+    if (hasNew && isMatchChat && matchConversation?._id) {
+      markMessagesAsRead(matchConversation._id).catch(err =>
+        logger.error('Erreur marquage lu:', err)
+      );
+    }
+  }, [isMatchChat, matchConversation]);
+
+  // Utiliser le hook de synchronisation des messages
+  const { refresh } = useMessageSync(
+    conversationIdToUse,
+    conversationType,
+    handleNewMessages,
+    {
+      pollingInterval: 5000, // Polling toutes les 5 secondes
+      enabled: isAuth && !!conversationIdToUse,
+      autoScroll: true,
+      notifyOnNew: true
+    }
+  );
 
   // Vérifier authentification
   useEffect(() => {
@@ -35,66 +82,22 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Charger messages
+  // Gérer le message initial
   useEffect(() => {
-    if (isAuth) {
-      if (isMatchChat && matchConversation?._id) {
-        loadMatchMessages();
-        markMessagesAsRead(matchConversation._id).catch(err =>
-          logger.error('Erreur marquage lu:', err)
-        );
-      } else if (conversationId) {
-        loadHistory(conversationId);
-      } else if (initialMessage && !initialMessageSentRef.current) {
-        initialMessageSentRef.current = true;
-        setMessages([
-          {
-            role: 'bot',
-            content: "Salut ! 👋 Je suis l'assistant Harmonith. Comment puis-je t'aider aujourd'hui ?",
-            createdAt: new Date()
-          }
-        ]);
-        handleSendMessage(initialMessage);
-      }
-    }
-  }, [isAuth, conversationId, matchConversation?._id, isMatchChat]);
-
-  const loadHistory = async (convId) => {
-    try {
-      setLoading(true);
-      const { messages: history } = await getChatHistory(convId);
-      setMessages(history || []);
-
-      // Vérifier si la conversation est déjà escaladée (chercher dans les messages)
-      if (history && history.length > 0) {
-        const hasEscalated = history.some(msg => msg.escalated === true);
-        if (hasEscalated) {
-          setEscalated(true);
+    if (isAuth && !conversationId && !isMatchChat && initialMessage && !initialMessageSentRef.current) {
+      initialMessageSentRef.current = true;
+      setMessages([
+        {
+          role: 'bot',
+          content: "Salut ! 👋 Je suis l'assistant Harmonith. Comment puis-je t'aider aujourd'hui ?",
+          createdAt: new Date()
         }
-      }
-    } catch (err) {
-      logger.error('Erreur chargement historique:', err);
-    } finally {
-      setLoading(false);
+      ]);
+      handleSendMessage(initialMessage);
     }
-  };
+  }, [isAuth, conversationId, isMatchChat, initialMessage]);
 
-  const loadMatchMessages = async () => {
-    try {
-      setLoading(true);
-      const { messages: msgs } = await getMessages(matchConversation._id, { limit: 100 });
-      setMessages(msgs);
-      // Trouver l'ID de l'utilisateur courant
-      const participants = matchConversation.participants || [];
-      const otherUserId = matchConversation.otherUser?._id;
-      const myUserId = participants.find(p => p._id !== otherUserId)?._id || participants.find(p => p !== otherUserId);
-      setCurrentUserId(myUserId);
-    } catch (err) {
-      logger.error('Erreur chargement messages match:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Les fonctions loadHistory et loadMatchMessages sont maintenant gérées par useMessageSync
 
   const handleSendMessage = async (msgContent) => {
     const content = msgContent || inputMessage.trim();
@@ -112,6 +115,8 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
           type: 'text'
         });
         setMessages(prev => [...prev, message]);
+        // Rafraîchir pour s'assurer de la synchronisation
+        setTimeout(() => refresh(), 1000);
       } else {
         // Envoyer message IA
         const userMessage = {

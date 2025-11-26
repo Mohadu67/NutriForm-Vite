@@ -21,7 +21,7 @@ import {
   DumbbellIcon,
   CheckCircleIcon,
   TargetIcon
-} from './MatchingIcons';
+} from '../../components/Icons/GlobalIcons';
 
 const WORKOUT_ICONS = {
   musculation: '🏋️‍♂️',

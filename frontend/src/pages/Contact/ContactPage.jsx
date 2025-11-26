@@ -5,6 +5,7 @@ import { useChat } from "../../contexts/ChatContext";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import Faq from "./Faq/Faq.jsx";
+import { MessageIcon } from "../../components/Icons/GlobalIcons";
 import styles from "./ContactPage.module.css";
 
 export default function ContactPage() {
@@ -120,9 +121,7 @@ export default function ContactPage() {
               onClick={handleOpenAiAssistant}
               aria-label="Ouvrir l'assistant IA"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
-              </svg>
+              <MessageIcon size={20} />
               Discuter avec l'Assistant IA
             </button>
           </div>
