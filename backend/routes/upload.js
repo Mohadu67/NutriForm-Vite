@@ -5,6 +5,7 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const User = require('../models/User');
 const auth = require('../middlewares/auth.middleware');
+const logger = require('../utils/logger.js');
 
 // Configuration Cloudinary
 cloudinary.config({
@@ -73,7 +74,7 @@ router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => 
         const publicId = user.photo.split('/').slice(-2).join('/').split('.')[0];
         await cloudinary.uploader.destroy(publicId);
       } catch (err) {
-        console.error('Erreur suppression ancienne photo:', err);
+        logger.error('Erreur suppression ancienne photo:', err);
       }
     }
 
@@ -88,14 +89,14 @@ router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => 
       photo: photoUrl
     });
   } catch (error) {
-    console.error('Erreur upload photo:', error);
+    logger.error('Erreur upload photo:', error);
 
     // Tenter de supprimer l'image uploadée sur Cloudinary en cas d'erreur
     if (req.file && req.file.filename) {
       try {
         await cloudinary.uploader.destroy(req.file.filename);
       } catch (err) {
-        console.error('Erreur nettoyage Cloudinary:', err);
+        logger.error('Erreur nettoyage Cloudinary:', err);
       }
     }
 
@@ -131,7 +132,7 @@ router.delete('/profile-photo', auth, async (req, res) => {
         const publicId = user.photo.split('/').slice(-2).join('/').split('.')[0];
         await cloudinary.uploader.destroy(publicId);
       } catch (err) {
-        console.error('Erreur suppression Cloudinary:', err);
+        logger.error('Erreur suppression Cloudinary:', err);
       }
     }
 
@@ -143,7 +144,7 @@ router.delete('/profile-photo', auth, async (req, res) => {
       message: 'Photo de profil supprimée'
     });
   } catch (error) {
-    console.error('Erreur suppression photo:', error);
+    logger.error('Erreur suppression photo:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la suppression de la photo'

@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 const sgMail = require('@sendgrid/mail');
 const config = require('../config');
+const logger = require('../utils/logger.js');
 
 
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
@@ -9,9 +10,9 @@ const FROM_NAME = process.env.FROM_NAME || config.smtp.fromName || undefined;
 
 if (USE_SENDGRID) {
   sgMail.setApiKey(SENDGRID_API_KEY);
-  console.log('[EMAIL_SERVICE] Using SendGrid for newsletter delivery');
+  logger.info('[EMAIL_SERVICE] Using SendGrid for newsletter delivery');
 } else {
-  console.log('[EMAIL_SERVICE] Using SMTP for newsletter delivery');
+  logger.info('[EMAIL_SERVICE] Using SMTP for newsletter delivery');
 }
 
 
@@ -19,7 +20,7 @@ let transporter = null;
 
 const getTransporter = () => {
   if (!transporter) {
-    console.log('[EMAIL_SERVICE] Creating transporter with config:', {
+    logger.info('[EMAIL_SERVICE] Creating transporter with config:', {
       host: config.smtp.host,
       port: config.smtp.port,
       secure: config.smtp.secure,
@@ -122,7 +123,7 @@ const sendNewsletterEmail = async (to, subject, content, senderName = 'L\'équip
       throw new Error('CONFIG: smtp.from manquant pour newsletter');
     }
 
-    console.log(`[EMAIL_SERVICE] Sending newsletter to ${to}...`);
+    logger.info(`[EMAIL_SERVICE] Sending newsletter to ${to}...`);
 
     if (USE_SENDGRID) {
       
@@ -133,7 +134,7 @@ const sendNewsletterEmail = async (to, subject, content, senderName = 'L\'équip
         html: htmlContent,
       };
       const result = await sgMail.send(msg);
-      console.log(`[EMAIL_SERVICE] ✅ Newsletter sent to ${to} via SendGrid: ${result[0]?.headers['x-message-id']}`);
+      logger.info(`[EMAIL_SERVICE] ✅ Newsletter sent to ${to} via SendGrid: ${result[0]?.headers['x-message-id']}`);
       return { success: true, messageId: result[0]?.headers['x-message-id'] };
     } else {
       
@@ -145,13 +146,13 @@ const sendNewsletterEmail = async (to, subject, content, senderName = 'L\'équip
         html: htmlContent
       });
 
-      console.log(`[EMAIL_SERVICE] ✅ Newsletter sent to ${to} via SMTP: ${info.messageId}`);
+      logger.info(`[EMAIL_SERVICE] ✅ Newsletter sent to ${to} via SMTP: ${info.messageId}`);
       return { success: true, messageId: info.messageId };
     }
   } catch (error) {
-    console.error(`[EMAIL_SERVICE] ❌ Error sending newsletter to ${to}:`, error.message);
-    console.error('[EMAIL_SERVICE] Error code:', error.code);
-    console.error('[EMAIL_SERVICE] Full error:', error);
+    logger.error(`[EMAIL_SERVICE] ❌ Error sending newsletter to ${to}:`, error.message);
+    logger.error('[EMAIL_SERVICE] Error code:', error.code);
+    logger.error('[EMAIL_SERVICE] Full error:', error);
     return { success: false, error: error.message };
   }
 };
@@ -202,7 +203,7 @@ const sendNewsletterToAll = async (newsletter) => {
     const overallSuccess = failedCount === 0;
 
     if (!overallSuccess) {
-      console.error('[EMAIL_SERVICE] Newsletter delivery issues detected:', {
+      logger.error('[EMAIL_SERVICE] Newsletter delivery issues detected:', {
         failedCount,
         sample: failedRecipients.slice(0, 5)
       });
@@ -216,7 +217,7 @@ const sendNewsletterToAll = async (newsletter) => {
       failedRecipients
     };
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de la newsletter:', error);
+    logger.error('Erreur lors de l\'envoi de la newsletter:', error);
     return {
       success: false,
       error: error.message

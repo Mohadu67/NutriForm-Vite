@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import styles from "./ProfilePhoto.module.css";
 import { secureApiCall } from "../../../../utils/authService.js";
 import { confirmDialog } from "../../../../utils/confirmDialog.jsx";
+import { storage } from "../../../../shared/utils/storage";
+import logger from '../../../../shared/utils/logger.js';
 
 export default function ProfilePhoto({ user }) {
   const [photo, setPhoto] = useState(user?.photo || null);
@@ -45,14 +47,14 @@ export default function ProfilePhoto({ user }) {
       if (data.success) {
         setPhoto(data.photo);
 
-        const userStr = localStorage.getItem("user");
+        const userStr = storage.get("user");
         if (userStr) {
           try {
             const userData = JSON.parse(userStr);
             userData.photo = data.photo;
-            localStorage.setItem("user", JSON.stringify(userData));
+            storage.set("user", JSON.stringify(userData));
           } catch (e) {
-            console.error("Failed to update user photo in localStorage:", e);
+            logger.error("Failed to update user photo in storage:", e);
           }
         }
 
@@ -62,7 +64,7 @@ export default function ProfilePhoto({ user }) {
         setMessage({ type: "error", text: data.message || "Erreur lors de l'upload" });
       }
     } catch (err) {
-      console.error("Erreur upload photo:", err);
+      logger.error("Erreur upload photo:", err);
       setMessage({ type: "error", text: "Erreur lors de l'upload de la photo" });
     } finally {
       setUploading(false);
@@ -99,14 +101,14 @@ export default function ProfilePhoto({ user }) {
       if (data.success) {
         setPhoto(null);
 
-        const userStr = localStorage.getItem("user");
+        const userStr = storage.get("user");
         if (userStr) {
           try {
             const userData = JSON.parse(userStr);
             userData.photo = null;
-            localStorage.setItem("user", JSON.stringify(userData));
+            storage.set("user", JSON.stringify(userData));
           } catch (e) {
-            console.error("Failed to remove user photo from localStorage:", e);
+            logger.error("Failed to remove user photo from storage:", e);
           }
         }
 
@@ -116,7 +118,7 @@ export default function ProfilePhoto({ user }) {
         setMessage({ type: "error", text: data.message || "Erreur lors de la suppression" });
       }
     } catch (err) {
-      console.error("Erreur suppression photo:", err);
+      logger.error("Erreur suppression photo:", err);
       setMessage({ type: "error", text: "Erreur lors de la suppression de la photo" });
     } finally {
       setUploading(false);

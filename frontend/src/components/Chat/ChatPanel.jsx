@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { storage } from '../../shared/utils/storage';
 import { Button, Spinner } from 'react-bootstrap';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { isAuthenticated } from '../../shared/api/auth';
 import styles from './ChatPanel.module.css';
+import logger from '../../shared/utils/logger.js';
 
 export default function ChatPanel({ conversationId: propConversationId, initialMessage, onClose }) {
   const [messages, setMessages] = useState([]);
@@ -72,7 +74,7 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
         ]);
       }
     } catch (err) {
-      console.error('Erreur envoi message:', err);
+      logger.error('Erreur envoi message:', err);
     } finally {
       setLoading(false);
     }
@@ -119,7 +121,7 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
         setMessages(history);
       }
     } catch (err) {
-      console.error('Erreur chargement historique:', err);
+      logger.error('Erreur chargement historique:', err);
     }
   };
 
@@ -135,7 +137,7 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
 
   const saveConversationToHistory = (convId, firstMessage) => {
     try {
-      const savedConversations = localStorage.getItem('chatConversations');
+      const savedConversations = storage.get('chatConversations');
       let conversations = savedConversations ? JSON.parse(savedConversations) : [];
 
       // Ajouter nouvelle conversation
@@ -151,9 +153,9 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
         conversations = conversations.slice(0, 20);
       }
 
-      localStorage.setItem('chatConversations', JSON.stringify(conversations));
+      storage.set('chatConversations', JSON.stringify(conversations));
     } catch (err) {
-      console.error('Erreur sauvegarde historique:', err);
+      logger.error('Erreur sauvegarde historique:', err);
     }
   };
 
@@ -172,7 +174,7 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
         }
       ]);
     } catch (err) {
-      console.error('Erreur escalade:', err);
+      logger.error('Erreur escalade:', err);
     }
   };
 

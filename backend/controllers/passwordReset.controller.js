@@ -6,20 +6,21 @@ const User = require('../models/User');
 const { sendResetEmail } = require('../services/mailer.service');
 const { buildFrontBaseUrl } = require('../utils/urls');
 const { validatePassword } = require('../utils/passwordValidator');
+const logger = require('../utils/logger.js');
 
 exports.requestPasswordReset = async (req, res) => {
-  console.log('[requestPasswordReset] START');
+  logger.info('[requestPasswordReset] START');
   const { email } = req.body;
   if (!email) {
     return res.status(400).json({ message: 'Email is required.' });
   }
   try {
     const emailNorm = String(email).trim().toLowerCase();
-    console.log('[requestPasswordReset] Looking for user:', emailNorm);
+    logger.info('[requestPasswordReset] Looking for user:', emailNorm);
     const user = await User.findOne({ email: emailNorm });
 
     if (!user) {
-      console.log('[requestPasswordReset] User not found');
+      logger.info('[requestPasswordReset] User not found');
       return res.status(200).json({ message: 'If an account with that email exists, a reset link has been sent.' });
     }
 
@@ -29,24 +30,24 @@ exports.requestPasswordReset = async (req, res) => {
     user.resetPasswordToken = token;
     user.resetPasswordExpires = expires;
     await user.save();
-    console.log('[requestPasswordReset] Token saved');
+    logger.info('[requestPasswordReset] Token saved');
 
     const front = buildFrontBaseUrl();
-    console.log('[requestPasswordReset] Frontend URL:', front);
+    logger.info('[requestPasswordReset] Frontend URL:', front);
     const resetUrl = `${front}/reset-password?token=${encodeURIComponent(token)}`;
 
-    console.log('[requestPasswordReset] Sending email to:', user.email);
+    logger.info('[requestPasswordReset] Sending email to:', user.email);
     await sendResetEmail({
       to: user.email,
       toName: user.prenom || user.pseudo || user.email,
       resetUrl,
     });
-    console.log('[requestPasswordReset] Email sent successfully');
+    logger.info('[requestPasswordReset] Email sent successfully');
 
     return res.status(200).json({ message: 'If an account with that email exists, a reset link has been sent.' });
   } catch (err) {
-    console.error('[forgotPassword] error:', err);
-    console.error('[forgotPassword] error stack:', err.stack);
+    logger.error('[forgotPassword] error:', err);
+    logger.error('[forgotPassword] error stack:', err.stack);
     return res.status(500).json({ message: 'Server error.' });
   }
 };

@@ -3,6 +3,7 @@ import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { toast } from 'sonner';
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import styles from "./CreatUser.module.css";
+import logger from '../../../shared/utils/logger.js';
 
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const RECAPTCHA_ENABLED = import.meta.env.VITE_ENABLE_RECAPTCHA !== 'false' && import.meta.env.VITE_ENABLE_RECAPTCHA !== '0';
@@ -92,7 +93,7 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
 
       let data = {};
       try { data = await res.json(); } catch (e) {
-        console.error("Failed to parse response:", e);
+        logger.error("Failed to parse response:", e);
       }
 
       if (!res.ok) {
@@ -111,14 +112,14 @@ export default function CreatUser({ onCreated, toLogin, onClose }) {
             body: JSON.stringify({ email: emailNorm, captchaToken: newsletterCaptchaToken })
           });
         } catch (newsletterErr) {
-          console.error("Failed to subscribe to newsletter:", newsletterErr);
+          logger.error("Failed to subscribe to newsletter:", newsletterErr);
         }
       }
 
       setStatus("success");
       toast.success("Compte créé ! Vérifie ton email pour l'activer.");
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       setStatus("error");
       const message = err.message || "Une erreur est survenue. Réessaie.";
       setErrorMsg(message);

@@ -1,10 +1,12 @@
 import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
+import { storage } from '../../../shared/utils/storage';
 import { useState, useEffect } from "react";
 import { toast } from 'sonner';
 import styles from "./FormImc.module.css";
 import ConnectReminder from "../../../components/MessageAlerte/ConnectReminder/ConnectReminder.jsx";
 import LabelField from "../../../components/LabelField/LabelField.jsx";
 import { secureApiCall } from "../../../utils/authService.js";
+import logger from '../../../shared/utils/logger.js';
 
 function normalizeNumber(value) {
   if (typeof value === "string") {
@@ -55,14 +57,14 @@ function calculerIMC(poids, taille) {
 }
 
 export default function FormImc({ onCalculate }) {
-  const [poids, setPoids] = useState(() => localStorage.getItem('userPoids') || "");
-  const [taille, setTaille] = useState(() => localStorage.getItem('userTaille') || "");
+  const [poids, setPoids] = useState(() => storage.get('userPoids') || "");
+  const [taille, setTaille] = useState(() => storage.get('userTaille') || "");
   const [showReminder, setShowReminder] = useState(false);
 
   useEffect(() => {
     const handleStorageChange = () => {
-      const savedPoids = localStorage.getItem('userPoids');
-      const savedTaille = localStorage.getItem('userTaille');
+      const savedPoids = storage.get('userPoids');
+      const savedTaille = storage.get('userTaille');
       if (savedPoids) setPoids(savedPoids);
       if (savedTaille) setTaille(savedTaille);
     };
@@ -87,7 +89,7 @@ export default function FormImc({ onCalculate }) {
       return;
     }
 
-    const userId = localStorage.getItem("userId");
+    const userId = storage.get("userId");
     setShowReminder(!userId);
 
     const { imc, categorie, description, conseil } = calculerIMC(p, t);
@@ -114,17 +116,17 @@ export default function FormImc({ onCalculate }) {
           }
         })
         .catch((e) => {
-          console.error("Failed to save IMC calculation to history:", e);
+          logger.error("Failed to save IMC calculation to history:", e);
         });
     } catch (e) {
-      console.error("Failed to send IMC calculation to API:", e);
+      logger.error("Failed to send IMC calculation to API:", e);
     }
 
     if (userId && window.sauvegarderDonnees) {
       try {
         window.sauvegarderDonnees({ imc });
       } catch (e) {
-        console.error("Failed to save IMC data via window.sauvegarderDonnees:", e);
+        logger.error("Failed to save IMC data via window.sauvegarderDonnees:", e);
       }
     }
   };
@@ -159,7 +161,7 @@ export default function FormImc({ onCalculate }) {
             onKeyDown={blockNonNumeric}
             onChange={(e) => {
               setTaille(e.target.value);
-              if (e.target.value) localStorage.setItem('userTaille', e.target.value);
+              if (e.target.value) storage.set('userTaille', e.target.value);
             }}
             required
           />
@@ -179,7 +181,7 @@ export default function FormImc({ onCalculate }) {
             onKeyDown={blockNonNumeric}
             onChange={(e) => {
               setPoids(e.target.value);
-              if (e.target.value) localStorage.setItem('userPoids', e.target.value);
+              if (e.target.value) storage.set('userPoids', e.target.value);
             }}
             required
           />

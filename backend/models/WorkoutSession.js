@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const logger = require('../utils/logger.js');
 const { Schema } = mongoose;
 
 const MuscuSetSchema = new Schema({
@@ -95,7 +96,7 @@ WorkoutSessionSchema.pre('save', function(next) {
       }
     }
   } catch (err) {
-    console.error('Erreur lors de la détection automatique des groupes musculaires:', err);
+    logger.error('Erreur lors de la détection automatique des groupes musculaires:', err);
   }
   next();
 });

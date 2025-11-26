@@ -5,6 +5,7 @@ import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import { secureApiCall, isAuthenticated } from "../../utils/authService";
 import styles from "./AdminPage.module.css";
+import logger from '../../shared/utils/logger.js';
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ export default function AdminPage() {
         return false;
       }
     } catch (err) {
-      console.error("Erreur vérification admin:", err);
+      logger.error("Erreur vérification admin:", err);
       navigate("/");
       return false;
     }
@@ -75,7 +76,7 @@ export default function AdminPage() {
         });
       }
     } catch (err) {
-      console.error("Erreur chargement stats:", err);
+      logger.error("Erreur chargement stats:", err);
     }
   }, []);
 
@@ -88,7 +89,7 @@ export default function AdminPage() {
         setReviews(data.reviews);
       }
     } catch (err) {
-      console.error("Erreur chargement avis:", err);
+      logger.error("Erreur chargement avis:", err);
     } finally {
       setLoading(false);
     }
@@ -103,7 +104,7 @@ export default function AdminPage() {
         setNewsletters(data.newsletters);
       }
     } catch (err) {
-      console.error("Erreur chargement newsletters:", err);
+      logger.error("Erreur chargement newsletters:", err);
     } finally {
       setLoading(false);
     }

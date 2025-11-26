@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import logger from '../src/shared/utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -115,7 +116,7 @@ routes.forEach((route) => {
   // Écrire le fichier index.html dans le répertoire de la route
   fs.writeFileSync(path.join(routePath, 'index.html'), htmlWithMetadata);
 
-  console.log(`✓ Prérendu: ${route.path}`);
+  logger.info(`✓ Prérendu: ${route.path}`);
 });
 
-console.log('\n✅ Prerendering terminé avec succès!');
+logger.info('\n✅ Prerendering terminé avec succès!');

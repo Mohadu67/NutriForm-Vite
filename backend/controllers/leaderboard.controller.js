@@ -1,6 +1,7 @@
 const LeaderboardEntry = require('../models/LeaderboardEntry');
 const WorkoutSession = require('../models/WorkoutSession');
 const User = require('../models/User');
+const logger = require('../utils/logger.js');
 
 /**
  * Obtenir le classement global
@@ -64,7 +65,7 @@ exports.getLeaderboard = async (req, res) => {
       data: leaderboardWithRank,
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération du leaderboard:', error);
+    logger.error('Erreur lors de la récupération du leaderboard:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération du classement',
@@ -138,7 +139,7 @@ exports.getUserRank = async (req, res) => {
       userEntry,
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération du rang:', error);
+    logger.error('Erreur lors de la récupération du rang:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération du rang',
@@ -193,7 +194,7 @@ exports.optIn = async (req, res) => {
       data: leaderboardEntry,
     });
   } catch (error) {
-    console.error('Erreur lors de l\'opt-in au leaderboard:', error);
+    logger.error('Erreur lors de l\'opt-in au leaderboard:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de l\'inscription au classement',
@@ -227,7 +228,7 @@ exports.optOut = async (req, res) => {
       data: leaderboardEntry,
     });
   } catch (error) {
-    console.error('Erreur lors de l\'opt-out du leaderboard:', error);
+    logger.error('Erreur lors de l\'opt-out du leaderboard:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la désinscription du classement',
@@ -258,7 +259,7 @@ exports.getOptInStatus = async (req, res) => {
       data: leaderboardEntry,
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération du statut:', error);
+    logger.error('Erreur lors de la récupération du statut:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération du statut',
@@ -318,7 +319,7 @@ exports.refreshProfile = async (req, res) => {
       data: leaderboardEntry,
     });
   } catch (error) {
-    console.error('Erreur lors du rafraîchissement du profil:', error);
+    logger.error('Erreur lors du rafraîchissement du profil:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors du rafraîchissement du profil',

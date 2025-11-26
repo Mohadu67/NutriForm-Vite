@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from 'sonner';
 import { login as secureLogin } from '../../../utils/authService';
+import logger from '../../../shared/utils/logger.js';
 
 export default function useLogin(onLoginSuccess, options = {}) {
   const { minDurationMs = 2500 } = options;
@@ -88,7 +89,7 @@ export default function useLogin(onLoginSuccess, options = {}) {
         toast.error(data.message || 'Erreur lors du renvoi de l\'email');
       }
     } catch (error) {
-      console.error('Erreur resendVerification:', error);
+      logger.error('Erreur resendVerification:', error);
       toast.error('Erreur lors du renvoi de l\'email');
     }
   };

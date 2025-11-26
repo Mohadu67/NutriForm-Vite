@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useChat } from "../../contexts/ChatContext";
 import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
+import { storage } from "../../shared/utils/storage";
 import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
 import UnifiedChatPanel from "../Chat/UnifiedChatPanel.jsx";
@@ -99,19 +100,19 @@ export default function Navbar() {
   const toggleDarkMode = useCallback(() => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
-    localStorage.setItem('darkMode', newDarkMode.toString());
+    storage.set('darkMode', newDarkMode.toString());
     setDocumentTheme(newDarkMode);
   }, [darkMode, setDocumentTheme]);
 
   // Change language
   const changeLanguage = useCallback((lng) => {
     i18n.changeLanguage(lng);
-    localStorage.setItem('language', lng);
+    storage.set('language', lng);
   }, [i18n]);
 
   // Initialize dark mode
   useEffect(() => {
-    const savedTheme = localStorage.getItem('darkMode');
+    const savedTheme = storage.get('darkMode');
     const isDark = savedTheme === 'true';
     setDarkMode(isDark);
     setDocumentTheme(isDark);
@@ -140,9 +141,9 @@ export default function Navbar() {
           retryCountRef.current = 0;
           setIsLoggedIn(true);
 
-          // Vérifier le statut premium depuis localStorage
+          // Vérifier le statut premium depuis storage
           try {
-            const cachedSub = localStorage.getItem('subscriptionStatus');
+            const cachedSub = storage.get('subscriptionStatus');
             if (cachedSub) {
               const subscription = JSON.parse(cachedSub);
               setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);

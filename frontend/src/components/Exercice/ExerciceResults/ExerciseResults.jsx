@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { storage } from '../../../shared/utils/storage';
 import {
   DndContext,
   closestCenter,
@@ -21,6 +22,7 @@ import styles from "./ExerciseResults.module.css";
 import { idOf } from "../Shared/idOf.js";
 import { sameIds, mergeById } from "../Shared/selectionUtils";
 import { loadExercises } from "../../../utils/exercisesLoader.js";
+import logger from '../../../shared/utils/logger.js';
 
 export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [], onChange, onResultsChange, onSearch, initialSelected }) {
   const [data, setData] = useState([]);
@@ -29,7 +31,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
 
   const [ordered, setOrdered] = useState(() => {
     try {
-      const v = localStorage.getItem("dynamiSelected");
+      const v = storage.get("dynamiSelected");
       return v ? JSON.parse(v) : [];
     } catch {
       return [];
@@ -37,7 +39,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   });
   const [dismissed, setDismissed] = useState(() => {
     try {
-      const v = localStorage.getItem("dynamiDismissed");
+      const v = storage.get("dynamiDismissed");
       return new Set(v ? JSON.parse(v) : []);
     } catch {
       return new Set();
@@ -45,7 +47,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   });
   const [hasTouched, setHasTouched] = useState(() => {
     try {
-      const v = localStorage.getItem("dynamiHasTouched");
+      const v = storage.get("dynamiHasTouched");
       return v === "1";
     } catch {
       return false;
@@ -82,8 +84,8 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   }, []);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiHasTouched", hasTouched ? "1" : "0"); } catch (e) {
-      console.error("Failed to save dynamiHasTouched:", e);
+    try { storage.set("dynamiHasTouched", hasTouched ? "1" : "0"); } catch (e) {
+      logger.error("Failed to save dynamiHasTouched:", e);
     }
   }, [hasTouched]);
 
@@ -120,8 +122,8 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
 
   useEffect(() => {
     if (Array.isArray(results) && results.length > 0) {
-      try { localStorage.setItem("dynamiLastResults", JSON.stringify(results)); } catch (e) {
-        console.error("Failed to save dynamiLastResults:", e);
+      try { storage.set("dynamiLastResults", JSON.stringify(results)); } catch (e) {
+        logger.error("Failed to save dynamiLastResults:", e);
       }
     }
   }, [results]);
@@ -262,8 +264,8 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   }, []);
 
   useEffect(() => {
-    try { localStorage.setItem("dynamiDismissed", JSON.stringify(Array.from(dismissed))); } catch (e) {
-      console.error("Failed to save dynamiDismissed:", e);
+    try { storage.set("dynamiDismissed", JSON.stringify(Array.from(dismissed))); } catch (e) {
+      logger.error("Failed to save dynamiDismissed:", e);
     }
   }, [dismissed]);
 
@@ -272,27 +274,27 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
     try {
       const str = JSON.stringify(arr);
       if (arr.length > 0) {
-        localStorage.setItem("dynamiSelected", str);
-        localStorage.setItem("formSelectedExercises", str);
+        storage.set("dynamiSelected", str);
+        storage.set("formSelectedExercises", str);
       } else {
-        localStorage.removeItem("dynamiSelected");
-        localStorage.setItem("formSelectedExercises", "[]");
+        storage.remove("dynamiSelected");
+        storage.set("formSelectedExercises", "[]");
       }
-      localStorage.setItem("dynamiHasTouched", arr.length > 0 ? "1" : "0");
+      storage.set("dynamiHasTouched", arr.length > 0 ? "1" : "0");
     } catch (e) {
-      console.error("Failed to save selection to localStorage:", e);
+      logger.error("Failed to save selection to localStorage:", e);
     }
     setTimeout(() => {
       try {
         window.dispatchEvent(new CustomEvent("dynami:selected:update", { detail: { items: arr } }));
       } catch (e) {
-        console.error("Failed to dispatch dynami:selected:update:", e);
+        logger.error("Failed to dispatch dynami:selected:update:", e);
       }
       try {
         if (onResultsChange) onResultsChange(arr);
         else if (onChange) onChange(arr);
       } catch (e) {
-        console.error("Failed to call onResultsChange/onChange:", e);
+        logger.error("Failed to call onResultsChange/onChange:", e);
       }
     }, 0);
   }

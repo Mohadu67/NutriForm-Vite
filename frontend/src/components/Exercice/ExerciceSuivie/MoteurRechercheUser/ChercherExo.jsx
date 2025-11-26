@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import { storage } from '../../../../shared/utils/storage';
 import { useTranslation } from "react-i18next";
 import Button from "../../../BoutonAction/BoutonAction";
 import styles from "./ChercherExo.module.css";
 import { idOf } from "../../Shared/idOf";
 import { mergeById } from "../../Shared/selectionUtils";
 import { loadExercises } from "../../../../utils/exercisesLoader";
+import logger from '../../../../shared/utils/logger.js';
 
 export default function ChercherExo({
   preselectedIds = [],
@@ -99,21 +101,21 @@ export default function ChercherExo({
 
     try {
       const str = JSON.stringify(merged);
-      localStorage.setItem("dynamiSelected", str);
-      localStorage.setItem("formSelectedExercises", str);
-      localStorage.setItem("dynamiHasTouched", "1");
+      storage.set("dynamiSelected", str);
+      storage.set("formSelectedExercises", str);
+      storage.set("dynamiHasTouched", "1");
     } catch (e) {
-      console.error("Failed to save merged exercises:", e);
+      logger.error("Failed to save merged exercises:", e);
     }
 
     try { onConfirm && onConfirm(merged); } catch (e) {
-      console.error("Failed to call onConfirm:", e);
+      logger.error("Failed to call onConfirm:", e);
     }
 
     try {
       window.dispatchEvent(new CustomEvent('dynami:selected:replace', { detail: { items: merged } }));
     } catch (e) {
-      console.error("Failed to dispatch event:", e);
+      logger.error("Failed to dispatch event:", e);
     }
 
     setQ("");

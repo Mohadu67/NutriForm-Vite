@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import styles from "./SuivieCard.module.css";
+import { storage } from "../../../../shared/utils/storage";
 
 import useExerciceForm from "./hooks/useExerciceForm";
 
@@ -21,6 +22,7 @@ import NotesSection from "./Notes/NotesSection";
 import notesStyles from "./Notes/NotesSaction.module.css";
 
 import { idOf } from "../../Shared/idOf.js";
+import logger from '../../../../shared/utils/logger.js';
 
 const STORAGE_NS = "suivie_exo_inputs:";
 function storageKeyFromExo(exo) {
@@ -32,7 +34,7 @@ function storageKeyFromExo(exo) {
 }
 function loadSavedDraft(exo) {
   try {
-    const raw = localStorage.getItem(storageKeyFromExo(exo));
+    const raw = storage.get(storageKeyFromExo(exo));
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -142,7 +144,7 @@ export default function SuivieCard({ exo, value, onChange }) {
         onChange(idOf(exo), next);
       }
     } catch (e) {
-      console.error("Failed to emit or call onChange when closing popup:", e);
+      logger.error("Failed to emit or call onChange when closing popup:", e);
     }
     setOpen(false);
   }
@@ -179,16 +181,16 @@ export default function SuivieCard({ exo, value, onChange }) {
     };
   }, [open]);
 
-  // Auto-save data to localStorage when it changes
+  // Auto-save data to storage when it changes
   useEffect(() => {
     if (!hydratedOnMountRef.current) return;
     const payload = { ...data, mode };
     const done = isExerciseDone(payload);
     const enriched = { ...payload, done };
     try {
-      localStorage.setItem(storageKeyFromExo(exo), JSON.stringify(enriched));
+      storage.set(storageKeyFromExo(exo), JSON.stringify(enriched));
     } catch (e) {
-      console.error("Failed to auto-save exercise data to localStorage:", e);
+      logger.error("Failed to auto-save exercise data to storage:", e);
     }
   }, [data, mode, exo]);
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { storage } from '../../../shared/utils/storage';
 import { toast } from 'sonner';
 import styles from "./FormCalorie.module.css";
 import ConnectReminder from "../../../components/MessageAlerte/ConnectReminder/ConnectReminder.jsx";
@@ -6,13 +7,14 @@ import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
 import BoutonSelection from "../../../components/BoutonSelection/BoutonSelection.jsx";
 import LabelField from "../../../components/LabelField/LabelField.jsx";
 import { secureApiCall } from "../../../utils/authService.js";
+import logger from '../../../shared/utils/logger.js';
 
 
 export default function FormCalorie({ onResult, onCalculate }) {
   const [showReminder, setShowReminder] = useState(false);
   const [form, setForm] = useState(() => {
-    const savedPoids = localStorage.getItem('userPoids');
-    const savedTaille = localStorage.getItem('userTaille');
+    const savedPoids = storage.get('userPoids');
+    const savedTaille = storage.get('userTaille');
     return {
       sexe: "homme",
       poids: savedPoids || "",
@@ -30,18 +32,18 @@ export default function FormCalorie({ onResult, onCalculate }) {
 
     
     if (name === 'poids' && value) {
-      localStorage.setItem('userPoids', value);
+      storage.set('userPoids', value);
     }
     if (name === 'taille' && value) {
-      localStorage.setItem('userTaille', value);
+      storage.set('userTaille', value);
     }
   };
 
   
   useEffect(() => {
     const handleStorageChange = () => {
-      const savedPoids = localStorage.getItem('userPoids');
-      const savedTaille = localStorage.getItem('userTaille');
+      const savedPoids = storage.get('userPoids');
+      const savedTaille = storage.get('userTaille');
       setForm((prev) => ({
         ...prev,
         poids: savedPoids || prev.poids,
@@ -136,10 +138,10 @@ export default function FormCalorie({ onResult, onCalculate }) {
           }
         })
         .catch((e) => {
-          console.error("Failed to save calorie calculation to history:", e);
+          logger.error("Failed to save calorie calculation to history:", e);
         });
     } catch (e) {
-      console.error("Failed to send calorie calculation to API:", e);
+      logger.error("Failed to send calorie calculation to API:", e);
     }
   };
 

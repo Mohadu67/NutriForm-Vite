@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
+import { storage } from '../../../../../../shared/utils/storage';
 import { MapContainer, TileLayer, Polyline, Marker, useMapEvents, Circle } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import styles from "./RouteTracker.module.css";
+import logger from '../../../../../../shared/utils/logger.js';
 
 // Fix pour les icônes Leaflet avec Vite
 delete L.Icon.Default.prototype._getIconUrl;
@@ -126,18 +128,18 @@ function useVibration() {
 function useRouteStorage(storageKey) {
   const save = (data) => {
     try {
-      localStorage.setItem(storageKey, JSON.stringify({
+      storage.set(storageKey, JSON.stringify({
         ...data,
         savedAt: Date.now()
       }));
     } catch (error) {
-      console.error("Erreur sauvegarde:", error);
+      logger.error("Erreur sauvegarde:", error);
     }
   };
 
   const load = () => {
     try {
-      const saved = localStorage.getItem(storageKey);
+      const saved = storage.get(storageKey);
       if (!saved) return null;
 
       const data = JSON.parse(saved);
@@ -145,22 +147,22 @@ function useRouteStorage(storageKey) {
 
       // Ignorer les sauvegardes de plus de 6 heures
       if (ageMinutes > 360) {
-        localStorage.removeItem(storageKey);
+        storage.remove(storageKey);
         return null;
       }
 
       return data;
     } catch (error) {
-      console.error("Erreur chargement:", error);
+      logger.error("Erreur chargement:", error);
       return null;
     }
   };
 
   const clear = () => {
     try {
-      localStorage.removeItem(storageKey);
+      storage.remove(storageKey);
     } catch (error) {
-      console.error("Erreur suppression:", error);
+      logger.error("Erreur suppression:", error);
     }
   };
 
@@ -287,7 +289,7 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
           setError(null);
         },
         (err) => {
-          console.error("Erreur de géolocalisation:", err);
+          logger.error("Erreur de géolocalisation:", err);
           setError("Impossible d'obtenir votre position. Vérifiez les autorisations.");
         },
         {
@@ -364,7 +366,7 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
 
         // Filtrer les points très imprécis (>50m)
         if (accuracy > 50) {
-          console.warn("GPS imprécis, point ignoré");
+          logger.warn("GPS imprécis, point ignoré");
           return;
         }
 
@@ -410,7 +412,7 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
         });
       },
       (err) => {
-        console.error("Erreur de suivi GPS:", err);
+        logger.error("Erreur de suivi GPS:", err);
         setError("Erreur de suivi GPS. Vérifiez vos autorisations.");
       },
       {

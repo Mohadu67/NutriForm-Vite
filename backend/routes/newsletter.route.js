@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const NewsletterSubscriber = require('../models/NewsletterSubscriber');
 const verifyCaptcha = require('../middlewares/recaptcha.middleware');
+const logger = require('../utils/logger.js');
 
 
 router.post('/subscribe', verifyCaptcha, async (req, res) => {
@@ -61,7 +62,7 @@ router.post('/subscribe', verifyCaptcha, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Newsletter subscription error:', error);
+    logger.error('Newsletter subscription error:', error);
 
     
     if (error.name === 'ValidationError') {
@@ -125,7 +126,7 @@ router.post('/unsubscribe', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Newsletter unsubscribe error:', error);
+    logger.error('Newsletter unsubscribe error:', error);
     res.status(500).json({
       success: false,
       message: 'Une erreur est survenue'
@@ -154,7 +155,7 @@ router.get('/subscribers', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Newsletter get subscribers error:', error);
+    logger.error('Newsletter get subscribers error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération des abonnés'
@@ -188,7 +189,7 @@ router.get('/stats', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Newsletter stats error:', error);
+    logger.error('Newsletter stats error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération des statistiques'

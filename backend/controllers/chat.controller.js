@@ -4,6 +4,7 @@ const SupportTicket = require('../models/SupportTicket');
 const AIConversation = require('../models/AIConversation');
 const User = require('../models/User');
 const { v4: uuidv4 } = require('uuid');
+const logger = require('../utils/logger.js');
 
 // Initialiser OpenAI (optionnel)
 let openai = null;
@@ -94,6 +95,10 @@ async function sendMessage(req, res) {
       return res.status(400).json({ error: 'Message vide.' });
     }
 
+    if (message.length > 2000) {
+      return res.status(400).json({ error: 'Message trop long (max 2000 caractères).' });
+    }
+
     // Générer un conversationId si c'est un nouveau chat
     const convId = conversationId || uuidv4();
 
@@ -170,7 +175,7 @@ async function sendMessage(req, res) {
         });
 
       } catch (error) {
-        console.error('Erreur OpenAI:', error);
+        logger.error('Erreur OpenAI:', error);
         // Fallback vers réponse générique
         botResponse = await generateFallbackResponse(userId, convId, message);
       }
@@ -206,7 +211,7 @@ async function sendMessage(req, res) {
     });
 
   } catch (error) {
-    console.error('Erreur sendMessage:', error);
+    logger.error('Erreur sendMessage:', error);
     res.status(500).json({ error: 'Erreur lors de l\'envoi du message.' });
   }
 }
@@ -1385,7 +1390,7 @@ async function getChatHistory(req, res) {
 
     res.status(200).json({ messages });
   } catch (error) {
-    console.error('Erreur getChatHistory:', error);
+    logger.error('Erreur getChatHistory:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération de l\'historique.' });
   }
 }
@@ -1423,7 +1428,7 @@ async function escalateConversation(req, res) {
       ticket
     });
   } catch (error) {
-    console.error('Erreur escalateConversation:', error);
+    logger.error('Erreur escalateConversation:', error);
     res.status(500).json({ error: 'Erreur lors de l\'escalade.' });
   }
 }
@@ -1450,7 +1455,7 @@ async function escalateToHuman(userId, conversationId, lastMessage, reason = '')
     { $set: { escalated: true } }
   );
 
-  console.log(`🎫 Ticket créé : ${ticket._id} pour user ${user.pseudo || user.email}`);
+  logger.info(`🎫 Ticket créé : ${ticket._id} pour user ${user.pseudo || user.email}`);
 
   return ticket;
 }
@@ -1488,7 +1493,7 @@ async function getAIConversations(req, res) {
 
     res.status(200).json({ conversations });
   } catch (error) {
-    console.error('Erreur getAIConversations:', error);
+    logger.error('Erreur getAIConversations:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des conversations.' });
   }
 }
@@ -1521,7 +1526,7 @@ async function deleteAIConversation(req, res) {
 
     res.status(200).json({ message: 'Conversation supprimée avec succès.' });
   } catch (error) {
-    console.error('Erreur deleteAIConversation:', error);
+    logger.error('Erreur deleteAIConversation:', error);
     res.status(500).json({ error: 'Erreur lors de la suppression de la conversation.' });
   }
 }
@@ -1555,7 +1560,7 @@ async function resolveTicket(req, res) {
       // Supprimer les messages
       await ChatMessage.deleteMany({ conversationId: ticket.conversationId });
 
-      console.log(`✅ Conversation ${ticket.conversationId} supprimée après résolution du ticket`);
+      logger.info(`✅ Conversation ${ticket.conversationId} supprimée après résolution du ticket`);
     }
 
     res.status(200).json({
@@ -1563,7 +1568,7 @@ async function resolveTicket(req, res) {
       ticket
     });
   } catch (error) {
-    console.error('Erreur resolveTicket:', error);
+    logger.error('Erreur resolveTicket:', error);
     res.status(500).json({ error: 'Erreur lors de la résolution du ticket.' });
   }
 }

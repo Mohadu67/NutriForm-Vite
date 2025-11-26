@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
+import { storage } from '../../shared/utils/storage';
 import { Button, Spinner, Alert } from 'react-bootstrap';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { isAuthenticated } from '../../shared/api/auth';
 import { useChat } from '../../contexts/ChatContext';
 import styles from './ChatWidget.module.css';
+import logger from '../../shared/utils/logger.js';
 
 export default function ChatWidget() {
   const { isChatOpen: isOpen, toggleChat } = useChat();
@@ -48,14 +50,14 @@ export default function ChatWidget() {
       const hasEscalation = history.some(msg => msg.escalated);
       setEscalated(hasEscalation);
     } catch (err) {
-      console.error('Erreur chargement historique:', err);
+      logger.error('Erreur chargement historique:', err);
     }
   };
 
   // Charger l'historique si conversationId existe dans localStorage
   useEffect(() => {
     if (isOpen && isAuth) {
-      const savedConvId = localStorage.getItem('chatConversationId');
+      const savedConvId = storage.get('chatConversationId');
       if (savedConvId) {
         setConversationId(savedConvId);
         loadHistory(savedConvId);
@@ -102,7 +104,7 @@ export default function ChatWidget() {
       // Sauvegarder conversationId
       if (!conversationId) {
         setConversationId(response.conversationId);
-        localStorage.setItem('chatConversationId', response.conversationId);
+        storage.set('chatConversationId', response.conversationId);
       }
 
       // Ajouter réponse bot (si pas escaladé)
@@ -124,7 +126,7 @@ export default function ChatWidget() {
       }
 
     } catch (err) {
-      console.error('Erreur envoi message:', err);
+      logger.error('Erreur envoi message:', err);
       setError(err.response?.data?.error || 'Erreur lors de l\'envoi du message.');
     } finally {
       setLoading(false);
@@ -146,7 +148,7 @@ export default function ChatWidget() {
         }
       ]);
     } catch (err) {
-      console.error('Erreur escalade:', err);
+      logger.error('Erreur escalade:', err);
       setError('Impossible de transférer vers le support.');
     }
   };
@@ -162,7 +164,7 @@ export default function ChatWidget() {
     setConversationId(null);
     setEscalated(false);
     setError(null);
-    localStorage.removeItem('chatConversationId');
+    storage.remove('chatConversationId');
   };
 
   return (

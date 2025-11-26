@@ -1,19 +1,20 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const User = require('../models/User');
 const Subscription = require('../models/Subscription');
+const logger = require('../utils/logger.js');
 
 /**
  * Créer une session Stripe Checkout avec trial de 7 jours
  * POST /api/subscriptions/create-checkout-session
  */
 async function createCheckoutSession(req, res) {
-  console.log('🎯 createCheckoutSession appelé pour userId:', req.userId);
-  console.log('🔑 Stripe Secret Key:', process.env.STRIPE_SECRET_KEY?.slice(0, 20) + '...' + process.env.STRIPE_SECRET_KEY?.slice(-4));
-  console.log('💰 Stripe Price ID:', process.env.STRIPE_PRICE_ID);
+  logger.info('🎯 createCheckoutSession appelé pour userId:', req.userId);
+  logger.info('✅ Stripe configuré');
+  logger.info('💰 Stripe Price ID:', process.env.STRIPE_PRICE_ID);
   try {
     const userId = req.userId;
     const user = await User.findById(userId);
-    console.log('👤 User trouvé:', user ? user.email : 'NON TROUVÉ');
+    logger.info('👤 User trouvé:', user ? user.email : 'NON TROUVÉ');
 
     if (!user) {
       return res.status(404).json({ error: 'Utilisateur introuvable.' });
@@ -83,7 +84,7 @@ async function createCheckoutSession(req, res) {
       url: session.url
     });
   } catch (error) {
-    console.error('Erreur createCheckoutSession:', error);
+    logger.error('Erreur createCheckoutSession:', error);
     res.status(500).json({
       error: 'Erreur lors de la création de la session de paiement.',
       details: error.message
@@ -96,7 +97,7 @@ async function createCheckoutSession(req, res) {
  * POST /api/subscriptions/webhook
  */
 async function handleWebhook(req, res) {
-  console.log('🎣 Webhook Stripe reçu');
+  logger.info('🎣 Webhook Stripe reçu');
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -105,10 +106,10 @@ async function handleWebhook(req, res) {
   try {
     // Vérifier la signature du webhook
     event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-    console.log('✅ Signature webhook validée');
-    console.log('📦 Event type:', event.type);
+    logger.info('✅ Signature webhook validée');
+    logger.info('📦 Event type:', event.type);
   } catch (err) {
-    console.error('❌ Erreur signature webhook:', err.message);
+    logger.error('❌ Erreur signature webhook:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -116,40 +117,40 @@ async function handleWebhook(req, res) {
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-        console.log('🎯 Traitement checkout.session.completed');
+        logger.info('🎯 Traitement checkout.session.completed');
         await handleCheckoutCompleted(event.data.object);
         break;
 
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
-        console.log('🎯 Traitement subscription created/updated');
+        logger.info('🎯 Traitement subscription created/updated');
         await handleSubscriptionUpdated(event.data.object);
         break;
 
       case 'customer.subscription.deleted':
-        console.log('🎯 Traitement subscription deleted');
+        logger.info('🎯 Traitement subscription deleted');
         await handleSubscriptionDeleted(event.data.object);
         break;
 
       case 'invoice.payment_succeeded':
-        console.log('🎯 Traitement payment succeeded');
+        logger.info('🎯 Traitement payment succeeded');
         await handlePaymentSucceeded(event.data.object);
         break;
 
       case 'invoice.payment_failed':
-        console.log('🎯 Traitement payment failed');
+        logger.info('🎯 Traitement payment failed');
         await handlePaymentFailed(event.data.object);
         break;
 
       default:
-        console.log(`ℹ️ Événement non géré: ${event.type}`);
+        logger.info(`ℹ️ Événement non géré: ${event.type}`);
     }
 
-    console.log('✅ Webhook traité avec succès');
+    logger.info('✅ Webhook traité avec succès');
     res.status(200).json({ received: true });
   } catch (error) {
-    console.error('❌ Erreur traitement webhook:', error);
-    console.error('Stack:', error.stack);
+    logger.error('❌ Erreur traitement webhook:', error);
+    logger.error('Stack:', error.stack);
     res.status(500).json({ error: 'Erreur traitement webhook', details: error.message });
   }
 }
@@ -158,28 +159,28 @@ async function handleWebhook(req, res) {
  * Handler: Checkout session complétée
  */
 async function handleCheckoutCompleted(session) {
-  console.log('🎯 handleCheckoutCompleted appelé');
-  console.log('📦 Session metadata:', session.metadata);
-  console.log('📦 Subscription ID:', session.subscription);
+  logger.info('🎯 handleCheckoutCompleted appelé');
+  logger.info('📦 Session metadata:', session.metadata);
+  logger.info('📦 Subscription ID:', session.subscription);
 
   const userId = session.metadata.userId;
   const subscriptionId = session.subscription;
 
   if (!userId || !subscriptionId) {
-    console.error('❌ Métadonnées manquantes dans checkout.session.completed', { userId, subscriptionId });
+    logger.error('❌ Métadonnées manquantes dans checkout.session.completed', { userId, subscriptionId });
     return;
   }
 
   try {
-    console.log(`🔍 Récupération subscription Stripe ${subscriptionId}...`);
+    logger.info(`🔍 Récupération subscription Stripe ${subscriptionId}...`);
     // Récupérer les détails de la subscription depuis Stripe
     const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId);
-    console.log('✅ Subscription Stripe récupérée');
+    logger.info('✅ Subscription Stripe récupérée');
 
-    console.log(`💾 Mise à jour DB pour user ${userId}...`);
+    logger.info(`💾 Mise à jour DB pour user ${userId}...`);
     // Créer ou mettre à jour la subscription en DB
     await upsertSubscription(userId, stripeSubscription);
-    console.log('✅ Subscription DB mise à jour');
+    logger.info('✅ Subscription DB mise à jour');
 
     // Mettre à jour le User tier
     await User.findByIdAndUpdate(userId, {
@@ -188,11 +189,11 @@ async function handleCheckoutCompleted(session) {
         ? new Date(stripeSubscription.trial_end * 1000)
         : null
     });
-    console.log('✅ User tier mis à jour');
+    logger.info('✅ User tier mis à jour');
 
-    console.log(`✅ Abonnement créé pour user ${userId}`);
+    logger.info(`✅ Abonnement créé pour user ${userId}`);
   } catch (error) {
-    console.error('❌ Erreur dans handleCheckoutCompleted:', error);
+    logger.error('❌ Erreur dans handleCheckoutCompleted:', error);
     throw error;
   }
 }
@@ -204,7 +205,7 @@ async function handleSubscriptionUpdated(stripeSubscription) {
   const userId = stripeSubscription.metadata.userId;
 
   if (!userId) {
-    console.error('Métadonnées userId manquantes dans subscription');
+    logger.error('Métadonnées userId manquantes dans subscription');
     return;
   }
 
@@ -222,7 +223,7 @@ async function handleSubscriptionUpdated(stripeSubscription) {
       : null
   });
 
-  console.log(`✅ Abonnement mis à jour pour user ${userId} - Tier: ${tier}`);
+  logger.info(`✅ Abonnement mis à jour pour user ${userId} - Tier: ${tier}`);
 }
 
 /**
@@ -232,7 +233,7 @@ async function handleSubscriptionDeleted(stripeSubscription) {
   const userId = stripeSubscription.metadata.userId;
 
   if (!userId) {
-    console.error('Métadonnées userId manquantes');
+    logger.error('Métadonnées userId manquantes');
     return;
   }
 
@@ -248,7 +249,7 @@ async function handleSubscriptionDeleted(stripeSubscription) {
     subscriptionTier: 'free'
   });
 
-  console.log(`❌ Abonnement annulé pour user ${userId}`);
+  logger.info(`❌ Abonnement annulé pour user ${userId}`);
 }
 
 /**
@@ -266,7 +267,7 @@ async function handlePaymentSucceeded(invoice) {
     await User.findByIdAndUpdate(userId, {
       subscriptionTier: 'premium'
     });
-    console.log(`✅ Paiement réussi pour user ${userId}`);
+    logger.info(`✅ Paiement réussi pour user ${userId}`);
   }
 }
 
@@ -287,7 +288,7 @@ async function handlePaymentFailed(invoice) {
       { stripeSubscriptionId: subscriptionId },
       { status: 'past_due' }
     );
-    console.log(`⚠️ Paiement échoué pour user ${userId}`);
+    logger.info(`⚠️ Paiement échoué pour user ${userId}`);
   }
 }
 
@@ -354,7 +355,7 @@ async function getSubscriptionStatus(req, res) {
       trialEnd: subscription.trialEnd
     });
   } catch (error) {
-    console.error('Erreur getSubscriptionStatus:', error);
+    logger.error('Erreur getSubscriptionStatus:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération du statut.' });
   }
 }
@@ -386,7 +387,7 @@ async function cancelSubscription(req, res) {
       currentPeriodEnd: subscription.currentPeriodEnd
     });
   } catch (error) {
-    console.error('Erreur cancelSubscription:', error);
+    logger.error('Erreur cancelSubscription:', error);
     res.status(500).json({ error: 'Erreur lors de l\'annulation.' });
   }
 }
@@ -413,7 +414,7 @@ async function createCustomerPortalSession(req, res) {
 
     res.status(200).json({ url: session.url });
   } catch (error) {
-    console.error('Erreur createCustomerPortalSession:', error);
+    logger.error('Erreur createCustomerPortalSession:', error);
     res.status(500).json({ error: 'Erreur lors de la création du portail client.' });
   }
 }
