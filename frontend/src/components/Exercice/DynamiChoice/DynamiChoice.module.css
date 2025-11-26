@@ -52,10 +52,6 @@
   color: var(--ink);
   border-radius: var(--radius-lg);
   border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    0 2px 12px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   padding: 1.5rem 1.25rem;
   width: 100%;
   max-width: 100%;
@@ -68,10 +64,6 @@
 :global(.dark) .container {
   background: rgba(18, 21, 27, 0.88);
   border-color: rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.6),
-    0 2px 12px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* Decorative gradient border */
@@ -348,6 +340,9 @@
   .container {
     padding: 2.5rem 2rem;
     gap: 2rem;
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .title {
