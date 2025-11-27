@@ -12,8 +12,13 @@
   height: 100%;
   min-height: 0;
   background: linear-gradient(to bottom, var(--color-bg-alt) 0%, var(--color-bg) 100%);
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to allow proper child scrolling */
   position: relative;
+  /* Mobile keyboard handling */
+  height: 100%;
+  max-height: 100%;
+  /* Prevent unwanted scrolling on the container */
+  overscroll-behavior: contain;
 }
 
 :global(.dark) .chatPanel {
@@ -139,6 +144,19 @@
   flex-direction: column;
   gap: var(--space-lg);
   scroll-behavior: smooth;
+  /* Better mobile scrolling */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  /* Prevent horizontal scroll issues */
+  touch-action: pan-y;
+  /* Ensure scrolling works properly */
+  position: relative;
+  z-index: 1;
+  /* iOS scroll fix - force GPU acceleration */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* Custom scrollbar */
@@ -430,6 +448,11 @@
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
   animation: slideUp 0.3s var(--transition-smooth);
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  /* Ensure it stays above keyboard on mobile */
+  padding-bottom: env(safe-area-inset-bottom, var(--space-lg));
 }
 
 @keyframes slideUp {
@@ -537,9 +560,37 @@
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
+  /* Main panel adjustments for mobile keyboard */
+  .chatPanel {
+    height: 100%;
+    max-height: 100vh;
+    max-height: 100dvh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+  }
+
   .chatMessages {
     padding: var(--space-lg) var(--space-md);
     gap: var(--space-md);
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    /* Fix scrolling issues on iOS */
+    position: relative;
+    z-index: 1;
+    /* Prevent momentum scrolling from going outside bounds */
+    scroll-padding-top: 10px;
+    scroll-padding-bottom: 10px;
+    /* Ensure touch events work properly */
+    touch-action: pan-y;
+    /* Fix for iOS Safari scroll bug */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
 
   .message {
@@ -557,11 +608,21 @@
   .chatInputContainer {
     padding: var(--space-md) var(--space-lg);
     gap: 10px;
+    position: sticky;
+    bottom: 0;
+    background: var(--color-bg);
+    z-index: 10;
+    padding-bottom: max(env(safe-area-inset-bottom), var(--space-md));
   }
 
   .chatInput {
     padding: 10px 14px;
     font-size: var(--font-size-sm);
+  }
+
+  /* Prevent zoom on input focus on iOS */
+  .chatInput:focus {
+    font-size: 16px !important;
   }
 
   .sendBtn {

@@ -23,7 +23,7 @@
 
 .dock {
   position: fixed;
-  bottom: 40px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-modal);
@@ -50,6 +50,10 @@
   will-change: transform;
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
+
+  /* Ensure dock doesn't interfere with page scroll */
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
 /* Decorative border gradient */
@@ -75,11 +79,24 @@
 .dockExpanded {
   padding: 0;
   gap: 0;
-  height: 85vh;
+  height: auto;
+  max-height: 90vh;
   display: flex;
-  flex-direction: column;
   overflow: hidden;
-  box-shadow: var(--shadow-xl), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  animation: expandUp 0.4s var(--transition-bounce);
+  /* Keep other properties from original dock */
+  bottom: 10px;
+  border-radius: 24px;
+  height: 90%;
+}
+
+@keyframes expandUp {
+  from {
+    max-height: 80px;
+  }
+  to {
+    max-height: 85vh;
+  }
 }
 
 /* ========================================
@@ -158,8 +175,8 @@
   animation: fadeInScale 0.4s var(--transition-smooth) 0.25s both;
 }
 
-/* Language selector */
-.langGroup {
+/* Language selector - For expanded menu */
+.languageSection .langGroup {
   display: flex;
   gap: 6px;
   justify-content: center;
@@ -169,7 +186,7 @@
   border: 1px solid var(--color-border);
 }
 
-:global(.dark) .langGroup {
+:global(.dark) .languageSection .langGroup {
   background: rgba(255, 255, 255, 0.03);
 }
 
@@ -298,8 +315,19 @@
   gap: var(--dock-gap);
   align-items: center;
   width: 100%;
-  padding: 0 var(--dock-padding);
-  height: 10vh;
+  padding: var(--dock-padding);
+  min-height: 56px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+/* When expanded, mainNav stays at bottom */
+.dockExpanded .mainNav {
+  border-radius: 0 0 24px 24px;
+  background: var(--color-surface);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
 /* Dock items */
@@ -348,6 +376,16 @@
   position: relative;
   z-index: 1;
   transition: transform 0.3s var(--transition-bounce);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dockIcon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .dockLabel {
@@ -510,15 +548,23 @@
 }
 
 .expandIcon {
-  font-size: 28px;
-  font-weight: 300;
-  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
   transition: transform 0.4s var(--transition-bounce);
-  line-height: 1;
+  width: 24px;
+  height: 24px;
+}
+
+.expandIcon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .expandBtn:hover {
-  transform: scale(1.15) rotate(5deg);
+  transform: scale(1.15);
   box-shadow: var(--shadow-glow-primary), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
@@ -527,7 +573,7 @@
 }
 
 .expandBtnOpen .expandIcon {
-  transform: rotate(90deg);
+  transform: rotate(180deg);
 }
 
 /* ========================================
@@ -799,7 +845,7 @@
   }
 
   /* ===== STYLES DES LANGUES ===== */
-  .langGroup {
+  .utilitiesExpanded .langGroup {
     display: flex;
     align-items: center;
     gap: 0;
@@ -815,7 +861,7 @@
     gap: 4px;
   }
 
-  :global(.dark) .langGroup {
+  :global(.dark) .utilitiesExpanded .langGroup {
     background: rgba(255, 255, 255, 0.06);
     border-color: rgba(255, 255, 255, 0.08);
   }
@@ -909,17 +955,257 @@
 }
 
 /* ========================================
-   MOBILE PANEL - Mobile only
+   EXPANDED CONTENT - Mobile only
    ======================================== */
 
-.mobilePanel {
-  width: 100%;
+.expandedContent {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  width: 100%;
+  background: var(--color-bg);
   overflow: hidden;
+  border-radius: 24px 24px 0 0;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Navigation Header */
+.navHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg) var(--space-xl);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  flex-shrink: 0;
+}
+
+.headerCloseBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+:global(.dark) .headerCloseBtn {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.headerCloseBtn:hover {
+  background: var(--color-primary);
+  color: #111;
+  transform: scale(1.1) rotate(90deg);
+}
+
+/* Menu Scroll Area */
+.menuScrollArea {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-md);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Navigation Sections */
+.navSection {
+  margin-bottom: var(--space-2xl);
+}
+
+.navSection:last-child {
+  margin-bottom: 0;
+}
+
+.navSectionTitle {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: var(--space-md);
+  padding: 0 var(--space-sm);
+}
+
+/* Navigation Links */
+.navLinks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* Navigation Item */
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  min-height: 48px;
+}
+
+.navItem:hover {
+  background: rgba(247, 177, 134, 0.1);
+  border-color: var(--color-primary);
+  transform: translateX(4px);
+}
+
+.navItemActive {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.2), rgba(184, 221, 209, 0.2));
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.navIcon {
+  font-size: 20px;
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+}
+
+.navItem:hover .navIcon,
+.navItemActive .navIcon {
+  color: var(--color-primary);
+}
+
+.navLabel {
+  flex: 1;
+  font-weight: var(--font-weight-medium);
+}
+
+.premiumBadge {
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
+  color: #111;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Utilities Section */
+.quickActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xl);
+}
+
+.utilityBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+  text-align: left;
+}
+
+:global(.dark) .utilityBtn {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.utilityBtn:hover {
+  background: rgba(247, 177, 134, 0.15);
+  border-color: var(--color-primary);
+  transform: translateX(4px);
+}
+
+.utilityBtn svg {
+  flex-shrink: 0;
+}
+
+.profileBtn {
+  background: rgba(184, 221, 209, 0.1);
+  border-color: var(--color-secondary);
+}
+
+.loginBtn {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.2), rgba(184, 221, 209, 0.2));
+  border-color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Language Section */
+.languageSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.langLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  padding: 0 var(--space-sm);
+}
+
+.langBtn {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.langBtn:hover {
+  background: rgba(247, 177, 134, 0.1);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  transform: scale(1.05);
+}
+
+.langActive {
+  background: var(--color-primary);
+  color: #111;
+  border-color: var(--color-primary);
+}
+
+/* Legacy mobile panel for chat */
+.mobilePanel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile keyboards */
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: visible; /* Changed from hidden to visible */
   animation: fadeIn 0.2s ease;
+  z-index: calc(var(--z-modal) + 1);
+  background: var(--color-bg);
+  /* Prevent scroll on the container itself */
+  touch-action: pan-y;
 }
 
 /* Chat history header */
@@ -932,7 +1218,9 @@
   color: white;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 10;
   box-shadow: 0 4px 20px rgba(247, 177, 134, 0.3);
   overflow: hidden;
 }
@@ -1000,11 +1288,15 @@
 
 /* Mobile chat panel container */
 .mobileChatPanel {
-  flex: 1;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to visible to allow child scroll */
+  position: relative;
+  height: 100%;
+  /* Ensure smooth scrolling on mobile */
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Chat header with close button */
@@ -1223,6 +1515,53 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* ========================================
+   MOBILE SPECIFIC - Keyboard Handling
+   ======================================== */
+
+@media (max-width: 768px) {
+  /* Better mobile keyboard handling */
+  .mobilePanel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height */
+    height: -webkit-fill-available; /* iOS Safari */
+    max-height: 100%;
+    overflow: visible;
+    /* Prevent body scroll when panel is open */
+    overscroll-behavior: contain;
+  }
+
+  .mobileChatPanel {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: visible; /* Allow child elements to scroll */
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    /* Ensure proper stacking context */
+    z-index: 1;
+    /* Prevent horizontal scrolling */
+    overflow-x: hidden;
+  }
+
+  .chatHistoryHeader {
+    flex-shrink: 0;
+    position: relative; /* Changed from sticky to relative for better mobile support */
+    min-height: 60px;
+  }
+
+  /* Ensure proper spacing on iOS devices */
+  .chatCloseBtn {
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 
