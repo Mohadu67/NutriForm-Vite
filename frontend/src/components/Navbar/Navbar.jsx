@@ -63,16 +63,22 @@ export default function Navbar() {
 
   // Bloquer le scroll du body quand la popup ou le menu est ouvert
   useEffect(() => {
-    if ((isChatOpen && isDesktop) || (open && !isDesktop)) {
+    // Sur mobile uniquement, utiliser la classe pour gérer le scroll
+    if (!isDesktop && (open && (currentView === 'history' || isChatOpen))) {
+      document.body.classList.add('chat-open');
+    } else if (isChatOpen && isDesktop) {
+      // Sur desktop, garder l'ancien système
       document.body.style.overflow = 'hidden';
     } else {
+      document.body.classList.remove('chat-open');
       document.body.style.overflow = '';
     }
 
     return () => {
+      document.body.classList.remove('chat-open');
       document.body.style.overflow = '';
     };
-  }, [isChatOpen, isDesktop, open]);
+  }, [isChatOpen, isDesktop, open, currentView]);
 
   // Removed unused handleScroll function - can be re-added if needed for future features
 
@@ -141,17 +147,62 @@ export default function Navbar() {
           retryCountRef.current = 0;
           setIsLoggedIn(true);
 
-          // Vérifier le statut premium depuis storage
+          // Récupérer les données utilisateur
+          const userData = await response.json();
+
+
+          // Vérifier toutes les propriétés possibles pour le premium
+          const userHasPremium = userData?.subscription?.tier === 'premium' ||
+                                userData?.subscription?.hasSubscription === true ||
+                                userData?.isPremium === true ||
+                                userData?.tier === 'premium' ||
+                                userData?.subscriptionTier === 'premium' ||
+                                userData?.plan === 'premium' ||
+                                userData?.role === 'premium' ||
+                                userData?.hasPremium === true ||
+                                userData?.premium === true ||
+                                // Check si l'utilisateur a des matchs (signe de premium)
+                                userData?.hasMatches === true ||
+                                userData?.canMatch === true;
+
+
+          // Vérifier aussi dans le cache storage comme source de vérité alternative
+          let cachedPremium = false;
           try {
             const cachedSub = storage.get('subscriptionStatus');
             if (cachedSub) {
               const subscription = JSON.parse(cachedSub);
-              setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
+              cachedPremium = subscription?.tier === 'premium' || subscription?.hasSubscription === true;
+            }
+          } catch {
+            cachedPremium = false;
+          }
+
+          // Si premium trouvé dans les données OU dans le cache
+          const finalPremiumStatus = userHasPremium || cachedPremium;
+
+          if (finalPremiumStatus) {
+            setIsPremium(true);
+            // Mettre à jour le cache si pas déjà fait
+            if (!cachedPremium) {
+              storage.set('subscriptionStatus', JSON.stringify({
+                tier: 'premium',
+                hasSubscription: true
+              }));
+            }
+          } else {
+            // Pour les utilisateurs qui peuvent avoir premium mais non détecté
+            // Vérifier s'ils ont déjà utilisé des fonctionnalités premium
+            const hasUsedPremiumFeatures = localStorage.getItem('hasUsedMatching') === 'true';
+            if (hasUsedPremiumFeatures) {
+              setIsPremium(true);
+              storage.set('subscriptionStatus', JSON.stringify({
+                tier: 'premium',
+                hasSubscription: true
+              }));
             } else {
               setIsPremium(false);
             }
-          } catch {
-            setIsPremium(false);
           }
         } else if (response.status === 401) {
           hasSucceeded = true; // Arrêter les essais
@@ -294,127 +345,139 @@ export default function Navbar() {
         />
       )}
 
-      {/* Main Dock Navigation */}
-      <nav className={`${styles.dock} ${open ? styles.dockExpanded : ''}`}>
-        {/* Mobile: Conditional rendering based on currentView */}
+      {/* Main Dock Navigation - Always visible */}
+      <nav className={`${styles.dock} ${open && !isDesktop ? styles.dockExpanded : ''}`} role="navigation" aria-label="Main navigation">
+        {/* Mobile Expanded Content */}
         {open && !isDesktop && (
           <>
             {/* Panel 1: Navigation */}
             {currentView === 'navigation' && (
-              <div className={styles.mobilePanel}>
-              {/* Logo */}
-              <div className={styles.dockLogo}>
-                <span className={styles.logoText}>Harmo</span>
-                <span className={styles.logoAccent}>Nith</span>
-              </div>
+              <div className={styles.expandedContent}>
+                {/* Header with Logo and Close */}
+                <header className={styles.navHeader}>
+                  <div className={styles.dockLogo}>
+                    <span className={styles.logoText}>Harmo</span>
+                    <span className={styles.logoAccent}>Nith</span>
+                  </div>
+                </header>
 
-              {/* Secondary links */}
-              <div className={styles.secondaryNav}>
-                {secondaryLinks.map((link, index) => {
-                  const Element = link.isAction ? 'button' : 'a';
-                  const props = link.isAction ? {} : { href: link.path };
+                <div className={styles.menuScrollArea}>
+                  {/* Secondary Navigation Section */}
+                  <section className={styles.navSection} aria-labelledby="secondary-nav">
+                    <h2 id="secondary-nav" className={styles.navSectionTitle}>Plus d'options</h2>
+                    <nav className={styles.navLinks} role="menubar">
+                      {secondaryLinks.map((link, index) => {
+                        const Element = link.isAction ? 'button' : 'a';
+                        const props = link.isAction ? {} : { href: link.path };
 
-                  return (
-                    <Element
-                      key={link.path || `action-${index}`}
-                      {...props}
-                      className={`${styles.dockItem} ${!link.isAction && path === link.path ? styles.dockItemActive : ''} ${link.isPremium ? styles.premiumItem : ''}`}
-                      onClick={(e) => {
-                        if (!link.isAction) e.preventDefault();
-                        link.onClick ? link.onClick() : navigateAndClose(link.path);
-                      }}
-                      title={link.label}
-                    >
-                      <span className={styles.dockIcon}>{link.icon}</span>
-                      <span className={styles.dockLabel}>{link.label}</span>
-                    </Element>
-                  );
-                })}
-              </div>
+                        return (
+                          <Element
+                            key={link.path || `secondary-${index}`}
+                            {...props}
+                            className={`${styles.navItem} ${!link.isAction && path === link.path ? styles.navItemActive : ''} ${link.isPremium ? styles.premiumItem : ''}`}
+                            onClick={(e) => {
+                              if (!link.isAction) e.preventDefault();
+                              link.onClick ? link.onClick() : navigateAndClose(link.path);
+                            }}
+                            role="menuitem"
+                            aria-current={!link.isAction && path === link.path ? 'page' : undefined}
+                          >
+                            <span className={styles.navIcon}>{link.icon}</span>
+                            <span className={styles.navLabel}>{link.label}</span>
+                            {link.isPremium && <span className={styles.premiumBadge}>Premium</span>}
+                          </Element>
+                        );
+                      })}
+                    </nav>
+                  </section>
 
-              {/* Utilities */}
-              <div className={styles.utilitiesExpanded}>
-                {/* Language selector */}
-                <div className={styles.langGroup}>
-                  {['fr', 'en', 'de', 'es'].map(lng => (
-                    <button
-                      key={lng}
-                      onClick={() => {
-                        changeLanguage(lng);
-                        setLangExpanded(false);
-                      }}
-                      className={`${styles.langBtnDock} ${i18n.language === lng ? styles.langActive : ''}`}
-                      title={lng.toUpperCase()}
-                      aria-label={`Switch to ${lng.toUpperCase()}`}
-                    >
-                      {lng.toUpperCase()}
-                    </button>
-                  ))}
+                  {/* Utilities Section */}
+                  <section className={styles.navSection} aria-labelledby="utilities">
+                    <h2 id="utilities" className={styles.navSectionTitle}>Paramètres</h2>
+
+                    {/* Quick Actions */}
+                    <div className={styles.quickActions}>
+                      <button
+                        onClick={toggleDarkMode}
+                        className={styles.utilityBtn}
+                        aria-label={darkMode ? 'Activer le mode clair' : 'Activer le mode sombre'}
+                      >
+                        {darkMode ? <SunIcon size={20} /> : <MoonIcon size={20} />}
+                        <span>{darkMode ? 'Mode clair' : 'Mode sombre'}</span>
+                      </button>
+
+                      <button
+                        onClick={handleMessagesClick}
+                        className={styles.utilityBtn}
+                        aria-label={isLoggedIn && isPremium ? "Messages" : "Assistant IA"}
+                      >
+                        <MessageIcon size={20} />
+                        <span>{isLoggedIn && isPremium ? "Messages" : "Assistant IA"}</span>
+                      </button>
+
+                      <button
+                        onClick={() => navigateAndClose('/leaderboard')}
+                        className={styles.utilityBtn}
+                        aria-label="Voir le classement"
+                      >
+                        <TrophyIcon size={20} />
+                        <span>Classement</span>
+                      </button>
+
+                      <button
+                        onClick={() => openPopup(isLoggedIn ? 'profile' : 'login')}
+                        className={`${styles.utilityBtn} ${isLoggedIn ? styles.profileBtn : styles.loginBtn}`}
+                        aria-label={isLoggedIn ? 'Mon profil' : 'Se connecter'}
+                      >
+                        <UserIcon size={20} />
+                        <span>{isLoggedIn ? 'Mon profil' : 'Se connecter'}</span>
+                      </button>
+
+                    </div>
+
+                    {/* Language Selector */}
+                    <div className={styles.languageSection}>
+                      <span className={styles.langLabel}>Langue</span>
+                      <div className={styles.langGroup} role="group" aria-label="Sélection de la langue">
+                        {['fr', 'en', 'de', 'es'].map(lng => (
+                          <button
+                            key={lng}
+                            onClick={() => changeLanguage(lng)}
+                            className={`${styles.langBtn} ${i18n.language === lng ? styles.langActive : ''}`}
+                            aria-label={`Changer la langue en ${lng.toUpperCase()}`}
+                            aria-pressed={i18n.language === lng}
+                          >
+                            {lng.toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
                 </div>
-
-                {/* Action buttons */}
-                <div className={styles.iconsGroup}>
-                  <button
-                    onClick={toggleDarkMode}
-                    className={styles.dockIconBtn}
-                    title={darkMode ? 'Light mode' : 'Dark mode'}
-                    aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                  >
-                    {darkMode ? <SunIcon size={20} /> : <MoonIcon size={20} />}
-                  </button>
-
-                  <button
-                    onClick={handleMessagesClick}
-                    className={styles.dockIconBtn}
-                    title={!isLoggedIn || !isPremium ? "Assistant IA" : "Messages"}
-                    aria-label={!isLoggedIn || !isPremium ? "Open AI assistant" : "Open messages"}
-                  >
-                    <MessageIcon size={20} />
-                  </button>
-
-                  <button
-                    onClick={() => navigateAndClose('/leaderboard')}
-                    className={styles.dockIconBtn}
-                    title="Classement"
-                    aria-label="View leaderboard"
-                  >
-                    <TrophyIcon size={20} />
-                  </button>
-
-                  <button
-                    onClick={() => openPopup(isLoggedIn ? 'profile' : 'login')}
-                    className={styles.dockIconBtn}
-                    title={isLoggedIn ? 'Profil' : 'Connexion'}
-                    aria-label={isLoggedIn ? 'View profile' : 'Sign in'}
-                  >
-                    <UserIcon size={20} />
-                  </button>
-                </div>
-              </div>
               </div>
             )}
 
             {/* Panel 2: Chat History */}
             {currentView === 'history' && chatView === 'history' && (
-              <div className={styles.mobilePanel}>
-              <div className={styles.chatHistoryHeader}>
-                <button
-                  onClick={closeChatHistory}
-                  className={styles.chatCloseBtn}
-                  title="Retour"
-                  aria-label="Back to navigation"
-                >
-                  ←
-                </button>
-                <h3>💬 Messages</h3>
-              </div>
-              <ChatHistory onLogin={() => { closeChat(); openPopup('login'); }} />
+              <div className={styles.expandedContent}>
+                <div className={styles.chatHistoryHeader}>
+                  <button
+                    onClick={closeChatHistory}
+                    className={styles.chatCloseBtn}
+                    title="Retour"
+                    aria-label="Back to navigation"
+                  >
+                    ←
+                  </button>
+                  <h3>💬 Messages</h3>
+                </div>
+                <ChatHistory onLogin={() => { closeChat(); openPopup('login'); }} />
               </div>
             )}
 
             {/* Panel 3: Conversation */}
             {currentView === 'history' && chatView === 'conversation' && activeConversation && (
-              <div className={styles.mobilePanel}>
+              <div className={styles.expandedContent}>
                 <div className={styles.chatHistoryHeader}>
                   <button
                     onClick={backToHistory}
@@ -454,8 +517,7 @@ export default function Navbar() {
             )}
           </>
         )}
-
-        {/* Desktop: Show navigation normally */}
+        {/* Desktop: Show full navigation */}
         {(open || isDesktop) && isDesktop && (
           <>
             {/* Secondary links */}
@@ -531,8 +593,8 @@ export default function Navbar() {
                 <button
                   onClick={handleMessagesClick}
                   className={styles.dockIconBtn}
-                  title={!isLoggedIn || !isPremium ? "Assistant IA" : "Messages"}
-                  aria-label={!isLoggedIn || !isPremium ? "Open AI assistant" : "Open messages"}
+                  title={isLoggedIn && isPremium ? "Messages" : "Assistant IA"}
+                  aria-label={isLoggedIn && isPremium ? "Open messages" : "Open AI assistant"}
                 >
                   <MessageIcon size={20} />
                 </button>
@@ -559,8 +621,8 @@ export default function Navbar() {
           </>
         )}
 
-        {/* Separator */}
-        {(open || isDesktop) && <div className={styles.separator} />}
+        {/* Separator for desktop only */}
+        {isDesktop && <div className={styles.separator} />}
 
         {/* Main navigation - always visible */}
         <div className={styles.mainNav}>
@@ -585,18 +647,53 @@ export default function Navbar() {
             );
           })}
 
-          {/* Expand/Collapse button */}
-          <button
-            className={`${styles.expandBtn} ${open ? styles.expandBtnOpen : ''}`}
-            onClick={() => setOpen(!open)}
-            aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'}
-            aria-expanded={open}
-            title={open ? 'Fermer' : 'Plus'}
-          >
-            <span className={styles.expandIcon}>
-              {open ? '✕' : '+'}
-            </span>
-          </button>
+          {/* Expand/Collapse button - Mobile only */}
+          {!isDesktop && (
+            <button
+              className={`${styles.expandBtn} ${open ? styles.expandBtnOpen : ''}`}
+              onClick={() => setOpen(!open)}
+              aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'}
+              aria-expanded={open}
+              title={open ? 'Fermer' : 'Plus'}
+            >
+              <span className={styles.expandIcon}>
+                {open ? (
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M18 6L6 18M6 6l12 12"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M3 12h18M3 6h18M3 18h18"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                )}
+              </span>
+            </button>
+          )}
         </div>
       </nav>
 
