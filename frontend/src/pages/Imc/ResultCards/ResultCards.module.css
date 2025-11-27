@@ -8,8 +8,8 @@
   --accent: var(--couleur-bouton-action, #f7b186);
   --accent-soft: var(--couleur-bouton-selection, #b8ddd1);
   --surface: var(--couleur-principale, #F7F6F2);
-  --shadow-sm: 0 2px 6px rgba(0,0,0,.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.04);
+  --shadow-md: 0 2px 6px rgba(0,0,0,.06);
 }
 
 :root.dark,
@@ -19,8 +19,8 @@
   --muted: #a6b0bf;
   --line: rgba(255,255,255,.08);
   --line-strong: rgba(255,255,255,.12);
-  --shadow-sm: 0 2px 6px rgba(0,0,0,.35);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.45);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.2);
+  --shadow-md: 0 2px 6px rgba(0,0,0,.25);
 }
 
 :root.dark .colTitle,
@@ -46,7 +46,6 @@
   color: var(--ink);
   text-align: left;
   box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.2s ease;
 }
 
 .ctaLink {
@@ -89,7 +88,7 @@
   margin: 0.5rem 0 0.5rem;
   text-align: center;
   color: #0d3d2f;
-  box-shadow: 0 2px 6px rgba(184, 221, 209, 0.15);
+  box-shadow: 0 1px 3px rgba(184, 221, 209, 0.12);
 }
 
 
@@ -115,18 +114,18 @@
   cursor: pointer;
   font-weight: 700;
   font-size: 0.95rem;
-  box-shadow: 0 3px 8px rgba(247, 177, 134, 0.25);
+  box-shadow: 0 1px 3px rgba(247, 177, 134, 0.15);
   transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .learnMore:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+  box-shadow: 0 2px 6px rgba(247, 177, 134, 0.2);
 }
 
 .learnMore:active {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(247, 177, 134, 0.2);
+  box-shadow: 0 1px 3px rgba(247, 177, 134, 0.15);
 }
 
 .link {

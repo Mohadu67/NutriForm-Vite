@@ -7,7 +7,14 @@ import App from "./App.jsx";
 import "./index.css";
 import SafeGoogleReCaptchaProvider from "./providers/SafeGoogleReCaptchaProvider.jsx";
 
-const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
+// Protection contre import.meta.env undefined
+const RECAPTCHA_SITE_KEY = (() => {
+  try {
+    return import.meta.env?.VITE_RECAPTCHA_SITE_KEY || "";
+  } catch {
+    return "";
+  }
+})();
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
