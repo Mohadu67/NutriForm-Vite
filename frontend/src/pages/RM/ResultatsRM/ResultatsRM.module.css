@@ -113,6 +113,10 @@
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .saveBtn:hover {
@@ -140,11 +144,20 @@
   font-weight: 700;
   margin: 0 0 12px 0;
   color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 :global(body.dark) .methodsTitle,
 :global(html.dark) .methodsTitle {
   color: #e5e7eb;
+}
+
+.methodsTitleIcon {
+  display: inline-flex;
+  align-items: center;
+  color: #f7b186;
 }
 
 .methodsGrid {
@@ -200,6 +213,9 @@
   color: #0369a1;
   border-left: 3px solid #0ea5e9;
   line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 :global(body.dark) .methodsNote,
@@ -207,6 +223,18 @@
   background: #0c1a26;
   color: #7dd3fc;
   border-left-color: #38bdf8;
+}
+
+.methodsNoteIcon {
+  display: inline-flex;
+  align-items: center;
+  color: #0ea5e9;
+  flex-shrink: 0;
+}
+
+:global(body.dark) .methodsNoteIcon,
+:global(html.dark) .methodsNoteIcon {
+  color: #38bdf8;
 }
 
 @media (min-width: 640px) {

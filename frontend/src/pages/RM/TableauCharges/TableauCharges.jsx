@@ -1,3 +1,4 @@
+import { ClipboardIcon, MuscleIcon, TargetIcon, FireIcon, AlertTriangleIcon } from "../../../components/Navbar/NavIcons";
 import styles from "./TableauCharges.module.css";
 
 export default function TableauCharges({ rm }) {
@@ -17,7 +18,12 @@ export default function TableauCharges({ rm }) {
   return (
     <section className={styles.container}>
       <div className={styles.header}>
-        <h2 className={styles.title}>📋 Table des charges d'entraînement</h2>
+        <h2 className={styles.title}>
+          <span className={styles.titleIcon}>
+            <ClipboardIcon size={24} />
+          </span>
+          Table des charges d'entraînement
+        </h2>
         <p className={styles.subtitle}>
           Utilise ces pourcentages pour planifier tes séances selon ton objectif
         </p>
@@ -62,24 +68,35 @@ export default function TableauCharges({ rm }) {
       </div>
 
       <div className={styles.tips}>
-        <h3 className={styles.tipsTitle}>💪 Conseils d'utilisation</h3>
+        <h3 className={styles.tipsTitle}>
+          <span className={styles.tipsTitleIcon}>
+            <MuscleIcon size={20} />
+          </span>
+          Conseils d'utilisation
+        </h3>
         <div className={styles.tipsGrid}>
           <div className={styles.tipCard}>
-            <div className={styles.tipIcon}>🎯</div>
+            <div className={styles.tipIcon}>
+              <TargetIcon size={32} />
+            </div>
             <h4 className={styles.tipTitle}>Force maximale</h4>
             <p className={styles.tipText}>
               85-100% du 1RM, 1-6 reps, repos 3-5min. Idéal pour progresser en force pure.
             </p>
           </div>
           <div className={styles.tipCard}>
-            <div className={styles.tipIcon}>💪</div>
+            <div className={styles.tipIcon}>
+              <MuscleIcon size={32} />
+            </div>
             <h4 className={styles.tipTitle}>Hypertrophie</h4>
             <p className={styles.tipText}>
               65-85% du 1RM, 6-12 reps, repos 60-90s. Parfait pour la prise de muscle.
             </p>
           </div>
           <div className={styles.tipCard}>
-            <div className={styles.tipIcon}>🔥</div>
+            <div className={styles.tipIcon}>
+              <FireIcon size={32} />
+            </div>
             <h4 className={styles.tipTitle}>Endurance</h4>
             <p className={styles.tipText}>
               50-65% du 1RM, 15-20+ reps, repos 30-60s. Pour l'endurance musculaire.
@@ -88,7 +105,10 @@ export default function TableauCharges({ rm }) {
         </div>
 
         <div className={styles.warning}>
-          <strong>⚠️ Important :</strong> Ces valeurs sont des estimations. Commence toujours par des charges légères et augmente progressivement. En cas de doute, consulte un coach sportif.
+          <span className={styles.warningIcon}>
+            <AlertTriangleIcon size={20} />
+          </span>
+          <strong>Important :</strong> Ces valeurs sont des estimations. Commence toujours par des charges légères et augmente progressivement. En cas de doute, consulte un coach sportif.
         </div>
       </div>
     </section>

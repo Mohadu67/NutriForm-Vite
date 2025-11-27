@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import { isAuthenticated, secureApiCall } from "../../utils/authService.js";
+import { CheckIcon, XIcon, AlertTriangleIcon, InfoIcon } from "../../components/Navbar/NavIcons";
 import FormRM from "./FormRM/FormRM.jsx";
 import ResultatsRM from "./ResultatsRM/ResultatsRM.jsx";
 import TableauCharges from "./TableauCharges/TableauCharges.jsx";
@@ -160,10 +161,10 @@ export default function RMPage() {
       {toast.show && (
         <div className={`${styles.toast} ${styles[toast.type]}`}>
           <span className={styles.toastIcon}>
-            {toast.type === 'success' && '✓'}
-            {toast.type === 'error' && '✕'}
-            {toast.type === 'warning' && '⚠'}
-            {toast.type === 'info' && 'ℹ'}
+            {toast.type === 'success' && <CheckIcon size={16} />}
+            {toast.type === 'error' && <XIcon size={16} />}
+            {toast.type === 'warning' && <AlertTriangleIcon size={16} />}
+            {toast.type === 'info' && <InfoIcon size={16} />}
           </span>
           <span className={styles.toastMessage}>{toast.message}</span>
           <button
@@ -171,7 +172,7 @@ export default function RMPage() {
             onClick={() => setToast({ show: false, message: '', type: 'info' })}
             aria-label="Fermer"
           >
-            ✕
+            <XIcon size={14} />
           </button>
         </div>
       )}

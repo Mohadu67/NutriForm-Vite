@@ -29,18 +29,19 @@
 
 .form {
   background: #fff;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   margin-bottom: 24px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
 }
 
 :global(body.dark) .form,
 :global(html.dark) .form {
   background: #1a1d24;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.25);
-  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .formGrid {
@@ -60,6 +61,8 @@
   font-weight: 600;
   font-size: 0.95rem;
   color: #333;
+  cursor: default;
+  user-select: none;
 }
 
 :global(body.dark) .label,
@@ -105,6 +108,8 @@
   font-size: 0.85rem;
   color: #999;
   font-style: italic;
+  cursor: default;
+  user-select: none;
 }
 
 .submitBtn {
@@ -118,30 +123,33 @@
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 3px 8px rgba(247, 177, 134, 0.25);
+  box-shadow: 0 1px 3px rgba(247, 177, 134, 0.15);
 }
 
 .submitBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+  box-shadow: 0 2px 6px rgba(247, 177, 134, 0.2);
 }
 
 .submitBtn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(247, 177, 134, 0.2);
+  box-shadow: 0 1px 3px rgba(247, 177, 134, 0.15);
 }
 
 .infoBox {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
   border-left: 4px solid #0ea5e9;
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.08);
+  transition: all 0.3s ease;
 }
 
 :global(body.dark) .infoBox,
 :global(html.dark) .infoBox {
   background: linear-gradient(135deg, #0c1a26 0%, #0f2538 100%);
   border-left-color: #38bdf8;
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.1);
 }
 
 .infoTitle {
@@ -149,11 +157,30 @@
   font-size: 1.1rem;
   font-weight: 700;
   color: #0369a1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: default;
 }
 
 :global(body.dark) .infoTitle,
 :global(html.dark) .infoTitle {
   color: #7dd3fc;
+}
+
+.infoIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: #0ea5e9;
+  flex-shrink: 0;
+}
+
+:global(body.dark) .infoIcon,
+:global(html.dark) .infoIcon {
+  color: #38bdf8;
 }
 
 .infoList {
