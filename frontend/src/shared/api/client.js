@@ -1,7 +1,14 @@
 import axios from "axios";
 import storage from "../utils/storage";
 
-const baseURL = import.meta.env.VITE_API_URL || "/api";
+// Protection contre import.meta.env undefined
+const baseURL = (() => {
+  try {
+    return import.meta.env?.VITE_API_URL || "/api";
+  } catch {
+    return "/api";
+  }
+})();
 
 const client = axios.create({
   baseURL,

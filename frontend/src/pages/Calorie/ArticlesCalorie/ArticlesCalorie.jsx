@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { XIcon } from "../../../components/Navbar/NavIcons";
 import styles from "./ArticlesCalorie.module.css";
 
 export default function ArticlesCalorie() {
@@ -165,7 +166,7 @@ export default function ArticlesCalorie() {
             }}
           >
             <button className={styles.closeButton} onClick={closeModal} aria-label="Fermer">
-              ✕
+              <XIcon size={20} />
             </button>
 
             {selectedArticle.image && (

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
-import { getMessages, sendMessage as sendMatchMessage, markMessagesAsRead } from '../../shared/api/matchChat';
+import { getMessages, sendMessage as sendMatchMessage, markMessagesAsRead, deleteMessage } from '../../shared/api/matchChat';
 import { isAuthenticated } from '../../shared/api/auth';
 import { storage } from '../../shared/utils/storage';
 import logger from '../../shared/utils/logger';
@@ -16,6 +16,8 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
   const [currentUserId, setCurrentUserId] = useState(null);
   const [escalated, setEscalated] = useState(false);
   const [escalating, setEscalating] = useState(false);
+  const [deletingMessage, setDeletingMessage] = useState(null);
+  const [showMessageOptions, setShowMessageOptions] = useState(null);
 
   const messagesEndRef = useRef(null);
   const initialMessageSentRef = useRef(false);
@@ -180,6 +182,26 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     }
   };
 
+  const handleDeleteMessage = async (messageId) => {
+    if (!isMatchChat || !messageId) return;
+
+    try {
+      setDeletingMessage(messageId);
+      await deleteMessage(messageId);
+
+      // Retirer le message de la liste locale
+      setMessages(prev => prev.filter(msg => msg._id !== messageId));
+
+      // Rafraîchir la liste des messages
+      setTimeout(() => refresh(), 500);
+    } catch (err) {
+      logger.error('Erreur suppression message:', err);
+    } finally {
+      setDeletingMessage(null);
+      setShowMessageOptions(null);
+    }
+  };
+
   const handleEscalate = async () => {
     if (!conversationId || escalating || escalated) return;
 
@@ -294,14 +316,49 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
                 key={msg._id || index}
                 className={`${styles.message} ${
                   isUserMessage ? styles.messageUser : styles.messageBot
-                }`}
+                } ${deletingMessage === msg._id ? styles.messageDeleting : ''}`}
               >
-                <div className={styles.messageContent}>
-                  <p>{msg.content}</p>
+                <div className={styles.messageWrapper}>
+                  <div className={styles.messageContent}>
+                    <p>{msg.content}</p>
+                  </div>
+
+                  {/* Options de message (suppression) */}
+                  {isMatchChat && isUserMessage && msg._id && (
+                    <div className={styles.messageActions}>
+                      <button
+                        onClick={() => setShowMessageOptions(showMessageOptions === msg._id ? null : msg._id)}
+                        className={styles.messageOptionsBtn}
+                      >
+                        ⋮
+                      </button>
+                      {showMessageOptions === msg._id && (
+                        <div className={styles.messageOptions}>
+                          <button
+                            onClick={() => handleDeleteMessage(msg._id)}
+                            disabled={deletingMessage === msg._id}
+                            className={styles.deleteBtn}
+                          >
+                            {deletingMessage === msg._id ? 'Suppression...' : '🗑️ Supprimer'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <span className={styles.messageTime}>
-                  {formatTimestamp(msg.createdAt)}
-                </span>
+
+                <div className={styles.messageFooter}>
+                  <span className={styles.messageTime}>
+                    {formatTimestamp(msg.createdAt)}
+                  </span>
+
+                  {/* Indicateur de lecture pour les messages match */}
+                  {isMatchChat && isUserMessage && (
+                    <span className={styles.readStatus}>
+                      {msg.read ? '✓✓' : '✓'}
+                    </span>
+                  )}
+                </div>
               </div>
             );
           })
