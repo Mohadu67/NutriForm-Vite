@@ -1,3 +1,4 @@
+import { SaveIcon, ChartIcon, LightbulbIcon } from "../../../components/Navbar/NavIcons";
 import styles from "./ResultatsRM.module.css";
 
 export default function ResultatsRM({ data, onSave }) {
@@ -35,13 +36,19 @@ export default function ResultatsRM({ data, onSave }) {
 
         {onSave && (
           <button onClick={onSave} className={styles.saveBtn}>
-            💾 Sauvegarder ce test
+            <SaveIcon size={18} />
+            Sauvegarder ce test
           </button>
         )}
       </div>
 
       <div className={styles.methodsCard}>
-        <h3 className={styles.methodsTitle}>📊 Formules utilisées</h3>
+        <h3 className={styles.methodsTitle}>
+          <span className={styles.methodsTitleIcon}>
+            <ChartIcon size={20} />
+          </span>
+          Formules utilisées
+        </h3>
         <div className={styles.methodsGrid}>
           <div className={styles.methodItem}>
             <span className={styles.methodName}>Epley</span>
@@ -73,7 +80,10 @@ export default function ResultatsRM({ data, onSave }) {
           </div>
         </div>
         <p className={styles.methodsNote}>
-          💡 Le résultat affiché est la moyenne de 7 formules scientifiques pour plus de précision
+          <span className={styles.methodsNoteIcon}>
+            <LightbulbIcon size={16} />
+          </span>
+          Le résultat affiché est la moyenne de 7 formules scientifiques pour plus de précision
         </p>
       </div>
     </section>

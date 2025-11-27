@@ -4,8 +4,23 @@ import styles from "./FormContact.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import BoutonAction from "../../../components/BoutonAction/BoutonAction.jsx";
 
-const API_URL = import.meta.env.VITE_API_URL || "";
-const RECAPTCHA_ENABLED = import.meta.env.VITE_ENABLE_RECAPTCHA !== 'false' && import.meta.env.VITE_ENABLE_RECAPTCHA !== '0';
+// Protection contre import.meta.env undefined
+const API_URL = (() => {
+  try {
+    return import.meta.env?.VITE_API_URL || "";
+  } catch {
+    return "";
+  }
+})();
+
+const RECAPTCHA_ENABLED = (() => {
+  try {
+    return import.meta.env?.VITE_ENABLE_RECAPTCHA !== 'false' &&
+           import.meta.env?.VITE_ENABLE_RECAPTCHA !== '0';
+  } catch {
+    return false;
+  }
+})();
 
 export default function FormContact({ onSend }) {
   const { executeRecaptcha } = useGoogleReCaptcha();

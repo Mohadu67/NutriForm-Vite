@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { LightbulbIcon } from "../../../components/Navbar/NavIcons";
 import styles from "./FormRM.module.css";
 
 export default function FormRM({ onResult }) {
@@ -140,7 +141,12 @@ export default function FormRM({ onResult }) {
       </form>
 
       <div className={styles.infoBox}>
-        <h3 className={styles.infoTitle}>💡 Pourquoi calculer son 1RM ?</h3>
+        <h3 className={styles.infoTitle}>
+          <span className={styles.infoIcon}>
+            <LightbulbIcon size={20} />
+          </span>
+          Pourquoi calculer son 1RM ?
+        </h3>
         <ul className={styles.infoList}>
           <li>Planifier tes cycles d'entraînement en % de RM</li>
           <li>Suivre ta progression de force</li>

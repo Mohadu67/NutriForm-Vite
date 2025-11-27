@@ -2,7 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import styles from "./Reviews.module.css";
 import { isAuthenticated } from "../../utils/authService";
 
-const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+// Protection contre import.meta.env undefined
+const API_URL = (() => {
+  try {
+    return (import.meta.env?.VITE_API_URL || "").replace(/\/$/, "");
+  } catch {
+    return "";
+  }
+})();
 
 export default function Reviews() {
   const [proReviews, setProReviews] = useState([]);
