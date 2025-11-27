@@ -16,7 +16,8 @@ async function getConversations(req, res) {
 
     const conversations = await Conversation.find({
       participants: userId,
-      isActive: true
+      isActive: true,
+      hiddenBy: { $ne: userId } // Ne pas afficher les conversations cachées
     })
       .populate('participants', 'pseudo prenom email')
       .populate('matchId', 'matchScore distance')
@@ -204,6 +205,11 @@ async function sendMessage(req, res) {
       timestamp: message.createdAt
     };
 
+    // Si la conversation était cachée pour le destinataire, la réafficher
+    if (conversation.isHiddenForUser(receiverId)) {
+      await conversation.unhideForUser(receiverId);
+    }
+
     // Incrémenter le compteur non lu pour le destinataire
     await conversation.incrementUnread(receiverId);
 
@@ -387,7 +393,7 @@ async function blockConversation(req, res) {
 }
 
 /**
- * Supprimer une conversation (soft delete)
+ * Supprimer une conversation (masquage local uniquement)
  * DELETE /api/match-chat/conversation/:conversationId
  */
 async function deleteConversation(req, res) {
@@ -406,14 +412,24 @@ async function deleteConversation(req, res) {
       return res.status(403).json({ error: 'Non autorisé.' });
     }
 
-    // Soft delete : marquer comme inactive
-    conversation.isActive = false;
-    await conversation.save();
+    // Masquer la conversation pour cet utilisateur seulement
+    try {
+      await conversation.hideForUser(userId);
 
-    // Supprimer tous les messages associés
-    await MatchMessage.deleteMany({ conversationId });
+      // Supprimer les messages uniquement pour cet utilisateur
+      await MatchMessage.updateMany(
+        { conversationId },
+        { $addToSet: { deletedBy: userId } }
+      );
 
-    res.status(200).json({ message: 'Conversation supprimée avec succès.' });
+      res.status(200).json({ message: 'Conversation supprimée avec succès.' });
+    } catch (saveError) {
+      logger.error('Erreur lors de la sauvegarde hideForUser:', saveError);
+      res.status(500).json({
+        error: 'Erreur lors de la suppression de la conversation.',
+        details: saveError.message
+      });
+    }
   } catch (error) {
     logger.error('Erreur deleteConversation:', error);
     res.status(500).json({ error: 'Erreur lors de la suppression de la conversation.' });

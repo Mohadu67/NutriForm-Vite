@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { XIcon } from "../../../components/Navbar/NavIcons";
 import styles from "./ArticlesImc.module.css"
 
 export default function ArticlesImc() {
@@ -151,7 +152,7 @@ export default function ArticlesImc() {
                     onKeyDown={(e) => { if (e.key === 'Escape') closeModal(); }}
                     >
                     <button className={styles.closeButton} onClick={closeModal}>
-                    ✕
+                        <XIcon size={20} />
                     </button>
                     <img
                     src={resolveImage(selectedArticle.image)}

@@ -281,12 +281,125 @@
   font-size: var(--font-size-sm);
 }
 
+/* Message wrapper pour options */
+.messageWrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+.messageUser .messageWrapper {
+  flex-direction: row-reverse;
+}
+
+/* Actions du message (menu) */
+.messageActions {
+  position: relative;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.message:hover .messageActions {
+  opacity: 1;
+}
+
+.messageOptionsBtn {
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-sm);
+}
+
+.messageOptionsBtn:hover {
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+}
+
+.messageOptions {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-xs);
+  min-width: 120px;
+  z-index: 10;
+  animation: fadeInScale 0.2s ease;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.deleteBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Message en cours de suppression */
+.messageDeleting {
+  opacity: 0.5;
+  animation: fadeOut 0.3s ease;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+/* Footer du message */
+.messageFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+  padding: 0 6px;
+}
+
+.messageUser .messageFooter {
+  justify-content: flex-end;
+}
+
 /* Timestamp */
 .messageTime {
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
-  margin-top: var(--space-xs);
-  padding: 0 6px;
   font-weight: var(--font-weight-medium);
   opacity: 0.8;
   transition: opacity var(--transition-fast);
@@ -296,12 +409,15 @@
   opacity: 1;
 }
 
-.messageUser .messageTime {
-  text-align: right;
+/* Indicateur de lecture */
+.readStatus {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast);
 }
 
-.messageBot .messageTime {
-  text-align: left;
+.readStatus:hover {
+  color: var(--color-primary);
 }
 
 /* ===== INPUT CONTAINER ===== */

@@ -35,7 +35,13 @@ class ErrorBoundary extends React.Component {
           >
             Recharger la page
           </button>
-          {import.meta.env.DEV && this.state.error && (
+          {(() => {
+            try {
+              return import.meta.env?.DEV;
+            } catch {
+              return false;
+            }
+          })() && this.state.error && (
             <details style={{ marginTop: '1rem', textAlign: 'left' }}>
               <summary>Détails de l'erreur (dev mode)</summary>
               <pre style={{ background: 'var(--paper, #f5f5f5)', padding: '1rem', overflow: 'auto' }}>

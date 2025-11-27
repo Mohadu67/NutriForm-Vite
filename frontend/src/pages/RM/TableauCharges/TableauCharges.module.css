@@ -14,11 +14,21 @@
   font-weight: 700;
   color: var(--ink, #222325);
   margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 :global(body.dark) .title,
 :global(html.dark) .title {
   color: #e5e7eb;
+}
+
+.titleIcon {
+  display: inline-flex;
+  align-items: center;
+  color: #f7b186;
 }
 
 .subtitle {
@@ -38,14 +48,14 @@
   background: var(--paper, #ffffff);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   margin-bottom: 32px;
 }
 
 :global(body.dark) .table,
 :global(html.dark) .table {
   background: #1a1d24;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .tableHeader {
@@ -67,7 +77,6 @@
   gap: 4px;
   padding: 12px 10px;
   border-bottom: 1px solid #f3f4f6;
-  transition: background 0.2s ease;
   align-items: center;
   font-size: 0.8rem;
 }
@@ -130,13 +139,13 @@
   background: var(--paper, #ffffff);
   border-radius: 12px;
   padding: 18px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 :global(body.dark) .tips,
 :global(html.dark) .tips {
   background: #1a1d24;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .tipsTitle {
@@ -144,11 +153,20 @@
   font-weight: 700;
   color: var(--ink, #222325);
   margin: 0 0 14px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 :global(body.dark) .tipsTitle,
 :global(html.dark) .tipsTitle {
   color: #e5e7eb;
+}
+
+.tipsTitleIcon {
+  display: inline-flex;
+  align-items: center;
+  color: #f7b186;
 }
 
 .tipsGrid {
@@ -171,8 +189,20 @@
 }
 
 .tipIcon {
-  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
   margin-bottom: 8px;
+  color: #f7b186;
+  background: rgba(247, 177, 134, 0.1);
+  border-radius: 12px;
+}
+
+:global(body.dark) .tipIcon,
+:global(html.dark) .tipIcon {
+  background: rgba(247, 177, 134, 0.15);
 }
 
 .tipTitle {
@@ -207,6 +237,17 @@
   font-size: 0.85rem;
   color: #92400e;
   line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.warningIcon {
+  display: inline-flex;
+  align-items: center;
+  color: #f59e0b;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 :global(body.dark) .warning,

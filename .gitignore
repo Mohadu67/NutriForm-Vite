@@ -38,15 +38,16 @@ frontend/cookies.txt
 
 # files
 
-AgentClaude.md
 package-lock.json
 package.json
-PLAN_CORRECTIONS.md
 .env.production
 cookies.txt
-*.md
 
-# Rapports techniques (documentation interne)
-RAPPORT-COOKIES-SAFARI-SOLUTION.md
-RAPPORT_DEBUG_SESSION.md
-MATCHING_ROADMAP.md
+# Documentation et rapports temporaires
+*.md
+!README.md
+!frontend/README.md
+!docs/README.md
+!docs/STRIPE_SETUP.md
+!docs/ROADMAP.md
+docs/archives/

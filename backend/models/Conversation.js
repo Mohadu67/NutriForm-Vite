@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const logger = require('../utils/logger');
 
 const conversationSchema = new mongoose.Schema(
   {
@@ -56,7 +57,13 @@ const conversationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       default: null
-    }
+    },
+
+    // Utilisateurs ayant supprimé/masqué cette conversation localement
+    hiddenBy: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }]
   },
   {
     timestamps: true
@@ -94,6 +101,62 @@ conversationSchema.methods.incrementUnread = function(userId) {
 conversationSchema.methods.resetUnread = function(userId) {
   this.unreadCount.set(userId.toString(), 0);
   return this.save();
+};
+
+// Méthode pour masquer la conversation pour un utilisateur (suppression locale)
+conversationSchema.methods.hideForUser = function(userId) {
+  try {
+    // S'assurer que hiddenBy est initialisé
+    if (!this.hiddenBy) {
+      this.hiddenBy = [];
+    }
+
+    // Convertir en string pour comparaison
+    const userIdStr = userId.toString();
+
+    // Vérifier si pas déjà dans hiddenBy
+    const isAlreadyHidden = this.hiddenBy.some(id => id.toString() === userIdStr);
+
+    if (!isAlreadyHidden) {
+      this.hiddenBy.push(userId);
+    }
+
+    return this.save();
+  } catch (error) {
+    logger.error('Erreur dans hideForUser:', error);
+    throw error;
+  }
+};
+
+// Méthode pour réafficher la conversation pour un utilisateur
+conversationSchema.methods.unhideForUser = function(userId) {
+  try {
+    if (!this.hiddenBy) {
+      return this.save();
+    }
+
+    const userIdStr = userId.toString();
+    this.hiddenBy = this.hiddenBy.filter(id => id.toString() !== userIdStr);
+    return this.save();
+  } catch (error) {
+    logger.error('Erreur dans unhideForUser:', error);
+    throw error;
+  }
+};
+
+// Méthode pour vérifier si la conversation est cachée pour un utilisateur
+conversationSchema.methods.isHiddenForUser = function(userId) {
+  try {
+    if (!this.hiddenBy || this.hiddenBy.length === 0) {
+      return false;
+    }
+
+    const userIdStr = userId.toString();
+    return this.hiddenBy.some(id => id.toString() === userIdStr);
+  } catch (error) {
+    logger.error('Erreur dans isHiddenForUser:', error);
+    return false;
+  }
 };
 
 module.exports = mongoose.model('Conversation', conversationSchema);
