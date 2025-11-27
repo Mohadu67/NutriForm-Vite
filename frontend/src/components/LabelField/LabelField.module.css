@@ -1,4 +1,183 @@
+/* Conteneur principal du champ */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+/* Label du champ */
 .label {
     font-weight: 700;
+    font-size: 0.875rem;
+    color: var(--color-text);
+    margin-bottom: 4px;
+    transition: color 0.25s ease;
+}
 
+/* Indicateur de champ requis */
+.label[data-required="true"]::after {
+    content: " *";
+    color: #dc2626;
+    font-weight: 400;
+}
+
+/* Container de l'input pour gérer les icônes */
+.inputContainer {
+    position: relative;
+    width: 100%;
+}
+
+/* Styles de base pour les inputs */
+.input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color, #e5e7eb);
+    border-radius: var(--radius-sm, 8px);
+    background: var(--input-bg, var(--color-bg));
+    color: var(--color-text);
+    font-size: 1rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+/* État hover */
+.input:hover:not(:disabled) {
+    border-color: var(--accent-form-light, var(--accent-form));
+}
+
+/* État focus */
+.input:focus {
+    border-color: var(--accent-form);
+    box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.1);
+}
+
+/* État désactivé */
+.input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: var(--color-bg-alt);
+}
+
+/* État d'erreur */
+.inputError {
+    border-color: #dc2626;
+}
+
+.inputError:focus {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* État de succès */
+.inputSuccess {
+    border-color: #10b981;
+}
+
+.inputSuccess:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Texte d'aide */
+.helper {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+/* Message d'erreur */
+.error {
+    font-size: 0.75rem;
+    color: #dc2626;
+    margin-top: 4px;
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    line-height: 1.4;
+    animation: slideDown 0.2s ease-out;
+}
+
+.error::before {
+    content: "⚠";
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* Message de succès */
+.success {
+    font-size: 0.75rem;
+    color: #10b981;
+    margin-top: 4px;
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    line-height: 1.4;
+    animation: slideDown 0.2s ease-out;
+}
+
+.success::before {
+    content: "✓";
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* Icône dans l'input */
+.icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    pointer-events: none;
+    transition: color 0.25s ease;
+}
+
+.input:focus ~ .icon {
+    color: var(--accent-form);
+}
+
+.inputWithIcon {
+    padding-left: 2.75rem;
+}
+
+/* Animation pour l'apparition des messages */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Support du mode sombre */
+:root[data-theme="dark"] .label {
+    color: var(--color-text-dark);
+}
+
+:root[data-theme="dark"] .input {
+    background: var(--color-bg-dark);
+    border-color: var(--border-color-dark, #374151);
+    color: var(--color-text-dark);
+}
+
+:root[data-theme="dark"] .helper {
+    color: var(--color-text-dark-muted);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .field {
+        margin-bottom: 0.75rem;
+    }
+
+    .input {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.9375rem;
+    }
 }
