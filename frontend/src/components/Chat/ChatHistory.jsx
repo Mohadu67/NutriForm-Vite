@@ -6,6 +6,7 @@ import { getAIConversations, deleteAIConversation } from '../../shared/api/chat'
 import { getSubscriptionStatus } from '../../shared/api/subscription';
 import logger from '../../shared/utils/logger';
 import Avatar from '../Shared/Avatar';
+import Alert from '../MessageAlerte/Alert/Alert';
 import styles from './ChatHistory.module.css';
 
 export default function ChatHistory({ onLogin }) {
@@ -14,6 +15,8 @@ export default function ChatHistory({ onLogin }) {
   const [matchConversations, setMatchConversations] = useState([]);
   const [isAuth, setIsAuth] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [alert, setAlert] = useState({ show: false, message: '', variant: 'error' });
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, type: null });
 
   // Vérifier authentification et premium
   useEffect(() => {
@@ -95,30 +98,47 @@ export default function ChatHistory({ onLogin }) {
 
   const handleDeleteAIConversation = async (conversationId, e) => {
     e.stopPropagation();
-    if (!confirm('Supprimer cette conversation ?')) return;
-
-    try {
-      await deleteAIConversation(conversationId);
-      // Recharger les conversations
-      await loadAIConversations();
-    } catch (err) {
-      logger.error('Erreur suppression conversation IA:', err);
-      alert('Erreur lors de la suppression de la conversation.');
-    }
+    setDeleteConfirm({ show: true, id: conversationId, type: 'ai' });
   };
 
   const handleDeleteMatchConversation = async (conversationId, e) => {
     e.stopPropagation();
-    if (!confirm('Supprimer cette conversation ?')) return;
+    setDeleteConfirm({ show: true, id: conversationId, type: 'match' });
+  };
+
+  const confirmDelete = async () => {
+    const { id, type } = deleteConfirm;
+    setDeleteConfirm({ show: false, id: null, type: null });
 
     try {
-      await deleteMatchConv(conversationId);
-      // Recharger les conversations
-      await loadMatchConversations();
+      if (type === 'ai') {
+        await deleteAIConversation(id);
+        await loadAIConversations();
+      } else if (type === 'match') {
+        await deleteMatchConv(id);
+        await loadMatchConversations();
+      }
+
+      setAlert({
+        show: true,
+        message: 'Conversation supprimée avec succès',
+        variant: 'success'
+      });
+
+      // Masquer l'alerte après 3 secondes
+      setTimeout(() => setAlert({ show: false, message: '', variant: 'error' }), 3000);
     } catch (err) {
-      logger.error('Erreur suppression conversation match:', err);
-      alert('Erreur lors de la suppression de la conversation.');
+      logger.error(`Erreur suppression conversation ${type}:`, err);
+      setAlert({
+        show: true,
+        message: 'Erreur lors de la suppression de la conversation',
+        variant: 'error'
+      });
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm({ show: false, id: null, type: null });
   };
 
   return (
@@ -255,6 +275,36 @@ export default function ChatHistory({ onLogin }) {
           </>
         )}
       </div>
+
+      {/* Alert de succès/erreur */}
+      <Alert
+        show={alert.show}
+        message={alert.message}
+        variant={alert.variant}
+        onClose={() => setAlert({ show: false, message: '', variant: 'error' })}
+      />
+
+      {/* Dialogue de confirmation de suppression */}
+      <Alert
+        show={deleteConfirm.show}
+        message="Êtes-vous sûr de vouloir supprimer cette conversation ?"
+        variant="error"
+      >
+        <button
+          onClick={confirmDelete}
+          className={styles.confirmBtn}
+          style={{ marginRight: '10px', padding: '8px 16px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+        >
+          Supprimer
+        </button>
+        <button
+          onClick={cancelDelete}
+          className={styles.cancelBtn}
+          style={{ padding: '8px 16px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+        >
+          Annuler
+        </button>
+      </Alert>
     </div>
   );
 }

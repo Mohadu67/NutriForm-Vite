@@ -10,9 +10,9 @@
   --green-dark: #7bc4a8;
   --red-soft: #f59e95;
   --yellow-gold: #ffd369;
-  --shadow-sm: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-md: 0 8px 24px rgba(0,0,0,0.12);
-  --shadow-lg: 0 16px 40px rgba(0,0,0,0.18);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md: 0 2px 6px rgba(0,0,0,0.06);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 :root.dark,
@@ -20,9 +20,9 @@
   --paper: #12151b;
   --ink: #e9ecf1;
   --muted: #a6b0bf;
-  --shadow-sm: 0 4px 12px rgba(0,0,0,0.45);
-  --shadow-md: 0 8px 24px rgba(0,0,0,0.55);
-  --shadow-lg: 0 16px 40px rgba(0,0,0,0.70);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-md: 0 2px 6px rgba(0,0,0,0.25);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 :root.dark .card,
@@ -93,7 +93,7 @@
   cursor: pointer;
   overflow: hidden;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   isolation: isolate;
   display: flex;
   flex-direction: column;
@@ -120,8 +120,8 @@
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   border-color: rgba(247, 177, 134, 0.3);
 }
 
@@ -248,7 +248,7 @@
 .cardIconSvg {
   width: 40px;
   height: 40px;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
 }
 
 /* Desktop */
@@ -261,7 +261,7 @@
 
 .perte .iconWrapper {
   background: linear-gradient(135deg, var(--orange-dark), var(--red-soft));
-  box-shadow: 0 4px 12px rgba(247, 158, 149, 0.25);
+  box-shadow: 0 2px 4px rgba(247, 158, 149, 0.15);
 }
 
 .perte .cardIconSvg {
@@ -270,7 +270,7 @@
 
 .stabiliser .iconWrapper {
   background: linear-gradient(135deg, var(--green), var(--green-light));
-  box-shadow: 0 4px 12px rgba(184, 221, 209, 0.25);
+  box-shadow: 0 2px 4px rgba(184, 221, 209, 0.15);
 }
 
 .stabiliser .cardIconSvg {
@@ -279,7 +279,7 @@
 
 .prise .iconWrapper {
   background: linear-gradient(135deg, var(--orange), var(--yellow-gold));
-  box-shadow: 0 4px 12px rgba(255, 211, 105, 0.25);
+  box-shadow: 0 2px 4px rgba(255, 211, 105, 0.15);
 }
 
 .prise .cardIconSvg {
@@ -336,17 +336,17 @@
 
 .perte .calorieBadge {
   background: linear-gradient(135deg, var(--orange-dark), var(--red-soft));
-  box-shadow: 0 3px 10px rgba(247, 158, 149, 0.2);
+  box-shadow: 0 1px 3px rgba(247, 158, 149, 0.12);
 }
 
 .stabiliser .calorieBadge {
   background: linear-gradient(135deg, var(--green), var(--green-light));
-  box-shadow: 0 3px 10px rgba(184, 221, 209, 0.2);
+  box-shadow: 0 1px 3px rgba(184, 221, 209, 0.12);
 }
 
 .prise .calorieBadge {
   background: linear-gradient(135deg, var(--orange), var(--yellow-gold));
-  box-shadow: 0 3px 10px rgba(255, 211, 105, 0.2);
+  box-shadow: 0 1px 3px rgba(255, 211, 105, 0.12);
 }
 
 .calorieNumber {
@@ -354,7 +354,7 @@
   font-weight: 900;
   color: #fff;
   line-height: 1;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 /* Desktop */
@@ -383,7 +383,7 @@
 .stabiliser .calorieNumber,
 .stabiliser .calorieUnit {
   color: #0d3d2f;
-  text-shadow: 0 2px 8px rgba(13, 61, 47, 0.15);
+  text-shadow: 0 1px 3px rgba(13, 61, 47, 0.1);
 }
 
 /* ============================================
