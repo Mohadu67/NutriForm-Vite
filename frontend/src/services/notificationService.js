@@ -1,5 +1,4 @@
 import { secureApiCall } from '../utils/authService';
-import logger from '../shared/utils/logger';
 
 let swRegistration = null;
 
@@ -8,18 +7,15 @@ let swRegistration = null;
  */
 export async function initializeNotifications() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    logger.warn('Notifications push non supportées');
     return { supported: false };
   }
 
   try {
     // Enregistrer le service worker
     swRegistration = await navigator.serviceWorker.register('/sw.js');
-    logger.info('Service Worker enregistré');
 
     return { supported: true, registration: swRegistration };
   } catch (error) {
-    logger.error('Erreur initialisation notifications:', error);
     return { supported: false, error };
   }
 }
@@ -92,7 +88,6 @@ export async function subscribeToNotifications() {
 
     return { success: true, subscription };
   } catch (error) {
-    logger.error('Erreur subscription:', error);
     return { success: false, error };
   }
 }
@@ -115,7 +110,6 @@ export async function unsubscribeFromNotifications() {
 
     return { success: true };
   } catch (error) {
-    logger.error('Erreur unsubscribe:', error);
     return { success: false, error };
   }
 }

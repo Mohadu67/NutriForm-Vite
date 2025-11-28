@@ -34,7 +34,7 @@ const matchMessageSchema = new mongoose.Schema(
     // Type de message
     type: {
       type: String,
-      enum: ['text', 'location', 'session-invite', 'system'],
+      enum: ['text', 'location', 'session-invite', 'session-share', 'system'],
       default: 'text'
     },
 
@@ -58,6 +58,13 @@ const matchMessageSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: 'WorkoutSession'
       },
+
+      // Pour type: 'session-share'
+      sessionName: String,
+      duration: Number,
+      calories: Number,
+      exercises: Number,
+      imageData: String, // Base64 encoded image
 
       // Autres métadonnées
       attachmentUrl: String

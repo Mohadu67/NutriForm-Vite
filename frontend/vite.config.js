@@ -3,7 +3,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import svgr from "vite-plugin-svgr";
 import { VitePWA } from 'vite-plugin-pwa'
-import logger from './src/shared/utils/logger.js';
 
 export default defineConfig(({ mode }) => ({
   test: {
