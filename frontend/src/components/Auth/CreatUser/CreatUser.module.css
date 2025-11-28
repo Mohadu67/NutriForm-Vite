@@ -256,6 +256,16 @@
   letter-spacing: 0.2px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .label {
+    color: #e2e8f0;
+  }
+}
+
+:global(.dark) .label {
+  color: #e2e8f0;
+}
+
 .inputWrapper {
   position: relative;
   display: flex;
@@ -354,6 +364,18 @@
   cursor: pointer;
   user-select: none;
   line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  .checkRow,
+  .checkRow span {
+    color: #e2e8f0;
+  }
+}
+
+:global(.dark) .checkRow,
+:global(.dark) .checkRow span {
+  color: #e2e8f0;
 }
 
 .checkRow input[type="checkbox"] {
@@ -455,6 +477,16 @@
   justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  .loginText {
+    color: #e2e8f0;
+  }
+}
+
+:global(.dark) .loginText {
+  color: #e2e8f0;
 }
 
 .loginBtn {
