@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useChat } from '../../contexts/ChatContext';
 import messageNotificationService from '../../services/messageNotificationService';
-import logger from '../../shared/utils/logger';
 
 /**
  * Composant pour gérer les notifications de messages
@@ -16,7 +15,6 @@ export default function MessageNotificationManager() {
       const { conversation } = event.detail;
       if (conversation) {
         openMatchChat(conversation);
-        logger.info('Ouverture conversation depuis notification:', conversation._id);
       }
     };
 
@@ -26,10 +24,8 @@ export default function MessageNotificationManager() {
       if (type === 'match' && conversationId) {
         // Pour les conversations match, on a besoin de l'objet complet
         // Le service devrait passer la conversation complète
-        logger.info('Ouverture conversation match:', conversationId);
       } else if (type === 'ai' && conversationId) {
         openChat();
-        logger.info('Ouverture conversation IA:', conversationId);
       }
     };
 

@@ -1,16 +1,21 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { FaWhatsapp, FaFacebook, FaTwitter, FaDownload, FaLink, FaTimes, FaCheckCircle } from 'react-icons/fa';
+import { FaWhatsapp, FaFacebook, FaTwitter, FaDownload, FaLink, FaTimes, FaCheckCircle, FaEnvelope } from 'react-icons/fa';
 import html2canvas from 'html2canvas';
 import ShareSessionCard from './ShareSessionCard';
 import styles from './ShareModal.module.css';
 import logger from '../../shared/utils/logger.js';
+import { getConversations, shareSession } from '../../shared/api/matchChat';
 
 const ShareModal = ({ show, onHide, session, user }) => {
   const [generating, setGenerating] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [error, setError] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showConversations, setShowConversations] = useState(false);
+  const [conversations, setConversations] = useState([]);
+  const [loadingConversations, setLoadingConversations] = useState(false);
+  const [sendingToConversation, setSendingToConversation] = useState(null);
 
   // Confetti effect quand on partage
   useEffect(() => {
@@ -177,6 +182,67 @@ const ShareModal = ({ show, onHide, session, user }) => {
     }
   };
 
+  const handleShareToChat = async () => {
+    try {
+      setLoadingConversations(true);
+      setError(null);
+
+      // Charger les conversations
+      const response = await getConversations();
+      setConversations(response.conversations || []);
+
+      if (response.conversations?.length === 0) {
+        setError('Aucune conversation disponible. Commence par matcher avec quelqu\'un !');
+        setLoadingConversations(false);
+        return;
+      }
+
+      // Afficher le sélecteur de conversations
+      setShowConversations(true);
+      setLoadingConversations(false);
+    } catch (err) {
+      logger.error('Erreur chargement conversations:', err);
+      setError('Impossible de charger les conversations');
+      setLoadingConversations(false);
+    }
+  };
+
+  const handleSendToConversation = async (conversationId) => {
+    try {
+      setSendingToConversation(conversationId);
+      setError(null);
+
+      // Générer l'image
+      const canvas = await generateImage();
+      if (!canvas) throw new Error('Échec de la génération de l\'image');
+
+      // Convertir en base64 avec qualité réduite pour limiter la taille
+      const imageData = canvas.toDataURL('image/jpeg', 0.7);
+
+      // Envoyer via l'API
+      await shareSession(conversationId, {
+        name: session.name || 'Séance',
+        duration: Math.floor((session.durationSec || 0) / 60),
+        calories: session.calories || 0,
+        exercises: session.entries?.length || 0,
+        imageData
+      });
+
+      // Success
+      setCopySuccess(true);
+      setTimeout(() => {
+        setCopySuccess(false);
+        setShowConversations(false);
+        onHide();
+      }, 1500);
+    } catch (err) {
+      logger.error('Erreur envoi session:', err);
+      setError('Impossible d\'envoyer la session');
+    } finally {
+      setSendingToConversation(null);
+    }
+  };
+
   if (!show) return null;
 
   return createPortal(
@@ -262,6 +328,20 @@ const ShareModal = ({ show, onHide, session, user }) => {
               </button>
 
               <button
+                className={`${styles.actionBtn} ${styles.message}`}
+                onClick={handleShareToChat}
+                disabled={generating || loadingConversations}
+              >
+                <div className={styles.btnIcon}>
+                  <FaEnvelope size={24} />
+                </div>
+                <div className={styles.btnContent}>
+                  <span className={styles.btnTitle}>Message</span>
+                  <span className={styles.btnSubtitle}>Partager à un ami</span>
+                </div>
+              </button>
+
+              <button
                 className={`${styles.actionBtn} ${styles.secondary}`}
                 onClick={handleDownload}
                 disabled={generating}
@@ -312,10 +392,77 @@ const ShareModal = ({ show, onHide, session, user }) => {
             </div>
           </div>
 
+          {/* Liste des conversations */}
+          {showConversations && (
+            <div className={styles.conversationsOverlay}>
+              <div className={styles.conversationsPanel}>
+                <div className={styles.conversationsHeader}>
+                  <h3>Choisir une conversation</h3>
+                  <button
+                    className={styles.closeConversations}
+                    onClick={() => setShowConversations(false)}
+                    aria-label="Fermer"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+
+                <div className={styles.conversationsList}>
+                  {conversations.map((conv) => (
+                    <button
+                      key={conv._id}
+                      className={styles.conversationItem}
+                      onClick={() => handleSendToConversation(conv._id)}
+                      disabled={sendingToConversation === conv._id}
+                    >
+                      <div className={styles.conversationAvatar}>
+                        {conv.otherUser?.profile?.profilePicture ? (
+                          <img
+                            src={conv.otherUser.profile.profilePicture}
+                            alt={conv.otherUser.pseudo}
+                          />
+                        ) : (
+                          <div className={styles.avatarPlaceholder}>
+                            {(conv.otherUser?.pseudo || conv.otherUser?.prenom || '?')[0].toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className={styles.conversationInfo}>
+                        <span className={styles.conversationName}>
+                          {conv.otherUser?.pseudo || conv.otherUser?.prenom || 'Utilisateur'}
+                        </span>
+                        {conv.lastMessage?.content && (
+                          <span className={styles.conversationLastMsg}>
+                            {conv.lastMessage.content.substring(0, 40)}
+                            {conv.lastMessage.content.length > 40 ? '...' : ''}
+                          </span>
+                        )}
+                      </div>
+
+                      {sendingToConversation === conv._id && (
+                        <div className={styles.sendingIndicator}>
+                          <div className={styles.miniSpinner}></div>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {generating && (
             <div className={styles.loadingOverlay}>
               <div className={styles.spinner}></div>
               <p>Génération de ton image...</p>
+            </div>
+          )}
+
+          {loadingConversations && (
+            <div className={styles.loadingOverlay}>
+              <div className={styles.spinner}></div>
+              <p>Chargement des conversations...</p>
             </div>
           )}
         </div>
