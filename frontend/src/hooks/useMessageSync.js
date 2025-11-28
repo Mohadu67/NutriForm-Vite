@@ -11,7 +11,7 @@ import { getChatHistory } from '../shared/api/chat';
  */
 export function useMessageSync(conversationId, type, onNewMessages, options = {}) {
   const {
-    pollingInterval = 5000,
+    pollingInterval = 15000, // Augmenté de 5s à 15s
     enabled = true,
     autoScroll = true,
     notifyOnNew = true

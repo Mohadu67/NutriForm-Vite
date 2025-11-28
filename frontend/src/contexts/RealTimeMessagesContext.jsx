@@ -15,10 +15,10 @@ export function RealTimeMessagesProvider({ children }) {
   const lastMessageIdRef = useRef(null);
   const lastFetchRef = useRef(null);
 
-  // Configurer le polling (5 secondes pour conversation active, 30 secondes pour notifications)
-  const ACTIVE_POLLING_INTERVAL = 5000; // 5 secondes
-  const BACKGROUND_POLLING_INTERVAL = 30000; // 30 secondes
-  const MIN_FETCH_INTERVAL = 2000; // 2 secondes minimum entre les requêtes
+  // Configurer le polling (15 secondes pour conversation active, 60 secondes pour notifications)
+  const ACTIVE_POLLING_INTERVAL = 15000; // 15 secondes (optimisé)
+  const BACKGROUND_POLLING_INTERVAL = 60000; // 60 secondes (optimisé)
+  const MIN_FETCH_INTERVAL = 3000; // 3 secondes minimum entre les requêtes
 
   /**
    * Charger les messages d'une conversation

@@ -1566,6 +1566,47 @@
 }
 
 /* ========================================
+   NOTIFICATION BADGE
+   ======================================== */
+
+.notificationBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ff4444 0%, #ff6666 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  border: 2px solid var(--color-bg);
+  box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);
+  animation: pulse 2s ease-in-out infinite;
+  z-index: 10;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 2px 12px rgba(255, 68, 68, 0.6);
+  }
+}
+
+/* Dark mode adjustments */
+:global(.dark) .notificationBadge {
+  border-color: var(--color-bg-dark);
+}
+
+/* ========================================
    REDUCED MOTION - Final Catch
    ======================================== */
 

@@ -76,13 +76,13 @@ exports.login = async (req, res) => {
     }
 
     // Envoi du token via cookie httpOnly (protection XSS)
-    // sameSite: 'lax' fonctionne avec proxy Netlify (même domaine via /api)
-    // En dev local: sameSite 'lax' car même domaine (localhost)
+    // sameSite: 'lax' fonctionne car même domaine racine (harmonith.fr)
+    // Frontend: harmonith.fr, Backend: api.harmonith.fr
     const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('token', token, {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: 'lax',
+      secure: isProduction, // true en prod (HTTPS)
+      sameSite: 'lax', // 'lax' fonctionne avec même domaine racine
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
     });

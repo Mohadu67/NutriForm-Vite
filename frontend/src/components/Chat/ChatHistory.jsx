@@ -16,6 +16,9 @@ export default function ChatHistory({ onLogin }) {
   const [isPremium, setIsPremium] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '', variant: 'error' });
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, type: null });
+  const [isLoadingConversations, setIsLoadingConversations] = useState(false);
+  const cacheTimeRef = useState({ ai: 0, match: 0 })[0];
+  const CACHE_DURATION = 30000; // 30 secondes de cache
 
   // Vérifier authentification et premium
   useEffect(() => {
@@ -36,35 +39,60 @@ export default function ChatHistory({ onLogin }) {
     checkAuth();
   }, []);
 
-  // Charger les conversations IA depuis l'API
+  // Charger les conversations en parallèle
   useEffect(() => {
     if (isAuth) {
-      loadAIConversations();
-    }
-  }, [isAuth]);
-
-  const loadAIConversations = async () => {
-    try {
-      const { conversations: aiConvs } = await getAIConversations();
-      setConversations(aiConvs || []);
-    } catch (err) {
-    }
-  };
-
-  // Charger les conversations de matches
-  useEffect(() => {
-    if (isAuth && isPremium) {
-      loadMatchConversations();
+      loadAllConversations();
     }
   }, [isAuth, isPremium]);
 
-  const loadMatchConversations = async () => {
+  const loadAllConversations = async (forceRefresh = false) => {
+    const now = Date.now();
+
+    // Déterminer quoi charger
+    const shouldLoadAI = forceRefresh || (now - cacheTimeRef.ai >= CACHE_DURATION);
+    const shouldLoadMatch = isPremium && (forceRefresh || (now - cacheTimeRef.match >= CACHE_DURATION));
+
+    if (!shouldLoadAI && !shouldLoadMatch) return;
+
     try {
-      const { conversations } = await getConversations();
-      setMatchConversations(conversations || []);
+      setIsLoadingConversations(true);
+
+      // Charger en parallèle
+      const promises = [];
+
+      if (shouldLoadAI) {
+        promises.push(
+          getAIConversations()
+            .then(({ conversations: aiConvs }) => {
+              setConversations(aiConvs || []);
+              cacheTimeRef.ai = now;
+            })
+            .catch(() => {})
+        );
+      }
+
+      if (shouldLoadMatch) {
+        promises.push(
+          getConversations()
+            .then(({ conversations }) => {
+              setMatchConversations(conversations || []);
+              cacheTimeRef.match = now;
+            })
+            .catch(() => {})
+        );
+      }
+
+      await Promise.all(promises);
     } catch (err) {
+      // Erreur silencieuse
+    } finally {
+      setIsLoadingConversations(false);
     }
   };
+
+  const loadAIConversations = (forceRefresh = false) => loadAllConversations(forceRefresh);
+  const loadMatchConversations = (forceRefresh = false) => loadAllConversations(forceRefresh);
 
   const getLastMessagePreview = (conv) => {
     if (conv.lastMessage) {
@@ -140,6 +168,11 @@ export default function ChatHistory({ onLogin }) {
     <div className={styles.chatHistory}>
       {/* Conversations list */}
       <div className={styles.conversationsList}>
+        {isLoadingConversations && (
+          <div style={{ padding: '10px', textAlign: 'center', fontSize: '0.9rem', color: '#888' }}>
+            Chargement des conversations...
+          </div>
+        )}
         {!isAuth ? (
           <div className={styles.emptyState}>
             <p>Connecte-toi pour voir tes conversations</p>
