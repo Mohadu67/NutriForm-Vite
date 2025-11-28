@@ -50,8 +50,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
     // Marquer comme lus si c'est un chat match et qu'il y a de nouveaux messages
     if (hasNew && isMatchChat && matchConversation?._id) {
-      markMessagesAsRead(matchConversation._id).catch(err =>
-      );
+      markMessagesAsRead(matchConversation._id).catch(err => console.error('Erreur lors du marquage des messages:', err));
     }
   }, [isMatchChat, matchConversation]);
 
