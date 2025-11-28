@@ -76,7 +76,7 @@
   box-shadow: 0 4px 12px rgba(184, 221, 209, 0.25);
 }
 
-/* Actions - Compact et discrets */
+/* Actions */
 .actions {
   display: flex;
   gap: 8px;
@@ -86,67 +86,33 @@
 
 .uploadButton,
 .deleteButton {
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.6875rem;
-  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
   cursor: pointer;
-  border: none;
-  position: relative;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  color: #000000;
 }
 
 .uploadButton {
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.25), rgba(184, 221, 209, 0.2));
-  color: #1e293b;
-  border: 1px solid rgba(184, 221, 209, 0.3);
+  background-color: #b8ddd1;
+  border: 1.5px solid #9dc9ba;
 }
 
 .uploadButton:hover {
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.35), rgba(184, 221, 209, 0.3));
+  background-color: #a5d4c6;
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(184, 221, 209, 0.2);
 }
 
 .deleteButton {
-  background: rgba(248, 250, 252, 0.8);
-  color: #64748b;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background-color: #cbd5e1;
+  border: 1.5px solid #b0bdc9;
 }
 
 .deleteButton:hover {
-  background: rgba(239, 68, 68, 0.08);
-  color: #dc2626;
-  border-color: rgba(239, 68, 68, 0.2);
+  background-color: #b0bdc9;
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.15);
-}
-
-@media (prefers-color-scheme: dark) {
-  .deleteButton {
-    background: rgba(30, 41, 59, 0.6);
-    color: #94a3b8;
-    border-color: rgba(148, 163, 184, 0.2);
-  }
-
-  .deleteButton:hover {
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.3);
-  }
-}
-
-:global(.dark) .deleteButton {
-  background: rgba(30, 41, 59, 0.6);
-  color: #94a3b8;
-  border-color: rgba(148, 163, 184, 0.2);
-}
-
-:global(.dark) .deleteButton:hover {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .uploadButton:disabled,
@@ -229,16 +195,6 @@
     color: #e2e8f0;
     border-color: rgba(123, 196, 168, 0.3);
   }
-
-  .uploadButton {
-    background: linear-gradient(135deg, rgba(123, 196, 168, 0.2), rgba(123, 196, 168, 0.15));
-    color: #e2e8f0;
-    border-color: rgba(123, 196, 168, 0.3);
-  }
-
-  .uploadButton:hover {
-    background: linear-gradient(135deg, rgba(123, 196, 168, 0.3), rgba(123, 196, 168, 0.25));
-  }
 }
 
 :global(.dark) .photo {
@@ -255,16 +211,6 @@
   background: linear-gradient(135deg, rgba(123, 196, 168, 0.25), rgba(247, 177, 134, 0.25));
   color: #e2e8f0;
   border-color: rgba(123, 196, 168, 0.3);
-}
-
-:global(.dark) .uploadButton {
-  background: linear-gradient(135deg, rgba(123, 196, 168, 0.2), rgba(123, 196, 168, 0.15));
-  color: #e2e8f0;
-  border-color: rgba(123, 196, 168, 0.3);
-}
-
-:global(.dark) .uploadButton:hover {
-  background: linear-gradient(135deg, rgba(123, 196, 168, 0.3), rgba(123, 196, 168, 0.25));
 }
 
 /* Responsive - Plus compact sur mobile */
