@@ -7,7 +7,6 @@ import {
   markMessagesAsRead
 } from '../../shared/api/matchChat';
 import styles from './ChatPanel.module.css';
-import logger from '../../shared/utils/logger.js';
 
 export default function ChatPanel({ isOpen, onClose }) {
   const [view, setView] = useState('list'); // 'list' | 'chat'
@@ -28,7 +27,7 @@ export default function ChatPanel({ isOpen, onClose }) {
   useEffect(() => {
     if (activeConversation) {
       loadMessages(activeConversation._id);
-      markMessagesAsRead(activeConversation._id).catch(logger.error);
+      markMessagesAsRead(activeConversation._id).catch(() => {});
     }
   }, [activeConversation]);
 
@@ -42,7 +41,6 @@ export default function ChatPanel({ isOpen, onClose }) {
       const { conversations: convs } = await getConversations();
       setConversations(convs);
     } catch (err) {
-      logger.error('Erreur chargement conversations:', err);
       toast.error('Erreur lors du chargement des conversations.');
     } finally {
       setLoading(false);
@@ -54,7 +52,6 @@ export default function ChatPanel({ isOpen, onClose }) {
       const { messages: msgs } = await getMessages(conversationId, { limit: 100 });
       setMessages(msgs);
     } catch (err) {
-      logger.error('Erreur chargement messages:', err);
       toast.error('Erreur lors du chargement des messages.');
     }
   };
@@ -74,7 +71,6 @@ export default function ChatPanel({ isOpen, onClose }) {
       setNewMessage('');
       scrollToBottom();
     } catch (err) {
-      logger.error('Erreur envoi message:', err);
       toast.error('Erreur lors de l\'envoi du message.');
     } finally {
       setSending(false);

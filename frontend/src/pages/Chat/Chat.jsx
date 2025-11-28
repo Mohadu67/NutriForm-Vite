@@ -10,7 +10,6 @@ import {
   markMessagesAsRead
 } from '../../shared/api/matchChat';
 import styles from './Chat.module.css';
-import logger from '../../shared/utils/logger.js';
 
 export default function Chat() {
   const { matchId } = useParams();
@@ -37,9 +36,7 @@ export default function Chat() {
   useEffect(() => {
     // Marquer comme lu quand l'utilisateur voit la conversation
     if (conversation?._id) {
-      markMessagesAsRead(conversation._id).catch(err =>
-        logger.error('Erreur marquage lu:', err)
-      );
+      markMessagesAsRead(conversation._id).catch(err => console.error('Erreur lors du marquage des messages:', err));
     }
   }, [conversation?._id]);
 
@@ -49,8 +46,6 @@ export default function Chat() {
 
       // Récupérer ou créer la conversation
       const { conversation: conv } = await getOrCreateConversation(matchId);
-      logger.info('📦 Conversation reçue:', conv);
-      logger.info('👤 OtherUser:', conv.otherUser);
       setConversation(conv);
       setOtherUser(conv.otherUser);
 
@@ -58,7 +53,6 @@ export default function Chat() {
       const { messages: msgs } = await getMessages(conv._id, { limit: 100 });
       setMessages(msgs);
     } catch (err) {
-      logger.error('Erreur chargement conversation:', err);
       if (err.response?.status === 403) {
         toast.error('Vous devez avoir un match mutuel pour chatter.');
         navigate('/matching');
@@ -88,7 +82,6 @@ export default function Chat() {
       setNewMessage('');
       scrollToBottom();
     } catch (err) {
-      logger.error('Erreur envoi message:', err);
       toast.error('Erreur lors de l\'envoi du message.');
     } finally {
       setSending(false);

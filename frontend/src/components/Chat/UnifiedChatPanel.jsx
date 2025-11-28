@@ -3,7 +3,6 @@ import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/
 import { getMessages, sendMessage as sendMatchMessage, markMessagesAsRead, deleteMessage } from '../../shared/api/matchChat';
 import { isAuthenticated } from '../../shared/api/auth';
 import { storage } from '../../shared/utils/storage';
-import logger from '../../shared/utils/logger';
 import { useMessageSync } from '../../hooks/useMessageSync';
 import styles from './UnifiedChatPanel.module.css';
 
@@ -51,9 +50,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
     // Marquer comme lus si c'est un chat match et qu'il y a de nouveaux messages
     if (hasNew && isMatchChat && matchConversation?._id) {
-      markMessagesAsRead(matchConversation._id).catch(err =>
-        logger.error('Erreur marquage lu:', err)
-      );
+      markMessagesAsRead(matchConversation._id).catch(err => console.error('Erreur lors du marquage des messages:', err));
     }
   }, [isMatchChat, matchConversation]);
 
@@ -174,7 +171,6 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     } catch (err) {
-      logger.error('Erreur envoi message:', err);
       // Remettre le message dans l'input en cas d'erreur
       setInputMessage(content);
     } finally {
@@ -195,7 +191,6 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       // Rafraîchir la liste des messages
       setTimeout(() => refresh(), 500);
     } catch (err) {
-      logger.error('Erreur suppression message:', err);
     } finally {
       setDeletingMessage(null);
       setShowMessageOptions(null);
@@ -225,7 +220,6 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
         storage.set('chatConversations', JSON.stringify(savedConversations));
       }
     } catch (err) {
-      logger.error('Erreur escalade:', err);
       setMessages(prev => [...prev, {
         role: 'bot',
         content: "❌ Erreur lors de la transmission au support. Veuillez réessayer.",
@@ -320,7 +314,18 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
               >
                 <div className={styles.messageWrapper}>
                   <div className={styles.messageContent}>
-                    <p>{msg.content}</p>
+                    {msg.type === 'session-share' && msg.metadata?.imageData ? (
+                      <div className={styles.sessionShare}>
+                        <img
+                          src={msg.metadata.imageData}
+                          alt="Session partagée"
+                          className={styles.sessionImage}
+                        />
+                        <p className={styles.sessionCaption}>{msg.content}</p>
+                      </div>
+                    ) : (
+                      <p>{msg.content}</p>
+                    )}
                   </div>
 
                   {/* Options de message (suppression) */}
