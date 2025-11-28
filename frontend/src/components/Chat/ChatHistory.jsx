@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useChat } from '../../contexts/ChatContext';
+import { useWebSocket } from '../../contexts/WebSocketContext';
 import { isAuthenticated } from '../../shared/api/auth';
 import { getConversations, deleteConversation as deleteMatchConv } from '../../shared/api/matchChat';
 import { getAIConversations, deleteAIConversation } from '../../shared/api/chat';
@@ -10,6 +11,7 @@ import styles from './ChatHistory.module.css';
 
 export default function ChatHistory({ onLogin }) {
   const { openAIChat, openMatchChat } = useChat();
+  const { on, isConnected } = useWebSocket();
   const [conversations, setConversations] = useState([]);
   const [matchConversations, setMatchConversations] = useState([]);
   const [isAuth, setIsAuth] = useState(false);
@@ -163,6 +165,57 @@ export default function ChatHistory({ onLogin }) {
   const cancelDelete = () => {
     setDeleteConfirm({ show: false, id: null, type: null });
   };
+
+  // Écouter les mises à jour de conversation via WebSocket
+  useEffect(() => {
+    if (!isConnected || !isAuth) return;
+
+    const handleConversationUpdate = ({ conversationId, lastMessage, unreadIncrement, unreadDecrement }) => {
+      console.log('🔄 Mise à jour conversation:', conversationId);
+
+      // Mettre à jour la conversation dans la liste
+      setMatchConversations(prev => {
+        const convIndex = prev.findIndex(c => c._id === conversationId);
+        if (convIndex === -1) {
+          // Nouvelle conversation, recharger la liste
+          if (lastMessage) {
+            loadAllConversations(true);
+          }
+          return prev;
+        }
+
+        // Mettre à jour la conversation existante
+        const updated = [...prev];
+
+        if (lastMessage) {
+          updated[convIndex] = {
+            ...updated[convIndex],
+            lastMessage: lastMessage,
+            updatedAt: lastMessage.timestamp
+          };
+        }
+
+        if (unreadIncrement) {
+          updated[convIndex].unreadCount = (updated[convIndex].unreadCount || 0) + 1;
+        } else if (unreadDecrement) {
+          updated[convIndex].unreadCount = Math.max(0, (updated[convIndex].unreadCount || 0) - unreadDecrement);
+        }
+
+        // Trier par date de dernier message
+        updated.sort((a, b) => {
+          const dateA = new Date(a.lastMessage?.timestamp || a.updatedAt);
+          const dateB = new Date(b.lastMessage?.timestamp || b.updatedAt);
+          return dateB - dateA;
+        });
+
+        return updated;
+      });
+    };
+
+    const cleanup = on('conversation_updated', handleConversationUpdate);
+
+    return cleanup;
+  }, [isConnected, isAuth, on]);
 
   return (
     <div className={styles.chatHistory}>

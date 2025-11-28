@@ -12,10 +12,12 @@ const cookieParser = require('cookie-parser');
 const config = require('./config');
 const { allowedOrigins } = config;
 const express = require('express');
+const http = require('http');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const { Server } = require('socket.io');
 
 const authRoutes = require('./routes/auth.route.js');
 const verifyRoutes = require('./routes/verify.route.js');
@@ -39,6 +41,20 @@ const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 
 const app = express();
+const httpServer = http.createServer(app);
+
+// Configuration Socket.io
+const io = new Server(httpServer, {
+  cors: {
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST']
+  },
+  transports: ['websocket', 'polling']
+});
+
+// Rendre io accessible dans toute l'app
+app.set('io', io);
 
 // ⚠️ IMPORTANT: Trust proxy pour Render (1 seul proxy en amont)
 app.set('trust proxy', 1);
@@ -149,9 +165,13 @@ app.get('/', (req, res) => {
   res.send('Bienvenue sur le backend de NutriForm 🚀');
 });
 
+// Configuration Socket.io pour la messagerie temps réel
+require('./socket/messageSocket')(io);
+
 // Démarrer le serveur sans attendre MongoDB
-app.listen(config.port, () => {
-  logger.info(`🚀 Serveur en ligne sur http://localhost:${config.port}`);
+httpServer.listen(config.port, () => {
+  logger.info(`🚀 Serveur HTTP en ligne sur http://localhost:${config.port}`);
+  logger.info(`🔌 WebSocket activé sur le même port`);
   logger.info(`📋 Environnement: ${config.env}`);
   logger.info(`🌐 Frontend URL: ${config.frontUrl}`);
 

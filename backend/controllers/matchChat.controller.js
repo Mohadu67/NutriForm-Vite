@@ -229,6 +229,33 @@ async function sendMessage(req, res) {
     // Populate le message avec les infos de l'expéditeur
     await message.populate('senderId', 'pseudo prenom');
 
+    // 🔌 WebSocket: Émettre le nouveau message en temps réel
+    const io = req.app.get('io');
+    if (io && io.emitNewMessage) {
+      io.emitNewMessage(conversationId, message);
+      logger.info(`📨 WebSocket: Message émis pour conversation ${conversationId}`);
+
+      // Notifier les participants de la mise à jour de la conversation
+      io.to(`user:${userId}`).emit('conversation_updated', {
+        conversationId,
+        lastMessage: {
+          content: content.trim(),
+          senderId: userId,
+          timestamp: message.createdAt
+        }
+      });
+
+      io.to(`user:${receiverId}`).emit('conversation_updated', {
+        conversationId,
+        lastMessage: {
+          content: content.trim(),
+          senderId: userId,
+          timestamp: message.createdAt
+        },
+        unreadIncrement: true
+      });
+    }
+
     // Envoyer une notification push au destinataire
     const senderUser = await User.findById(userId).select('pseudo photo');
     if (senderUser) {
@@ -317,6 +344,15 @@ async function markAsRead(req, res) {
       return res.status(403).json({ error: 'Vous ne faites pas partie de cette conversation.' });
     }
 
+    // Récupérer les IDs des messages qui vont être marqués comme lus
+    const messagesToMarkRead = await MatchMessage.find({
+      conversationId,
+      receiverId: userId,
+      read: false
+    }).select('_id senderId').lean();
+
+    const messageIds = messagesToMarkRead.map(m => m._id.toString());
+
     // Marquer tous les messages non lus comme lus
     const result = await MatchMessage.updateMany(
       {
@@ -334,6 +370,26 @@ async function markAsRead(req, res) {
 
     // Réinitialiser le compteur non lu pour cet utilisateur
     await conversation.resetUnread(userId);
+
+    // 🔌 WebSocket: Notifier l'expéditeur que ses messages ont été lus
+    if (messageIds.length > 0) {
+      const io = req.app.get('io');
+      if (io) {
+        io.to(`conversation:${conversationId}`).emit('messages_read', {
+          conversationId,
+          messageIds,
+          readBy: userId
+        });
+
+        // Notifier l'utilisateur qui a lu pour décrémenter son badge
+        io.to(`user:${userId}`).emit('conversation_updated', {
+          conversationId,
+          unreadDecrement: messageIds.length
+        });
+
+        logger.info(`📖 WebSocket: ${messageIds.length} messages marqués comme lus dans conversation ${conversationId}`);
+      }
+    }
 
     res.status(200).json({
       message: 'Messages marqués comme lus.',
