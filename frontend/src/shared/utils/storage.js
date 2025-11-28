@@ -3,6 +3,8 @@
  * Remplace les appels directs à localStorage/sessionStorage
  */
 
+import logger from './logger';
+
 class StorageService {
   constructor(storage = localStorage) {
     this.storage = storage;
@@ -19,7 +21,7 @@ class StorageService {
       this.storage.setItem(key, JSON.stringify(value));
       return true;
     } catch (error) {
-      console.error(`Storage error for ${key}:`, error);
+      logger.error(`Storage error for ${key}:`, error);
       return false;
     }
   }

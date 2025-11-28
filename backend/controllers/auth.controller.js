@@ -189,6 +189,8 @@ exports.me = async (req, res) => {
       pseudo: user.pseudo,
       photo: photoUrl,
       role: user.role,
+      subscriptionTier: user.subscriptionTier || 'free',
+      isPremium: user.subscriptionTier === 'premium',
       displayName,
     });
   } catch (e) {

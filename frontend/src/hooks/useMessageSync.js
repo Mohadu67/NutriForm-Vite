@@ -1,7 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { getMessages } from '../shared/api/matchChat';
 import { getChatHistory } from '../shared/api/chat';
-import logger from '../shared/utils/logger';
 
 /**
  * Hook pour synchroniser les messages en temps réel
@@ -72,7 +71,7 @@ export function useMessageSync(conversationId, type, onNewMessages, options = {}
         }
       }
     } catch (error) {
-      logger.error(`Erreur sync messages ${type}:`, error);
+      // Erreur silencieuse
     }
   }, [conversationId, type, onNewMessages, notifyOnNew, autoScroll]);
 
@@ -114,8 +113,6 @@ export function useMessageSync(conversationId, type, onNewMessages, options = {}
 
     // Configurer l'intervalle
     intervalRef.current = setInterval(fetchMessages, pollingInterval);
-
-    logger.info(`Message sync démarré: ${type} - ${conversationId}`);
   }, [enabled, conversationId, fetchMessages, pollingInterval, type]);
 
   /**
@@ -125,7 +122,6 @@ export function useMessageSync(conversationId, type, onNewMessages, options = {}
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
-      logger.info('Message sync arrêté');
     }
   }, []);
 

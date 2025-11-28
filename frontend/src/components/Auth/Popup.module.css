@@ -104,36 +104,38 @@
   color-scheme: dark;
 }
 
+.overlay,
 .popup-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: var(--nf-overlay);
   background-color: var(--nf-overlay-solid);
   backdrop-filter: blur(6px) saturate(115%);
   -webkit-backdrop-filter: blur(6px) saturate(115%);
   z-index: 9999;
-  overflow-y: auto;
-  overflow-x: hidden;
-  overscroll-behavior: contain;
-  display: flex;
-  justify-content: center;
-  align-items: center; 
-  padding: 1rem;
+  overflow: hidden;
   animation: overlayDingue 260ms ease-out;
   color: var(--nf-ink);
 }
 
 @keyframes overlayDingue { from { opacity: 0 } to { opacity: 1 } }
 
+.card,
 .popup-card {
-  position: relative;
-  width: auto;
-  max-height: 90vh;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   padding: 20px;
-  max-width: 600px;
 
   background:
     linear-gradient(180deg, var(--nf-card-bg), var(--nf-card-bg-2)) padding-box,
@@ -148,8 +150,8 @@
   display: flex;
   flex-direction: column;
   isolation: isolate;
-  transform-origin: var(--originX, 50%) var(--originY, 50%);
   animation: cardDingueIn 320ms cubic-bezier(.2,.8,.2,1);
+  z-index: 10000;
 }
 
 .popup-close {
@@ -175,6 +177,7 @@
 }
 .popup-close:hover { background: var(--nf-close-hover); transform: rotate(90deg) scale(1.05); }
 
+.card::before,
 .popup-card::before {
   content: "";
   position: absolute;
@@ -188,9 +191,9 @@
 }
 
 @keyframes cardDingueIn {
-  0%   { opacity: 0; transform: translateY(12px) scale(.96); }
-  60%  { opacity: 1; transform: translateY(0)    scale(1.02); }
-  100% { opacity: 1; transform: translateY(0)    scale(1); }
+  0%   { opacity: 0; transform: translate(-50%, -48%) scale(.96); }
+  60%  { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 .popup-title {
@@ -327,13 +330,25 @@
 .popup-card a { color: var(--nf-green); }
 
 @media (prefers-reduced-motion: reduce) {
-  .popup-card, .popup-overlay, .popup-close, .popup-submit { animation: none !important; transition: none !important; }
+  .card, .popup-card, .overlay, .popup-overlay, .popup-close, .popup-submit { animation: none !important; transition: none !important; }
 }
 
-@media (min-width: 420px) { .popup-card { width: 90%; } }
+@media (max-width: 420px) {
+  .card,
+  .popup-card {
+    width: 95%;
+    padding: 16px;
+    max-height: 90vh;
+  }
+}
 
 @media (min-width: 768px) {
-  .popup-card { padding: 28px; }
+  .card,
+  .popup-card {
+    padding: 28px;
+    width: 80%;
+    max-width: 600px;
+  }
   .popup-title { font-size: clamp(1.4rem, 2vw, 1.8rem); }
   .popup-submit { font-size: 1.05rem; padding: 1rem 1.4rem; }
 }

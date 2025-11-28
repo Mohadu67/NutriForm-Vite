@@ -2,13 +2,14 @@ import { memo, useMemo, useState } from "react";
 import { storage } from '../../../shared/utils/storage';
 import { Link } from "react-router-dom";
 import Alert from "../Alert/Alert";
-import PopupUser from "../../Auth/PopupUser";
+import PopupUser from "../../Auth/PopupUser.jsx";
 import styles from "./ConnectReminder.module.css";
 
 function ConnectReminder({
   show = false,
   message = "Connecte‑toi, enregistre tes résultats et retrouve ton historique.",
   cta = "Se connecter",
+  onSuccess = null,
 }) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState("login");
@@ -25,19 +26,27 @@ function ConnectReminder({
     }
   }, []);
 
+  // Fonction pour ouvrir la popup de connexion
+  const handleOpenLogin = () => {
+    setPopupView("login");
+    setIsPopupOpen(true);
+  };
+
   return (
     <>
-      {show && !isAuthed && !isPopupOpen && (
+      {show && !isAuthed && (
         <Alert show={true} variant="error" message={message}>
           <div className={styles.actions}>
             <button
               id="openLogin"
+              type="button"
               className={styles.cta}
-              onClick={() => { setPopupView("login"); setIsPopupOpen(true); }}
+              onClick={handleOpenLogin}
+              aria-label="Ouvrir le formulaire de connexion"
             >
               {cta}
             </button>
-            <Link to="/contact" className={styles.link}>Besoin d’aide ?</Link>
+            <Link to="/contact" className={styles.link}>Besoin d'aide ?</Link>
           </div>
         </Alert>
       )}
@@ -46,8 +55,24 @@ function ConnectReminder({
         view={popupView}
         setView={setPopupView}
         onClose={() => setIsPopupOpen(false)}
-        onLoginSuccess={() => { setPopupView("history"); setIsPopupOpen(true); }}
-        onLogout={() => { setPopupView("login"); setIsPopupOpen(false); }}
+        onLoginSuccess={() => {
+          setIsPopupOpen(false);
+          // Dispatcher un événement pour mettre à jour l'interface
+          window.dispatchEvent(new CustomEvent('userLoggedIn'));
+          // Optionnel: recharger seulement si nécessaire
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            // Refresh seulement si pas de callback personnalisé
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+          }
+        }}
+        onLogout={() => {
+          setPopupView("login");
+          setIsPopupOpen(false);
+        }}
       />
     </>
   );
