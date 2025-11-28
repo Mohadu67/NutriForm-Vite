@@ -60,7 +60,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     conversationType,
     handleNewMessages,
     {
-      pollingInterval: 5000, // Polling toutes les 5 secondes
+      pollingInterval: 15000, // Polling toutes les 15 secondes (optimisé)
       enabled: isAuth && !!conversationIdToUse,
       autoScroll: true,
       notifyOnNew: true
