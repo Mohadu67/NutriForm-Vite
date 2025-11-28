@@ -36,8 +36,7 @@ export default function Chat() {
   useEffect(() => {
     // Marquer comme lu quand l'utilisateur voit la conversation
     if (conversation?._id) {
-      markMessagesAsRead(conversation._id).catch(err =>
-      );
+      markMessagesAsRead(conversation._id).catch(err => console.error('Erreur lors du marquage des messages:', err));
     }
   }, [conversation?._id]);
 
