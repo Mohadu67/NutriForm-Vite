@@ -119,3 +119,23 @@ export const sendSessionInvite = async (conversationId, sessionData) => {
     }
   });
 };
+
+/**
+ * Partager une session d'entraînement complétée
+ * @param {string} conversationId - ID de la conversation
+ * @param {object} sessionData - { name, duration, calories, exercises, imageData }
+ * @returns {Promise} Message créé
+ */
+export const shareSession = async (conversationId, sessionData) => {
+  return sendMessage(conversationId, {
+    content: `🎉 J'ai terminé ma séance "${sessionData.name}" ! 💪\n⏱️ ${sessionData.duration} min | 🔥 ${sessionData.calories} kcal`,
+    type: 'session-share',
+    metadata: {
+      sessionName: sessionData.name,
+      duration: sessionData.duration,
+      calories: sessionData.calories,
+      exercises: sessionData.exercises,
+      imageData: sessionData.imageData
+    }
+  });
+};

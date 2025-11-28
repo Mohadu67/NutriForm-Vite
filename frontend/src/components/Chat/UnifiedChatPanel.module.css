@@ -299,6 +299,33 @@
   font-size: var(--font-size-sm);
 }
 
+/* Session share styles */
+.sessionShare {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sessionImage {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.sessionImage:hover {
+  transform: scale(1.02);
+}
+
+.sessionCaption {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  opacity: 0.95;
+}
+
 /* Message wrapper pour options */
 .messageWrapper {
   position: relative;

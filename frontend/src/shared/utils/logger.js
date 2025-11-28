@@ -4,7 +4,6 @@
  */
 
 const isDev = import.meta.env.DEV;
-const isDebug = typeof window !== 'undefined' && localStorage.getItem('debug') === 'true';
 
 class Logger {
   constructor(namespace = 'app') {
@@ -12,20 +11,33 @@ class Logger {
   }
 
   /**
+   * Vérifie si le mode debug est activé
+   */
+  isDebugEnabled() {
+    try {
+      return typeof window !== 'undefined' && localStorage.getItem('debug') === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Fonction interne pour logger avec un niveau spécifique
    */
   log(level, message, ...args) {
-    if (!isDev && !isDebug) return;
+    // Seulement logger si debug est explicitement activé
+    if (!this.isDebugEnabled()) {
+      // En production, envoyer les erreurs à un service de monitoring
+      if (level === 'error' && !isDev) {
+        this.sendToMonitoring({ level, message, args, timestamp: new Date().toISOString() });
+      }
+      return;
+    }
 
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${this.namespace}] [${level}]`;
 
     console[level](prefix, message, ...args);
-
-    // En production, envoyer les erreurs à un service de monitoring
-    if (level === 'error' && !isDev) {
-      this.sendToMonitoring({ level, message, args, timestamp });
-    }
   }
 
   /**
@@ -53,7 +65,7 @@ class Logger {
    * Log de debug (uniquement si debug activé)
    */
   debug(message, ...args) {
-    if (isDebug) {
+    if (this.isDebugEnabled()) {
       this.log('debug', message, ...args);
     }
   }
@@ -62,7 +74,7 @@ class Logger {
    * Log de succès (avec style)
    */
   success(message, ...args) {
-    if (!isDev && !isDebug) return;
+    if (!this.isDebugEnabled()) return;
 
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${this.namespace}] [SUCCESS]`;

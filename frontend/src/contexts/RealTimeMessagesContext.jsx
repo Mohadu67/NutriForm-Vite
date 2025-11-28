@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { getMessages } from '../shared/api/matchChat';
 import { getChatHistory } from '../shared/api/chat';
-import logger from '../shared/utils/logger';
 
 const RealTimeMessagesContext = createContext();
 
@@ -65,7 +64,7 @@ export function RealTimeMessagesProvider({ children }) {
         }
       }
     } catch (error) {
-      logger.error('Erreur chargement messages temps réel:', error);
+      // Erreur silencieuse
     }
   }, [activeConversationId]);
 
@@ -131,8 +130,6 @@ export function RealTimeMessagesProvider({ children }) {
     pollingIntervalRef.current = setInterval(() => {
       loadMessages(conversationId, type);
     }, ACTIVE_POLLING_INTERVAL);
-
-    logger.info(`Polling démarré pour ${type} conversation ${conversationId}`);
   }, [loadMessages]);
 
   /**
@@ -145,7 +142,6 @@ export function RealTimeMessagesProvider({ children }) {
     }
     setIsPolling(false);
     lastMessageIdRef.current = null;
-    logger.info('Polling arrêté');
   }, []);
 
   /**
@@ -162,7 +158,7 @@ export function RealTimeMessagesProvider({ children }) {
         // const unreadMessages = await getUnreadMessages();
         // processUnreadMessages(unreadMessages);
       } catch (error) {
-        logger.error('Erreur vérification messages en arrière-plan:', error);
+        // Erreur silencieuse
       }
     };
 

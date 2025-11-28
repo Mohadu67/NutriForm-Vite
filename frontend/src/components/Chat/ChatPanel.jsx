@@ -4,7 +4,6 @@ import { Button, Spinner } from 'react-bootstrap';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { isAuthenticated } from '../../shared/api/auth';
 import styles from './ChatPanel.module.css';
-import logger from '../../shared/utils/logger.js';
 
 export default function ChatPanel({ conversationId: propConversationId, initialMessage, onClose }) {
   const [messages, setMessages] = useState([]);
@@ -74,7 +73,6 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
         ]);
       }
     } catch (err) {
-      logger.error('Erreur envoi message:', err);
     } finally {
       setLoading(false);
     }
@@ -121,7 +119,6 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
         setMessages(history);
       }
     } catch (err) {
-      logger.error('Erreur chargement historique:', err);
     }
   };
 
@@ -155,7 +152,6 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
 
       storage.set('chatConversations', JSON.stringify(conversations));
     } catch (err) {
-      logger.error('Erreur sauvegarde historique:', err);
     }
   };
 
@@ -174,7 +170,6 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
         }
       ]);
     } catch (err) {
-      logger.error('Erreur escalade:', err);
     }
   };
 
