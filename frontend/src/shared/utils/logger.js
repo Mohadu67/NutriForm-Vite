@@ -3,7 +3,7 @@
  * Remplace les console.log dispersés dans le code
  */
 
-const isDev = import.meta.env.DEV;
+const isDev = typeof import.meta.env !== 'undefined' ? import.meta.env.DEV : process.env.NODE_ENV !== 'production';
 
 class Logger {
   constructor(namespace = 'app') {
