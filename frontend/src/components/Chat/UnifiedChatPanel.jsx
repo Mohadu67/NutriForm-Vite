@@ -3,7 +3,7 @@ import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/
 import { getMessages, sendMessage as sendMatchMessage, markMessagesAsRead, deleteMessage } from '../../shared/api/matchChat';
 import { isAuthenticated } from '../../shared/api/auth';
 import { storage } from '../../shared/utils/storage';
-import { useMessageSync } from '../../hooks/useMessageSync';
+import { useWebSocket } from '../../contexts/WebSocketContext';
 import styles from './UnifiedChatPanel.module.css';
 
 export default function UnifiedChatPanel({ conversationId, matchConversation, initialMessage }) {
@@ -26,46 +26,50 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
   const conversationIdToUse = isMatchChat ? matchConversation?._id : conversationId;
   const conversationType = isMatchChat ? 'match' : 'ai';
 
-  // Callback pour gérer les nouveaux messages
-  const handleNewMessages = useCallback((newMessages, hasNew) => {
-    setMessages(newMessages);
+  // WebSocket context
+  const { joinConversation, leaveConversation, on, isConnected } = useWebSocket();
 
-    // Si c'est la première charge, vérifier l'escalation
-    if (!hasLoadedInitialMessages.current && newMessages.length > 0) {
-      hasLoadedInitialMessages.current = true;
+  // Charger les messages initiaux
+  const loadInitialMessages = useCallback(async () => {
+    if (!conversationIdToUse) return;
 
-      if (!isMatchChat) {
-        const hasEscalated = newMessages.some(msg => msg.escalated === true);
-        if (hasEscalated) {
-          setEscalated(true);
-        }
-      } else {
-        // Trouver l'ID de l'utilisateur courant pour les chats match
+    try {
+      setLoading(true);
+      let msgs = [];
+
+      if (isMatchChat) {
+        const { messages: matchMsgs } = await getMessages(conversationIdToUse, { limit: 100 });
+        msgs = matchMsgs || [];
+
+        // Trouver l'ID de l'utilisateur courant
         const participants = matchConversation?.participants || [];
         const otherUserId = matchConversation?.otherUser?._id;
         const myUserId = participants.find(p => p._id !== otherUserId)?._id || participants.find(p => p !== otherUserId);
         setCurrentUserId(myUserId);
+      } else {
+        const { messages: aiMsgs } = await getChatHistory(conversationIdToUse);
+        msgs = aiMsgs || [];
+
+        // Vérifier escalation
+        const hasEscalated = msgs.some(msg => msg.escalated === true);
+        if (hasEscalated) {
+          setEscalated(true);
+        }
       }
-    }
 
-    // Marquer comme lus si c'est un chat match et qu'il y a de nouveaux messages
-    if (hasNew && isMatchChat && matchConversation?._id) {
-      markMessagesAsRead(matchConversation._id).catch(err => console.error('Erreur lors du marquage des messages:', err));
-    }
-  }, [isMatchChat, matchConversation]);
+      setMessages(msgs);
+      hasLoadedInitialMessages.current = true;
 
-  // Utiliser le hook de synchronisation des messages
-  const { refresh } = useMessageSync(
-    conversationIdToUse,
-    conversationType,
-    handleNewMessages,
-    {
-      pollingInterval: 15000, // Polling toutes les 15 secondes (optimisé)
-      enabled: isAuth && !!conversationIdToUse,
-      autoScroll: true,
-      notifyOnNew: true
+      // Marquer comme lus si match chat
+      if (isMatchChat && conversationIdToUse) {
+        markMessagesAsRead(conversationIdToUse).catch(err => console.error('Erreur marquage:', err));
+      }
+    } catch (error) {
+      console.error('Erreur chargement messages:', error);
+    } finally {
+      setLoading(false);
     }
-  );
+  }, [conversationIdToUse, isMatchChat, matchConversation]);
 
   // Vérifier authentification
   useEffect(() => {
@@ -75,6 +79,70 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     };
     checkAuth();
   }, []);
+
+  // Charger les messages initiaux et rejoindre la conversation WebSocket
+  useEffect(() => {
+    if (!isAuth || !conversationIdToUse) return;
+
+    // Charger les messages
+    loadInitialMessages();
+
+    // Rejoindre la conversation via WebSocket
+    if (isConnected) {
+      joinConversation(conversationIdToUse);
+    }
+
+    // Quitter la conversation au démontage
+    return () => {
+      if (conversationIdToUse) {
+        leaveConversation(conversationIdToUse);
+      }
+    };
+  }, [isAuth, conversationIdToUse, isConnected, loadInitialMessages, joinConversation, leaveConversation]);
+
+  // Écouter les nouveaux messages via WebSocket
+  useEffect(() => {
+    if (!isConnected || !conversationIdToUse) return;
+
+    const handleNewMessage = ({ conversationId: convId, message }) => {
+      if (convId === conversationIdToUse) {
+        console.log('📨 Nouveau message reçu via WebSocket:', message);
+        setMessages(prev => {
+          // Éviter les doublons
+          if (prev.some(m => m._id === message._id)) {
+            return prev;
+          }
+          return [...prev, message];
+        });
+
+        // Auto-scroll
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    };
+
+    const handleMessagesRead = ({ conversationId: convId, messageIds }) => {
+      if (convId === conversationIdToUse) {
+        console.log('📖 Messages marqués comme lus via WebSocket:', messageIds);
+        setMessages(prev => prev.map(msg => {
+          if (messageIds.includes(msg._id)) {
+            return { ...msg, read: true, readAt: new Date() };
+          }
+          return msg;
+        }));
+      }
+    };
+
+    // Écouter les événements
+    const cleanupNewMessage = on('new_message', handleNewMessage);
+    const cleanupMessagesRead = on('messages_read', handleMessagesRead);
+
+    return () => {
+      cleanupNewMessage?.();
+      cleanupMessagesRead?.();
+    };
+  }, [isConnected, conversationIdToUse, on]);
 
   // Auto-scroll
   useEffect(() => {
@@ -113,9 +181,11 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
           content,
           type: 'text'
         });
-        setMessages(prev => [...prev, message]);
-        // Rafraîchir pour s'assurer de la synchronisation
-        setTimeout(() => refresh(), 1000);
+        // Le message sera reçu via WebSocket, pas besoin de l'ajouter manuellement
+        // sauf si WebSocket n'est pas connecté
+        if (!isConnected) {
+          setMessages(prev => [...prev, message]);
+        }
       } else {
         // Envoyer message IA
         const userMessage = {
@@ -187,9 +257,6 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
       // Retirer le message de la liste locale
       setMessages(prev => prev.filter(msg => msg._id !== messageId));
-
-      // Rafraîchir la liste des messages
-      setTimeout(() => refresh(), 500);
     } catch (err) {
     } finally {
       setDeletingMessage(null);

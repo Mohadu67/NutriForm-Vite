@@ -7,6 +7,7 @@ import CanonicalLink from "./components/CanonicalLink/CanonicalLink.jsx";
 import NotificationPrompt from "./components/Notifications/NotificationPrompt.jsx";
 import LoadingSpinner from "./components/Shared/LoadingSpinner.jsx";
 import { ChatProvider } from "./contexts/ChatContext.jsx";
+import { WebSocketProvider } from "./contexts/WebSocketContext.jsx";
 import { initializeNotifications } from "./services/notificationService.js";
 import MessageNotificationManager from "./components/Chat/MessageNotificationManager.jsx";
 import './i18n/config';
@@ -61,12 +62,13 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <ChatProvider>
-        <UpdatePrompt />
-        <CanonicalLink />
-        <NotificationPrompt />
-        <MessageNotificationManager />
-        <Suspense fallback={<LoadingSpinner />}>
+      <WebSocketProvider>
+        <ChatProvider>
+          <UpdatePrompt />
+          <CanonicalLink />
+          <NotificationPrompt />
+          <MessageNotificationManager />
+          <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             {/* Pages principales - chargées immédiatement */}
             <Route path="/" element={<Home />} />
@@ -111,7 +113,8 @@ export default function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
-      </ChatProvider>
+        </ChatProvider>
+      </WebSocketProvider>
     </ErrorBoundary>
   );
 }

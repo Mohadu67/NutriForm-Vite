@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useChat } from "../../contexts/ChatContext";
+import { useWebSocket } from "../../contexts/WebSocketContext";
 import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
 import { storage } from "../../shared/utils/storage";
 import { getConversations } from "../../shared/api/matchChat";
@@ -29,6 +30,7 @@ import {
 export default function Navbar() {
   const { t, i18n } = useTranslation();
   const { isChatOpen, chatView, activeConversation, openChat, closeChat, backToHistory } = useChat();
+  const { on, isConnected } = useWebSocket();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -267,8 +269,8 @@ export default function Navbar() {
     // Mettre à jour immédiatement
     updateUnreadCount();
 
-    // Mettre à jour toutes les 30 secondes
-    const interval = setInterval(updateUnreadCount, 30000);
+    // Mettre à jour toutes les 60 secondes (fallback)
+    const interval = setInterval(updateUnreadCount, 60000);
 
     // Écouter les événements de nouveaux messages
     const handleNewMessage = () => updateUnreadCount();
@@ -279,6 +281,25 @@ export default function Navbar() {
       window.removeEventListener('newMessage', handleNewMessage);
     };
   }, [isLoggedIn, isPremium]);
+
+  // Écouter les mises à jour de conversation via WebSocket
+  useEffect(() => {
+    if (!isConnected || !isLoggedIn || !isPremium) return;
+
+    const handleConversationUpdate = ({ unreadIncrement, unreadDecrement }) => {
+      if (unreadIncrement) {
+        // Incrémenter le badge immédiatement
+        setUnreadCount(prev => prev + 1);
+      } else if (unreadDecrement) {
+        // Décrémenter le badge
+        setUnreadCount(prev => Math.max(0, prev - unreadDecrement));
+      }
+    };
+
+    const cleanup = on('conversation_updated', handleConversationUpdate);
+
+    return cleanup;
+  }, [isConnected, isLoggedIn, isPremium, on]);
 
   // Main navigation links (always visible on mobile bottom nav) - Les plus importants
   const mainLinks = useMemo(() => [
