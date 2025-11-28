@@ -4,7 +4,6 @@ import { isAuthenticated } from '../../shared/api/auth';
 import { getConversations, deleteConversation as deleteMatchConv } from '../../shared/api/matchChat';
 import { getAIConversations, deleteAIConversation } from '../../shared/api/chat';
 import { getSubscriptionStatus } from '../../shared/api/subscription';
-import logger from '../../shared/utils/logger';
 import Avatar from '../Shared/Avatar';
 import Alert from '../MessageAlerte/Alert/Alert';
 import styles from './ChatHistory.module.css';
@@ -30,7 +29,6 @@ export default function ChatHistory({ onLogin }) {
           const subscription = await getSubscriptionStatus();
           setIsPremium(subscription?.tier === 'premium' || subscription?.hasSubscription === true);
         } catch (err) {
-          logger.error('Erreur récupération subscription:', err);
           setIsPremium(false);
         }
       }
@@ -50,7 +48,6 @@ export default function ChatHistory({ onLogin }) {
       const { conversations: aiConvs } = await getAIConversations();
       setConversations(aiConvs || []);
     } catch (err) {
-      logger.error('Erreur chargement conversations IA:', err);
     }
   };
 
@@ -66,7 +63,6 @@ export default function ChatHistory({ onLogin }) {
       const { conversations } = await getConversations();
       setMatchConversations(conversations || []);
     } catch (err) {
-      logger.error('Erreur chargement conversations matches:', err);
     }
   };
 
@@ -128,7 +124,6 @@ export default function ChatHistory({ onLogin }) {
       // Masquer l'alerte après 3 secondes
       setTimeout(() => setAlert({ show: false, message: '', variant: 'error' }), 3000);
     } catch (err) {
-      logger.error(`Erreur suppression conversation ${type}:`, err);
       setAlert({
         show: true,
         message: 'Erreur lors de la suppression de la conversation',

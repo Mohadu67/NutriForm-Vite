@@ -1,6 +1,5 @@
 import { getConversations } from '../shared/api/matchChat';
 import { getChatHistory } from '../shared/api/chat';
-import logger from '../shared/utils/logger';
 
 class MessageNotificationService {
   constructor() {
@@ -29,8 +28,6 @@ class MessageNotificationService {
     this.checkInterval = setInterval(() => {
       this.checkForNewMessages();
     }, 30000);
-
-    logger.info('Service de notification des messages démarré');
   }
 
   /**
@@ -42,7 +39,6 @@ class MessageNotificationService {
       this.checkInterval = null;
     }
     this.isActive = false;
-    logger.info('Service de notification des messages arrêté');
   }
 
   /**
@@ -79,7 +75,7 @@ class MessageNotificationService {
         this.notifiedMessageIds = new Set(idsArray.slice(-100));
       }
     } catch (error) {
-      logger.error('Erreur vérification nouveaux messages:', error);
+      // Erreur silencieuse
     }
   }
 
