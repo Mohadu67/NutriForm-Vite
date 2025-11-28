@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useChat } from "../../contexts/ChatContext";
 import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
 import { storage } from "../../shared/utils/storage";
+import { getConversations } from "../../shared/api/matchChat";
 import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
 import UnifiedChatPanel from "../Chat/UnifiedChatPanel.jsx";
@@ -40,6 +41,7 @@ export default function Navbar() {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
   const [langExpanded, setLangExpanded] = useState(false);
   const [currentView, setCurrentView] = useState('navigation'); // Pour mobile: 'navigation' ou 'history'
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const path = useMemo(() => (location.pathname || "/").toLowerCase(), [location.pathname]);
 
@@ -150,6 +152,7 @@ export default function Navbar() {
           // Récupérer les données utilisateur
           const userData = await response.json();
 
+          console.log('🔍 Navbar - userData:', userData);
 
           // Vérifier toutes les propriétés possibles pour le premium
           const userHasPremium = userData?.subscription?.tier === 'premium' ||
@@ -180,6 +183,8 @@ export default function Navbar() {
 
           // Si premium trouvé dans les données OU dans le cache
           const finalPremiumStatus = userHasPremium || cachedPremium;
+
+          console.log('🔍 Navbar - userHasPremium:', userHasPremium, 'cachedPremium:', cachedPremium, 'finalPremiumStatus:', finalPremiumStatus);
 
           if (finalPremiumStatus) {
             setIsPremium(true);
@@ -242,6 +247,39 @@ export default function Navbar() {
     };
   }, []);
 
+  // Récupérer le compteur de messages non lus
+  useEffect(() => {
+    if (!isLoggedIn || !isPremium) {
+      setUnreadCount(0);
+      return;
+    }
+
+    const updateUnreadCount = async () => {
+      try {
+        const { conversations } = await getConversations();
+        const total = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
+        setUnreadCount(total);
+      } catch (err) {
+        // Erreur silencieuse
+      }
+    };
+
+    // Mettre à jour immédiatement
+    updateUnreadCount();
+
+    // Mettre à jour toutes les 30 secondes
+    const interval = setInterval(updateUnreadCount, 30000);
+
+    // Écouter les événements de nouveaux messages
+    const handleNewMessage = () => updateUnreadCount();
+    window.addEventListener('newMessage', handleNewMessage);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('newMessage', handleNewMessage);
+    };
+  }, [isLoggedIn, isPremium]);
+
   // Main navigation links (always visible on mobile bottom nav) - Les plus importants
   const mainLinks = useMemo(() => [
     {
@@ -264,19 +302,23 @@ export default function Navbar() {
   ], [t, isLoggedIn]);
 
   // Secondary navigation links (in expanded menu) - Les moins importants
-  const secondaryLinks = useMemo(() => [
-    ...(isLoggedIn && isPremium ? [
-      {
-        label: 'Partenaires',
-        path: "/matching",
-        icon: <UsersIcon size={28} />,
-        isPremium: true
-      }
-    ] : []),
-    { label: t('nav.tools'), path: "/outils", icon: <ToolsIcon size={28} /> },
-    { label: t('nav.about'), path: "/about", icon: <InfoIcon size={28} /> },
-    { label: 'FAQ', path: "/contact", icon: <HelpCircleIcon size={28} /> }
-  ], [t, isLoggedIn, isPremium]);
+  const secondaryLinks = useMemo(() => {
+    console.log('🔍 Navbar - isLoggedIn:', isLoggedIn, 'isPremium:', isPremium);
+
+    return [
+      ...(isLoggedIn && isPremium ? [
+        {
+          label: 'Partenaires',
+          path: "/matching",
+          icon: <UsersIcon size={28} />,
+          isPremium: true
+        }
+      ] : []),
+      { label: t('nav.tools'), path: "/outils", icon: <ToolsIcon size={28} /> },
+      { label: t('nav.about'), path: "/about", icon: <InfoIcon size={28} /> },
+      { label: 'FAQ', path: "/contact", icon: <HelpCircleIcon size={28} /> }
+    ];
+  }, [t, isLoggedIn, isPremium]);
 
   // Close menu handler
   const closeMenu = useCallback(() => {
@@ -409,10 +451,14 @@ export default function Navbar() {
                       <button
                         onClick={handleMessagesClick}
                         className={styles.utilityBtn}
-                        aria-label={isLoggedIn && isPremium ? "Messages" : "Assistant IA"}
+                        aria-label="Messages"
+                        style={{ position: 'relative' }}
                       >
                         <MessageIcon size={20} />
-                        <span>{isLoggedIn && isPremium ? "Messages" : "Assistant IA"}</span>
+                        <span>Messages</span>
+                        {unreadCount > 0 && (
+                          <span className={styles.notificationBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+                        )}
                       </button>
 
                       <button
@@ -593,10 +639,14 @@ export default function Navbar() {
                 <button
                   onClick={handleMessagesClick}
                   className={styles.dockIconBtn}
-                  title={isLoggedIn && isPremium ? "Messages" : "Assistant IA"}
-                  aria-label={isLoggedIn && isPremium ? "Open messages" : "Open AI assistant"}
+                  title="Messages"
+                  aria-label="Messages"
+                  style={{ position: 'relative' }}
                 >
                   <MessageIcon size={20} />
+                  {unreadCount > 0 && (
+                    <span className={styles.notificationBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+                  )}
                 </button>
 
                 <button

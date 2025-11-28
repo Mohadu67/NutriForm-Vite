@@ -17,50 +17,61 @@ async function getConversations(req, res) {
     const conversations = await Conversation.find({
       participants: userId,
       isActive: true,
-      hiddenBy: { $ne: userId } // Ne pas afficher les conversations cachées
+      hiddenBy: { $ne: userId }
     })
-      .populate('participants', 'pseudo prenom email')
-      .populate('matchId', 'matchScore distance')
-      .sort({ 'lastMessage.timestamp': -1 });
-
-    // Pour chaque conversation, récupérer le profil de l'autre participant
-    const conversationsWithProfiles = await Promise.all(
-      conversations.map(async (conv) => {
-        const otherUserId = conv.participants.find(
-          p => p._id.toString() !== userId.toString()
-        );
-
-        // Récupérer la photo du User
-        const otherUserFull = await User.findById(otherUserId._id)
-          .select('photo')
-          .lean();
-
-        const profile = await UserProfile.findOne({ userId: otherUserId._id })
-          .select('age city fitnessLevel')
-          .lean();
-
-        // Utiliser la méthode du modèle pour obtenir unreadCount
-        const unreadCount = conv.getUnreadCount(userId);
-
-        return {
-          _id: conv._id,
-          matchId: conv.matchId,
-          participants: conv.participants,
-          lastMessage: conv.lastMessage,
-          isActive: conv.isActive,
-          createdAt: conv.createdAt,
-          updatedAt: conv.updatedAt,
-          otherUser: {
-            ...otherUserId.toObject(),
-            profile: {
-              ...profile,
-              profilePicture: otherUserFull?.photo
-            }
-          },
-          unreadCount
-        };
+      .populate({
+        path: 'participants',
+        select: 'pseudo prenom email photo' // Inclure photo directement
       })
+      .populate('matchId', 'matchScore distance')
+      .sort({ 'lastMessage.timestamp': -1 })
+      .lean(); // Utiliser lean() pour de meilleures performances
+
+    // Récupérer tous les IDs des autres utilisateurs
+    const otherUserIds = conversations.map(conv =>
+      conv.participants.find(p => p._id.toString() !== userId.toString())?._id
+    ).filter(Boolean);
+
+    // Récupérer tous les profils en une seule requête
+    const profiles = await UserProfile.find({
+      userId: { $in: otherUserIds }
+    })
+      .select('userId age city fitnessLevel')
+      .lean();
+
+    // Créer un Map pour un accès O(1)
+    const profilesMap = new Map(
+      profiles.map(p => [p.userId.toString(), p])
     );
+
+    // Construire la réponse
+    const conversationsWithProfiles = conversations.map(conv => {
+      const otherUser = conv.participants.find(
+        p => p._id.toString() !== userId.toString()
+      );
+
+      const profile = profilesMap.get(otherUser._id.toString()) || {};
+      const unreadCount = conv.unreadCount?.get?.(userId.toString()) ||
+                         conv.unreadCount?.[userId.toString()] || 0;
+
+      return {
+        _id: conv._id,
+        matchId: conv.matchId,
+        participants: conv.participants,
+        lastMessage: conv.lastMessage,
+        isActive: conv.isActive,
+        createdAt: conv.createdAt,
+        updatedAt: conv.updatedAt,
+        otherUser: {
+          ...otherUser,
+          profile: {
+            ...profile,
+            profilePicture: otherUser.photo
+          }
+        },
+        unreadCount
+      };
+    });
 
     res.status(200).json({ conversations: conversationsWithProfiles });
   } catch (error) {
