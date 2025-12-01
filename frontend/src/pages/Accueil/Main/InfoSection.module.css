@@ -1,127 +1,281 @@
-/* InfoSection - Style épuré et aéré */
+/* InfoSection - Mobile First - Design magique soft et épuré */
+
+/* ============================================
+   MOBILE FIRST - BASE STYLES
+   ============================================ */
 
 .infoSection {
-  max-width: 720px;
-  margin: 5rem auto 3rem;
-  padding: 0 1.5rem;
+  width: 100%;
+  padding: 3rem 1rem;
+  background: var(--couleur-principale, #f7f6f2);
 }
 
-.contentBlock {
-  margin-bottom: 2.5rem;
-  padding-bottom: 2.5rem;
-  border-bottom: 1px solid var(--line, rgba(0,0,0,.08));
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.contentBlock:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
+/* ============================================
+   CARDS
+   ============================================ */
+
+.card {
+  background: var(--paper, #ffffff);
+  border-radius: 16px;
+  border: 1px solid var(--line, rgba(0,0,0,.06));
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  overflow: hidden;
 }
 
-.contentBlock h2 {
+.cardHeader {
+  padding: 1.5rem 1.25rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.cardIcon {
+  flex-shrink: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--couleur-bouton-action, #f7b186);
+}
+
+.cardTitle {
   font-family: var(--font-titre, sans-serif);
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--ink, #222325);
-  margin-bottom: 1rem;
-  line-height: 1.35;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  margin: 0;
 }
 
-.contentBlock p {
-  font-size: 0.95rem;
+.cardContent {
+  padding: 0 1.25rem 1.5rem;
+}
+
+.cardContent p {
+  font-size: 0.9375rem;
   line-height: 1.7;
   color: var(--muted, #6b7280);
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
-.contentBlock p:last-child {
+.cardContent p:last-child {
   margin-bottom: 0;
 }
 
-/* Liste avec flèches subtiles */
+/* ============================================
+   LISTS
+   ============================================ */
+
 .list {
-  margin: 1.25rem 0;
-  padding-left: 0;
   list-style: none;
+  padding: 0;
+  margin: 1.25rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-left: 1.25rem;
   position: relative;
-  padding-left: 1.5rem;
-  margin-bottom: 0.75rem;
-  line-height: 1.6;
-  color: var(--muted, #6b7280);
-  font-size: 0.95rem;
 }
 
 .list li::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 0.6rem;
-  width: 6px;
-  height: 6px;
+  top: 0.5rem;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--couleur-bouton-action, #f7b186);
 }
 
-.list li strong {
-  color: var(--ink, #222325);
+.listLabel {
+  font-size: 0.9375rem;
   font-weight: 600;
+  color: var(--ink, #222325);
+  line-height: 1.4;
 }
 
-/* Grille de conseils */
+.listDesc {
+  font-size: 0.875rem;
+  color: var(--muted, #6b7280);
+  line-height: 1.5;
+}
+
+/* ============================================
+   TIPS GRID
+   ============================================ */
+
 .tipsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
   margin-top: 1.25rem;
 }
 
-.tip {
-  padding: 1rem 1.25rem;
-  background: var(--paper, #ffffff);
+.tipCard {
+  padding: 1rem;
+  background: var(--couleur-principale, #f7f6f2);
   border-radius: 10px;
-  border-left: 3px solid var(--couleur-bouton-selection, #b8ddd1);
+  border: 1px solid var(--line, rgba(0,0,0,.04));
 }
 
-.tip strong {
-  display: block;
-  font-size: 0.85rem;
+.tipTitle {
+  font-family: var(--font-titre, sans-serif);
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--ink, #222325);
-  margin-bottom: 0.4rem;
+  margin: 0 0 0.375rem;
+  line-height: 1.4;
 }
 
-.tip p {
-  font-size: 0.85rem;
+.tipDesc {
+  font-size: 0.8125rem;
   line-height: 1.5;
   color: var(--muted, #6b7280);
   margin: 0;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .card {
+    background: var(--paper, #12151b);
+    border-color: var(--line, rgba(255,255,255,.08));
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+
+  .tipCard {
+    background: rgba(255,255,255,.02);
+    border-color: var(--line, rgba(255,255,255,.06));
+  }
+}
+
+/* ============================================
+   TABLET - 640px+
+   ============================================ */
+
+@media (min-width: 640px) {
   .infoSection {
-    margin-top: 3rem;
-    padding: 0 1rem;
+    padding: 4rem 2rem;
   }
 
-  .contentBlock {
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
+  .container {
+    gap: 2rem;
   }
 
-  .contentBlock h2 {
-    font-size: 1.35rem;
+  .card {
+    border-radius: 20px;
+  }
+
+  .cardHeader {
+    padding: 2rem 2rem 1.25rem;
+    gap: 1rem;
+  }
+
+  .cardTitle {
+    font-size: 1.5rem;
+  }
+
+  .cardContent {
+    padding: 0 2rem 2rem;
+  }
+
+  .cardContent p {
+    font-size: 1rem;
+  }
+
+  .listLabel {
+    font-size: 1rem;
+  }
+
+  .listDesc {
+    font-size: 0.9375rem;
   }
 
   .tipsGrid {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 
-  .tip {
-    padding: 0.85rem 1rem;
+  .tipCard {
+    padding: 1.25rem;
+  }
+
+  .tipTitle {
+    font-size: 0.9375rem;
+  }
+
+  .tipDesc {
+    font-size: 0.875rem;
+  }
+}
+
+/* ============================================
+   DESKTOP - 1024px+
+   ============================================ */
+
+@media (min-width: 1024px) {
+  .infoSection {
+    padding: 5rem 2rem;
+  }
+
+  .container {
+    max-width: 900px;
+    gap: 2.5rem;
+  }
+
+  .cardHeader {
+    padding: 2.5rem 2.5rem 1.5rem;
+  }
+
+  .cardTitle {
+    font-size: 1.75rem;
+  }
+
+  .cardContent {
+    padding: 0 2.5rem 2.5rem;
+  }
+
+  .tipsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+/* ============================================
+   LARGE DESKTOP - 1280px+
+   ============================================ */
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1000px;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
   }
 }
