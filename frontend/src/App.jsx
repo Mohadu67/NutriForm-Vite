@@ -50,6 +50,11 @@ const MatchingPageFuturistic = lazy(() => import("./pages/Matching/MatchingPageF
 // Chat - lazy loaded (feature social)
 const Chat = lazy(() => import("./pages/Chat/Chat.jsx"));
 
+// Recipes - lazy loaded
+const RecipesPage = lazy(() => import("./pages/Recipes/RecipesPage.jsx"));
+const RecipeDetail = lazy(() => import("./pages/Recipes/RecipeDetail.jsx"));
+const RecipeForm = lazy(() => import("./pages/Admin/RecipeForm.jsx"));
+
 export default function App() {
   useEffect(() => {
     Clarity.init("thd0hih6t5");
@@ -99,6 +104,8 @@ export default function App() {
             <Route path="/admin/newsletter/new" element={<NewsletterAdmin />} />
             <Route path="/admin/newsletter/:id" element={<NewsletterAdmin />} />
             <Route path="/admin/support-tickets" element={<SupportTickets />} />
+            <Route path="/admin/recipes/new" element={<RecipeForm />} />
+            <Route path="/admin/recipes/:id/edit" element={<RecipeForm />} />
 
             {/* Profile & Matching - lazy loaded */}
             <Route path="/profile/setup" element={<ProfileSetup />} />
@@ -108,6 +115,10 @@ export default function App() {
 
             {/* Chat - lazy loaded */}
             <Route path="/chat/:matchId" element={<Chat />} />
+
+            {/* Recipes - lazy loaded */}
+            <Route path="/recettes" element={<RecipesPage />} />
+            <Route path="/recettes/:id" element={<RecipeDetail />} />
 
             {/* 404 */}
             <Route path="*" element={<NotFound />} />

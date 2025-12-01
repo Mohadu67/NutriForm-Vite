@@ -62,10 +62,10 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
       // Marquer comme lus si match chat
       if (isMatchChat && conversationIdToUse) {
-        markMessagesAsRead(conversationIdToUse).catch(err => console.error('Erreur marquage:', err));
+        markMessagesAsRead(conversationIdToUse).catch(() => {});
       }
     } catch (error) {
-      console.error('Erreur chargement messages:', error);
+      // Erreur silencieuse
     } finally {
       setLoading(false);
     }
@@ -106,7 +106,6 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
     const handleNewMessage = ({ conversationId: convId, message }) => {
       if (convId === conversationIdToUse) {
-        console.log('📨 Nouveau message reçu via WebSocket:', message);
         setMessages(prev => {
           // Éviter les doublons
           if (prev.some(m => m._id === message._id)) {
@@ -124,7 +123,6 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
     const handleMessagesRead = ({ conversationId: convId, messageIds }) => {
       if (convId === conversationIdToUse) {
-        console.log('📖 Messages marqués comme lus via WebSocket:', messageIds);
         setMessages(prev => prev.map(msg => {
           if (messageIds.includes(msg._id)) {
             return { ...msg, read: true, readAt: new Date() };

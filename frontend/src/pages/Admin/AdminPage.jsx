@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { MdStar, MdEmail, MdSupport, MdCheckCircle, MdSchedule, MdGroups, MdRateReview, MdDelete, MdEdit, MdSend } from 'react-icons/md';
+import { MdStar, MdEmail, MdSupport, MdCheckCircle, MdSchedule, MdGroups, MdRateReview, MdDelete, MdEdit, MdSend, MdRestaurant } from 'react-icons/md';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import { secureApiCall, isAuthenticated } from "../../utils/authService";
@@ -12,11 +12,13 @@ export default function AdminPage() {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [reviews, setReviews] = useState([]);
   const [newsletters, setNewsletters] = useState([]);
+  const [recipes, setRecipes] = useState([]);
   const [stats, setStats] = useState({
     totalReviews: 0,
     pendingReviews: 0,
     approvedReviews: 0,
     activeSubscribers: 0,
+    totalRecipes: 0,
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -110,15 +112,32 @@ export default function AdminPage() {
     }
   }, []);
 
+  const fetchRecipes = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await secureApiCall('/recipes');
+      const data = await response.json();
+      if (data.success) {
+        setRecipes(data.recipes);
+        setStats(prev => ({ ...prev, totalRecipes: data.recipes.length }));
+      }
+    } catch (err) {
+      logger.error("Erreur chargement recettes:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     checkAdmin().then((isAdmin) => {
       if (isAdmin) {
         fetchStats();
         if (activeSection === "reviews") fetchReviews();
         if (activeSection === "newsletter") fetchNewsletters();
+        if (activeSection === "recipes") fetchRecipes();
       }
     });
-  }, [activeSection, checkAdmin, fetchStats, fetchReviews, fetchNewsletters]);
+  }, [activeSection, checkAdmin, fetchStats, fetchReviews, fetchNewsletters, fetchRecipes]);
 
   const handleApprove = async (id) => {
     try {
@@ -234,6 +253,22 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteRecipe = async (id) => {
+    if (!confirm("Voulez-vous vraiment supprimer cette recette ?")) return;
+    try {
+      const response = await secureApiCall(`/recipes/${id}`, { method: "DELETE" });
+      const data = await response.json();
+      if (data.success) {
+        showMessage("success", "Recette supprimée !");
+        fetchRecipes();
+      } else {
+        showMessage("error", data.message || "Erreur");
+      }
+    } catch {
+      showMessage("error", "Erreur lors de la suppression");
+    }
+  };
+
   const filteredReviews = getFilteredReviews();
 
   return (
@@ -268,6 +303,12 @@ export default function AdminPage() {
           >
             <MdStar /> Avis
             {stats.pendingReviews > 0 && <span className={styles.badge}>{stats.pendingReviews}</span>}
+          </button>
+          <button
+            className={`${styles.navBtn} ${activeSection === "recipes" ? styles.navBtnActive : ""}`}
+            onClick={() => setActiveSection("recipes")}
+          >
+            <MdRestaurant /> Recettes
           </button>
           <button
             className={`${styles.navBtn} ${activeSection === "newsletter" ? styles.navBtnActive : ""}`}
@@ -495,6 +536,60 @@ export default function AdminPage() {
                           </button>
                         </>
                       )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Recipes */}
+        {activeSection === "recipes" && (
+          <div className={styles.content}>
+            <div className={styles.sectionHeader}>
+              <button className={styles.btnPrimary} onClick={() => navigate("/admin/recipes/new")}>
+                <MdEdit /> Nouvelle Recette
+              </button>
+            </div>
+
+            {loading ? (
+              <div className={styles.loading}>Chargement...</div>
+            ) : recipes.length === 0 ? (
+              <div className={styles.empty}>
+                <MdRestaurant className={styles.emptyIcon} />
+                <h3>Aucune recette</h3>
+                <button className={styles.btnPrimary} onClick={() => navigate("/admin/recipes/new")}>
+                  <MdEdit /> Créer une recette
+                </button>
+              </div>
+            ) : (
+              <div className={styles.recipesGrid}>
+                {recipes.map((recipe) => (
+                  <div key={recipe._id} className={styles.recipeCard}>
+                    <div className={styles.recipeImage}>
+                      <img src={recipe.image} alt={recipe.title} />
+                      {recipe.isPremium && <span className={styles.premiumBadge}>Premium</span>}
+                    </div>
+                    <div className={styles.recipeContent}>
+                      <h3>{recipe.title}</h3>
+                      <p>{recipe.description?.slice(0, 100)}...</p>
+                      <div className={styles.recipeMeta}>
+                        <span>⏱️ {recipe.totalTime} min</span>
+                        <span>🔥 {recipe.nutrition?.calories || 0} kcal</span>
+                        <span>👁️ {recipe.views} vues</span>
+                      </div>
+                      <div className={styles.recipeActions}>
+                        <button className={styles.btnSecondary} onClick={() => navigate(`/recettes/${recipe.slug || recipe._id}`)}>
+                          👁️ Voir
+                        </button>
+                        <button className={styles.btnSecondary} onClick={() => navigate(`/admin/recipes/${recipe._id}/edit`)}>
+                          <MdEdit /> Modifier
+                        </button>
+                        <button className={styles.btnDanger} onClick={() => handleDeleteRecipe(recipe._id)}>
+                          <MdDelete /> Supprimer
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
