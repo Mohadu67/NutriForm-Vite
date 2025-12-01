@@ -1,8 +1,11 @@
 import { useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import styles from "./ResultatPopup.module.css";
 
 export default function ResultatPopup({ titre, calories, macros, onClose }) {
+  const navigate = useNavigate();
+
   // Bloquer le scroll du body AVANT le paint
   useLayoutEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -145,6 +148,21 @@ export default function ResultatPopup({ titre, calories, macros, onClose }) {
                 <span>{conseil}</span>
               </li>
             ))}
+            <li className={styles.conseilItem}>
+              <svg className={styles.conseilIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M9 12l2 2 4-4"/>
+                <circle cx="12" cy="12" r="10"/>
+              </svg>
+              <button
+                className={styles.recipeBtn}
+                onClick={() => {
+                  onClose();
+                  navigate('/recettes');
+                }}
+              >
+                Découvre nos recettes adaptées à ton objectif
+              </button>
+            </li>
           </ul>
         </div>
 

@@ -171,8 +171,6 @@ export default function ChatHistory({ onLogin }) {
     if (!isConnected || !isAuth) return;
 
     const handleConversationUpdate = ({ conversationId, lastMessage, unreadIncrement, unreadDecrement }) => {
-      console.log('🔄 Mise à jour conversation:', conversationId);
-
       // Mettre à jour la conversation dans la liste
       setMatchConversations(prev => {
         const convIndex = prev.findIndex(c => c._id === conversationId);
