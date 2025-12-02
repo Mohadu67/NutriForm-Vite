@@ -19,6 +19,7 @@ import CaloriePage from "./pages/Calorie/CaloriePage.jsx";
 import ContactPage from "./pages/Contact/ContactPage.jsx";
 import AboutPage from "./pages/About/AboutPage.jsx";
 import ExoPage from "./pages/Exo/Exo.jsx";
+import ProgramsPage from "./pages/Programs/Programs.jsx";
 import PageOutils from "./pages/OutilsCalcul/PageOutils.jsx";
 import NotFound from "./pages/NotFound/NotFound.jsx";
 
@@ -40,6 +41,7 @@ const Pricing = lazy(() => import("./pages/Pricing/Pricing.jsx"));
 const AdminPage = lazy(() => import("./pages/Admin/AdminPage.jsx"));
 const NewsletterAdmin = lazy(() => import("./pages/Admin/NewsletterAdmin.jsx"));
 const SupportTickets = lazy(() => import("./pages/Admin/SupportTickets.jsx"));
+const ProgramsAdmin = lazy(() => import("./pages/Admin/ProgramsAdmin/ProgramsAdmin.jsx"));
 
 // Profile & Matching - lazy loaded (features avancées)
 const ProfileSetup = lazy(() => import("./pages/Profile/ProfileSetup.jsx"));
@@ -78,6 +80,7 @@ export default function App() {
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/exo" element={<ExoPage />} />
+            <Route path="/programs" element={<ProgramsPage />} />
             <Route path="/outils" element={<PageOutils />} />
 
             {/* Pages RGPD - lazy loaded */}
@@ -99,6 +102,7 @@ export default function App() {
             <Route path="/admin/newsletter/new" element={<NewsletterAdmin />} />
             <Route path="/admin/newsletter/:id" element={<NewsletterAdmin />} />
             <Route path="/admin/support-tickets" element={<SupportTickets />} />
+            <Route path="/admin/programs" element={<ProgramsAdmin />} />
 
             {/* Profile & Matching - lazy loaded */}
             <Route path="/profile/setup" element={<ProfileSetup />} />

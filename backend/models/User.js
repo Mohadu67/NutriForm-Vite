@@ -52,6 +52,10 @@ const userSchema = new mongoose.Schema(
     },
     imc: [imcSchema],
     calories: [caloriesSchema],
+    favoriteProgramIds: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'WorkoutProgram' }],
+      default: []
+    },
     role: {
       type: String,
       enum: ['user', 'admin'],
@@ -85,6 +89,7 @@ userSchema.path('pseudo').validate(function (v) {
 }, 'Pseudo invalide. Autorisé: a-z 0-9 . _ - (3-30 caractères)');
 
 userSchema.index({ resetPasswordToken: 1, resetPasswordExpires: 1 });
+userSchema.index({ favoriteProgramIds: 1 });
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('motdepasse')) return next();
