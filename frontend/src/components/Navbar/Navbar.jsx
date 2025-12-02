@@ -24,7 +24,8 @@ import {
   TrophyIcon,
   UserIcon,
   UsersIcon,
-  HelpCircleIcon
+  HelpCircleIcon,
+  UtensilsIcon
 } from "./NavIcons";
 
 export default function Navbar() {
@@ -128,6 +129,33 @@ export default function Navbar() {
     setDocumentTheme(isDark);
   }, [setDocumentTheme]);
 
+  // Gestion du hash pour ouvrir la popup de connexion
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1); // Enlever le #
+      if (hash === 'login') {
+        setPopupView('login');
+        setIsPopupOpen(true);
+        // Nettoyer le hash après ouverture
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      } else if (hash === 'signup') {
+        setPopupView('create');
+        setIsPopupOpen(true);
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    };
+
+    // Vérifier au montage
+    handleHashChange();
+
+    // Écouter les changements de hash
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
   // Monitor login state and premium status - avec httpOnly cookies
   useEffect(() => {
     let isMounted = true;
@@ -153,8 +181,6 @@ export default function Navbar() {
 
           // Récupérer les données utilisateur
           const userData = await response.json();
-
-          console.log('🔍 Navbar - userData:', userData);
 
           // Vérifier toutes les propriétés possibles pour le premium
           const userHasPremium = userData?.subscription?.tier === 'premium' ||
@@ -185,8 +211,6 @@ export default function Navbar() {
 
           // Si premium trouvé dans les données OU dans le cache
           const finalPremiumStatus = userHasPremium || cachedPremium;
-
-          console.log('🔍 Navbar - userHasPremium:', userHasPremium, 'cachedPremium:', cachedPremium, 'finalPremiumStatus:', finalPremiumStatus);
 
           if (finalPremiumStatus) {
             setIsPremium(true);
@@ -324,8 +348,6 @@ export default function Navbar() {
 
   // Secondary navigation links (in expanded menu) - Les moins importants
   const secondaryLinks = useMemo(() => {
-    console.log('🔍 Navbar - isLoggedIn:', isLoggedIn, 'isPremium:', isPremium);
-
     return [
       ...(isLoggedIn && isPremium ? [
         {
@@ -335,6 +357,7 @@ export default function Navbar() {
           isPremium: true
         }
       ] : []),
+      { label: 'Recettes', path: "/recettes", icon: <UtensilsIcon size={28} /> },
       { label: t('nav.tools'), path: "/outils", icon: <ToolsIcon size={28} /> },
       { label: t('nav.about'), path: "/about", icon: <InfoIcon size={28} /> },
       { label: 'FAQ', path: "/contact", icon: <HelpCircleIcon size={28} /> }

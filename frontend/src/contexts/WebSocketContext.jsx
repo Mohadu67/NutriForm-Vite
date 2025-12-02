@@ -20,18 +20,14 @@ export function WebSocketProvider({ children }) {
   const connect = useCallback(() => {
     // Ne pas reconnecter si déjà connecté
     if (socketRef.current?.connected) {
-      console.log('🔌 WebSocket: Déjà connecté');
       return;
     }
 
     // Obtenir le token d'authentification
     const token = storage.get('token');
     if (!token) {
-      console.warn('⚠️ WebSocket: Pas de token, connexion impossible');
       return;
     }
-
-    console.log('🔌 WebSocket: Connexion en cours...');
 
     // Créer la connexion Socket.io
     const newSocket = io(BACKEND_URL, {
@@ -45,17 +41,15 @@ export function WebSocketProvider({ children }) {
 
     // Événements de connexion
     newSocket.on('connect', () => {
-      console.log('✅ WebSocket: Connecté au serveur');
       setIsConnected(true);
       reconnectAttempts.current = 0;
     });
 
-    newSocket.on('connected', (data) => {
-      console.log('🔌 WebSocket: Authentifié', data);
+    newSocket.on('connected', () => {
+      // WebSocket authentifié
     });
 
     newSocket.on('disconnect', (reason) => {
-      console.log('🔌 WebSocket: Déconnecté', reason);
       setIsConnected(false);
 
       // Reconnecter automatiquement si déconnexion involontaire
@@ -68,8 +62,7 @@ export function WebSocketProvider({ children }) {
       }
     });
 
-    newSocket.on('connect_error', (error) => {
-      console.error('❌ WebSocket: Erreur de connexion', error.message);
+    newSocket.on('connect_error', () => {
       setIsConnected(false);
     });
 
@@ -84,7 +77,6 @@ export function WebSocketProvider({ children }) {
    */
   const disconnect = useCallback(() => {
     if (socketRef.current) {
-      console.log('🔌 WebSocket: Déconnexion...');
       socketRef.current.disconnect();
       socketRef.current = null;
       setSocket(null);
@@ -98,7 +90,6 @@ export function WebSocketProvider({ children }) {
   const joinConversation = useCallback((conversationId) => {
     if (!socketRef.current || !conversationId) return;
 
-    console.log(`👥 WebSocket: Rejoindre conversation ${conversationId}`);
     socketRef.current.emit('join_conversation', conversationId);
     setActiveConversationId(conversationId);
   }, []);
@@ -109,7 +100,6 @@ export function WebSocketProvider({ children }) {
   const leaveConversation = useCallback((conversationId) => {
     if (!socketRef.current || !conversationId) return;
 
-    console.log(`👋 WebSocket: Quitter conversation ${conversationId}`);
     socketRef.current.emit('leave_conversation', conversationId);
 
     if (activeConversationId === conversationId) {

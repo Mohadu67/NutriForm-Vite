@@ -37,6 +37,7 @@ const profileRoutes = require('./routes/profile.route.js');
 const matchingRoutes = require('./routes/matching.route.js');
 const matchChatRoutes = require('./routes/matchChat.route.js');
 const pushNotificationRoutes = require('./routes/pushNotification.route.js');
+const recipeRoutes = require('./routes/recipe.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 
@@ -160,6 +161,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/matching', matchingRoutes);
 app.use('/api/match-chat', matchChatRoutes);
 app.use('/api/push', pushNotificationRoutes);
+app.use('/api/recipes', recipeRoutes);
 
 app.get('/', (req, res) => {
   res.send('Bienvenue sur le backend de NutriForm 🚀');
