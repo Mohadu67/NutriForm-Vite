@@ -1,0 +1,144 @@
+/* ============================================
+   CONFIRM MODAL - Mobile First
+   ============================================ */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.5rem;
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 50%;
+  color: #ff6b6b;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+  text-align: center;
+  color: var(--color-text);
+}
+
+.message {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.actions button {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.cancelButton:hover {
+  opacity: 0.8;
+}
+
+.confirmButton {
+  background: #ff6b6b;
+  color: white;
+}
+
+.confirmButton:hover {
+  opacity: 0.9;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .modal {
+    background: var(--color-surface-dark);
+    border-color: var(--color-border-dark);
+  }
+
+  .title {
+    color: var(--color-text-dark);
+  }
+
+  .message {
+    color: var(--color-text-dark-secondary);
+  }
+
+  .cancelButton {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-dark);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .modal {
+    padding: 1.5rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+}
