@@ -1,0 +1,401 @@
+/* Recipe Form Styles */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: calc(100vh - 200px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.backBtn {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-surface, #f8f9fa);
+  border: 2px solid var(--color-border, #e9ecef);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text, #212529);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.backBtn:hover {
+  background: var(--color-primary, #f7b186);
+  border-color: var(--color-primary, #f7b186);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text, #212529);
+  margin: 0;
+}
+
+.loading {
+  text-align: center;
+  padding: 4rem;
+  font-size: 1.2rem;
+  color: var(--color-text-secondary, #6c757d);
+}
+
+.error {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 68, 68, 0.05));
+  border: 2px solid rgba(255, 107, 107, 0.3);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.success {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.05));
+  border: 2px solid rgba(40, 167, 69, 0.3);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #28a745;
+  font-weight: 500;
+}
+
+/* Form Styles */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section {
+  background: var(--color-surface, white);
+  border: 2px solid var(--color-border, #e9ecef);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text, #212529);
+  margin: 0 0 1.5rem 0;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.formGroup:last-child {
+  margin-bottom: 0;
+}
+
+.formGroup label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text, #212529);
+}
+
+.formGroup input,
+.formGroup textarea,
+.formGroup select {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--color-border, #e9ecef);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--color-text, #212529);
+  background: var(--color-bg, white);
+  transition: all 0.2s;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus,
+.formGroup select:focus {
+  outline: none;
+  border-color: var(--color-primary, #f7b186);
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.1);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.imagePreview {
+  width: 100%;
+  max-width: 400px;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-top: 1rem;
+  border: 2px solid var(--color-border, #e9ecef);
+}
+
+.checkboxGroup {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text, #212529);
+  cursor: pointer;
+}
+
+.checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--color-primary, #f7b186);
+}
+
+/* Nutrition Grid */
+.nutritionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+/* Pills (Tags, Goals, etc.) */
+.pillsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.pill {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-surface, #f8f9fa);
+  border: 2px solid var(--color-border, #e9ecef);
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text, #495057);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pill:hover {
+  background: rgba(247, 177, 134, 0.1);
+  border-color: var(--color-primary, #f7b186);
+  transform: translateY(-2px);
+}
+
+.pillActive {
+  background: linear-gradient(135deg, var(--color-secondary, #b8ddd1) 0%, var(--color-primary, #f7b186) 100%);
+  border-color: var(--color-primary, #f7b186);
+  color: #111;
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+}
+
+/* Ingredients */
+.ingredientRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto auto;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: var(--color-bg, #f8f9fa);
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #e9ecef);
+}
+
+.ingredientRow input {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border, #dee2e6);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+/* Instructions */
+.instructionRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: var(--color-bg, #f8f9fa);
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #e9ecef);
+}
+
+.stepNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--color-secondary, #b8ddd1) 0%, var(--color-primary, #f7b186) 100%);
+  color: #111;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  margin-top: 0.5rem;
+}
+
+.instructionRow textarea {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border, #dee2e6);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+.removeBtn {
+  padding: 0.5rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.removeBtn:hover:not(:disabled) {
+  background: #c82333;
+  transform: scale(1.1);
+}
+
+.removeBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.addBtn {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-surface, white);
+  border: 2px dashed var(--color-primary, #f7b186);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary, #f7b186);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.addBtn:hover {
+  background: rgba(247, 177, 134, 0.1);
+  border-style: solid;
+  transform: translateY(-2px);
+}
+
+/* Form Actions */
+.formActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 2rem;
+  border-top: 2px solid var(--color-border, #e9ecef);
+}
+
+.cancelBtn,
+.submitBtn {
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.cancelBtn {
+  background: var(--color-surface, #f8f9fa);
+  color: var(--color-text, #495057);
+  border: 2px solid var(--color-border, #dee2e6);
+}
+
+.cancelBtn:hover {
+  background: #e9ecef;
+  transform: translateY(-2px);
+}
+
+.submitBtn {
+  background: linear-gradient(135deg, var(--color-secondary, #b8ddd1) 0%, var(--color-primary, #f7b186) 100%);
+  color: #111;
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+}
+
+.submitBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(247, 177, 134, 0.4);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .section {
+    padding: 1.5rem;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .nutritionGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ingredientRow {
+    grid-template-columns: 1fr;
+  }
+
+  .instructionRow {
+    grid-template-columns: 1fr;
+  }
+
+  .stepNumber {
+    align-self: flex-start;
+  }
+
+  .formActions {
+    flex-direction: column;
+  }
+
+  .cancelBtn,
+  .submitBtn {
+    width: 100%;
+  }
+}
