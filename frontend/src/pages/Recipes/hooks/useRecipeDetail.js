@@ -3,7 +3,7 @@ import axios from 'axios';
 import { storage } from '../../../shared/utils/storage';
 import { secureApiCall } from '../../../utils/authService';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 export const useRecipeDetail = (recipeId) => {
   const [recipe, setRecipe] = useState(null);
