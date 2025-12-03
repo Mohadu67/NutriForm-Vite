@@ -285,7 +285,8 @@ export default function Navbar() {
         const { unreadCount: count } = await getUnreadCount();
         setUnreadCount(count);
       } catch (err) {
-        // Erreur silencieuse
+        // Fallback silencieux si l'endpoint n'existe pas encore (sera fixé après déploiement)
+        setUnreadCount(0);
       }
     };
 
