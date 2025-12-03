@@ -14,6 +14,15 @@ export const getConversations = async () => {
 };
 
 /**
+ * Récupérer uniquement le compteur total de messages non lus
+ * @returns {Promise<{unreadCount: number}>} Compteur de messages non lus
+ */
+export const getUnreadCount = async () => {
+  const response = await client.get('/match-chat/unread-count');
+  return response.data;
+};
+
+/**
  * Récupérer ou créer une conversation pour un match
  * @param {string} matchId - ID du match
  * @returns {Promise} Conversation

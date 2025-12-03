@@ -15,120 +15,71 @@ async function getConversations(req, res) {
     const userId = req.userId;
     const limit = parseInt(req.query.limit) || 50; // Limite par défaut de 50 conversations
 
-    // Utiliser une agrégation pour optimiser la requête et tout charger en une fois
-    const conversations = await Conversation.aggregate([
-      // Étape 1: Filter les conversations de l'utilisateur
-      {
-        $match: {
-          participants: userId,
-          isActive: true,
-          hiddenBy: { $ne: userId }
-        }
-      },
-      // Étape 2: Trier par date du dernier message
-      {
-        $sort: { 'lastMessage.timestamp': -1 }
-      },
-      // Étape 3: Limiter le nombre de résultats
-      {
-        $limit: limit
-      },
-      // Étape 4: Lookup des participants (users)
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'participants',
-          foreignField: '_id',
-          as: 'participantsData'
-        }
-      },
-      // Étape 5: Lookup des profils utilisateurs
-      {
-        $lookup: {
-          from: 'userprofiles',
-          let: { participantIds: '$participants' },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $in: ['$userId', '$$participantIds'] }
-              }
-            },
-            {
-              $project: {
-                userId: 1,
-                age: 1,
-                city: 1,
-                fitnessLevel: 1
-              }
-            }
-          ],
-          as: 'profilesData'
-        }
-      },
-      // Étape 6: Lookup du match
-      {
-        $lookup: {
-          from: 'matches',
-          localField: 'matchId',
-          foreignField: '_id',
-          as: 'matchData'
-        }
-      },
-      // Étape 7: Projet final pour structurer les données
-      {
-        $project: {
-          _id: 1,
-          matchId: 1,
-          participants: 1,
-          lastMessage: 1,
-          isActive: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          participantsData: 1,
-          profilesData: 1,
-          matchData: { $arrayElemAt: ['$matchData', 0] },
-          unreadCount: 1
-        }
-      }
-    ]);
+    // Optimisation: récupérer les conversations avec populate, mais limiter les champs
+    const conversations = await Conversation.find({
+      participants: userId,
+      isActive: true,
+      hiddenBy: { $ne: userId }
+    })
+      .select('_id participants matchId lastMessage isActive createdAt updatedAt unreadCount')
+      .populate({
+        path: 'participants',
+        select: 'pseudo prenom email photo'
+      })
+      .populate({
+        path: 'matchId',
+        select: 'matchScore distance'
+      })
+      .sort({ 'lastMessage.timestamp': -1 })
+      .limit(limit)
+      .lean();
 
-    // Transformer les résultats pour le format attendu par le frontend
+    // Récupérer tous les IDs des autres utilisateurs en une fois
+    const otherUserIds = conversations.map(conv =>
+      conv.participants.find(p => p._id.toString() !== userId.toString())?._id
+    ).filter(Boolean);
+
+    // Récupérer tous les profils en une seule requête avec seulement les champs nécessaires
+    const profiles = await UserProfile.find({
+      userId: { $in: otherUserIds }
+    })
+      .select('userId age city fitnessLevel')
+      .lean();
+
+    // Créer un Map pour un accès O(1) rapide
+    const profilesMap = new Map(
+      profiles.map(p => [p.userId.toString(), p])
+    );
+
+    // Construire la réponse en une seule passe
     const conversationsWithProfiles = conversations.map(conv => {
-      const otherUser = conv.participantsData.find(
+      const otherUser = conv.participants.find(
         p => p._id.toString() !== userId.toString()
       );
 
-      const otherUserProfile = conv.profilesData.find(
-        p => p.userId.toString() === otherUser._id.toString()
-      ) || {};
+      if (!otherUser) return null;
 
+      const profile = profilesMap.get(otherUser._id.toString()) || {};
       const unreadCount = conv.unreadCount?.[userId.toString()] || 0;
 
       return {
         _id: conv._id,
-        matchId: conv.matchData ? {
-          _id: conv.matchData._id,
-          matchScore: conv.matchData.matchScore,
-          distance: conv.matchData.distance
-        } : conv.matchId,
-        participants: conv.participantsData,
+        matchId: conv.matchId,
+        participants: conv.participants,
         lastMessage: conv.lastMessage,
         isActive: conv.isActive,
         createdAt: conv.createdAt,
         updatedAt: conv.updatedAt,
         otherUser: {
-          _id: otherUser._id,
-          pseudo: otherUser.pseudo,
-          prenom: otherUser.prenom,
-          email: otherUser.email,
+          ...otherUser,
           profile: {
-            ...otherUserProfile,
+            ...profile,
             profilePicture: otherUser.photo
           }
         },
         unreadCount
       };
-    });
+    }).filter(Boolean); // Enlever les null
 
     res.status(200).json({ conversations: conversationsWithProfiles });
   } catch (error) {
@@ -560,6 +511,37 @@ async function deleteConversation(req, res) {
   }
 }
 
+/**
+ * Récupérer uniquement le compteur total de messages non lus
+ * GET /api/match-chat/unread-count
+ */
+async function getUnreadCount(req, res) {
+  try {
+    const userId = req.userId;
+    const userIdStr = userId.toString();
+
+    // Requête simple et rapide
+    const conversations = await Conversation.find({
+      participants: userId,
+      isActive: true,
+      hiddenBy: { $ne: userId }
+    })
+      .select('unreadCount')
+      .lean();
+
+    // Calculer le total
+    const totalUnread = conversations.reduce((sum, conv) => {
+      const count = conv.unreadCount?.[userIdStr] || 0;
+      return sum + count;
+    }, 0);
+
+    res.status(200).json({ unreadCount: totalUnread });
+  } catch (error) {
+    logger.error('Erreur getUnreadCount:', error);
+    res.status(200).json({ unreadCount: 0 }); // Retourner 0 en cas d'erreur
+  }
+}
+
 module.exports = {
   getConversations,
   getOrCreateConversation,
@@ -568,5 +550,6 @@ module.exports = {
   markAsRead,
   deleteMessage,
   blockConversation,
-  deleteConversation
+  deleteConversation,
+  getUnreadCount
 };
