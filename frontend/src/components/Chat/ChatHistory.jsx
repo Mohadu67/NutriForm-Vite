@@ -19,6 +19,7 @@ export default function ChatHistory({ onLogin }) {
   const [alert, setAlert] = useState({ show: false, message: '', variant: 'error' });
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, type: null });
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const cacheTimeRef = useState({ ai: 0, match: 0 })[0];
   const CACHE_DURATION = 30000; // 30 secondes de cache
 
@@ -41,12 +42,20 @@ export default function ChatHistory({ onLogin }) {
     checkAuth();
   }, []);
 
-  // Charger les conversations en parallèle
+  // Charger les conversations au premier affichage du composant
   useEffect(() => {
-    if (isAuth) {
-      loadAllConversations();
+    if (isAuth && !hasLoadedOnce) {
+      setHasLoadedOnce(true);
+      loadAllConversations(true); // Force le chargement au premier affichage
     }
-  }, [isAuth, isPremium]);
+  }, [isAuth, hasLoadedOnce]);
+
+  // Ne PAS charger automatiquement au montage - seulement quand l'utilisateur ouvre le panneau
+  // useEffect(() => {
+  //   if (isAuth) {
+  //     loadAllConversations();
+  //   }
+  // }, [isAuth, isPremium]);
 
   const loadAllConversations = async (forceRefresh = false) => {
     const now = Date.now();
