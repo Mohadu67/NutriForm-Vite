@@ -50,6 +50,13 @@ export default function ChatHistory({ onLogin }) {
     }
   }, [isAuth, hasLoadedOnce]);
 
+  // Recharger les conversations quand isPremium change (passage de false à true)
+  useEffect(() => {
+    if (isAuth && isPremium && hasLoadedOnce) {
+      loadAllConversations(true);
+    }
+  }, [isPremium]);
+
   // Ne PAS charger automatiquement au montage - seulement quand l'utilisateur ouvre le panneau
   // useEffect(() => {
   //   if (isAuth) {
@@ -86,8 +93,8 @@ export default function ChatHistory({ onLogin }) {
       if (shouldLoadMatch) {
         promises.push(
           getConversations()
-            .then(({ conversations }) => {
-              setMatchConversations(conversations || []);
+            .then((data) => {
+              setMatchConversations(data.conversations || []);
               cacheTimeRef.match = now;
             })
             .catch(() => {})
