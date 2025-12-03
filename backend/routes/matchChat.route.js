@@ -10,7 +10,8 @@ const {
   markAsRead,
   deleteMessage,
   blockConversation,
-  deleteConversation
+  deleteConversation,
+  getUnreadCount
 } = require('../controllers/matchChat.controller');
 
 /**
@@ -20,6 +21,9 @@ const {
 
 // Récupérer toutes les conversations
 router.get('/conversations', auth, premium, getConversations);
+
+// Récupérer uniquement le compteur de messages non lus (plus rapide)
+router.get('/unread-count', auth, premium, getUnreadCount);
 
 // Récupérer ou créer une conversation pour un match
 router.get('/conversation/:matchId', auth, premium, getOrCreateConversation);
