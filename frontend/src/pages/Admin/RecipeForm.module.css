@@ -356,6 +356,21 @@
 }
 
 /* Responsive */
+@media (max-width: 992px) {
+  .formRow {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .nutritionGrid {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  }
+
+  .ingredientRow {
+    grid-template-columns: 1.5fr 0.8fr 0.8fr auto auto;
+    gap: 0.75rem;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
@@ -364,38 +379,172 @@
   .header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .backBtn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.95rem;
   }
 
   .section {
-    padding: 1.5rem;
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .form {
+    gap: 1.5rem;
+  }
+
+  .formGroup {
+    margin-bottom: 1.25rem;
+  }
+
+  .formGroup label {
+    font-size: 0.9rem;
+  }
+
+  .formGroup input,
+  .formGroup textarea,
+  .formGroup select {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.95rem;
   }
 
   .formRow {
     grid-template-columns: 1fr;
+    gap: 1.25rem;
   }
 
   .nutritionGrid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0.875rem;
+  }
+
+  .imagePreview {
+    max-width: 100%;
+    height: 200px;
+  }
+
+  .checkboxGroup {
+    gap: 1.25rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pillsGrid {
+    gap: 0.625rem;
+  }
+
+  .pill {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9rem;
   }
 
   .ingredientRow {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 0.875rem;
+  }
+
+  .ingredientRow input {
+    padding: 0.625rem;
+    font-size: 0.9rem;
+  }
+
+  .ingredientRow .checkbox {
+    grid-column: 1;
+    margin: 0.25rem 0;
   }
 
   .instructionRow {
-    grid-template-columns: 1fr;
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+    padding: 0.875rem;
+  }
+
+  .instructionRow textarea {
+    padding: 0.625rem;
+    font-size: 0.9rem;
+    grid-column: 1 / -1;
   }
 
   .stepNumber {
-    align-self: flex-start;
+    width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+    margin-top: 0;
+  }
+
+  .removeBtn {
+    width: 32px;
+    height: 32px;
+    font-size: 1.1rem;
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .addBtn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.95rem;
   }
 
   .formActions {
-    flex-direction: column;
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+    padding-top: 1.5rem;
   }
 
   .cancelBtn,
   .submitBtn {
     width: 100%;
+    padding: 0.875rem 1.5rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.75rem;
+  }
+
+  .header h1 {
+    font-size: 1.3rem;
+  }
+
+  .section {
+    padding: 1rem;
+  }
+
+  .section h2 {
+    font-size: 1.2rem;
+  }
+
+  .nutritionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pillsGrid {
+    gap: 0.5rem;
+  }
+
+  .pill {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .checkboxGroup {
+    gap: 1rem;
   }
 }

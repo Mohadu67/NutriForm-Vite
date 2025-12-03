@@ -236,6 +236,39 @@ async function assignTicket(req, res) {
 }
 
 /**
+ * Supprimer un ticket (admin)
+ * DELETE /api/admin/support-tickets/:id
+ */
+async function deleteTicket(req, res) {
+  try {
+    const { id } = req.params;
+    const { deleteMessages = false } = req.query;
+
+    const ticket = await SupportTicket.findById(id);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket introuvable.' });
+    }
+
+    // Supprimer les messages si demandé
+    if (deleteMessages && ticket.conversationId) {
+      await ChatMessage.deleteMany({ conversationId: ticket.conversationId });
+      logger.info(`🗑️ Messages supprimés pour le ticket ${id}`);
+    }
+
+    // Supprimer le ticket
+    await SupportTicket.findByIdAndDelete(id);
+
+    res.status(200).json({
+      message: 'Ticket supprimé avec succès.',
+      messagesDeleted: deleteMessages
+    });
+  } catch (error) {
+    logger.error('Erreur deleteTicket:', error);
+    res.status(500).json({ error: 'Erreur lors de la suppression du ticket.' });
+  }
+}
+
+/**
  * Statistiques des tickets (admin)
  * GET /api/admin/support-tickets/stats
  */
@@ -288,5 +321,6 @@ module.exports = {
   resolveTicket,
   reopenTicket,
   assignTicket,
+  deleteTicket,
   getTicketStats
 };

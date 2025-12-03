@@ -99,6 +99,18 @@ export async function reopenSupportTicket(ticketId) {
 }
 
 /**
+ * ADMIN: Supprimer un ticket
+ * @param {string} ticketId
+ * @param {boolean} deleteMessages - Supprimer les messages associés (optionnel)
+ * @returns {Promise<{message, messagesDeleted}>}
+ */
+export async function deleteSupportTicket(ticketId, deleteMessages = false) {
+  const params = deleteMessages ? '?deleteMessages=true' : '';
+  const response = await client.delete(`${endpoints.supportTickets.byId(ticketId)}${params}`);
+  return response.data;
+}
+
+/**
  * ADMIN: Assigner un ticket
  * @param {string} ticketId
  * @param {string} adminId - ID de l'admin (null pour désassigner)
