@@ -49,5 +49,7 @@ const aiConversationSchema = new mongoose.Schema(
 // Index pour recherche rapide
 aiConversationSchema.index({ userId: 1, conversationId: 1 });
 aiConversationSchema.index({ updatedAt: -1 });
+// Index composite pour requête getAIConversations optimisée
+aiConversationSchema.index({ userId: 1, isActive: 1, updatedAt: -1 });
 
 module.exports = mongoose.model('AIConversation', aiConversationSchema);

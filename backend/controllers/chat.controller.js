@@ -1486,9 +1486,11 @@ function detectCategory(message) {
 async function getAIConversations(req, res) {
   try {
     const userId = req.userId;
+    const limit = parseInt(req.query.limit) || 20; // Limite par défaut de 20 conversations IA
 
     const conversations = await AIConversation.find({ userId, isActive: true })
       .sort({ updatedAt: -1 })
+      .limit(limit)
       .lean();
 
     res.status(200).json({ conversations });

@@ -73,6 +73,9 @@ const conversationSchema = new mongoose.Schema(
 // Index pour recherche rapide (matchId a déjà un index via unique: true)
 conversationSchema.index({ participants: 1 });
 conversationSchema.index({ 'lastMessage.timestamp': -1 });
+// Index composite pour requête getConversations optimisée
+conversationSchema.index({ participants: 1, isActive: 1, 'lastMessage.timestamp': -1 });
+conversationSchema.index({ participants: 1, hiddenBy: 1, isActive: 1 });
 
 // Méthode pour vérifier si un utilisateur fait partie de la conversation
 conversationSchema.methods.includesUser = function(userId) {
