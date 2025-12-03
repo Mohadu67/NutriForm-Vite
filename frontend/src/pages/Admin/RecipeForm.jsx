@@ -124,7 +124,7 @@ export default function RecipeForm() {
       ...prev,
       nutrition: {
         ...prev.nutrition,
-        [name]: parseFloat(value) || 0
+        [name]: value === '' ? '' : parseFloat(value)
       }
     }));
   };
@@ -413,6 +413,7 @@ export default function RecipeForm() {
                   value={formData.nutrition.calories}
                   onChange={handleNutritionChange}
                   min="0"
+                  step="0.1"
                   required
                 />
               </div>
@@ -424,6 +425,7 @@ export default function RecipeForm() {
                   value={formData.nutrition.proteins}
                   onChange={handleNutritionChange}
                   min="0"
+                  step="0.1"
                   required
                 />
               </div>
@@ -435,6 +437,7 @@ export default function RecipeForm() {
                   value={formData.nutrition.carbs}
                   onChange={handleNutritionChange}
                   min="0"
+                  step="0.1"
                   required
                 />
               </div>
@@ -446,6 +449,7 @@ export default function RecipeForm() {
                   value={formData.nutrition.fats}
                   onChange={handleNutritionChange}
                   min="0"
+                  step="0.1"
                   required
                 />
               </div>
@@ -457,6 +461,7 @@ export default function RecipeForm() {
                   value={formData.nutrition.fiber}
                   onChange={handleNutritionChange}
                   min="0"
+                  step="0.1"
                 />
               </div>
             </div>

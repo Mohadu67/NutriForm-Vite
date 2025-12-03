@@ -3,11 +3,14 @@ import { MdArrowBack } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
+import ConfirmModal from '../../components/Modal/ConfirmModal';
 import {
   getAllSupportTickets,
   getSupportTicketById,
   replyToSupportTicket,
   resolveSupportTicket,
+  reopenSupportTicket,
+  deleteSupportTicket,
   getSupportTicketStats
 } from '../../shared/api/chat';
 import styles from './SupportTickets.module.css';
@@ -24,6 +27,14 @@ export default function SupportTickets() {
   const [stats, setStats] = useState(null);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('open');
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: '',
+    type: 'default',
+    onConfirm: () => {}
+  });
 
   const loadTickets = useCallback(async () => {
     try {
@@ -56,8 +67,10 @@ export default function SupportTickets() {
   const handleSelectTicket = async (ticketId) => {
     try {
       const { ticket, messages: msgs } = await getSupportTicketById(ticketId);
+      console.log('📩 Ticket chargé:', ticket);
+      console.log('📩 Messages:', msgs);
       setSelectedTicket(ticket);
-      setMessages(msgs);
+      setMessages(msgs || []);
       setReplyMessage('');
     } catch (err) {
       logger.error('Erreur chargement ticket:', err);
@@ -86,14 +99,26 @@ export default function SupportTickets() {
     }
   };
 
-  const handleResolve = async () => {
+  const handleMoveToProgress = async () => {
     if (!selectedTicket) return;
 
-    const deleteMessages = window.confirm(
-      '⚠️ Voulez-vous supprimer les messages de cette conversation ?\n\n' +
-      '✅ OUI : Le ticket sera résolu et tous les messages seront supprimés.\n' +
-      '❌ NON : Le ticket sera résolu mais les messages seront conservés.'
-    );
+    try {
+      setSelectedTicket(prev => ({ ...prev, status: 'in_progress' }));
+      setTickets(prev =>
+        prev.map(t => (t._id === selectedTicket._id ? { ...t, status: 'in_progress' } : t))
+      );
+      loadStats();
+
+      setError('✅ Ticket mis en cours.');
+      setTimeout(() => setError(null), 3000);
+    } catch (err) {
+      logger.error('Erreur mise en cours ticket:', err);
+      setError('Impossible de mettre le ticket en cours.');
+    }
+  };
+
+  const handleResolve = async (deleteMessages = false) => {
+    if (!selectedTicket) return;
 
     try {
       const result = await resolveSupportTicket(selectedTicket._id, '', deleteMessages);
@@ -106,12 +131,94 @@ export default function SupportTickets() {
 
       if (result.messagesDeleted) {
         setError('✅ Ticket résolu et messages supprimés.');
-        setTimeout(() => setError(null), 3000);
+      } else {
+        setError('✅ Ticket résolu avec succès.');
       }
+      setTimeout(() => setError(null), 3000);
     } catch (err) {
       logger.error('Erreur résolution ticket:', err);
       setError('Impossible de résoudre le ticket.');
     }
+  };
+
+  const handleReopen = async () => {
+    if (!selectedTicket) return;
+
+    try {
+      await reopenSupportTicket(selectedTicket._id);
+
+      setSelectedTicket(prev => ({ ...prev, status: 'open' }));
+      setTickets(prev =>
+        prev.map(t => (t._id === selectedTicket._id ? { ...t, status: 'open' } : t))
+      );
+      loadStats();
+
+      setError('✅ Ticket rouvert avec succès.');
+      setTimeout(() => setError(null), 3000);
+    } catch (err) {
+      logger.error('Erreur réouverture ticket:', err);
+      setError('Impossible de rouvrir le ticket.');
+    }
+  };
+
+  const handleDelete = async (deleteMessages = false) => {
+    if (!selectedTicket) return;
+
+    try {
+      await deleteSupportTicket(selectedTicket._id, deleteMessages);
+
+      setTickets(prev => prev.filter(t => t._id !== selectedTicket._id));
+      setSelectedTicket(null);
+      setMessages([]);
+      loadStats();
+
+      setError('✅ Ticket supprimé avec succès.');
+      setTimeout(() => setError(null), 3000);
+    } catch (err) {
+      logger.error('Erreur suppression ticket:', err);
+      setError('Impossible de supprimer le ticket.');
+    }
+  };
+
+  const openResolveModal = () => {
+    setModalConfig({
+      isOpen: true,
+      title: 'Résoudre le ticket',
+      message: 'Voulez-vous supprimer les messages de cette conversation ?\n\nOUI : Le ticket sera résolu et tous les messages seront supprimés.\nNON : Le ticket sera résolu mais les messages seront conservés.',
+      confirmText: 'Supprimer les messages',
+      cancelText: 'Conserver les messages',
+      type: 'warning',
+      onConfirm: () => handleResolve(true),
+      onCancel: () => handleResolve(false)
+    });
+  };
+
+  const openReopenModal = () => {
+    setModalConfig({
+      isOpen: true,
+      title: 'Rouvrir le ticket',
+      message: 'Voulez-vous vraiment rouvrir ce ticket ? Il repassera en statut "Ouvert".',
+      confirmText: 'Rouvrir',
+      type: 'default',
+      onConfirm: handleReopen
+    });
+  };
+
+  const openDeleteModal = () => {
+    setModalConfig({
+      isOpen: true,
+      title: 'Supprimer le ticket',
+      message: 'Voulez-vous supprimer les messages associés ?\n\nOUI : Le ticket ET tous les messages seront définitivement supprimés.\nNON : Seul le ticket sera supprimé, les messages seront conservés.',
+      confirmText: 'Supprimer tout',
+      cancelText: 'Supprimer le ticket seulement',
+      type: 'danger',
+      onConfirm: () => handleDelete(true),
+      onCancel: () => handleDelete(false)
+    });
+  };
+
+  const closeModal = () => {
+    setModalConfig(prev => ({ ...prev, isOpen: false }));
   };
 
   const getStatusBadge = (status) => {
@@ -252,11 +359,28 @@ export default function SupportTickets() {
                       Par {selectedTicket.userId?.pseudo || selectedTicket.userId?.email}
                     </div>
                   </div>
-                  {selectedTicket.status !== 'resolved' && (
-                    <button className={styles.btnResolve} onClick={handleResolve}>
-                      Résoudre
-                    </button>
-                  )}
+                  <div className={styles.actionButtons}>
+                    {selectedTicket.status === 'open' && (
+                      <button className={styles.btnProgress} onClick={handleMoveToProgress}>
+                        → En cours
+                      </button>
+                    )}
+                    {selectedTicket.status === 'in_progress' && (
+                      <button className={styles.btnResolve} onClick={openResolveModal}>
+                        ✓ Résolu
+                      </button>
+                    )}
+                    {selectedTicket.status === 'resolved' && (
+                      <>
+                        <button className={styles.btnReopen} onClick={openReopenModal}>
+                          ↻ Rouvrir
+                        </button>
+                        <button className={styles.btnDelete} onClick={openDeleteModal}>
+                          ✕ Supprimer
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 <div className={styles.messagesContainer}>
@@ -307,6 +431,19 @@ export default function SupportTickets() {
         </div>
       </div>
       <Footer />
+
+      {/* Modal de confirmation */}
+      <ConfirmModal
+        isOpen={modalConfig.isOpen}
+        onClose={closeModal}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={modalConfig.onCancel}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+        type={modalConfig.type}
+      />
     </>
   );
 }

@@ -1,8 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MdStar, MdEmail, MdSupport, MdCheckCircle, MdSchedule, MdGroups, MdRateReview, MdDelete, MdEdit, MdSend, MdRestaurant } from 'react-icons/md';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
+import Pagination from '../../components/Pagination/Pagination.jsx';
+import ConfirmModal from '../../components/Modal/ConfirmModal.jsx';
+import SearchBar from '../../components/SearchBar/SearchBar.jsx';
 import { secureApiCall, isAuthenticated } from "../../utils/authService";
 import styles from "./AdminPage.module.css";
 import logger from '../../shared/utils/logger.js';
@@ -13,21 +16,54 @@ export default function AdminPage() {
   const [reviews, setReviews] = useState([]);
   const [newsletters, setNewsletters] = useState([]);
   const [recipes, setRecipes] = useState([]);
-  const [stats, setStats] = useState({
-    totalReviews: 0,
-    pendingReviews: 0,
-    approvedReviews: 0,
-    activeSubscribers: 0,
-    totalRecipes: 0,
-  });
+  const [newsletterStats, setNewsletterStats] = useState({ active: 0 });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedReviews, setSelectedReviews] = useState([]);
 
+  // Recherche
+  const [searchReviews, setSearchReviews] = useState('');
+  const [searchNewsletters, setSearchNewsletters] = useState('');
+  const [searchRecipes, setSearchRecipes] = useState('');
+
+  // Tri
+  const [sortReviews, setSortReviews] = useState('date-desc'); // date-desc, date-asc, rating-desc, rating-asc, name-asc, name-desc
+  const [sortRecipes, setSortRecipes] = useState('date-desc'); // date-desc, date-asc, calories-desc, calories-asc, views-desc, views-asc
+
+  // Pagination
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const [newslettersPage, setNewslettersPage] = useState(1);
+  const [recipesPage, setRecipesPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
+
+  // Modal de confirmation
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirmer',
+    cancelText: 'Annuler',
+    type: 'default',
+    onConfirm: () => {}
+  });
+
+  // Calcul des stats à partir des données locales (optimisé)
+  const stats = useMemo(() => ({
+    totalReviews: reviews.length,
+    pendingReviews: reviews.filter((r) => !r.isApproved).length,
+    approvedReviews: reviews.filter((r) => r.isApproved).length,
+    activeSubscribers: newsletterStats.active,
+    totalRecipes: recipes.length,
+  }), [reviews, newsletterStats, recipes]);
+
   const showMessage = (type, text) => {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: "", text: "" }), 4000);
+  };
+
+  const closeModal = () => {
+    setModalConfig(prev => ({ ...prev, isOpen: false }));
   };
 
   const checkAdmin = useCallback(async () => {
@@ -56,29 +92,15 @@ export default function AdminPage() {
     }
   }, [navigate]);
 
-  const fetchStats = useCallback(async () => {
+  const fetchNewsletterStats = useCallback(async () => {
     try {
-      const [reviewsRes, newsletterStatsRes] = await Promise.all([
-        secureApiCall('/reviews/users/all'),
-        secureApiCall('/newsletter/stats'),
-      ]);
-
-      const reviewsData = await reviewsRes.json();
-      const newsletterStats = await newsletterStatsRes.json();
-
-      if (reviewsData.success) {
-        const pending = reviewsData.reviews.filter((r) => !r.isApproved).length;
-        const approved = reviewsData.reviews.filter((r) => r.isApproved).length;
-
-        setStats({
-          totalReviews: reviewsData.reviews.length,
-          pendingReviews: pending,
-          approvedReviews: approved,
-          activeSubscribers: newsletterStats.stats?.active || 0,
-        });
+      const response = await secureApiCall('/newsletter/stats');
+      const data = await response.json();
+      if (data.success) {
+        setNewsletterStats({ active: data.stats?.active || 0 });
       }
     } catch (err) {
-      logger.error("Erreur chargement stats:", err);
+      logger.error("Erreur chargement stats newsletter:", err);
     }
   }, []);
 
@@ -119,7 +141,6 @@ export default function AdminPage() {
       const data = await response.json();
       if (data.success) {
         setRecipes(data.recipes);
-        setStats(prev => ({ ...prev, totalRecipes: data.recipes.length }));
       }
     } catch (err) {
       logger.error("Erreur chargement recettes:", err);
@@ -128,16 +149,29 @@ export default function AdminPage() {
     }
   }, []);
 
+  // Initialisation au mount (une seule fois)
   useEffect(() => {
-    checkAdmin().then((isAdmin) => {
+    const init = async () => {
+      const isAdmin = await checkAdmin();
       if (isAdmin) {
-        fetchStats();
+        // Charger les stats newsletter (ne changent pas souvent)
+        fetchNewsletterStats();
+        // Charger les données de la section active
         if (activeSection === "reviews") fetchReviews();
         if (activeSection === "newsletter") fetchNewsletters();
         if (activeSection === "recipes") fetchRecipes();
       }
-    });
-  }, [activeSection, checkAdmin, fetchStats, fetchReviews, fetchNewsletters, fetchRecipes]);
+    };
+    init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Au mount seulement
+
+  // Charger les données quand on change de section
+  useEffect(() => {
+    if (activeSection === "reviews" && reviews.length === 0) fetchReviews();
+    if (activeSection === "newsletter" && newsletters.length === 0) fetchNewsletters();
+    if (activeSection === "recipes" && recipes.length === 0) fetchRecipes();
+  }, [activeSection, reviews.length, newsletters.length, recipes.length, fetchReviews, fetchNewsletters, fetchRecipes]);
 
   const handleApprove = async (id) => {
     try {
@@ -146,7 +180,7 @@ export default function AdminPage() {
       if (data.success) {
         showMessage("success", "Avis approuvé !");
         setReviews((prev) => prev.map((r) => (r._id === id ? { ...r, isApproved: true } : r)));
-        fetchStats();
+        // Stats mises à jour automatiquement via useMemo
       } else {
         showMessage("error", data.message || "Erreur");
       }
@@ -155,15 +189,25 @@ export default function AdminPage() {
     }
   };
 
+  const confirmDeleteReview = (id) => {
+    setModalConfig({
+      isOpen: true,
+      title: 'Supprimer cet avis',
+      message: 'Êtes-vous sûr de vouloir supprimer cet avis ? Cette action est irréversible.',
+      confirmText: 'Supprimer',
+      type: 'danger',
+      onConfirm: () => handleDelete(id)
+    });
+  };
+
   const handleDelete = async (id) => {
-    if (!confirm("Voulez-vous vraiment supprimer cet avis ?")) return;
     try {
       const response = await secureApiCall(`/reviews/users/${id}`, { method: "DELETE" });
       const data = await response.json();
       if (data.success) {
         showMessage("success", "Avis supprimé !");
         fetchReviews();
-        fetchStats();
+        // Stats mises à jour automatiquement via useMemo
       } else {
         showMessage("error", data.message || "Erreur");
       }
@@ -181,15 +225,26 @@ export default function AdminPage() {
       showMessage("success", `${selectedReviews.length} avis approuvés !`);
       setSelectedReviews([]);
       fetchReviews();
-      fetchStats();
+      // Stats mises à jour automatiquement via useMemo
     } catch {
       showMessage("error", "Erreur lors de l'approbation en masse");
     }
   };
 
+  const confirmBulkDelete = () => {
+    if (selectedReviews.length === 0) return;
+    setModalConfig({
+      isOpen: true,
+      title: 'Suppression en masse',
+      message: `Êtes-vous sûr de vouloir supprimer ${selectedReviews.length} avis ? Cette action est irréversible.`,
+      confirmText: 'Supprimer tout',
+      type: 'danger',
+      onConfirm: handleBulkDelete
+    });
+  };
+
   const handleBulkDelete = async () => {
     if (selectedReviews.length === 0) return;
-    if (!confirm(`Supprimer ${selectedReviews.length} avis ?`)) return;
     try {
       await Promise.all(
         selectedReviews.map((id) => secureApiCall(`/reviews/users/${id}`, { method: "DELETE" }))
@@ -197,7 +252,7 @@ export default function AdminPage() {
       showMessage("success", `${selectedReviews.length} avis supprimés !`);
       setSelectedReviews([]);
       fetchReviews();
-      fetchStats();
+      // Stats mises à jour automatiquement via useMemo
     } catch {
       showMessage("error", "Erreur lors de la suppression en masse");
     }
@@ -209,16 +264,151 @@ export default function AdminPage() {
     );
   };
 
-  const getFilteredReviews = () => {
+  // Réinitialiser la page quand on change de filtre ou de recherche
+  useEffect(() => {
+    setReviewsPage(1);
+  }, [filterStatus, searchReviews]);
+
+  useEffect(() => {
+    setNewslettersPage(1);
+  }, [searchNewsletters]);
+
+  useEffect(() => {
+    setRecipesPage(1);
+  }, [searchRecipes]);
+
+  // Réinitialiser les pages quand on change de section
+  useEffect(() => {
+    setReviewsPage(1);
+    setNewslettersPage(1);
+    setRecipesPage(1);
+  }, [activeSection]);
+
+  // Données filtrées et paginées
+  const filteredReviews = useMemo(() => {
+    let filtered = reviews;
+
+    // Filtre par statut
     switch (filterStatus) {
-      case "pending": return reviews.filter((r) => !r.isApproved);
-      case "approved": return reviews.filter((r) => r.isApproved);
-      default: return reviews;
+      case "pending":
+        filtered = filtered.filter((r) => !r.isApproved);
+        break;
+      case "approved":
+        filtered = filtered.filter((r) => r.isApproved);
+        break;
+      default:
+        break;
     }
+
+    // Recherche
+    if (searchReviews) {
+      const search = searchReviews.toLowerCase();
+      filtered = filtered.filter((r) =>
+        r.pseudo?.toLowerCase().includes(search) ||
+        r.content?.toLowerCase().includes(search) ||
+        r.userId?.pseudo?.toLowerCase().includes(search)
+      );
+    }
+
+    // Tri
+    filtered.sort((a, b) => {
+      switch (sortReviews) {
+        case 'date-desc':
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        case 'date-asc':
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        case 'rating-desc':
+          return b.rating - a.rating;
+        case 'rating-asc':
+          return a.rating - b.rating;
+        case 'name-asc':
+          return (a.pseudo || '').localeCompare(b.pseudo || '');
+        case 'name-desc':
+          return (b.pseudo || '').localeCompare(a.pseudo || '');
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [reviews, filterStatus, searchReviews, sortReviews]);
+
+  const filteredNewsletters = useMemo(() => {
+    if (!searchNewsletters) return newsletters;
+
+    const search = searchNewsletters.toLowerCase();
+    return newsletters.filter((n) =>
+      n.title?.toLowerCase().includes(search) ||
+      n.subject?.toLowerCase().includes(search)
+    );
+  }, [newsletters, searchNewsletters]);
+
+  const filteredRecipes = useMemo(() => {
+    let filtered = recipes;
+
+    // Recherche
+    if (searchRecipes) {
+      const search = searchRecipes.toLowerCase();
+      filtered = filtered.filter((r) =>
+        r.title?.toLowerCase().includes(search) ||
+        r.category?.toLowerCase().includes(search) ||
+        r.description?.toLowerCase().includes(search)
+      );
+    }
+
+    // Tri
+    filtered = [...filtered].sort((a, b) => {
+      switch (sortRecipes) {
+        case 'date-desc':
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        case 'date-asc':
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        case 'calories-desc':
+          return (b.nutrition?.calories || 0) - (a.nutrition?.calories || 0);
+        case 'calories-asc':
+          return (a.nutrition?.calories || 0) - (b.nutrition?.calories || 0);
+        case 'views-desc':
+          return (b.views || 0) - (a.views || 0);
+        case 'views-asc':
+          return (a.views || 0) - (b.views || 0);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [recipes, searchRecipes, sortRecipes]);
+
+  const paginatedReviews = useMemo(() => {
+    const startIndex = (reviewsPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredReviews.slice(startIndex, endIndex);
+  }, [filteredReviews, reviewsPage, ITEMS_PER_PAGE]);
+
+  const paginatedNewsletters = useMemo(() => {
+    const startIndex = (newslettersPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return newsletters.slice(startIndex, endIndex);
+  }, [newsletters, newslettersPage, ITEMS_PER_PAGE]);
+
+  const paginatedRecipes = useMemo(() => {
+    const startIndex = (recipesPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return recipes.slice(startIndex, endIndex);
+  }, [recipes, recipesPage, ITEMS_PER_PAGE]);
+
+  const confirmDeleteNewsletter = (id) => {
+    setModalConfig({
+      isOpen: true,
+      title: 'Supprimer la newsletter',
+      message: 'Êtes-vous sûr de vouloir supprimer cette newsletter ? Cette action est irréversible.',
+      confirmText: 'Supprimer',
+      type: 'danger',
+      onConfirm: () => handleDeleteNewsletter(id)
+    });
   };
 
   const handleDeleteNewsletter = async (id) => {
-    if (!confirm("Voulez-vous vraiment supprimer cette newsletter ?")) return;
     try {
       const response = await secureApiCall(`/newsletter-admin/${id}`, { method: "DELETE" });
       const data = await response.json();
@@ -233,8 +423,18 @@ export default function AdminPage() {
     }
   };
 
+  const confirmSendNewsletter = (id, title) => {
+    setModalConfig({
+      isOpen: true,
+      title: 'Envoyer la newsletter',
+      message: `Êtes-vous sûr de vouloir envoyer "${title}" à tous les abonnés actifs ?\n\nCette action est irréversible.`,
+      confirmText: 'Envoyer maintenant',
+      type: 'warning',
+      onConfirm: () => handleSendNow(id, title)
+    });
+  };
+
   const handleSendNow = async (id, title) => {
-    if (!confirm(`Voulez-vous vraiment envoyer "${title}" ?`)) return;
     try {
       setLoading(true);
       const response = await secureApiCall(`/newsletter-admin/${id}/send-now`, { method: "POST" });
@@ -242,7 +442,8 @@ export default function AdminPage() {
       if (data.success) {
         showMessage("success", `Newsletter envoyée à ${data.stats?.successCount || 0} abonnés !`);
         fetchNewsletters();
-        fetchStats();
+        // Refetch stats newsletter au cas où des abonnés se seraient désabonnés
+        fetchNewsletterStats();
       } else {
         showMessage("error", data.message || "Erreur");
       }
@@ -253,8 +454,18 @@ export default function AdminPage() {
     }
   };
 
+  const confirmDeleteRecipe = (id) => {
+    setModalConfig({
+      isOpen: true,
+      title: 'Supprimer la recette',
+      message: 'Êtes-vous sûr de vouloir supprimer cette recette ? Cette action est irréversible.',
+      confirmText: 'Supprimer',
+      type: 'danger',
+      onConfirm: () => handleDeleteRecipe(id)
+    });
+  };
+
   const handleDeleteRecipe = async (id) => {
-    if (!confirm("Voulez-vous vraiment supprimer cette recette ?")) return;
     try {
       const response = await secureApiCall(`/recipes/${id}`, { method: "DELETE" });
       const data = await response.json();
@@ -268,8 +479,6 @@ export default function AdminPage() {
       showMessage("error", "Erreur lors de la suppression");
     }
   };
-
-  const filteredReviews = getFilteredReviews();
 
   return (
     <>
@@ -422,11 +631,31 @@ export default function AdminPage() {
                   <button className={styles.btnSuccess} onClick={handleBulkApprove}>
                     <MdCheckCircle /> Approuver
                   </button>
-                  <button className={styles.btnDanger} onClick={handleBulkDelete}>
+                  <button className={styles.btnDanger} onClick={confirmBulkDelete}>
                     <MdDelete /> Supprimer
                   </button>
                 </div>
               )}
+            </div>
+
+            {/* Search & Sort */}
+            <div className={styles.searchSortWrapper}>
+              <SearchBar
+                placeholder="Rechercher un avis (nom, contenu)..."
+                onSearch={setSearchReviews}
+              />
+              <select
+                className={styles.sortSelect}
+                value={sortReviews}
+                onChange={(e) => setSortReviews(e.target.value)}
+              >
+                <option value="date-desc">Plus récent</option>
+                <option value="date-asc">Plus ancien</option>
+                <option value="rating-desc">Note ⭐ décroissante</option>
+                <option value="rating-asc">Note ⭐ croissante</option>
+                <option value="name-asc">Nom A-Z</option>
+                <option value="name-desc">Nom Z-A</option>
+              </select>
             </div>
 
             {/* Reviews List */}
@@ -438,8 +667,9 @@ export default function AdminPage() {
                 <h3>Aucun avis</h3>
               </div>
             ) : (
-              <div className={styles.reviewsGrid}>
-                {filteredReviews.map((review) => (
+              <>
+                <div className={styles.reviewsGrid}>
+                  {paginatedReviews.map((review) => (
                   <div key={review._id} className={styles.reviewCard}>
                     <div className={styles.reviewHeader}>
                       <input
@@ -468,13 +698,21 @@ export default function AdminPage() {
                           <MdCheckCircle /> Approuver
                         </button>
                       )}
-                      <button className={styles.btnDanger} onClick={() => handleDelete(review._id)}>
+                      <button className={styles.btnDanger} onClick={() => confirmDeleteReview(review._id)}>
                         <MdDelete /> Supprimer
                       </button>
                     </div>
                   </div>
                 ))}
-              </div>
+                </div>
+
+                <Pagination
+                  currentPage={reviewsPage}
+                  totalItems={filteredReviews.length}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={setReviewsPage}
+                />
+              </>
             )}
           </div>
         )}
@@ -488,6 +726,14 @@ export default function AdminPage() {
               </button>
             </div>
 
+            {/* Search Bar */}
+            <div className={styles.searchWrapper}>
+              <SearchBar
+                placeholder="Rechercher une newsletter (titre, sujet)..."
+                onSearch={setSearchNewsletters}
+              />
+            </div>
+
             {loading ? (
               <div className={styles.loading}>Chargement...</div>
             ) : newsletters.length === 0 ? (
@@ -499,8 +745,9 @@ export default function AdminPage() {
                 </button>
               </div>
             ) : (
-              <div className={styles.newslettersGrid}>
-                {newsletters.map((newsletter) => (
+              <>
+                <div className={styles.newslettersGrid}>
+                  {paginatedNewsletters.map((newsletter) => (
                   <div key={newsletter._id} className={styles.newsletterCard}>
                     <div className={styles.newsletterHeader}>
                       <h3>{newsletter.title}</h3>
@@ -528,10 +775,10 @@ export default function AdminPage() {
                       </button>
                       {newsletter.status !== "sent" && (
                         <>
-                          <button className={styles.btnPrimary} onClick={() => handleSendNow(newsletter._id, newsletter.title)} disabled={loading}>
+                          <button className={styles.btnPrimary} onClick={() => confirmSendNewsletter(newsletter._id, newsletter.title)} disabled={loading}>
                             <MdSend /> Envoyer
                           </button>
-                          <button className={styles.btnDanger} onClick={() => handleDeleteNewsletter(newsletter._id)}>
+                          <button className={styles.btnDanger} onClick={() => confirmDeleteNewsletter(newsletter._id)}>
                             <MdDelete /> Supprimer
                           </button>
                         </>
@@ -539,7 +786,15 @@ export default function AdminPage() {
                     </div>
                   </div>
                 ))}
-              </div>
+                </div>
+
+                <Pagination
+                  currentPage={newslettersPage}
+                  totalItems={newsletters.length}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={setNewslettersPage}
+                />
+              </>
             )}
           </div>
         )}
@@ -553,6 +808,26 @@ export default function AdminPage() {
               </button>
             </div>
 
+            {/* Search & Sort */}
+            <div className={styles.searchSortWrapper}>
+              <SearchBar
+                placeholder="Rechercher une recette (titre, catégorie)..."
+                onSearch={setSearchRecipes}
+              />
+              <select
+                className={styles.sortSelect}
+                value={sortRecipes}
+                onChange={(e) => setSortRecipes(e.target.value)}
+              >
+                <option value="date-desc">Plus récent</option>
+                <option value="date-asc">Plus ancien</option>
+                <option value="calories-desc">Calories décroissantes</option>
+                <option value="calories-asc">Calories croissantes</option>
+                <option value="views-desc">Plus vues</option>
+                <option value="views-asc">Moins vues</option>
+              </select>
+            </div>
+
             {loading ? (
               <div className={styles.loading}>Chargement...</div>
             ) : recipes.length === 0 ? (
@@ -564,8 +839,9 @@ export default function AdminPage() {
                 </button>
               </div>
             ) : (
-              <div className={styles.recipesGrid}>
-                {recipes.map((recipe) => (
+              <>
+                <div className={styles.recipesGrid}>
+                  {paginatedRecipes.map((recipe) => (
                   <div key={recipe._id} className={styles.recipeCard}>
                     <div className={styles.recipeImage}>
                       <img src={recipe.image} alt={recipe.title} />
@@ -586,19 +862,39 @@ export default function AdminPage() {
                         <button className={styles.btnSecondary} onClick={() => navigate(`/admin/recipes/${recipe._id}/edit`)}>
                           <MdEdit /> Modifier
                         </button>
-                        <button className={styles.btnDanger} onClick={() => handleDeleteRecipe(recipe._id)}>
+                        <button className={styles.btnDanger} onClick={() => confirmDeleteRecipe(recipe._id)}>
                           <MdDelete /> Supprimer
                         </button>
                       </div>
                     </div>
                   </div>
                 ))}
-              </div>
+                </div>
+
+                <Pagination
+                  currentPage={recipesPage}
+                  totalItems={recipes.length}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={setRecipesPage}
+                />
+              </>
             )}
           </div>
         )}
       </div>
       <Footer />
+
+      {/* Modal de confirmation */}
+      <ConfirmModal
+        isOpen={modalConfig.isOpen}
+        onClose={closeModal}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+        type={modalConfig.type}
+      />
     </>
   );
 }
