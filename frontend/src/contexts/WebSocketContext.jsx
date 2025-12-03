@@ -4,7 +4,7 @@ import { storage } from '../shared/utils/storage';
 
 const WebSocketContext = createContext();
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const BACKEND_URL = import.meta.env.VITE_API_URL || '';
 
 export function WebSocketProvider({ children }) {
   const [socket, setSocket] = useState(null);

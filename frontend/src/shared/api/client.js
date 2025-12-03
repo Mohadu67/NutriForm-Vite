@@ -4,9 +4,9 @@ import storage from "../utils/storage";
 // Protection contre import.meta.env undefined
 const baseURL = (() => {
   try {
-    return import.meta.env?.VITE_API_URL || "/api";
+    return import.meta.env?.VITE_API_URL || "";
   } catch {
-    return "/api";
+    return "";
   }
 })();
 
