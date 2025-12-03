@@ -5,7 +5,7 @@ import { useChat } from "../../contexts/ChatContext";
 import { useWebSocket } from "../../contexts/WebSocketContext";
 import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
 import { storage } from "../../shared/utils/storage";
-import { getConversations } from "../../shared/api/matchChat";
+import { getUnreadCount } from "../../shared/api/matchChat";
 import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
 import UnifiedChatPanel from "../Chat/UnifiedChatPanel.jsx";
@@ -282,9 +282,8 @@ export default function Navbar() {
 
     const updateUnreadCount = async () => {
       try {
-        const { conversations } = await getConversations();
-        const total = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
-        setUnreadCount(total);
+        const { unreadCount: count } = await getUnreadCount();
+        setUnreadCount(count);
       } catch (err) {
         // Erreur silencieuse
       }
