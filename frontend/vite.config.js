@@ -2,7 +2,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import svgr from "vite-plugin-svgr";
-import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig(async ({ mode }) => {
   // lazy/dynamic import of the app logger to avoid executing app code
@@ -84,13 +83,7 @@ export default defineConfig(async ({ mode }) => {
     plugins: [
       react(),
       svgr(),
-      // PWA désactivé - utilise sw.js manuel + manifest.webmanifest manuel
-      ...(mode === 'production' ? [VitePWA({
-        registerType: 'autoUpdate',
-        injectRegister: false,
-        selfDestroying: true, // Ne génère pas de SW
-        manifest: false, // Utilise le manifest.webmanifest manuel dans public/
-      })] : [])
+      // PWA complètement désactivé - utilise sw.js manuel + manifest.webmanifest manuel dans public/
     ],
     optimizeDeps: {
       include: [
