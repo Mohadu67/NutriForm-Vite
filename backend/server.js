@@ -163,9 +163,45 @@ app.use('/api/match-chat', matchChatRoutes);
 app.use('/api/push', pushNotificationRoutes);
 app.use('/api/recipes', recipeRoutes);
 
-app.get('/', (req, res) => {
-  res.send('Bienvenue sur le backend de NutriForm 🚀');
-});
+// Servir les fichiers statiques du frontend (en production)
+const frontendDistPath = path.join(__dirname, '../frontend/dist');
+if (fs.existsSync(frontendDistPath)) {
+  logger.info('📦 Serveur de fichiers statiques activé');
+
+  // Assets statiques (JS, CSS, images, etc.)
+  app.use(express.static(frontendDistPath, {
+    maxAge: '1y',
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, filepath) => {
+      // Cache agressif pour les assets avec hash
+      if (filepath.match(/\.(js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|webp|ico)$/)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    }
+  }));
+
+  // Initialiser et utiliser le SSR middleware
+  const { initSSR, ssrMiddleware } = require('./middleware/ssr.middleware.js');
+
+  // Initialiser le SSR au démarrage
+  initSSR().then((success) => {
+    if (success) {
+      logger.info('✅ SSR activé');
+    } else {
+      logger.warn('⚠️  SSR désactivé, mode SPA uniquement');
+    }
+  });
+
+  // Middleware SSR pour les routes frontend (doit être APRÈS les routes API)
+  app.use(ssrMiddleware());
+
+} else {
+  logger.warn('⚠️  Build frontend non trouvé, serveur API uniquement');
+  app.get('/', (req, res) => {
+    res.send('Bienvenue sur le backend de NutriForm 🚀');
+  });
+}
 
 // Configuration Socket.io pour la messagerie temps réel
 require('./socket/messageSocket')(io);
