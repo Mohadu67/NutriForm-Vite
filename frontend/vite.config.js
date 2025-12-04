@@ -84,14 +84,13 @@ export default defineConfig(async ({ mode }) => {
     plugins: [
       react(),
       svgr(),
-      // Désactiver PWA complètement - utilise sw.js manuel pour les push notifications
+      // PWA avec manifest seulement - utilise sw.js manuel pour les push notifications
       ...(mode === 'production' ? [VitePWA({
         registerType: 'autoUpdate',
         injectRegister: false, // Ne pas auto-register, on le fait manuellement
-        workbox: {
-          // Désactiver la génération automatique du service worker
-          enabled: false
-        },
+        strategies: 'injectManifest',
+        srcDir: 'public',
+        filename: 'sw.js',
         manifest: {
           name: 'Harmonith - Coach Sportif en Ligne',
           short_name: 'Harmonith',
