@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middlewares/auth.middleware');
 const { requirePremium: premium } = require('../middlewares/subscription.middleware');
+const { messageLimiter } = require('../middlewares/messageRateLimit.middleware');
 const {
   getConversations,
   getOrCreateConversation,
@@ -28,8 +29,8 @@ router.get('/unread-count', auth, premium, getUnreadCount);
 // Récupérer ou créer une conversation pour un match
 router.get('/conversation/:matchId', auth, premium, getOrCreateConversation);
 
-// Envoyer un message dans une conversation
-router.post('/:conversationId/messages', auth, premium, sendMessage);
+// Envoyer un message dans une conversation (avec rate limiting strict)
+router.post('/:conversationId/messages', auth, premium, messageLimiter, sendMessage);
 
 // Récupérer les messages d'une conversation
 router.get('/:conversationId/messages', auth, premium, getMessages);
