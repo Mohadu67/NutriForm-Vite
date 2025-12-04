@@ -1,12 +1,10 @@
 import { useEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import IntroOutils from "./IntrOutils";
 import OutilsCards from "./OutilsCards";
 import InfoSection from "./InfoSection";
 import styles from "./Main.module.css";
 
 export default function Main() {
-  const { t } = useTranslation();
   const toolsSectionRef = useRef(null);
 
   const scrollToTools = () => {
@@ -44,7 +42,7 @@ export default function Main() {
             <span className={styles.highlight}>je t'accompagne.</span>
           </h1>
           <p className={styles.heroSubtitle}>
-            {t('home.mainSubtitle')}
+            Des outils précis et une expertise personnalisée pour atteindre tes objectifs fitness.
           </p>
         </div>
         <div className={styles.heroVisual}>
@@ -75,7 +73,7 @@ export default function Main() {
 
       {/* Tools Section */}
       <section ref={toolsSectionRef} className={`${styles.toolsSection} ${styles.fadeIn}`}>
-        <IntroOutils title={t('home.toolsTitle')}>
+        <IntroOutils title="Mes outils">
           <OutilsCards />
         </IntroOutils>
       </section>

@@ -1,13 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { storage } from '../../../../shared/utils/storage';
-import { useTranslation } from "react-i18next";
 import { FaShare } from "react-icons/fa";
 import styles from "./FinSeance.module.css";
 import useSaveSession from "../ExerciceCard/hooks/useSaveSession";
 import ShareModal from "../../../Share/ShareModal";
 
 export default function FinSeance({ items = [], onFinish, sessionData }) {
-  const { t } = useTranslation();
   const { saving, save } = useSaveSession();
   const [done, setDone] = useState(false);
   const [progress, setProgress] = useState({ total: 0, current: 0 });
@@ -19,16 +17,13 @@ export default function FinSeance({ items = [], onFinish, sessionData }) {
 
   const buttonLabel = useMemo(() => {
     if (saving && progress.total > 0) {
-      return t("exercise.finish.saving", {
-        current: progress.current,
-        total: progress.total,
-      });
+      return `Sauvegarde ${progress.current}/${progress.total}...`;
     }
-    if (done) return t("exercise.finish.saved");
+    if (done) return "Séance sauvegardée !";
     return hasItems
-      ? t("exercise.finish.actions.endSession")
-      : t("exercise.finish.actions.finish");
-  }, [saving, progress, done, hasItems, t]);
+      ? "Terminer la séance"
+      : "Terminer";
+  }, [saving, progress, done, hasItems]);
 
   async function handleFinish() {
     setErrors([]);
@@ -65,11 +60,11 @@ export default function FinSeance({ items = [], onFinish, sessionData }) {
   if (done) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.title}>{t("exercise.finish.congratsTitle")}</h2>
+        <h2 className={styles.title}>Bravo !</h2>
         <p className={styles.text}>
           {errors.length === 0
-            ? t("exercise.finish.successMessage")
-            : t("exercise.finish.errorMessage", { count: errors.length })}
+            ? "Ta séance a été sauvegardée avec succès !"
+            : `${errors.length} erreur(s) lors de la sauvegarde`}
         </p>
 
         {savedSession && errors.length === 0 && (

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { storage } from '../../../shared/utils/storage';
-import { useTranslation } from "react-i18next";
 import styles from "./SuivieExo.module.css";
 import SuivieCard from "./ExerciceCard/SuivieCard.jsx";
 import Chrono from "./Chrono/Chrono.jsx";
@@ -33,7 +32,6 @@ function loadSaved(it) {
 
 
 export default function SuivieExo({ sessionName, exercises = [], onBack, onFinish = () => {} }) {
-  const { t } = useTranslation();
   const label = (sessionName && sessionName.trim()) ? sessionName.trim() : "ta séance";
 
   function getPersistedSelection() {
@@ -186,7 +184,7 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onFinis
   return (
     <section className={styles.wrapper}>
             <button type="button" className={styles.titleBackBtn} onClick={() => onBack(Array.isArray(items) ? items : [])}>
-              {t('exercice.previous')}
+              Précédent
             </button>
       <div className={styles.titleRow}>
         <Chrono
