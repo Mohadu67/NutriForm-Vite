@@ -1,6 +1,5 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { storage } from '../../../shared/utils/storage';
-import { useTranslation } from "react-i18next";
 import { mergeById } from "../Shared/selectionUtils";
 import CardChoice, { TYPE_CARDS, EQUIP_CARDS, TYPE_ICONS, EQUIP_ICONS } from "./CardChoice/CardChoice.jsx";
 import { useStepSubtitle, buildFunnyMessage } from "../subtitlePools";
@@ -79,7 +78,6 @@ const MUSCLE_CARDS = [
 ];
 
 export default function DynamiChoice({ onComplete = () => {}, onStepChange, requestedStep, onSearch }) {
-  const { t } = useTranslation();
   const containerRef = useRef(null);
   const [step, setStep] = useState(() => {
     try {
@@ -359,7 +357,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
       <div className={styles.footer}>
         <button type="button" className={styles.prevBtn} onClick={onPrev} disabled={step === 0}>
-          {t('exercice.previous')}
+          Précédent
         </button>
         <button
           type="button"
@@ -367,7 +365,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
           onClick={onNext}
           disabled={step < 3 ? !canNext : false}
         >
-          {step < 3 ? t('exercice.next') : t('exercice.letsgo')}
+          {step < 3 ? 'Suivant' : "C'est parti !"}
         </button>
       </div>
     </section>

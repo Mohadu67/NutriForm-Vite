@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import { storage } from '../../shared/utils/storage';
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
-import { useTranslation } from "react-i18next";
 import styles from "./Newsletter.module.css";
 
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const RECAPTCHA_ENABLED = import.meta.env.VITE_ENABLE_RECAPTCHA !== 'false' && import.meta.env.VITE_ENABLE_RECAPTCHA !== '0';
 
 export default function Newsletter() {
-  const { t } = useTranslation();
   const { executeRecaptcha } = useGoogleReCaptcha();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle");
@@ -31,7 +29,7 @@ export default function Newsletter() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
       setStatus("error");
-      setMessage(t('newsletter.errorInvalidEmail') || "Format d'email invalide. Vérifie ton adresse email.");
+      setMessage("Format d'email invalide. Vérifie ton adresse email.");
       return;
     }
 
@@ -62,7 +60,7 @@ export default function Newsletter() {
 
       if (response.ok) {
         setStatus("success");
-        setMessage(t('newsletter.successMessage'));
+        setMessage("Merci pour ton inscription ! Tu recevras bientôt nos meilleurs conseils.");
         setEmail("");
         storage.set("hideNewsletter", "true");
 
@@ -73,11 +71,11 @@ export default function Newsletter() {
         }, 2000);
       } else {
         setStatus("error");
-        setMessage(data.message || t('newsletter.errorGeneric'));
+        setMessage(data.message || "Une erreur est survenue. Réessaye plus tard.");
       }
     } catch {
       setStatus("error");
-      setMessage(t('newsletter.errorNetwork'));
+      setMessage("Problème de connexion. Vérifie ta connexion internet.");
     }
   };
 
@@ -88,25 +86,25 @@ export default function Newsletter() {
       <div className={styles.container}>
         <div className={styles.content}>
           <div className={styles.textBlock}>
-            <span className={styles.badge}>{t('newsletter.badge')}</span>
+            <span className={styles.badge}>Newsletter</span>
             <h2 className={styles.title}>
-              {t('newsletter.title')}
+              Reste informé de nos nouveautés
             </h2>
             <p className={styles.description}>
-              {t('newsletter.description')}
+              Rejoins notre communauté et reçois nos meilleurs conseils fitness, nutrition et nos nouveaux outils en avant-première.
             </p>
             <div className={styles.features}>
               <div className={styles.feature}>
                 <span className={styles.featureIcon}>✨</span>
-                <span>{t('newsletter.feature1')}</span>
+                <span>Conseils exclusifs chaque semaine</span>
               </div>
               <div className={styles.feature}>
                 <span className={styles.featureIcon}>💡</span>
-                <span>{t('newsletter.feature2')}</span>
+                <span>Programmes d'entraînement personnalisés</span>
               </div>
               <div className={styles.feature}>
                 <span className={styles.featureIcon}>🎁</span>
-                <span>{t('newsletter.feature3')}</span>
+                <span>Accès anticipé aux nouvelles fonctionnalités</span>
               </div>
             </div>
           </div>
@@ -116,12 +114,12 @@ export default function Newsletter() {
               <div className={styles.inputGroup}>
                 <input
                   type="email"
-                  placeholder={t('newsletter.placeholder')}
+                  placeholder="ton@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={styles.input}
                   disabled={status === "loading" || status === "success"}
-                  aria-label={t('newsletter.ariaLabel')}
+                  aria-label="Adresse email pour la newsletter"
                   required
                   pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
                   title="Veuillez entrer une adresse email valide"
@@ -134,9 +132,9 @@ export default function Newsletter() {
                   {status === "loading" ? (
                     <span className={styles.spinner}></span>
                   ) : status === "success" ? (
-                    t('newsletter.buttonSuccess')
+                    "Inscrit !"
                   ) : (
-                    t('newsletter.buttonSubscribe')
+                    "S'inscrire"
                   )}
                 </button>
               </div>
@@ -148,7 +146,7 @@ export default function Newsletter() {
               )}
 
               <p className={styles.privacy}>
-                {t('newsletter.privacy')}
+                Tes données sont protégées. Pas de spam, désinscription facile.
               </p>
             </form>
           </div>

@@ -49,7 +49,7 @@ export default defineConfig(async ({ mode }) => {
             // UI libraries
             'ui-vendor': ['react-bootstrap', 'sonner', 'react-icons'],
             // Utilities
-            'utils': ['axios', 'dompurify', 'i18next', 'react-i18next'],
+            'utils': ['axios', 'dompurify'],
             // Maps
             'leaflet': ['leaflet', 'react-leaflet'],
             // DnD
@@ -100,8 +100,6 @@ export default defineConfig(async ({ mode }) => {
         'axios',
         'leaflet',
         'react-leaflet',
-        'i18next',
-        'react-i18next',
         'dompurify',
         '@dnd-kit/core',
         '@dnd-kit/sortable'

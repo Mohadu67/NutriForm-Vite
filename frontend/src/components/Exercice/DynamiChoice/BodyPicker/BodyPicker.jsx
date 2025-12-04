@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import * as assets from "./figureAssets";
 import cls from "./BodyPicker.module.css";
 import bodySvgMarkup from "./body.svg?raw";
@@ -23,17 +22,16 @@ const EXTRA_LABELS = Object.freeze({
 });
 
 function BodyPicker({ value, onChange, multiple = false }) {
-  const { t } = useTranslation();
   const zoneIdToLabel = useMemo(() => {
     const map = new Map();
     Object.entries(FRONT_ZONE_LABELS || {}).forEach(([id, fallback]) => {
-      map.set(id, t(`exercise.bodyPicker.zones.${id}`, { defaultValue: fallback }));
+      map.set(id, fallback);
     });
     Object.entries(EXTRA_LABELS).forEach(([id, fallback]) => {
-      map.set(id, t(`exercise.bodyPicker.zones.${id}`, { defaultValue: fallback }));
+      map.set(id, fallback);
     });
     return map;
-  }, [t]);
+  }, []);
 
   const VALID_IDS = useMemo(() => {
     const base = new Set((FRONT_ZONE_METADATA || []).map((z) => z.id));
@@ -272,8 +270,8 @@ function BodyPicker({ value, onChange, multiple = false }) {
   }, [syncActive]);
 
   const instructions = multiple
-    ? t("exercise.bodyPicker.instructions.multi")
-    : t("exercise.bodyPicker.instructions.single");
+    ? "Clique sur les zones musculaires que tu veux travailler"
+    : "Clique sur la zone musculaire que tu veux travailler";
 
 
   return (
@@ -283,7 +281,7 @@ function BodyPicker({ value, onChange, multiple = false }) {
           <div
             ref={containerRef}
             className={cls.svg}
-            aria-label={t("exercise.bodyPicker.aria")}
+            aria-label="Sélecteur de zones musculaires"
           />
         </div>
       </div>

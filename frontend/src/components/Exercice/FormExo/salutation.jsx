@@ -1,11 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { storage } from '../../../shared/utils/storage';
-import { useTranslation } from "react-i18next";
 import { secureApiCall, isAuthenticated } from "../../../utils/authService.js";
 import logger from '../../../shared/utils/logger.js';
 
 export default function Salutation({ className = "", seedKey = "static" }) {
-  const { t } = useTranslation();
   const [displayName, setDisplayName] = useState("");
   const phraseRef = useRef("");
 
@@ -52,29 +50,35 @@ export default function Salutation({ className = "", seedKey = "static" }) {
   }, [displayName]);
 
   const phrasePool = useMemo(() => {
-    const key = capitalizedName
-      ? "exercise.salutation.named"
-      : "exercise.salutation.generic";
-    const options = {
-      returnObjects: true,
-    };
-    if (capitalizedName) options.name = capitalizedName;
-    const list = t(key, options);
-    if (Array.isArray(list) && list.length > 0) return list;
-    return [t("exercise.salutation.fallback", { name: capitalizedName })];
-  }, [t, capitalizedName]);
+    if (capitalizedName) {
+      return [
+        `Salut ${capitalizedName} ! Prêt à te surpasser ?`,
+        `Hello ${capitalizedName} ! C'est l'heure de transpirer !`,
+        `Hey ${capitalizedName} ! On y va ?`,
+        `Bienvenue ${capitalizedName} ! Prêt pour cette séance ?`,
+        `Salut ${capitalizedName} ! Donnons tout aujourd'hui !`
+      ];
+    }
+    return [
+      "Prêt à t'entraîner ?",
+      "C'est l'heure de se donner à fond !",
+      "Bienvenue ! Prêt pour cette séance ?",
+      "On y va ? Donnons tout !",
+      "Let's go ! C'est parti !"
+    ];
+  }, [capitalizedName]);
 
   useEffect(() => {
     const pool = Array.isArray(phrasePool) ? phrasePool : [];
     const pick = pool.length
       ? pool[Math.floor(Math.random() * pool.length)]
-      : t("exercise.salutation.fallback", { name: capitalizedName });
+      : (capitalizedName ? `Salut ${capitalizedName} ! Prêt à te surpasser ?` : "Prêt à t'entraîner ?");
     phraseRef.current = pick;
-  }, [seedKey, phrasePool, t, capitalizedName]);
+  }, [seedKey, phrasePool, capitalizedName]);
 
   return (
     <h2 className={className}>
-      {phraseRef.current || t("exercise.salutation.fallback", { name: capitalizedName })}
+      {phraseRef.current || (capitalizedName ? `Salut ${capitalizedName} ! Prêt à te surpasser ?` : "Prêt à t'entraîner ?")}
     </h2>
   );
 }
