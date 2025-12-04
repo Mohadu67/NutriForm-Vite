@@ -5,6 +5,9 @@ const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
 const { notifyNewMessage } = require('../services/pushNotification.service');
 const logger = require('../utils/logger.js');
+const validator = require('validator');
+const xss = require('xss');
+const { encrypt, decrypt } = require('../utils/encryption');
 
 /**
  * Récupérer toutes les conversations de l'utilisateur
@@ -183,9 +186,28 @@ async function sendMessage(req, res) {
     const { content, type = 'text', metadata = {} } = req.body;
     const userId = req.userId;
 
+    // Validation 1: Message non vide
     if (!content || content.trim().length === 0) {
       return res.status(400).json({ error: 'Le message ne peut pas être vide.' });
     }
+
+    // Validation 2: Longueur maximale (5000 caractères)
+    if (content.length > 5000) {
+      return res.status(400).json({ error: 'Le message est trop long (maximum 5000 caractères).' });
+    }
+
+    // Validation 3: Type de message valide
+    const validTypes = ['text', 'location', 'session-invite', 'session-share'];
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({ error: 'Type de message invalide.' });
+    }
+
+    // Sanitization: Nettoyer le contenu HTML/XSS
+    const sanitizedContent = xss(content.trim(), {
+      whiteList: {}, // Aucun tag HTML autorisé
+      stripIgnoreTag: true,
+      stripIgnoreTagBody: ['script', 'style']
+    });
 
     // Récupérer la conversation
     const conversation = await Conversation.findById(conversationId);
@@ -206,6 +228,9 @@ async function sendMessage(req, res) {
     // Identifier le destinataire
     const receiverId = conversation.getOtherParticipant(userId);
 
+    // Chiffrer le contenu du message
+    const encryptedData = encrypt(sanitizedContent);
+
     // Créer le message
     const message = await MatchMessage.create({
       conversationId,
@@ -213,13 +238,17 @@ async function sendMessage(req, res) {
       senderId: userId,
       receiverId,
       type,
-      content: content.trim(),
+      content: encryptedData.encrypted,
+      encryption: {
+        iv: encryptedData.iv,
+        authTag: encryptedData.authTag
+      },
       metadata
     });
 
     // Mettre à jour le lastMessage de la conversation
     conversation.lastMessage = {
-      content: content.trim(),
+      content: sanitizedContent,
       senderId: userId,
       timestamp: message.createdAt
     };
@@ -237,17 +266,23 @@ async function sendMessage(req, res) {
     // Populate le message avec les infos de l'expéditeur
     await message.populate('senderId', 'pseudo prenom');
 
+    // Déchiffrer pour le retour (le message en BDD reste chiffré)
+    const messageObj = message.toObject();
+    if (messageObj.encryption?.iv && messageObj.encryption?.authTag) {
+      messageObj.content = decrypt(messageObj.content, messageObj.encryption.iv, messageObj.encryption.authTag);
+    }
+
     // 🔌 WebSocket: Émettre le nouveau message en temps réel
     const io = req.app.get('io');
     if (io && io.emitNewMessage) {
-      io.emitNewMessage(conversationId, message);
+      io.emitNewMessage(conversationId, messageObj);
       logger.info(`📨 WebSocket: Message émis pour conversation ${conversationId}`);
 
       // Notifier les participants de la mise à jour de la conversation
       io.to(`user:${userId}`).emit('conversation_updated', {
         conversationId,
         lastMessage: {
-          content: content.trim(),
+          content: sanitizedContent,
           senderId: userId,
           timestamp: message.createdAt
         }
@@ -256,7 +291,7 @@ async function sendMessage(req, res) {
       io.to(`user:${receiverId}`).emit('conversation_updated', {
         conversationId,
         lastMessage: {
-          content: content.trim(),
+          content: sanitizedContent,
           senderId: userId,
           timestamp: message.createdAt
         },
@@ -270,12 +305,12 @@ async function sendMessage(req, res) {
       notifyNewMessage(receiverId, {
         senderName: senderUser.pseudo || 'Un utilisateur',
         senderPhoto: senderUser.photo,
-        message: content.trim().substring(0, 100), // Limiter à 100 caractères
+        message: sanitizedContent.substring(0, 100), // Limiter à 100 caractères
         conversationId: conversationId
       }).catch(err => logger.error('Erreur notification message:', err));
     }
 
-    res.status(201).json({ message });
+    res.status(201).json({ message: messageObj });
   } catch (error) {
     logger.error('Erreur sendMessage:', error);
     res.status(500).json({ error: 'Erreur lors de l\'envoi du message.' });
@@ -322,10 +357,25 @@ async function getMessages(req, res) {
       .populate('receiverId', 'pseudo prenom')
       .lean();
 
-    // Inverser pour avoir l'ordre chronologique
-    messages.reverse();
+    // Déchiffrer les messages
+    const decryptedMessages = messages.map(msg => {
+      if (msg.encryption?.iv && msg.encryption?.authTag) {
+        try {
+          msg.content = decrypt(msg.content, msg.encryption.iv, msg.encryption.authTag);
+        } catch (error) {
+          logger.error(`Erreur déchiffrement message ${msg._id}:`, error);
+          msg.content = '[Message chiffré - erreur de déchiffrement]';
+        }
+      }
+      // Ne pas exposer les données de chiffrement au client
+      const { encryption, ...msgWithoutEncryption } = msg;
+      return msgWithoutEncryption;
+    });
 
-    res.status(200).json({ messages });
+    // Inverser pour avoir l'ordre chronologique
+    decryptedMessages.reverse();
+
+    res.status(200).json({ messages: decryptedMessages });
   } catch (error) {
     logger.error('Erreur getMessages:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des messages.' });

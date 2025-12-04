@@ -7,6 +7,7 @@ import {
   isSubscribed
 } from '../../services/notificationService';
 import { storage } from '../../shared/utils/storage';
+import { isAuthenticated } from '../../shared/api/auth';
 import styles from './NotificationPrompt.module.css';
 
 const NotificationPrompt = () => {
@@ -16,12 +17,17 @@ const NotificationPrompt = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
+  const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
-    checkNotificationStatus();
+    checkAuthAndNotificationStatus();
   }, []);
 
-  const checkNotificationStatus = async () => {
+  const checkAuthAndNotificationStatus = async () => {
+    // Vérifier l'authentification
+    const auth = await isAuthenticated();
+    setIsAuth(auth);
+
     // Vérifier le support
     const { supported: isSupported } = await initializeNotifications();
     setSupported(isSupported);
@@ -37,14 +43,20 @@ const NotificationPrompt = () => {
     const isSub = await isSubscribed();
     setSubscribed(isSub);
 
-    // Afficher le prompt si supporté, pas encore abonné, et permission pas refusée
-    if (isSupported && !isSub && Notification.permission !== 'denied') {
+    // Afficher le prompt si supporté, authentifié, pas encore abonné, et permission pas refusée
+    if (isSupported && auth && !isSub && Notification.permission !== 'denied') {
       // Afficher après 3 secondes pour ne pas déranger immédiatement
       setTimeout(() => setShowPrompt(true), 3000);
     }
   };
 
   const handleEnable = async () => {
+    // Vérifier l'authentification avant de s'abonner
+    if (!isAuth) {
+      setError('Vous devez être connecté pour activer les notifications');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 

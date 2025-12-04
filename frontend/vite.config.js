@@ -84,32 +84,12 @@ export default defineConfig(async ({ mode }) => {
     plugins: [
       react(),
       svgr(),
-      // Désactiver PWA en mode dev pour améliorer les performances
+      // Désactiver PWA complètement - utilise sw.js manuel pour les push notifications
       ...(mode === 'production' ? [VitePWA({
         registerType: 'autoUpdate',
-        injectRegister: 'auto',
+        injectRegister: false, // Ne pas auto-register, on le fait manuellement
         workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}'],
-          globIgnores: ['**/assets/icons/**'],
-          cleanupOutdatedCaches: true,
-          skipWaiting: true,
-          clientsClaim: true,
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/harmonith\.fr\/.*/i,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'harmonith-cache',
-                expiration: {
-                  maxEntries: 100,
-                  maxAgeSeconds: 60 * 60 * 24 * 7 // 7 jours
-                },
-                networkTimeoutSeconds: 10
-              }
-            }
-          ]
-        },
-        devOptions: {
+          // Désactiver la génération automatique du service worker
           enabled: false
         },
         manifest: {
