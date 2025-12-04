@@ -10,7 +10,6 @@ import { ChatProvider } from "./contexts/ChatContext.jsx";
 import { WebSocketProvider } from "./contexts/WebSocketContext.jsx";
 import { initializeNotifications } from "./services/notificationService.js";
 import MessageNotificationManager from "./components/Chat/MessageNotificationManager.jsx";
-import './i18n/config';
 
 // Pages principales - chargées immédiatement (pour SEO et performance initiale)
 import Home from "./pages/Accueil/Home.jsx";
