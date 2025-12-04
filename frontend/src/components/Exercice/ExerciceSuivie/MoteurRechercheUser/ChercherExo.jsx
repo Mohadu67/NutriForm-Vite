@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { storage } from '../../../../shared/utils/storage';
-import { useTranslation } from "react-i18next";
 import Button from "../../../BoutonAction/BoutonAction";
 import styles from "./ChercherExo.module.css";
 import { idOf } from "../../Shared/idOf";
@@ -13,7 +12,6 @@ export default function ChercherExo({
   onConfirm = () => {},
   onCancel,
 }) {
-  const { t } = useTranslation();
   const [all, setAll] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -125,10 +123,10 @@ export default function ChercherExo({
   return (
     <section className={styles.container}>
       <header className={styles.header}>
-        <h3 style={{ margin: 0 }}>{t('exercice.addExercises')}</h3>
+        <h3 style={{ margin: 0 }}>Ajouter des exercices</h3>
         <div className={styles.headerActions}>
           {onCancel && (
-            <Button className={styles.btnAnnule} type="button" onClick={onCancel}>{t('exercice.cancel')}</Button>
+            <Button className={styles.btnAnnule} type="button" onClick={onCancel}>Annuler</Button>
           )}
         </div>
       </header>
@@ -136,7 +134,7 @@ export default function ChercherExo({
       <div className={styles.filters}>
         <input
           type="search"
-          placeholder={t('exercice.searchByName')}
+          placeholder="Rechercher par nom..."
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => {
@@ -154,21 +152,21 @@ export default function ChercherExo({
           <select value={type} onChange={(e) => setType(e.target.value)} className={styles.select}>
             {options.type.map((v, i) => (
               <option key={i} value={v}>
-                {v === "" ? t('exercice.allTypes') : v === "etirement" ? "étirement" : v}
+                {v === "" ? "Tous les types" : v === "etirement" ? "étirement" : v}
               </option>
             ))}
           </select>
           <select value={muscle} onChange={(e) => setMuscle(e.target.value)} className={styles.select}>
             {options.muscle.map((v, i) => (
               <option key={i} value={v}>
-                {v === "" ? t('exercice.allMuscles') : v === "epaules" ? "épaules" : v}
+                {v === "" ? "Tous les muscles" : v === "epaules" ? "épaules" : v}
               </option>
             ))}
           </select>
           <select value={equip} onChange={(e) => setEquip(e.target.value)} className={styles.select}>
             {options.equip.map((v, i) => (
               <option key={i} value={v}>
-                {v === "" ? t('exercice.allEquipment') : v.replace(/-/g, " ")}
+                {v === "" ? "Tout l'équipement" : v.replace(/-/g, " ")}
               </option>
             ))}
           </select>
@@ -207,7 +205,7 @@ export default function ChercherExo({
                       <span>{ex.name || ex.title}</span>
                       {isPre && (
                         <span className={styles.badge}>
-                          {t('exercice.alreadyAdded')}
+                          Déjà ajouté
                         </span>
                       )}
                     </div>
@@ -218,14 +216,14 @@ export default function ChercherExo({
             );
           })}
           {filtered.length === 0 && (
-            <li className={styles.empty}>{t('exercice.noResults')}</li>
+            <li className={styles.empty}>Aucun résultat trouvé</li>
           )}
         </ul>
       )}
 
       <div className={styles.footer}>
         <Button type="button" onClick={handleConfirm} disabled={selectedIds.size === 0}>
-          {t('exercice.add')} {selectedIds.size > 0 ? `(${selectedIds.size})` : ""}
+          Ajouter {selectedIds.size > 0 ? `(${selectedIds.size})` : ""}
         </Button>
       </div>
     </section>
