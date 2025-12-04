@@ -1,4 +1,5 @@
 import { secureApiCall } from '../utils/authService';
+import client from '../shared/api/client';
 
 let swRegistration = null;
 
@@ -11,11 +12,14 @@ export async function initializeNotifications() {
   }
 
   try {
-    // Enregistrer le service worker
-    swRegistration = await navigator.serviceWorker.register('/sw.js');
+    // Enregistrer le service worker manuel pour les push notifications
+    swRegistration = await navigator.serviceWorker.register('/sw.js', {
+      scope: '/'
+    });
 
     return { supported: true, registration: swRegistration };
   } catch (error) {
+    console.error('Erreur enregistrement SW:', error);
     return { supported: false, error };
   }
 }
@@ -51,10 +55,9 @@ export async function subscribeToNotifications() {
       throw new Error('Permission refusée');
     }
 
-    // Récupérer la clé publique VAPID
-    const response = await secureApiCall('/push/vapid-public-key');
-    const data = await response.json();
-    const publicKey = data.publicKey;
+    // Récupérer la clé publique VAPID (endpoint public, pas besoin d'auth)
+    const vapidResponse = await client.get('/push/vapid-public-key');
+    const publicKey = vapidResponse.data.publicKey;
 
     if (!publicKey) {
       throw new Error('Clé VAPID manquante');
@@ -66,7 +69,7 @@ export async function subscribeToNotifications() {
       applicationServerKey: urlBase64ToUint8Array(publicKey)
     });
 
-    // Envoyer la subscription au backend
+    // Envoyer la subscription au backend (nécessite auth)
     const subscribeResponse = await secureApiCall('/push/subscribe', {
       method: 'POST',
       body: JSON.stringify({

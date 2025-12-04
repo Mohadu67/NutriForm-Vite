@@ -38,11 +38,23 @@ const matchMessageSchema = new mongoose.Schema(
       default: 'text'
     },
 
-    // Contenu du message
+    // Contenu du message (chiffré)
     content: {
       type: String,
       required: true,
-      maxlength: 2000
+      maxlength: 10000 // Plus long car chiffré
+    },
+
+    // Données de chiffrement (pour AES-256-GCM)
+    encryption: {
+      iv: {
+        type: String,
+        required: false // Optionnel pour compatibilité avec anciens messages
+      },
+      authTag: {
+        type: String,
+        required: false
+      }
     },
 
     // Données supplémentaires selon le type

@@ -1,0 +1,25 @@
+const rateLimit = require('express-rate-limit');
+
+/**
+ * Rate limiter strict pour l'envoi de messages
+ * Limite: 30 messages par minute par utilisateur
+ */
+const messageLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30, // Maximum 30 messages par minute
+  message: 'Trop de messages envoyés. Veuillez patienter avant de réessayer.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Utiliser l'userId au lieu de l'IP pour un rate limit par utilisateur
+  keyGenerator: (req) => {
+    return req.userId ? req.userId.toString() : req.ip;
+  },
+  handler: (req, res) => {
+    res.status(429).json({
+      error: 'Trop de messages envoyés. Veuillez patienter avant de réessayer.',
+      retryAfter: 60
+    });
+  }
+});
+
+module.exports = { messageLimiter };
