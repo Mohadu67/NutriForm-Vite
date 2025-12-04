@@ -84,46 +84,12 @@ export default defineConfig(async ({ mode }) => {
     plugins: [
       react(),
       svgr(),
-      // PWA avec manifest seulement - utilise sw.js manuel pour les push notifications
+      // PWA désactivé - utilise sw.js manuel + manifest.webmanifest manuel
       ...(mode === 'production' ? [VitePWA({
         registerType: 'autoUpdate',
-        injectRegister: false, // Ne pas auto-register, on le fait manuellement
-        strategies: 'injectManifest',
-        srcDir: 'public',
-        filename: 'sw.js',
-        manifest: {
-          name: 'Harmonith - Coach Sportif en Ligne',
-          short_name: 'Harmonith',
-          description: 'Calculateur IMC, calories et programme d\'entraînement personnalisé',
-          theme_color: '#B5EAD7',
-          background_color: '#F7F6F2',
-          display: 'standalone',
-          icons: [
-            {
-              src: '/favicon.png',
-              sizes: '192x192',
-              type: 'image/png',
-              purpose: 'any'
-            },
-            {
-              src: '/favicon.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any'
-            },
-            {
-              src: '/assets/icons/apple-touch-icon.png',
-              sizes: '180x180',
-              type: 'image/png'
-            },
-            {
-              src: '/logo.svg',
-              sizes: 'any',
-              type: 'image/svg+xml',
-              purpose: 'any maskable'
-            }
-          ]
-        }
+        injectRegister: false,
+        selfDestroying: true, // Ne génère pas de SW
+        manifest: false, // Utilise le manifest.webmanifest manuel dans public/
       })] : [])
     ],
     optimizeDeps: {
