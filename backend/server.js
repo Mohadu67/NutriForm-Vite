@@ -90,7 +90,15 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
+      imgSrc: [
+        "'self'",
+        "data:",
+        "https:",
+        "https://res.cloudinary.com",
+        "https://images.unsplash.com",
+        "https://jow.fr",
+        "https://cdn.aistoucuisine.com"
+      ],
       connectSrc: ["'self'"],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
