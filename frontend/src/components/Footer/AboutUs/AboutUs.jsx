@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import { useTranslation } from "react-i18next";
 import styles from "./AboutUs.module.css";
 import {
   DumbbellIcon,
@@ -59,7 +58,6 @@ const resolveLocaleContent = (data, language) => {
 };
 
 export default function AboutUs() {
-  const { i18n } = useTranslation();
   const [rawData, setRawData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -85,8 +83,8 @@ export default function AboutUs() {
 
   const content = useMemo(() => {
     if (!rawData) return null;
-    return resolveLocaleContent(rawData, i18n.language);
-  }, [rawData, i18n.language]);
+    return resolveLocaleContent(rawData, 'fr');
+  }, [rawData]);
 
   if (loading) return null;
   if (!content) return null;

@@ -1,5 +1,3 @@
-
-import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import styles from "./Main.module.css";
 
@@ -55,9 +53,9 @@ const primaryTools = [
   {
     id: "imc",
     href: "/outils?tool=imc",
-    titleKey: "homeTools.imc.title",
-    descriptionKey: "homeTools.imc.description",
-    ctaKey: "homeTools.imc.cta",
+    title: "Calculateur IMC",
+    description: "Calcule ton indice de masse corporelle et découvre ta zone santé",
+    cta: "Calculer mon IMC",
     icon: <IconImc />,
     accent: "#b8ddd1",
     accentSoft: "#9ec9bd",
@@ -65,9 +63,9 @@ const primaryTools = [
   {
     id: "calories",
     href: "/outils?tool=cal",
-    titleKey: "homeTools.calories.title",
-    descriptionKey: "homeTools.calories.description",
-    ctaKey: "homeTools.calories.cta",
+    title: "Besoins Caloriques",
+    description: "Estime tes besoins quotidiens pour atteindre tes objectifs",
+    cta: "Calculer mes besoins",
     icon: <IconCalories />,
     accent: "#f7b186",
     accentSoft: "#f39c6e",
@@ -75,9 +73,9 @@ const primaryTools = [
   {
     id: "rm",
     href: "/outils?tool=rm",
-    titleKey: "homeTools.rm.title",
-    descriptionKey: "homeTools.rm.description",
-    ctaKey: "homeTools.rm.cta",
+    title: "Calculateur 1RM",
+    description: "Détermine ta charge maximale pour optimiser tes entraînements",
+    cta: "Calculer mon 1RM",
     icon: <IconRM />,
     accent: "#b8ddd1",
     accentSoft: "#f7b186",
@@ -87,15 +85,13 @@ const primaryTools = [
 const upcomingTools = [
   {
     id: "fc",
-    titleKey: "homeTools.heart.title",
-    descriptionKey: "homeTools.heart.description",
+    title: "Zones de Fréquence Cardiaque",
+    description: "Optimise tes entraînements cardio selon ta fréquence cardiaque",
     icon: <IconHeart />,
   },
 ];
 
 export default function OutilsCards() {
-  const { t } = useTranslation();
-
   return (
     <div className={styles.toolsWrapper}>
       <div className={styles.primaryGrid}>
@@ -108,26 +104,26 @@ export default function OutilsCards() {
               "--card-accent": tool.accent,
               "--card-accent-soft": tool.accentSoft,
             }}
-            aria-label={t(tool.titleKey)}
+            aria-label={tool.title}
           >
             <span className={styles.iconBadge}>{tool.icon}</span>
-            <h3 className={styles.cardTitle}>{t(tool.titleKey)}</h3>
-            <p className={styles.cardDescription}>{t(tool.descriptionKey)}</p>
-            <span className={styles.cardCta}>{t(tool.ctaKey)}</span>
+            <h3 className={styles.cardTitle}>{tool.title}</h3>
+            <p className={styles.cardDescription}>{tool.description}</p>
+            <span className={styles.cardCta}>{tool.cta}</span>
           </Link>
         ))}
       </div>
 
-      <div className={styles.secondaryGrid} aria-label={t("homeTools.upcomingLabel")}
+      <div className={styles.secondaryGrid} aria-label="Outils à venir"
       >
         {upcomingTools.map((tool) => (
           <div key={tool.id} className={styles.secondaryCard}>
             <span className={styles.iconBadgeMuted}>{tool.icon}</span>
             <div className={styles.secondaryContent}>
-              <h4 className={styles.secondaryTitle}>{t(tool.titleKey)}</h4>
-              <p className={styles.secondaryDescription}>{t(tool.descriptionKey)}</p>
+              <h4 className={styles.secondaryTitle}>{tool.title}</h4>
+              <p className={styles.secondaryDescription}>{tool.description}</p>
             </div>
-            <span className={styles.soonPill}>{t("homeTools.badgeSoon")}</span>
+            <span className={styles.soonPill}>Bientôt</span>
           </div>
         ))}
       </div>
