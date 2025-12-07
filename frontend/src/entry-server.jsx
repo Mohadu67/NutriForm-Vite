@@ -6,8 +6,6 @@ import { lazy, Suspense } from 'react';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary.jsx';
 import CanonicalLink from './components/CanonicalLink/CanonicalLink.jsx';
 import LoadingSpinner from './components/Shared/LoadingSpinner.jsx';
-// Ne pas charger i18n côté serveur pour éviter les erreurs avec browser detector
-// import './i18n/config';
 
 // Les polyfills sont gérés par jsdom dans le middleware backend
 // Pas besoin de les redéfinir ici

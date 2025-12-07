@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import { useChat } from "../../contexts/ChatContext";
 import { useWebSocket } from "../../contexts/WebSocketContext";
 import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
@@ -29,7 +28,6 @@ import {
 } from "./NavIcons";
 
 export default function Navbar() {
-  const { t, i18n } = useTranslation();
   const { isChatOpen, chatView, activeConversation, openChat, closeChat, backToHistory } = useChat();
   const { on, isConnected } = useWebSocket();
   const location = useLocation();
@@ -42,6 +40,13 @@ export default function Navbar() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState('login');
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const [currentLanguage, setCurrentLanguage] = useState(() => {
+    try {
+      return storage.get('language') || 'fr';
+    } catch {
+      return 'fr';
+    }
+  });
   const [langExpanded, setLangExpanded] = useState(false);
   const [currentView, setCurrentView] = useState('navigation'); // Pour mobile: 'navigation' ou 'history'
   const [unreadCount, setUnreadCount] = useState(0);
@@ -117,9 +122,9 @@ export default function Navbar() {
 
   // Change language
   const changeLanguage = useCallback((lng) => {
-    i18n.changeLanguage(lng);
+    setCurrentLanguage(lng);
     storage.set('language', lng);
-  }, [i18n]);
+  }, []);
 
   // Initialize dark mode
   useEffect(() => {
@@ -333,7 +338,7 @@ export default function Navbar() {
       icon: <HomeIcon size={20} />
     },
     {
-      label: t('nav.exercises'),
+      label: "Exercices",
       path: "/exo",
       icon: <DumbbellIcon size={20} />
     },
@@ -344,7 +349,7 @@ export default function Navbar() {
         icon: <DashboardIcon size={20} />
       }
     ] : [])
-  ], [t, isLoggedIn]);
+  ], [isLoggedIn]);
 
   // Secondary navigation links (in expanded menu) - Les moins importants
   const secondaryLinks = useMemo(() => {
@@ -358,11 +363,11 @@ export default function Navbar() {
         }
       ] : []),
       { label: 'Recettes', path: "/recettes", icon: <UtensilsIcon size={28} /> },
-      { label: t('nav.tools'), path: "/outils", icon: <ToolsIcon size={28} /> },
-      { label: t('nav.about'), path: "/about", icon: <InfoIcon size={28} /> },
+      { label: "Outils", path: "/outils", icon: <ToolsIcon size={28} /> },
+      { label: "À propos", path: "/about", icon: <InfoIcon size={28} /> },
       { label: 'FAQ', path: "/contact", icon: <HelpCircleIcon size={28} /> }
     ];
-  }, [t, isLoggedIn, isPremium]);
+  }, [isLoggedIn, isPremium]);
 
   // Close menu handler
   const closeMenu = useCallback(() => {
@@ -533,9 +538,9 @@ export default function Navbar() {
                           <button
                             key={lng}
                             onClick={() => changeLanguage(lng)}
-                            className={`${styles.langBtn} ${i18n.language === lng ? styles.langActive : ''}`}
+                            className={`${styles.langBtn} ${currentLanguage === lng ? styles.langActive : ''}`}
                             aria-label={`Changer la langue en ${lng.toUpperCase()}`}
-                            aria-pressed={i18n.language === lng}
+                            aria-pressed={currentLanguage === lng}
                           >
                             {lng.toUpperCase()}
                           </button>
@@ -649,7 +654,7 @@ export default function Navbar() {
                     title="Changer de langue"
                     aria-label="Change language"
                   >
-                    {i18n.language.toUpperCase()}
+                    {currentLanguage.toUpperCase()}
                   </button>
                 ) : (
                   ['fr', 'en', 'de', 'es'].map(lng => (
@@ -659,7 +664,7 @@ export default function Navbar() {
                         changeLanguage(lng);
                         setLangExpanded(false);
                       }}
-                      className={`${styles.langBtnDock} ${i18n.language === lng ? styles.langActive : ''}`}
+                      className={`${styles.langBtnDock} ${currentLanguage === lng ? styles.langActive : ''}`}
                       title={lng.toUpperCase()}
                       aria-label={`Switch to ${lng.toUpperCase()}`}
                     >
@@ -733,7 +738,7 @@ export default function Navbar() {
                   if (!link.isAction) e.preventDefault();
                   link.onClick ? link.onClick() : navigate(link.path);
                 }}
-                title={link.label || t('nav.home')}
+                title={link.label || "Accueil"}
               >
                 <span className={styles.dockIcon}>{link.icon}</span>
                 {link.label && <span className={styles.dockLabel}>{link.label}</span>}
