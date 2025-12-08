@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import {
   getDifficultyClass,
   getCycleTypeLabel,
@@ -17,8 +16,6 @@ import {
 } from '../ProgramIcons';
 
 export default function ProgramPreview({ program, onStart, onBack }) {
-  const { t } = useTranslation();
-
   const totalCycles = program.cycles?.length || 0;
   const totalExercises = program.cycles?.filter(c => c.type === 'exercise').length || 0;
 

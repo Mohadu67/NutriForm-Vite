@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import NavBar from '../../components/NavBar/NavBar';
+import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import ProgramBrowser from '../../components/Programs/ProgramBrowser/ProgramBrowser';
 import ProgramPreview from '../../components/Programs/ProgramPreview/ProgramPreview';
 import ProgramRunner from '../../components/Programs/ProgramRunner/ProgramRunner';
-import { storage } from '../../shared/utils/storage';
 import { secureApiCall, isAuthenticated } from '../../utils/authService';
 import { getSubscriptionStatus } from '../../shared/api/subscription';
 import logger from '../../shared/utils/logger';
+import { retryApiCall, saveToLocalStorage } from '../../utils/apiRetry';
 import styles from './Programs.module.css';
 
 export default function Programs() {
-  const { t } = useTranslation();
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [viewMode, setViewMode] = useState('browse'); // 'browse', 'preview', 'running', 'create'
   const [isPremium, setIsPremium] = useState(false);
@@ -63,35 +61,69 @@ export default function Programs() {
     // Essayer de sauvegarder la session (si connecté, Premium et programme MongoDB)
     if (isMongoId) {
       setSaveStatus('saving');
+
       try {
-        const response = await secureApiCall('/programs/' + result.programId + '/start', {
-          method: 'POST',
-        });
+        // Utiliser retryApiCall avec exponential backoff
+        await retryApiCall(
+          async () => {
+            const response = await secureApiCall('/programs/' + result.programId + '/start', {
+              method: 'POST',
+            });
 
-        if (response.ok) {
-          const { session } = await response.json();
-          logger.info('Session créée:', session);
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
 
-          // Compléter la session
-          await secureApiCall('/programs/session/' + session._id + '/complete', {
-            method: 'PATCH',
-            body: JSON.stringify({
-              cyclesCompleted: result.cyclesCompleted,
-              durationSec: result.durationSec,
-              calories: result.estimatedCalories,
-            }),
-          });
+            const { session } = await response.json();
+            logger.info('Session créée:', session);
 
-          logger.info('Session sauvegardée avec succès');
-          setSaveStatus('saved');
-        } else {
-          // Non connecté ou non Premium - pas de sauvegarde
-          logger.info('Session non sauvegardée (non connecté ou non Premium)');
-          setSaveStatus('not_saved');
-        }
+            // Compléter la session
+            const completeResponse = await secureApiCall(
+              '/programs/session/' + session._id + '/complete',
+              {
+                method: 'PATCH',
+                body: JSON.stringify({
+                  cyclesCompleted: result.cyclesCompleted,
+                  durationSec: result.durationSec,
+                  calories: result.estimatedCalories,
+                }),
+              }
+            );
+
+            if (!completeResponse.ok) {
+              throw new Error(`HTTP ${completeResponse.status}`);
+            }
+
+            return { success: true };
+          },
+          {
+            maxRetries: 3,
+            delayMs: 1000,
+            onRetry: (attempt, max) => {
+              logger.info(`Tentative ${attempt}/${max} de sauvegarde...`);
+            },
+          }
+        );
+
+        logger.info('Session sauvegardée avec succès');
+        setSaveStatus('saved');
       } catch (error) {
-        logger.error('Erreur lors de la sauvegarde:', error);
-        setSaveStatus('error');
+        logger.error('Erreur lors de la sauvegarde après plusieurs tentatives:', error);
+
+        // Sauvegarder en localStorage en fallback
+        if (isPremium && isAuthenticated()) {
+          saveToLocalStorage('pending_program_sessions', {
+            programId: result.programId,
+            programName: result.programName,
+            cyclesCompleted: result.cyclesCompleted,
+            durationSec: result.durationSec,
+            calories: result.estimatedCalories,
+          });
+          logger.info('Session sauvegardée localement pour synchronisation ultérieure');
+          setSaveStatus('saved_locally');
+        } else {
+          setSaveStatus('error');
+        }
       }
     } else {
       // Programme JSON - pas de sauvegarde backend
@@ -120,7 +152,7 @@ export default function Programs() {
 
   return (
     <>
-      <NavBar />
+      <Navbar />
       <div className={styles.page}>
         <div className={styles.container}>
           {viewMode === 'browse' && (
