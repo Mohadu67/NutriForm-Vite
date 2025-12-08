@@ -83,6 +83,7 @@ exports.login = async (req, res) => {
       httpOnly: true,
       secure: isProduction, // true en prod (HTTPS)
       sameSite: 'lax', // 'lax' fonctionne avec même domaine racine
+      domain: isProduction ? '.harmonith.fr' : undefined, // Partage entre sous-domaines
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
     });
@@ -296,6 +297,7 @@ exports.logout = async (req, res) => {
       httpOnly: true,
       secure: isProduction,
       sameSite: 'lax',
+      domain: isProduction ? '.harmonith.fr' : undefined,
       path: '/',
     });
 
