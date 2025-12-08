@@ -22,6 +22,7 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   const timerRef = useRef(null);
+  const transitionRef = useRef(null);
   const audioRef = useRef(null);
 
   const cycles = program?.cycles || [];
@@ -47,49 +48,54 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
     return 0;
   };
 
-  // Initialiser le timer au changement de cycle
+  // Timer unifié - gère initialisation, décompte et transition
   useEffect(() => {
+    // Initialiser le timer au changement de cycle
     if (currentCycle) {
       const duration = getCycleDuration(currentCycle);
       setTimeRemaining(duration);
+      // Nettoyer toute transition en cours
+      if (transitionRef.current) {
+        clearTimeout(transitionRef.current);
+        transitionRef.current = null;
+      }
     }
-  }, [currentCycleIndex]);
 
-  // Timer unifié - gère uniquement le décompte
-  useEffect(() => {
+    // Ne pas démarrer le timer si pausé ou terminé
     if (isPaused || isFinished) {
       return;
     }
 
+    // Timer principal
     const interval = setInterval(() => {
       setTotalElapsedTime((prev) => prev + 1);
 
       setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          // Temps écoulé, passer au cycle suivant
+        // Si temps écoulé, déclencher transition après 800ms (une seule fois)
+        if (prev <= 1 && !transitionRef.current) {
+          transitionRef.current = setTimeout(() => {
+            transitionRef.current = null;
+            if (currentCycleIndex < cycles.length - 1) {
+              setCurrentCycleIndex((prevIndex) => prevIndex + 1);
+            } else {
+              handleFinish();
+            }
+          }, 800);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [isPaused, isFinished, currentCycleIndex]);
-
-  // Gérer la transition vers le cycle suivant
-  useEffect(() => {
-    if (timeRemaining === 0 && !isPaused && !isFinished && currentCycle) {
-      const timeout = setTimeout(() => {
-        if (currentCycleIndex < cycles.length - 1) {
-          setCurrentCycleIndex((prev) => prev + 1);
-        } else {
-          handleFinish();
-        }
-      }, 800);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [timeRemaining, isPaused, isFinished, currentCycleIndex, cycles.length]);
+    return () => {
+      clearInterval(interval);
+      // Nettoyer transition au démontage
+      if (transitionRef.current) {
+        clearTimeout(transitionRef.current);
+        transitionRef.current = null;
+      }
+    };
+  }, [isPaused, isFinished, currentCycleIndex, cycles.length, currentCycle]);
 
   // Sons d'alerte
   useEffect(() => {

@@ -69,8 +69,15 @@ export default function Programs() {
         // Utiliser retryApiCall avec exponential backoff
         await retryApiCall(
           async () => {
-            const response = await secureApiCall('/programs/' + result.programId + '/start', {
+            // Utiliser la nouvelle route record-completion qui crée directement une session terminée
+            const response = await secureApiCall('/programs/' + result.programId + '/record-completion', {
               method: 'POST',
+              body: JSON.stringify({
+                cyclesCompleted: result.cyclesCompleted,
+                durationSec: result.durationSec,
+                calories: result.estimatedCalories,
+                entries: [] // Optionnel : détails des cycles si disponibles
+              }),
             });
 
             if (!response.ok) {
@@ -78,24 +85,7 @@ export default function Programs() {
             }
 
             const { session } = await response.json();
-            logger.info('Session créée:', session);
-
-            // Compléter la session
-            const completeResponse = await secureApiCall(
-              '/programs/session/' + session._id + '/complete',
-              {
-                method: 'PATCH',
-                body: JSON.stringify({
-                  cyclesCompleted: result.cyclesCompleted,
-                  durationSec: result.durationSec,
-                  calories: result.estimatedCalories,
-                }),
-              }
-            );
-
-            if (!completeResponse.ok) {
-              throw new Error(`HTTP ${completeResponse.status}`);
-            }
+            logger.info('Session enregistrée:', session);
 
             return { success: true };
           },
