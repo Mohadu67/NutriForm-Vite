@@ -28,6 +28,13 @@ const router = express.Router();
 const authMiddleware = require("../middlewares/auth.middleware");
 const adminMiddleware = require("../middlewares/admin.middleware");
 const { requirePremium } = require("../middlewares/subscription.middleware");
+const {
+  createProgramLimiter,
+  proposeProgramLimiter,
+  rateProgramLimiter,
+  favoriteLimiter,
+  modifyProgramLimiter
+} = require("../middlewares/programRateLimit.middleware");
 
 // Routes publiques (accessibles sans authentification)
 router.get("/public", getPublicPrograms);
@@ -49,18 +56,18 @@ router.post("/admin/:id/reject", authMiddleware, adminMiddleware, rejectProgram)
 // Routes de session (Premium)
 router.patch("/session/:sessionId/complete", authMiddleware, requirePremium, completeProgram);
 
-// Routes avec paramètres dynamiques Premium
-router.post("/:id/propose", authMiddleware, requirePremium, proposeToPublic);
+// Routes avec paramètres dynamiques Premium (avec rate limiting)
+router.post("/:id/propose", authMiddleware, requirePremium, proposeProgramLimiter, proposeToPublic);
 router.post("/:id/start", authMiddleware, requirePremium, startProgram);
 router.post("/:id/record-completion", authMiddleware, requirePremium, recordCompletedSession);
-router.post("/:id/rate", authMiddleware, requirePremium, rateProgram);
-router.post("/:id/favorite", authMiddleware, requirePremium, addToFavorites);
-router.delete("/:id/favorite", authMiddleware, requirePremium, removeFromFavorites);
+router.post("/:id/rate", authMiddleware, requirePremium, rateProgramLimiter, rateProgram);
+router.post("/:id/favorite", authMiddleware, requirePremium, favoriteLimiter, addToFavorites);
+router.delete("/:id/favorite", authMiddleware, requirePremium, favoriteLimiter, removeFromFavorites);
 
-// Routes CRUD basiques (Premium)
-router.post("/", authMiddleware, requirePremium, createProgram);
-router.patch("/:id", authMiddleware, requirePremium, updateProgram);
-router.delete("/:id", authMiddleware, requirePremium, deleteProgram);
+// Routes CRUD basiques (Premium avec rate limiting)
+router.post("/", authMiddleware, requirePremium, createProgramLimiter, createProgram);
+router.patch("/:id", authMiddleware, requirePremium, modifyProgramLimiter, updateProgram);
+router.delete("/:id", authMiddleware, requirePremium, modifyProgramLimiter, deleteProgram);
 
 // Route /:id en DERNIER (publique, match tout ce qui n'a pas été matché avant)
 router.get("/:id", getProgramById);
