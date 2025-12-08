@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import { useChat } from "../../contexts/ChatContext";
 import { useWebSocket } from "../../contexts/WebSocketContext";
 import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
@@ -24,11 +23,11 @@ import {
   TrophyIcon,
   UserIcon,
   UsersIcon,
-  HelpCircleIcon
+  HelpCircleIcon,
+  UtensilsIcon
 } from "./NavIcons";
 
 export default function Navbar() {
-  const { t, i18n } = useTranslation();
   const { isChatOpen, chatView, activeConversation, openChat, closeChat, backToHistory } = useChat();
   const { on, isConnected } = useWebSocket();
   const location = useLocation();
@@ -41,7 +40,6 @@ export default function Navbar() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState('login');
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
-  const [langExpanded, setLangExpanded] = useState(false);
   const [currentView, setCurrentView] = useState('navigation'); // Pour mobile: 'navigation' ou 'history'
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -114,11 +112,6 @@ export default function Navbar() {
     setDocumentTheme(newDarkMode);
   }, [darkMode, setDocumentTheme]);
 
-  // Change language
-  const changeLanguage = useCallback((lng) => {
-    i18n.changeLanguage(lng);
-    storage.set('language', lng);
-  }, [i18n]);
 
   // Initialize dark mode
   useEffect(() => {
@@ -127,6 +120,33 @@ export default function Navbar() {
     setDarkMode(isDark);
     setDocumentTheme(isDark);
   }, [setDocumentTheme]);
+
+  // Gestion du hash pour ouvrir la popup de connexion
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1); // Enlever le #
+      if (hash === 'login') {
+        setPopupView('login');
+        setIsPopupOpen(true);
+        // Nettoyer le hash après ouverture
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      } else if (hash === 'signup') {
+        setPopupView('create');
+        setIsPopupOpen(true);
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    };
+
+    // Vérifier au montage
+    handleHashChange();
+
+    // Écouter les changements de hash
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
 
   // Monitor login state and premium status - avec httpOnly cookies
   useEffect(() => {
@@ -153,8 +173,6 @@ export default function Navbar() {
 
           // Récupérer les données utilisateur
           const userData = await response.json();
-
-          console.log('🔍 Navbar - userData:', userData);
 
           // Vérifier toutes les propriétés possibles pour le premium
           const userHasPremium = userData?.subscription?.tier === 'premium' ||
@@ -185,8 +203,6 @@ export default function Navbar() {
 
           // Si premium trouvé dans les données OU dans le cache
           const finalPremiumStatus = userHasPremium || cachedPremium;
-
-          console.log('🔍 Navbar - userHasPremium:', userHasPremium, 'cachedPremium:', cachedPremium, 'finalPremiumStatus:', finalPremiumStatus);
 
           if (finalPremiumStatus) {
             setIsPremium(true);
@@ -309,7 +325,7 @@ export default function Navbar() {
       icon: <HomeIcon size={20} />
     },
     {
-      label: t('nav.exercises'),
+      label: "Exercices",
       path: "/exo",
       icon: <DumbbellIcon size={20} />
     },
@@ -320,12 +336,10 @@ export default function Navbar() {
         icon: <DashboardIcon size={20} />
       }
     ] : [])
-  ], [t, isLoggedIn]);
+  ], [isLoggedIn]);
 
   // Secondary navigation links (in expanded menu) - Les moins importants
   const secondaryLinks = useMemo(() => {
-    console.log('🔍 Navbar - isLoggedIn:', isLoggedIn, 'isPremium:', isPremium);
-
     return [
       ...(isLoggedIn && isPremium ? [
         {
@@ -335,11 +349,12 @@ export default function Navbar() {
           isPremium: true
         }
       ] : []),
-      { label: t('nav.tools'), path: "/outils", icon: <ToolsIcon size={28} /> },
-      { label: t('nav.about'), path: "/about", icon: <InfoIcon size={28} /> },
+      { label: 'Recettes', path: "/recettes", icon: <UtensilsIcon size={28} /> },
+      { label: "Outils", path: "/outils", icon: <ToolsIcon size={28} /> },
+      { label: "À propos", path: "/about", icon: <InfoIcon size={28} /> },
       { label: 'FAQ', path: "/contact", icon: <HelpCircleIcon size={28} /> }
     ];
-  }, [t, isLoggedIn, isPremium]);
+  }, [isLoggedIn, isPremium]);
 
   // Close menu handler
   const closeMenu = useCallback(() => {
@@ -501,24 +516,6 @@ export default function Navbar() {
                       </button>
 
                     </div>
-
-                    {/* Language Selector */}
-                    <div className={styles.languageSection}>
-                      <span className={styles.langLabel}>Langue</span>
-                      <div className={styles.langGroup} role="group" aria-label="Sélection de la langue">
-                        {['fr', 'en', 'de', 'es'].map(lng => (
-                          <button
-                            key={lng}
-                            onClick={() => changeLanguage(lng)}
-                            className={`${styles.langBtn} ${i18n.language === lng ? styles.langActive : ''}`}
-                            aria-label={`Changer la langue en ${lng.toUpperCase()}`}
-                            aria-pressed={i18n.language === lng}
-                          >
-                            {lng.toUpperCase()}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
                   </section>
                 </div>
               </div>
@@ -613,39 +610,6 @@ export default function Navbar() {
 
             {/* Utilities */}
             <div className={styles.utilitiesExpanded}>
-              {/* Language selector */}
-              <div
-                className={`${styles.langGroup} ${langExpanded ? styles.langGroupExpanded : ''}`}
-                onMouseEnter={() => setLangExpanded(true)}
-                onMouseLeave={() => setLangExpanded(false)}
-              >
-                {!langExpanded ? (
-                  <button
-                    onClick={() => setLangExpanded(true)}
-                    className={`${styles.langBtnDock} ${styles.langActive}`}
-                    title="Changer de langue"
-                    aria-label="Change language"
-                  >
-                    {i18n.language.toUpperCase()}
-                  </button>
-                ) : (
-                  ['fr', 'en', 'de', 'es'].map(lng => (
-                    <button
-                      key={lng}
-                      onClick={() => {
-                        changeLanguage(lng);
-                        setLangExpanded(false);
-                      }}
-                      className={`${styles.langBtnDock} ${i18n.language === lng ? styles.langActive : ''}`}
-                      title={lng.toUpperCase()}
-                      aria-label={`Switch to ${lng.toUpperCase()}`}
-                    >
-                      {lng.toUpperCase()}
-                    </button>
-                  ))
-                )}
-              </div>
-
               {/* Action buttons */}
               <div className={styles.iconsGroup}>
                 <button
@@ -710,7 +674,7 @@ export default function Navbar() {
                   if (!link.isAction) e.preventDefault();
                   link.onClick ? link.onClick() : navigate(link.path);
                 }}
-                title={link.label || t('nav.home')}
+                title={link.label || "Accueil"}
               >
                 <span className={styles.dockIcon}>{link.icon}</span>
                 {link.label && <span className={styles.dockLabel}>{link.label}</span>}

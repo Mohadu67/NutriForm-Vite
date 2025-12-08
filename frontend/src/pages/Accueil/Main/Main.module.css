@@ -342,42 +342,6 @@
 }
 
 /* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .hero {
-    background: var(--couleur-principale, #0c0e12);
-  }
-
-  .badge {
-    background: var(--paper, #12151b);
-  }
-
-  .floatingOrb {
-    opacity: 0.2;
-  }
-
-  .toolsSection {
-    background: var(--paper, #12151b);
-  }
-
-  .infoWrapper {
-    background: var(--couleur-principale, #0c0e12);
-  }
-
-  .primaryCard,
-  .secondaryCard {
-    background: var(--paper, #12151b);
-  }
-
-  .iconBadge {
-    background: color-mix(in srgb, var(--couleur-bouton-selection) 10%, var(--paper));
-    border-color: color-mix(in srgb, var(--couleur-bouton-selection) 20%, transparent);
-  }
-
-  .iconBadgeMuted {
-    background: color-mix(in srgb, var(--couleur-bouton-action) 10%, var(--paper));
-    border-color: color-mix(in srgb, var(--couleur-bouton-action) 20%, transparent);
-  }
-}
 
 /* Tablet+ */
 @media (min-width: 768px) {

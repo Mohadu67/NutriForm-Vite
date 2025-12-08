@@ -72,14 +72,6 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .modal {
-    background: linear-gradient(135deg,
-      rgba(25, 30, 40, 0.98) 0%,
-      rgba(18, 21, 27, 0.96) 100%
-    );
-  }
-}
 
 /* ============================================
    HEADER - MOBILE FIRST
@@ -256,12 +248,6 @@
   color: #2B2B2B;
 }
 
-@media (prefers-color-scheme: dark) {
-  .sectionTitle {
-    color: #e9ecf1;
-  }
-}
-
 /* Desktop */
 @media (min-width: 640px) {
   .sectionTitle {
@@ -298,16 +284,6 @@
   border-radius: 16px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .macroCard {
-    background: linear-gradient(135deg,
-      rgba(247, 177, 134, 0.12) 0%,
-      rgba(247, 177, 134, 0.06) 100%
-    );
-    border-color: rgba(247, 177, 134, 0.2);
-  }
-}
-
 .macroIcon {
   width: 40px;
   height: 40px;
@@ -341,23 +317,11 @@
   color: #555;
 }
 
-@media (prefers-color-scheme: dark) {
-  .macroLabel {
-    color: #a6b0bf;
-  }
-}
-
 .macroValue {
   font-size: 1.3rem;
   font-weight: 800;
   color: #2B2B2B;
   line-height: 1;
-}
-
-@media (prefers-color-scheme: dark) {
-  .macroValue {
-    color: #e9ecf1;
-  }
 }
 
 /* ============================================
@@ -372,12 +336,6 @@
 @media (min-width: 640px) {
   .conseilsSection {
     padding: 2.5rem 2rem;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .conseilsSection {
-    border-top-color: rgba(255, 255, 255, 0.08);
   }
 }
 
@@ -406,22 +364,30 @@
   color: #555;
 }
 
-@media (prefers-color-scheme: dark) {
-  .conseilItem {
-    background: linear-gradient(135deg,
-      rgba(247, 177, 134, 0.08) 0%,
-      rgba(247, 177, 134, 0.03) 100%
-    );
-    color: #a6b0bf;
-  }
-}
-
 .conseilIcon {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
   color: var(--orange);
   margin-top: 0.125rem;
+}
+
+.recipeBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--orange);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+  text-decoration: underline;
+}
+
+.recipeBtn:hover {
+  opacity: 0.8;
 }
 
 /* ============================================
@@ -451,16 +417,6 @@
   border-radius: 16px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .infoCard {
-    background: linear-gradient(135deg,
-      rgba(184, 221, 209, 0.12) 0%,
-      rgba(184, 221, 209, 0.06) 100%
-    );
-    border-color: rgba(184, 221, 209, 0.25);
-  }
-}
-
 .infoIcon {
   width: 24px;
   height: 24px;
@@ -474,12 +430,6 @@
   font-size: 0.9rem;
   line-height: 1.6;
   color: #555;
-}
-
-@media (prefers-color-scheme: dark) {
-  .infoText {
-    color: #a6b0bf;
-  }
 }
 
 /* ============================================

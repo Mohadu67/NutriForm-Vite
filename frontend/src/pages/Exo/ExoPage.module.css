@@ -332,36 +332,6 @@
 }
 
 /* ========== DARK MODE ========== */
-@media (prefers-color-scheme: dark) {
-  .hero {
-    background: var(--couleur-principale, #0c0e12);
-  }
-
-  .badge {
-    background: var(--paper, #12151b);
-  }
-
-  .floatingOrb {
-    opacity: 0.2;
-  }
-
-  .formSection {
-    background: var(--paper, #12151b);
-  }
-
-  .infoSection {
-    background: var(--couleur-principale, #0c0e12);
-  }
-
-  .contentBlock {
-    background: var(--paper, #12151b);
-  }
-
-  .list li,
-  .tip {
-    background: rgba(255,255,255,.04);
-  }
-}
 
 /* ========== REDUCED MOTION ========== */
 @media (prefers-reduced-motion: reduce) {

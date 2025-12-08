@@ -136,12 +136,6 @@
   letter-spacing: 0.2px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .label {
-    color: #e2e8f0;
-  }
-}
-
 :global(.dark) .label {
   color: #e2e8f0;
 }
@@ -242,13 +236,6 @@
   color: var(--auth-ink);
   cursor: pointer;
   user-select: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  .remember,
-  .remember span {
-    color: #e2e8f0;
-  }
 }
 
 :global(.dark) .remember,
@@ -416,12 +403,6 @@
   justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
-}
-
-@media (prefers-color-scheme: dark) {
-  .signupText {
-    color: #e2e8f0;
-  }
 }
 
 :global(.dark) .signupText {

@@ -69,11 +69,6 @@
 }
 
 /* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .faqItem {
-    background: var(--paper, #12151b);
-  }
-}
 
 /* Responsive */
 @media (max-width: 768px) {

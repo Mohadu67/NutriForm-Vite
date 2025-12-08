@@ -10,7 +10,6 @@ import { ChatProvider } from "./contexts/ChatContext.jsx";
 import { WebSocketProvider } from "./contexts/WebSocketContext.jsx";
 import { initializeNotifications } from "./services/notificationService.js";
 import MessageNotificationManager from "./components/Chat/MessageNotificationManager.jsx";
-import './i18n/config';
 
 // Pages principales - chargées immédiatement (pour SEO et performance initiale)
 import Home from "./pages/Accueil/Home.jsx";
@@ -52,14 +51,22 @@ const MatchingPageFuturistic = lazy(() => import("./pages/Matching/MatchingPageF
 // Chat - lazy loaded (feature social)
 const Chat = lazy(() => import("./pages/Chat/Chat.jsx"));
 
+// Recipes - lazy loaded
+const RecipesPage = lazy(() => import("./pages/Recipes/RecipesPage.jsx"));
+const RecipeDetail = lazy(() => import("./pages/Recipes/RecipeDetail.jsx"));
+const RecipeForm = lazy(() => import("./pages/Admin/RecipeForm.jsx"));
+
 export default function App() {
   useEffect(() => {
-    Clarity.init("thd0hih6t5");
-    // Note: Session management is now handled server-side via httpOnly cookies
-    // No need for client-side session checks anymore
+    // Clarity et notifications uniquement côté client
+    if (typeof window !== 'undefined') {
+      Clarity.init("thd0hih6t5");
+      // Note: Session management is now handled server-side via httpOnly cookies
+      // No need for client-side session checks anymore
 
-    // Initialiser les notifications push
-    initializeNotifications();
+      // Initialiser les notifications push
+      initializeNotifications();
+    }
   }, []);
 
   return (
@@ -103,6 +110,8 @@ export default function App() {
             <Route path="/admin/newsletter/:id" element={<NewsletterAdmin />} />
             <Route path="/admin/support-tickets" element={<SupportTickets />} />
             <Route path="/admin/programs" element={<ProgramsAdmin />} />
+            <Route path="/admin/recipes/new" element={<RecipeForm />} />
+            <Route path="/admin/recipes/:id/edit" element={<RecipeForm />} />
 
             {/* Profile & Matching - lazy loaded */}
             <Route path="/profile/setup" element={<ProfileSetup />} />
@@ -112,6 +121,10 @@ export default function App() {
 
             {/* Chat - lazy loaded */}
             <Route path="/chat/:matchId" element={<Chat />} />
+
+            {/* Recipes - lazy loaded */}
+            <Route path="/recettes" element={<RecipesPage />} />
+            <Route path="/recettes/:id" element={<RecipeDetail />} />
 
             {/* 404 */}
             <Route path="*" element={<NotFound />} />

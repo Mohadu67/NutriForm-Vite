@@ -181,29 +181,6 @@
 }
 
 /* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .carouselSection {
-    background: var(--paper, #12151b);
-  }
-
-  .reviewCard {
-    background: var(--couleur-principale, #0c0e12);
-  }
-
-  .authorInitial {
-    background: color-mix(in srgb, var(--couleur-bouton-selection) 15%, var(--paper));
-    border-color: color-mix(in srgb, var(--couleur-bouton-selection) 30%, transparent);
-  }
-
-  .proBadge {
-    background: transparent;
-    border-color: var(--line);
-  }
-
-  .starEmpty {
-    color: rgba(255,255,255,.15);
-  }
-}
 
 /* Responsive */
 @media (max-width: 768px) {

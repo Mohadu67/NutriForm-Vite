@@ -26,19 +26,6 @@
   --suivie-accent-hover: #ff9655;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --suivie-bg: #0c0e12;
-    --suivie-surface: #1a1d24;
-    --suivie-ink: #e9ecf1;
-    --suivie-muted: #a6b0bf;
-    --suivie-border: rgba(255,255,255,0.08);
-    --suivie-border-strong: rgba(255,255,255,0.12);
-    --suivie-accent: #ffb581;
-    --suivie-accent-hover: #ff9655;
-  }
-}
-
 /* ==================== CARD PREVIEW ==================== */
 .card {
   font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
@@ -301,12 +288,6 @@
 :global(html.dark) .focusForm,
 :global(body.dark) .focusForm {
   background: rgba(247, 177, 134, 0.05);
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(:root:not(.light)) .focusForm {
-    background: rgba(247, 177, 134, 0.05);
-  }
 }
 
 .focusFormHeader h4 {
@@ -730,13 +711,6 @@
   border-left-color: #63b3ed;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) .repsChallengeHint {
-    background: rgba(66, 153, 225, 0.1);
-    border-left-color: #63b3ed;
-  }
-}
-
 /* ==================== FATIGUE HINT ==================== */
 
 .fatigueHint {
@@ -751,11 +725,4 @@
 :global(body.dark) .fatigueHint {
   background: rgba(168, 162, 255, 0.1);
   border-left-color: #B794F4;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) .fatigueHint {
-    background: rgba(168, 162, 255, 0.1);
-    border-left-color: #B794F4;
-  }
 }

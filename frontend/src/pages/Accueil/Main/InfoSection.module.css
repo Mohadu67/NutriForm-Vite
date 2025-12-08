@@ -154,19 +154,6 @@
    DARK MODE
    ============================================ */
 
-@media (prefers-color-scheme: dark) {
-  .card {
-    background: var(--paper, #12151b);
-    border-color: var(--line, rgba(255,255,255,.08));
-    box-shadow: 0 1px 3px rgba(0,0,0,.2);
-  }
-
-  .tipCard {
-    background: rgba(255,255,255,.02);
-    border-color: var(--line, rgba(255,255,255,.06));
-  }
-}
-
 /* ============================================
    TABLET - 640px+
    ============================================ */

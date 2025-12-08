@@ -24,17 +24,6 @@
   --shadow-md: 0 8px 20px rgba(0,0,0,0.65);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --paper: #12151b;
-    --ink: #e9ecf1;
-    --muted: #a6b0bf;
-    --line: rgba(255,255,255,.1);
-    --shadow-sm: 0 4px 12px rgba(0,0,0,0.45);
-    --shadow-md: 0 8px 20px rgba(0,0,0,0.65);
-  }
-}
-
 .tipCard {
   background: var(--paper);
   border-radius: 14px;

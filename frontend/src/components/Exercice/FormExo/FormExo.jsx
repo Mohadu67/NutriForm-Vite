@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { storage } from '../../../shared/utils/storage';
-import { useTranslation } from "react-i18next";
 import styles from "./FormExo.module.css";
 import DynamiChoice from "../DynamiChoice/DynamiChoice.jsx";
 import Progress from "../BarreDetape/Etapes.jsx";
@@ -18,7 +17,6 @@ import logger from '../../../shared/utils/logger.js';
 
 export default function FormExo({ user: userProp }) {
   const user = userProp || getCurrentUser();
-  const { t } = useTranslation();
   const [sessionName, setSessionName] = useState(() => {
     try { return JSON.parse(storage.get("formSessionName")) || ""; } catch { return ""; }
   });
@@ -75,28 +73,28 @@ export default function FormExo({ user: userProp }) {
     checkLastWeekSession();
   }, [user, mode, currentStep, hasCheckedLastWeek]);
 
-  const defaultExerciseName = useMemo(() => t("exercise.form.defaultExerciseName"), [t]);
+  const defaultExerciseName = useMemo(() => "Exercice", []);
 
   const steps = useMemo(
     () => [
       {
-        title: t("exercise.form.steps.training.title"),
-        sub: t("exercise.form.steps.training.subtitle"),
+        title: "Type d'entraînement",
+        sub: "Sélectionne le type d'entraînement",
       },
       {
-        title: t("exercise.form.steps.equipment.title"),
-        sub: t("exercise.form.steps.equipment.subtitle"),
+        title: "Équipement",
+        sub: "Choisis ton équipement disponible",
       },
       {
-        title: t("exercise.form.steps.muscles.title"),
-        sub: t("exercise.form.steps.muscles.subtitle"),
+        title: "Muscles ciblés",
+        sub: "Sélectionne les muscles à travailler",
       },
       {
-        title: t("exercise.form.steps.exercises.title"),
-        sub: t("exercise.form.steps.exercises.subtitle"),
+        title: "Exercices proposés",
+        sub: "Choisis tes exercices",
       },
     ],
-    [t]
+    []
   );
 
   function getBodyMassKg(u) {
@@ -200,10 +198,10 @@ export default function FormExo({ user: userProp }) {
               logger.error("Failed to scroll:", e);
             }
           }}>
-            {t("exercise.form.actions.restart")}
+            Nouvelle séance
           </button>
           <button className={styles.BtnReturn} type="button" onClick={() => setShowSummary(false)}>
-            {t("exercise.form.actions.back")}
+            Retour
           </button>
         </div>
 
@@ -398,10 +396,10 @@ export default function FormExo({ user: userProp }) {
 
       {mode === "builder" && (
         <div className={styles.sessionName}>
-          <label>{t("exercise.form.sessionName.label")}</label>
+          <label>Nom de la séance</label>
           <input
             type="text"
-            placeholder={t("exercise.form.sessionName.placeholder")}
+            placeholder="ex: Jambes du lundi"
             value={sessionName}
             onChange={(e) => setSessionName(e.target.value)}
           />

@@ -31,16 +31,6 @@
   --nf-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --nf-surface: #1c1c1c;
-    --nf-surface-border: rgba(255, 255, 255, 0.08);
-    --nf-ink: #e9ecf1;
-    --nf-muted: #bdbdbd;
-    --nf-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
-  }
-}
-
 /* Header */
 .popup-header-row {
   text-align: center;

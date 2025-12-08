@@ -475,14 +475,3 @@
   --muted: #a6b0bf;
   --line: rgba(255,255,255,0.1);
 }
-
-@media (prefers-color-scheme: dark) {
-  :global(html:not(.light)) .reviewsSection,
-  :global(body:not(.light)) .reviewsSection {
-    --bg: #0c0e12;
-    --paper: #12151b;
-    --ink: #e9ecf1;
-    --muted: #a6b0bf;
-    --line: rgba(255,255,255,0.1);
-  }
-}
