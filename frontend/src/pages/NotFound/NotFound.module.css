@@ -13,18 +13,6 @@
   --radius-sm: 10px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0c0e12;
-    --paper: #12151b;
-    --ink: #e9ecf1;
-    --muted: #a6b0bf;
-    --line: rgba(255,255,255,0.1);
-    --shadow-sm: 0 6px 16px rgba(0,0,0,0.45);
-    --shadow-md: 0 12px 30px rgba(0,0,0,0.6);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }

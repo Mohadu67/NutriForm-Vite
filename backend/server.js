@@ -181,24 +181,15 @@ if (fs.existsSync(frontendDistPath)) {
     }
   }));
 
-  // Initialiser et utiliser le SSR middleware
-  const { initSSR, ssrMiddleware } = require('./middleware/ssr.middleware.js');
-
-  // Initialiser le SSR au démarrage
-  initSSR().then((success) => {
-    if (success) {
-      logger.info('✅ SSR activé');
-    } else {
-      logger.warn('⚠️  SSR désactivé, mode SPA uniquement');
-    }
+  // SSR désactivé temporairement - causait des conflits React (double instance)
+  // Servir index.html pour toutes les routes frontend (mode SPA)
+  app.use((req, res) => {
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
   });
-
-  // Middleware SSR pour les routes frontend (doit être APRÈS les routes API)
-  app.use(ssrMiddleware());
 
 } else {
   logger.warn('⚠️  Build frontend non trouvé, serveur API uniquement');
-  app.get('/', (req, res) => {
+  app.get('/', (_req, res) => {
     res.send('Bienvenue sur le backend de NutriForm 🚀');
   });
 }

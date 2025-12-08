@@ -37,9 +37,5 @@ const app = (
   </React.StrictMode>
 );
 
-// Détecter si le HTML a été pré-rendu (SSR)
-if (rootElement.hasChildNodes()) {
-  ReactDOM.hydrateRoot(rootElement, app);
-} else {
-  ReactDOM.createRoot(rootElement).render(app);
-}
+// Mode SPA uniquement (SSR désactivé)
+ReactDOM.createRoot(rootElement).render(app);

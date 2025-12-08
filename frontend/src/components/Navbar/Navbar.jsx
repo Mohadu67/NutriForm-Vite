@@ -40,14 +40,6 @@ export default function Navbar() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState('login');
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
-  const [currentLanguage, setCurrentLanguage] = useState(() => {
-    try {
-      return storage.get('language') || 'fr';
-    } catch {
-      return 'fr';
-    }
-  });
-  const [langExpanded, setLangExpanded] = useState(false);
   const [currentView, setCurrentView] = useState('navigation'); // Pour mobile: 'navigation' ou 'history'
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -120,11 +112,6 @@ export default function Navbar() {
     setDocumentTheme(newDarkMode);
   }, [darkMode, setDocumentTheme]);
 
-  // Change language
-  const changeLanguage = useCallback((lng) => {
-    setCurrentLanguage(lng);
-    storage.set('language', lng);
-  }, []);
 
   // Initialize dark mode
   useEffect(() => {
@@ -529,24 +516,6 @@ export default function Navbar() {
                       </button>
 
                     </div>
-
-                    {/* Language Selector */}
-                    <div className={styles.languageSection}>
-                      <span className={styles.langLabel}>Langue</span>
-                      <div className={styles.langGroup} role="group" aria-label="Sélection de la langue">
-                        {['fr', 'en', 'de', 'es'].map(lng => (
-                          <button
-                            key={lng}
-                            onClick={() => changeLanguage(lng)}
-                            className={`${styles.langBtn} ${currentLanguage === lng ? styles.langActive : ''}`}
-                            aria-label={`Changer la langue en ${lng.toUpperCase()}`}
-                            aria-pressed={currentLanguage === lng}
-                          >
-                            {lng.toUpperCase()}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
                   </section>
                 </div>
               </div>
@@ -641,39 +610,6 @@ export default function Navbar() {
 
             {/* Utilities */}
             <div className={styles.utilitiesExpanded}>
-              {/* Language selector */}
-              <div
-                className={`${styles.langGroup} ${langExpanded ? styles.langGroupExpanded : ''}`}
-                onMouseEnter={() => setLangExpanded(true)}
-                onMouseLeave={() => setLangExpanded(false)}
-              >
-                {!langExpanded ? (
-                  <button
-                    onClick={() => setLangExpanded(true)}
-                    className={`${styles.langBtnDock} ${styles.langActive}`}
-                    title="Changer de langue"
-                    aria-label="Change language"
-                  >
-                    {currentLanguage.toUpperCase()}
-                  </button>
-                ) : (
-                  ['fr', 'en', 'de', 'es'].map(lng => (
-                    <button
-                      key={lng}
-                      onClick={() => {
-                        changeLanguage(lng);
-                        setLangExpanded(false);
-                      }}
-                      className={`${styles.langBtnDock} ${currentLanguage === lng ? styles.langActive : ''}`}
-                      title={lng.toUpperCase()}
-                      aria-label={`Switch to ${lng.toUpperCase()}`}
-                    >
-                      {lng.toUpperCase()}
-                    </button>
-                  ))
-                )}
-              </div>
-
               {/* Action buttons */}
               <div className={styles.iconsGroup}>
                 <button

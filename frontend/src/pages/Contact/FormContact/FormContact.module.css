@@ -125,16 +125,6 @@
 }
 
 /* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .wrapper {
-    background: var(--paper, #12151b);
-  }
-
-  .input,
-  .textarea {
-    background: var(--couleur-principale, #0c0e12);
-  }
-}
 
 /* Responsive */
 @media (max-width: 768px) {

@@ -87,10 +87,7 @@
 }
 
 .highlight {
-  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), var(--couleur-bouton-selection, #b8ddd1));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--couleur-bouton-action, #f7b186);
 }
 
 .heroSubtitle {
@@ -174,27 +171,6 @@
 }
 
 /* ========== DARK MODE ========== */
-@media (prefers-color-scheme: dark) {
-  .hero {
-    background: var(--couleur-principale, #0c0e12);
-  }
-
-  .badge {
-    background: var(--paper, #12151b);
-  }
-
-  .floatingOrb {
-    opacity: 0.2;
-  }
-
-  .faqWrapper {
-    background: var(--paper, #12151b);
-  }
-
-  .formWrapper {
-    background: var(--couleur-principale, #0c0e12);
-  }
-}
 
 /* ========== TABLET+ ========== */
 @media (min-width: 768px) {
@@ -253,9 +229,9 @@
 .aiButton {
   margin-top: 32px;
   padding: 16px 32px;
-  background: linear-gradient(135deg, #f7b186 0%, #f9c89f 100%);
+  background: #f7b186;
   color: white;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 12px;
   font-size: 1.125rem;
   font-weight: 600;
@@ -269,8 +245,8 @@
 
 .aiButton:hover {
   transform: translateY(-2px);
+  border-color: #e89e6e;
   box-shadow: 0 8px 20px rgba(247, 177, 134, 0.35);
-  background: linear-gradient(135deg, #f9c89f 0%, #f7b186 100%);
 }
 
 .aiButton:active {
