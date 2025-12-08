@@ -256,12 +256,6 @@
   letter-spacing: 0.2px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .label {
-    color: #e2e8f0;
-  }
-}
-
 :global(.dark) .label {
   color: #e2e8f0;
 }
@@ -364,13 +358,6 @@
   cursor: pointer;
   user-select: none;
   line-height: 1.5;
-}
-
-@media (prefers-color-scheme: dark) {
-  .checkRow,
-  .checkRow span {
-    color: #e2e8f0;
-  }
 }
 
 :global(.dark) .checkRow,
@@ -477,12 +464,6 @@
   justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
-}
-
-@media (prefers-color-scheme: dark) {
-  .loginText {
-    color: #e2e8f0;
-  }
 }
 
 :global(.dark) .loginText {

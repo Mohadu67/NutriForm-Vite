@@ -165,20 +165,6 @@
 }
 
 /* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .footer {
-    background: var(--paper, #12151b);
-    color: var(--ink, #e9ecf1);
-  }
-
-  .linkList li a {
-    background: var(--couleur-principale, #0c0e12);
-  }
-
-  .socialList :global(a) {
-    background: var(--couleur-principale, #0c0e12);
-  }
-}
 
 /* Responsive */
 @media (min-width: 640px) {

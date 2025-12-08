@@ -8,12 +8,6 @@
   background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
 }
 
-@media (prefers-color-scheme: dark) {
-  :global(:root:not(.light)) .walkRunForm {
-    background: linear-gradient(155deg, rgba(255, 181, 129, 0.08), rgba(26, 29, 36, 0.6));
-  }
-}
-
 /* Input avec unité */
 .inputWrapper {
   position: relative;
@@ -88,12 +82,6 @@
 :global(html.dark) .pauseSection,
 :global(body.dark) .pauseSection {
   background: rgba(26, 29, 36, 0.4);
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(:root:not(.light)) .pauseSection {
-    background: rgba(26, 29, 36, 0.4);
-  }
 }
 
 .pauseTopRow {
@@ -271,12 +259,6 @@
 :global(html.dark) .liveStat,
 :global(body.dark) .liveStat {
   background: rgba(26, 29, 36, 0.6);
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(:root:not(.light)) .liveStat {
-    background: rgba(26, 29, 36, 0.6);
-  }
 }
 
 .liveStatLabel {

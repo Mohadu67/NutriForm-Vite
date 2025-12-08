@@ -1,11 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { storage } from '../../../shared/utils/storage';
-import { useTranslation } from "react-i18next";
 import { secureApiCall, isAuthenticated } from "../../../utils/authService.js";
 import logger from '../../../shared/utils/logger.js';
 
 export default function Salutation({ className = "", seedKey = "static" }) {
-  const { t } = useTranslation();
   const [displayName, setDisplayName] = useState("");
   const phraseRef = useRef("");
 
@@ -52,29 +50,35 @@ export default function Salutation({ className = "", seedKey = "static" }) {
   }, [displayName]);
 
   const phrasePool = useMemo(() => {
-    const key = capitalizedName
-      ? "exercise.salutation.named"
-      : "exercise.salutation.generic";
-    const options = {
-      returnObjects: true,
-    };
-    if (capitalizedName) options.name = capitalizedName;
-    const list = t(key, options);
-    if (Array.isArray(list) && list.length > 0) return list;
-    return [t("exercise.salutation.fallback", { name: capitalizedName })];
-  }, [t, capitalizedName]);
+    if (capitalizedName) {
+      return [
+        `Prêt pour ta séance, ${capitalizedName} ?`,
+        `C'est parti ${capitalizedName} !`,
+        `En forme ${capitalizedName} ?`,
+        `À toi de jouer, ${capitalizedName} !`,
+        `Motivé aujourd'hui, ${capitalizedName} ?`
+      ];
+    }
+    return [
+      "Prêt pour ta séance ?",
+      "C'est parti !",
+      "En forme aujourd'hui ?",
+      "À toi de jouer !",
+      "Motivé pour l'entraînement ?"
+    ];
+  }, [capitalizedName]);
 
   useEffect(() => {
     const pool = Array.isArray(phrasePool) ? phrasePool : [];
     const pick = pool.length
       ? pool[Math.floor(Math.random() * pool.length)]
-      : t("exercise.salutation.fallback", { name: capitalizedName });
+      : (capitalizedName ? `Bienvenue ${capitalizedName}` : "Bienvenue");
     phraseRef.current = pick;
-  }, [seedKey, phrasePool, t, capitalizedName]);
+  }, [seedKey, phrasePool, capitalizedName]);
 
   return (
     <h2 className={className}>
-      {phraseRef.current || t("exercise.salutation.fallback", { name: capitalizedName })}
+      {phraseRef.current || (capitalizedName ? `Bienvenue ${capitalizedName}` : "Bienvenue")}
     </h2>
   );
 }

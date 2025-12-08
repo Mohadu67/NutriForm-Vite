@@ -16,7 +16,9 @@ const RECAPTCHA_SITE_KEY = (() => {
   }
 })();
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+// Utiliser hydrateRoot pour le SSR, sinon createRoot
+const rootElement = document.getElementById("root");
+const app = (
   <React.StrictMode>
     <HelmetProvider>
       <SafeGoogleReCaptchaProvider
@@ -34,3 +36,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </HelmetProvider>
   </React.StrictMode>
 );
+
+// Mode SPA uniquement (SSR désactivé)
+ReactDOM.createRoot(rootElement).render(app);
