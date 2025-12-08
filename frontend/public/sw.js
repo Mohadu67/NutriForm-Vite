@@ -1,8 +1,8 @@
 // Service Worker pour NutriForm
 // Gère le cache et les notifications push
 
-const CACHE_NAME = 'nutriform-v1';
-const API_CACHE = 'nutriform-api-v1';
+const CACHE_NAME = 'nutriform-v2';
+const API_CACHE = 'nutriform-api-v2';
 
 // Événement d'installation
 self.addEventListener('install', (event) => {
@@ -35,6 +35,9 @@ self.addEventListener('fetch', (event) => {
   // Ignorer les requêtes non-GET
   if (request.method !== 'GET') return;
 
+  // Ignorer les requêtes externes (Cloudinary, Google Analytics, etc.)
+  if (url.origin !== self.location.origin) return;
+
   // API: Network First avec fallback cache
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
@@ -53,7 +56,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Assets: Cache First avec fallback network
+  // Assets: Cache First avec fallback network (seulement pour assets locaux)
   event.respondWith(
     caches.match(request).then((cached) => {
       return cached || fetch(request).then((response) => {
