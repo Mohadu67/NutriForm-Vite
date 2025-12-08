@@ -3,7 +3,10 @@ import styles from './CustomSelect.module.css';
 
 export default function CustomSelect({ label, value, options, onChange, icon: Icon }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
   const selectRef = useRef(null);
+  const buttonRef = useRef(null);
+  const optionsRefs = useRef([]);
 
   // Fermer le select quand on clique en dehors
   useEffect(() => {
@@ -17,11 +20,88 @@ export default function CustomSelect({ label, value, options, onChange, icon: Ic
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Reset focused index when opening/closing
+  useEffect(() => {
+    if (isOpen) {
+      const currentIndex = options.findIndex(opt => opt.value === value);
+      setFocusedIndex(currentIndex >= 0 ? currentIndex : 0);
+    } else {
+      setFocusedIndex(-1);
+    }
+  }, [isOpen, options, value]);
+
+  // Scroll to focused option
+  useEffect(() => {
+    if (isOpen && focusedIndex >= 0 && optionsRefs.current[focusedIndex]) {
+      optionsRefs.current[focusedIndex].scrollIntoView({
+        block: 'nearest',
+        behavior: 'smooth'
+      });
+    }
+  }, [focusedIndex, isOpen]);
+
   const selectedOption = options.find(opt => opt.value === value);
 
   const handleSelect = (optionValue) => {
     onChange(optionValue);
     setIsOpen(false);
+    buttonRef.current?.focus();
+  };
+
+  // Keyboard navigation
+  const handleKeyDown = (e) => {
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        if (!isOpen) {
+          setIsOpen(true);
+        } else {
+          setFocusedIndex((prev) => (prev + 1) % options.length);
+        }
+        break;
+
+      case 'ArrowUp':
+        e.preventDefault();
+        if (!isOpen) {
+          setIsOpen(true);
+        } else {
+          setFocusedIndex((prev) => (prev - 1 + options.length) % options.length);
+        }
+        break;
+
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (!isOpen) {
+          setIsOpen(true);
+        } else if (focusedIndex >= 0) {
+          handleSelect(options[focusedIndex].value);
+        }
+        break;
+
+      case 'Escape':
+        e.preventDefault();
+        setIsOpen(false);
+        buttonRef.current?.focus();
+        break;
+
+      case 'Home':
+        if (isOpen) {
+          e.preventDefault();
+          setFocusedIndex(0);
+        }
+        break;
+
+      case 'End':
+        if (isOpen) {
+          e.preventDefault();
+          setFocusedIndex(options.length - 1);
+        }
+        break;
+
+      default:
+        break;
+    }
   };
 
   return (
@@ -32,8 +112,12 @@ export default function CustomSelect({ label, value, options, onChange, icon: Ic
         type="button"
         className={styles.selectButton}
         onClick={() => setIsOpen(!isOpen)}
+        onKeyDown={handleKeyDown}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
+        aria-label={label}
+        aria-activedescendant={isOpen && focusedIndex >= 0 ? `option-${focusedIndex}` : undefined}
+        ref={buttonRef}
       >
         {Icon && (
           <span className={styles.icon}>
@@ -64,13 +148,15 @@ export default function CustomSelect({ label, value, options, onChange, icon: Ic
       {isOpen && (
         <div className={styles.dropdown}>
           <ul className={styles.optionsList} role="listbox">
-            {options.map((option) => (
+            {options.map((option, index) => (
               <li
                 key={option.value}
-                className={`${styles.option} ${option.value === value ? styles.optionSelected : ''}`}
+                ref={el => optionsRefs.current[index] = el}
+                className={`${styles.option} ${option.value === value ? styles.optionSelected : ''} ${index === focusedIndex ? styles.optionFocused : ''}`}
                 onClick={() => handleSelect(option.value)}
                 role="option"
                 aria-selected={option.value === value}
+                id={`option-${index}`}
               >
                 {option.label}
                 {option.value === value && (

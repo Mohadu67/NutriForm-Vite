@@ -20,6 +20,7 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
   const [isFinished, setIsFinished] = useState(false);
   const [totalElapsedTime, setTotalElapsedTime] = useState(0);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
 
   const timerRef = useRef(null);
   const transitionRef = useRef(null);
@@ -59,6 +60,12 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
         clearTimeout(transitionRef.current);
         transitionRef.current = null;
       }
+
+      // Annoncer le nouveau cycle au screen reader
+      const cycleName = currentCycle.type === 'exercise'
+        ? currentCycle.exerciseName
+        : getCycleTypeLabel(currentCycle.type);
+      setAnnouncement(`${getCycleTypeLabel(currentCycle.type)} : ${cycleName}. Durée : ${formatTime(duration)}`);
     }
 
     // Ne pas démarrer le timer si pausé ou terminé
@@ -300,7 +307,7 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
         <div
           className={`${styles.timer} ${timeRemaining <= 3 ? styles.timerWarning : ''}`}
           role="timer"
-          aria-live="polite"
+          aria-live="off"
           aria-label={`${isPaused ? 'Pause - ' : ''}${formatTime(timeRemaining)} restant`}
         >
           {formatTime(timeRemaining)}
@@ -308,6 +315,16 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
         <div className={styles.timerLabel}>
           {isPaused ? 'En pause' : 'Temps restant'}
         </div>
+      </div>
+
+      {/* Annonce accessible seulement lors des transitions de cycle */}
+      <div
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {announcement}
       </div>
 
       <div className={styles.controls} role="group" aria-label="Contrôles du programme">

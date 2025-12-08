@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNotification } from '../../../hooks/useNotification.jsx';
 import { secureApiCall } from '../../../utils/authService';
 import logger from '../../../shared/utils/logger';
 import styles from './MyPrograms.module.css';
@@ -14,6 +15,7 @@ import {
 } from '../ProgramIcons';
 
 export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
+  const notify = useNotification();
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,9 +42,10 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
   };
 
   const handleDelete = async (programId) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce programme ?')) {
-      return;
-    }
+    const confirmed = await notify.confirm('Êtes-vous sûr de vouloir supprimer ce programme ?', {
+      title: 'Supprimer le programme'
+    });
+    if (!confirmed) return;
 
     try {
       const response = await secureApiCall(`/api/programs/${programId}`, {
@@ -52,19 +55,21 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
       if (response.ok) {
         setPrograms(programs.filter(p => p._id !== programId));
         logger.info('Programme supprimé');
+        notify.success('Programme supprimé avec succès');
       } else {
-        alert('Erreur lors de la suppression');
+        notify.error('Erreur lors de la suppression');
       }
     } catch (error) {
       logger.error('Erreur suppression:', error);
-      alert('Erreur lors de la suppression');
+      notify.error('Erreur lors de la suppression');
     }
   };
 
   const handlePropose = async (programId) => {
-    if (!confirm('Voulez-vous proposer ce programme pour qu\'il soit accessible à tous ? Il sera soumis à validation par un administrateur.')) {
-      return;
-    }
+    const confirmed = await notify.confirm('Voulez-vous proposer ce programme pour qu\'il soit accessible à tous ? Il sera soumis à validation par un administrateur.', {
+      title: 'Proposer le programme au public'
+    });
+    if (!confirmed) return;
 
     try {
       const response = await secureApiCall(`/api/programs/${programId}/propose`, {
@@ -74,16 +79,16 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
       if (response.ok) {
         // Recharger la liste
         loadMyPrograms();
-        alert('Programme proposé avec succès ! Il sera bientôt examiné par notre équipe.');
+        notify.success('Programme proposé avec succès ! Il sera bientôt examiné par notre équipe.');
       } else {
         const error = await response.json();
-        alert(error.error === 'program_already_proposed_or_public'
+        notify.error(error.error === 'program_already_proposed_or_public'
           ? 'Ce programme a déjà été proposé ou est déjà public'
           : 'Erreur lors de la proposition');
       }
     } catch (error) {
       logger.error('Erreur proposition:', error);
-      alert('Erreur lors de la proposition');
+      notify.error('Erreur lors de la proposition');
     }
   };
 
