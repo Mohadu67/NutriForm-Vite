@@ -52,19 +52,19 @@ export default function Salutation({ className = "", seedKey = "static" }) {
   const phrasePool = useMemo(() => {
     if (capitalizedName) {
       return [
-        `Salut ${capitalizedName} ! Prêt à te surpasser ?`,
-        `Hello ${capitalizedName} ! C'est l'heure de transpirer !`,
-        `Hey ${capitalizedName} ! On y va ?`,
-        `Bienvenue ${capitalizedName} ! Prêt pour cette séance ?`,
-        `Salut ${capitalizedName} ! Donnons tout aujourd'hui !`
+        `Prêt pour ta séance, ${capitalizedName} ?`,
+        `C'est parti ${capitalizedName} !`,
+        `En forme ${capitalizedName} ?`,
+        `À toi de jouer, ${capitalizedName} !`,
+        `Motivé aujourd'hui, ${capitalizedName} ?`
       ];
     }
     return [
-      "Prêt à t'entraîner ?",
-      "C'est l'heure de se donner à fond !",
-      "Bienvenue ! Prêt pour cette séance ?",
-      "On y va ? Donnons tout !",
-      "Let's go ! C'est parti !"
+      "Prêt pour ta séance ?",
+      "C'est parti !",
+      "En forme aujourd'hui ?",
+      "À toi de jouer !",
+      "Motivé pour l'entraînement ?"
     ];
   }, [capitalizedName]);
 
@@ -72,13 +72,13 @@ export default function Salutation({ className = "", seedKey = "static" }) {
     const pool = Array.isArray(phrasePool) ? phrasePool : [];
     const pick = pool.length
       ? pool[Math.floor(Math.random() * pool.length)]
-      : (capitalizedName ? `Salut ${capitalizedName} ! Prêt à te surpasser ?` : "Prêt à t'entraîner ?");
+      : (capitalizedName ? `Bienvenue ${capitalizedName}` : "Bienvenue");
     phraseRef.current = pick;
   }, [seedKey, phrasePool, capitalizedName]);
 
   return (
     <h2 className={className}>
-      {phraseRef.current || (capitalizedName ? `Salut ${capitalizedName} ! Prêt à te surpasser ?` : "Prêt à t'entraîner ?")}
+      {phraseRef.current || (capitalizedName ? `Bienvenue ${capitalizedName}` : "Bienvenue")}
     </h2>
   );
 }

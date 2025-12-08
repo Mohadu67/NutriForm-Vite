@@ -53,8 +53,8 @@ const primaryTools = [
   {
     id: "imc",
     href: "/outils?tool=imc",
-    title: "Calculateur d'IMC",
-    description: "Calcule ton Indice de Masse Corporelle pour mieux comprendre ta composition corporelle.",
+    title: "Calculateur IMC",
+    description: "Calcule ton indice de masse corporelle et découvre ta zone santé",
     cta: "Calculer mon IMC",
     icon: <IconImc />,
     accent: "#b8ddd1",
@@ -64,7 +64,7 @@ const primaryTools = [
     id: "calories",
     href: "/outils?tool=cal",
     title: "Besoins Caloriques",
-    description: "Détermine tes besoins caloriques journaliers selon tes objectifs et ton niveau d'activité.",
+    description: "Estime tes besoins quotidiens pour atteindre tes objectifs",
     cta: "Calculer mes besoins",
     icon: <IconCalories />,
     accent: "#f7b186",
@@ -74,7 +74,7 @@ const primaryTools = [
     id: "rm",
     href: "/outils?tool=rm",
     title: "Calculateur 1RM",
-    description: "Estime ta charge maximale pour optimiser ta progression en musculation.",
+    description: "Détermine ta charge maximale pour optimiser tes entraînements",
     cta: "Calculer mon 1RM",
     icon: <IconRM />,
     accent: "#b8ddd1",
@@ -85,14 +85,13 @@ const primaryTools = [
 const upcomingTools = [
   {
     id: "fc",
-    title: "Fréquence Cardiaque",
-    description: "Optimise tes zones d'entraînement cardio",
+    title: "Zones de Fréquence Cardiaque",
+    description: "Optimise tes entraînements cardio selon ta fréquence cardiaque",
     icon: <IconHeart />,
   },
 ];
 
 export default function OutilsCards() {
-
   return (
     <div className={styles.toolsWrapper}>
       <div className={styles.primaryGrid}>
@@ -115,7 +114,7 @@ export default function OutilsCards() {
         ))}
       </div>
 
-      <div className={styles.secondaryGrid} aria-label="Bientôt disponibles"
+      <div className={styles.secondaryGrid} aria-label="Outils à venir"
       >
         {upcomingTools.map((tool) => (
           <div key={tool.id} className={styles.secondaryCard}>

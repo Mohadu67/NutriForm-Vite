@@ -171,9 +171,36 @@ app.use('/api/match-chat', matchChatRoutes);
 app.use('/api/push', pushNotificationRoutes);
 app.use('/api/recipes', recipeRoutes);
 
-app.get('/', (req, res) => {
-  res.send('Bienvenue sur le backend de NutriForm 🚀');
-});
+// Servir les fichiers statiques du frontend (en production)
+const frontendDistPath = path.join(__dirname, '../frontend/dist');
+if (fs.existsSync(frontendDistPath)) {
+  logger.info('📦 Serveur de fichiers statiques activé');
+
+  // Assets statiques (JS, CSS, images, etc.)
+  app.use(express.static(frontendDistPath, {
+    maxAge: '1y',
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, filepath) => {
+      // Cache agressif pour les assets avec hash
+      if (filepath.match(/\.(js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|webp|ico)$/)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    }
+  }));
+
+  // SSR désactivé temporairement - causait des conflits React (double instance)
+  // Servir index.html pour toutes les routes frontend (mode SPA)
+  app.use((req, res) => {
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+
+} else {
+  logger.warn('⚠️  Build frontend non trouvé, serveur API uniquement');
+  app.get('/', (_req, res) => {
+    res.send('Bienvenue sur le backend de NutriForm 🚀');
+  });
+}
 
 // Configuration Socket.io pour la messagerie temps réel
 require('./socket/messageSocket')(io);

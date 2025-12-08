@@ -173,7 +173,7 @@ export default function ChercherExo({
         </div>
       </div>
 
-      {loading && <p className={styles.loading}>Chargement… respire, on feuillette la bd.json.</p>}
+      {loading && <p className={styles.loading}>Chargement des exercices...</p>}
       {error && <p className={styles.error}>Erreur: {error}</p>}
 
       {!loading && !error && (
@@ -216,7 +216,7 @@ export default function ChercherExo({
             );
           })}
           {filtered.length === 0 && (
-            <li className={styles.empty}>Aucun résultat trouvé</li>
+            <li className={styles.empty}>Aucun résultat</li>
           )}
         </ul>
       )}

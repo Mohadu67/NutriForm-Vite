@@ -73,25 +73,25 @@ export default function FormExo({ user: userProp }) {
     checkLastWeekSession();
   }, [user, mode, currentStep, hasCheckedLastWeek]);
 
-  const defaultExerciseName = "Exercice";
+  const defaultExerciseName = useMemo(() => "Exercice", []);
 
   const steps = useMemo(
     () => [
       {
         title: "Type d'entraînement",
-        sub: "Choisis le type d'activité que tu souhaites pratiquer",
+        sub: "Sélectionne le type d'entraînement",
       },
       {
-        title: "Équipement disponible",
-        sub: "Sélectionne le matériel que tu as à disposition",
+        title: "Équipement",
+        sub: "Choisis ton équipement disponible",
       },
       {
         title: "Muscles ciblés",
-        sub: "Définis les groupes musculaires que tu veux travailler",
+        sub: "Sélectionne les muscles à travailler",
       },
       {
         title: "Exercices proposés",
-        sub: "Sélectionne les exercices pour ta séance",
+        sub: "Choisis tes exercices",
       },
     ],
     []
@@ -399,7 +399,7 @@ export default function FormExo({ user: userProp }) {
           <label>Nom de la séance</label>
           <input
             type="text"
-            placeholder="Ex: Push Day, Jambes, Cardio..."
+            placeholder="ex: Jambes du lundi"
             value={sessionName}
             onChange={(e) => setSessionName(e.target.value)}
           />

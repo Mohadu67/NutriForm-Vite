@@ -28,7 +28,8 @@
   width: 80px;
   height: 80px;
   margin: 0 auto 1.5rem;
-  background: linear-gradient(135deg, #FFD700, #FFA500);
+  background: #FFD700;
+  border: 2px solid transparent;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -36,6 +37,10 @@
   color: white;
   box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
   animation: float 3s ease-in-out infinite;
+}
+
+.heroIcon:hover {
+  border-color: #FFA500;
 }
 
 @keyframes float {
@@ -102,9 +107,9 @@
 }
 
 .optInBtn {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
+  background: #FFD700;
   color: white;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 25px;
   padding: 0.75rem 1.5rem;
   font-weight: 600;
@@ -116,6 +121,7 @@
 }
 
 .optInBtn:hover:not(:disabled) {
+  border-color: #FFA500;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(255, 165, 0, 0.4);
 }
@@ -172,9 +178,9 @@
 }
 
 .refreshBtn {
-  background: linear-gradient(135deg, var(--couleur-bouton-action), #e89e6e);
+  background: var(--couleur-bouton-action);
   color: var(--couleur-text-bouton);
-  border: none;
+  border: 2px solid transparent;
   border-radius: 12px;
   width: 38px;
   height: 38px;
@@ -189,6 +195,7 @@
 }
 
 .refreshBtn:hover:not(:disabled) {
+  border-color: #e89e6e;
   transform: translateY(-2px) rotate(90deg);
   box-shadow: 0 6px 16px rgba(247, 177, 134, 0.5);
 }
@@ -824,17 +831,3 @@
 /* ========================================
    DARK MODE ADJUSTMENTS
    ======================================== */
-
-@media (prefers-color-scheme: dark) {
-  .optInBanner {
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(255, 165, 0, 0.05));
-  }
-
-  .podiumItem {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  }
-
-  .listItem:hover {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  }
-}

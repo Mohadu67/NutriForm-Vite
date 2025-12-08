@@ -60,7 +60,7 @@ export default function Newsletter() {
 
       if (response.ok) {
         setStatus("success");
-        setMessage("Merci pour ton inscription ! Tu recevras bientôt nos meilleurs conseils.");
+        setMessage("Merci ! Tu es maintenant inscrit à notre newsletter.");
         setEmail("");
         storage.set("hideNewsletter", "true");
 
@@ -71,11 +71,11 @@ export default function Newsletter() {
         }, 2000);
       } else {
         setStatus("error");
-        setMessage(data.message || "Une erreur est survenue. Réessaye plus tard.");
+        setMessage(data.message || "Une erreur est survenue. Réessaie plus tard.");
       }
     } catch {
       setStatus("error");
-      setMessage("Problème de connexion. Vérifie ta connexion internet.");
+      setMessage("Erreur de connexion. Vérifie ta connexion internet.");
     }
   };
 
@@ -88,23 +88,23 @@ export default function Newsletter() {
           <div className={styles.textBlock}>
             <span className={styles.badge}>Newsletter</span>
             <h2 className={styles.title}>
-              Reste informé de nos nouveautés
+              Reste motivé, inscris-toi à la newsletter
             </h2>
             <p className={styles.description}>
-              Rejoins notre communauté et reçois nos meilleurs conseils fitness, nutrition et nos nouveaux outils en avant-première.
+              Reçois nos meilleurs conseils fitness, des recettes saines et des offres exclusives directement dans ta boîte mail.
             </p>
             <div className={styles.features}>
               <div className={styles.feature}>
                 <span className={styles.featureIcon}>✨</span>
-                <span>Conseils exclusifs chaque semaine</span>
+                <span>Conseils d'experts chaque semaine</span>
               </div>
               <div className={styles.feature}>
                 <span className={styles.featureIcon}>💡</span>
-                <span>Programmes d'entraînement personnalisés</span>
+                <span>Programmes d'entraînement exclusifs</span>
               </div>
               <div className={styles.feature}>
                 <span className={styles.featureIcon}>🎁</span>
-                <span>Accès anticipé aux nouvelles fonctionnalités</span>
+                <span>Offres spéciales réservées aux abonnés</span>
               </div>
             </div>
           </div>
@@ -146,7 +146,7 @@ export default function Newsletter() {
               )}
 
               <p className={styles.privacy}>
-                Tes données sont protégées. Pas de spam, désinscription facile.
+                Tes données sont protégées. Tu peux te désinscrire à tout moment.
               </p>
             </form>
           </div>
