@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
+import { Toaster } from 'sonner';
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
@@ -71,6 +72,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
+      <Toaster richColors closeButton />
       <WebSocketProvider>
         <ChatProvider>
           <UpdatePrompt />

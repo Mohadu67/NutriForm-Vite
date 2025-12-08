@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNotification } from '../../hooks/useNotification.jsx';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import ProgramBrowser from '../../components/Programs/ProgramBrowser/ProgramBrowser';
@@ -13,6 +14,7 @@ import { retryApiCall, saveToLocalStorage } from '../../utils/apiRetry';
 import styles from './Programs.module.css';
 
 export default function Programs() {
+  const notify = useNotification();
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [viewMode, setViewMode] = useState('browse'); // 'browse', 'preview', 'running', 'create', 'my-programs'
   const [isPremium, setIsPremium] = useState(false);
@@ -169,19 +171,19 @@ export default function Programs() {
         const data = await response.json();
         console.log('✅ Programme sauvegardé avec succès:', data);
         logger.info('Programme sauvegardé avec succès');
-        alert('✅ Programme créé avec succès !');
+        notify.success('Programme créé avec succès !');
         setViewMode('my-programs');
         setEditingProgram(null);
       } else {
         const error = await response.json();
         console.error('❌ Erreur serveur:', error);
         logger.error('Erreur sauvegarde programme:', error);
-        alert('❌ Erreur: ' + (error.error || 'Erreur inconnue'));
+        notify.error('Erreur: ' + (error.error || 'Erreur inconnue'));
       }
     } catch (error) {
       console.error('💥 Exception:', error);
       logger.error('Erreur sauvegarde programme:', error);
-      alert('❌ Erreur lors de la sauvegarde: ' + error.message);
+      notify.error('Erreur lors de la sauvegarde: ' + error.message);
     }
   };
 

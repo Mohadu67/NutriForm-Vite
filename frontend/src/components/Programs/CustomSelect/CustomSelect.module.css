@@ -103,7 +103,7 @@
   padding: 0.5rem 0;
   max-height: 240px;
   overflow-y: auto;
-  background-color: white;
+  background: var(--color-surface);
 }
 
 .option {
@@ -125,6 +125,12 @@
   background: rgba(247, 177, 134, 0.15);
   color: var(--color-primary);
   font-weight: 600;
+}
+
+.optionFocused {
+  background: rgba(247, 177, 134, 0.2);
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }
 
 .checkIcon {
@@ -163,6 +169,10 @@
 
   .optionSelected {
     background: rgba(247, 177, 134, 0.12);
+  }
+
+  .optionFocused {
+    background: rgba(247, 177, 134, 0.15);
   }
 }
 
