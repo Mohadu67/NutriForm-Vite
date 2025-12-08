@@ -14,7 +14,13 @@ export default function RecipeCard({ recipe }) {
   return (
     <Link to={`/recettes/${recipe._id}`} className={style.card}>
       <div className={style.imageContainer}>
-        <img src={recipe.image} alt={recipe.title} className={style.image} />
+        <img
+          src={recipe.image}
+          alt={recipe.title}
+          className={style.image}
+          loading="eager"
+          crossOrigin="anonymous"
+        />
         {recipe.isPremium && (
           <span className={style.premiumBadge}>Premium</span>
         )}
