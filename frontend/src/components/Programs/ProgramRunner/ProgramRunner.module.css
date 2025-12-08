@@ -430,7 +430,7 @@
    DARK MODE
    ============================================ */
 
-@media (prefers-color-scheme: dark) {
+:global(.dark) {
   .programName,
   .cycleName,
   .nextName {

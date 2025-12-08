@@ -112,7 +112,7 @@
 }
 
 /* Dark mode */
-@media (prefers-color-scheme: dark) {
+:global(.dark) {
   .modal {
     background: var(--color-surface-dark);
     border-color: var(--color-border-dark);

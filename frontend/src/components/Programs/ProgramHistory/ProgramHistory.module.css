@@ -336,7 +336,7 @@
    DARK MODE
    ============================================ */
 
-@media (prefers-color-scheme: dark) {
+:global(.dark) {
   .sectionTitle,
   .sessionName,
   .statValue,

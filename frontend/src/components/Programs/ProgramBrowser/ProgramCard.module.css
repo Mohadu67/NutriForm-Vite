@@ -205,7 +205,7 @@
    DARK MODE
    ============================================ */
 
-@media (prefers-color-scheme: dark) {
+:global(.dark) {
   .card {
     background: var(--color-surface-dark);
     border-color: var(--color-border-dark);
