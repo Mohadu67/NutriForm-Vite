@@ -233,11 +233,15 @@
 }
 
 .stepIndicator.active .stepNumber {
-  background: linear-gradient(135deg, #f7b186 0%, #ffc699 100%);
+  background: #f7b186;
   color: white;
-  border-color: transparent;
+  border: 2px solid transparent;
   box-shadow: 0 4px 20px rgba(247, 177, 134, 0.4);
   animation: bounce 0.6s ease-out;
+}
+
+.stepIndicator.active .stepNumber:hover {
+  border-color: #e89e6e;
 }
 
 .stepLabel {
@@ -478,11 +482,15 @@ textarea.formControl {
 }
 
 .levelCard.selected {
-  background: linear-gradient(135deg, #f7b186 0%, #ffc699 100%);
-  border-color: transparent;
+  background: #f7b186;
+  border: 2px solid transparent;
   color: white;
   box-shadow: 0 8px 24px rgba(247, 177, 134, 0.4);
   transform: translateY(-4px);
+}
+
+.levelCard.selected:hover {
+  border-color: #e89e6e;
 }
 
 .levelCard strong {
@@ -525,20 +533,24 @@ textarea.formControl {
 }
 
 .workoutBadge.selected {
-  background: linear-gradient(135deg, #f7b186 0%, #ffc699 100%);
-  border-color: transparent;
+  background: #f7b186;
+  border: 2px solid transparent;
   color: white;
   box-shadow: 0 4px 16px rgba(247, 177, 134, 0.4);
   transform: translateY(-2px);
+}
+
+.workoutBadge.selected:hover {
+  border-color: #e89e6e;
 }
 
 /* ===== LOCATION ===== */
 .locationButton {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, #f7b186 0%, #ffc699 100%);
+  background: #f7b186;
   color: white;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 12px;
   font-size: 15px;
   font-weight: 600;
@@ -553,6 +565,7 @@ textarea.formControl {
 }
 
 .locationButton:hover {
+  border-color: #e89e6e;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(247, 177, 134, 0.4);
 }
@@ -624,9 +637,9 @@ textarea.formControl {
 
 .addSlotButton {
   padding: 6px 12px;
-  background: linear-gradient(135deg, #f7b186 0%, #ffc699 100%);
+  background: #f7b186;
   color: white;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
@@ -636,6 +649,7 @@ textarea.formControl {
 }
 
 .addSlotButton:hover {
+  border-color: #e89e6e;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
 }
@@ -823,8 +837,8 @@ textarea.formControl {
 .nextButton {
   flex: 2;
   padding: 14px 20px;
-  background: linear-gradient(135deg, #f7b186 0%, #ffc699 100%);
-  border: none;
+  background: #f7b186;
+  border: 2px solid transparent;
   border-radius: 14px;
   font-size: 15px;
   font-weight: 600;
@@ -839,6 +853,7 @@ textarea.formControl {
 }
 
 .nextButton:hover {
+  border-color: #e89e6e;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(247, 177, 134, 0.4);
 }

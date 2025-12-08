@@ -417,46 +417,6 @@
 }
 
 /* ========== DARK MODE ========== */
-@media (prefers-color-scheme: dark) {
-  .hero {
-    background: var(--couleur-principale, #0c0e12);
-  }
-
-  .badge {
-    background: var(--paper, #12151b);
-  }
-
-  .floatingOrb {
-    opacity: 0.2;
-  }
-
-  .mission {
-    background: var(--paper, #12151b);
-  }
-
-  .values,
-  .trust {
-    background: var(--couleur-principale, #0c0e12);
-  }
-
-  .features {
-    background: var(--paper, #12151b);
-  }
-
-  .valueCard,
-  .statBig,
-  .trustHighlight {
-    background: var(--paper, #12151b);
-  }
-
-  .bentoCard {
-    background: var(--paper, #12151b);
-  }
-
-  .bentoIcon {
-    background: var(--couleur-principale, #0c0e12);
-  }
-}
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {

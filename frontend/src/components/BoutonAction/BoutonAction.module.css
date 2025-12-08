@@ -74,15 +74,3 @@
 }
 
 /* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .logout {
-    color: #fca5a5;
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.25);
-  }
-
-  .logout:hover {
-    background: rgba(239, 68, 68, 0.18);
-    border-color: rgba(239, 68, 68, 0.35);
-  }
-}

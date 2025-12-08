@@ -270,8 +270,8 @@ function BodyPicker({ value, onChange, multiple = false }) {
   }, [syncActive]);
 
   const instructions = multiple
-    ? "Clique sur les zones musculaires que tu veux travailler"
-    : "Clique sur la zone musculaire que tu veux travailler";
+    ? "Clique sur les zones du corps que tu souhaites cibler"
+    : "Clique sur une zone du corps pour la sélectionner";
 
 
   return (
@@ -281,7 +281,7 @@ function BodyPicker({ value, onChange, multiple = false }) {
           <div
             ref={containerRef}
             className={cls.svg}
-            aria-label="Sélecteur de zones musculaires"
+            aria-label="Sélecteur de zones du corps"
           />
         </div>
       </div>

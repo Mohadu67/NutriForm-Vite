@@ -4,7 +4,7 @@ import { useChat } from "../../contexts/ChatContext";
 import { useWebSocket } from "../../contexts/WebSocketContext";
 import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
 import { storage } from "../../shared/utils/storage";
-import { getUnreadCount } from "../../shared/api/matchChat";
+import { getConversations } from "../../shared/api/matchChat";
 import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
 import UnifiedChatPanel from "../Chat/UnifiedChatPanel.jsx";
@@ -274,11 +274,11 @@ export default function Navbar() {
 
     const updateUnreadCount = async () => {
       try {
-        const { unreadCount: count } = await getUnreadCount();
-        setUnreadCount(count);
+        const { conversations } = await getConversations();
+        const total = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
+        setUnreadCount(total);
       } catch (err) {
-        // Fallback silencieux si l'endpoint n'existe pas encore (sera fixé après déploiement)
-        setUnreadCount(0);
+        // Erreur silencieuse
       }
     };
 
@@ -325,7 +325,7 @@ export default function Navbar() {
       icon: <HomeIcon size={20} />
     },
     {
-      label: 'Exercices',
+      label: "Exercices",
       path: "/exo",
       icon: <DumbbellIcon size={20} />
     },
@@ -350,8 +350,8 @@ export default function Navbar() {
         }
       ] : []),
       { label: 'Recettes', path: "/recettes", icon: <UtensilsIcon size={28} /> },
-      { label: 'Outils', path: "/outils", icon: <ToolsIcon size={28} /> },
-      { label: 'À propos', path: "/about", icon: <InfoIcon size={28} /> },
+      { label: "Outils", path: "/outils", icon: <ToolsIcon size={28} /> },
+      { label: "À propos", path: "/about", icon: <InfoIcon size={28} /> },
       { label: 'FAQ', path: "/contact", icon: <HelpCircleIcon size={28} /> }
     ];
   }, [isLoggedIn, isPremium]);
@@ -674,7 +674,7 @@ export default function Navbar() {
                   if (!link.isAction) e.preventDefault();
                   link.onClick ? link.onClick() : navigate(link.path);
                 }}
-                title={link.label || 'Accueil'}
+                title={link.label || "Accueil"}
               >
                 <span className={styles.dockIcon}>{link.icon}</span>
                 {link.label && <span className={styles.dockLabel}>{link.label}</span>}
