@@ -137,7 +137,7 @@ const recipeSchema = new mongoose.Schema({
 });
 
 // Index pour recherche et filtres
-recipeSchema.index({ slug: 1 });
+// Note: slug a déjà un index via unique: true, pas besoin de le redéfinir
 recipeSchema.index({ goal: 1 });
 recipeSchema.index({ mealType: 1 });
 recipeSchema.index({ tags: 1 });

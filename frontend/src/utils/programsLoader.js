@@ -1,37 +1,66 @@
 /**
- * Charger les programmes d'entraînement depuis les fichiers JSON
+ * Charger les programmes d'entraînement depuis les fichiers JSON + MongoDB
  * @param {string|string[]} types - Type(s) de programmes à charger ('all' par défaut)
  * @returns {Promise<Array>} Liste des programmes
  */
 export async function loadPrograms(types = 'all') {
+  try {
+    // Charger les programmes JSON locaux
+    const jsonPrograms = await loadJSONPrograms(types);
+
+    // Charger les programmes MongoDB publics
+    const mongoPrograms = await loadMongoPrograms(types);
+
+    // Fusionner et retourner
+    return [...jsonPrograms, ...mongoPrograms];
+  } catch (error) {
+    console.error('Erreur lors du chargement des programmes:', error);
+    return [];
+  }
+}
+
+/**
+ * Charger les programmes depuis JSON local
+ */
+async function loadJSONPrograms(types = 'all') {
   const fileMap = {
     all: '/data/programs/programs.json',
   };
 
-  // Si on demande 'all', charger tous les programmes
-  if (types === 'all') {
-    try {
-      const res = await fetch(fileMap.all);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      return data.programs || [];
-    } catch {
-      return [];
-    }
-  }
-
-  // Sinon, filtrer par type
   try {
     const res = await fetch(fileMap.all);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const allPrograms = data.programs || [];
 
-    // Convertir en tableau si nécessaire
-    const typeArray = Array.isArray(types) ? types : [types];
+    // Si on demande 'all', retourner tous
+    if (types === 'all') {
+      return allPrograms;
+    }
 
-    // Filtrer par type
+    // Sinon, filtrer par type
+    const typeArray = Array.isArray(types) ? types : [types];
     return allPrograms.filter(program => typeArray.includes(program.type));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Charger les programmes depuis MongoDB (API)
+ */
+async function loadMongoPrograms(types = 'all') {
+  try {
+    const queryParams = new URLSearchParams();
+    if (types !== 'all') {
+      queryParams.append('type', types);
+    }
+
+    const res = await fetch(`/api/programs/public?${queryParams.toString()}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const data = await res.json();
+    return data.programs || [];
   } catch {
     return [];
   }

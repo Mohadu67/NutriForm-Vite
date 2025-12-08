@@ -91,11 +91,39 @@
   margin: 0;
 }
 
+.premiumActions {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.myProgramsButton,
 .createButton {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  white-space: nowrap;
+}
+
+.myProgramsButton {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.myProgramsButton:hover {
+  background: var(--hover-bg);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.createButton {
   background: var(--color-primary);
   color: #111;
   border: none;

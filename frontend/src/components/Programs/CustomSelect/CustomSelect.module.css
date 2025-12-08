@@ -103,6 +103,7 @@
   padding: 0.5rem 0;
   max-height: 240px;
   overflow-y: auto;
+  background-color: white;
 }
 
 .option {
