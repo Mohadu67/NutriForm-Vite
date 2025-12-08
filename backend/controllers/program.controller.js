@@ -12,7 +12,10 @@ async function getPublicPrograms(req, res) {
     const { type, difficulty, tags, limit = 50, skip = 0 } = req.query;
 
     const filter = {
-      isPublic: true,
+      $or: [
+        { isPublic: true },
+        { status: 'public' }
+      ],
       isActive: true
     };
 
@@ -666,6 +669,283 @@ async function getProgramHistory(req, res) {
   }
 }
 
+/**
+ * Proposer un programme personnel au public (User Premium)
+ */
+async function proposeToPublic(req, res) {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "invalid_program_id" });
+    }
+
+    const program = await WorkoutProgram.findById(id);
+
+    if (!program) {
+      return res.status(404).json({ error: "program_not_found" });
+    }
+
+    // Vérifier que l'utilisateur est le créateur
+    if (program.userId.toString() !== userId) {
+      return res.status(403).json({ error: "not_program_owner" });
+    }
+
+    // Vérifier que le programme est privé
+    if (program.status !== 'private') {
+      return res.status(400).json({ error: "program_already_proposed_or_public" });
+    }
+
+    // Mettre le statut à "pending"
+    program.status = 'pending';
+    await program.save();
+
+    logger.info(`Programme ${id} proposé au public par user ${userId}`);
+
+    return res.status(200).json({
+      success: true,
+      message: "program_proposed_successfully",
+      program
+    });
+  } catch (err) {
+    logger.error("proposeToPublic error:", err);
+    return res.status(500).json({ error: "server_error" });
+  }
+}
+
+/**
+ * Récupérer les programmes en attente de validation (Admin)
+ */
+async function getPendingPrograms(req, res) {
+  try {
+    const programs = await WorkoutProgram
+      .find({ status: 'pending', isActive: true })
+      .populate('userId', 'pseudo email')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      programs
+    });
+  } catch (err) {
+    logger.error("getPendingPrograms error:", err);
+    return res.status(500).json({ error: "server_error" });
+  }
+}
+
+/**
+ * Approuver un programme (Admin)
+ */
+async function approveProgram(req, res) {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "invalid_program_id" });
+    }
+
+    const program = await WorkoutProgram.findById(id);
+
+    if (!program) {
+      return res.status(404).json({ error: "program_not_found" });
+    }
+
+    if (program.status !== 'pending') {
+      return res.status(400).json({ error: "program_not_pending" });
+    }
+
+    // Approuver le programme
+    program.status = 'public';
+    program.isPublic = true;
+    await program.save();
+
+    logger.info(`Programme ${id} approuvé par admin ${req.user.id}`);
+
+    return res.status(200).json({
+      success: true,
+      message: "program_approved",
+      program
+    });
+  } catch (err) {
+    logger.error("approveProgram error:", err);
+    return res.status(500).json({ error: "server_error" });
+  }
+}
+
+/**
+ * Rejeter un programme (Admin)
+ */
+async function rejectProgram(req, res) {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "invalid_program_id" });
+    }
+
+    const program = await WorkoutProgram.findById(id);
+
+    if (!program) {
+      return res.status(404).json({ error: "program_not_found" });
+    }
+
+    if (program.status !== 'pending') {
+      return res.status(400).json({ error: "program_not_pending" });
+    }
+
+    // Rejeter le programme (revient à private)
+    program.status = 'private';
+    program.isPublic = false;
+    await program.save();
+
+    logger.info(`Programme ${id} rejeté par admin ${req.user.id}. Raison: ${reason}`);
+
+    return res.status(200).json({
+      success: true,
+      message: "program_rejected",
+      reason
+    });
+  } catch (err) {
+    logger.error("rejectProgram error:", err);
+    return res.status(500).json({ error: "server_error" });
+  }
+}
+
+/**
+ * Créer un programme public (Admin uniquement)
+ */
+async function createAdminProgram(req, res) {
+  try {
+    const {
+      name,
+      description,
+      type,
+      difficulty,
+      estimatedDuration,
+      estimatedCalories,
+      tags,
+      muscleGroups,
+      equipment,
+      cycles,
+      coverImage,
+      instructions,
+      tips
+    } = req.body;
+
+    if (!name || !type || !cycles || cycles.length === 0) {
+      return res.status(400).json({ error: "missing_required_fields" });
+    }
+
+    const program = new WorkoutProgram({
+      name,
+      description,
+      type,
+      difficulty,
+      estimatedDuration,
+      estimatedCalories,
+      tags,
+      muscleGroups,
+      equipment,
+      cycles,
+      coverImage,
+      instructions,
+      tips,
+      createdBy: 'admin',
+      status: 'public',
+      isPublic: true,
+      isActive: true
+    });
+
+    await program.save();
+
+    logger.info(`Programme admin créé: ${program._id} par admin ${req.user.id}`);
+
+    return res.status(201).json({
+      success: true,
+      program
+    });
+  } catch (err) {
+    logger.error("createAdminProgram error:", err);
+    return res.status(500).json({ error: "server_error" });
+  }
+}
+
+/**
+ * Modifier un programme admin (Admin uniquement)
+ */
+async function updateAdminProgram(req, res) {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "invalid_program_id" });
+    }
+
+    const program = await WorkoutProgram.findById(id);
+
+    if (!program) {
+      return res.status(404).json({ error: "program_not_found" });
+    }
+
+    if (program.createdBy !== 'admin') {
+      return res.status(403).json({ error: "not_admin_program" });
+    }
+
+    // Mise à jour
+    Object.assign(program, updates);
+    await program.save();
+
+    logger.info(`Programme admin ${id} mis à jour par admin ${req.user.id}`);
+
+    return res.status(200).json({
+      success: true,
+      program
+    });
+  } catch (err) {
+    logger.error("updateAdminProgram error:", err);
+    return res.status(500).json({ error: "server_error" });
+  }
+}
+
+/**
+ * Supprimer un programme admin (Admin uniquement)
+ */
+async function deleteAdminProgram(req, res) {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "invalid_program_id" });
+    }
+
+    const program = await WorkoutProgram.findById(id);
+
+    if (!program) {
+      return res.status(404).json({ error: "program_not_found" });
+    }
+
+    if (program.createdBy !== 'admin') {
+      return res.status(403).json({ error: "not_admin_program" });
+    }
+
+    await program.deleteOne();
+
+    logger.info(`Programme admin ${id} supprimé par admin ${req.user.id}`);
+
+    return res.status(200).json({
+      success: true,
+      message: "program_deleted"
+    });
+  } catch (err) {
+    logger.error("deleteAdminProgram error:", err);
+    return res.status(500).json({ error: "server_error" });
+  }
+}
+
 module.exports = {
   getPublicPrograms,
   getProgramById,
@@ -680,5 +960,12 @@ module.exports = {
   getProgramHistory,
   addToFavorites,
   removeFromFavorites,
-  getFavorites
+  getFavorites,
+  proposeToPublic,
+  getPendingPrograms,
+  approveProgram,
+  rejectProgram,
+  createAdminProgram,
+  updateAdminProgram,
+  deleteAdminProgram
 };

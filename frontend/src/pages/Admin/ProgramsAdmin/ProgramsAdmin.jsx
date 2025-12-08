@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { secureApiCall } from '../../../utils/authService';
 import logger from '../../../shared/utils/logger';
 import CycleEditor from './CycleEditor';
+import PendingPrograms from './PendingPrograms';
 import styles from './ProgramsAdmin.module.css';
 
 export default function ProgramsAdmin() {
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingProgram, setEditingProgram] = useState(null);
+  const [showPending, setShowPending] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -32,7 +34,7 @@ export default function ProgramsAdmin() {
   const fetchPrograms = async () => {
     try {
       setLoading(true);
-      const response = await secureApiCall('/programs/admin/all', {
+      const response = await secureApiCall('/api/programs/admin/all', {
         method: 'GET',
       });
 
@@ -68,28 +70,39 @@ export default function ProgramsAdmin() {
         estimatedCalories: parseInt(formData.estimatedCalories),
       };
 
+      console.log('📤 Envoi du programme:', payload);
+      console.log('📊 Nombre de cycles:', payload.cycles.length);
+
       const url = editingProgram
-        ? `/programs/${editingProgram._id}`
-        : '/programs';
+        ? `/api/programs/admin/${editingProgram._id}`
+        : '/api/programs/admin/create';
 
       const method = editingProgram ? 'PATCH' : 'POST';
+
+      console.log(`🌐 Requête ${method} vers ${url}`);
 
       const response = await secureApiCall(url, {
         method,
         body: JSON.stringify(payload),
       });
 
+      console.log('📥 Statut de la réponse:', response.status, response.ok);
+
       if (response.ok) {
-        alert(editingProgram ? 'Programme mis à jour' : 'Programme créé');
+        const data = await response.json();
+        console.log('✅ Succès:', data);
+        alert(editingProgram ? 'Programme mis à jour ✅' : 'Programme créé ✅');
         fetchPrograms();
         resetForm();
       } else {
         const error = await response.json();
+        console.error('❌ Erreur serveur:', error);
         alert('Erreur: ' + (error.error || 'Erreur inconnue'));
       }
     } catch (error) {
+      console.error('💥 Exception:', error);
       logger.error('Erreur lors de la sauvegarde:', error);
-      alert('Erreur lors de la sauvegarde');
+      alert('Erreur lors de la sauvegarde: ' + error.message);
     }
   };
 
@@ -119,7 +132,7 @@ export default function ProgramsAdmin() {
     }
 
     try {
-      const response = await secureApiCall(`/programs/${programId}`, {
+      const response = await secureApiCall(`/api/programs/admin/${programId}`, {
         method: 'DELETE',
       });
 
@@ -159,7 +172,14 @@ export default function ProgramsAdmin() {
 
   return (
     <div className={styles.admin}>
-      <h1>Gestion des Programmes</h1>
+      <div className={styles.headerBar}>
+        <h1>Gestion des Programmes</h1>
+        <button onClick={() => setShowPending(true)} className={styles.pendingButton}>
+          📋 Programmes en attente
+        </button>
+      </div>
+
+      {showPending && <PendingPrograms onClose={() => setShowPending(false)} />}
 
       <div className={styles.content}>
         {/* Formulaire */}

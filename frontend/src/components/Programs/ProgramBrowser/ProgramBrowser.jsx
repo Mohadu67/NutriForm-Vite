@@ -6,7 +6,7 @@ import styles from './ProgramBrowser.module.css';
 import logger from '../../../shared/utils/logger';
 import { DumbbellIcon, SparklesIcon, SearchIcon, LayersIcon, SlidersIcon } from '../../Programs/ProgramIcons';
 
-export default function ProgramBrowser({ onSelectProgram, onCreateProgram, isPremium }) {
+export default function ProgramBrowser({ onSelectProgram, onCreateProgram, onViewMyPrograms, isPremium }) {
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -76,11 +76,21 @@ export default function ProgramBrowser({ onSelectProgram, onCreateProgram, isPre
             </div>
           </div>
 
-          {isPremium && onCreateProgram && (
-            <button onClick={onCreateProgram} className={styles.createButton}>
-              <SparklesIcon size={20} />
-              <span>Créer mon programme</span>
-            </button>
+          {isPremium && (
+            <div className={styles.premiumActions}>
+              {onViewMyPrograms && (
+                <button onClick={onViewMyPrograms} className={styles.myProgramsButton}>
+                  <DumbbellIcon size={20} />
+                  <span>Mes programmes</span>
+                </button>
+              )}
+              {onCreateProgram && (
+                <button onClick={onCreateProgram} className={styles.createButton}>
+                  <SparklesIcon size={20} />
+                  <span>Créer un programme</span>
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>

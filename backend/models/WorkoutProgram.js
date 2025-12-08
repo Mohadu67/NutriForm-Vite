@@ -83,6 +83,13 @@ const WorkoutProgramSchema = new Schema({
   isPublic: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
 
+  // Statut du programme
+  status: {
+    type: String,
+    enum: ["private", "public", "pending"], // private = perso, public = validé admin, pending = en attente validation
+    default: "private"
+  },
+
   // Créateur
   createdBy: {
     type: String,
