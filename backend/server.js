@@ -88,7 +88,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://www.googletagmanager.com", "https://www.google-analytics.com"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: [
         "'self'",
@@ -99,7 +99,19 @@ app.use(helmet({
         "https://jow.fr",
         "https://cdn.aistoucuisine.com"
       ],
-      connectSrc: ["'self'"],
+      connectSrc: [
+        "'self'",
+        "https://api.harmonith.fr",
+        "https://res.cloudinary.com",
+        "https://www.googletagmanager.com",
+        "https://www.google-analytics.com",
+        "https://region1.google-analytics.com",
+        "https://*.clarity.ms",
+        "https://pagead2.googlesyndication.com",
+        "https://*.adtrafficquality.google",
+        "https://cdn.jsdelivr.net",
+        "https://*.google.com"
+      ],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
