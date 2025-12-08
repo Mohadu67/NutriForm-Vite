@@ -146,7 +146,8 @@ async function createProgram(req, res) {
       estimatedCalories
     } = sanitized;
 
-    const isPublic = req.body.isPublic;
+    // isPublic est un boolean, ne pas sanitizer
+    const isPublic = Boolean(req.body.isPublic);
 
     // Validation des champs requis
     if (!name || !type || !cycles || cycles.length === 0) {
@@ -289,6 +290,9 @@ async function updateProgram(req, res) {
       return res.status(403).json({ error: "access_denied" });
     }
 
+    // Sanitize toutes les entrées utilisateur
+    const sanitized = sanitizeProgram(req.body);
+
     // Mettre à jour les champs autorisés
     const allowedUpdates = [
       'name',
@@ -306,16 +310,22 @@ async function updateProgram(req, res) {
       'estimatedCalories'
     ];
 
-    // Seul l'admin peut modifier isPublic et isActive
-    if (isAdmin) {
-      allowedUpdates.push('isPublic', 'isActive');
-    }
-
+    // Appliquer les champs sanitizés
     allowedUpdates.forEach(field => {
-      if (req.body[field] !== undefined) {
-        program[field] = req.body[field];
+      if (sanitized[field] !== undefined) {
+        program[field] = sanitized[field];
       }
     });
+
+    // Seul l'admin peut modifier isPublic et isActive (booleans non sanitizés)
+    if (isAdmin) {
+      if (req.body.isPublic !== undefined) {
+        program.isPublic = Boolean(req.body.isPublic);
+      }
+      if (req.body.isActive !== undefined) {
+        program.isActive = Boolean(req.body.isActive);
+      }
+    }
 
     await program.save();
 
@@ -904,6 +914,9 @@ async function rejectProgram(req, res) {
  */
 async function createAdminProgram(req, res) {
   try {
+    // Sanitize toutes les entrées utilisateur
+    const sanitized = sanitizeProgram(req.body);
+
     const {
       name,
       description,
@@ -918,7 +931,7 @@ async function createAdminProgram(req, res) {
       coverImage,
       instructions,
       tips
-    } = req.body;
+    } = sanitized;
 
     if (!name || !type || !cycles || cycles.length === 0) {
       return res.status(400).json({ error: "missing_required_fields" });
@@ -980,21 +993,28 @@ async function updateAdminProgram(req, res) {
       return res.status(403).json({ error: "not_admin_program" });
     }
 
-    // Whitelist des champs modifiables par admin
+    // Sanitize toutes les entrées utilisateur
+    const sanitized = sanitizeProgram(req.body);
+
+    // Whitelist des champs modifiables par admin (texte sanitizé)
     const allowedUpdates = [
       'name', 'description', 'type', 'difficulty',
       'estimatedDuration', 'estimatedCalories',
       'tags', 'muscleGroups', 'equipment', 'cycles',
-      'coverImage', 'instructions', 'tips',
-      'status', 'isPublic', 'isActive'
+      'coverImage', 'instructions', 'tips'
     ];
 
-    // Appliquer seulement les champs autorisés
+    // Appliquer seulement les champs autorisés (sanitizés)
     allowedUpdates.forEach(field => {
-      if (updates[field] !== undefined) {
-        program[field] = updates[field];
+      if (sanitized[field] !== undefined) {
+        program[field] = sanitized[field];
       }
     });
+
+    // Champs admin (booleans/strings non sanitizés)
+    if (req.body.status !== undefined) program.status = req.body.status;
+    if (req.body.isPublic !== undefined) program.isPublic = Boolean(req.body.isPublic);
+    if (req.body.isActive !== undefined) program.isActive = Boolean(req.body.isActive);
 
     await program.save();
 
