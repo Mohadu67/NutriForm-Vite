@@ -187,6 +187,27 @@ async function createProgram(req, res) {
         });
       }
 
+      // Validation des durées (doivent être positives et raisonnables)
+      if (cycle.type === "exercise") {
+        if (cycle.durationSec == null || cycle.durationSec < 5 || cycle.durationSec > 600) {
+          return res.status(400).json({
+            error: "invalid_exercise_duration",
+            message: "La durée d'exercice doit être entre 5 et 600 secondes",
+            cycleIndex: i
+          });
+        }
+      }
+
+      if (cycle.type === "rest" || cycle.type === "transition") {
+        if (cycle.restSec == null || cycle.restSec < 0 || cycle.restSec > 300) {
+          return res.status(400).json({
+            error: "invalid_rest_duration",
+            message: "La durée de repos doit être entre 0 et 300 secondes",
+            cycleIndex: i
+          });
+        }
+      }
+
       if (cycle.intensity && (cycle.intensity < 1 || cycle.intensity > 10)) {
         return res.status(400).json({
           error: "invalid_intensity",
@@ -435,6 +456,65 @@ async function completeProgram(req, res) {
     });
   } catch (err) {
     logger.error("completeProgram error:", err);
+    return res.status(500).json({ error: "server_error" });
+  }
+}
+
+/**
+ * Enregistrer une session déjà terminée (pour workouts exécutés côté client)
+ * POST /api/programs/:id/record-completion
+ */
+async function recordCompletedSession(req, res) {
+  try {
+    const { id } = req.params;
+    const { cyclesCompleted, durationSec, calories, entries } = req.body;
+    const userId = req.user.id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "invalid_program_id" });
+    }
+
+    const program = await WorkoutProgram.findById(id);
+
+    if (!program) {
+      return res.status(404).json({ error: "program_not_found" });
+    }
+
+    // Validation des données
+    if (cyclesCompleted == null || durationSec == null) {
+      return res.status(400).json({ error: "missing_required_fields" });
+    }
+
+    // Créer une session directement en status "finished"
+    const now = new Date();
+    const session = await WorkoutSession.create({
+      userId: new mongoose.Types.ObjectId(userId),
+      name: program.name,
+      programId: program._id,
+      programName: program.name,
+      programType: program.type,
+      cyclesTotal: program.cycles.length,
+      cyclesCompleted,
+      durationSec,
+      calories: calories || 0,
+      entries: entries || [],
+      status: "finished",
+      startedAt: new Date(now.getTime() - (durationSec * 1000)), // Calculer startedAt
+      endedAt: now
+    });
+
+    // Incrémenter les compteurs du programme
+    await program.incrementUsage();
+    await program.incrementCompletion();
+
+    logger.info(`Session completed recorded for program ${id} by user ${userId}`);
+
+    return res.status(201).json({
+      success: true,
+      session
+    });
+  } catch (err) {
+    logger.error("recordCompletedSession error:", err);
     return res.status(500).json({ error: "server_error" });
   }
 }
@@ -895,8 +975,22 @@ async function updateAdminProgram(req, res) {
       return res.status(403).json({ error: "not_admin_program" });
     }
 
-    // Mise à jour
-    Object.assign(program, updates);
+    // Whitelist des champs modifiables par admin
+    const allowedUpdates = [
+      'name', 'description', 'type', 'difficulty',
+      'estimatedDuration', 'estimatedCalories',
+      'tags', 'muscleGroups', 'equipment', 'cycles',
+      'coverImage', 'instructions', 'tips',
+      'status', 'isPublic', 'isActive'
+    ];
+
+    // Appliquer seulement les champs autorisés
+    allowedUpdates.forEach(field => {
+      if (updates[field] !== undefined) {
+        program[field] = updates[field];
+      }
+    });
+
     await program.save();
 
     logger.info(`Programme admin ${id} mis à jour par admin ${req.user.id}`);
@@ -955,6 +1049,7 @@ module.exports = {
   deleteProgram,
   startProgram,
   completeProgram,
+  recordCompletedSession,
   rateProgram,
   getAllPrograms,
   getProgramHistory,

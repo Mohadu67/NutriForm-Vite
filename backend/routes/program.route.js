@@ -8,6 +8,7 @@ const {
   deleteProgram,
   startProgram,
   completeProgram,
+  recordCompletedSession,
   rateProgram,
   getAllPrograms,
   getProgramHistory,
@@ -51,6 +52,7 @@ router.patch("/session/:sessionId/complete", authMiddleware, requirePremium, com
 // Routes avec paramètres dynamiques Premium
 router.post("/:id/propose", authMiddleware, requirePremium, proposeToPublic);
 router.post("/:id/start", authMiddleware, requirePremium, startProgram);
+router.post("/:id/record-completion", authMiddleware, requirePremium, recordCompletedSession);
 router.post("/:id/rate", authMiddleware, requirePremium, rateProgram);
 router.post("/:id/favorite", authMiddleware, requirePremium, addToFavorites);
 router.delete("/:id/favorite", authMiddleware, requirePremium, removeFromFavorites);
