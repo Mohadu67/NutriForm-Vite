@@ -365,7 +365,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
           onClick={onNext}
           disabled={step < 3 ? !canNext : false}
         >
-          {step < 3 ? 'Suivant' : "C'est parti !"}
+          {step < 3 ? "Suivant" : "C'est parti !"}
         </button>
       </div>
     </section>

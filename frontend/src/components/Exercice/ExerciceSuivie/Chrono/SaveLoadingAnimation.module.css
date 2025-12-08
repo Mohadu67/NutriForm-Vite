@@ -191,24 +191,6 @@
 }
 
 /* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .container {
-    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-  }
-
-  .message {
-    color: #f9fafb;
-  }
-
-  .note {
-    color: #9ca3af;
-  }
-
-  .progressBar {
-    background: #374151;
-  }
-}
-
 :global(.dark) .container {
   background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
 }

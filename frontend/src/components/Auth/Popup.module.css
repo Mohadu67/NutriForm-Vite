@@ -49,25 +49,6 @@
   --nf-muted: #bdbdbd;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --nf-bg: #0c0e12;
-    --nf-green: #7bc4a8;
-    --nf-peach: #f7b186;
-    --nf-ink: #e9ecf1;
-    --nf-shadow: 0 20px 50px rgba(0,0,0,.60), 0 4px 14px rgba(0,0,0,.40);
-    --nf-card-bg: rgba(18,21,27,.95);
-    --nf-card-bg-2: rgba(18,21,27,.92);
-    --nf-close-bg: rgba(255,255,255,.15);
-    --nf-close-hover: rgba(255,255,255,.25);
-    --nf-overlay: radial-gradient(1200px 600px at 50% -10%, rgba(5,6,11,.78), rgba(4,5,9,.65)), rgba(3,3,6,.62);
-    --nf-overlay-solid: rgba(12,14,18,.92);
-    --nf-surface: #1c1c1c;
-    --nf-surface-border: rgba(255,255,255,.08);
-    --nf-muted: #bdbdbd;
-  }
-}
-
 .themeLight {
   --nf-bg: #F7F6F2;
   --nf-green: #b8ddd1;

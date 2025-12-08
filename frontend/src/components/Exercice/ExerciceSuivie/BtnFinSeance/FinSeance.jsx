@@ -17,9 +17,9 @@ export default function FinSeance({ items = [], onFinish, sessionData }) {
 
   const buttonLabel = useMemo(() => {
     if (saving && progress.total > 0) {
-      return `Sauvegarde ${progress.current}/${progress.total}...`;
+      return `Sauvegarde... (${progress.current}/${progress.total})`;
     }
-    if (done) return "Séance sauvegardée !";
+    if (done) return "Séance sauvegardée";
     return hasItems
       ? "Terminer la séance"
       : "Terminer";
@@ -60,11 +60,11 @@ export default function FinSeance({ items = [], onFinish, sessionData }) {
   if (done) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.title}>Bravo !</h2>
+        <h2 className={styles.title}>Félicitations !</h2>
         <p className={styles.text}>
           {errors.length === 0
-            ? "Ta séance a été sauvegardée avec succès !"
-            : `${errors.length} erreur(s) lors de la sauvegarde`}
+            ? "Ta séance a été sauvegardée avec succès."
+            : `${errors.length} erreur${errors.length > 1 ? 's' : ''} lors de la sauvegarde.`}
         </p>
 
         {savedSession && errors.length === 0 && (

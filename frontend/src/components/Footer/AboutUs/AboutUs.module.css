@@ -248,26 +248,6 @@
 }
 
 /* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .aboutSection {
-    background: var(--couleur-principale, #0c0e12);
-  }
-
-  .statCard,
-  .valueCard,
-  .memberCard {
-    background: var(--paper, #12151b);
-  }
-
-  .memberPhoto {
-    background: color-mix(in srgb, var(--couleur-bouton-selection) 15%, var(--paper));
-    border-color: var(--line);
-  }
-
-  .memberSocials a {
-    background: transparent;
-  }
-}
 
 /* Responsive */
 @media (max-width: 768px) {

@@ -42,7 +42,7 @@ export default function Main() {
             <span className={styles.highlight}>je t'accompagne.</span>
           </h1>
           <p className={styles.heroSubtitle}>
-            Des outils précis et une expertise personnalisée pour atteindre tes objectifs fitness.
+            Des outils pratiques pour optimiser tes performances et atteindre tes objectifs fitness
           </p>
         </div>
         <div className={styles.heroVisual}>
@@ -73,7 +73,7 @@ export default function Main() {
 
       {/* Tools Section */}
       <section ref={toolsSectionRef} className={`${styles.toolsSection} ${styles.fadeIn}`}>
-        <IntroOutils title="Mes outils">
+        <IntroOutils title="Mes Outils Fitness">
           <OutilsCards />
         </IntroOutils>
       </section>

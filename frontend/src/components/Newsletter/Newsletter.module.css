@@ -185,21 +185,6 @@
 }
 
 /* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .newsletter {
-    background: var(--paper, #12151b);
-  }
-
-  .formBlock {
-    background: var(--couleur-principale, #0c0e12);
-  }
-
-  .message.error {
-    background: rgba(239, 68, 68, 0.15);
-    color: #fca5a5;
-    border-color: rgba(239, 68, 68, 0.3);
-  }
-}
 
 /* Responsive */
 @media (max-width: 768px) {

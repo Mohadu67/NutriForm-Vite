@@ -24,9 +24,9 @@ export default function Footer() {
   const location = useLocation();
 
   const CORE_LINKS = [
-    { label: 'Outils', path: "/outils", special: true },
-    { label: 'Exercices', path: "/exo", special: true },
-    { label: 'Contact', path: "/contact" },
+    { label: "Outils", path: "/outils", special: true },
+    { label: "Exercices", path: "/exo", special: true },
+    { label: "Contact", path: "/contact" },
   ];
 
   useEffect(() => {
@@ -42,15 +42,15 @@ export default function Footer() {
 
   const links = useMemo(() => {
     const connexion = isLoggedIn
-      ? { label: 'Historique', auth: true, onClick: () => { setPopupView("history"); setIsPopupOpen(true); } }
-      : { label: 'Connexion', auth: true, onClick: () => { setPopupView("login"); setIsPopupOpen(true); } };
+      ? { label: "Historique", auth: true, onClick: () => { setPopupView("history"); setIsPopupOpen(true); } }
+      : { label: "Connexion", auth: true, onClick: () => { setPopupView("login"); setIsPopupOpen(true); } };
 
     if (path === "/") {
       return [...CORE_LINKS, connexion];
     }
 
     const filtered = CORE_LINKS.filter((link) => link.path !== path);
-    return [{ label: 'Accueil', path: "/" }, ...filtered, connexion];
+    return [{ label: "Accueil", path: "/" }, ...filtered, connexion];
   }, [isLoggedIn, path, CORE_LINKS]);
 
   const linkListRef = useRef(null);
@@ -93,7 +93,7 @@ export default function Footer() {
           <div className={styles.brand}>
             <Logo className={styles.logo} />
             <p className={styles.tagline}>
-              Ton partenaire fitness pour atteindre tes objectifs santé et performance.
+              Ton partenaire fitness pour atteindre tes objectifs santé et bien-être
             </p>
           </div>
 

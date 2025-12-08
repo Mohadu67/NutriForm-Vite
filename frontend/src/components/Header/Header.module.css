@@ -48,12 +48,6 @@
 
 /* Dark Mode Support
    -------------------------------------------------------------------------- */
-@media (prefers-color-scheme: dark) {
-  .header {
-    --header-bg: var(--header-bg-dark);
-    --header-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
-}
 
 
 /* Reduced Motion - Accessibility

@@ -330,39 +330,6 @@
 }
 
 /* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .section {
-    background: var(--couleur-principale, #0c0e12);
-  }
-
-  .reviewCard {
-    background: var(--paper, #12151b);
-  }
-
-  .authorInitial {
-    background: color-mix(in srgb, var(--couleur-bouton-selection) 15%, var(--paper));
-    border-color: color-mix(in srgb, var(--couleur-bouton-selection) 30%, transparent);
-  }
-
-  .modal {
-    background: var(--paper, #12151b);
-  }
-
-  .input,
-  .textarea {
-    background: color-mix(in srgb, var(--paper) 90%, #000);
-  }
-
-  .starEmpty {
-    color: rgba(255,255,255,.15);
-  }
-
-  .message.error {
-    background: rgba(239, 68, 68, 0.15);
-    color: #fca5a5;
-    border-color: rgba(239, 68, 68, 0.3);
-  }
-}
 
 /* Responsive */
 @media (max-width: 768px) {
