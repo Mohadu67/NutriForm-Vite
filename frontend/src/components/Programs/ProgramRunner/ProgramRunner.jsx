@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import { formatDuration, getCycleTypeLabel } from '../../../utils/programUtils';
 import styles from './ProgramRunner.module.css';
 import logger from '../../../shared/utils/logger';
@@ -15,7 +14,6 @@ import {
 } from '../ProgramIcons';
 
 export default function ProgramRunner({ program, onComplete, onCancel, onBackToList, isPremium, saveStatus }) {
-  const { t } = useTranslation();
   const [currentCycleIndex, setCurrentCycleIndex] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -28,6 +26,13 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
 
   const cycles = program?.cycles || [];
   const currentCycle = cycles[currentCycleIndex];
+
+  // Compter uniquement les exercices (pas les repos/transitions)
+  const exerciseCycles = cycles.filter(c => c.type === 'exercise');
+  const exercisesCompleted = cycles
+    .slice(0, currentCycleIndex + 1)
+    .filter(c => c.type === 'exercise').length;
+  const totalExercises = exerciseCycles.length;
 
   // Calculer la durée du cycle actuel
   const getCycleDuration = (cycle) => {
@@ -42,44 +47,49 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
     return 0;
   };
 
-  // Initialiser le timer au chargement et changement de cycle
+  // Initialiser le timer au changement de cycle
   useEffect(() => {
-    if (!currentCycle || isFinished) return;
+    if (currentCycle) {
+      const duration = getCycleDuration(currentCycle);
+      setTimeRemaining(duration);
+    }
+  }, [currentCycleIndex]);
 
-    const duration = getCycleDuration(currentCycle);
-    setTimeRemaining(duration);
-  }, [currentCycleIndex, isFinished]);
-
-  // Timer - décompte chaque seconde (NE PAS mettre timeRemaining en dépendance !)
+  // Timer unifié - gère uniquement le décompte
   useEffect(() => {
     if (isPaused || isFinished) {
       return;
     }
 
     const interval = setInterval(() => {
-      setTimeRemaining((prev) => Math.max(0, prev - 1));
       setTotalElapsedTime((prev) => prev + 1);
+
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          // Temps écoulé, passer au cycle suivant
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(interval);
   }, [isPaused, isFinished, currentCycleIndex]);
 
-  // Transition vers le cycle suivant quand timeRemaining atteint 0
+  // Gérer la transition vers le cycle suivant
   useEffect(() => {
-    if (timeRemaining !== 0 || isPaused || isFinished) {
-      return;
+    if (timeRemaining === 0 && !isPaused && !isFinished && currentCycle) {
+      const timeout = setTimeout(() => {
+        if (currentCycleIndex < cycles.length - 1) {
+          setCurrentCycleIndex((prev) => prev + 1);
+        } else {
+          handleFinish();
+        }
+      }, 800);
+
+      return () => clearTimeout(timeout);
     }
-
-    const timeout = setTimeout(() => {
-      if (currentCycleIndex < cycles.length - 1) {
-        setCurrentCycleIndex(currentCycleIndex + 1);
-      } else {
-        handleFinish();
-      }
-    }, 800);
-
-    return () => clearTimeout(timeout);
-  }, [timeRemaining, isPaused, isFinished, currentCycleIndex, cycles.length, currentCycle]);
+  }, [timeRemaining, isPaused, isFinished, currentCycleIndex, cycles.length]);
 
   // Sons d'alerte
   useEffect(() => {
@@ -199,9 +209,14 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
             ✅ Session sauvegardée avec succès !
           </div>
         )}
+        {saveStatus === 'saved_locally' && (
+          <div className={styles.saveStatusWarning}>
+            ⚠️ Session sauvegardée localement. Sera synchronisée à la prochaine connexion.
+          </div>
+        )}
         {saveStatus === 'error' && (
           <div className={styles.saveStatusError}>
-            ❌ Erreur lors de la sauvegarde
+            ❌ Erreur lors de la sauvegarde. Vérifiez votre connexion.
           </div>
         )}
         {saveStatus === 'not_saved' && !isPremium && (
@@ -224,15 +239,28 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
   return (
     <div className={styles.runner}>
 
-      <div className={styles.progressBar}>
+      <div
+        className={styles.progressBar}
+        role="progressbar"
+        aria-valuenow={Math.round(progress)}
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-label={`Progression : ${Math.round(progress)}%`}
+      >
         <div className={styles.progressFill} style={{ width: `${progress}%` }}></div>
       </div>
 
       <div className={styles.header}>
         <h2 className={styles.programName}>{program.name}</h2>
-        <p className={styles.cycleCounter}>
-          Cycle {currentCycleIndex + 1} / {cycles.length}
-        </p>
+        {currentCycle?.type === 'exercise' ? (
+          <p className={styles.cycleCounter}>
+            Exercice {exercisesCompleted} / {totalExercises}
+          </p>
+        ) : (
+          <p className={styles.cycleCounter}>
+            {getCycleTypeLabel(currentCycle?.type)}
+          </p>
+        )}
       </div>
 
       <div className={`${styles.currentCycle} ${getCycleColor(currentCycle?.type)}`}>
@@ -242,8 +270,9 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
           <div className={styles.cycleImageContainer}>
             <img
               src={currentCycle.image}
-              alt={currentCycle?.exerciseName || getCycleTypeLabel(currentCycle?.type)}
+              alt={`Démonstration de l'exercice : ${currentCycle?.exerciseName || getCycleTypeLabel(currentCycle?.type)}`}
               className={styles.cycleImage}
+              loading="lazy"
             />
           </div>
         )}
@@ -262,7 +291,12 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
       </div>
 
       <div className={styles.timerContainer}>
-        <div className={`${styles.timer} ${timeRemaining <= 3 ? styles.timerWarning : ''}`}>
+        <div
+          className={`${styles.timer} ${timeRemaining <= 3 ? styles.timerWarning : ''}`}
+          role="timer"
+          aria-live="polite"
+          aria-label={`${isPaused ? 'Pause - ' : ''}${formatTime(timeRemaining)} restant`}
+        >
           {formatTime(timeRemaining)}
         </div>
         <div className={styles.timerLabel}>
@@ -270,12 +304,20 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
         </div>
       </div>
 
-      <div className={styles.controls}>
-        <button onClick={handleCancelClick} className={styles.cancelButton}>
+      <div className={styles.controls} role="group" aria-label="Contrôles du programme">
+        <button
+          onClick={handleCancelClick}
+          className={styles.cancelButton}
+          aria-label="Arrêter le programme d'entraînement"
+        >
           <StopIcon size={20} />
           <span>Arrêter</span>
         </button>
-        <button onClick={handlePauseResume} className={styles.pauseButton}>
+        <button
+          onClick={handlePauseResume}
+          className={styles.pauseButton}
+          aria-label={isPaused ? 'Reprendre le programme' : 'Mettre en pause'}
+        >
           {isPaused ? (
             <>
               <PlayIcon size={20} />

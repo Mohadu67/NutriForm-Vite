@@ -24,7 +24,8 @@ import {
   UserIcon,
   UsersIcon,
   HelpCircleIcon,
-  UtensilsIcon
+  UtensilsIcon,
+  CalendarIcon
 } from "./NavIcons";
 
 export default function Navbar() {
@@ -328,6 +329,11 @@ export default function Navbar() {
       label: "Exercices",
       path: "/exo",
       icon: <DumbbellIcon size={20} />
+    },
+    {
+      label: "Programmes",
+      path: "/programs",
+      icon: <CalendarIcon size={20} />
     },
     ...(isLoggedIn ? [
       {

@@ -1,10 +1,7 @@
-import { useTranslation } from 'react-i18next';
 import styles from './ProgramCard.module.css';
 import { TimerIcon, FlameIcon, TrendingUpIcon } from '../ProgramIcons';
 
 export default function ProgramCard({ program, onClick }) {
-  const { t } = useTranslation();
-
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
       case 'débutant':
@@ -32,10 +29,26 @@ export default function ProgramCard({ program, onClick }) {
   };
 
   return (
-    <div className={styles.card} onClick={onClick}>
+    <div
+      className={styles.card}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      aria-label={`Sélectionner le programme ${program.name}`}
+    >
       {program.coverImage && (
         <div className={styles.coverImage}>
-          <img src={program.coverImage} alt={program.name} />
+          <img
+            src={program.coverImage}
+            alt={`Image du programme ${program.name}`}
+            loading="lazy"
+          />
         </div>
       )}
 

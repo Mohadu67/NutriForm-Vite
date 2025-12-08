@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect, useMemo } from 'react';
 import { loadPrograms } from '../../../utils/programsLoader';
 import ProgramCard from './ProgramCard';
 import CustomSelect from '../CustomSelect/CustomSelect';
@@ -8,7 +7,6 @@ import logger from '../../../shared/utils/logger';
 import { DumbbellIcon, SparklesIcon, SearchIcon, LayersIcon, SlidersIcon } from '../../Programs/ProgramIcons';
 
 export default function ProgramBrowser({ onSelectProgram, onCreateProgram, isPremium }) {
-  const { t } = useTranslation();
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -32,15 +30,18 @@ export default function ProgramBrowser({ onSelectProgram, onCreateProgram, isPre
     fetchPrograms();
   }, []);
 
-  const filteredPrograms = programs.filter((program) => {
-    if (filters.type !== 'all' && program.type !== filters.type) {
-      return false;
-    }
-    if (filters.difficulty !== 'all' && program.difficulty !== filters.difficulty) {
-      return false;
-    }
-    return true;
-  });
+  // Optimisation avec useMemo pour éviter le re-filtrage à chaque render
+  const filteredPrograms = useMemo(() => {
+    return programs.filter((program) => {
+      if (filters.type !== 'all' && program.type !== filters.type) {
+        return false;
+      }
+      if (filters.difficulty !== 'all' && program.difficulty !== filters.difficulty) {
+        return false;
+      }
+      return true;
+    });
+  }, [programs, filters]);
 
   const handleFilterChange = (filterType, value) => {
     setFilters((prev) => ({
@@ -51,8 +52,8 @@ export default function ProgramBrowser({ onSelectProgram, onCreateProgram, isPre
 
   if (loading) {
     return (
-      <div className={styles.loading}>
-        <div className={styles.spinner}></div>
+      <div className={styles.loading} role="status" aria-live="polite">
+        <div className={styles.spinner} aria-hidden="true"></div>
         <p>Chargement des programmes...</p>
       </div>
     );
