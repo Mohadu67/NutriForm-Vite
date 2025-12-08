@@ -3,6 +3,7 @@ const WorkoutProgram = require("../models/WorkoutProgram");
 const WorkoutSession = require("../models/WorkoutSession");
 const User = require("../models/User");
 const logger = require("../utils/logger");
+const { sanitizeProgram } = require("../utils/sanitizer");
 
 /**
  * Récupérer tous les programmes publics (accessibles sans connexion)
@@ -126,6 +127,9 @@ async function getUserPrograms(req, res) {
  */
 async function createProgram(req, res) {
   try {
+    // Sanitize toutes les entrées utilisateur
+    const sanitized = sanitizeProgram(req.body);
+
     const {
       name,
       description,
@@ -137,11 +141,12 @@ async function createProgram(req, res) {
       equipment,
       cycles,
       coverImage,
-      isPublic,
       instructions,
       tips,
       estimatedCalories
-    } = req.body;
+    } = sanitized;
+
+    const isPublic = req.body.isPublic;
 
     // Validation des champs requis
     if (!name || !type || !cycles || cycles.length === 0) {
