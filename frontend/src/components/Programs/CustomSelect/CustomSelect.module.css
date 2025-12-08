@@ -142,7 +142,7 @@
    DARK MODE
    ============================================ */
 
-@media (prefers-color-scheme: dark) {
+:global(.dark) {
   .selectButton,
   .dropdown {
     background: var(--color-surface-dark);

@@ -366,7 +366,7 @@
    DARK MODE
    ============================================ */
 
-@media (prefers-color-scheme: dark) {
+:global(.dark) {
   .title,
   .sectionTitle,
   .cycleName,

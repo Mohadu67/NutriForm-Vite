@@ -451,3 +451,107 @@
     padding: 1rem;
   }
 }
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+:global(.dark) {
+  .container {
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .form {
+    background: var(--color-surface-dark);
+    border-color: var(--color-border-dark);
+  }
+
+  .header h2,
+  .section h3 {
+    color: var(--color-text-dark);
+  }
+
+  .closeBtn {
+    color: var(--color-text-dark);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .closeBtn:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .formGroup label {
+    color: var(--color-text-dark);
+  }
+
+  .formGroup input,
+  .formGroup textarea,
+  .formGroup select {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: var(--color-border-dark);
+    color: var(--color-text-dark);
+  }
+
+  .formGroup input:focus,
+  .formGroup textarea:focus,
+  .formGroup select:focus {
+    border-color: var(--color-primary);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .checkbox {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: var(--color-border-dark);
+    color: var(--color-text-dark);
+  }
+
+  .checkbox:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .checkbox input:checked + span {
+    background: var(--color-primary);
+    color: #111;
+  }
+
+  .tagList span {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text-dark);
+  }
+
+  .tagList button {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .cycleForm {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: var(--color-border-dark);
+  }
+
+  .cyclesList {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: var(--color-border-dark);
+  }
+
+  .cycleItem {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: var(--color-border-dark);
+  }
+
+  .cycleInfo {
+    color: var(--color-text-dark);
+  }
+
+  .cycleType {
+    color: var(--color-text-dark-secondary);
+  }
+
+  .cancelBtn {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text-dark);
+  }
+
+  .cancelBtn:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
