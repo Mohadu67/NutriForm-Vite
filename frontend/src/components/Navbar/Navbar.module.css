@@ -163,7 +163,7 @@
 }
 
 /* ========================================
-   UTILITIES (Languages + Actions)
+   UTILITIES (Actions)
    ======================================== */
 
 .utilitiesExpanded {
@@ -175,58 +175,6 @@
   animation: fadeInScale 0.4s var(--transition-smooth) 0.25s both;
 }
 
-/* Language selector - For expanded menu */
-.languageSection .langGroup {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.03);
-  padding: 6px;
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border);
-}
-
-:global(.dark) .languageSection .langGroup {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.langBtnDock {
-  background: transparent;
-  border: none;
-  color: var(--color-text-muted);
-  font-size: 11px;
-  font-weight: var(--font-weight-bold);
-  padding: 6px var(--space-md);
-  border-radius: 14px;
-  cursor: pointer;
-  transition: all 0.3s var(--transition-bounce);
-  position: relative;
-}
-
-.langBtnDock::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 14px;
-  background: var(--color-primary);
-  opacity: 0;
-  transition: opacity 0.3s var(--transition-smooth);
-  z-index: -1;
-}
-
-.langBtnDock:hover {
-  color: var(--color-primary);
-  transform: scale(1.1);
-}
-
-.langBtnDock.langActive {
-  color: #111111;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.langBtnDock.langActive::before {
-  opacity: 1;
-}
 
 /* Action icons group */
 .iconsGroup {
@@ -847,50 +795,6 @@
     line-height: 1.2;
   }
 
-  /* ===== STYLES DES LANGUES ===== */
-  .utilitiesExpanded .langGroup {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    padding: 4px;
-    border-radius: 10px;
-    background: rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-
-  .langGroupExpanded {
-    gap: 4px;
-  }
-
-  :global(.dark) .utilitiesExpanded .langGroup {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.08);
-  }
-
-  .langBtnDock {
-    font-size: 11px;
-    font-weight: var(--font-weight-bold);
-    padding: 6px 11px;
-    border-radius: var(--radius-sm);
-    transition: all 0.2s ease;
-    border: none;
-    cursor: pointer;
-    background: transparent;
-    color: var(--color-text-muted);
-  }
-
-  .langBtnDock:hover {
-    background: rgba(247, 177, 134, 0.2);
-    transform: scale(1.05);
-  }
-
-  .langBtnDock.langActive {
-    background: var(--color-primary);
-    color: #111;
-    font-weight: 800;
-  }
 
   /* ===== STYLES DES BOUTONS ICÔNES ===== */
   .iconsGroup {
@@ -951,8 +855,7 @@
 /* Focus states */
 .dockItem:focus-visible,
 .expandBtn:focus-visible,
-.dockIconBtn:focus-visible,
-.langBtnDock:focus-visible {
+.dockIconBtn:focus-visible {
   outline: 3px solid var(--color-primary);
   outline-offset: 4px;
 }
@@ -1151,44 +1054,6 @@
   font-weight: var(--font-weight-semibold);
 }
 
-/* Language Section */
-.languageSection {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.langLabel {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-muted);
-  padding: 0 var(--space-sm);
-}
-
-.langBtn {
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  border: 1px solid var(--color-border);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.langBtn:hover {
-  background: rgba(247, 177, 134, 0.1);
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-  transform: scale(1.05);
-}
-
-.langActive {
-  background: var(--color-primary);
-  color: #111;
-  border-color: var(--color-primary);
-}
 
 /* Legacy mobile panel for chat */
 .mobilePanel {
