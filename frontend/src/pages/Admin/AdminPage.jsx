@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { MdStar, MdEmail, MdSupport, MdCheckCircle, MdSchedule, MdGroups, MdRateReview, MdDelete, MdEdit, MdSend, MdRestaurant } from 'react-icons/md';
+import { MdStar, MdEmail, MdSupport, MdCheckCircle, MdSchedule, MdGroups, MdRateReview, MdDelete, MdEdit, MdSend, MdRestaurant, MdFitnessCenter } from 'react-icons/md';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import Pagination from '../../components/Pagination/Pagination.jsx';
@@ -520,6 +520,12 @@ export default function AdminPage() {
             <MdRestaurant /> Recettes
           </button>
           <button
+            className={styles.navBtn}
+            onClick={() => navigate("/admin/programs")}
+          >
+            <MdFitnessCenter /> Programmes
+          </button>
+          <button
             className={`${styles.navBtn} ${activeSection === "newsletter" ? styles.navBtnActive : ""}`}
             onClick={() => setActiveSection("newsletter")}
           >
@@ -586,6 +592,11 @@ export default function AdminPage() {
                 <MdStar className={styles.actionIcon} />
                 <h3>Modérer les avis</h3>
                 {stats.pendingReviews > 0 && <span className={styles.actionBadge}>{stats.pendingReviews}</span>}
+              </div>
+
+              <div className={styles.actionCard} onClick={() => navigate("/admin/programs")}>
+                <MdFitnessCenter className={styles.actionIcon} />
+                <h3>Gérer les programmes</h3>
               </div>
 
               <div className={styles.actionCard} onClick={() => navigate("/admin/newsletter/new")}>
