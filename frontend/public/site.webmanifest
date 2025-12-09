@@ -1,0 +1,66 @@
+{
+  "name": "Harmonith - Tu t'entraine, je t'accompagne !",
+  "short_name": "Harmonith",
+  "description": "Application fitness pour débutants et experts : calculateurs IMC et calories, programmes d'entraînement personnalisés, suivi de progression et classement pour t'accompagner au quotidien dans ta pratique sportive.",
+  "icons": [
+    {
+      "src": "/assets/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#B5EAD7",
+  "background_color": "#F7F6F2",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "shortcuts": [
+    {
+      "name": "Calculateur IMC Gratuit",
+      "short_name": "IMC",
+      "description": "Calculateur IMC gratuit en ligne - Calcule ton Indice de Masse Corporelle instantanément et découvre ta catégorie de poids santé",
+      "url": "/imc-calculator",
+      "icons": [{ "src": "/logo.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Calculateur de Calories",
+      "short_name": "Calories",
+      "description": "Calculateur de besoins caloriques journaliers - Estime précisément tes calories selon ton niveau d'activité physique et tes objectifs fitness",
+      "url": "/calorie-calculator",
+      "icons": [{ "src": "/logo.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Programmes Entraînement",
+      "short_name": "Entraînements",
+      "description": "Programmes d'entraînement personnalisés - Accède à tes programmes de musculation et fitness adaptés à ton niveau pour progresser efficacement",
+      "url": "/trainings",
+      "icons": [{ "src": "/logo.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Suivi Performance Sportive",
+      "short_name": "Dashboard",
+      "description": "Tableau de bord fitness - Visualise tes statistiques d'entraînement, ton évolution et tes objectifs fitness atteints",
+      "url": "/dashboard",
+      "icons": [{ "src": "/logo.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Classement Fitness",
+      "short_name": "Leaderboard",
+      "description": "Classement sportif communautaire - Compare tes performances d'entraînement avec les autres sportifs de la communauté Harmonith",
+      "url": "/leaderboard",
+      "icons": [{ "src": "/logo.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Contact Support",
+      "short_name": "Contact",
+      "description": "Contacte l'équipe Harmonith - Pose tes questions ou partage tes suggestions pour améliorer ton expérience fitness",
+      "url": "/contact",
+      "icons": [{ "src": "/logo.svg", "sizes": "any" }]
+    }
+  ]
+}
