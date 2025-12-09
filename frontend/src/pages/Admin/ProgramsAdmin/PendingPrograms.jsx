@@ -15,7 +15,7 @@ export default function PendingPrograms({ onClose }) {
   const fetchPendingPrograms = async () => {
     try {
       setLoading(true);
-      const response = await secureApiCall('/api/programs/admin/pending', {
+      const response = await secureApiCall('/programs/admin/pending', {
         method: 'GET',
       });
 
@@ -36,7 +36,7 @@ export default function PendingPrograms({ onClose }) {
     }
 
     try {
-      const response = await secureApiCall(`/api/programs/admin/${programId}/approve`, {
+      const response = await secureApiCall(`/programs/admin/${programId}/approve`, {
         method: 'POST',
       });
 
@@ -59,7 +59,7 @@ export default function PendingPrograms({ onClose }) {
     if (reason === null) return; // Annulé
 
     try {
-      const response = await secureApiCall(`/api/programs/admin/${programId}/reject`, {
+      const response = await secureApiCall(`/programs/admin/${programId}/reject`, {
         method: 'POST',
         body: JSON.stringify({ reason }),
       });
