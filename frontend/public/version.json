@@ -1,0 +1,11 @@
+{
+  "version": "3.0.0",
+  "buildDate": "2025-12-09",
+  "features": [
+    "Programmes d'entraînement (HIIT, Circuit, Tabata, etc.)",
+    "Améliorations de sécurité (XSS, CSRF, NoSQL injection)",
+    "Optimisations de performance (-50% requêtes MongoDB)",
+    "Améliorations UX et accessibilité",
+    "Rate limiting et validation renforcée"
+  ]
+}
