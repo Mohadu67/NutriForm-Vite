@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
+import UpdateBanner from "./components/UpdateBanner/UpdateBanner.jsx";
 import CanonicalLink from "./components/CanonicalLink/CanonicalLink.jsx";
 import NotificationPrompt from "./components/Notifications/NotificationPrompt.jsx";
 import LoadingSpinner from "./components/Shared/LoadingSpinner.jsx";
@@ -76,6 +77,7 @@ export default function App() {
       <WebSocketProvider>
         <ChatProvider>
           <UpdatePrompt />
+          <UpdateBanner />
           <CanonicalLink />
           <NotificationPrompt />
           <MessageNotificationManager />
