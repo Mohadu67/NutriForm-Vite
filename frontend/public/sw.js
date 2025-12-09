@@ -1,18 +1,20 @@
 // Service Worker pour NutriForm
 // Gère le cache et les notifications push
 
-const CACHE_NAME = 'nutriform-v2';
-const API_CACHE = 'nutriform-api-v2';
+const CACHE_NAME = 'nutriform-v3';
+const API_CACHE = 'nutriform-api-v3';
+const APP_VERSION = '3.0.0';
 
 // Événement d'installation
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installation');
+  console.log(`Service Worker: Installation v${APP_VERSION}`);
+  // Force immediate activation to ensure users get the latest version
   self.skipWaiting();
 });
 
 // Événement d'activation
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activation');
+  console.log(`Service Worker: Activation v${APP_VERSION}`);
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -23,7 +25,20 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      // Take control of all clients immediately
+      return self.clients.claim();
+    }).then(() => {
+      // Notify all clients to reload for the new version
+      return self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({
+            type: 'NEW_VERSION',
+            version: APP_VERSION
+          });
+        });
+      });
+    })
   );
 });
 
