@@ -51,12 +51,17 @@ async function loadJSONPrograms(types = 'all') {
  */
 async function loadMongoPrograms(types = 'all') {
   try {
+    // Utiliser VITE_API_URL pour être compatible dev et prod
+    const API_URL = import.meta.env?.VITE_API_URL || '/api';
+
     const queryParams = new URLSearchParams();
     if (types !== 'all') {
       queryParams.append('type', types);
     }
 
-    const res = await fetch(`/api/programs/public?${queryParams.toString()}`);
+    const res = await fetch(`${API_URL}/programs/public?${queryParams.toString()}`, {
+      credentials: 'include', // Important pour les cookies en production cross-domain
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const data = await res.json();
@@ -87,7 +92,10 @@ export async function loadProgramById(programId) {
  */
 export async function loadUserPrograms() {
   try {
-    const response = await fetch('/api/programs/user/my-programs', {
+    // Utiliser VITE_API_URL pour être compatible dev et prod
+    const API_URL = import.meta.env?.VITE_API_URL || '/api';
+
+    const response = await fetch(`${API_URL}/programs/user/my-programs`, {
       method: 'GET',
       credentials: 'include',
       headers: {
