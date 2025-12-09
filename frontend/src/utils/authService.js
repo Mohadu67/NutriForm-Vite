@@ -72,18 +72,18 @@ export async function secureApiCall(endpoint, options = {}) {
     if (endpoint === '/me' && (!options || !options.method || options.method === 'GET')) {
       const now = Date.now();
 
-      // Si un appel est déjà en cours, attendre le résultat et retourner un clone
+      // Si un appel est déjà en cours, attendre le résultat
       if (authCheckInProgress) {
-        return authCheckInProgress.then(res => res.clone());
+        return authCheckInProgress;
       }
 
       // Si on a un résultat en cache récent, le retourner
       if (authCheckResult && (now - authCheckTimestamp) < AUTH_CACHE_DURATION) {
-        return Promise.resolve(authCheckResult.clone());
+        return Promise.resolve(authCheckResult);
       }
 
       // Faire l'appel et le mettre en cache
-      authCheckInProgress = apiCall(endpoint, options).then(response => {
+      authCheckInProgress = apiCall(endpoint, options).then(async response => {
         authCheckInProgress = null;
         authCheckTimestamp = Date.now();
 
@@ -95,8 +95,14 @@ export async function secureApiCall(endpoint, options = {}) {
           return response;
         }
 
-        // Cloner la réponse pour la mettre en cache
-        authCheckResult = response.clone();
+        // Créer un objet de réponse synthétique pour le cache
+        // (on ne peut pas cloner un Response après l'avoir consommé)
+        const data = await response.clone().json();
+        authCheckResult = new Response(JSON.stringify(data), {
+          status: response.status,
+          statusText: response.statusText,
+          headers: response.headers
+        });
         return response;
       }).catch(err => {
         authCheckInProgress = null;

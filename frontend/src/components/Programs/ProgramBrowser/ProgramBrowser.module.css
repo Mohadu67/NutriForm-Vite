@@ -303,6 +303,23 @@
   .filters {
     grid-template-columns: 1fr;
   }
+
+  .headerTop {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .premiumActions {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .myProgramsButton,
+  .createButton {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* ============================================
