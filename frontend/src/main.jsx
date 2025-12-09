@@ -43,12 +43,8 @@ ReactDOM.createRoot(rootElement).render(app);
 // Enregistrer le service worker pour les notifications push
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('Service Worker enregistré:', registration);
-      })
-      .catch(error => {
-        console.error('Erreur enregistrement Service Worker:', error);
-      });
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Silencieux en production
+    });
   });
 }
