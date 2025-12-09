@@ -4,7 +4,7 @@ import styles from "./ProfileUser.module.css";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import ProfilePhoto from "./ProfilePhoto/ProfilePhoto.jsx";
 import NotificationSettings from "../../Notifications/NotificationSettings.jsx";
-import { secureApiCall, logout, isAuthenticated } from "../../../utils/authService.js";
+import { secureApiCall, logout, isAuthenticated, invalidateAuthCache } from "../../../utils/authService.js";
 import { getSubscriptionStatus, createCustomerPortalSession } from "../../../shared/api/subscription.js";
 import { getMyProfile, updateProfile } from "../../../shared/api/profile.js";
 import { UserIcon, DiamondIcon, HeartIcon, SettingsIcon } from '../../Icons/GlobalIcons';
@@ -69,13 +69,12 @@ export default function ProfileUser({ onLogout }) {
   const [loadingSubscription, setLoadingSubscription] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated()) {
-      fetchUserData();
-      fetchSubscriptionInfo();
-      fetchMatchingProfile();
-    } else {
-      setLoading(false);
-    }
+    // Invalider le cache auth pour forcer un appel frais
+    invalidateAuthCache();
+    // Toujours essayer (cookie httpOnly détermine l'auth)
+    fetchUserData();
+    fetchSubscriptionInfo();
+    fetchMatchingProfile();
   }, []);
 
   const fetchSubscriptionInfo = async () => {
@@ -110,23 +109,8 @@ export default function ProfileUser({ onLogout }) {
 
       if (!res.ok) {
         if (res.status === 401) {
-          const weeklyGoal = storage.get('weeklyGoal');
-          const dynamiPrefs = {
-            dynamiStep: storage.get('dynamiStep'),
-            dynamiType: storage.get('dynamiType'),
-            dynamiEquip: storage.get('dynamiEquip'),
-            dynamiMuscle: storage.get('dynamiMuscle'),
-          };
-
+          // logout() gère déjà le nettoyage localStorage proprement
           await logout();
-          storage.clear();
-          sessionStorage.clear();
-
-          if (weeklyGoal) storage.set('weeklyGoal', weeklyGoal);
-          Object.entries(dynamiPrefs).forEach(([key, value]) => {
-            if (value) storage.set(key, value);
-          });
-
           if (onLogout) onLogout();
           window.location.href = '/';
           return;
