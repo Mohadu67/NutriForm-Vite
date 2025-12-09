@@ -24,7 +24,8 @@ import {
   UserIcon,
   UsersIcon,
   HelpCircleIcon,
-  UtensilsIcon
+  UtensilsIcon,
+  CalendarIcon
 } from "./NavIcons";
 
 export default function Navbar() {
@@ -329,18 +330,28 @@ export default function Navbar() {
       path: "/exo",
       icon: <DumbbellIcon size={20} />
     },
-    ...(isLoggedIn ? [
+    ...(isLoggedIn && isPremium ? [
       {
         label: 'Dashboard',
         path: "/dashboard",
         icon: <DashboardIcon size={20} />
       }
-    ] : [])
-  ], [isLoggedIn]);
+    ] : [
+      {
+        label: "Programmes",
+        path: "/programs",
+        icon: <CalendarIcon size={20} />
+      }
+    ])
+  ], [isLoggedIn, isPremium]);
 
   // Secondary navigation links (in expanded menu) - Les moins importants
   const secondaryLinks = useMemo(() => {
     return [
+      // Si user connecté et premium, montrer Programmes dans le menu expand
+      ...(isLoggedIn && isPremium ? [
+        { label: "Programmes", path: "/programs", icon: <CalendarIcon size={28} /> }
+      ] : []),
       ...(isLoggedIn && isPremium ? [
         {
           label: 'Partenaires',
