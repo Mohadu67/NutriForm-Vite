@@ -91,7 +91,8 @@ export async function secureApiCall(endpoint, options = {}) {
           authCheckResult = null;
           storage.remove("user");
           storage.remove("userId");
-          throw new Error('Not authenticated');
+          // Ne pas throw, retourner la réponse 401 pour gestion propre
+          return response;
         }
 
         // Cloner la réponse pour la mettre en cache
@@ -114,7 +115,8 @@ export async function secureApiCall(endpoint, options = {}) {
       storage.remove("user");
       storage.remove("userId");
       authCheckResult = null; // Invalider le cache
-      throw new Error('Not authenticated');
+      // Ne pas throw, retourner la réponse 401 pour gestion propre
+      return response;
     }
 
     return response;
