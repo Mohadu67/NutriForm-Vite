@@ -158,8 +158,8 @@ export default function Programs() {
 
     try {
       const endpoint = editingProgram
-        ? `/api/programs/${editingProgram._id}`
-        : '/api/programs';
+        ? `/programs/${editingProgram._id}`
+        : '/programs';
 
       const method = editingProgram ? 'PATCH' : 'POST';
 

@@ -28,7 +28,7 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
   const loadMyPrograms = async () => {
     try {
       setLoading(true);
-      const response = await secureApiCall('/api/programs/user/my-programs');
+      const response = await secureApiCall('/programs/user/my-programs');
 
       if (response.ok) {
         const data = await response.json();
@@ -51,7 +51,7 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
 
     setDeletingId(programId);
     try {
-      const response = await secureApiCall(`/api/programs/${programId}`, {
+      const response = await secureApiCall(`/programs/${programId}`, {
         method: 'DELETE',
       });
 
@@ -78,7 +78,7 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
 
     setProposingId(programId);
     try {
-      const response = await secureApiCall(`/api/programs/${programId}/propose`, {
+      const response = await secureApiCall(`/programs/${programId}/propose`, {
         method: 'POST',
       });
 

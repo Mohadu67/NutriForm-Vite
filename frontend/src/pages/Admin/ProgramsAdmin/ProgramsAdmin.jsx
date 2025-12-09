@@ -36,7 +36,7 @@ export default function ProgramsAdmin() {
   const fetchPrograms = async () => {
     try {
       setLoading(true);
-      const response = await secureApiCall('/api/programs/admin/all', {
+      const response = await secureApiCall('/programs/admin/all', {
         method: 'GET',
       });
 
@@ -76,8 +76,8 @@ export default function ProgramsAdmin() {
       console.log('📊 Nombre de cycles:', payload.cycles.length);
 
       const url = editingProgram
-        ? `/api/programs/admin/${editingProgram._id}`
-        : '/api/programs/admin/create';
+        ? `/programs/admin/${editingProgram._id}`
+        : '/programs/admin/create';
 
       const method = editingProgram ? 'PATCH' : 'POST';
 
@@ -134,7 +134,7 @@ export default function ProgramsAdmin() {
     }
 
     try {
-      const response = await secureApiCall(`/api/programs/admin/${programId}`, {
+      const response = await secureApiCall(`/programs/admin/${programId}`, {
         method: 'DELETE',
       });
 
