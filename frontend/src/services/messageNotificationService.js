@@ -75,7 +75,11 @@ class MessageNotificationService {
         this.notifiedMessageIds = new Set(idsArray.slice(-100));
       }
     } catch (error) {
-      // Erreur silencieuse
+      // Si erreur 401/403, arrêter le service (utilisateur non authentifié/premium)
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        this.stop();
+      }
+      // Erreur silencieuse pour les autres cas
     }
   }
 
@@ -136,12 +140,14 @@ class MessageNotificationService {
 // Créer une instance unique (singleton)
 const messageNotificationService = new MessageNotificationService();
 
-// Démarrer automatiquement si l'utilisateur est connecté
-if (localStorage.getItem('token')) {
-  messageNotificationService.start();
-}
+// NE PAS démarrer automatiquement - attendre l'événement userLoggedIn
+// (le token est maintenant dans un cookie httpOnly, pas accessible via JS)
 
 // Écouter les événements de connexion/déconnexion
+window.addEventListener('userLoggedIn', () => {
+  messageNotificationService.start();
+});
+
 window.addEventListener('userLogin', () => {
   messageNotificationService.start();
 });

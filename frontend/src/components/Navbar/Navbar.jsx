@@ -258,11 +258,20 @@ export default function Navbar() {
       updateLoginState();
     };
 
+    // Écouter les événements de déconnexion
+    const handleLogoutEvent = () => {
+      setIsLoggedIn(false);
+      setIsPremium(false);
+      invalidateAuthCache();
+    };
+
     window.addEventListener('userLoggedIn', handleLoginSuccess);
+    window.addEventListener('userLogout', handleLogoutEvent);
 
     return () => {
       isMounted = false;
       window.removeEventListener('userLoggedIn', handleLoginSuccess);
+      window.removeEventListener('userLogout', handleLogoutEvent);
     };
   }, []);
 
@@ -279,12 +288,16 @@ export default function Navbar() {
         const total = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
         setUnreadCount(total);
       } catch (err) {
-        // Erreur silencieuse
+        // Si erreur 401/403, l'utilisateur n'est pas authentifié ou pas premium
+        if (err?.response?.status === 401 || err?.response?.status === 403) {
+          setUnreadCount(0);
+        }
+        // Erreur silencieuse pour les autres cas
       }
     };
 
-    // Mettre à jour immédiatement
-    updateUnreadCount();
+    // Attendre 500ms avant le premier appel pour laisser le temps à l'auth de se mettre en place
+    const initialTimeout = setTimeout(updateUnreadCount, 500);
 
     // Mettre à jour toutes les 60 secondes (fallback)
     const interval = setInterval(updateUnreadCount, 60000);
@@ -294,6 +307,7 @@ export default function Navbar() {
     window.addEventListener('newMessage', handleNewMessage);
 
     return () => {
+      clearTimeout(initialTimeout);
       clearInterval(interval);
       window.removeEventListener('newMessage', handleNewMessage);
     };

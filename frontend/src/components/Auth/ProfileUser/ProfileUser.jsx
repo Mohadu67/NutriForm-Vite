@@ -263,6 +263,7 @@ export default function ProfileUser({ onLogout }) {
   const handleLogout = async () => {
     await logout();
     window.dispatchEvent(new Event("storage"));
+    window.dispatchEvent(new Event("userLogout"));
     onLogout?.();
     navigate('/');
   };
