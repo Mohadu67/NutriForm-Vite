@@ -80,6 +80,18 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
       setTimeRemaining((prev) => {
         // Si temps écoulé, déclencher transition après 800ms (une seule fois)
         if (prev <= 1 && !transitionRef.current) {
+          // Feedback visuel/sonore lors des transitions
+          if (currentCycleIndex < cycles.length - 1) {
+            // Vibration si disponible
+            if ('vibrate' in navigator) {
+              navigator.vibrate(200);
+            }
+
+            // Notification console du prochain cycle
+            const nextCycle = cycles[currentCycleIndex + 1];
+            logger.info(`🔄 Prochain: ${nextCycle.exerciseName || getCycleTypeLabel(nextCycle.type)}`);
+          }
+
           transitionRef.current = setTimeout(() => {
             transitionRef.current = null;
             if (currentCycleIndex < cycles.length - 1) {
@@ -96,8 +108,8 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
 
     return () => {
       clearInterval(interval);
-      // Nettoyer transition au démontage
-      if (transitionRef.current) {
+      // Vérifier si on est en pause avant de clear la transition
+      if (transitionRef.current && !isPaused) {
         clearTimeout(transitionRef.current);
         transitionRef.current = null;
       }
@@ -128,6 +140,10 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
       clearInterval(timerRef.current);
     }
 
+    // Calculer les calories proportionnellement au taux de complétion
+    const completionRate = (currentCycleIndex + 1) / cycles.length;
+    const estimatedCalories = Math.round((program.estimatedCalories || 0) * completionRate);
+
     const result = {
       programId: program.id,
       programName: program.name,
@@ -135,7 +151,7 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
       cyclesCompleted: cycles.length,
       cyclesTotal: cycles.length,
       durationSec: totalElapsedTime,
-      estimatedCalories: program.estimatedCalories || 0,
+      estimatedCalories,
     };
 
     onComplete(result);

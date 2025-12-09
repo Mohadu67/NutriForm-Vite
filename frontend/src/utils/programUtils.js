@@ -175,3 +175,31 @@ export function getCycleBadgeClass(type) {
       return '';
   }
 }
+
+/**
+ * Obtenir la classe CSS de couleur pour la difficulté
+ * @param {string} difficulty - Niveau de difficulté
+ * @param {Object} styles - Module CSS styles
+ * @returns {string} Classe CSS de couleur
+ */
+export function getDifficultyColor(difficulty, styles) {
+  switch (difficulty) {
+    case 'débutant':
+      return styles.easy;
+    case 'intermédiaire':
+      return styles.medium;
+    case 'avancé':
+      return styles.hard;
+    default:
+      return '';
+  }
+}
+
+/**
+ * Obtenir le label d'un type de programme (alias pour compatibilité)
+ * @param {string} type - Type de programme
+ * @returns {string} Label formaté
+ */
+export function getTypeLabel(type) {
+  return getProgramTypeLabel(type);
+}

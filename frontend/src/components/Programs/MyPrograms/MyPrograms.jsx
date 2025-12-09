@@ -18,6 +18,8 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
   const notify = useNotification();
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [proposingId, setProposingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     loadMyPrograms();
@@ -47,6 +49,7 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
     });
     if (!confirmed) return;
 
+    setDeletingId(programId);
     try {
       const response = await secureApiCall(`/api/programs/${programId}`, {
         method: 'DELETE',
@@ -62,6 +65,8 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
     } catch (error) {
       logger.error('Erreur suppression:', error);
       notify.error('Erreur lors de la suppression');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -71,6 +76,7 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
     });
     if (!confirmed) return;
 
+    setProposingId(programId);
     try {
       const response = await secureApiCall(`/api/programs/${programId}/propose`, {
         method: 'POST',
@@ -89,6 +95,8 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
     } catch (error) {
       logger.error('Erreur proposition:', error);
       notify.error('Erreur lors de la proposition');
+    } finally {
+      setProposingId(null);
     }
   };
 
@@ -182,19 +190,29 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
                   {program.status === 'private' && (
                     <button
                       onClick={() => handlePropose(program._id)}
+                      disabled={proposingId === program._id || program.status === 'pending'}
                       className={styles.proposeBtn}
                       title="Proposer au public"
                     >
-                      <ShareIcon size={16} />
+                      {proposingId === program._id ? (
+                        <span>⏳</span>
+                      ) : (
+                        <ShareIcon size={16} />
+                      )}
                     </button>
                   )}
 
                   <button
                     onClick={() => handleDelete(program._id)}
+                    disabled={deletingId === program._id}
                     className={styles.deleteBtn}
                     title="Supprimer"
                   >
-                    <TrashIcon size={16} />
+                    {deletingId === program._id ? (
+                      <span>⏳</span>
+                    ) : (
+                      <TrashIcon size={16} />
+                    )}
                   </button>
                 </div>
               </div>

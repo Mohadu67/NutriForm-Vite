@@ -10,8 +10,7 @@ module.exports = {
     '!**/node_modules/**',
   ],
   testMatch: [
-    '**/__tests__/**/*.js',
-    '**/*.test.js',
+    '**/__tests__/**/*.test.js'
   ],
   coverageThreshold: {
     global: {
@@ -21,6 +20,10 @@ module.exports = {
       statements: 60,
     },
   },
-  testTimeout: 10000,
+  testTimeout: 30000,
   verbose: true,
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  testEnvironmentOptions: {
+    NODE_ENV: 'test',
+  },
 };

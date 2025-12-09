@@ -5,12 +5,30 @@ const User = require("../models/User");
 const logger = require("../utils/logger");
 const { sanitizeProgram } = require("../utils/sanitizer");
 
+
+// Constantes de validation pour prévenir injection NoSQL
+const VALID_TYPES = ["hiit", "circuit", "superset", "amrap", "emom", "tabata", "custom"];
+const VALID_DIFFICULTIES = ["débutant", "intermédiaire", "avancé"];
+const MAX_LIMIT = 100;
+const MAX_SKIP = 10000;
 /**
  * Récupérer tous les programmes publics (accessibles sans connexion)
  */
 async function getPublicPrograms(req, res) {
   try {
     const { type, difficulty, tags, limit = 50, skip = 0 } = req.query;
+
+    // Validation stricte de la pagination
+    const parsedLimit = parseInt(limit);
+    const parsedSkip = parseInt(skip);
+
+    if (isNaN(parsedLimit) || parsedLimit < 1 || parsedLimit > MAX_LIMIT) {
+      return res.status(400).json({ error: "invalid_limit", message: `Limit must be between 1 and ${MAX_LIMIT}` });
+    }
+
+    if (isNaN(parsedSkip) || parsedSkip < 0 || parsedSkip > MAX_SKIP) {
+      return res.status(400).json({ error: "invalid_skip", message: `Skip must be between 0 and ${MAX_SKIP}` });
+    }
 
     const filter = {
       $or: [
@@ -20,38 +38,62 @@ async function getPublicPrograms(req, res) {
       isActive: true
     };
 
+    // Whitelist stricte pour type
     if (type && type !== 'all') {
+      if (!VALID_TYPES.includes(type)) {
+        return res.status(400).json({ error: "invalid_type", message: `Type must be one of: ${VALID_TYPES.join(', ')}` });
+      }
       filter.type = type;
     }
 
+    // Whitelist stricte pour difficulty
     if (difficulty && difficulty !== 'all') {
+      if (!VALID_DIFFICULTIES.includes(difficulty)) {
+        return res.status(400).json({ error: "invalid_difficulty", message: `Difficulty must be one of: ${VALID_DIFFICULTIES.join(', ')}` });
+      }
       filter.difficulty = difficulty;
     }
 
+    // Sanitization stricte des tags
     if (tags) {
-      const tagArray = tags.split(',');
-      filter.tags = { $in: tagArray };
+      const tagArray = tags.split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0 && tag.length <= 30)
+        .slice(0, 10); // Limiter à 10 tags max
+
+      if (tagArray.length > 0) {
+        filter.tags = { $in: tagArray };
+      }
     }
 
-    const [programs, total] = await Promise.all([
-      WorkoutProgram
-        .find(filter)
-        .select('-ratings -userId')
-        .sort({ usageCount: -1, createdAt: -1 })
-        .limit(parseInt(limit))
-        .skip(parseInt(skip))
-        .lean(),
-      WorkoutProgram.countDocuments(filter)
-    ]);
+    const result = await WorkoutProgram.aggregate([
+      { $match: filter },
+      {
+        $facet: {
+          programs: [
+            { $sort: { usageCount: -1, createdAt: -1 } },
+            { $skip: parsedSkip },
+            { $limit: parsedLimit },
+            { $project: { ratings: 0, userId: 0 } }
+          ],
+          totalCount: [
+            { $count: 'count' }
+          ]
+        }
+      }
+    ]).option({ maxTimeMS: 5000 });
+
+    const programs = result[0].programs;
+    const total = result[0].totalCount[0]?.count || 0;
 
     return res.status(200).json({
       success: true,
       programs,
       pagination: {
         total,
-        limit: parseInt(limit),
-        skip: parseInt(skip),
-        hasMore: total > parseInt(skip) + parseInt(limit)
+        limit: parsedLimit,
+        skip: parsedSkip,
+        hasMore: total > parsedSkip + parsedLimit
       }
     });
   } catch (err) {
@@ -80,7 +122,8 @@ async function getProgramById(req, res) {
     }
 
     // Vérifier si le programme est accessible
-    if (!program.isPublic || !program.isActive) {
+    const isAccessible = program.isPublic || program.status === 'public';
+    if (!isAccessible || !program.isActive) {
       // Si non public ou inactif, vérifier si l'utilisateur est le créateur ou admin
       if (!req.user || (program.userId?.toString() !== req.user.id && req.user.role !== 'admin')) {
         return res.status(403).json({ error: "access_denied" });
@@ -195,7 +238,20 @@ async function createProgram(req, res) {
 
       // Validation des durées (doivent être positives et raisonnables)
       if (cycle.type === "exercise") {
-        if (cycle.durationSec == null || cycle.durationSec < 5 || cycle.durationSec > 600) {
+        // Au moins une métrique doit être présente
+        const hasDuration = cycle.durationSec != null || cycle.durationMin != null;
+        const hasReps = cycle.reps != null;
+
+        if (!hasDuration && !hasReps) {
+          return res.status(400).json({
+            error: "missing_exercise_metrics",
+            message: "Un exercice doit avoir une durée (durationSec/durationMin) ou des répétitions (reps)",
+            cycleIndex: i
+          });
+        }
+
+        // Valider durationSec si présent
+        if (cycle.durationSec != null && (cycle.durationSec < 5 || cycle.durationSec > 600)) {
           return res.status(400).json({
             error: "invalid_exercise_duration",
             message: "La durée d'exercice doit être entre 5 et 600 secondes",
@@ -246,6 +302,7 @@ async function createProgram(req, res) {
       cycles,
       coverImage,
       isPublic: isAdmin ? isPublic : false, // Seul l'admin peut créer des programmes publics
+      status: isAdmin && isPublic ? 'public' : 'private', // Synchroniser status avec isPublic
       isActive: true,
       createdBy: isAdmin ? 'admin' : 'user',
       userId: isAdmin ? null : new mongoose.Types.ObjectId(req.user.id),
@@ -436,7 +493,7 @@ async function completeProgram(req, res) {
       return res.status(400).json({ error: "invalid_session_id" });
     }
 
-    const session = await WorkoutSession.findById(sessionId);
+    const session = await WorkoutSession.findById(sessionId).populate('programId');
 
     if (!session) {
       return res.status(404).json({ error: "session_not_found" });
@@ -457,12 +514,9 @@ async function completeProgram(req, res) {
 
     await session.save();
 
-    // Incrémenter le compteur de complétion du programme
-    if (session.programId) {
-      const program = await WorkoutProgram.findById(session.programId);
-      if (program) {
-        await program.incrementCompletion();
-      }
+    // Incrémenter le compteur de complétion du programme (déjà populé)
+    if (session.programId && session.programId._id) {
+      await session.programId.incrementCompletion();
     }
 
     return res.status(200).json({
@@ -710,26 +764,19 @@ async function getProgramHistory(req, res) {
     const userId = req.user.id;
     const { limit = 20, skip = 0 } = req.query;
 
-    const sessions = await WorkoutSession
-      .find({
-        userId: new mongoose.Types.ObjectId(userId),
-        programId: { $exists: true, $ne: null },
-        status: "finished"
-      })
-      .sort({ endedAt: -1, createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip(parseInt(skip))
-      .populate('programId', 'name type difficulty estimatedCalories')
-      .lean();
+    // Validation stricte de la pagination
+    const parsedLimit = parseInt(limit);
+    const parsedSkip = parseInt(skip);
 
-    // Statistiques globales
-    const totalSessions = await WorkoutSession.countDocuments({
-      userId: new mongoose.Types.ObjectId(userId),
-      programId: { $exists: true, $ne: null },
-      status: "finished"
-    });
+    if (isNaN(parsedLimit) || parsedLimit < 1 || parsedLimit > MAX_LIMIT) {
+      return res.status(400).json({ error: "invalid_limit", message: `Limit must be between 1 and ${MAX_LIMIT}` });
+    }
 
-    const stats = await WorkoutSession.aggregate([
+    if (isNaN(parsedSkip) || parsedSkip < 0 || parsedSkip > MAX_SKIP) {
+      return res.status(400).json({ error: "invalid_skip", message: `Skip must be between 0 and ${MAX_SKIP}` });
+    }
+
+    const result = await WorkoutSession.aggregate([
       {
         $match: {
           userId: new mongoose.Types.ObjectId(userId),
@@ -738,24 +785,63 @@ async function getProgramHistory(req, res) {
         }
       },
       {
-        $group: {
-          _id: null,
-          totalDuration: { $sum: "$durationSec" },
-          totalCalories: { $sum: "$calories" },
-          totalCycles: { $sum: "$cyclesCompleted" }
+        $facet: {
+          sessions: [
+            { $sort: { endedAt: -1, createdAt: -1 } },
+            { $skip: parsedSkip },
+            { $limit: parsedLimit },
+            {
+              $lookup: {
+                from: 'workoutprograms',
+                localField: 'programId',
+                foreignField: '_id',
+                as: 'program'
+              }
+            },
+            { $unwind: { path: '$program', preserveNullAndEmptyArrays: true } },
+            {
+              $addFields: {
+                programId: {
+                  _id: '$program._id',
+                  name: '$program.name',
+                  type: '$program.type',
+                  difficulty: '$program.difficulty',
+                  estimatedCalories: '$program.estimatedCalories'
+                }
+              }
+            },
+            { $project: { program: 0 } }
+          ],
+          totalCount: [
+            { $count: 'count' }
+          ],
+          stats: [
+            {
+              $group: {
+                _id: null,
+                totalDuration: { $sum: "$durationSec" },
+                totalCalories: { $sum: "$calories" },
+                totalCycles: { $sum: "$cyclesCompleted" }
+              }
+            }
+          ]
         }
       }
-    ]);
+    ]).option({ maxTimeMS: 5000 });
+
+    const sessions = result[0].sessions;
+    const total = result[0].totalCount[0]?.count || 0;
+    const stats = result[0].stats[0] || { totalDuration: 0, totalCalories: 0, totalCycles: 0 };
 
     return res.status(200).json({
       success: true,
       sessions,
-      stats: stats.length > 0 ? stats[0] : { totalDuration: 0, totalCalories: 0, totalCycles: 0 },
+      stats,
       pagination: {
-        total: totalSessions,
-        limit: parseInt(limit),
-        skip: parseInt(skip),
-        hasMore: totalSessions > parseInt(skip) + parseInt(limit)
+        total,
+        limit: parsedLimit,
+        skip: parsedSkip,
+        hasMore: total > parsedSkip + parsedLimit
       }
     });
   } catch (err) {
@@ -783,7 +869,7 @@ async function proposeToPublic(req, res) {
     }
 
     // Vérifier que l'utilisateur est le créateur
-    if (program.userId.toString() !== userId) {
+    if (!program.userId || program.userId.toString() !== userId) {
       return res.status(403).json({ error: "not_program_owner" });
     }
 
