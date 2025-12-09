@@ -66,6 +66,14 @@ const WorkoutSessionSchema = new Schema({
   endedAt: { type: Date },
   notes: { type: String },
   entries: [EntrySchema],
+
+  // Champs pour les programmes d'exercices
+  programId: { type: Schema.Types.ObjectId, ref: "WorkoutProgram" },
+  programName: { type: String },
+  programType: { type: String },
+  cyclesCompleted: { type: Number, default: 0 },
+  cyclesTotal: { type: Number, default: 0 },
+
   clientSummary: {
     plannedExercises: { type: Number },
     completedExercises: { type: Number },
@@ -100,5 +108,17 @@ WorkoutSessionSchema.pre('save', function(next) {
   }
   next();
 });
+
+// Index pour optimiser getProgramHistory
+WorkoutSessionSchema.index(
+  { userId: 1, programId: 1, status: 1, endedAt: -1 },
+  { name: 'user_program_history' }
+);
+
+// Index pour requêtes de statistiques
+WorkoutSessionSchema.index(
+  { userId: 1, programId: 1, status: 1 },
+  { name: 'user_program_stats' }
+);
 
 module.exports = mongoose.model("WorkoutSession", WorkoutSessionSchema);

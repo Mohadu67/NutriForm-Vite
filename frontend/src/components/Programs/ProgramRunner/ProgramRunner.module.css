@@ -1,0 +1,571 @@
+/* ============================================
+   PROGRAM RUNNER - Mobile First
+   ============================================ */
+
+.runner {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ============================================
+   PROGRESS BAR
+   ============================================ */
+
+.progressBar {
+  width: 100%;
+  height: 6px;
+  background: var(--color-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-primary);
+  transition: width 0.3s ease;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.header {
+  text-align: center;
+}
+
+.programName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.cycleCounter {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ============================================
+   CURRENT CYCLE
+   ============================================ */
+
+.currentCycle {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.3s ease;
+}
+
+.currentCycle.exerciseColor {
+  border-color: var(--color-primary);
+}
+
+.currentCycle.restColor {
+  border-color: #4ecdc4;
+}
+
+.currentCycle.transitionColor {
+  border-color: #f9ca24;
+}
+
+.cycleType {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.cycleImageContainer {
+  width: 100%;
+  max-width: 320px;
+  height: 220px;
+  margin: 1.5rem auto;
+  background-color: white;
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cycleImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.noImage {
+  font-size: 3rem;
+  opacity: 0.3;
+}
+
+.cycleName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.intensity {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* ============================================
+   TIMER
+   ============================================ */
+
+.timerContainer {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.timer {
+  font-size: 4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.timer.timerWarning {
+  color: #ff6b6b;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.timerLabel {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-top: 0.75rem;
+  font-weight: 500;
+}
+
+/* ============================================
+   CONTROLS
+   ============================================ */
+
+.controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.controls button {
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pauseButton {
+  background: var(--color-primary);
+  color: #111;
+  flex: 1;
+  max-width: 200px;
+  justify-content: center;
+}
+
+.pauseButton:hover {
+  opacity: 0.9;
+}
+
+.cancelButton {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.cancelButton:hover {
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+/* ============================================
+   NEXT CYCLE
+   ============================================ */
+
+.nextCycle {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.nextCycle svg {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.nextContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.nextLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.nextName {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ============================================
+   FINISHED SCREEN
+   ============================================ */
+
+.finished {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.finishedIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 1.5rem;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 50%;
+  color: #4caf50;
+}
+
+.finishedTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.finishedText {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 2rem 0;
+  line-height: 1.6;
+}
+
+.finishedStats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.finishedStat {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.statIcon {
+  color: var(--color-primary);
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.premiumCta {
+  background: rgba(247, 177, 134, 0.1);
+  border: 1px solid var(--color-primary);
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.premiumCta p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+.premiumCta strong {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* ============================================
+   SAVE STATUS
+   ============================================ */
+
+.saveStatus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.saveStatus p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+.saveStatusSuccess {
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid #4caf50;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.saveStatusError {
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid #ff6b6b;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.backButton {
+  padding: 1rem 2rem;
+  background: var(--color-primary);
+  color: #111;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+.backButton:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+:global(.dark) {
+  .programName,
+  .cycleName,
+  .nextName {
+    color: var(--color-text-dark);
+  }
+
+  .cycleCounter,
+  .cycleType,
+  .intensity,
+  .timerLabel,
+  .nextLabel,
+  .statLabel {
+    color: var(--color-text-dark-secondary);
+  }
+
+  .currentCycle {
+    background: var(--color-surface-dark);
+    border-color: var(--color-border-dark);
+  }
+
+  .cancelButton {
+    background: var(--color-surface-dark);
+    border-color: var(--color-border-dark);
+    color: var(--color-text-dark);
+  }
+
+  .nextCycle {
+    background: var(--color-surface-dark);
+    border-color: var(--color-border-dark);
+  }
+
+  .finishedStat {
+    background: var(--color-surface-dark);
+    border-color: var(--color-border-dark);
+  }
+
+  .finishedTitle {
+    color: var(--color-text-dark);
+  }
+
+  .finishedText,
+  .premiumCta p {
+    color: var(--color-text-dark-secondary);
+  }
+
+  .saveStatus {
+    background: var(--color-surface-dark);
+    border-color: var(--color-border-dark);
+  }
+
+  .saveStatus p {
+    color: var(--color-text-dark-secondary);
+  }
+
+  .spinner {
+    border-color: var(--color-border-dark);
+    border-top-color: var(--color-primary);
+  }
+}
+
+/* ============================================
+   TABLET - 640px+
+   ============================================ */
+
+@media (min-width: 640px) {
+  .runner {
+    padding: 2rem;
+    gap: 2rem;
+  }
+
+  .programName {
+    font-size: 1.5rem;
+  }
+
+  .currentCycle {
+    padding: 2.5rem 2rem;
+  }
+
+  .cycleName {
+    font-size: 1.75rem;
+  }
+
+  .timer {
+    font-size: 5rem;
+  }
+
+  .controls button {
+    padding: 1rem 2rem;
+  }
+
+  .finished {
+    padding: 4rem 2rem;
+  }
+}
+
+/* ============================================
+   DESKTOP - 1024px+
+   ============================================ */
+
+@media (min-width: 1024px) {
+  .controls {
+    flex-direction: row;
+  }
+
+  .finishedStats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ============================================
+   MOBILE SPECIFIC
+   ============================================ */
+
+@media (max-width: 640px) {
+  .controls {
+    flex-direction: column;
+  }
+
+  .pauseButton,
+  .cancelButton {
+    max-width: 100%;
+  }
+
+  .finishedStats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -25,6 +25,7 @@ const passwordResetRoutes = require('./routes/passwordReset.route.js');
 const contactRoutes = require('./routes/contact.route.js');
 const historyRoutes = require('./routes/history.route.js');
 const workoutSessionRoutes = require('./routes/workoutSession.route.js');
+const programRoutes = require('./routes/program.route.js');
 const newsletterRoutes = require('./routes/newsletter.route.js');
 const newsletterAdminRoutes = require('./routes/newsletter-admin.route.js');
 const reviewsRoutes = require('./routes/reviews.js');
@@ -169,6 +170,7 @@ app.use('/api', passwordResetRoutes);
 app.use('/api', contactRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/workouts', workoutSessionRoutes);
+app.use('/api/programs', programRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/newsletter-admin', newsletterAdminRoutes);
 app.use('/api/reviews', reviewsRoutes);
@@ -217,25 +219,30 @@ if (fs.existsSync(frontendDistPath)) {
 // Configuration Socket.io pour la messagerie temps réel
 require('./socket/messageSocket')(io);
 
-// Démarrer le serveur sans attendre MongoDB
-httpServer.listen(config.port, () => {
-  logger.info(`🚀 Serveur HTTP en ligne sur http://localhost:${config.port}`);
-  logger.info(`🔌 WebSocket activé sur le même port`);
-  logger.info(`📋 Environnement: ${config.env}`);
-  logger.info(`🌐 Frontend URL: ${config.frontUrl}`);
+// Démarrer le serveur seulement si pas en mode test
+if (process.env.NODE_ENV !== 'test') {
+  httpServer.listen(config.port, () => {
+    logger.info(`🚀 Serveur HTTP en ligne sur http://localhost:${config.port}`);
+    logger.info(`🔌 WebSocket activé sur le même port`);
+    logger.info(`📋 Environnement: ${config.env}`);
+    logger.info(`🌐 Frontend URL: ${config.frontUrl}`);
 
-  // Démarrer les crons uniquement si MongoDB est connecté
-  if (mongoose.connection.readyState === 1) {
-    logger.info('⏰ Démarrage des tâches planifiées...');
-    startNewsletterCron();
-    startLeaderboardCron();
-  } else {
-    logger.warn('⚠️  Tâches planifiées désactivées - MongoDB non connecté');
-    // Réessayer après connexion
-    mongoose.connection.once('open', () => {
-      logger.info('⏰ Démarrage des tâches planifiées (après connexion MongoDB)...');
+    // Démarrer les crons uniquement si MongoDB est connecté
+    if (mongoose.connection.readyState === 1) {
+      logger.info('⏰ Démarrage des tâches planifiées...');
       startNewsletterCron();
       startLeaderboardCron();
-    });
-  }
-});
+    } else {
+      logger.warn('⚠️  Tâches planifiées désactivées - MongoDB non connecté');
+      // Réessayer après connexion
+      mongoose.connection.once('open', () => {
+        logger.info('⏰ Démarrage des tâches planifiées (après connexion MongoDB)...');
+        startNewsletterCron();
+        startLeaderboardCron();
+      });
+    }
+  });
+}
+
+// Exporter l'app pour les tests
+module.exports = app;

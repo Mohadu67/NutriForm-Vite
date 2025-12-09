@@ -75,15 +75,14 @@ exports.login = async (req, res) => {
       photoUrl = `${backendBase}${photoUrl}`;
     }
 
-    // Envoi du token via cookie httpOnly (protection XSS)
-    // sameSite: 'lax' fonctionne car même domaine racine (harmonith.fr)
+    // Envoi du token via cookie httpOnly (protection XSS et CSRF)
     // Frontend: harmonith.fr, Backend: api.harmonith.fr
     const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('token', token, {
       httpOnly: true,
       secure: isProduction, // true en prod (HTTPS)
-      sameSite: 'lax', // 'lax' fonctionne avec même domaine racine
-      domain: isProduction ? '.harmonith.fr' : undefined, // Partage entre sous-domaines
+      sameSite: isProduction ? 'lax' : 'strict', // lax en prod pour cross-domain, strict en dev
+      domain: isProduction ? '.harmonith.fr' : undefined, // Partage entre sous-domaines en prod
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 jours
     });
@@ -296,7 +295,7 @@ exports.logout = async (req, res) => {
     res.clearCookie('token', {
       httpOnly: true,
       secure: isProduction,
-      sameSite: 'lax',
+      sameSite: isProduction ? 'lax' : 'strict', // lax en prod pour cross-domain, strict en dev
       domain: isProduction ? '.harmonith.fr' : undefined,
       path: '/',
     });
