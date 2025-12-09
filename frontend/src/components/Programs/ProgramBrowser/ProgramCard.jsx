@@ -1,32 +1,8 @@
 import styles from './ProgramCard.module.css';
 import { TimerIcon, FlameIcon, TrendingUpIcon } from '../ProgramIcons';
+import { getDifficultyColor, getTypeLabel } from '../../../utils/programUtils';
 
 export default function ProgramCard({ program, onClick }) {
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case 'débutant':
-        return styles.easy;
-      case 'intermédiaire':
-        return styles.medium;
-      case 'avancé':
-        return styles.hard;
-      default:
-        return '';
-    }
-  };
-
-  const getTypeLabel = (type) => {
-    const labels = {
-      hiit: 'HIIT',
-      circuit: 'Circuit',
-      tabata: 'Tabata',
-      superset: 'Superset',
-      amrap: 'AMRAP',
-      emom: 'EMOM',
-      custom: 'Personnalisé',
-    };
-    return labels[type] || type;
-  };
 
   return (
     <div
@@ -77,7 +53,7 @@ export default function ProgramCard({ program, onClick }) {
             <span>{program.estimatedCalories} kcal</span>
           </div>
 
-          <div className={`${styles.stat} ${getDifficultyColor(program.difficulty)}`}>
+          <div className={`${styles.stat} ${getDifficultyColor(program.difficulty, styles)}`}>
             <span className={styles.icon}>
               <TrendingUpIcon size={16} />
             </span>

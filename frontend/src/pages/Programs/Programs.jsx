@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotification } from '../../hooks/useNotification.jsx';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
@@ -15,11 +16,16 @@ import styles from './Programs.module.css';
 
 export default function Programs() {
   const notify = useNotification();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [viewMode, setViewMode] = useState('browse'); // 'browse', 'preview', 'running', 'create', 'my-programs'
   const [isPremium, setIsPremium] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null); // 'saving', 'saved', 'error', 'not_saved'
   const [editingProgram, setEditingProgram] = useState(null);
+
+  // Vérifier si on vient de la page admin
+  const fromAdmin = location.state?.fromAdmin || false;
 
   // Vérifier si l'utilisateur est Premium au chargement
   useEffect(() => {
@@ -147,8 +153,8 @@ export default function Programs() {
   };
 
   const handleSaveProgram = async (programData) => {
-    console.log('🚀 handleSaveProgram appelé avec:', programData);
-    console.log('📊 Nombre de cycles:', programData.cycles?.length || 0);
+    logger.debug('handleSaveProgram appelé avec:', programData);
+    logger.debug('Nombre de cycles:', programData.cycles?.length || 0);
 
     try {
       const endpoint = editingProgram
@@ -157,32 +163,28 @@ export default function Programs() {
 
       const method = editingProgram ? 'PATCH' : 'POST';
 
-      console.log(`🌐 Requête ${method} vers ${endpoint}`);
-      console.log('📤 Données envoyées:', JSON.stringify(programData, null, 2));
+      logger.debug(`Requête ${method} vers ${endpoint}`);
 
       const response = await secureApiCall(endpoint, {
         method,
         body: JSON.stringify(programData),
       });
 
-      console.log('📥 Réponse reçue - Status:', response.status, 'OK:', response.ok);
+      logger.debug('Réponse reçue - Status:', response.status, 'OK:', response.ok);
 
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Programme sauvegardé avec succès:', data);
         logger.info('Programme sauvegardé avec succès');
         notify.success('Programme créé avec succès !');
         setViewMode('my-programs');
         setEditingProgram(null);
       } else {
         const error = await response.json();
-        console.error('❌ Erreur serveur:', error);
-        logger.error('Erreur sauvegarde programme:', error);
+        logger.error('Erreur serveur:', error);
         notify.error('Erreur: ' + (error.error || 'Erreur inconnue'));
       }
     } catch (error) {
-      console.error('💥 Exception:', error);
-      logger.error('Erreur sauvegarde programme:', error);
+      logger.error('Exception lors de la sauvegarde:', error);
       notify.error('Erreur lors de la sauvegarde: ' + error.message);
     }
   };
@@ -201,6 +203,17 @@ export default function Programs() {
       <Navbar />
       <div className={styles.page}>
         <div className={styles.container}>
+          {/* Bouton retour si on vient de l'admin */}
+          {fromAdmin && viewMode === 'browse' && (
+            <button
+              onClick={() => navigate(-1)}
+              className={styles.backToAdminBtn}
+              aria-label="Retour à la page admin"
+            >
+              ← Retour à l'administration
+            </button>
+          )}
+
           {viewMode === 'browse' && (
             <ProgramBrowser
               onSelectProgram={handleSelectProgram}

@@ -325,11 +325,17 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
           <h3>Groupes musculaires ciblés</h3>
           <div className={styles.checkboxGrid}>
             {muscleGroupOptions.map(group => (
-              <label key={group} className={styles.checkbox}>
+              <label
+                key={group}
+                className={styles.checkbox}
+                htmlFor={`muscle-${group}`}
+              >
                 <input
                   type="checkbox"
+                  id={`muscle-${group}`}
                   checked={formData.muscleGroups.includes(group)}
                   onChange={() => toggleMuscleGroup(group)}
+                  aria-label={`Groupe musculaire : ${group}`}
                 />
                 <span>{group}</span>
               </label>
@@ -342,11 +348,17 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
           <h3>Équipement requis</h3>
           <div className={styles.checkboxGrid}>
             {equipmentOptions.map(equip => (
-              <label key={equip} className={styles.checkbox}>
+              <label
+                key={equip}
+                className={styles.checkbox}
+                htmlFor={`equipment-${equip}`}
+              >
                 <input
                   type="checkbox"
+                  id={`equipment-${equip}`}
                   checked={formData.equipment.includes(equip)}
                   onChange={() => toggleEquipment(equip)}
+                  aria-label={`Équipement : ${equip}`}
                 />
                 <span>{equip}</span>
               </label>

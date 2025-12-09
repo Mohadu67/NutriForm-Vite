@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { secureApiCall } from '../../../utils/authService';
 import logger from '../../../shared/utils/logger';
 import CycleEditor from './CycleEditor';
@@ -6,6 +7,7 @@ import PendingPrograms from './PendingPrograms';
 import styles from './ProgramsAdmin.module.css';
 
 export default function ProgramsAdmin() {
+  const navigate = useNavigate();
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingProgram, setEditingProgram] = useState(null);
@@ -172,6 +174,14 @@ export default function ProgramsAdmin() {
 
   return (
     <div className={styles.admin}>
+      <button
+        onClick={() => navigate('/admin')}
+        className={styles.backButton}
+        aria-label="Retour au dashboard admin"
+      >
+        ← Retour au dashboard
+      </button>
+
       <div className={styles.headerBar}>
         <h1>Gestion des Programmes</h1>
         <button onClick={() => setShowPending(true)} className={styles.pendingButton}>

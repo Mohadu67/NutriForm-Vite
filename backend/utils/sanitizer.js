@@ -1,5 +1,13 @@
 const sanitizeHtml = require('sanitize-html');
 
+// Whitelist des domaines autorisés pour les images
+const ALLOWED_IMAGE_DOMAINS = [
+  'harmonith.fr',
+  'res.cloudinary.com',
+  'i.imgur.com',
+  'images.unsplash.com'
+];
+
 /**
  * Configuration stricte pour sanitize-html
  * Permet seulement du texte basique avec formatage minimal
@@ -135,12 +143,33 @@ function sanitizeProgram(data) {
     sanitized.estimatedCalories = Math.max(0, Math.min(2000, Number(data.estimatedCalories) || 0));
   }
 
-  // URL d'image (validation basique)
+  // URL d'image (validation stricte avec whitelist de domaines)
   if (data.coverImage) {
     const cleaned = sanitizeShortText(data.coverImage, 500);
+
     // Vérifier que c'est une URL valide (http/https ou chemin relatif)
     if (cleaned.match(/^(https?:\/\/|\/)/)) {
-      sanitized.coverImage = cleaned;
+      // Si c'est une URL absolue, vérifier le domaine
+      if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) {
+        try {
+          const url = new URL(cleaned);
+          const domain = url.hostname;
+
+          // Vérifier si le domaine est dans la whitelist
+          const isAllowed = ALLOWED_IMAGE_DOMAINS.some(allowedDomain => {
+            return domain === allowedDomain || domain.endsWith('.' + allowedDomain);
+          });
+
+          if (isAllowed) {
+            sanitized.coverImage = cleaned;
+          }
+        } catch (e) {
+          // URL invalide, on ne l'assigne pas
+        }
+      } else {
+        // Chemin relatif, autorisé
+        sanitized.coverImage = cleaned;
+      }
     }
   }
 

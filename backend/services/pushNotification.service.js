@@ -2,14 +2,14 @@ const webPush = require('web-push');
 const PushSubscription = require('../models/PushSubscription');
 const logger = require('../utils/logger.js');
 
-// Configuration VAPID
-if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+// Configuration VAPID (skip en mode test)
+if (process.env.NODE_ENV !== 'test' && process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webPush.setVapidDetails(
     process.env.VAPID_SUBJECT || 'mailto:contact@nutriform.com',
     process.env.VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY
   );
-} else {
+} else if (process.env.NODE_ENV !== 'test') {
   logger.warn('⚠️  Clés VAPID manquantes - Notifications push désactivées');
 }
 

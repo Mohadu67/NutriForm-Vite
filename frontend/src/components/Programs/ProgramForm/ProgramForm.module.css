@@ -420,6 +420,50 @@
   outline-offset: 2px;
 }
 
+/* États disabled pour meilleur feedback */
+button:disabled,
+.submitBtn:disabled,
+.cancelBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--color-surface-disabled, #f5f5f5);
+}
+
+/* Amélioration feedback erreurs */
+.error {
+  color: var(--color-error, #dc3545);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.error::before {
+  content: '⚠️';
+  font-size: 1rem;
+}
+
+.inputError,
+.textareaError {
+  border-color: var(--color-error, #dc3545) !important;
+  background-color: rgba(220, 53, 69, 0.05);
+}
+
+.inputError:focus,
+.textareaError:focus {
+  outline-color: var(--color-error, #dc3545);
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15);
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   .header {

@@ -149,19 +149,31 @@ WorkoutProgramSchema.methods.incrementCompletion = async function() {
   await this.save();
 };
 
-// Méthode pour ajouter une note
+// Méthode pour ajouter une note (optimisée avec opérations atomiques)
 WorkoutProgramSchema.methods.addRating = async function(userId, rating) {
-  // Supprimer l'ancienne note si elle existe
-  this.ratings = this.ratings.filter(r => r.userId.toString() !== userId.toString());
+  // Supprimer l'ancienne note avec opération atomique
+  await this.model('WorkoutProgram').updateOne(
+    { _id: this._id },
+    { $pull: { ratings: { userId: userId } } }
+  );
 
-  // Ajouter la nouvelle note
-  this.ratings.push({ userId, rating });
+  // Ajouter la nouvelle note avec opération atomique
+  await this.model('WorkoutProgram').updateOne(
+    { _id: this._id },
+    { $push: { ratings: { userId: userId, rating: rating, createdAt: new Date() } } }
+  );
 
-  // Recalculer la moyenne
-  const sum = this.ratings.reduce((acc, r) => acc + r.rating, 0);
-  this.avgRating = sum / this.ratings.length;
+  // Recalculer la moyenne avec aggregate (plus performant)
+  const result = await this.model('WorkoutProgram').aggregate([
+    { $match: { _id: this._id } },
+    { $unwind: '$ratings' },
+    { $group: { _id: '$_id', avgRating: { $avg: '$ratings.rating' } } }
+  ]);
 
-  await this.save();
+  if (result.length > 0) {
+    this.avgRating = result[0].avgRating;
+    await this.save();
+  }
 };
 
 // Virtual pour calculer la durée totale des cycles
