@@ -6,7 +6,7 @@ import Footer from '../../components/Footer/Footer.jsx';
 import Pagination from '../../components/Pagination/Pagination.jsx';
 import ConfirmModal from '../../components/Modal/ConfirmModal.jsx';
 import SearchBar from '../../components/SearchBar/SearchBar.jsx';
-import { secureApiCall, isAuthenticated } from "../../utils/authService";
+import { secureApiCall, isAuthenticated, invalidateAuthCache } from "../../utils/authService";
 import styles from "./AdminPage.module.css";
 import logger from '../../shared/utils/logger.js';
 
@@ -73,6 +73,8 @@ export default function AdminPage() {
     }
 
     try {
+      // Invalider le cache pour forcer un appel frais
+      invalidateAuthCache();
       const response = await secureApiCall('/me');
       if (response.ok) {
         const data = await response.json();

@@ -35,7 +35,15 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    // Initialiser avec la valeur du localStorage
+    try {
+      const user = storage.get('user');
+      return Boolean(user);
+    } catch {
+      return false;
+    }
+  });
   const [isPremium, setIsPremium] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -45,6 +53,14 @@ export default function Navbar() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   const path = useMemo(() => (location.pathname || "/").toLowerCase(), [location.pathname]);
+
+  // Vérifier le statut de connexion à chaque changement de route
+  useEffect(() => {
+    const user = storage.get('user');
+    if (Boolean(user) !== isLoggedIn) {
+      setIsLoggedIn(Boolean(user));
+    }
+  }, [location.pathname]);
 
   // Detect desktop mode
   useEffect(() => {
@@ -170,10 +186,15 @@ export default function Navbar() {
         if (response.ok) {
           hasSucceeded = true;
           retryCountRef.current = 0;
-          setIsLoggedIn(true);
 
           // Récupérer les données utilisateur
           const userData = await response.json();
+
+          // IMPORTANT: Stocker dans localStorage pour que isAuthenticated() fonctionne
+          storage.set("user", userData);
+          storage.set("userId", userData.id);
+
+          setIsLoggedIn(true);
 
           // Vérifier toutes les propriétés possibles pour le premium
           const userHasPremium = userData?.subscription?.tier === 'premium' ||
@@ -344,41 +365,41 @@ export default function Navbar() {
       path: "/exo",
       icon: <DumbbellIcon size={20} />
     },
-    ...(isLoggedIn && isPremium ? [
-      {
-        label: 'Dashboard',
-        path: "/dashboard",
-        icon: <DashboardIcon size={20} />
-      }
-    ] : [
-      {
-        label: "Programmes",
-        path: "/programs",
-        icon: <CalendarIcon size={20} />
-      }
-    ])
-  ], [isLoggedIn, isPremium]);
+    {
+      label: "Programmes",
+      path: "/programs",
+      icon: <CalendarIcon size={20} />
+    }
+  ], []);
 
   // Secondary navigation links (in expanded menu) - Les moins importants
   const secondaryLinks = useMemo(() => {
-    return [
-      // Si user connecté et premium, montrer Programmes dans le menu expand
-      ...(isLoggedIn && isPremium ? [
-        { label: "Programmes", path: "/programs", icon: <CalendarIcon size={28} /> }
-      ] : []),
-      ...(isLoggedIn && isPremium ? [
-        {
-          label: 'Partenaires',
-          path: "/matching",
-          icon: <UsersIcon size={28} />,
-          isPremium: true
-        }
-      ] : []),
+    const links = [];
+
+    // Dashboard visible SEULEMENT si connecté
+    if (isLoggedIn) {
+      links.push({ label: "Dashboard", path: "/dashboard", icon: <DashboardIcon size={28} /> });
+    }
+
+    // Si premium: montrer Partenaires
+    if (isLoggedIn && isPremium) {
+      links.push({
+        label: 'Partenaires',
+        path: "/matching",
+        icon: <UsersIcon size={28} />,
+        isPremium: true
+      });
+    }
+
+    // Liens toujours visibles
+    links.push(
       { label: 'Recettes', path: "/recettes", icon: <UtensilsIcon size={28} /> },
       { label: "Outils", path: "/outils", icon: <ToolsIcon size={28} /> },
       { label: "À propos", path: "/about", icon: <InfoIcon size={28} /> },
       { label: 'FAQ', path: "/contact", icon: <HelpCircleIcon size={28} /> }
-    ];
+    );
+
+    return links;
   }, [isLoggedIn, isPremium]);
 
   // Close menu handler

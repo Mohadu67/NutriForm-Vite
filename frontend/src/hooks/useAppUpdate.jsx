@@ -10,6 +10,25 @@ export function useAppUpdate() {
   const [newVersion, setNewVersion] = useState(null);
 
   useEffect(() => {
+    // Désactivé temporairement
+    return () => {};
+  }, []);
+
+  useEffect(() => {
+    return () => {};
+  }, []);
+
+  const applyUpdate = () => {};
+
+  return { updateAvailable: false, newVersion: null, applyUpdate };
+}
+
+/*
+export function useAppUpdate_OLD() {
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [newVersion, setNewVersion] = useState(null);
+
+  useEffect(() => {
     // Vérifier si le service worker est supporté
     if (!('serviceWorker' in navigator)) {
       return;
@@ -92,3 +111,4 @@ export function useAppUpdate() {
     applyUpdate,
   };
 }
+*/
