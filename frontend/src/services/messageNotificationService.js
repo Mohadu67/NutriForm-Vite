@@ -140,8 +140,23 @@ class MessageNotificationService {
 // Créer une instance unique (singleton)
 const messageNotificationService = new MessageNotificationService();
 
-// NE PAS démarrer automatiquement - attendre l'événement userLoggedIn
-// (le token est maintenant dans un cookie httpOnly, pas accessible via JS)
+// Démarrer automatiquement si déjà connecté
+// Vérifier après un court délai pour laisser l'auth se mettre en place
+setTimeout(async () => {
+  try {
+    // Tenter un appel API pour vérifier si connecté
+    const response = await fetch('/api/me', { credentials: 'include' });
+    if (response.ok) {
+      const data = await response.json();
+      // Si premium, démarrer le service
+      if (data.subscriptionTier === 'premium' || data.isPremium) {
+        messageNotificationService.start();
+      }
+    }
+  } catch {
+    // Silencieux
+  }
+}, 1000);
 
 // Écouter les événements de connexion/déconnexion
 window.addEventListener('userLoggedIn', () => {
