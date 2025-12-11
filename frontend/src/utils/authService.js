@@ -89,8 +89,9 @@ export async function secureApiCall(endpoint, options = {}) {
 
         if (response.status === 401) {
           authCheckResult = null;
-          storage.remove("user");
-          storage.remove("userId");
+          // NE PAS supprimer les données locales ici
+          // La gestion de la déconnexion doit être faite par le composant appelant
+          // après vérification que c'est vraiment une déconnexion et non un problème temporaire
           // Ne pas throw, retourner la réponse 401 pour gestion propre
           return response;
         }
@@ -117,10 +118,9 @@ export async function secureApiCall(endpoint, options = {}) {
     const response = await apiCall(endpoint, options);
 
     if (response.status === 401) {
-      // Cookie expiré ou invalide, nettoyer les données locales
-      storage.remove("user");
-      storage.remove("userId");
-      authCheckResult = null; // Invalider le cache
+      // Invalider le cache mais NE PAS supprimer les données locales
+      // La déconnexion explicite doit passer par logout()
+      authCheckResult = null;
       // Ne pas throw, retourner la réponse 401 pour gestion propre
       return response;
     }
