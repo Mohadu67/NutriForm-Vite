@@ -30,8 +30,7 @@ export default defineConfig({
     noExternal: [
       'react-bootstrap',
       'bootstrap-icons',
-      '@dr.pogodin/react-helmet',
-      'react-helmet',
+      'react-helmet-async',
       'react-icons'
     ],
     external: [

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { StaticRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { HelmetProvider } from '@dr.pogodin/react-helmet';
+import { HelmetProvider } from 'react-helmet-async';
 import { lazy, Suspense } from 'react';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary.jsx';
 import CanonicalLink from './components/CanonicalLink/CanonicalLink.jsx';

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Helmet } from "@dr.pogodin/react-helmet";
+import { Helmet } from "react-helmet-async";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import FormImc from "./FormImc/FormImc.jsx";
 import ResultCards from "./ResultCards/ResultCards.jsx";

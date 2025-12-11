@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Helmet } from "@dr.pogodin/react-helmet";
+import { Helmet } from "react-helmet-async";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import { isAuthenticated, secureApiCall } from "../../utils/authService.js";
 import { CheckIcon, XIcon, AlertTriangleIcon, InfoIcon } from "../../components/Navbar/NavIcons";
