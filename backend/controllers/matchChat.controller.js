@@ -258,6 +258,11 @@ async function sendMessage(req, res) {
       await conversation.unhideForUser(receiverId);
     }
 
+    // Si la conversation était cachée pour l'expéditeur (moi), la réafficher aussi
+    if (conversation.isHiddenForUser(userId)) {
+      await conversation.unhideForUser(userId);
+    }
+
     // Incrémenter le compteur non lu pour le destinataire
     await conversation.incrementUnread(receiverId);
 

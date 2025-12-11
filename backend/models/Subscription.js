@@ -28,11 +28,11 @@ const subscriptionSchema = new mongoose.Schema(
     },
     currentPeriodStart: {
       type: Date,
-      required: true
+      default: null
     },
     currentPeriodEnd: {
       type: Date,
-      required: true
+      default: null
     },
     cancelAtPeriodEnd: {
       type: Boolean,
@@ -58,8 +58,17 @@ const subscriptionSchema = new mongoose.Schema(
 // Pas besoin de les redéfinir ici
 
 // Méthode pour vérifier si la subscription est active (y compris trial)
+// Note: même si cancelAtPeriodEnd=true, l'user garde l'accès jusqu'à currentPeriodEnd
 subscriptionSchema.methods.isActive = function () {
-  return ['active', 'trialing'].includes(this.status) && !this.cancelAtPeriodEnd;
+  // Si le status est actif ou en trial
+  if (['active', 'trialing'].includes(this.status)) {
+    // Si annulé, vérifier que la période n'est pas terminée
+    if (this.cancelAtPeriodEnd && this.currentPeriodEnd) {
+      return new Date() < this.currentPeriodEnd;
+    }
+    return true;
+  }
+  return false;
 };
 
 // Méthode pour vérifier si l'utilisateur est en trial
