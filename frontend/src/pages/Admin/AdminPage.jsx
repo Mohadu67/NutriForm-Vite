@@ -48,6 +48,10 @@ export default function AdminPage() {
     onConfirm: () => {}
   });
 
+  // Compteurs pour badges de notification
+  const [pendingProgramsCount, setPendingProgramsCount] = useState(0);
+  const [openTicketsCount, setOpenTicketsCount] = useState(0);
+
   // Calcul des stats à partir des données locales (optimisé)
   const stats = useMemo(() => ({
     totalReviews: reviews.length,
@@ -106,6 +110,29 @@ export default function AdminPage() {
     }
   }, []);
 
+  const fetchPendingProgramsCount = useCallback(async () => {
+    try {
+      const response = await secureApiCall('/programs/admin/pending');
+      const data = await response.json();
+      if (data.success) {
+        setPendingProgramsCount(data.programs?.length || 0);
+      }
+    } catch (err) {
+      logger.error("Erreur chargement programmes pending:", err);
+    }
+  }, []);
+
+  const fetchOpenTicketsCount = useCallback(async () => {
+    try {
+      const response = await secureApiCall('/admin/support-tickets/stats');
+      const data = await response.json();
+      // L'endpoint retourne directement totalOpen sans wrapper success
+      setOpenTicketsCount(data.totalOpen || 0);
+    } catch (err) {
+      logger.error("Erreur chargement tickets ouverts:", err);
+    }
+  }, []);
+
   const fetchReviews = useCallback(async () => {
     setLoading(true);
     try {
@@ -158,6 +185,9 @@ export default function AdminPage() {
       if (isAdmin) {
         // Charger les stats newsletter (ne changent pas souvent)
         fetchNewsletterStats();
+        // Charger les compteurs pour les badges
+        fetchPendingProgramsCount();
+        fetchOpenTicketsCount();
         // Charger les données de la section active
         if (activeSection === "reviews") fetchReviews();
         if (activeSection === "newsletter") fetchNewsletters();
@@ -390,14 +420,14 @@ export default function AdminPage() {
   const paginatedNewsletters = useMemo(() => {
     const startIndex = (newslettersPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    return newsletters.slice(startIndex, endIndex);
-  }, [newsletters, newslettersPage, ITEMS_PER_PAGE]);
+    return filteredNewsletters.slice(startIndex, endIndex);
+  }, [filteredNewsletters, newslettersPage, ITEMS_PER_PAGE]);
 
   const paginatedRecipes = useMemo(() => {
     const startIndex = (recipesPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    return recipes.slice(startIndex, endIndex);
-  }, [recipes, recipesPage, ITEMS_PER_PAGE]);
+    return filteredRecipes.slice(startIndex, endIndex);
+  }, [filteredRecipes, recipesPage, ITEMS_PER_PAGE]);
 
   const confirmDeleteNewsletter = (id) => {
     setModalConfig({
@@ -436,7 +466,7 @@ export default function AdminPage() {
     });
   };
 
-  const handleSendNow = async (id, title) => {
+  const handleSendNow = async (id) => {
     try {
       setLoading(true);
       const response = await secureApiCall(`/newsletter-admin/${id}/send-now`, { method: "POST" });
@@ -526,6 +556,7 @@ export default function AdminPage() {
             onClick={() => navigate("/admin/programs")}
           >
             <MdFitnessCenter /> Programmes
+            {pendingProgramsCount > 0 && <span className={styles.badge}>{pendingProgramsCount}</span>}
           </button>
           <button
             className={`${styles.navBtn} ${activeSection === "newsletter" ? styles.navBtnActive : ""}`}
@@ -538,6 +569,7 @@ export default function AdminPage() {
             onClick={() => navigate("/admin/support-tickets")}
           >
             <MdSupport /> Support
+            {openTicketsCount > 0 && <span className={styles.badge}>{openTicketsCount}</span>}
           </button>
         </div>
 
@@ -599,6 +631,7 @@ export default function AdminPage() {
               <div className={styles.actionCard} onClick={() => navigate("/admin/programs")}>
                 <MdFitnessCenter className={styles.actionIcon} />
                 <h3>Gérer les programmes</h3>
+                {pendingProgramsCount > 0 && <span className={styles.actionBadge}>{pendingProgramsCount}</span>}
               </div>
 
               <div className={styles.actionCard} onClick={() => navigate("/admin/newsletter/new")}>
@@ -609,6 +642,7 @@ export default function AdminPage() {
               <div className={styles.actionCard} onClick={() => navigate("/admin/support-tickets")}>
                 <MdSupport className={styles.actionIcon} />
                 <h3>Support</h3>
+                {openTicketsCount > 0 && <span className={styles.actionBadge}>{openTicketsCount}</span>}
               </div>
             </div>
           </div>
@@ -803,7 +837,7 @@ export default function AdminPage() {
 
                 <Pagination
                   currentPage={newslettersPage}
-                  totalItems={newsletters.length}
+                  totalItems={filteredNewsletters.length}
                   itemsPerPage={ITEMS_PER_PAGE}
                   onPageChange={setNewslettersPage}
                 />
@@ -886,7 +920,7 @@ export default function AdminPage() {
 
                 <Pagination
                   currentPage={recipesPage}
-                  totalItems={recipes.length}
+                  totalItems={filteredRecipes.length}
                   itemsPerPage={ITEMS_PER_PAGE}
                   onPageChange={setRecipesPage}
                 />

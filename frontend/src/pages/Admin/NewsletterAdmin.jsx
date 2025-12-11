@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { storage } from '../../shared/utils/storage';
 import { useNavigate } from "react-router-dom";
+import { toast } from 'sonner';
 import DOMPurify from "dompurify";
 import styles from "./NewsletterAdmin.module.css";
 import { secureApiCall } from "../../utils/authService.js";
+import ConfirmModal from "../../components/Modal/ConfirmModal";
 
 const toDateTimeLocalValue = (value) => {
   if (!value) return "";
@@ -34,6 +36,10 @@ export default function NewsletterAdmin() {
     scheduledDate: "",
     status: "draft"
   });
+  const [deleteModalConfig, setDeleteModalConfig] = useState({
+    isOpen: false,
+    newsletterId: null
+  });
 
   const checkAdminAccess = useCallback(() => {
     try {
@@ -50,7 +56,7 @@ export default function NewsletterAdmin() {
       const user = JSON.parse(userStr);
 
       if (user.role !== 'admin') {
-        alert('Accès refusé. Privilèges admin requis.');
+        toast.warning('Accès refusé. Privilèges admin requis.');
         navigate('/');
         return;
       }
@@ -67,7 +73,7 @@ export default function NewsletterAdmin() {
       const res = await secureApiCall('/newsletter-admin');
 
       if (res.status === 401 || res.status === 403) {
-        alert('Session expirée ou accès refusé');
+        toast.warning('Session expirée ou accès refusé');
         navigate('/');
         return;
       }
@@ -118,14 +124,14 @@ export default function NewsletterAdmin() {
       const data = await res.json();
 
       if (data.success) {
-        alert(editingId ? "Newsletter mise à jour !" : "Newsletter créée !");
+        toast.success(editingId ? "Newsletter mise à jour !" : "Newsletter créée !");
         resetForm();
         fetchNewsletters();
       } else {
-        alert(data.message || "Erreur lors de la sauvegarde");
+        toast.error(data.message || "Erreur lors de la sauvegarde");
       }
-    } catch (error) {
-      alert("Erreur lors de la sauvegarde");
+    } catch {
+      toast.error("Erreur lors de la sauvegarde");
     }
   };
 
@@ -141,9 +147,14 @@ export default function NewsletterAdmin() {
     setShowForm(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm("Supprimer cette newsletter ?")) return;
+  const confirmDelete = (id) => {
+    setDeleteModalConfig({
+      isOpen: true,
+      newsletterId: id
+    });
+  };
 
+  const handleDelete = async (id) => {
     try {
       const res = await secureApiCall(`/newsletter-admin/${id}`, {
         method: "DELETE"
@@ -152,13 +163,13 @@ export default function NewsletterAdmin() {
       const data = await res.json();
 
       if (data.success) {
-        alert("Newsletter supprimée !");
+        toast.success("Newsletter supprimée !");
         fetchNewsletters();
       } else {
-        alert(data.message);
+        toast.error(data.message);
       }
-    } catch (error) {
-      alert("Erreur lors de la suppression");
+    } catch {
+      toast.error("Erreur lors de la suppression");
     }
   };
 
@@ -347,7 +358,7 @@ export default function NewsletterAdmin() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDelete(newsletter._id);
+                          confirmDelete(newsletter._id);
                         }}
                         className={styles.btnDelete}
                       >
@@ -361,6 +372,19 @@ export default function NewsletterAdmin() {
           })
         )}
       </div>
+
+      {/* Modal de confirmation de suppression */}
+      <ConfirmModal
+        isOpen={deleteModalConfig.isOpen}
+        onClose={() => setDeleteModalConfig({ isOpen: false, newsletterId: null })}
+        onConfirm={() => {
+          handleDelete(deleteModalConfig.newsletterId);
+          setDeleteModalConfig({ isOpen: false, newsletterId: null });
+        }}
+        title="Supprimer la newsletter"
+        message="Voulez-vous vraiment supprimer cette newsletter ? Cette action est irréversible."
+        type="danger"
+      />
     </div>
   );
 }

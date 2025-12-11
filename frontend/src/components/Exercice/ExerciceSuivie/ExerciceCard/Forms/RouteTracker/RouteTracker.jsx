@@ -5,6 +5,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import styles from "./RouteTracker.module.css";
 import logger from '../../../../../../shared/utils/logger.js';
+import { useNotification } from '../../../../../../hooks/useNotification';
 
 // Fix pour les icônes Leaflet avec Vite
 delete L.Icon.Default.prototype._getIconUrl;
@@ -188,7 +189,8 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
   const syncIntervalRef = useRef(null);
 
   const vibrate = useVibration();
-  const storage = useRouteStorage('routeTracker_session');
+  const storageHook = useRouteStorage('routeTracker_session');
+  const notify = useNotification();
 
   const MIN_MOVEMENT = 0.010; // 10m - réduit pour plus de précision
   const MAX_ROUTE_POINTS = 1000; // Limite pour performances
@@ -261,7 +263,7 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
   // Sauvegarde automatique
   useEffect(() => {
     if (tracking && route.length > 0) {
-      storage.save({
+      storageHook.save({
         route,
         stats,
         totalPauseTime: totalPauseTimeRef.current,
@@ -273,7 +275,7 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
 
   // Vérifier parcours sauvegardé au montage
   useEffect(() => {
-    const saved = storage.load();
+    const saved = storageHook.load();
     if (saved && saved.route && saved.route.length > 0) {
       setShowRecoveryPrompt(true);
     }
@@ -304,7 +306,7 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
   }, []);
 
   const recoverSession = () => {
-    const saved = storage.load();
+    const saved = storageHook.load();
     if (saved) {
       setRoute(saved.route || []);
       setStats(saved.stats || { distance: 0, duration: 0, pauseTime: 0, moving: true });
@@ -319,7 +321,7 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
   };
 
   const discardSession = () => {
-    storage.clear();
+    storageHook.clear();
     setShowRecoveryPrompt(false);
   };
 
@@ -441,9 +443,12 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
     }
   };
 
-  const stopTracking = () => {
+  const stopTracking = async () => {
     // Confirmation avant arrêt
-    if (!window.confirm("Voulez-vous vraiment terminer ce parcours ? Les données seront sauvegardées.")) {
+    const confirmed = await notify.confirm("Voulez-vous vraiment terminer ce parcours ? Les données seront sauvegardées.", {
+      title: "Terminer le parcours"
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -487,7 +492,7 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
     }
 
     // Nettoyer le stockage
-    storage.clear();
+    storageHook.clear();
   };
 
   useEffect(() => {

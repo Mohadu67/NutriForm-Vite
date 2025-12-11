@@ -1,4 +1,5 @@
 import React, { useCallback } from "react";
+import { toast } from 'sonner';
 import styles from "./Rgpd.module.css";
 import logger from '../../shared/utils/logger.js';
 
@@ -9,7 +10,7 @@ export default function CookiesPolicy() {
         if (window?.tarteaucitron?.userInterface?.openPanel) {
         window.tarteaucitron.userInterface.openPanel();
       } else {
-        alert(
+        toast.warning(
           "Le gestionnaire de consentement n'est pas disponible pour le moment. Réessayez après le chargement de la page."
         );
       }

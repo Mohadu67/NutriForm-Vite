@@ -9,6 +9,7 @@ import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
 import UnifiedChatPanel from "../Chat/UnifiedChatPanel.jsx";
 import ChatHistory from "../Chat/ChatHistory.jsx";
+import NotificationCenter from "../Notifications/NotificationCenter/NotificationCenter";
 
 // Import SVG Icons
 import {
@@ -44,7 +45,36 @@ export default function Navbar() {
       return false;
     }
   });
-  const [isPremium, setIsPremium] = useState(false);
+  const [isPremium, setIsPremium] = useState(() => {
+    // Initialiser avec la valeur du localStorage
+    try {
+      const user = storage.get('user');
+      if (user) {
+        // Vérifier toutes les propriétés possibles pour le premium
+        return user?.subscription?.tier === 'premium' ||
+               user?.subscription?.hasSubscription === true ||
+               user?.isPremium === true ||
+               user?.tier === 'premium' ||
+               user?.subscriptionTier === 'premium' ||
+               user?.plan === 'premium' ||
+               user?.hasPremium === true ||
+               user?.premium === true;
+      }
+      // Vérifier aussi le cache subscriptionStatus
+      const cachedSub = storage.get('subscriptionStatus');
+      if (cachedSub) {
+        try {
+          const subscription = typeof cachedSub === 'string' ? JSON.parse(cachedSub) : cachedSub;
+          return subscription?.tier === 'premium' || subscription?.hasSubscription === true;
+        } catch {
+          return false;
+        }
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  });
   const [darkMode, setDarkMode] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState('login');
@@ -54,11 +84,42 @@ export default function Navbar() {
 
   const path = useMemo(() => (location.pathname || "/").toLowerCase(), [location.pathname]);
 
-  // Vérifier le statut de connexion à chaque changement de route
+  // Vérifier le statut de connexion et premium à chaque changement de route
   useEffect(() => {
     const user = storage.get('user');
-    if (Boolean(user) !== isLoggedIn) {
-      setIsLoggedIn(Boolean(user));
+    const hasUser = Boolean(user);
+
+    if (hasUser !== isLoggedIn) {
+      setIsLoggedIn(hasUser);
+    }
+
+    // Vérifier aussi le statut premium depuis le cache
+    if (hasUser) {
+      const userIsPremium = user?.subscription?.tier === 'premium' ||
+                           user?.subscription?.hasSubscription === true ||
+                           user?.isPremium === true ||
+                           user?.tier === 'premium' ||
+                           user?.subscriptionTier === 'premium' ||
+                           user?.plan === 'premium' ||
+                           user?.hasPremium === true ||
+                           user?.premium === true;
+
+      // Vérifier aussi le cache subscriptionStatus
+      let cachedPremium = false;
+      const cachedSub = storage.get('subscriptionStatus');
+      if (cachedSub) {
+        try {
+          const subscription = typeof cachedSub === 'string' ? JSON.parse(cachedSub) : cachedSub;
+          cachedPremium = subscription?.tier === 'premium' || subscription?.hasSubscription === true;
+        } catch {
+          cachedPremium = false;
+        }
+      }
+
+      const finalPremium = userIsPremium || cachedPremium;
+      if (finalPremium !== isPremium) {
+        setIsPremium(finalPremium);
+      }
     }
   }, [location.pathname]);
 
@@ -178,6 +239,10 @@ export default function Navbar() {
         return;
       }
 
+      // Vérifier d'abord si on a des données utilisateur en cache
+      const cachedUser = storage.get('user');
+      const hasLocalData = Boolean(cachedUser);
+
       try {
         const response = await secureApiCall('/me');
 
@@ -250,20 +315,38 @@ export default function Navbar() {
             }
           }
         } else if (response.status === 401) {
-          hasSucceeded = true; // Arrêter les essais
-          setIsLoggedIn(false);
-          setIsPremium(false);
+          // IMPORTANT: Ne pas déconnecter immédiatement si on a des données locales
+          // Le 401 peut être temporaire (problème réseau, timing, etc.)
+          // On laisse l'utilisateur connecté visuellement et on réessaye
+          retryCountRef.current++;
+
+          if (retryCountRef.current >= MAX_RETRIES) {
+            hasSucceeded = true; // Arrêter les essais
+            // Seulement maintenant on peut déconnecter si vraiment pas authentifié
+            if (!hasLocalData) {
+              setIsLoggedIn(false);
+              setIsPremium(false);
+            }
+            // Si on avait des données locales, on garde l'état connecté
+            // Le prochain refresh validera l'authentification
+          }
         }
       } catch (err) {
         retryCountRef.current++;
         // Si erreur 'Not authenticated', arrêter immédiatement
         if (err.message === 'Not authenticated') {
           hasSucceeded = true;
-          setIsLoggedIn(false);
-          setIsPremium(false);
+          // Ne déconnecter que si pas de données locales
+          if (!hasLocalData) {
+            setIsLoggedIn(false);
+            setIsPremium(false);
+          }
         } else if (retryCountRef.current >= MAX_RETRIES) {
-          setIsLoggedIn(false);
-          setIsPremium(false);
+          // En cas d'erreur réseau, garder l'état actuel si on a des données locales
+          if (!hasLocalData) {
+            setIsLoggedIn(false);
+            setIsPremium(false);
+          }
         }
       }
     };
@@ -679,6 +762,8 @@ export default function Navbar() {
                     <span className={styles.notificationBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
                   )}
                 </button>
+
+                {isLoggedIn && <NotificationCenter className={styles.dockIconBtn} />}
 
                 <button
                   onClick={() => navigateAndClose('/leaderboard')}
