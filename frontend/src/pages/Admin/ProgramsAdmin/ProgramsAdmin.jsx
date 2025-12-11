@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { secureApiCall } from '../../../utils/authService';
 import logger from '../../../shared/utils/logger';
 import CycleEditor from './CycleEditor';
 import PendingPrograms from './PendingPrograms';
+import ConfirmModal from '../../../components/Modal/ConfirmModal';
+import { TimerIcon, FlameIcon, TrendingUpIcon, LayersIcon, UserIcon, TagIcon } from '../../../components/Programs/ProgramIcons';
 import styles from './ProgramsAdmin.module.css';
 
 export default function ProgramsAdmin() {
@@ -12,6 +15,7 @@ export default function ProgramsAdmin() {
   const [loading, setLoading] = useState(true);
   const [editingProgram, setEditingProgram] = useState(null);
   const [showPending, setShowPending] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -28,10 +32,27 @@ export default function ProgramsAdmin() {
     tips: '',
     cycles: [],
   });
+  const [deleteModalConfig, setDeleteModalConfig] = useState({
+    isOpen: false,
+    programId: null
+  });
 
   useEffect(() => {
     fetchPrograms();
+    fetchPendingCount();
   }, []);
+
+  const fetchPendingCount = async () => {
+    try {
+      const response = await secureApiCall('/programs/admin/pending');
+      if (response.ok) {
+        const data = await response.json();
+        setPendingCount(data.programs?.length || 0);
+      }
+    } catch (error) {
+      logger.error('Erreur chargement programmes pending:', error);
+    }
+  };
 
   const fetchPrograms = async () => {
     try {
@@ -72,39 +93,28 @@ export default function ProgramsAdmin() {
         estimatedCalories: parseInt(formData.estimatedCalories),
       };
 
-      console.log('📤 Envoi du programme:', payload);
-      console.log('📊 Nombre de cycles:', payload.cycles.length);
-
       const url = editingProgram
         ? `/programs/admin/${editingProgram._id}`
         : '/programs/admin/create';
 
       const method = editingProgram ? 'PATCH' : 'POST';
 
-      console.log(`🌐 Requête ${method} vers ${url}`);
-
       const response = await secureApiCall(url, {
         method,
         body: JSON.stringify(payload),
       });
 
-      console.log('📥 Statut de la réponse:', response.status, response.ok);
-
       if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Succès:', data);
-        alert(editingProgram ? 'Programme mis à jour ✅' : 'Programme créé ✅');
+        toast.success(editingProgram ? 'Programme mis à jour ✅' : 'Programme créé ✅');
         fetchPrograms();
         resetForm();
       } else {
         const error = await response.json();
-        console.error('❌ Erreur serveur:', error);
-        alert('Erreur: ' + (error.error || 'Erreur inconnue'));
+        toast.error('Erreur: ' + (error.error || 'Erreur inconnue'));
       }
     } catch (error) {
-      console.error('💥 Exception:', error);
       logger.error('Erreur lors de la sauvegarde:', error);
-      alert('Erreur lors de la sauvegarde: ' + error.message);
+      toast.error('Erreur lors de la sauvegarde: ' + error.message);
     }
   };
 
@@ -128,23 +138,26 @@ export default function ProgramsAdmin() {
     });
   };
 
-  const handleDelete = async (programId) => {
-    if (!confirm('Voulez-vous vraiment supprimer ce programme ?')) {
-      return;
-    }
+  const confirmDelete = (programId) => {
+    setDeleteModalConfig({
+      isOpen: true,
+      programId
+    });
+  };
 
+  const handleDelete = async (programId) => {
     try {
       const response = await secureApiCall(`/programs/admin/${programId}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        alert('Programme supprimé');
+        toast.success('Programme supprimé');
         fetchPrograms();
       }
     } catch (error) {
       logger.error('Erreur lors de la suppression:', error);
-      alert('Erreur lors de la suppression');
+      toast.error('Erreur lors de la suppression');
     }
   };
 
@@ -186,6 +199,7 @@ export default function ProgramsAdmin() {
         <h1>Gestion des Programmes</h1>
         <button onClick={() => setShowPending(true)} className={styles.pendingButton}>
           📋 Programmes en attente
+          {pendingCount > 0 && <span className={styles.notifBadge}>{pendingCount}</span>}
         </button>
       </div>
 
@@ -359,12 +373,13 @@ export default function ProgramsAdmin() {
           </form>
         </div>
 
-        {/* Liste des programmes */}
+        {/* Liste des programmes publics (validés par admin ou créés par admin) */}
         <div className={styles.listSection}>
-          <h2>Programmes existants ({programs.length})</h2>
+          <h2>Programmes publics ({programs.filter(p => p.isPublic || p.status === 'public').length})</h2>
+          <p className={styles.sectionSubtitle}>Programmes visibles par tous les utilisateurs</p>
 
           <div className={styles.programsList}>
-            {programs.map((program) => (
+            {programs.filter(p => p.isPublic || p.status === 'public').map((program) => (
               <div key={program._id} className={styles.programCard}>
                 <div className={styles.programHeader}>
                   <h3>{program.name}</h3>
@@ -380,17 +395,29 @@ export default function ProgramsAdmin() {
                 <p className={styles.programDescription}>{program.description}</p>
 
                 <div className={styles.programStats}>
-                  <span>⏱️ {program.estimatedDuration} min</span>
-                  <span>🔥 {program.estimatedCalories} kcal</span>
-                  <span>📊 {program.difficulty}</span>
-                  <span>🔢 {program.cycles?.length || 0} cycles</span>
+                  <span className={styles.statItem}>
+                    <TimerIcon size={16} />
+                    {program.estimatedDuration} min
+                  </span>
+                  <span className={styles.statItem}>
+                    <FlameIcon size={16} />
+                    {program.estimatedCalories} kcal
+                  </span>
+                  <span className={styles.statItem}>
+                    <TrendingUpIcon size={16} />
+                    {program.difficulty}
+                  </span>
+                  <span className={styles.statItem}>
+                    <LayersIcon size={16} />
+                    {program.cycles?.length || 0} cycles
+                  </span>
                 </div>
 
                 <div className={styles.programActions}>
                   <button onClick={() => handleEdit(program)} className={styles.editButton}>
                     Modifier
                   </button>
-                  <button onClick={() => handleDelete(program._id)} className={styles.deleteButton}>
+                  <button onClick={() => confirmDelete(program._id)} className={styles.deleteButton}>
                     Supprimer
                   </button>
                 </div>
@@ -398,7 +425,95 @@ export default function ProgramsAdmin() {
             ))}
           </div>
         </div>
+
+        {/* Liste des programmes créés par les utilisateurs */}
+        <div className={styles.userProgramsSection}>
+          <h2>
+            <UserIcon size={22} />
+            Programmes utilisateurs ({programs.filter(p => p.userId && p.createdBy === 'user').length})
+          </h2>
+          <p className={styles.sectionSubtitle}>Programmes créés par les utilisateurs premium (privés ou en attente)</p>
+
+          <div className={styles.programsList}>
+            {programs.filter(p => p.userId && p.createdBy === 'user').length === 0 ? (
+              <div className={styles.emptyState}>
+                <UserIcon size={40} />
+                <p>Aucun programme utilisateur pour le moment</p>
+              </div>
+            ) : (
+              programs.filter(p => p.userId && p.createdBy === 'user').map((program) => (
+                <div key={program._id} className={styles.userProgramCard}>
+                  <div className={styles.programHeader}>
+                    <h3>{program.name}</h3>
+                    <div className={styles.badges}>
+                      <span className={styles.userBadge}>
+                        <UserIcon size={14} />
+                        {program.userId?.pseudo || program.userId?.username || 'Utilisateur'}
+                      </span>
+                      <span className={`${styles.statusBadge} ${styles[program.status]}`}>
+                        {program.status === 'pending' ? '⏳ En attente' :
+                         program.status === 'private' ? '🔒 Privé' :
+                         program.status === 'rejected' ? '❌ Rejeté' : program.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className={styles.programDescription}>{program.description}</p>
+
+                  <div className={styles.programStats}>
+                    <span className={styles.statItem}>
+                      <TimerIcon size={16} />
+                      {program.estimatedDuration} min
+                    </span>
+                    <span className={styles.statItem}>
+                      <FlameIcon size={16} />
+                      {program.estimatedCalories} kcal
+                    </span>
+                    <span className={styles.statItem}>
+                      <TrendingUpIcon size={16} />
+                      {program.difficulty}
+                    </span>
+                    <span className={styles.statItem}>
+                      <LayersIcon size={16} />
+                      {program.cycles?.length || 0} cycles
+                    </span>
+                    <span className={styles.statItem}>
+                      <TagIcon size={16} />
+                      {program.type}
+                    </span>
+                  </div>
+
+                  <div className={styles.programMeta}>
+                    <span>Créé le {new Date(program.createdAt).toLocaleDateString('fr-FR')}</span>
+                  </div>
+
+                  <div className={styles.programActions}>
+                    <button onClick={() => handleEdit(program)} className={styles.editButton}>
+                      Voir / Modifier
+                    </button>
+                    <button onClick={() => confirmDelete(program._id)} className={styles.deleteButton}>
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Modal de confirmation de suppression */}
+      <ConfirmModal
+        isOpen={deleteModalConfig.isOpen}
+        onClose={() => setDeleteModalConfig({ isOpen: false, programId: null })}
+        onConfirm={() => {
+          handleDelete(deleteModalConfig.programId);
+          setDeleteModalConfig({ isOpen: false, programId: null });
+        }}
+        title="Supprimer le programme"
+        message="Voulez-vous vraiment supprimer ce programme ? Cette action est irréversible."
+        type="danger"
+      />
     </div>
   );
 }

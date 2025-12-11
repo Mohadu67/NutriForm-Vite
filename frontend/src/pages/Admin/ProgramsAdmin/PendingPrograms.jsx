@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { secureApiCall } from '../../../utils/authService';
 import logger from '../../../shared/utils/logger';
+import ConfirmModal from '../../../components/Modal/ConfirmModal';
+import { TimerIcon, FlameIcon, TrendingUpIcon, LayersIcon, TagIcon, UserIcon, CheckCircleIcon, XIcon } from '../../../components/Programs/ProgramIcons';
 import styles from './PendingPrograms.module.css';
 
 export default function PendingPrograms({ onClose }) {
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProgram, setSelectedProgram] = useState(null);
+  const [approveModalConfig, setApproveModalConfig] = useState({ isOpen: false, programId: null });
+  const [rejectModalConfig, setRejectModalConfig] = useState({ isOpen: false, programId: null });
+  const [rejectReason, setRejectReason] = useState('');
 
   useEffect(() => {
     fetchPendingPrograms();
@@ -30,34 +36,36 @@ export default function PendingPrograms({ onClose }) {
     }
   };
 
-  const handleApprove = async (programId) => {
-    if (!confirm('Voulez-vous approuver ce programme et le rendre public ?')) {
-      return;
-    }
+  const confirmApprove = (programId) => {
+    setApproveModalConfig({ isOpen: true, programId });
+  };
 
+  const handleApprove = async (programId) => {
     try {
       const response = await secureApiCall(`/programs/admin/${programId}/approve`, {
         method: 'POST',
       });
 
       if (response.ok) {
-        alert('Programme approuvé avec succès !');
+        toast.success('Programme approuvé avec succès !');
         fetchPendingPrograms();
         setSelectedProgram(null);
       } else {
         const error = await response.json();
-        alert('Erreur: ' + (error.error || 'Erreur inconnue'));
+        toast.error('Erreur: ' + (error.error || 'Erreur inconnue'));
       }
     } catch (error) {
       logger.error('Erreur lors de l\'approbation:', error);
-      alert('Erreur lors de l\'approbation');
+      toast.error('Erreur lors de l\'approbation');
     }
   };
 
-  const handleReject = async (programId) => {
-    const reason = prompt('Raison du rejet (optionnel):');
-    if (reason === null) return; // Annulé
+  const confirmReject = (programId) => {
+    setRejectReason('');
+    setRejectModalConfig({ isOpen: true, programId });
+  };
 
+  const handleReject = async (programId, reason) => {
     try {
       const response = await secureApiCall(`/programs/admin/${programId}/reject`, {
         method: 'POST',
@@ -65,16 +73,16 @@ export default function PendingPrograms({ onClose }) {
       });
 
       if (response.ok) {
-        alert('Programme rejeté. L\'utilisateur peut le modifier et le soumettre à nouveau.');
+        toast.success('Programme rejeté. L\'utilisateur peut le modifier et le soumettre à nouveau.');
         fetchPendingPrograms();
         setSelectedProgram(null);
       } else {
         const error = await response.json();
-        alert('Erreur: ' + (error.error || 'Erreur inconnue'));
+        toast.error('Erreur: ' + (error.error || 'Erreur inconnue'));
       }
     } catch (error) {
       logger.error('Erreur lors du rejet:', error);
-      alert('Erreur lors du rejet');
+      toast.error('Erreur lors du rejet');
     }
   };
 
@@ -93,7 +101,7 @@ export default function PendingPrograms({ onClose }) {
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h2>Programmes en attente de validation</h2>
-          <button onClick={onClose} className={styles.closeBtn}>✕</button>
+          <button onClick={onClose} className={styles.closeBtn}><XIcon size={20} /></button>
         </div>
 
         {programs.length === 0 ? (
@@ -110,18 +118,19 @@ export default function PendingPrograms({ onClose }) {
                 <div className={styles.cardHeader} onClick={() => setSelectedProgram(program)}>
                   <h3>{program.name}</h3>
                   <span className={styles.badge}>
-                    Par: {program.userId?.pseudo || program.userId?.username || 'Utilisateur'}
+                    <UserIcon size={16} />
+                    {program.userId?.pseudo || program.userId?.username || 'Utilisateur'}
                   </span>
                 </div>
 
                 <p className={styles.description}>{program.description}</p>
 
                 <div className={styles.stats}>
-                  <span>⏱️ {program.estimatedDuration} min</span>
-                  <span>🔥 {program.estimatedCalories || 0} kcal</span>
-                  <span>📊 {program.difficulty}</span>
-                  <span>🔢 {program.cycles?.length || 0} cycles</span>
-                  <span>🏷️ {program.type}</span>
+                  <span className={styles.statItem}><TimerIcon size={16} /> {program.estimatedDuration} min</span>
+                  <span className={styles.statItem}><FlameIcon size={16} /> {program.estimatedCalories || 0} kcal</span>
+                  <span className={styles.statItem}><TrendingUpIcon size={16} /> {program.difficulty}</span>
+                  <span className={styles.statItem}><LayersIcon size={16} /> {program.cycles?.length || 0} cycles</span>
+                  <span className={styles.statItem}><TagIcon size={16} /> {program.type}</span>
                 </div>
 
                 {selectedProgram?._id === program._id && (
@@ -203,16 +212,16 @@ export default function PendingPrograms({ onClose }) {
 
                     <div className={styles.actions}>
                       <button
-                        onClick={() => handleApprove(program._id)}
+                        onClick={() => confirmApprove(program._id)}
                         className={styles.approveBtn}
                       >
-                        ✓ Approuver
+                        <CheckCircleIcon size={18} /> Approuver
                       </button>
                       <button
-                        onClick={() => handleReject(program._id)}
+                        onClick={() => confirmReject(program._id)}
                         className={styles.rejectBtn}
                       >
-                        ✕ Rejeter
+                        <XIcon size={18} /> Rejeter
                       </button>
                     </div>
                   </div>
@@ -231,6 +240,55 @@ export default function PendingPrograms({ onClose }) {
           </div>
         )}
       </div>
+
+      {/* Modal d'approbation */}
+      <ConfirmModal
+        isOpen={approveModalConfig.isOpen}
+        onClose={() => setApproveModalConfig({ isOpen: false, programId: null })}
+        onConfirm={() => {
+          handleApprove(approveModalConfig.programId);
+          setApproveModalConfig({ isOpen: false, programId: null });
+        }}
+        title="Approuver le programme"
+        message="Voulez-vous approuver ce programme et le rendre public ? Il sera visible par tous les utilisateurs."
+        type="default"
+      />
+
+      {/* Modal de rejet avec champ raison */}
+      {rejectModalConfig.isOpen && (
+        <div className={styles.modal} onClick={() => setRejectModalConfig({ isOpen: false, programId: null })}>
+          <div className={styles.rejectModal} onClick={(e) => e.stopPropagation()}>
+            <h3>Rejeter le programme</h3>
+            <p>L'utilisateur pourra modifier et resoumettre son programme.</p>
+            <div className={styles.rejectInputGroup}>
+              <label>Raison du rejet (optionnel) :</label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Expliquez pourquoi le programme est rejeté..."
+                rows={3}
+              />
+            </div>
+            <div className={styles.rejectActions}>
+              <button
+                onClick={() => setRejectModalConfig({ isOpen: false, programId: null })}
+                className={styles.cancelBtn}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => {
+                  handleReject(rejectModalConfig.programId, rejectReason);
+                  setRejectModalConfig({ isOpen: false, programId: null });
+                }}
+                className={styles.confirmRejectBtn}
+              >
+                Confirmer le rejet
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

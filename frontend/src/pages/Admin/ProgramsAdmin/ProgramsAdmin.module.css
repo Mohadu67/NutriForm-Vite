@@ -45,26 +45,56 @@
 
 .pendingButton {
   padding: 12px 24px;
-  background: #f97316;
-  color: white;
-  border: none;
+  background: transparent;
+  border: 2px solid #f7b186;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  position: relative;
+  font-weight: bold;
 }
 
 .pendingButton:hover {
-  background: #ea580c;
+  background: rgba(247, 177, 134, 0.1);
+  border-color: #f7b186;
+  transform: translateY(-1px);
 }
 
 .pendingButton:focus {
-  outline: 2px solid #f97316;
+  outline: 2px solid #f7b186;
   outline-offset: 2px;
+}
+
+.pendingButton .notifBadge {
+  background: #dc2626;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.4);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.6);
+  }
 }
 
 .loading {
@@ -92,8 +122,14 @@
 .formSection h2,
 .listSection h2 {
   font-size: 1.5rem;
-  margin: 0 0 24px 0;
+  margin: 0 0 8px 0;
   color: var(--text-primary, #1a1a1a);
+}
+
+.sectionSubtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #666);
+  margin: 0 0 20px 0;
 }
 
 .form {
@@ -311,6 +347,16 @@
   color: var(--text-secondary, #666);
 }
 
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statItem svg {
+  flex-shrink: 0;
+}
+
 .programActions {
   display: flex;
   gap: 12px;
@@ -355,6 +401,121 @@
   outline-offset: 2px;
 }
 
+/* Section programmes utilisateurs */
+.userProgramsSection {
+  grid-column: 1 / -1;
+  background: var(--bg-secondary, #ffffff);
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e3f2fd;
+  margin-top: 20px;
+}
+
+.userProgramsSection h2 {
+  font-size: 1.5rem;
+  margin: 0 0 8px 0;
+  color: var(--text-primary, #1a1a1a);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.userProgramsSection h2 svg {
+  color: #2196F3;
+}
+
+.userProgramCard {
+  background: linear-gradient(135deg, #f8fbff 0%, #fff 100%);
+  padding: 16px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid #e3f2fd;
+  transition: all 0.2s ease;
+}
+
+.userProgramCard:hover {
+  border-color: #90caf9;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.1);
+}
+
+.userBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #1565c0;
+  border: 1px solid #90caf9;
+}
+
+.userBadge svg {
+  color: #1976d2;
+}
+
+.statusBadge {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.statusBadge.pending {
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+  color: #f57c00;
+  border: 1px solid #ffb74d;
+}
+
+.statusBadge.private {
+  background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+  color: #c2185b;
+  border: 1px solid #f48fb1;
+}
+
+.statusBadge.rejected {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+}
+
+.statusBadge.public {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  color: #2e7d32;
+  border: 1px solid #81c784;
+}
+
+.programMeta {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #888);
+  padding-top: 8px;
+  border-top: 1px dashed #e0e0e0;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #90a4ae;
+  text-align: center;
+  gap: 12px;
+}
+
+.emptyState svg {
+  opacity: 0.5;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
 /* Mobile responsive */
 @media (max-width: 1024px) {
   .content {
@@ -363,5 +524,9 @@
 
   .formRow {
     grid-template-columns: 1fr;
+  }
+
+  .userProgramsSection {
+    grid-column: 1;
   }
 }

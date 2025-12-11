@@ -7,7 +7,7 @@ import {
   isSubscribed
 } from '../../services/notificationService';
 import { storage } from '../../shared/utils/storage';
-import { isAuthenticated } from '../../shared/api/auth';
+import { isAuthenticated as isAuthenticatedLocal } from '../../utils/authService';
 import styles from './NotificationPrompt.module.css';
 
 const NotificationPrompt = () => {
@@ -24,9 +24,22 @@ const NotificationPrompt = () => {
   }, []);
 
   const checkAuthAndNotificationStatus = async () => {
-    // Vérifier l'authentification
-    const auth = await isAuthenticated();
+    // Vérifier si le prompt a été dismissed récemment (moins de 24h)
+    const dismissedTime = storage.get('notificationPromptDismissed');
+    if (dismissedTime) {
+      const now = Date.now();
+      const dismissed = parseInt(dismissedTime, 10);
+      const hoursSinceDismiss = (now - dismissed) / (1000 * 60 * 60);
+      if (hoursSinceDismiss < 24) {
+        return;
+      }
+    }
+
+    // Vérifier l'authentification (utiliser la version locale qui vérifie le localStorage)
+    const auth = isAuthenticatedLocal();
     setIsAuth(auth);
+
+    if (!auth) return;
 
     // Vérifier le support
     const { supported: isSupported } = await initializeNotifications();

@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { storage } from '../../../shared/utils/storage';
 import { secureApiCall, isAuthenticated } from "../../../utils/authService";
 import logger from '../../../shared/utils/logger.js';
+import { useNotification } from '../../../hooks/useNotification';
 
 export default function useHistoryData() {
   const [records, setRecords] = useState([]);
   const [sessions, setSessions] = useState([]);
+  const notify = useNotification();
   const [points, setPoints] = useState(null);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
@@ -56,23 +58,11 @@ export default function useHistoryData() {
           return;
         }
 
-        const weeklyGoal = storage.get('weeklyGoal');
-        const dynamiPrefs = {
-          dynamiStep: storage.get('dynamiStep'),
-          dynamiType: storage.get('dynamiType'),
-          dynamiEquip: storage.get('dynamiEquip'),
-          dynamiMuscle: storage.get('dynamiMuscle'),
-        };
-
-        storage.clear();
-        sessionStorage.clear();
-
-        if (weeklyGoal) storage.set('weeklyGoal', weeklyGoal);
-        Object.entries(dynamiPrefs).forEach(([key, value]) => {
-          if (value) storage.set(key, value);
-        });
-
-        setError("Session expirée. Reconnecte-toi.");
+        // Ne PAS vider le localStorage sur une erreur réseau ou autre
+        // Cela déconnecte l'utilisateur de façon inattendue
+        // Seule une vraie déconnexion (via logout) doit vider le storage
+        logger.warn('Erreur lors de la récupération des données utilisateur:', err);
+        setError("Erreur de chargement. Réessaie plus tard.");
         setStatus("error");
       });
 
@@ -217,7 +207,8 @@ export default function useHistoryData() {
 
   const handleDelete = async (id) => {
     if (!id) return;
-    if (!window.confirm("Supprimer cette mesure ?")) return;
+    const confirmed = await notify.confirm("Supprimer cette mesure ?", { title: "Suppression" });
+    if (!confirmed) return;
     try {
       const res = await secureApiCall(`/history/${id}`, {
         method: "DELETE",

@@ -1,7 +1,31 @@
 import { useState } from "react";
 import { toast } from 'sonner';
-import { login as secureLogin } from '../../../utils/authService';
+import { login as secureLogin, secureApiCall } from '../../../utils/authService';
 import logger from '../../../shared/utils/logger.js';
+
+/**
+ * Vérifie s'il y a des programmes en attente de validation (pour les admins)
+ */
+async function checkPendingProgramsForAdmin(user) {
+  if (user?.role !== 'admin') return;
+
+  try {
+    const response = await secureApiCall('/programs/admin/pending');
+    if (response.ok) {
+      const data = await response.json();
+      const pendingCount = data.programs?.length || 0;
+
+      if (pendingCount > 0) {
+        toast.info(
+          `${pendingCount} programme${pendingCount > 1 ? 's' : ''} en attente de validation`,
+          { duration: 5000 }
+        );
+      }
+    }
+  } catch (error) {
+    logger.error('Erreur vérification programmes pending:', error);
+  }
+}
 
 export default function useLogin(onLoginSuccess, options = {}) {
   const { minDurationMs = 2500 } = options;
@@ -52,6 +76,10 @@ export default function useLogin(onLoginSuccess, options = {}) {
 
       setStatus("success");
       toast.success("Connexion réussie !");
+
+      // Vérifier les programmes en attente pour les admins
+      checkPendingProgramsForAdmin(user);
+
       if (onLoginSuccess && user) onLoginSuccess(user);
       return { user };
     } catch (e) {

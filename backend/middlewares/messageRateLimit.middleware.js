@@ -10,9 +10,14 @@ const messageLimiter = rateLimit({
   message: 'Trop de messages envoyés. Veuillez patienter avant de réessayer.',
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   // Utiliser l'userId au lieu de l'IP pour un rate limit par utilisateur
   keyGenerator: (req) => {
-    return req.userId ? req.userId.toString() : req.ip;
+    if (req.userId) return req.userId.toString();
+    // Utiliser le header X-Forwarded-For ou l'IP directe
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip = forwarded ? forwarded.split(',')[0].trim() : req.socket?.remoteAddress || 'unknown';
+    return ip;
   },
   handler: (req, res) => {
     res.status(429).json({

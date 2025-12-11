@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { toast } from 'sonner';
 import styles from "./Reviews.module.css";
 import { isAuthenticated } from "../../utils/authService";
 
@@ -68,10 +69,10 @@ export default function Reviews() {
         setUserReviews([data.review, ...userReviews]);
         setNewReview({ name: "", rating: 5, comment: "" });
         setShowReviewModal(false);
-        alert("Merci pour votre avis ! ✅");
+        toast.success("Merci pour votre avis ! ✅");
       }
     } catch {
-      alert("Erreur lors de l'envoi de votre avis");
+      toast.error("Erreur lors de l'envoi de votre avis");
     }
   };
 

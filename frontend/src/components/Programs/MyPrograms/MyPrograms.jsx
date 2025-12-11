@@ -14,7 +14,7 @@ import {
   ClockIcon
 } from '../ProgramIcons';
 
-export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
+export default function MyPrograms({ onBack, onEdit, onSelectProgram, refreshKey }) {
   const notify = useNotification();
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +23,7 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram }) {
 
   useEffect(() => {
     loadMyPrograms();
-  }, []);
+  }, [refreshKey]);
 
   const loadMyPrograms = async () => {
     try {

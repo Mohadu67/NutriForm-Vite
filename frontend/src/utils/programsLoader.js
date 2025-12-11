@@ -1,18 +1,14 @@
 /**
- * Charger les programmes d'entraînement depuis les fichiers JSON + MongoDB
+ * Charger les programmes d'entraînement depuis MongoDB
+ * Les programmes sont maintenant stockés uniquement dans MongoDB (migration effectuée)
  * @param {string|string[]} types - Type(s) de programmes à charger ('all' par défaut)
  * @returns {Promise<Array>} Liste des programmes
  */
 export async function loadPrograms(types = 'all') {
   try {
-    // Charger les programmes JSON locaux
-    const jsonPrograms = await loadJSONPrograms(types);
-
-    // Charger les programmes MongoDB publics
+    // Charger les programmes MongoDB publics (seule source depuis la migration)
     const mongoPrograms = await loadMongoPrograms(types);
-
-    // Fusionner et retourner
-    return [...jsonPrograms, ...mongoPrograms];
+    return mongoPrograms;
   } catch (error) {
     console.error('Erreur lors du chargement des programmes:', error);
     return [];
@@ -52,21 +48,44 @@ async function loadJSONPrograms(types = 'all') {
 async function loadMongoPrograms(types = 'all') {
   try {
     // Utiliser VITE_API_URL pour être compatible dev et prod
-    const API_URL = import.meta.env?.VITE_API_URL || '/api';
+    // Supprimer le slash final si présent pour éviter les doubles slashs
+    const API_URL = (import.meta.env?.VITE_API_URL || '').replace(/\/$/, '');
+
+    // Si pas d'URL API configurée, skip les programmes MongoDB
+    if (!API_URL) {
+      console.warn('[programsLoader] VITE_API_URL non configuré, skip MongoDB');
+      return [];
+    }
 
     const queryParams = new URLSearchParams();
     if (types !== 'all') {
       queryParams.append('type', types);
     }
 
-    const res = await fetch(`${API_URL}/programs/public?${queryParams.toString()}`, {
+    const url = `${API_URL}/programs/public?${queryParams.toString()}`;
+    console.log('[programsLoader] Fetching MongoDB programs from:', url);
+
+    const res = await fetch(url, {
       credentials: 'include', // Important pour les cookies en production cross-domain
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    if (!res.ok) {
+      console.error('[programsLoader] HTTP error:', res.status, res.statusText);
+      throw new Error(`HTTP ${res.status}`);
+    }
 
     const data = await res.json();
-    return data.programs || [];
-  } catch {
+    const programs = data.programs || [];
+
+    console.log('[programsLoader] Loaded', programs.length, 'MongoDB programs');
+
+    // Normaliser les programmes MongoDB pour avoir un champ 'id' comme les programmes JSON
+    return programs.map(program => ({
+      ...program,
+      id: program._id || program.id, // Utiliser _id si disponible, sinon id
+    }));
+  } catch (error) {
+    console.error('[programsLoader] Erreur chargement programmes MongoDB:', error);
     return [];
   }
 }

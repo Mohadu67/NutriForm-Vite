@@ -23,6 +23,7 @@ export default function Programs() {
   const [isPremium, setIsPremium] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null); // 'saving', 'saved', 'error', 'not_saved'
   const [editingProgram, setEditingProgram] = useState(null);
+  const [myProgramsRefreshKey, setMyProgramsRefreshKey] = useState(0);
 
   // Vérifier si on vient de la page admin
   const fromAdmin = location.state?.fromAdmin || false;
@@ -176,6 +177,7 @@ export default function Programs() {
         const data = await response.json();
         logger.info('Programme sauvegardé avec succès');
         notify.success('Programme créé avec succès !');
+        setMyProgramsRefreshKey(prev => prev + 1); // Forcer le rechargement de MyPrograms
         setViewMode('my-programs');
         setEditingProgram(null);
       } else {
@@ -256,6 +258,7 @@ export default function Programs() {
               onBack={handleBackToBrowse}
               onEdit={handleEditProgram}
               onSelectProgram={handleSelectProgram}
+              refreshKey={myProgramsRefreshKey}
             />
           )}
         </div>
