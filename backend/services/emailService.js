@@ -1,55 +1,35 @@
 const nodemailer = require('nodemailer');
-const sgMail = require('@sendgrid/mail');
 const config = require('../config');
 const logger = require('../utils/logger.js');
 
+const FROM_NAME = process.env.FROM_NAME || 'Harmonith';
 
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-const USE_SENDGRID = !!SENDGRID_API_KEY;
-const FROM_NAME = process.env.FROM_NAME || config.smtp.fromName || undefined;
-
-if (USE_SENDGRID) {
-  sgMail.setApiKey(SENDGRID_API_KEY);
-  logger.info('[EMAIL_SERVICE] Using SendGrid for newsletter delivery');
-} else {
-  logger.info('[EMAIL_SERVICE] Using SMTP for newsletter delivery');
-}
-
+logger.info('[EMAIL_SERVICE] Using Gmail SMTP for email delivery');
 
 let transporter = null;
 
 const getTransporter = () => {
   if (!transporter) {
-    logger.info('[EMAIL_SERVICE] Creating transporter with config:', {
-      host: config.smtp.host,
-      port: config.smtp.port,
-      secure: config.smtp.secure,
-      user: config.smtp.user,
-      hasPass: !!config.smtp.pass
+    logger.info('[EMAIL_SERVICE] Creating Gmail SMTP transporter:', {
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: process.env.SMTP_PORT || 465,
+      secure: process.env.SMTP_SECURE === 'true',
+      user: process.env.SMTP_USER
     });
 
     transporter = nodemailer.createTransport({
-      host: config.smtp.host,
-      port: config.smtp.port,
-      secure: config.smtp.secure, 
-      auth: config.smtp.user && config.smtp.pass ? {
-        user: config.smtp.user,
-        pass: config.smtp.pass
-      } : undefined,
-      pool: true,
-      maxConnections: 5,
-      maxMessages: 100,
-      rateDelta: 1000,
-      rateLimit: 5,
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 10000,
-      tls: {
-        rejectUnauthorized: false,
-        minVersion: 'TLSv1.2'
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: Number(process.env.SMTP_PORT) || 465,
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
       },
-      debug: process.env.NODE_ENV === 'development',
-      logger: process.env.NODE_ENV === 'development'
+      pool: true,
+      maxConnections: 3,
+      maxMessages: 50,
+      rateDelta: 1000,
+      rateLimit: 3
     });
   }
   return transporter;
@@ -93,7 +73,7 @@ const getNewsletterTemplate = (subject, content) => {
           <tr>
             <td style="background: #f8f8f8; padding: 32px; text-align: center; border-top: 1px solid #e0e0e0;">
               <p style="margin: 0 0 12px; color: #666; font-size: 13px;">
-                📬 Vous recevez cet email car vous êtes inscrit à notre newsletter
+                Vous recevez cet email car vous êtes inscrit à notre newsletter
               </p>
               <p style="margin: 0; font-size: 12px; color: #999;">
                 <a href="${config.frontUrl}/newsletter/unsubscribe?email={{email}}" style="color: #F7B186; text-decoration: none;">
@@ -117,52 +97,33 @@ const sendNewsletterEmail = async (to, subject, content, senderName = 'L\'équip
     const htmlContent = getNewsletterTemplate(subject, content)
       .replace('{{email}}', encodeURIComponent(to));
 
-    const from = config.smtp.from || config.smtp.user;
-    const fromName = FROM_NAME;
-    if (!from) {
-      throw new Error('CONFIG: smtp.from manquant pour newsletter');
+    const fromEmail = process.env.SMTP_USER;
+    if (!fromEmail) {
+      throw new Error('CONFIG: SMTP_USER manquant');
     }
 
     logger.info(`[EMAIL_SERVICE] Sending newsletter to ${to}...`);
 
-    if (USE_SENDGRID) {
-      
-      const msg = {
-        to,
-        from: fromName ? { email: from, name: fromName } : { email: from },
-        subject,
-        html: htmlContent,
-      };
-      const result = await sgMail.send(msg);
-      logger.info(`[EMAIL_SERVICE] ✅ Newsletter sent to ${to} via SendGrid: ${result[0]?.headers['x-message-id']}`);
-      return { success: true, messageId: result[0]?.headers['x-message-id'] };
-    } else {
-      
-      const transporter = getTransporter();
-      const info = await transporter.sendMail({
-        from: fromName ? `${fromName} <${from}>` : from,
-        to,
-        subject,
-        html: htmlContent
-      });
+    const transporter = getTransporter();
+    const info = await transporter.sendMail({
+      from: `"${FROM_NAME}" <${fromEmail}>`,
+      to,
+      subject,
+      html: htmlContent
+    });
 
-      logger.info(`[EMAIL_SERVICE] ✅ Newsletter sent to ${to} via SMTP: ${info.messageId}`);
-      return { success: true, messageId: info.messageId };
-    }
+    logger.info(`[EMAIL_SERVICE] ✅ Newsletter sent to ${to}: ${info.messageId}`);
+    return { success: true, messageId: info.messageId };
   } catch (error) {
-    logger.error(`[EMAIL_SERVICE] ❌ Error sending newsletter to ${to}:`, error.message);
-    logger.error('[EMAIL_SERVICE] Error code:', error.code);
-    logger.error('[EMAIL_SERVICE] Full error:', error);
+    logger.error(`[EMAIL_SERVICE] ❌ Error sending to ${to}:`, error.message);
     return { success: false, error: error.message };
   }
 };
-
 
 const sendNewsletterToAll = async (newsletter) => {
   const NewsletterSubscriber = require('../models/NewsletterSubscriber');
 
   try {
-    
     const subscribers = await NewsletterSubscriber.find({ isActive: true });
 
     if (subscribers.length === 0) {
@@ -170,7 +131,8 @@ const sendNewsletterToAll = async (newsletter) => {
         success: true,
         message: 'Aucun abonné actif',
         successCount: 0,
-        failedCount: 0
+        failedCount: 0,
+        totalRecipients: 0
       };
     }
 
@@ -178,13 +140,12 @@ const sendNewsletterToAll = async (newsletter) => {
     let failedCount = 0;
     const failedRecipients = [];
 
-    
     for (const subscriber of subscribers) {
       const result = await sendNewsletterEmail(
         subscriber.email,
         newsletter.subject,
         newsletter.content,
-        newsletter.createdByName 
+        newsletter.createdByName
       );
 
       if (result.success) {
@@ -196,14 +157,16 @@ const sendNewsletterToAll = async (newsletter) => {
           error: result.error || 'Unknown error'
         });
       }
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Délai entre chaque envoi pour respecter les limites Gmail
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    const overallSuccess = failedCount === 0;
+    // Considérer comme succès si au moins un email est envoyé
+    const overallSuccess = successCount > 0;
 
-    if (!overallSuccess) {
-      logger.error('[EMAIL_SERVICE] Newsletter delivery issues detected:', {
+    if (failedCount > 0) {
+      logger.error('[EMAIL_SERVICE] Some emails failed:', {
         failedCount,
         sample: failedRecipients.slice(0, 5)
       });
@@ -220,7 +183,10 @@ const sendNewsletterToAll = async (newsletter) => {
     logger.error('Erreur lors de l\'envoi de la newsletter:', error);
     return {
       success: false,
-      error: error.message
+      error: error.message,
+      successCount: 0,
+      failedCount: 0,
+      totalRecipients: 0
     };
   }
 };
