@@ -27,6 +27,10 @@
   color: #f7b186;
 }
 
+.iconButton:hover svg {
+  stroke: #f7b186;
+}
+
 .iconButton:focus-visible {
   outline: 2px solid #f7b186;
   outline-offset: 2px;
