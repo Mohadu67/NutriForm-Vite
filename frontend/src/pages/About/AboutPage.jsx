@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Helmet } from "@dr.pogodin/react-helmet";
+import { Helmet } from "react-helmet-async";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import styles from "./AboutPage.module.css";

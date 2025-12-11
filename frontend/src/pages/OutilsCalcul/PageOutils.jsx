@@ -1,4 +1,4 @@
-import { Helmet } from "@dr.pogodin/react-helmet";
+import { Helmet } from "react-helmet-async";
 import Header from "../../components/Header/Header.jsx";
 import Footer from "../../components/Footer/Footer.jsx";
 import OutilsCalcul from "./OutilsCalcul.jsx";

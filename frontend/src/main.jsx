@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { Helmet, HelmetProvider } from "@dr.pogodin/react-helmet";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 
 import App from "./App.jsx";
 import "./index.css";
