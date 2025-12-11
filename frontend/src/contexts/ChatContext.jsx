@@ -1,6 +1,7 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
+import { getConversations } from '../shared/api/matchChat';
 
-const ChatContext = createContext();
+const ChatContext = createContext(null);
 
 export function ChatProvider({ children }) {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -24,6 +25,24 @@ export function ChatProvider({ children }) {
     setIsChatOpen(true);
   };
 
+  // Ouvrir une conversation match par son ID (récupère les données et ouvre le modal)
+  const openMatchChatById = useCallback(async (conversationId) => {
+    try {
+      const { conversations } = await getConversations();
+      const conversation = conversations.find(c => c._id === conversationId);
+      if (conversation) {
+        setActiveConversation({ type: 'match', data: conversation });
+        setChatView('conversation');
+        setIsChatOpen(true);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Erreur ouverture conversation:', error);
+      return false;
+    }
+  }, []);
+
   const closeChat = () => {
     setIsChatOpen(false);
   };
@@ -41,6 +60,7 @@ export function ChatProvider({ children }) {
       openChat,
       openAIChat,
       openMatchChat,
+      openMatchChatById,
       closeChat,
       backToHistory
     }}>
@@ -51,8 +71,6 @@ export function ChatProvider({ children }) {
 
 export function useChat() {
   const context = useContext(ChatContext);
-  if (!context) {
-    throw new Error('useChat must be used within a ChatProvider');
-  }
+  // Retourner le contexte même s'il est null (pour éviter les erreurs sur Safari lors du lazy loading)
   return context;
 }

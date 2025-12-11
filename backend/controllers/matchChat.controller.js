@@ -133,6 +133,25 @@ async function getOrCreateConversation(req, res) {
       // Mettre à jour le Match avec le conversationId
       match.conversationId = conversation._id;
       await match.save();
+    } else {
+      // Si la conversation était cachée pour l'utilisateur, la réafficher
+      logger.info(`🔍 getOrCreateConversation: checking hiddenBy for user ${userId}, hiddenBy=${JSON.stringify(conversation.hiddenBy)}`);
+      if (conversation.isHiddenForUser(userId)) {
+        logger.info(`🔓 Conversation ${conversation._id} était cachée pour user ${userId}, on la réaffiche`);
+        await conversation.unhideForUser(userId);
+
+        // Notifier via WebSocket que la conversation a été restaurée
+        const io = req.app.get('io');
+        logger.info(`📡 WebSocket io disponible: ${!!io}`);
+        if (io) {
+          io.to(`user:${userId}`).emit('conversation_restored', {
+            conversationId: conversation._id
+          });
+          logger.info(`✅ Événement conversation_restored émis pour user ${userId}`);
+        }
+      } else {
+        logger.info(`ℹ️ Conversation ${conversation._id} n'était pas cachée pour user ${userId}`);
+      }
     }
 
     // Populate les informations
@@ -253,18 +272,23 @@ async function sendMessage(req, res) {
       timestamp: message.createdAt
     };
 
+    // Gérer le unhide pour les deux participants si nécessaire
     // Si la conversation était cachée pour le destinataire, la réafficher
     if (conversation.isHiddenForUser(receiverId)) {
-      await conversation.unhideForUser(receiverId);
+      const userIdStr = receiverId.toString();
+      conversation.hiddenBy = conversation.hiddenBy.filter(id => id.toString() !== userIdStr);
     }
 
     // Si la conversation était cachée pour l'expéditeur (moi), la réafficher aussi
     if (conversation.isHiddenForUser(userId)) {
-      await conversation.unhideForUser(userId);
+      const userIdStr = userId.toString();
+      conversation.hiddenBy = conversation.hiddenBy.filter(id => id.toString() !== userIdStr);
     }
 
     // Incrémenter le compteur non lu pour le destinataire
-    await conversation.incrementUnread(receiverId);
+    const receiverKey = receiverId.toString();
+    const currentUnread = conversation.unreadCount.get(receiverKey) || 0;
+    conversation.unreadCount.set(receiverKey, currentUnread + 1);
 
     await conversation.save();
 

@@ -44,10 +44,10 @@ const NewsletterAdmin = lazy(() => import("./pages/Admin/NewsletterAdmin.jsx"));
 const SupportTickets = lazy(() => import("./pages/Admin/SupportTickets.jsx"));
 const ProgramsAdmin = lazy(() => import("./pages/Admin/ProgramsAdmin/ProgramsAdmin.jsx"));
 
-// Profile & Matching - lazy loaded (features avancées)
-const ProfileSetup = lazy(() => import("./pages/Profile/ProfileSetup.jsx"));
+// Profile & Matching - loaded directly to avoid Safari lazy loading issues
+import ProfileSetup from "./pages/Profile/ProfileSetup.jsx";
+import MatchingPage from "./pages/Matching/MatchingPage.jsx";
 const ProfileSetupFuturistic = lazy(() => import("./pages/Profile/ProfileSetupFuturistic.jsx"));
-const MatchingPage = lazy(() => import("./pages/Matching/MatchingPage.jsx"));
 const MatchingPageFuturistic = lazy(() => import("./pages/Matching/MatchingPageFuturistic.jsx"));
 
 // Chat - lazy loaded (feature social)

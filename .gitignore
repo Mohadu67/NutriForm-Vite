@@ -38,9 +38,6 @@ frontend/cookies.txt
 # frontend/.env.production  # Pas de secrets ici, on le commit pour Netlify
 
 # files
-
-package-lock.json
-package.json
 .env.production
 cookies.txt
 
