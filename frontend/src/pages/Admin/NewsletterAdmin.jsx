@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { storage } from '../../shared/utils/storage';
 import { useNavigate } from "react-router-dom";
 import { toast } from 'sonner';
 import DOMPurify from "dompurify";
 import styles from "./NewsletterAdmin.module.css";
-import { secureApiCall } from "../../utils/authService.js";
+import { secureApiCall, isAuthenticated, invalidateAuthCache } from "../../utils/authService.js";
 import ConfirmModal from "../../components/Modal/ConfirmModal";
 
 const toDateTimeLocalValue = (value) => {
@@ -41,28 +40,28 @@ export default function NewsletterAdmin() {
     newsletterId: null
   });
 
-  const checkAdminAccess = useCallback(() => {
+  const checkAdminAccess = useCallback(async () => {
+    if (!isAuthenticated()) {
+      navigate('/');
+      return;
+    }
+
     try {
+      invalidateAuthCache();
+      const response = await secureApiCall('/me');
 
-      const userFromLocal = storage.get('user');
-      const userFromSession = sessionStorage.getItem('user');
-      const userStr = userFromLocal || userFromSession;
-
-      if (!userStr) {
+      if (response.ok) {
+        const data = await response.json();
+        if (data.role !== 'admin') {
+          toast.warning('Accès refusé. Privilèges admin requis.');
+          navigate('/');
+          return;
+        }
+        setIsAdmin(true);
+        setCheckingAuth(false);
+      } else {
         navigate('/');
-        return;
       }
-
-      const user = JSON.parse(userStr);
-
-      if (user.role !== 'admin') {
-        toast.warning('Accès refusé. Privilèges admin requis.');
-        navigate('/');
-        return;
-      }
-
-      setIsAdmin(true);
-      setCheckingAuth(false);
     } catch {
       navigate('/');
     }
