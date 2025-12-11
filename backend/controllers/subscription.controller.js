@@ -393,6 +393,53 @@ async function cancelSubscription(req, res) {
 }
 
 /**
+ * Synchroniser la subscription depuis Stripe (fallback si webhook non reçu)
+ * POST /api/subscriptions/sync
+ */
+async function syncSubscription(req, res) {
+  try {
+    const userId = req.userId;
+    const user = await User.findById(userId);
+
+    if (!user || !user.stripeCustomerId) {
+      return res.status(400).json({ error: 'Aucun compte Stripe lié.' });
+    }
+
+    // Récupérer les subscriptions actives du customer sur Stripe
+    const subscriptions = await stripe.subscriptions.list({
+      customer: user.stripeCustomerId,
+      status: 'all',
+      limit: 1
+    });
+
+    if (subscriptions.data.length === 0) {
+      return res.status(404).json({ error: 'Aucun abonnement trouvé sur Stripe.' });
+    }
+
+    const stripeSubscription = subscriptions.data[0];
+
+    // Synchroniser en DB
+    await upsertSubscription(userId, stripeSubscription);
+
+    // Mettre à jour le tier User
+    const tier = ['active', 'trialing'].includes(stripeSubscription.status) ? 'premium' : 'free';
+    user.subscriptionTier = tier;
+    await user.save();
+
+    logger.info(`✅ Subscription synchronisée pour user ${userId} - Tier: ${tier}`);
+
+    res.status(200).json({
+      message: 'Subscription synchronisée avec succès.',
+      tier,
+      status: stripeSubscription.status
+    });
+  } catch (error) {
+    logger.error('Erreur syncSubscription:', error);
+    res.status(500).json({ error: 'Erreur lors de la synchronisation.' });
+  }
+}
+
+/**
  * Créer un lien vers le Stripe Customer Portal
  * POST /api/subscriptions/customer-portal
  */
@@ -424,5 +471,6 @@ module.exports = {
   handleWebhook,
   getSubscriptionStatus,
   cancelSubscription,
-  createCustomerPortalSession
+  createCustomerPortalSession,
+  syncSubscription
 };

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { storage } from '../../../shared/utils/storage';
+import { useWebSocket } from '../../../contexts/WebSocketContext';
 import styles from './NotificationCenter.module.css';
 
 // SVG Icon pour la cloche
@@ -40,6 +41,7 @@ const NOTIFICATION_TYPES = {
 // Icônes par type
 const TypeIcons = {
   message: '💬',
+  match: '❤️',
   system: '🔔',
   activity: '🏃',
   admin: '👑'
@@ -47,6 +49,7 @@ const TypeIcons = {
 
 export default function NotificationCenter({ className = '' }) {
   const navigate = useNavigate();
+  const { on, isConnected } = useWebSocket();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [isLoading] = useState(false);
@@ -154,7 +157,7 @@ export default function NotificationCenter({ className = '' }) {
     loadNotifications();
   }, [loadNotifications]);
 
-  // Écouter les événements de nouvelles notifications
+  // Écouter les événements de nouvelles notifications (CustomEvent local)
   useEffect(() => {
     const handleNewNotification = (event) => {
       addNotification(event.detail);
@@ -166,6 +169,20 @@ export default function NotificationCenter({ className = '' }) {
       window.removeEventListener('addNotification', handleNewNotification);
     };
   }, [addNotification]);
+
+  // Écouter les notifications via WebSocket
+  useEffect(() => {
+    console.log('🔔 NotificationCenter: WebSocket isConnected=', isConnected, 'on=', !!on);
+    if (!isConnected || !on) return;
+
+    console.log('🔔 NotificationCenter: Enregistrement listener new_notification');
+    const cleanup = on('new_notification', (notification) => {
+      console.log('🔔 NotificationCenter: Notification reçue!', notification);
+      addNotification(notification);
+    });
+
+    return cleanup;
+  }, [on, isConnected, addNotification]);
 
   // Formater le timestamp
   const formatTime = (timestamp) => {

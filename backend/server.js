@@ -16,6 +16,7 @@ const http = require('http');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
+const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const { Server } = require('socket.io');
 
@@ -139,6 +140,17 @@ const globalLimiter = rateLimit({
 app.use(cors({
   origin: allowedOrigins,
   credentials: true,
+}));
+
+// Compression gzip pour réduire la taille des réponses (gain ~60-80%)
+app.use(compression({
+  level: 6, // Bon compromis vitesse/compression
+  threshold: 1024, // Compresser seulement si > 1KB
+  filter: (req, res) => {
+    // Ne pas compresser les SSE ou WebSocket upgrades
+    if (req.headers['accept'] === 'text/event-stream') return false;
+    return compression.filter(req, res);
+  }
 }));
 
 // ⚠️ IMPORTANT: Webhook Stripe AVANT express.json() pour recevoir raw body

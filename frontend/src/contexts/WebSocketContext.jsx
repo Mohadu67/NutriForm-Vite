@@ -1,10 +1,13 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { storage } from '../shared/utils/storage';
+import { isAuthenticated } from '../utils/authService';
 
-const WebSocketContext = createContext();
+const WebSocketContext = createContext(null);
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || '';
+// Extraire l'URL de base (sans /api) pour le WebSocket
+const API_URL = import.meta.env.VITE_API_URL || '';
+const BACKEND_URL = API_URL.replace(/\/api\/?$/, '') || 'http://localhost:3000';
 
 export function WebSocketProvider({ children }) {
   const [socket, setSocket] = useState(null);
@@ -23,20 +26,26 @@ export function WebSocketProvider({ children }) {
       return;
     }
 
-    // Obtenir le token d'authentification
-    const token = storage.get('token');
-    if (!token) {
+    // Vérifier si l'utilisateur est authentifié (via cookie httpOnly)
+    const authenticated = isAuthenticated();
+    if (!authenticated) {
       return;
     }
 
+    // Récupérer le token pour WebSocket
+    const wsToken = storage.get('wsToken');
+
     // Créer la connexion Socket.io
     const newSocket = io(BACKEND_URL, {
-      auth: { token },
-      transports: ['websocket', 'polling'],
+      path: '/socket.io',
+      auth: { token: wsToken }, // Token pour authentification WebSocket
+      withCredentials: true,
+      transports: ['polling', 'websocket'], // Polling d'abord, plus stable
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
-      reconnectionAttempts: MAX_RECONNECT_ATTEMPTS
+      reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
+      forceNew: true // Forcer une nouvelle connexion
     });
 
     // Événements de connexion
@@ -46,7 +55,7 @@ export function WebSocketProvider({ children }) {
     });
 
     newSocket.on('connected', () => {
-      // WebSocket authentifié
+      // Authentification confirmée par le serveur
     });
 
     newSocket.on('disconnect', (reason) => {
@@ -154,15 +163,18 @@ export function WebSocketProvider({ children }) {
    * Connexion automatique au montage
    */
   useEffect(() => {
-    const token = storage.get('token');
-    if (token) {
-      connect();
-    }
+    let isMounted = true;
+
+    // Petit délai pour éviter les problèmes avec React StrictMode (double mount)
+    const connectTimeout = setTimeout(() => {
+      if (isMounted && isAuthenticated()) {
+        connect();
+      }
+    }, 100);
 
     // Reconnecter si l'utilisateur se connecte
     const handleLogin = () => {
-      const newToken = storage.get('token');
-      if (newToken) {
+      if (isMounted && isAuthenticated()) {
         connect();
       }
     };
@@ -171,6 +183,8 @@ export function WebSocketProvider({ children }) {
 
     // Déconnexion au démontage
     return () => {
+      isMounted = false;
+      clearTimeout(connectTimeout);
       disconnect();
       window.removeEventListener('userLoggedIn', handleLogin);
     };
@@ -199,8 +213,6 @@ export function WebSocketProvider({ children }) {
 
 export function useWebSocket() {
   const context = useContext(WebSocketContext);
-  if (!context) {
-    throw new Error('useWebSocket must be used within a WebSocketProvider');
-  }
+  // Retourner le contexte même s'il est null (pour éviter les erreurs sur Safari lors du lazy loading)
   return context;
 }

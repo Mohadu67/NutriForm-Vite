@@ -24,7 +24,6 @@
 
 .iconButton:hover {
   background: rgba(247, 177, 134, 0.15);
-  color: #f7b186;
 }
 
 .iconButton:hover svg {

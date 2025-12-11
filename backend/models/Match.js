@@ -95,7 +95,7 @@ matchSchema.methods.isMutual = function() {
 
 // Méthode pour enregistrer un like
 matchSchema.methods.addLike = function(userId) {
-  if (!this.likedBy.includes(userId)) {
+  if (!this.likedBy.some(id => id.equals(userId))) {
     this.likedBy.push(userId);
   }
 

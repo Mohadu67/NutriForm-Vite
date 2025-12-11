@@ -6,21 +6,45 @@ const config = require('../config');
 const connectedUsers = new Map();
 
 /**
+ * Extraire le token depuis les cookies
+ */
+const extractTokenFromCookie = (cookieHeader) => {
+  if (!cookieHeader) return null;
+
+  const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+    const [key, value] = cookie.trim().split('=');
+    acc[key] = value;
+    return acc;
+  }, {});
+
+  return cookies.token || null;
+};
+
+/**
  * Middleware d'authentification pour Socket.io
  */
 const authenticateSocket = async (socket, next) => {
   try {
-    const token = socket.handshake.auth.token || socket.handshake.headers.cookie?.split('token=')[1]?.split(';')[0];
+    // Essayer d'abord le token dans auth, puis dans le cookie
+    const authToken = socket.handshake.auth?.token;
+    const cookieToken = extractTokenFromCookie(socket.handshake.headers.cookie);
+    const token = authToken || cookieToken;
+
+    logger.info(`🔌 WebSocket Auth: authToken=${!!authToken}, cookieToken=${!!cookieToken}`);
 
     if (!token) {
+      logger.warn('WebSocket: Aucun token trouvé');
       return next(new Error('Authentication error: No token provided'));
     }
 
     const decoded = jwt.verify(token, config.jwtSecret);
-    socket.userId = decoded.userId;
+    // Le token contient 'id' pas 'userId'
+    const userId = decoded.userId || decoded.id;
+    logger.info(`🔌 WebSocket Auth: userId=${userId}`);
+    socket.userId = userId;
     next();
   } catch (error) {
-    logger.error('Socket authentication error:', error);
+    logger.error('Socket authentication error:', error.message);
     next(new Error('Authentication error: Invalid token'));
   }
 };
@@ -34,6 +58,13 @@ module.exports = (io) => {
 
   io.on('connection', (socket) => {
     const userId = socket.userId;
+
+    // Vérifier que l'authentification a réussi
+    if (!userId) {
+      logger.warn('🔌 WebSocket: Connexion sans userId, déconnexion...');
+      socket.disconnect(true);
+      return;
+    }
 
     // Enregistrer l'utilisateur comme connecté
     connectedUsers.set(userId.toString(), socket.id);
