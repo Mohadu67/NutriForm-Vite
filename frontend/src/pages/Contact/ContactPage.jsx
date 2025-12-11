@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Helmet } from "@dr.pogodin/react-helmet";
+import { Helmet } from "react-helmet-async";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import { useChat } from "../../contexts/ChatContext";
 import Header from "../../components/Header/Header.jsx";

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Helmet } from "@dr.pogodin/react-helmet";
+import { Helmet } from "react-helmet-async";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import FormCalorie from "./FormCalorie/FormCalorie.jsx";
 import ResultatsCalorie from "./ResultatsCalorie/ResultatsCalorie.jsx";
