@@ -1,9 +1,9 @@
 // Service Worker pour NutriForm
 // Gère le cache et les notifications push
 
-const CACHE_NAME = 'nutriform-v3';
-const API_CACHE = 'nutriform-api-v3';
-const APP_VERSION = '3.0.0';
+const CACHE_NAME = 'nutriform-v4';
+const API_CACHE = 'nutriform-api-v4';
+const APP_VERSION = '4.0.0';
 
 // Événement d'installation
 self.addEventListener('install', (event) => {
@@ -71,14 +71,41 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Assets: Cache First avec fallback network (seulement pour assets locaux)
+  // Pour les fichiers JS/CSS avec hash, utiliser Network First
+  // Car après un rebuild, les anciens fichiers n'existent plus
+  if (url.pathname.startsWith('/assets/') && /\.(js|css)$/.test(url.pathname)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Ne mettre en cache que si la réponse est valide (pas une page HTML)
+          if (response.ok && response.headers.get('content-type')?.includes('javascript') ||
+              response.headers.get('content-type')?.includes('css')) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(request);
+        })
+    );
+    return;
+  }
+
+  // Autres assets: Cache First avec fallback network
   event.respondWith(
     caches.match(request).then((cached) => {
       return cached || fetch(request).then((response) => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          cache.put(request, response.clone());
-          return response;
-        });
+        // Ne pas mettre en cache les erreurs
+        if (response.ok) {
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, response.clone());
+            return response;
+          });
+        }
+        return response;
       });
     })
   );
