@@ -18,7 +18,8 @@ const logger = require('../utils/logger.js');
 exports.getMatchSuggestions = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { limit = 20, minScore = 50 } = req.query;
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
+    const minScore = Math.max(Math.min(parseInt(req.query.minScore) || 50, 100), 0);
 
     // Récupérer le profil de l'utilisateur
     const myProfile = await UserProfile.findOne({ userId }).populate('blockedUsers');
@@ -245,6 +246,11 @@ exports.likeProfile = async (req, res) => {
       return res.status(400).json({ error: 'targetUserId requis.' });
     }
 
+    const mongoose = require('mongoose');
+    if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
+      return res.status(400).json({ error: 'targetUserId invalide.' });
+    }
+
     if (userId.toString() === targetUserId) {
       return res.status(400).json({ error: 'Vous ne pouvez pas vous liker vous-même.' });
     }
@@ -281,19 +287,47 @@ exports.likeProfile = async (req, res) => {
         const user2 = await User.findById(match.user2Id._id || match.user2Id);
 
         if (user1 && user2) {
-          // Notifier l'utilisateur 1
+          // Notifier l'utilisateur 1 (Web Push)
           notifyNewMatch(user1._id, {
             username: user2.pseudo || 'Un utilisateur',
             photo: user2.photo,
             matchId: match._id
           }).catch(err => logger.error('Erreur notification user1:', err));
 
-          // Notifier l'utilisateur 2
+          // Notifier l'utilisateur 2 (Web Push)
           notifyNewMatch(user2._id, {
             username: user1.pseudo || 'Un utilisateur',
             photo: user1.photo,
             matchId: match._id
           }).catch(err => logger.error('Erreur notification user2:', err));
+
+          // Envoyer via WebSocket pour affichage dans le modal
+          const io = req.app.get('io');
+          if (io && io.notifyUser) {
+            // Notifier user1 du match avec user2
+            io.notifyUser(user1._id.toString(), 'new_notification', {
+              id: `match-${match._id}-${Date.now()}`,
+              type: 'match',
+              title: 'Match mutuel ! 🎉',
+              message: `${user2.pseudo || 'Un utilisateur'} et toi êtes maintenant matchés !`,
+              avatar: user2.photo,
+              timestamp: new Date().toISOString(),
+              read: false,
+              link: '/matching'
+            });
+
+            // Notifier user2 du match avec user1
+            io.notifyUser(user2._id.toString(), 'new_notification', {
+              id: `match-${match._id}-${Date.now()}`,
+              type: 'match',
+              title: 'Match mutuel ! 🎉',
+              message: `${user1.pseudo || 'Un utilisateur'} et toi êtes maintenant matchés !`,
+              avatar: user1.photo,
+              timestamp: new Date().toISOString(),
+              read: false,
+              link: '/matching'
+            });
+          }
         }
       }
 
@@ -490,7 +524,7 @@ exports.blockUser = async (req, res) => {
 
     const myProfile = await UserProfile.findOne({ userId });
 
-    if (!myProfile.blockedUsers.includes(targetUserId)) {
+    if (!myProfile.blockedUsers.some(id => id.equals(targetUserId))) {
       myProfile.blockedUsers.push(targetUserId);
       await myProfile.save();
     }

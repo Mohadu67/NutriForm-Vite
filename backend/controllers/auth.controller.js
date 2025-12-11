@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Subscription = require('../models/Subscription');
 const { sendVerifyEmail } = require('../services/mailer.service');
 const { validatePassword } = require('../utils/passwordValidator');
 const logger = require('../utils/logger.js');
@@ -90,6 +91,7 @@ exports.login = async (req, res) => {
     return res.json({
       message: 'Connexion réussie.',
       displayName,
+      token, // Token pour WebSocket (le cookie httpOnly reste pour les API calls)
       user: {
         id: user._id,
         prenom: user.prenom,
@@ -171,7 +173,7 @@ exports.register = async (req, res) => {
 
 exports.me = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).lean();
+    const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: 'Utilisateur introuvable.' });
     const displayName = user.prenom || user.pseudo || (user.email ? user.email.split('@')[0] : '');
 
@@ -182,6 +184,17 @@ exports.me = async (req, res) => {
       photoUrl = `${backendBase}${photoUrl}`;
     }
 
+    // TOUJOURS vérifier Subscription.isActive() pour déterminer isPremium
+    const subscription = await Subscription.findOne({ userId: req.userId });
+    const isPremium = subscription && subscription.isActive();
+
+    // Synchroniser le tier User si nécessaire
+    const expectedTier = isPremium ? 'premium' : 'free';
+    if (user.subscriptionTier !== expectedTier) {
+      user.subscriptionTier = expectedTier;
+      await user.save();
+    }
+
     return res.json({
       id: user._id,
       email: user.email,
@@ -189,8 +202,8 @@ exports.me = async (req, res) => {
       pseudo: user.pseudo,
       photo: photoUrl,
       role: user.role,
-      subscriptionTier: user.subscriptionTier || 'free',
-      isPremium: user.subscriptionTier === 'premium',
+      subscriptionTier: expectedTier,
+      isPremium,
       displayName,
     });
   } catch (e) {
