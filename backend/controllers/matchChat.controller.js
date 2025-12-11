@@ -27,7 +27,7 @@ async function getConversations(req, res) {
       .select('_id participants matchId lastMessage isActive createdAt updatedAt unreadCount')
       .populate({
         path: 'participants',
-        select: 'pseudo prenom email photo'
+        select: 'pseudo prenom photo'
       })
       .populate({
         path: 'matchId',
@@ -137,7 +137,7 @@ async function getOrCreateConversation(req, res) {
 
     // Populate les informations
     await conversation.populate([
-      { path: 'participants', select: 'pseudo prenom email' },
+      { path: 'participants', select: 'pseudo prenom photo' },
       { path: 'matchId', select: 'matchScore distance' }
     ]);
 
@@ -302,10 +302,29 @@ async function sendMessage(req, res) {
         },
         unreadIncrement: true
       });
+
+    }
+
+    // Récupérer les infos de l'expéditeur pour les notifications
+    const senderUser = await User.findById(userId).select('pseudo photo');
+
+    // Envoyer une notification dans le NotificationCenter via WebSocket
+    logger.info(`🔔 Tentative envoi notification: io=${!!io}, notifyUser=${!!io?.notifyUser}, senderUser=${!!senderUser}`);
+    if (io && io.notifyUser && senderUser) {
+      logger.info(`🔔 Envoi new_notification à user ${receiverId}`);
+      io.notifyUser(receiverId.toString(), 'new_notification', {
+        id: `msg-${message._id}-${Date.now()}`,
+        type: 'message',
+        title: 'Nouveau message',
+        message: `${senderUser.pseudo || 'Un utilisateur'}: ${sanitizedContent.substring(0, 50)}${sanitizedContent.length > 50 ? '...' : ''}`,
+        avatar: senderUser.photo,
+        timestamp: new Date().toISOString(),
+        read: false,
+        link: `/matching?conversation=${conversationId}`
+      });
     }
 
     // Envoyer une notification push au destinataire
-    const senderUser = await User.findById(userId).select('pseudo photo');
     if (senderUser) {
       notifyNewMessage(receiverId, {
         senderName: senderUser.pseudo || 'Un utilisateur',

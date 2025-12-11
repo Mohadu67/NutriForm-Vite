@@ -15,17 +15,11 @@ async function requirePremium(req, res, next) {
       });
     }
 
-    // Vérifier le tier dans User model
-    if (req.user.subscriptionTier === 'premium') {
-      return next();
-    }
-
-    // Si tier est 'free', vérifier s'il y a une subscription active en DB
-    // (cas où le webhook n'a pas encore mis à jour le User)
+    // TOUJOURS vérifier Subscription.isActive() - ne jamais faire confiance au tier User seul
     const subscription = await Subscription.findOne({ userId: req.userId });
 
     if (subscription && subscription.isActive()) {
-      // Mettre à jour le tier dans User si nécessaire
+      // Synchroniser le tier User si nécessaire
       if (req.user.subscriptionTier !== 'premium') {
         req.user.subscriptionTier = 'premium';
         await req.user.save();
@@ -33,7 +27,13 @@ async function requirePremium(req, res, next) {
       return next();
     }
 
-    // L'utilisateur est free et n'a pas d'abonnement actif
+    // L'abonnement n'est pas actif - rétrograder le User si nécessaire
+    if (req.user.subscriptionTier === 'premium') {
+      req.user.subscriptionTier = 'free';
+      await req.user.save();
+      logger.info(`User ${req.userId} rétrogradé à free (subscription expirée)`);
+    }
+
     return res.status(403).json({
       error: 'premium_required',
       message: 'Cette fonctionnalité nécessite un abonnement Premium.',

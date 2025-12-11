@@ -5,7 +5,8 @@ const {
   createCheckoutSession,
   getSubscriptionStatus,
   cancelSubscription,
-  createCustomerPortalSession
+  createCustomerPortalSession,
+  syncSubscription
 } = require('../controllers/subscription.controller');
 
 /**
@@ -20,5 +21,6 @@ router.post('/create-checkout-session', auth, createCheckoutSession);
 router.get('/status', auth, getSubscriptionStatus);
 router.post('/cancel', auth, cancelSubscription);
 router.post('/customer-portal', auth, createCustomerPortalSession);
+router.post('/sync', auth, syncSubscription);
 
 module.exports = router;

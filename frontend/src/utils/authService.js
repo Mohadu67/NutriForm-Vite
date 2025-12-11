@@ -48,6 +48,11 @@ export async function login(identifier, password, remember = false) {
     storage.set("user", data.user);
     storage.set("userId", data.user.id);
 
+    // Stocker le token pour le WebSocket (nécessaire en cross-origin dev)
+    if (data.token) {
+      storage.set("wsToken", data.token);
+    }
+
     // Invalider le cache auth pour forcer un refresh
     authCheckResult = null;
     authCheckTimestamp = 0;
