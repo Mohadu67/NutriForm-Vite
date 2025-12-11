@@ -226,9 +226,19 @@ export default function ChatHistory({ onLogin }) {
       });
     };
 
-    const cleanup = on('conversation_updated', handleConversationUpdate);
+    // Écouter quand une conversation est restaurée (après suppression puis réouverture)
+    const handleConversationRestored = () => {
+      // Recharger la liste des conversations pour inclure la conversation restaurée
+      loadAllConversations(true);
+    };
 
-    return cleanup;
+    const cleanupUpdate = on('conversation_updated', handleConversationUpdate);
+    const cleanupRestored = on('conversation_restored', handleConversationRestored);
+
+    return () => {
+      cleanupUpdate?.();
+      cleanupRestored?.();
+    };
   }, [isConnected, isAuth, on]);
 
   return (

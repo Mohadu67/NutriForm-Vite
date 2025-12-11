@@ -478,8 +478,6 @@
   position: sticky;
   bottom: 0;
   z-index: 5;
-  /* Ensure it stays above keyboard on mobile */
-  padding-bottom: env(safe-area-inset-bottom, var(--space-lg));
 }
 
 @keyframes slideUp {

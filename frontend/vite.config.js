@@ -42,18 +42,8 @@ export default defineConfig(async ({ mode }) => {
       // Optimisation du bundle
       rollupOptions: {
         output: {
-          manualChunks: {
-            // React core et routing
-            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-            // UI libraries
-            'ui-vendor': ['react-bootstrap', 'sonner', 'react-icons'],
-            // Utilities
-            'utils': ['axios', 'dompurify'],
-            // Maps
-            'leaflet': ['leaflet', 'react-leaflet'],
-            // DnD
-            'dnd': ['@dnd-kit/core', '@dnd-kit/sortable'],
-          }
+          // Désactiver manualChunks pour éviter les problèmes de React sur Safari
+          // Le code splitting automatique de Vite est plus fiable
         }
       },
       // Suppression des logger.info en production
@@ -109,7 +99,15 @@ export default defineConfig(async ({ mode }) => {
       },
       warmup: {
         clientFiles: ['./src/main.jsx', './src/App.jsx']
+      },
+      // Fix pour Safari HMR
+      hmr: {
+        overlay: false
       }
+    },
+    // Forcer esbuild pour une meilleure compatibilité Safari
+    esbuild: {
+      target: 'es2020'
     }
   })
 })

@@ -80,25 +80,24 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     checkAuth();
   }, []);
 
-  // Charger les messages initiaux et rejoindre la conversation WebSocket
+  // Charger les messages initiaux
   useEffect(() => {
     if (!isAuth || !conversationIdToUse) return;
-
-    // Charger les messages
     loadInitialMessages();
+  }, [isAuth, conversationIdToUse, loadInitialMessages]);
+
+  // Rejoindre la conversation WebSocket (séparé pour gérer le timing de connexion)
+  useEffect(() => {
+    if (!isConnected || !conversationIdToUse) return;
 
     // Rejoindre la conversation via WebSocket
-    if (isConnected) {
-      joinConversation(conversationIdToUse);
-    }
+    joinConversation(conversationIdToUse);
 
     // Quitter la conversation au démontage
     return () => {
-      if (conversationIdToUse) {
-        leaveConversation(conversationIdToUse);
-      }
+      leaveConversation(conversationIdToUse);
     };
-  }, [isAuth, conversationIdToUse, isConnected, loadInitialMessages, joinConversation, leaveConversation]);
+  }, [isConnected, conversationIdToUse, joinConversation, leaveConversation]);
 
   // Écouter les nouveaux messages via WebSocket
   useEffect(() => {
@@ -179,11 +178,15 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
           content,
           type: 'text'
         });
-        // Le message sera reçu via WebSocket, pas besoin de l'ajouter manuellement
-        // sauf si WebSocket n'est pas connecté
-        if (!isConnected) {
-          setMessages(prev => [...prev, message]);
-        }
+        // Toujours ajouter le message localement pour affichage immédiat
+        // Le check de doublon dans handleNewMessage évitera les doublons si WebSocket le renvoie
+        setMessages(prev => {
+          // Éviter les doublons si le message existe déjà
+          if (prev.some(m => m._id === message._id)) {
+            return prev;
+          }
+          return [...prev, message];
+        });
       } else {
         // Envoyer message IA
         const userMessage = {

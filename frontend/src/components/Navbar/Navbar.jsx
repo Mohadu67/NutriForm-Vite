@@ -26,7 +26,8 @@ import {
   UsersIcon,
   HelpCircleIcon,
   UtensilsIcon,
-  CalendarIcon
+  CalendarIcon,
+  BellIcon
 } from "./NavIcons";
 
 export default function Navbar() {
@@ -79,7 +80,7 @@ export default function Navbar() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState('login');
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
-  const [currentView, setCurrentView] = useState('navigation'); // Pour mobile: 'navigation' ou 'history'
+  const [currentView, setCurrentView] = useState('navigation'); // Pour mobile: 'navigation', 'history' ou 'notifications'
   const [unreadCount, setUnreadCount] = useState(0);
 
   const path = useMemo(() => (location.pathname || "/").toLowerCase(), [location.pathname]);
@@ -541,6 +542,19 @@ export default function Navbar() {
     }
   }, [isDesktop, closeChat]);
 
+  // Handle notifications button click - open notifications panel on mobile
+  const handleNotificationsClick = useCallback(() => {
+    if (!isDesktop) {
+      setCurrentView('notifications');
+      setOpen(true);
+    }
+  }, [isDesktop]);
+
+  // Close notifications panel
+  const closeNotificationsPanel = useCallback(() => {
+    setCurrentView('navigation');
+  }, []);
+
   return (
     <>
       {/* Overlay - closes menu when clicked */}
@@ -626,6 +640,17 @@ export default function Navbar() {
                         )}
                       </button>
 
+                      {isLoggedIn && (
+                        <button
+                          onClick={handleNotificationsClick}
+                          className={styles.utilityBtn}
+                          aria-label="Notifications"
+                        >
+                          <BellIcon size={20} />
+                          <span>Notifications</span>
+                        </button>
+                      )}
+
                       <button
                         onClick={() => navigateAndClose('/leaderboard')}
                         className={styles.utilityBtn}
@@ -706,6 +731,24 @@ export default function Navbar() {
                     onClose={backToHistory}
                   />
                 </div>
+              </div>
+            )}
+
+            {/* Panel 4: Notifications */}
+            {currentView === 'notifications' && (
+              <div className={styles.expandedContent}>
+                <div className={styles.chatHistoryHeader}>
+                  <button
+                    onClick={closeNotificationsPanel}
+                    className={styles.chatCloseBtn}
+                    title="Retour"
+                    aria-label="Back to navigation"
+                  >
+                    ←
+                  </button>
+                  <h3>🔔 Notifications</h3>
+                </div>
+                <NotificationCenter mode="panel" onClose={closeNotificationsPanel} />
               </div>
             )}
           </>

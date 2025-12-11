@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { storage } from '../../../shared/utils/storage';
 import { useWebSocket } from '../../../contexts/WebSocketContext';
+import { useChat } from '../../../contexts/ChatContext';
 import styles from './NotificationCenter.module.css';
 
 // SVG Icon pour la cloche
@@ -47,13 +48,19 @@ const TypeIcons = {
   admin: '👑'
 };
 
-export default function NotificationCenter({ className = '' }) {
+export default function NotificationCenter({ className = '', mode = 'dropdown', onClose }) {
   const navigate = useNavigate();
-  const { on, isConnected } = useWebSocket();
+  const webSocketContext = useWebSocket();
+  const chatContext = useChat();
+  const { on, isConnected } = webSocketContext || {};
+  const { openMatchChatById } = chatContext || {};
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [isLoading] = useState(false);
   const dropdownRef = useRef(null);
+
+  // En mode panel, toujours "ouvert"
+  const isPanel = mode === 'panel';
 
   // Charger les notifications depuis le localStorage
   const loadNotifications = useCallback(() => {
@@ -119,21 +126,40 @@ export default function NotificationCenter({ className = '' }) {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   // Gérer le clic sur une notification
-  const handleNotificationClick = useCallback((notification) => {
+  const handleNotificationClick = useCallback(async (notification) => {
     markAsRead(notification.id);
 
-    // Navigation selon le type
+    // Pour les messages, ouvrir directement la conversation dans le modal
+    if (notification.type === 'message' && notification.link && openMatchChatById) {
+      // Extraire le conversationId du link: /matching?conversation=xxx
+      const match = notification.link.match(/conversation=([a-f0-9]+)/i);
+      if (match && match[1]) {
+        const conversationId = match[1];
+        await openMatchChatById(conversationId);
+        setIsOpen(false);
+        if (isPanel && onClose) {
+          onClose();
+        }
+        return;
+      }
+    }
+
+    // Pour les autres types, navigation classique
     if (notification.link) {
       navigate(notification.link);
     } else if (notification.type === NOTIFICATION_TYPES.MESSAGE) {
-      // Ouvrir le chat
+      // Fallback: ouvrir le chat history
       window.dispatchEvent(new CustomEvent('openChat'));
     } else if (notification.type === NOTIFICATION_TYPES.ADMIN) {
       navigate('/admin');
     }
 
     setIsOpen(false);
-  }, [markAsRead, navigate]);
+    // Fermer le panel si en mode panel
+    if (isPanel && onClose) {
+      onClose();
+    }
+  }, [markAsRead, navigate, isPanel, onClose, openMatchChatById]);
 
   // Fermer le dropdown au clic extérieur
   useEffect(() => {
@@ -172,12 +198,9 @@ export default function NotificationCenter({ className = '' }) {
 
   // Écouter les notifications via WebSocket
   useEffect(() => {
-    console.log('🔔 NotificationCenter: WebSocket isConnected=', isConnected, 'on=', !!on);
     if (!isConnected || !on) return;
 
-    console.log('🔔 NotificationCenter: Enregistrement listener new_notification');
     const cleanup = on('new_notification', (notification) => {
-      console.log('🔔 NotificationCenter: Notification reçue!', notification);
       addNotification(notification);
     });
 
@@ -200,6 +223,100 @@ export default function NotificationCenter({ className = '' }) {
     return date.toLocaleDateString('fr-FR');
   };
 
+  // Contenu des notifications (partagé entre dropdown et panel)
+  const notificationContent = (
+    <>
+      {/* Header - différent selon le mode */}
+      {!isPanel && (
+        <div className={styles.header}>
+          <h3>Notifications</h3>
+          <div className={styles.headerActions}>
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllAsRead}
+                className={styles.markAllBtn}
+              >
+                Tout marquer lu
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Actions pour le mode panel */}
+      {isPanel && unreadCount > 0 && (
+        <div className={styles.panelActions}>
+          <button
+            onClick={markAllAsRead}
+            className={styles.markAllBtn}
+          >
+            Tout marquer lu
+          </button>
+        </div>
+      )}
+
+      {/* Liste des notifications */}
+      <div className={`${styles.list} ${isPanel ? styles.panelList : ''}`}>
+        {isLoading ? (
+          <div className={styles.loading}>
+            <span className={styles.spinner}></span>
+            Chargement...
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className={styles.empty}>
+            <span className={styles.emptyIcon}>🔔</span>
+            <p>Aucune notification</p>
+          </div>
+        ) : (
+          notifications.map((notif) => (
+            <button
+              key={notif.id}
+              className={`${styles.item} ${!notif.read ? styles.unread : ''}`}
+              onClick={() => handleNotificationClick(notif)}
+            >
+              <div className={styles.itemIcon}>
+                {notif.avatar ? (
+                  <img src={notif.avatar} alt="" className={styles.avatar} />
+                ) : (
+                  <span className={styles.typeIcon}>
+                    {TypeIcons[notif.type] || TypeIcons.system}
+                  </span>
+                )}
+              </div>
+              <div className={styles.itemContent}>
+                <p className={styles.itemTitle}>{notif.title}</p>
+                {notif.message && (
+                  <p className={styles.itemMessage}>{notif.message}</p>
+                )}
+                <span className={styles.itemTime}>{formatTime(notif.timestamp)}</span>
+              </div>
+              {!notif.read && <span className={styles.unreadDot}></span>}
+            </button>
+          ))
+        )}
+      </div>
+
+      {/* Footer */}
+      {notifications.length > 0 && (
+        <div className={styles.footer}>
+          <button onClick={clearAll} className={styles.clearBtn}>
+            Effacer tout
+          </button>
+        </div>
+      )}
+    </>
+  );
+
+  // Mode panel : afficher directement le contenu sans wrapper dropdown
+  if (isPanel) {
+    return (
+      <div className={`${styles.panelContainer} ${className}`}>
+        {notificationContent}
+      </div>
+    );
+  }
+
+  // Mode dropdown (comportement par défaut)
   return (
     <div className={`${styles.container} ${className}`} ref={dropdownRef}>
       {/* Icône avec badge */}
@@ -220,70 +337,7 @@ export default function NotificationCenter({ className = '' }) {
       {/* Dropdown */}
       {isOpen && (
         <div className={styles.dropdown}>
-          {/* Header */}
-          <div className={styles.header}>
-            <h3>Notifications</h3>
-            <div className={styles.headerActions}>
-              {unreadCount > 0 && (
-                <button
-                  onClick={markAllAsRead}
-                  className={styles.markAllBtn}
-                >
-                  Tout marquer lu
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Liste des notifications */}
-          <div className={styles.list}>
-            {isLoading ? (
-              <div className={styles.loading}>
-                <span className={styles.spinner}></span>
-                Chargement...
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className={styles.empty}>
-                <span className={styles.emptyIcon}>🔔</span>
-                <p>Aucune notification</p>
-              </div>
-            ) : (
-              notifications.map((notif) => (
-                <button
-                  key={notif.id}
-                  className={`${styles.item} ${!notif.read ? styles.unread : ''}`}
-                  onClick={() => handleNotificationClick(notif)}
-                >
-                  <div className={styles.itemIcon}>
-                    {notif.avatar ? (
-                      <img src={notif.avatar} alt="" className={styles.avatar} />
-                    ) : (
-                      <span className={styles.typeIcon}>
-                        {TypeIcons[notif.type] || TypeIcons.system}
-                      </span>
-                    )}
-                  </div>
-                  <div className={styles.itemContent}>
-                    <p className={styles.itemTitle}>{notif.title}</p>
-                    {notif.message && (
-                      <p className={styles.itemMessage}>{notif.message}</p>
-                    )}
-                    <span className={styles.itemTime}>{formatTime(notif.timestamp)}</span>
-                  </div>
-                  {!notif.read && <span className={styles.unreadDot}></span>}
-                </button>
-              ))
-            )}
-          </div>
-
-          {/* Footer */}
-          {notifications.length > 0 && (
-            <div className={styles.footer}>
-              <button onClick={clearAll} className={styles.clearBtn}>
-                Effacer tout
-              </button>
-            </div>
-          )}
+          {notificationContent}
         </div>
       )}
     </div>
