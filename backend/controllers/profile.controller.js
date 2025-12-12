@@ -1,5 +1,6 @@
 const UserProfile = require('../models/UserProfile');
 const User = require('../models/User');
+const Match = require('../models/Match');
 const logger = require('../utils/logger.js');
 
 // Récupérer le profil de l'utilisateur connecté
@@ -326,9 +327,18 @@ exports.updateMatchPreferences = async (req, res) => {
     logger.info('[updateMatchPreferences] Avant sauvegarde:', JSON.stringify(profile.matchPreferences, null, 2));
     await profile.save();
 
+    // Réinitialiser les profils rejetés pour donner une seconde chance
+    // quand les préférences de matching sont modifiées
+    const deletedRejections = await Match.deleteMany({
+      rejectedBy: userId,
+      status: 'rejected'
+    });
+    logger.info(`[updateMatchPreferences] ${deletedRejections.deletedCount} profils rejetés réinitialisés pour userId: ${userId}`);
+
     res.json({
       matchPreferences: profile.matchPreferences,
-      message: 'Préférences de matching mises à jour.'
+      message: 'Préférences de matching mises à jour.',
+      rejectedProfilesReset: deletedRejections.deletedCount
     });
   } catch (error) {
     logger.error('Erreur updateMatchPreferences:', error);
