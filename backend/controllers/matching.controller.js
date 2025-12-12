@@ -1,6 +1,7 @@
 const UserProfile = require('../models/UserProfile');
 const Match = require('../models/Match');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const { notifyNewMatch } = require('../services/pushNotification.service');
 const logger = require('../utils/logger.js');
 
@@ -328,6 +329,28 @@ exports.likeProfile = async (req, res) => {
               link: '/matching'
             });
           }
+
+          // Sauvegarder les notifications en base de données pour persistance
+          await Notification.create([
+            {
+              userId: user1._id,
+              type: 'match',
+              title: 'Match mutuel ! 🎉',
+              message: `${user2.pseudo || 'Un utilisateur'} et toi êtes maintenant matchés !`,
+              avatar: user2.photo,
+              link: '/matching',
+              metadata: { matchId: match._id }
+            },
+            {
+              userId: user2._id,
+              type: 'match',
+              title: 'Match mutuel ! 🎉',
+              message: `${user1.pseudo || 'Un utilisateur'} et toi êtes maintenant matchés !`,
+              avatar: user1.photo,
+              link: '/matching',
+              metadata: { matchId: match._id }
+            }
+          ]).catch(err => logger.error('Erreur sauvegarde notifications match:', err));
         }
       }
 
