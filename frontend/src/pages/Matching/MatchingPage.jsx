@@ -242,6 +242,7 @@ export default function MatchingPageFuturistic() {
 
   // États pour les profils rejetés
   const [rejectedProfiles, setRejectedProfiles] = useState([]);
+  const [rejectedCount, setRejectedCount] = useState(0); // Compteur réel depuis le backend
   const [showRejected, setShowRejected] = useState(false);
   const [relikingId, setRelikingId] = useState(null);
 
@@ -300,9 +301,22 @@ export default function MatchingPageFuturistic() {
     }
   }, [navigate]);
 
+  // Charger les profils rejetés (défini avant le useEffect qui l'utilise)
+  const loadRejectedProfiles = useCallback(async () => {
+    try {
+      const { profiles } = await getRejectedProfiles();
+      setRejectedProfiles(profiles || []);
+      setRejectedCount(profiles?.length || 0);
+    } catch (err) {
+      logger.error('Erreur chargement profils rejetés:', err);
+      // Pas de toast ici pour éviter le spam au chargement initial
+    }
+  }, []);
+
   useEffect(() => {
     loadProfileAndMatches();
-  }, [loadProfileAndMatches]);
+    loadRejectedProfiles(); // Charger le compteur des profils rejetés au démarrage
+  }, [loadProfileAndMatches, loadRejectedProfiles]);
 
   const handleLike = async () => {
     if (currentIndex >= matches.length || actionLoading) return;
@@ -357,6 +371,7 @@ export default function MatchingPageFuturistic() {
 
       setTimeout(() => {
         setCurrentIndex(prev => prev + 1);
+        setRejectedCount(prev => prev + 1); // Incrémenter le compteur des profils rejetés
         setCardAnimation('enter');
         setSwipeDirection(null);
         setActionLoading(false);
@@ -451,17 +466,6 @@ export default function MatchingPageFuturistic() {
     }
   };
 
-  // Charger les profils rejetés
-  const loadRejectedProfiles = async () => {
-    try {
-      const { profiles } = await getRejectedProfiles();
-      setRejectedProfiles(profiles || []);
-    } catch (err) {
-      logger.error('Erreur chargement profils rejetés:', err);
-      toast.error('Erreur lors du chargement des profils rejetés');
-    }
-  };
-
   // Ouvrir la modal des profils rejetés
   const handleShowRejected = async () => {
     setShowRejected(true);
@@ -474,15 +478,20 @@ export default function MatchingPageFuturistic() {
       setRelikingId(userId);
       const response = await relikeProfile(userId);
 
-      // Retirer de la liste des rejetés
+      console.log('[handleRelike] Response:', response);
+
+      // Retirer de la liste des rejetés et décrémenter le compteur
       setRejectedProfiles(prev => prev.filter(p => p._id !== userId));
+      setRejectedCount(prev => Math.max(0, prev - 1));
 
       // Si c'est un match mutuel, l'ajouter à la liste
       if (response.isMutual && response.match) {
+        console.log('[handleRelike] Adding mutual match:', response.match);
         setMutualMatches(prev => [...prev, response.match]);
         toast.success('C\'est un match ! 🎉');
       } else {
-        toast.success('Profil liké !');
+        // Pas encore un match mutuel - l'autre personne doit aussi liker
+        toast.success('Like envoyé ! En attente de leur réponse...');
       }
     } catch (err) {
       logger.error('Erreur re-like:', err);
@@ -541,15 +550,15 @@ export default function MatchingPageFuturistic() {
           <ProgressRing current={remainingMatches} total={matches.length} />
 
           <div
-            className={`${styles.statCard} ${currentIndex > 0 ? styles.clickable : styles.disabled}`}
-            onClick={() => currentIndex > 0 && handleShowRejected()}
+            className={`${styles.statCard} ${rejectedCount > 0 ? styles.clickable : styles.disabled}`}
+            onClick={() => rejectedCount > 0 && handleShowRejected()}
           >
             <div className={styles.statIcon}>
               <UsersIcon size={32} />
             </div>
-            <div className={styles.statValue}>{currentIndex}</div>
+            <div className={styles.statValue}>{rejectedCount}</div>
             <div className={styles.statLabel}>Vus</div>
-            {currentIndex > 0 && (
+            {rejectedCount > 0 && (
               <div className={styles.statHint}>Voir les passés</div>
             )}
           </div>
