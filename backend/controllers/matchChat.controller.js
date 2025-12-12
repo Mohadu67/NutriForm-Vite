@@ -134,11 +134,28 @@ async function getOrCreateConversation(req, res) {
       match.conversationId = conversation._id;
       await match.save();
     } else {
-      // Si la conversation était cachée pour l'utilisateur, la réafficher
-      logger.info(`🔍 getOrCreateConversation: checking hiddenBy for user ${userId}, hiddenBy=${JSON.stringify(conversation.hiddenBy)}`);
+      // Si la conversation était cachée ou inactive, la réafficher/réactiver
+      logger.info(`🔍 getOrCreateConversation: checking hiddenBy for user ${userId}, hiddenBy=${JSON.stringify(conversation.hiddenBy)}, isActive=${conversation.isActive}`);
+
+      let needsSave = false;
+
+      // Réactiver si inactive
+      if (!conversation.isActive) {
+        logger.info(`🔄 Conversation ${conversation._id} était inactive, on la réactive`);
+        conversation.isActive = true;
+        needsSave = true;
+      }
+
+      // Réafficher si cachée
       if (conversation.isHiddenForUser(userId)) {
         logger.info(`🔓 Conversation ${conversation._id} était cachée pour user ${userId}, on la réaffiche`);
-        await conversation.unhideForUser(userId);
+        const userIdStr = userId.toString();
+        conversation.hiddenBy = conversation.hiddenBy.filter(id => id.toString() !== userIdStr);
+        needsSave = true;
+      }
+
+      if (needsSave) {
+        await conversation.save();
 
         // Notifier via WebSocket que la conversation a été restaurée
         const io = req.app.get('io');
@@ -150,7 +167,7 @@ async function getOrCreateConversation(req, res) {
           logger.info(`✅ Événement conversation_restored émis pour user ${userId}`);
         }
       } else {
-        logger.info(`ℹ️ Conversation ${conversation._id} n'était pas cachée pour user ${userId}`);
+        logger.info(`ℹ️ Conversation ${conversation._id} était déjà active et visible pour user ${userId}`);
       }
     }
 

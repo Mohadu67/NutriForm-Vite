@@ -47,8 +47,6 @@ const ProgramsAdmin = lazy(() => import("./pages/Admin/ProgramsAdmin/ProgramsAdm
 // Profile & Matching - loaded directly to avoid Safari lazy loading issues
 import ProfileSetup from "./pages/Profile/ProfileSetup.jsx";
 import MatchingPage from "./pages/Matching/MatchingPage.jsx";
-const ProfileSetupFuturistic = lazy(() => import("./pages/Profile/ProfileSetupFuturistic.jsx"));
-const MatchingPageFuturistic = lazy(() => import("./pages/Matching/MatchingPageFuturistic.jsx"));
 
 // Chat - lazy loaded (feature social)
 const Chat = lazy(() => import("./pages/Chat/Chat.jsx"));
@@ -117,11 +115,9 @@ export default function App() {
             <Route path="/admin/recipes/new" element={<RecipeForm />} />
             <Route path="/admin/recipes/:id/edit" element={<RecipeForm />} />
 
-            {/* Profile & Matching - lazy loaded */}
+            {/* Profile & Matching */}
             <Route path="/profile/setup" element={<ProfileSetup />} />
-            <Route path="/profile/setup-futur" element={<ProfileSetupFuturistic />} />
             <Route path="/matching" element={<MatchingPage />} />
-            <Route path="/matching-futur" element={<MatchingPageFuturistic />} />
 
             {/* Chat - lazy loaded */}
             <Route path="/chat/:matchId" element={<Chat />} />

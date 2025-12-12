@@ -52,6 +52,8 @@ export function ChatProvider({ children }) {
   };
 
   const backToHistory = () => {
+    // Forcer un refresh quand on revient à l'historique (conversation potentiellement mise à jour)
+    setConversationsNeedRefresh(true);
     setChatView('history');
     setActiveConversation(null);
   };
