@@ -7,7 +7,11 @@ const WebSocketContext = createContext(null);
 
 // Extraire l'URL de base (sans /api) pour le WebSocket
 const API_URL = import.meta.env.VITE_API_URL || '';
-const BACKEND_URL = API_URL.replace(/\/api\/?$/, '') || 'http://localhost:3000';
+// En production, utiliser api.harmonith.fr si VITE_API_URL n'est pas défini
+const BACKEND_URL = API_URL.replace(/\/api\/?$/, '') ||
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? 'https://api.harmonith.fr'
+    : 'http://localhost:3000');
 
 export function WebSocketProvider({ children }) {
   const [socket, setSocket] = useState(null);
