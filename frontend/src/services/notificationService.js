@@ -1,27 +1,104 @@
-import { secureApiCall } from '../utils/authService';
+import { secureApiCall, isAuthenticated } from '../utils/authService';
 import client from '../shared/api/client';
 
 let swRegistration = null;
+let initializationPromise = null;
 
 /**
  * Initialiser les notifications
  */
 export async function initializeNotifications() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    return { supported: false };
+  // Éviter les appels concurrents
+  if (initializationPromise) {
+    return initializationPromise;
   }
 
+  initializationPromise = (async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      return { supported: false };
+    }
+
+    try {
+      // Enregistrer le service worker manuel pour les push notifications
+      swRegistration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/'
+      });
+
+      // Si l'utilisateur est authentifié et a accordé la permission, synchroniser la subscription
+      if (isAuthenticated() && Notification.permission === 'granted') {
+        await syncSubscriptionWithServer();
+      }
+
+      return { supported: true, registration: swRegistration };
+    } catch (error) {
+      console.error('Erreur enregistrement SW:', error);
+      return { supported: false, error };
+    }
+  })();
+
+  return initializationPromise;
+}
+
+/**
+ * Synchroniser la subscription avec le serveur
+ * S'assure que la subscription du navigateur est bien enregistrée côté backend
+ */
+async function syncSubscriptionWithServer() {
   try {
-    // Enregistrer le service worker manuel pour les push notifications
-    swRegistration = await navigator.serviceWorker.register('/sw.js', {
-      scope: '/'
-    });
+    if (!swRegistration) return { synced: false };
 
-    return { supported: true, registration: swRegistration };
+    const subscription = await swRegistration.pushManager.getSubscription();
+
+    if (subscription) {
+      // Envoyer/mettre à jour la subscription au backend
+      const response = await secureApiCall('/push/subscribe', {
+        method: 'POST',
+        body: JSON.stringify({
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
+            auth: arrayBufferToBase64(subscription.getKey('auth'))
+          },
+          deviceInfo: {
+            browser: navigator.userAgent,
+            os: navigator.userAgentData?.platform || navigator.platform || 'unknown'
+          }
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ Subscription synchronisée avec le serveur');
+        return { synced: true };
+      }
+    }
+    return { synced: false };
   } catch (error) {
-    console.error('Erreur enregistrement SW:', error);
-    return { supported: false, error };
+    console.error('Erreur synchronisation subscription:', error);
+    return { synced: false, error };
   }
+}
+
+/**
+ * Synchroniser après connexion utilisateur
+ * À appeler après un login réussi
+ */
+export async function syncNotificationsOnLogin() {
+  if (!('Notification' in window)) return;
+
+  // Attendre que le SW soit prêt
+  await initializeNotifications();
+
+  // Si l'utilisateur a déjà accordé la permission, synchroniser
+  if (Notification.permission === 'granted') {
+    await syncSubscriptionWithServer();
+  }
+}
+
+// Écouter l'événement de connexion pour synchroniser automatiquement
+if (typeof window !== 'undefined') {
+  window.addEventListener('userLoggedIn', () => {
+    syncNotificationsOnLogin();
+  });
 }
 
 /**
@@ -80,10 +157,14 @@ export async function subscribeToNotifications() {
         },
         deviceInfo: {
           browser: navigator.userAgent,
-          os: navigator.platform
+          os: navigator.userAgentData?.platform || navigator.platform || 'unknown'
         }
       })
     });
+
+    if (subscribeResponse.status === 401) {
+      throw new Error('SESSION_EXPIRED');
+    }
 
     if (!subscribeResponse.ok) {
       throw new Error('Erreur lors de l\'abonnement');

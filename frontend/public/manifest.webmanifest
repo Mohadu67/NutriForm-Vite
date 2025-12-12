@@ -4,6 +4,18 @@
   "description": "Application fitness pour débutants et experts : calculateurs IMC et calories, programmes d'entraînement personnalisés, suivi de progression et classement pour t'accompagner au quotidien dans ta pratique sportive.",
   "icons": [
     {
+      "src": "/assets/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
       "src": "/assets/icons/apple-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png"
