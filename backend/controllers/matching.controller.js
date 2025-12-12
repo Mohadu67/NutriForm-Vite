@@ -450,6 +450,8 @@ exports.rejectMatch = async (req, res) => {
     const userId = req.user._id;
     const { targetUserId } = req.body;
 
+    logger.info(`[rejectMatch] userId: ${userId}, targetUserId: ${targetUserId}`);
+
     const match = await Match.findOne({
       $or: [
         { user1Id: userId, user2Id: targetUserId },
@@ -458,6 +460,7 @@ exports.rejectMatch = async (req, res) => {
     });
 
     if (!match) {
+      logger.info(`[rejectMatch] No existing match found, creating new rejected match`);
       // Créer un match rejeté pour ne plus le montrer
       const myProfile = await UserProfile.findOne({ userId });
       const theirProfile = await UserProfile.findOne({ userId: targetUserId });
@@ -476,12 +479,17 @@ exports.rejectMatch = async (req, res) => {
           rejectedBy: userId
         });
 
-        await rejectedMatch.save();
+        const savedMatch = await rejectedMatch.save();
+        logger.info(`[rejectMatch] New rejected match created: ${savedMatch._id}, rejectedBy: ${savedMatch.rejectedBy}`);
+      } else {
+        logger.warn(`[rejectMatch] Could not create rejected match - myProfile: ${!!myProfile}, theirProfile: ${!!theirProfile}`);
       }
     } else {
+      logger.info(`[rejectMatch] Existing match found: ${match._id}, current status: ${match.status}`);
       match.status = 'rejected';
       match.rejectedBy = userId;
-      await match.save();
+      const savedMatch = await match.save();
+      logger.info(`[rejectMatch] Match updated: ${savedMatch._id}, status: ${savedMatch.status}, rejectedBy: ${savedMatch.rejectedBy}`);
     }
 
     res.json({ message: 'Profil rejeté.' });
@@ -576,26 +584,49 @@ exports.blockUser = async (req, res) => {
 exports.getRejectedProfiles = async (req, res) => {
   try {
     const userId = req.user._id;
+    const userIdStr = userId.toString();
+    logger.info(`[getRejectedProfiles] userId: ${userIdStr}`);
 
-    // Trouver tous les matches rejetés par l'utilisateur courant
-    // On utilise rejectedBy pour savoir qui a fait le rejet
+    // Requête simplifiée: trouver les matches rejetés PAR cet utilisateur
     const rejectedMatches = await Match.find({
-      rejectedBy: userId,
-      status: 'rejected'
-    })
-      .populate('user1Id user2Id')
-      .sort({ updatedAt: -1 });
+      status: 'rejected',
+      rejectedBy: userId
+    }).sort({ updatedAt: -1 });
 
-    const formattedProfiles = await Promise.all(rejectedMatches.map(async (match) => {
-      // Le partenaire rejeté est l'autre utilisateur (pas celui qui a rejeté)
-      const isUser1 = match.user1Id._id ? match.user1Id._id.equals(userId) : match.user1Id.equals(userId);
-      const partnerId = isUser1 ? (match.user2Id._id || match.user2Id) : (match.user1Id._id || match.user1Id);
-      const partnerUser = isUser1 ? match.user2Id : match.user1Id;
+    logger.info(`[getRejectedProfiles] Found ${rejectedMatches.length} rejected matches for userId: ${userIdStr}`);
+
+    // Log détaillé des matches trouvés
+    rejectedMatches.forEach((m, idx) => {
+      logger.info(`[getRejectedProfiles] Match[${idx}]: _id=${m._id}, user1=${m.user1Id}, user2=${m.user2Id}, rejectedBy=${m.rejectedBy}, status=${m.status}`);
+    });
+
+    const formattedProfiles = [];
+
+    for (const match of rejectedMatches) {
+      // Trouver le partenaire (l'autre utilisateur dans le match)
+      const user1IdStr = match.user1Id?.toString();
+      const user2IdStr = match.user2Id?.toString();
+      const partnerId = user1IdStr === userIdStr ? match.user2Id : match.user1Id;
+
+      logger.info(`[getRejectedProfiles] Processing match ${match._id}: user1=${user1IdStr}, user2=${user2IdStr}, partnerId=${partnerId}`);
+
+      if (!partnerId) {
+        logger.warn(`[getRejectedProfiles] No partnerId for match ${match._id}`);
+        continue;
+      }
+
+      // Récupérer les infos du partenaire
+      const partnerUser = await User.findById(partnerId).select('pseudo photo');
       const partnerProfile = await UserProfile.findOne({ userId: partnerId });
 
-      if (!partnerProfile || !partnerUser) return null;
+      if (!partnerUser) {
+        logger.warn(`[getRejectedProfiles] Partner user not found for ${partnerId}`);
+        continue;
+      }
 
-      return {
+      logger.info(`[getRejectedProfiles] Partner found: ${partnerUser.pseudo || 'no pseudo'}`);
+
+      formattedProfiles.push({
         _id: partnerId,
         matchId: match._id,
         username: partnerUser.pseudo || 'Utilisateur',
@@ -609,10 +640,11 @@ exports.getRejectedProfiles = async (req, res) => {
         },
         matchScore: match.matchScore,
         rejectedAt: match.updatedAt
-      };
-    }));
+      });
+    }
 
-    res.json({ profiles: formattedProfiles.filter(p => p !== null) });
+    logger.info(`[getRejectedProfiles] Returning ${formattedProfiles.length} profiles`);
+    res.json({ profiles: formattedProfiles });
   } catch (error) {
     logger.error('Erreur getRejectedProfiles:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des profils rejetés.' });
@@ -624,6 +656,8 @@ exports.relikeProfile = async (req, res) => {
   try {
     const userId = req.user._id;
     const { targetUserId } = req.body;
+
+    logger.info(`[relikeProfile] userId: ${userId}, targetUserId: ${targetUserId}`);
 
     if (!targetUserId) {
       return res.status(400).json({ error: 'targetUserId requis.' });
@@ -639,8 +673,11 @@ exports.relikeProfile = async (req, res) => {
     }).populate('user1Id user2Id');
 
     if (!match) {
+      logger.warn(`[relikeProfile] No rejected match found`);
       return res.status(404).json({ error: 'Match rejeté non trouvé.' });
     }
+
+    logger.info(`[relikeProfile] Found match: ${match._id}, likedBy: ${match.likedBy}, status: ${match.status}`);
 
     // Ajouter le like de l'utilisateur courant
     if (!match.likedBy.some(id => id.equals(userId))) {
@@ -654,6 +691,8 @@ exports.relikeProfile = async (req, res) => {
     const targetId = match.user1Id._id.equals(userId) ? match.user2Id._id : match.user1Id._id;
     const otherHasLiked = match.likedBy.some(id => id.equals(targetId));
 
+    logger.info(`[relikeProfile] targetId: ${targetId}, otherHasLiked: ${otherHasLiked}, likedBy length: ${match.likedBy.length}`);
+
     if (otherHasLiked && match.likedBy.length === 2) {
       match.status = 'mutual';
     } else {
@@ -665,6 +704,7 @@ exports.relikeProfile = async (req, res) => {
       }
     }
 
+    logger.info(`[relikeProfile] New status: ${match.status}`);
     await match.save();
 
     // Si c'est un match mutuel, retourner les infos du match
