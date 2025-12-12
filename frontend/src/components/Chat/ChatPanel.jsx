@@ -3,6 +3,7 @@ import { storage } from '../../shared/utils/storage';
 import { Button, Spinner } from 'react-bootstrap';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { isAuthenticated } from '../../shared/api/auth';
+import { MessageCircleIcon, BotIcon, OnlineIcon } from '../Icons/GlobalIcons';
 import styles from './ChatPanel.module.css';
 
 export default function ChatPanel({ conversationId: propConversationId, initialMessage, onClose }) {
@@ -180,9 +181,9 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
       {!onClose && (
         <div className={styles.chatHeader}>
           <div>
-            <h4 className={styles.chatTitle}>💬 Assistant</h4>
+            <h4 className={styles.chatTitle}><MessageCircleIcon size={16} /> Assistant</h4>
             <p className={styles.chatSubtitle}>
-              {escalated ? '🟢 Support humain' : '🤖 IA'}
+              {escalated ? <><OnlineIcon size={12} /> Support humain</> : <><BotIcon size={12} /> IA</>}
             </p>
           </div>
         </div>
