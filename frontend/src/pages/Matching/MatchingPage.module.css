@@ -920,8 +920,7 @@
   align-items: center;
   gap: 14px;
   padding: 14px;
-  background: rgba(247, 177, 134, 0.06);
-  border: 1px solid rgba(247, 177, 134, 0.1);
+  border: 1px solid var(--matching-primary);
   border-radius: var(--matching-radius-md);
   cursor: pointer;
   transition: var(--matching-transition);
@@ -1002,8 +1001,12 @@
 
 .matchListLevel {
   font-size: 0.6875rem;
-  color: var(--matching-accent);
+  color: white;
   font-weight: 700;
+  background-color: var(--matching-primary-dark);
+  padding: 5px 8px;
+  border-radius: var(--matching-radius-sm);
+
 }
 
 .matchListActions {
@@ -1025,7 +1028,6 @@
   align-items: center;
   justify-content: center;
   transition: var(--matching-transition);
-  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
 }
 
 .matchListChatBtn:hover {

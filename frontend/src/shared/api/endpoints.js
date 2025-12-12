@@ -58,6 +58,14 @@ export const endpoints = {
     reopen: (ticketId) => `/admin/support-tickets/${ticketId}/reopen`,
     assign: (ticketId) => `/admin/support-tickets/${ticketId}/assign`,
     stats: "/admin/support-tickets/stats",
+  },
+  notifications: {
+    list: "/notifications",
+    add: "/notifications",
+    markAsRead: (notificationId) => `/notifications/${notificationId}/read`,
+    markAllRead: "/notifications/read-all",
+    delete: (notificationId) => `/notifications/${notificationId}`,
+    clearAll: "/notifications/clear",
   }
 };
 export default endpoints;

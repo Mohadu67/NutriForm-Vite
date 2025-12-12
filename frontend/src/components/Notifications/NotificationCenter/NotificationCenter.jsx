@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { storage } from '../../../shared/utils/storage';
 import { useWebSocket } from '../../../contexts/WebSocketContext';
 import { useChat } from '../../../contexts/ChatContext';
+import { secureApiCall } from '../../../utils/authService';
+import endpoints from '../../../shared/api/endpoints';
 import styles from './NotificationCenter.module.css';
 
 // SVG Icon pour la cloche
@@ -62,65 +63,101 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
   // En mode panel, toujours "ouvert"
   const isPanel = mode === 'panel';
 
-  // Charger les notifications depuis le localStorage
-  const loadNotifications = useCallback(() => {
+  // Charger les notifications depuis le serveur
+  const loadNotifications = useCallback(async () => {
     try {
-      const stored = storage.get('notificationCenter');
-      if (stored) {
-        const parsed = typeof stored === 'string' ? JSON.parse(stored) : stored;
-        setNotifications(parsed || []);
+      const response = await secureApiCall(endpoints.notifications.list);
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.notifications || []);
       }
-    } catch {
+    } catch (error) {
+      console.error('Erreur chargement notifications:', error);
       setNotifications([]);
     }
   }, []);
 
-  // Sauvegarder les notifications
-  const saveNotifications = useCallback((notifs) => {
-    storage.set('notificationCenter', JSON.stringify(notifs));
+  // Sauvegarder une notification sur le serveur
+  const saveNotificationToServer = useCallback(async (notif) => {
+    try {
+      await secureApiCall(endpoints.notifications.add, {
+        method: 'POST',
+        body: JSON.stringify(notif)
+      });
+    } catch (error) {
+      console.error('Erreur sauvegarde notification:', error);
+    }
   }, []);
 
   // Ajouter une notification (appelable de l'extérieur via window event)
   const addNotification = useCallback((notification) => {
     const newNotif = {
-      id: Date.now().toString(),
+      id: notification.id || Date.now().toString(),
       timestamp: new Date().toISOString(),
       read: false,
       ...notification
     };
 
+    // Ajouter localement d'abord pour UX réactive
     setNotifications(prev => {
-      const updated = [newNotif, ...prev].slice(0, 50); // Garder max 50
-      saveNotifications(updated);
-      return updated;
+      // Éviter les doublons par id
+      if (prev.some(n => n.id === newNotif.id || n._id === newNotif.id)) {
+        return prev;
+      }
+      return [newNotif, ...prev].slice(0, 50);
     });
-  }, [saveNotifications]);
+
+    // Sauvegarder sur le serveur en arrière-plan
+    saveNotificationToServer(newNotif);
+  }, [saveNotificationToServer]);
 
   // Marquer comme lu
-  const markAsRead = useCallback((id) => {
-    setNotifications(prev => {
-      const updated = prev.map(n =>
-        n.id === id ? { ...n, read: true } : n
-      );
-      saveNotifications(updated);
-      return updated;
-    });
-  }, [saveNotifications]);
+  const markAsRead = useCallback(async (id) => {
+    // Mise à jour locale immédiate
+    setNotifications(prev => prev.map(n =>
+      (n.id === id || n._id === id) ? { ...n, read: true } : n
+    ));
+
+    // Sync serveur en arrière-plan
+    try {
+      const notifId = id;
+      await secureApiCall(endpoints.notifications.markAsRead(notifId), {
+        method: 'PUT'
+      });
+    } catch (error) {
+      console.error('Erreur markAsRead:', error);
+    }
+  }, []);
 
   // Marquer toutes comme lues
-  const markAllAsRead = useCallback(() => {
-    setNotifications(prev => {
-      const updated = prev.map(n => ({ ...n, read: true }));
-      saveNotifications(updated);
-      return updated;
-    });
-  }, [saveNotifications]);
+  const markAllAsRead = useCallback(async () => {
+    // Mise à jour locale immédiate
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+
+    // Sync serveur
+    try {
+      await secureApiCall(endpoints.notifications.markAllRead, {
+        method: 'PUT'
+      });
+    } catch (error) {
+      console.error('Erreur markAllAsRead:', error);
+    }
+  }, []);
 
   // Supprimer toutes les notifications
-  const clearAll = useCallback(() => {
+  const clearAll = useCallback(async () => {
+    // Mise à jour locale immédiate
     setNotifications([]);
-    saveNotifications([]);
-  }, [saveNotifications]);
+
+    // Sync serveur
+    try {
+      await secureApiCall(endpoints.notifications.clearAll, {
+        method: 'DELETE'
+      });
+    } catch (error) {
+      console.error('Erreur clearAll:', error);
+    }
+  }, []);
 
   // Compter les non lues
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -270,9 +307,9 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
         ) : (
           notifications.map((notif) => (
             <button
-              key={notif.id}
+              key={notif._id || notif.id}
               className={`${styles.item} ${!notif.read ? styles.unread : ''}`}
-              onClick={() => handleNotificationClick(notif)}
+              onClick={() => handleNotificationClick({ ...notif, id: notif._id || notif.id })}
             >
               <div className={styles.itemIcon}>
                 {notif.avatar ? (
@@ -288,7 +325,7 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
                 {notif.message && (
                   <p className={styles.itemMessage}>{notif.message}</p>
                 )}
-                <span className={styles.itemTime}>{formatTime(notif.timestamp)}</span>
+                <span className={styles.itemTime}>{formatTime(notif.createdAt || notif.timestamp)}</span>
               </div>
               {!notif.read && <span className={styles.unreadDot}></span>}
             </button>
