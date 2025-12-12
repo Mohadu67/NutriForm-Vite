@@ -4,11 +4,11 @@ import { toast } from 'sonner';
 import { useChat } from '../../contexts/ChatContext';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
-import { getMatchSuggestions, likeProfile, rejectProfile, getMutualMatches, unlikeProfile } from '../../shared/api/matching';
+import { getMatchSuggestions, likeProfile, rejectProfile, getMutualMatches, unlikeProfile, getRejectedProfiles, relikeProfile } from '../../shared/api/matching';
 import { getMyProfile } from '../../shared/api/profile';
 import { getOrCreateConversation } from '../../shared/api/matchChat';
-import logger from '../../shared/utils/logger';
 import styles from './MatchingPage.module.css';
+import logger from '../../shared/utils/logger.js';
 import {
   HeartIcon,
   SparklesIcon,
@@ -20,6 +20,7 @@ import {
   StarIcon,
   DumbbellIcon,
   CheckCircleIcon,
+  TrashIcon,
   TargetIcon
 } from '../../components/Icons/GlobalIcons';
 
@@ -111,7 +112,116 @@ const ProgressRing = ({ current, total }) => {
   );
 };
 
-export default function MatchingPage() {
+// Composant ProfileDetailModal - Affiche le profil complet
+const ProfileDetailModal = ({ user, matchId, matchScore, onClose, onStartChat }) => {
+  if (!user) return null;
+
+  return (
+    <div className={styles.profileDetailOverlay} onClick={onClose}>
+      <div className={styles.profileDetailModal} onClick={e => e.stopPropagation()}>
+        <button className={styles.profileDetailClose} onClick={onClose}>
+          <XIcon size={24} />
+        </button>
+
+        <div className={styles.profileDetailHeader}>
+          <div className={styles.profileDetailAvatarWrapper}>
+            {(user.photo || user.profilePicture) ? (
+              <img src={user.photo || user.profilePicture} alt={user.username} className={styles.profileDetailAvatar} />
+            ) : (
+              <div className={styles.profileDetailAvatarPlaceholder}>
+                {user.username?.[0]?.toUpperCase() || '?'}
+              </div>
+            )}
+            {matchScore && (
+              <div className={styles.profileDetailScoreBadge}>{matchScore}%</div>
+            )}
+          </div>
+
+          <div className={styles.profileDetailInfo}>
+            <h2>{user.username}{user.age ? `, ${user.age} ans` : ''}</h2>
+            <p className={styles.profileDetailLocation}>
+              <GlobeIcon size={16} />
+              {user.location?.city || 'Ville inconnue'}
+              {user.distance && (
+                <span className={styles.profileDetailDistance}>
+                  à {user.distance < 1 ? '< 1' : Math.round(user.distance)} km
+                </span>
+              )}
+            </p>
+            <div className={styles.profileDetailBadges}>
+              {user.isVerified && (
+                <span className={styles.verifiedBadgeSmall}>
+                  <CheckCircleIcon size={14} /> Vérifié
+                </span>
+              )}
+              {user.fitnessLevel && (
+                <span className={styles.levelBadgeSmall}>
+                  <DumbbellIcon size={14} /> {FITNESS_LEVEL_LABELS[user.fitnessLevel]}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {user.bio && (
+          <div className={styles.profileDetailSection}>
+            <h4>À propos</h4>
+            <p>{user.bio}</p>
+          </div>
+        )}
+
+        {user.workoutTypes?.length > 0 && (
+          <div className={styles.profileDetailSection}>
+            <h4>Sports pratiqués</h4>
+            <div className={styles.profileDetailTags}>
+              {user.workoutTypes.map((sport, idx) => (
+                <span key={idx} className={styles.profileDetailTag}>
+                  {WORKOUT_ICONS[sport] || '🎯'} {sport}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {user.availability?.length > 0 && (
+          <div className={styles.profileDetailSection}>
+            <h4>Disponibilités</h4>
+            <div className={styles.profileDetailTags}>
+              {user.availability.map((slot, idx) => (
+                <span key={idx} className={styles.profileDetailTag}>
+                  <CalendarIcon size={14} /> {slot}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {user.goals?.length > 0 && (
+          <div className={styles.profileDetailSection}>
+            <h4>Objectifs</h4>
+            <div className={styles.profileDetailTags}>
+              {user.goals.map((goal, idx) => (
+                <span key={idx} className={styles.profileDetailTag}>
+                  <StarIcon size={14} /> {goal}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {onStartChat && matchId && (
+          <div className={styles.profileDetailActions}>
+            <button className={styles.profileDetailChatBtn} onClick={() => onStartChat(matchId, user._id)}>
+              <MailIcon size={20} /> Envoyer un message
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default function MatchingPageFuturistic() {
   const navigate = useNavigate();
   const { openMatchChat } = useChat();
   const [loading, setLoading] = useState(true);
@@ -125,6 +235,18 @@ export default function MatchingPage() {
   const [cardAnimation, setCardAnimation] = useState('enter');
   const [mutualMatchData, setMutualMatchData] = useState(null);
   const [swipeDirection, setSwipeDirection] = useState(null);
+
+  // États pour les modals de profil
+  const [selectedProfile, setSelectedProfile] = useState(null); // Pour voir un profil depuis la liste des matches
+  const [showSwipeProfile, setShowSwipeProfile] = useState(false); // Pour voir le profil de la card de swipe
+
+  // États pour les profils rejetés
+  const [rejectedProfiles, setRejectedProfiles] = useState([]);
+  const [showRejected, setShowRejected] = useState(false);
+  const [relikingId, setRelikingId] = useState(null);
+
+  // État pour la confirmation de suppression
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const cardRef = useRef(null);
   const [touchStart, setTouchStart] = useState(null);
@@ -143,8 +265,8 @@ export default function MatchingPage() {
       setProfile(userProfile);
 
       if (!userProfile.location?.coordinates) {
-        setError('Veuillez configurer votre localisation pour trouver des partenaires près de chez vous.');
-        setLoading(false);
+        setError('Veuillez configurer votre localisation dans votre profil.');
+        setTimeout(() => navigate('/profile/setup'), 2000);
         return;
       }
 
@@ -169,6 +291,7 @@ export default function MatchingPage() {
       logger.error('Erreur chargement matches:', err);
       if (err?.response?.data?.error === 'premium_required') {
         setError('Le matching est réservé aux membres Premium. Abonnez-vous pour débloquer cette fonctionnalité !');
+        setTimeout(() => navigate('/pricing'), 2000);
       } else {
         setError(err?.response?.data?.message || 'Erreur lors du chargement des matches.');
       }
@@ -190,27 +313,16 @@ export default function MatchingPage() {
       setSwipeDirection('right');
 
       const currentMatch = matches[currentIndex];
-      if (!currentMatch.user?._id) {
-        logger.error('User ID manquant dans currentMatch:', currentMatch);
-        setActionLoading(false);
-        setCardAnimation('enter');
-        setSwipeDirection(null);
-        return;
-      }
       const response = await likeProfile(currentMatch.user._id);
 
       setTimeout(() => {
-        // Afficher la popup SEULEMENT si c'est un match mutuel
-        if (response.match && response.match.isMutual) {
+        if (response.match) {
+          // Construire l'objet match complet avec les données utilisateur qu'on a déjà
           const newMatch = {
             _id: response.match._id,
             user: currentMatch.user,
-            matchScore: currentMatch.matchScore,
-            distance: currentMatch.distance,
-            status: response.match.status,
-            createdAt: new Date()
+            matchScore: currentMatch.matchScore
           };
-
           setMutualMatchData({
             matchId: response.match._id,
             user: currentMatch.user,
@@ -241,13 +353,6 @@ export default function MatchingPage() {
       setSwipeDirection('left');
 
       const currentMatch = matches[currentIndex];
-      if (!currentMatch.user?._id) {
-        logger.error('User ID manquant dans currentMatch:', currentMatch);
-        setActionLoading(false);
-        setCardAnimation('enter');
-        setSwipeDirection(null);
-        return;
-      }
       await rejectProfile(currentMatch.user._id);
 
       setTimeout(() => {
@@ -267,17 +372,10 @@ export default function MatchingPage() {
 
   // Touch handlers pour swipe
   const handleTouchStart = (e) => {
-    // Ne pas déclencher le swipe sur les boutons
-    const target = e.target;
-    if (target.tagName === 'BUTTON' || target.closest('button')) {
-      return;
-    }
     setTouchStart(e.touches[0].clientX);
-    setTouchMove(e.touches[0].clientX);
   };
 
   const handleTouchMove = (e) => {
-    if (!touchStart) return;
     setTouchMove(e.touches[0].clientX);
   };
 
@@ -285,41 +383,112 @@ export default function MatchingPage() {
     if (!touchStart || !touchMove) return;
 
     const distance = touchMove - touchStart;
-    const threshold = 120; // Augmenté de 100 à 120 pour être moins sensible
+    const threshold = 100;
 
-    // S'assurer qu'il y a eu un vrai mouvement horizontal
-    if (Math.abs(distance) > threshold) {
-      if (distance > 0) {
-        handleLike();
-      } else {
-        handleReject();
-      }
+    if (distance > threshold) {
+      handleLike();
+    } else if (distance < -threshold) {
+      handleReject();
     }
 
     setTouchStart(null);
     setTouchMove(null);
   };
 
-  const handleStartChat = async (matchId, matchUserId) => {
+  const handleStartChat = async (matchId, _userId) => {
     try {
-      const { conversation } = await getOrCreateConversation(matchId);
-      openMatchChat(conversation);
+      if (!matchId) {
+        console.error('handleStartChat: matchId est undefined');
+        toast.error('Erreur: ID du match manquant');
+        return;
+      }
+      console.log('handleStartChat: matchId =', matchId);
+      const response = await getOrCreateConversation(matchId);
+      console.log('handleStartChat: response =', response);
+
+      if (!response?.conversation?._id) {
+        console.error('handleStartChat: conversation._id manquant dans la réponse', response);
+        toast.error('Erreur: conversation non trouvée');
+        return;
+      }
+
+      openMatchChat(response.conversation);
       setShowMatches(false);
       setMutualMatchData(null);
+      setSelectedProfile(null);
     } catch (err) {
-      logger.error('Erreur création conversation:', err);
+      console.error('Erreur création conversation:', err);
       toast.error('Erreur lors de l\'ouverture du chat');
     }
   };
 
-  const handleUnlikeMatch = async (matchId, targetUserId) => {
+  // Ouvrir le profil d'un match depuis la liste
+  const handleOpenMatchProfile = (match) => {
+    setSelectedProfile({
+      matchId: match._id,
+      user: match.user,
+      matchScore: match.matchScore
+    });
+  };
+
+  // Ouvrir la modal de confirmation de suppression
+  const handleRemoveMatch = (matchId, userId, username) => {
+    setDeleteConfirm({ matchId, userId, username });
+  };
+
+  // Confirmer la suppression du match
+  const confirmDeleteMatch = async () => {
+    if (!deleteConfirm) return;
+
     try {
-      await unlikeProfile(targetUserId);
-      setMutualMatches(prev => prev.filter(m => m._id !== matchId));
-      toast.success('Match retiré');
+      await unlikeProfile(deleteConfirm.userId);
+      setMutualMatches(prev => prev.filter(m => m._id !== deleteConfirm.matchId));
+      toast.success('Match supprimé');
+      setDeleteConfirm(null);
     } catch (err) {
-      logger.error('Erreur unlike:', err);
-      toast.error('Erreur lors du retrait du match');
+      logger.error('Erreur suppression match:', err);
+      toast.error('Erreur lors de la suppression');
+    }
+  };
+
+  // Charger les profils rejetés
+  const loadRejectedProfiles = async () => {
+    try {
+      const { profiles } = await getRejectedProfiles();
+      setRejectedProfiles(profiles || []);
+    } catch (err) {
+      logger.error('Erreur chargement profils rejetés:', err);
+      toast.error('Erreur lors du chargement des profils rejetés');
+    }
+  };
+
+  // Ouvrir la modal des profils rejetés
+  const handleShowRejected = async () => {
+    setShowRejected(true);
+    await loadRejectedProfiles();
+  };
+
+  // Re-liker un profil rejeté
+  const handleRelike = async (userId) => {
+    try {
+      setRelikingId(userId);
+      const response = await relikeProfile(userId);
+
+      // Retirer de la liste des rejetés
+      setRejectedProfiles(prev => prev.filter(p => p._id !== userId));
+
+      // Si c'est un match mutuel, l'ajouter à la liste
+      if (response.isMutual && response.match) {
+        setMutualMatches(prev => [...prev, response.match]);
+        toast.success('C\'est un match ! 🎉');
+      } else {
+        toast.success('Profil liké !');
+      }
+    } catch (err) {
+      logger.error('Erreur re-like:', err);
+      toast.error('Erreur lors du like');
+    } finally {
+      setRelikingId(null);
     }
   };
 
@@ -353,7 +522,7 @@ export default function MatchingPage() {
           <p>Swipe pour découvrir des profils compatibles</p>
         </div>
 
-        {/* Stats futuristes */}
+        {/* Stats */}
         <div className={styles.statsContainer}>
           <div
             className={`${styles.statCard} ${mutualMatches.length > 0 ? styles.clickable : styles.disabled}`}
@@ -371,12 +540,18 @@ export default function MatchingPage() {
 
           <ProgressRing current={remainingMatches} total={matches.length} />
 
-          <div className={styles.statCard}>
+          <div
+            className={`${styles.statCard} ${currentIndex > 0 ? styles.clickable : styles.disabled}`}
+            onClick={() => currentIndex > 0 && handleShowRejected()}
+          >
             <div className={styles.statIcon}>
               <UsersIcon size={32} />
             </div>
-            <div className={styles.statValue}>{matches.length}</div>
-            <div className={styles.statLabel}>Disponibles</div>
+            <div className={styles.statValue}>{currentIndex}</div>
+            <div className={styles.statLabel}>Vus</div>
+            {currentIndex > 0 && (
+              <div className={styles.statHint}>Voir les passés</div>
+            )}
           </div>
         </div>
 
@@ -387,8 +562,8 @@ export default function MatchingPage() {
           </div>
         )}
 
-        {/* Card container 3D */}
-        {currentMatch && currentMatch.user ? (
+        {/* Card de swipe */}
+        {currentMatch ? (
           <div className={styles.cardContainer}>
             <div
               ref={cardRef}
@@ -397,82 +572,90 @@ export default function MatchingPage() {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
             >
-              <div className={styles.matchCardInner}>
-                {/* Header avec score */}
-                <div className={styles.cardHeader}>
-                  <div className={styles.matchScoreBadge}>
-                    <span className={styles.matchScoreValue}>{currentMatch.matchScore}%</span>
-                    <span className={styles.matchScoreLabel}>Match</span>
-                  </div>
-                  {currentMatch.user?.isVerified && (
-                    <div className={styles.verifiedBadge}>
-                      <CheckCircleIcon size={16} /> Vérifié
+              {/* Zone cliquable pour voir le profil */}
+              <div
+                className={styles.matchCardClickable}
+                onClick={() => setShowSwipeProfile(true)}
+              >
+                <div className={styles.matchCardInner}>
+                  {/* Header avec score */}
+                  <div className={styles.cardHeader}>
+                    <div className={styles.cardScoreBadge}>
+                      <span className={styles.cardScoreValue}>{currentMatch.matchScore}%</span>
+                      <span className={styles.cardScoreLabel}>Match</span>
                     </div>
-                  )}
-                </div>
-
-                {/* Profile info */}
-                <div className={styles.profileSection}>
-                  <h2>{currentMatch.user.username}, {currentMatch.user.age}</h2>
-                  <div className={styles.location}>
-                    <GlobeIcon size={16} />
-                    <span>{currentMatch.user.location?.city || 'Ville inconnue'}</span>
-                    {currentMatch.distance && (
-                      <span className={styles.distance}>• {currentMatch.distance.toFixed(1)}km</span>
+                    {currentMatch.user.isVerified && (
+                      <div className={styles.verifiedBadge}>
+                        <CheckCircleIcon size={16} /> Vérifié
+                      </div>
                     )}
                   </div>
 
-                  <div className={styles.levelBadge}>
-                    {FITNESS_LEVEL_LABELS[currentMatch.user.fitnessLevel] || 'Non spécifié'}
+                  {/* Avatar */}
+                  <div className={styles.cardAvatarSection}>
+                    {(currentMatch.user.photo || currentMatch.user.profilePicture) ? (
+                      <img
+                        src={currentMatch.user.photo || currentMatch.user.profilePicture}
+                        alt={currentMatch.user.username}
+                        className={styles.cardAvatar}
+                      />
+                    ) : (
+                      <div className={styles.cardAvatarPlaceholder}>
+                        {currentMatch.user.username?.[0]?.toUpperCase() || '?'}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Profile info */}
+                  <div className={styles.profileSection}>
+                    <h2>{currentMatch.user.username}, {currentMatch.user.age}</h2>
+                    <div className={styles.location}>
+                      <GlobeIcon size={16} />
+                      <span>{currentMatch.user.location?.city || 'Ville inconnue'}</span>
+                      {currentMatch.distance && (
+                        <span className={styles.distance}>• {currentMatch.distance.toFixed(1)}km</span>
+                      )}
+                    </div>
+
+                    <div className={styles.levelBadge}>
+                      {FITNESS_LEVEL_LABELS[currentMatch.user.fitnessLevel] || 'Non spécifié'}
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  {currentMatch.user.bio && (
+                    <div className={styles.bioSection}>
+                      <p>{currentMatch.user.bio}</p>
+                    </div>
+                  )}
+
+                  {/* Workout types */}
+                  {currentMatch.user.workoutTypes?.length > 0 && (
+                    <div className={styles.workoutSection}>
+                      <h6>Activités préférées</h6>
+                      <div className={styles.workoutGrid}>
+                        {currentMatch.user.workoutTypes.slice(0, 4).map((type) => (
+                          <span key={type} className={styles.workoutChip}>
+                            {WORKOUT_ICONS[type] || '🎯'} {type}
+                          </span>
+                        ))}
+                        {currentMatch.user.workoutTypes.length > 4 && (
+                          <span className={styles.workoutChipMore}>
+                            +{currentMatch.user.workoutTypes.length - 4}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Hint pour voir plus */}
+                  <div className={styles.cardViewMoreHint}>
+                    <span>Cliquer pour voir le profil complet</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 18l6-6-6-6"/>
+                    </svg>
                   </div>
                 </div>
-
-                {/* Bio */}
-                {currentMatch.user.bio && (
-                  <div className={styles.bioSection}>
-                    <p>{currentMatch.user.bio}</p>
-                  </div>
-                )}
-
-                {/* Workout types */}
-                {currentMatch.user.workoutTypes?.length > 0 && (
-                  <div className={styles.workoutSection}>
-                    <h6>Activités préférées</h6>
-                    <div className={styles.workoutGrid}>
-                      {currentMatch.user.workoutTypes.map((type) => (
-                        <span key={type} className={styles.workoutChip}>
-                          {WORKOUT_ICONS[type] || '🎯'} {type}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Score breakdown */}
-                {currentMatch.scoreBreakdown && (
-                  <div className={styles.scoreSection}>
-                    <h6>Compatibilité</h6>
-                    <div className={styles.scoreBreakdownGrid}>
-                      {Object.entries(currentMatch.scoreBreakdown).map(([key, value]) => (
-                        <div key={key} className={styles.scoreItem}>
-                          <span className={styles.scoreItemLabel}>
-                            {key === 'proximity' && <><GlobeIcon size={14} /> Proximité</>}
-                            {key === 'workout' && <><DumbbellIcon size={14} /> Activités</>}
-                            {key === 'level' && <><StarIcon size={14} /> Niveau</>}
-                            {key === 'availability' && <><CalendarIcon size={14} /> Dispo</>}
-                          </span>
-                          <div className={styles.scoreBar}>
-                            <div
-                              className={styles.scoreBarFill}
-                              style={{ width: `${value}%` }}
-                            />
-                          </div>
-                          <span className={styles.scoreItemValue}>{value}%</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Swipe hints */}
@@ -517,7 +700,7 @@ export default function MatchingPage() {
             </div>
             {!profile?.location?.coordinates ? (
               <>
-                <h3>Configuration de votre profil</h3>
+                <h3>Configuration requise</h3>
                 <p>Pour trouver des partenaires d'entraînement près de chez vous, configurez votre localisation dans votre profil.</p>
                 <div className={styles.emptyActions}>
                   <button className={styles.emptyBtn} onClick={() => navigate('/profile/setup')}>
@@ -545,14 +728,14 @@ export default function MatchingPage() {
           </div>
         )}
 
-        {/* Modal matches mutuels */}
+        {/* Modal liste des matches mutuels */}
         {showMatches && (
           <div className={styles.modalOverlay} onClick={() => setShowMatches(false)}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
               <div className={styles.modalHeader}>
                 <h3>Mes Matches</h3>
                 <button className={styles.modalClose} onClick={() => setShowMatches(false)}>
-                  ×
+                  <XIcon size={20} />
                 </button>
               </div>
               <div className={styles.modalBody}>
@@ -561,49 +744,53 @@ export default function MatchingPage() {
                 ) : (
                   <div className={styles.matchesGrid}>
                     {mutualMatches.map((match) => (
-                      <div key={match._id} className={styles.mutualMatchCard}>
-                        <button
-                          className={styles.unlikeButton}
-                          onClick={() => handleUnlikeMatch(match._id, match.user?._id)}
-                          title="Retirer le match"
-                        >
-                          <XIcon size={18} />
-                        </button>
-                        <div className={styles.matchCardHeader}>
-                          <div className={styles.matchAvatar}>
-                            {match.user?.photo ? (
-                              <img
-                                src={match.user.photo}
-                                alt={match.user?.username || 'User'}
-                              />
-                            ) : (
-                              <div className={styles.avatarPlaceholder}>
-                                {match.user?.username?.[0]?.toUpperCase() || '?'}
-                              </div>
-                            )}
-                          </div>
-                          <h5>{match.user?.username || 'Utilisateur'}</h5>
-                        </div>
-                        <div className={styles.matchBadges}>
-                          <span className={styles.scoreBadge}>{match.matchScore}% match</span>
-                          {match.user?.isVerified && (
-                            <span className={styles.verifiedBadge}>
-                              <CheckCircleIcon size={14} />
-                            </span>
+                      <div
+                        key={match._id}
+                        className={styles.matchListCard}
+                        onClick={() => handleOpenMatchProfile(match)}
+                      >
+                        <div className={styles.matchListAvatar}>
+                          {(match.user?.photo || match.user?.profilePicture) ? (
+                            <img src={match.user.photo || match.user.profilePicture} alt={match.user.username} />
+                          ) : (
+                            <div className={styles.matchListAvatarPlaceholder}>
+                              {match.user?.username?.[0]?.toUpperCase() || '?'}
+                            </div>
                           )}
+                          <div className={styles.matchListScore}>{match.matchScore}%</div>
                         </div>
-                        <div className={styles.matchInfo}>
-                          <strong>Ville:</strong> {match.user?.location?.city || 'N/A'}
+                        <div className={styles.matchListInfo}>
+                          <h5>{match.user?.username || 'Utilisateur'}</h5>
+                          <p>
+                            <GlobeIcon size={12} />
+                            {match.user?.location?.city || 'N/A'}
+                          </p>
+                          <span className={styles.matchListLevel}>
+                            {FITNESS_LEVEL_LABELS[match.user?.fitnessLevel] || 'N/A'}
+                          </span>
                         </div>
-                        <div className={styles.matchInfo}>
-                          <strong>Niveau:</strong> {FITNESS_LEVEL_LABELS[match.user?.fitnessLevel] || 'N/A'}
+                        <div className={styles.matchListActions}>
+                          <button
+                            className={styles.matchListChatBtn}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStartChat(match._id, match.user?._id);
+                            }}
+                            title="Envoyer un message"
+                          >
+                            <MailIcon size={18} />
+                          </button>
+                          <button
+                            className={styles.matchListDeleteBtn}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveMatch(match._id, match.user?._id, match.user?.username);
+                            }}
+                            title="Supprimer le match"
+                          >
+                            <TrashIcon size={16} />
+                          </button>
                         </div>
-                        <button
-                          className={styles.chatButton}
-                          onClick={() => handleStartChat(match._id, match.user?._id)}
-                        >
-                          <MailIcon size={16} /> Discuter
-                        </button>
                       </div>
                     ))}
                   </div>
@@ -613,10 +800,11 @@ export default function MatchingPage() {
           </div>
         )}
 
-        {/* Popup match mutuel avec confettis */}
+        {/* Popup "C'est un Match !" */}
         {mutualMatchData && (
-          <div className={styles.mutualMatchOverlay}>
-            <div className={styles.mutualMatchPopup}>
+          <div className={styles.matchPopupOverlay} onClick={() => setMutualMatchData(null)}>
+            <div className={styles.matchPopup} onClick={(e) => e.stopPropagation()}>
+              {/* Confettis */}
               <div className={styles.confettiContainer}>
                 {Array.from({ length: 30 }).map((_, i) => (
                   <div
@@ -630,41 +818,188 @@ export default function MatchingPage() {
                   />
                 ))}
               </div>
-              <div className={styles.mutualMatchContent}>
-                <div className={styles.mutualMatchIcon}>
-                  <SparklesIcon size={60} />
-                </div>
-                <h2 className={styles.mutualMatchTitle}>C'est un Match !</h2>
-                <p className={styles.mutualMatchMessage}>
-                  Vous et {mutualMatchData.user.username} vous êtes likés mutuellement
-                </p>
-                <div className={styles.mutualMatchProfile}>
-                  <div className={styles.mutualMatchAvatarLarge}>
-                    <div className={styles.avatarPlaceholderLarge}>
-                      {mutualMatchData.user.username[0].toUpperCase()}
-                    </div>
+
+              {/* Bouton fermer */}
+              <button className={styles.matchPopupClose} onClick={() => setMutualMatchData(null)}>
+                <XIcon size={24} />
+              </button>
+
+              <div className={styles.matchPopupContent}>
+                <div className={styles.matchPopupHeader}>
+                  <div className={styles.matchPopupIcon}>
+                    <SparklesIcon size={48} />
                   </div>
-                  <p className={styles.mutualMatchAge}>
-                    {mutualMatchData.user.username}, {mutualMatchData.user.age} ans
-                  </p>
-                  <p className={styles.mutualMatchLocation}>
-                    <GlobeIcon size={16} /> {mutualMatchData.user.location?.city || 'Ville inconnue'}
-                  </p>
+                  <h2>C'est un Match !</h2>
+                  <p>Vous et {mutualMatchData.user.username} vous êtes likés mutuellement</p>
                 </div>
-                <div className={styles.mutualMatchActions}>
+
+                {/* Card cliquable pour voir le profil */}
+                <div
+                  className={styles.matchPopupProfileCard}
+                  onClick={() => setSelectedProfile(mutualMatchData)}
+                >
+                  <div className={styles.matchPopupAvatar}>
+                    {(mutualMatchData.user.photo || mutualMatchData.user.profilePicture) ? (
+                      <img src={mutualMatchData.user.photo || mutualMatchData.user.profilePicture} alt={mutualMatchData.user.username} />
+                    ) : (
+                      <div className={styles.matchPopupAvatarPlaceholder}>
+                        {mutualMatchData.user.username[0].toUpperCase()}
+                      </div>
+                    )}
+                    <div className={styles.matchPopupScore}>{mutualMatchData.matchScore}%</div>
+                  </div>
+                  <div className={styles.matchPopupInfo}>
+                    <h3>{mutualMatchData.user.username}, {mutualMatchData.user.age} ans</h3>
+                    <p>
+                      <GlobeIcon size={14} />
+                      {mutualMatchData.user.location?.city || 'Ville inconnue'}
+                    </p>
+                    {mutualMatchData.user.fitnessLevel && (
+                      <span className={styles.matchPopupLevel}>
+                        {FITNESS_LEVEL_LABELS[mutualMatchData.user.fitnessLevel]}
+                      </span>
+                    )}
+                  </div>
+                  <div className={styles.matchPopupViewHint}>
+                    <span>Voir profil</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className={styles.matchPopupActions}>
                   <button
-                    className={styles.mutualMatchChatBtn}
+                    className={styles.matchPopupChatBtn}
                     onClick={() => handleStartChat(mutualMatchData.matchId, mutualMatchData.user._id)}
                   >
                     <MailIcon size={20} /> Envoyer un message
                   </button>
                   <button
-                    className={styles.mutualMatchBtn}
+                    className={styles.matchPopupContinueBtn}
                     onClick={() => setMutualMatchData(null)}
                   >
                     Continuer à swiper
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal profil détaillé depuis la liste des matches */}
+        {selectedProfile && (
+          <ProfileDetailModal
+            user={selectedProfile.user}
+            matchId={selectedProfile.matchId}
+            matchScore={selectedProfile.matchScore}
+            onClose={() => setSelectedProfile(null)}
+            onStartChat={handleStartChat}
+          />
+        )}
+
+        {/* Modal profil détaillé depuis la card de swipe */}
+        {showSwipeProfile && currentMatch && (
+          <ProfileDetailModal
+            user={currentMatch.user}
+            matchScore={currentMatch.matchScore}
+            onClose={() => setShowSwipeProfile(false)}
+            onStartChat={null} // Pas de chat car pas encore matché
+          />
+        )}
+
+        {/* Modal des profils rejetés/passés */}
+        {showRejected && (
+          <div className={styles.modalOverlay} onClick={() => setShowRejected(false)}>
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h3>Profils passés</h3>
+                <button className={styles.modalClose} onClick={() => setShowRejected(false)}>
+                  <XIcon size={20} />
+                </button>
+              </div>
+              <div className={styles.modalBody}>
+                {rejectedProfiles.length === 0 ? (
+                  <p className={styles.noMatches}>Aucun profil passé pour le moment</p>
+                ) : (
+                  <div className={styles.matchesGrid}>
+                    {rejectedProfiles.map((profile) => (
+                      <div
+                        key={profile._id}
+                        className={styles.matchListCard}
+                        onClick={() => setSelectedProfile({ user: profile, matchScore: null })}
+                      >
+                        <div className={styles.matchListAvatar}>
+                          {(profile.photo || profile.profilePicture) ? (
+                            <img src={profile.photo || profile.profilePicture} alt={profile.username} />
+                          ) : (
+                            <div className={styles.matchListAvatarPlaceholder}>
+                              {profile.username?.[0]?.toUpperCase() || '?'}
+                            </div>
+                          )}
+                        </div>
+                        <div className={styles.matchListInfo}>
+                          <h5>{profile.username || 'Utilisateur'}</h5>
+                          <p>
+                            <GlobeIcon size={12} />
+                            {profile.location?.city || 'N/A'}
+                          </p>
+                          <span className={styles.matchListLevel}>
+                            {FITNESS_LEVEL_LABELS[profile.fitnessLevel] || 'N/A'}
+                          </span>
+                        </div>
+                        <div className={styles.matchListActions}>
+                          <button
+                            className={styles.relikeBtn}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRelike(profile._id);
+                            }}
+                            disabled={relikingId === profile._id}
+                            title="Re-liker ce profil"
+                          >
+                            {relikingId === profile._id ? (
+                              <div className={styles.miniSpinner}></div>
+                            ) : (
+                              <HeartIcon size={18} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de confirmation de suppression */}
+        {deleteConfirm && (
+          <div className={styles.confirmOverlay} onClick={() => setDeleteConfirm(null)}>
+            <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.confirmIconWrapper}>
+                <TrashIcon size={32} />
+              </div>
+              <h3 className={styles.confirmTitle}>Supprimer ce match ?</h3>
+              <p className={styles.confirmText}>
+                Voulez-vous vraiment supprimer votre match avec <strong>{deleteConfirm.username || 'cet utilisateur'}</strong> ? Cette action est irréversible.
+              </p>
+              <div className={styles.confirmActions}>
+                <button
+                  className={styles.confirmCancelBtn}
+                  onClick={() => setDeleteConfirm(null)}
+                >
+                  Annuler
+                </button>
+                <button
+                  className={styles.confirmDeleteBtn}
+                  onClick={confirmDeleteMatch}
+                >
+                  <TrashIcon size={16} />
+                  Supprimer
+                </button>
               </div>
             </div>
           </div>

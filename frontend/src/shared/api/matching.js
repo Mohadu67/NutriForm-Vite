@@ -36,3 +36,15 @@ export async function unlikeProfile(targetUserId) {
   const response = await client.post(endpoints.matching.unlike, { targetUserId });
   return response.data;
 }
+
+// Obtenir les profils rejetés
+export async function getRejectedProfiles() {
+  const response = await client.get(endpoints.matching.rejected);
+  return response.data;
+}
+
+// Re-liker un profil précédemment rejeté
+export async function relikeProfile(targetUserId) {
+  const response = await client.post(endpoints.matching.relike, { targetUserId });
+  return response.data;
+}

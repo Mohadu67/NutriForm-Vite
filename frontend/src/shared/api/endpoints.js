@@ -34,6 +34,8 @@ export const endpoints = {
     reject: "/matching/reject",
     mutual: "/matching/mutual",
     block: "/matching/block",
+    rejected: "/matching/rejected",
+    relike: "/matching/relike",
   },
   subscription: {
     create: "/subscriptions/create-checkout-session",
