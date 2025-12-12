@@ -48,6 +48,13 @@ const matchSchema = new mongoose.Schema({
     ref: 'User'
   }],
 
+  // Qui a rejeté le match (pour retrouver les profils passés)
+  rejectedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+
   // ID de conversation si match mutuel
   conversationId: {
     type: mongoose.Schema.Types.ObjectId,
