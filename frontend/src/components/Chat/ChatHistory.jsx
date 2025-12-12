@@ -7,6 +7,7 @@ import { getAIConversations, deleteAIConversation } from '../../shared/api/chat'
 import { getSubscriptionStatus } from '../../shared/api/subscription';
 import Avatar from '../Shared/Avatar';
 import Alert from '../MessageAlerte/Alert/Alert';
+import { BotIcon, MessageCircleIcon, OnlineIcon } from '../Icons/GlobalIcons';
 import styles from './ChatHistory.module.css';
 
 export default function ChatHistory({ onLogin }) {
@@ -271,7 +272,7 @@ export default function ChatHistory({ onLogin }) {
             {/* Section épinglée: Assistant IA - UNE SEULE conversation */}
             <div className={styles.pinnedSection}>
               <div className={styles.sectionHeader}>
-                <span>🤖 Assistant IA</span>
+                <span><BotIcon size={16} /> Assistant IA</span>
                 {conversations.length > 0 && (
                   <button
                     className={styles.newConvBtn}
@@ -289,7 +290,7 @@ export default function ChatHistory({ onLogin }) {
                 >
                   <div className={styles.convContent}>
                     <div className={styles.convHeader}>
-                      <span className={styles.convTitle}>💬 Nouvelle conversation</span>
+                      <span className={styles.convTitle}><MessageCircleIcon size={14} /> Nouvelle conversation</span>
                     </div>
                     <p className={styles.convPreview}>Commencer une discussion avec l'assistant</p>
                   </div>
@@ -303,7 +304,7 @@ export default function ChatHistory({ onLogin }) {
                   <div className={styles.convContent}>
                     <div className={styles.convHeader}>
                       <span className={styles.convTitle}>
-                        {conversations[0].escalated ? '🟢 Support humain' : '💬 Discussion IA'}
+                        {conversations[0].escalated ? <><OnlineIcon size={14} /> Support humain</> : <><MessageCircleIcon size={14} /> Discussion IA</>}
                       </span>
                       <span className={styles.convDate}>{formatDate(conversations[0].updatedAt)}</span>
                     </div>
@@ -323,7 +324,7 @@ export default function ChatHistory({ onLogin }) {
             {/* Section: Messages Partenaires - TOUJOURS VISIBLE */}
             <div className={styles.matchesSection}>
               <div className={styles.sectionHeader}>
-                <span>💬 Messages Partenaires</span>
+                <span><MessageCircleIcon size={16} /> Messages Partenaires</span>
                 {matchConversations.length > 0 && (
                   <span className={styles.badge}>{matchConversations.length}</span>
                 )}

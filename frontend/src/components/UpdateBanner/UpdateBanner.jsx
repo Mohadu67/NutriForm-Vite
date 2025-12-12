@@ -1,4 +1,5 @@
 import { useAppUpdate } from '../../hooks/useAppUpdate';
+import { PartyPopperIcon } from '../Icons/GlobalIcons';
 import styles from './UpdateBanner.module.css';
 
 export default function UpdateBanner() {
@@ -10,7 +11,7 @@ export default function UpdateBanner() {
     <div className={styles.banner} role="alert" aria-live="polite">
       <div className={styles.content}>
         <div className={styles.info}>
-          <span className={styles.icon}>🎉</span>
+          <span className={styles.icon}><PartyPopperIcon size={24} /></span>
           <div className={styles.text}>
             <strong>Nouvelle version disponible</strong>
             {newVersion && <span className={styles.version}>v{newVersion}</span>}

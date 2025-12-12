@@ -4,6 +4,7 @@ import { Button, Spinner, Alert } from 'react-bootstrap';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { isAuthenticated } from '../../shared/api/auth';
 import { useChat } from '../../contexts/ChatContext';
+import { MessageCircleIcon, BotIcon, OnlineIcon } from '../Icons/GlobalIcons';
 import styles from './ChatWidget.module.css';
 
 export default function ChatWidget() {
@@ -188,9 +189,9 @@ export default function ChatWidget() {
           {/* Header */}
           <div className={styles.chatHeader}>
             <div>
-              <h3 className={styles.chatTitle}>💬 Assistant Harmonith</h3>
+              <h3 className={styles.chatTitle}><MessageCircleIcon size={18} /> Assistant Harmonith</h3>
               <p className={styles.chatSubtitle}>
-                {escalated ? '🟢 Support humain' : '🤖 Assistant virtuel'}
+                {escalated ? <><OnlineIcon size={14} /> Support humain</> : <><BotIcon size={14} /> Assistant virtuel</>}
               </p>
             </div>
             <button

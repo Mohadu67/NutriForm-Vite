@@ -5,6 +5,7 @@ import {
   unsubscribeFromNotifications,
   isSubscribed
 } from '../../services/notificationService';
+import { BellIcon } from '../Icons/GlobalIcons';
 import styles from './NotificationPrompt.module.css';
 
 const NotificationSettings = () => {
@@ -76,7 +77,7 @@ const NotificationSettings = () => {
       <div className={styles.statusContainer}>
         <div className={styles.statusHeader}>
           <div className={styles.statusInfo}>
-            <span className={styles.statusIcon}>🔔</span>
+            <span className={styles.statusIcon}><BellIcon size={20} /></span>
             <div>
               <h4>Notifications push</h4>
               <p className={styles.statusText}>
@@ -93,7 +94,7 @@ const NotificationSettings = () => {
     <div className={styles.statusContainer}>
       <div className={styles.statusHeader}>
         <div className={styles.statusInfo}>
-          <span className={styles.statusIcon}>🔔</span>
+          <span className={styles.statusIcon}><BellIcon size={20} /></span>
           <div>
             <h4>Notifications push</h4>
             <p className={styles.statusText}>
