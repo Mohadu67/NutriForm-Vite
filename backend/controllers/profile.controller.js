@@ -329,9 +329,12 @@ exports.updateMatchPreferences = async (req, res) => {
 
     // Réinitialiser les profils rejetés pour donner une seconde chance
     // quand les préférences de matching sont modifiées
+    // On supprime les deux formats : nouveau (rejectedBy) et ancien (user1Id avec status rejected)
     const deletedRejections = await Match.deleteMany({
-      rejectedBy: userId,
-      status: 'rejected'
+      $or: [
+        { rejectedBy: userId, status: 'rejected' },
+        { user1Id: userId, status: 'rejected', rejectedBy: { $exists: false } }
+      ]
     });
     logger.info(`[updateMatchPreferences] ${deletedRejections.deletedCount} profils rejetés réinitialisés pour userId: ${userId}`);
 
