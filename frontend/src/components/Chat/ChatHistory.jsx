@@ -10,7 +10,7 @@ import Alert from '../MessageAlerte/Alert/Alert';
 import styles from './ChatHistory.module.css';
 
 export default function ChatHistory({ onLogin }) {
-  const { openAIChat, openMatchChat } = useChat();
+  const { openAIChat, openMatchChat, consumeRefreshFlag } = useChat();
   const { on, isConnected } = useWebSocket();
   const [conversations, setConversations] = useState([]);
   const [matchConversations, setMatchConversations] = useState([]);
@@ -56,6 +56,17 @@ export default function ChatHistory({ onLogin }) {
       loadAllConversations(true);
     }
   }, [isPremium]);
+
+  // Vérifier si un refresh est nécessaire (après ouverture d'un chat depuis Matching)
+  // Cela permet de restaurer une conversation supprimée puis réouverte
+  useEffect(() => {
+    if (isAuth && hasLoadedOnce && consumeRefreshFlag) {
+      const needsRefresh = consumeRefreshFlag();
+      if (needsRefresh) {
+        loadAllConversations(true);
+      }
+    }
+  });
 
   // Ne PAS charger automatiquement au montage - seulement quand l'utilisateur ouvre le panneau
   // useEffect(() => {
