@@ -1,9 +1,9 @@
 // Service Worker pour NutriForm
 // Gère le cache et les notifications push
 
-const CACHE_NAME = 'nutriform-v4';
-const API_CACHE = 'nutriform-api-v4';
-const APP_VERSION = '4.0.0';
+const CACHE_NAME = 'nutriform-v5';
+const API_CACHE = 'nutriform-api-v5';
+const APP_VERSION = '5.0.0';
 
 // Événement d'installation
 self.addEventListener('install', (event) => {
@@ -52,6 +52,23 @@ self.addEventListener('fetch', (event) => {
 
   // Ignorer les requêtes externes (Cloudinary, Google Analytics, etc.)
   if (url.origin !== self.location.origin) return;
+
+  // Navigation (pages HTML): TOUJOURS Network First pour éviter les pages blanches sur Safari
+  if (request.mode === 'navigate' || request.destination === 'document') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          return response;
+        })
+        .catch(() => {
+          // En cas d'erreur réseau, retourner le cache ou index.html
+          return caches.match(request).then((cached) => {
+            return cached || caches.match('/index.html');
+          });
+        })
+    );
+    return;
+  }
 
   // API: Network First avec fallback cache
   if (url.pathname.startsWith('/api/')) {
