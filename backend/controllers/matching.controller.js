@@ -449,13 +449,15 @@ exports.rejectMatch = async (req, res) => {
           matchScore: score.total,
           scoreBreakdown: score.breakdown,
           distance: distance !== null ? parseFloat(distance.toFixed(2)) : 0,
-          status: 'rejected'
+          status: 'rejected',
+          rejectedBy: userId
         });
 
         await rejectedMatch.save();
       }
     } else {
       match.status = 'rejected';
+      match.rejectedBy = userId;
       await match.save();
     }
 
@@ -553,19 +555,19 @@ exports.getRejectedProfiles = async (req, res) => {
     const userId = req.user._id;
 
     // Trouver tous les matches rejetés par l'utilisateur courant
-    // Un match est rejeté si status = 'rejected' ET l'utilisateur courant était user1
-    // (car c'est lui qui a créé le rejet via rejectMatch)
+    // On utilise rejectedBy pour savoir qui a fait le rejet
     const rejectedMatches = await Match.find({
-      user1Id: userId,
+      rejectedBy: userId,
       status: 'rejected'
     })
       .populate('user1Id user2Id')
       .sort({ updatedAt: -1 });
 
     const formattedProfiles = await Promise.all(rejectedMatches.map(async (match) => {
-      // Le partenaire rejeté est toujours user2Id car user1Id est celui qui rejette
-      const partnerId = match.user2Id._id || match.user2Id;
-      const partnerUser = match.user2Id;
+      // Le partenaire rejeté est l'autre utilisateur (pas celui qui a rejeté)
+      const isUser1 = match.user1Id._id ? match.user1Id._id.equals(userId) : match.user1Id.equals(userId);
+      const partnerId = isUser1 ? (match.user2Id._id || match.user2Id) : (match.user1Id._id || match.user1Id);
+      const partnerUser = isUser1 ? match.user2Id : match.user1Id;
       const partnerProfile = await UserProfile.findOne({ userId: partnerId });
 
       if (!partnerProfile || !partnerUser) return null;
@@ -621,6 +623,9 @@ exports.relikeProfile = async (req, res) => {
     if (!match.likedBy.some(id => id.equals(userId))) {
       match.likedBy.push(userId);
     }
+
+    // Nettoyer le champ rejectedBy car le profil n'est plus rejeté
+    match.rejectedBy = null;
 
     // Vérifier si l'autre personne avait déjà liké (cas où elle nous a liké après qu'on l'ait rejetée)
     const targetId = match.user1Id._id.equals(userId) ? match.user2Id._id : match.user1Id._id;
