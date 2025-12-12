@@ -167,6 +167,12 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     const content = msgContent || inputMessage.trim();
     if (!content || sending) return;
 
+    // Vérifier que la conversation est bien chargée avant d'envoyer
+    if (isMatchChat && !matchConversation?._id) {
+      console.error('matchConversation._id est undefined, impossible d\'envoyer le message');
+      return;
+    }
+
     // Vider l'input immédiatement
     setInputMessage('');
     setSending(true);

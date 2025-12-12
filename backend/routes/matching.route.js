@@ -50,4 +50,18 @@ router.get('/mutual', matchingController.getMutualMatches);
  */
 router.post('/block', matchingController.blockUser);
 
+/**
+ * @route   GET /api/matching/rejected
+ * @desc    Obtenir les profils rejetés
+ * @access  Premium
+ */
+router.get('/rejected', matchingController.getRejectedProfiles);
+
+/**
+ * @route   POST /api/matching/relike
+ * @desc    Re-liker un profil précédemment rejeté
+ * @access  Premium
+ */
+router.post('/relike', matchingController.relikeProfile);
+
 module.exports = router;

@@ -547,4 +547,133 @@ exports.blockUser = async (req, res) => {
   }
 };
 
+// Obtenir les profils rejetés (pour pouvoir les re-liker)
+exports.getRejectedProfiles = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Trouver tous les matches rejetés par l'utilisateur courant
+    // Un match est rejeté si status = 'rejected' ET l'utilisateur courant était user1
+    // (car c'est lui qui a créé le rejet via rejectMatch)
+    const rejectedMatches = await Match.find({
+      user1Id: userId,
+      status: 'rejected'
+    })
+      .populate('user1Id user2Id')
+      .sort({ updatedAt: -1 });
+
+    const formattedProfiles = await Promise.all(rejectedMatches.map(async (match) => {
+      // Le partenaire rejeté est toujours user2Id car user1Id est celui qui rejette
+      const partnerId = match.user2Id._id || match.user2Id;
+      const partnerUser = match.user2Id;
+      const partnerProfile = await UserProfile.findOne({ userId: partnerId });
+
+      if (!partnerProfile || !partnerUser) return null;
+
+      return {
+        _id: partnerId,
+        matchId: match._id,
+        username: partnerUser.pseudo || 'Utilisateur',
+        photo: partnerUser.photo,
+        bio: partnerProfile?.bio || '',
+        age: partnerProfile?.age || null,
+        fitnessLevel: partnerProfile?.fitnessLevel || null,
+        workoutTypes: partnerProfile?.workoutTypes || [],
+        location: {
+          city: partnerProfile?.location?.city || null
+        },
+        matchScore: match.matchScore,
+        rejectedAt: match.updatedAt
+      };
+    }));
+
+    res.json({ profiles: formattedProfiles.filter(p => p !== null) });
+  } catch (error) {
+    logger.error('Erreur getRejectedProfiles:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des profils rejetés.' });
+  }
+};
+
+// Re-liker un profil précédemment rejeté
+exports.relikeProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { targetUserId } = req.body;
+
+    if (!targetUserId) {
+      return res.status(400).json({ error: 'targetUserId requis.' });
+    }
+
+    // Trouver le match rejeté existant
+    const match = await Match.findOne({
+      $or: [
+        { user1Id: userId, user2Id: targetUserId },
+        { user1Id: targetUserId, user2Id: userId }
+      ],
+      status: 'rejected'
+    }).populate('user1Id user2Id');
+
+    if (!match) {
+      return res.status(404).json({ error: 'Match rejeté non trouvé.' });
+    }
+
+    // Ajouter le like de l'utilisateur courant
+    if (!match.likedBy.some(id => id.equals(userId))) {
+      match.likedBy.push(userId);
+    }
+
+    // Vérifier si l'autre personne avait déjà liké (cas où elle nous a liké après qu'on l'ait rejetée)
+    const targetId = match.user1Id._id.equals(userId) ? match.user2Id._id : match.user1Id._id;
+    const otherHasLiked = match.likedBy.some(id => id.equals(targetId));
+
+    if (otherHasLiked && match.likedBy.length === 2) {
+      match.status = 'mutual';
+    } else {
+      // Mettre le status en user1_liked ou user2_liked selon qui like
+      if (match.user1Id._id.equals(userId)) {
+        match.status = 'user1_liked';
+      } else {
+        match.status = 'user2_liked';
+      }
+    }
+
+    await match.save();
+
+    // Si c'est un match mutuel, retourner les infos du match
+    let matchData = null;
+    if (match.status === 'mutual') {
+      const partnerId = match.user1Id._id.equals(userId) ? match.user2Id._id : match.user1Id._id;
+      const partnerUser = match.user1Id._id.equals(userId) ? match.user2Id : match.user1Id;
+      const partnerProfile = await UserProfile.findOne({ userId: partnerId });
+
+      matchData = {
+        _id: match._id,
+        user: {
+          _id: partnerId,
+          username: partnerUser.pseudo || 'Utilisateur',
+          photo: partnerUser.photo,
+          bio: partnerProfile?.bio || '',
+          age: partnerProfile?.age || null,
+          fitnessLevel: partnerProfile?.fitnessLevel || null,
+          workoutTypes: partnerProfile?.workoutTypes || [],
+          location: {
+            city: partnerProfile?.location?.city || null
+          }
+        },
+        matchScore: match.matchScore
+      };
+    }
+
+    res.json({
+      success: true,
+      isMutual: match.status === 'mutual',
+      match: matchData,
+      message: match.status === 'mutual' ? 'Match mutuel ! 🎉' : 'Like enregistré.'
+    });
+  } catch (error) {
+    logger.error('Erreur relikeProfile:', error);
+    res.status(500).json({ error: 'Erreur lors du re-like.' });
+  }
+};
+
 module.exports = exports;
