@@ -49,3 +49,5 @@ cookies.txt
 !docs/STRIPE_SETUP.md
 !docs/ROADMAP.md
 docs/archives/
+
+*node_modules_old
