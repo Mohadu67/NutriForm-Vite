@@ -7,6 +7,8 @@ export function ChatProvider({ children }) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatView, setChatView] = useState('history'); // 'history' or 'conversation'
   const [activeConversation, setActiveConversation] = useState(null); // { type: 'ai'|'match', data: ... }
+  // Flag pour forcer le refresh de la liste des conversations (après ouverture d'un chat depuis Matching)
+  const [conversationsNeedRefresh, setConversationsNeedRefresh] = useState(false);
 
   const openChat = () => {
     setChatView('history');
@@ -20,6 +22,8 @@ export function ChatProvider({ children }) {
   };
 
   const openMatchChat = (matchConversation) => {
+    // Marquer qu'un refresh sera nécessaire (conversation potentiellement restaurée)
+    setConversationsNeedRefresh(true);
     setActiveConversation({ type: 'match', data: matchConversation });
     setChatView('conversation');
     setIsChatOpen(true);
@@ -52,17 +56,28 @@ export function ChatProvider({ children }) {
     setActiveConversation(null);
   };
 
+  // Fonction pour consommer le flag de refresh
+  const consumeRefreshFlag = useCallback(() => {
+    if (conversationsNeedRefresh) {
+      setConversationsNeedRefresh(false);
+      return true;
+    }
+    return false;
+  }, [conversationsNeedRefresh]);
+
   return (
     <ChatContext.Provider value={{
       isChatOpen,
       chatView,
       activeConversation,
+      conversationsNeedRefresh,
       openChat,
       openAIChat,
       openMatchChat,
       openMatchChatById,
       closeChat,
-      backToHistory
+      backToHistory,
+      consumeRefreshFlag
     }}>
       {children}
     </ChatContext.Provider>
