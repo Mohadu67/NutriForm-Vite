@@ -12,7 +12,11 @@ export default function useHistoryData() {
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
 
-  const [displayName, setDisplayName] = useState(storage.get("cachedDisplayName") || "");
+  // Ne pas utiliser le cache si c'est "Utilisateur" (valeur par défaut)
+  const cachedName = storage.get("cachedDisplayName");
+  const [displayName, setDisplayName] = useState(
+    cachedName && cachedName !== "Utilisateur" ? cachedName : ""
+  );
   const [user, setUser] = useState(null);
 
   useEffect(() => {

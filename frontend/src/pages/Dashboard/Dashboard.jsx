@@ -116,8 +116,21 @@ export default function Dashboard() {
   } = useSessionManagement();
 
   const capitalizedName = useMemo(() => {
-    if (!displayName) return "Utilisateur";
-    return displayName.charAt(0).toUpperCase() + displayName.slice(1);
+    // Si pas de displayName, essayer de récupérer depuis le storage
+    let name = displayName;
+    if (!name) {
+      const userData = storage.get("user");
+      if (userData) {
+        try {
+          const parsed = typeof userData === 'string' ? JSON.parse(userData) : userData;
+          name = parsed?.prenom || parsed?.pseudo || parsed?.displayName || '';
+        } catch {
+          // Ignore parsing errors
+        }
+      }
+    }
+    if (!name) return "Utilisateur";
+    return name.charAt(0).toUpperCase() + name.slice(1);
   }, [displayName]);
 
   // Paywall pour utilisateurs gratuits
