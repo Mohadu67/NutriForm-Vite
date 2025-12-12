@@ -194,6 +194,9 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 :global(.dark) .convTitle {
@@ -417,6 +420,12 @@
   position: relative;
   overflow: hidden;
   transition: all var(--transition-base);
+}
+
+.sectionHeader span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .newConvBtn {

@@ -8,6 +8,7 @@ import {
 } from '../../services/notificationService';
 import { storage } from '../../shared/utils/storage';
 import { secureApiCall } from '../../utils/authService';
+import { BellIcon } from '../Icons/GlobalIcons';
 import styles from './NotificationPrompt.module.css';
 
 const NotificationPrompt = () => {
@@ -147,7 +148,7 @@ const NotificationPrompt = () => {
           <div className={styles.promptHeader}>
             <div className={styles.iconWrapper}>
               <span className={styles.iconBg}></span>
-              <span className={styles.promptIcon}>🔔</span>
+              <span className={styles.promptIcon}><BellIcon size={28} /></span>
             </div>
           </div>
 

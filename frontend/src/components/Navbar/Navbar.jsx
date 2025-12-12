@@ -27,7 +27,9 @@ import {
   HelpCircleIcon,
   UtensilsIcon,
   CalendarIcon,
-  BellIcon
+  BellIcon,
+  BotIcon,
+  MessageCircleIcon
 } from "./NavIcons";
 
 export default function Navbar() {
@@ -687,7 +689,7 @@ export default function Navbar() {
                   >
                     ←
                   </button>
-                  <h3>💬 Messages</h3>
+                  <h3><MessageCircleIcon size={18} /> Messages</h3>
                 </div>
                 <ChatHistory onLogin={() => { closeChat(); openPopup('login'); }} />
               </div>
@@ -717,7 +719,7 @@ export default function Navbar() {
                       </>
                     ) : (
                       <>
-                        <div className={styles.chatProfileImageAI}>🤖</div>
+                        <div className={styles.chatProfileImageAI}><BotIcon size={24} /></div>
                         <h3>Assistant IA</h3>
                       </>
                     )}
@@ -746,7 +748,7 @@ export default function Navbar() {
                   >
                     ←
                   </button>
-                  <h3>🔔 Notifications</h3>
+                  <h3><BellIcon size={18} /> Notifications</h3>
                 </div>
                 <NotificationCenter mode="panel" onClose={closeNotificationsPanel} />
               </div>
@@ -945,7 +947,7 @@ export default function Navbar() {
             {chatView === 'history' ? (
               <>
                 <div className={styles.chatPanelHeader}>
-                  <h3>💬 Messages</h3>
+                  <h3><MessageCircleIcon size={18} /> Messages</h3>
                   <button onClick={closeChat} className={styles.chatCloseBtn}>
                     ✕
                   </button>
@@ -972,7 +974,7 @@ export default function Navbar() {
                       </>
                     ) : (
                       <>
-                        <div className={styles.chatProfileImageAI}>🤖</div>
+                        <div className={styles.chatProfileImageAI}><BotIcon size={24} /></div>
                         <h3>Assistant IA</h3>
                       </>
                     )}

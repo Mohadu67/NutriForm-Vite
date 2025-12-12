@@ -6,6 +6,7 @@ import {
   sendMessage,
   markMessagesAsRead
 } from '../../shared/api/matchChat';
+import { MessageCircleIcon } from '../Icons/GlobalIcons';
 import styles from './ChatPanel.module.css';
 
 export default function ChatPanel({ isOpen, onClose }) {
@@ -129,7 +130,7 @@ export default function ChatPanel({ isOpen, onClose }) {
             </button>
           )}
           <h2>
-            {view === 'list' ? '💬 Messages' : activeConversation?.otherUser?.pseudo || 'Chat'}
+            {view === 'list' ? <><MessageCircleIcon size={16} /> Messages</> : activeConversation?.otherUser?.pseudo || 'Chat'}
           </h2>
           <button className={styles.closeBtn} onClick={onClose}>
             ✕
@@ -148,7 +149,7 @@ export default function ChatPanel({ isOpen, onClose }) {
                 </div>
               ) : conversations.length === 0 ? (
                 <div className={styles.emptyState}>
-                  <div className={styles.emptyIcon}>💬</div>
+                  <div className={styles.emptyIcon}><MessageCircleIcon size={32} /></div>
                   <h3>Aucune conversation</h3>
                   <p>Vos matches mutuels apparaîtront ici</p>
                 </div>
