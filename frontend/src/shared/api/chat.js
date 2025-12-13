@@ -16,12 +16,17 @@ export async function sendChatMessage(message, conversationId = null) {
 }
 
 /**
- * Récupérer l'historique d'une conversation
+ * Récupérer l'historique d'une conversation (avec pagination)
  * @param {string} conversationId
- * @returns {Promise<{messages: Array}>}
+ * @param {object} options - {limit, before} pour pagination
+ * @returns {Promise<{messages: Array, hasMore: boolean, totalCount: number}>}
  */
-export async function getChatHistory(conversationId) {
-  const response = await client.get(`${endpoints.chat.history}/${conversationId}`);
+export async function getChatHistory(conversationId, { limit = 20, before = null } = {}) {
+  const params = new URLSearchParams();
+  params.append('limit', limit);
+  if (before) params.append('before', before);
+
+  const response = await client.get(`${endpoints.chat.history}/${conversationId}?${params}`);
   return response.data;
 }
 

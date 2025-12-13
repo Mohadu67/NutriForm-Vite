@@ -1,10 +1,30 @@
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './ConfirmModal.module.css';
 import { AlertTriangleIcon } from '../ProgramIcons';
 
 export default function ConfirmModal({ isOpen, onConfirm, onCancel, title, message }) {
   const modalRef = useRef(null);
   const cancelButtonRef = useRef(null);
+
+  // Bloquer le scroll du body quand le modal est ouvert
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen]);
 
   // Focus trap: focus sur le premier bouton à l'ouverture
   useEffect(() => {
@@ -49,7 +69,7 @@ export default function ConfirmModal({ isOpen, onConfirm, onCancel, title, messa
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div className={styles.overlay} onClick={onCancel} role="presentation">
       <div
         className={styles.modal}
@@ -82,4 +102,6 @@ export default function ConfirmModal({ isOpen, onConfirm, onCancel, title, messa
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

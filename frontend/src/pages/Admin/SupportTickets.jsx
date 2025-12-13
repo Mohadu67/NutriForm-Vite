@@ -13,6 +13,7 @@ import {
   deleteSupportTicket,
   getSupportTicketStats
 } from '../../shared/api/chat';
+import { formatDisplayName } from '../../shared/utils/string';
 import styles from './SupportTickets.module.css';
 import logger from '../../shared/utils/logger.js';
 
@@ -329,16 +330,20 @@ export default function SupportTickets() {
                     className={`${styles.ticketItem} ${selectedTicket?._id === ticket._id ? styles.ticketItemActive : ''}`}
                     onClick={() => handleSelectTicket(ticket._id)}
                   >
+                    <div className={styles.ticketHeader}>
+                      <div className={styles.ticketUserName}>
+                        {formatDisplayName(ticket.userId)}
+                      </div>
+                      <div className={styles.ticketDate}>
+                        {new Date(ticket.createdAt).toLocaleDateString('fr-FR')}
+                      </div>
+                    </div>
+                    <div className={styles.ticketMessage}>
+                      {ticket.subject}
+                    </div>
                     <div className={styles.ticketBadges}>
                       {getStatusBadge(ticket.status)}
                       {getPriorityBadge(ticket.priority)}
-                    </div>
-                    <h4>{ticket.subject}</h4>
-                    <div className={styles.ticketMeta}>
-                      {ticket.userId?.pseudo || ticket.userId?.email}
-                    </div>
-                    <div className={styles.ticketDate}>
-                      {new Date(ticket.createdAt).toLocaleDateString('fr-FR')}
                     </div>
                   </div>
                 ))
@@ -351,10 +356,21 @@ export default function SupportTickets() {
             {selectedTicket ? (
               <>
                 <div className={styles.detailHeader}>
-                  <div>
-                    <h3>{selectedTicket.subject}</h3>
+                  <div className={styles.detailInfo}>
+                    <div className={styles.detailUserName}>
+                      {formatDisplayName(selectedTicket.userId)}
+                    </div>
+                    <div className={styles.detailMessage}>
+                      {selectedTicket.subject}
+                    </div>
                     <div className={styles.detailMeta}>
-                      Par {selectedTicket.userId?.pseudo || selectedTicket.userId?.email}
+                      {new Date(selectedTicket.createdAt).toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
                     </div>
                   </div>
                   <div className={styles.actionButtons}>

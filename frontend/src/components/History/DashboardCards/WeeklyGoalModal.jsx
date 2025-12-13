@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import styles from "./WeeklyGoalModal.module.css";
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -11,6 +13,25 @@ export default function WeeklyGoalModal({
   min = 1,
   max = 14,
 }) {
+  // Bloquer le scroll du body quand le modal est ouvert
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) {
     return null;
   }
@@ -37,7 +58,7 @@ export default function WeeklyGoalModal({
     }
   };
 
-  return (
+  const modalContent = (
     <div className={styles.overlay} onClick={onClose}>
       <div
         className={styles.content}
@@ -86,4 +107,6 @@ export default function WeeklyGoalModal({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

@@ -5,6 +5,7 @@ import { isAuthenticated } from '../../shared/api/auth';
 import { getConversations, deleteConversation as deleteMatchConv } from '../../shared/api/matchChat';
 import { getAIConversations, deleteAIConversation } from '../../shared/api/chat';
 import { getSubscriptionStatus } from '../../shared/api/subscription';
+import { formatDisplayName } from '../../shared/utils/string';
 import Avatar from '../Shared/Avatar';
 import Alert from '../MessageAlerte/Alert/Alert';
 import { BotIcon, MessageCircleIcon, OnlineIcon } from '../Icons/GlobalIcons';
@@ -57,7 +58,7 @@ function ConversationItem({ conv, onOpen, onDelete, formatDate, isLongPressActiv
       <div className={styles.avatarContainer}>
         <Avatar
           src={conv.otherUser?.profile?.profilePicture}
-          name={conv.otherUser?.pseudo || conv.otherUser?.prenom || 'User'}
+          name={formatDisplayName(conv.otherUser, 'User')}
           size="md"
           className={styles.convProfileImage}
         />
@@ -70,7 +71,7 @@ function ConversationItem({ conv, onOpen, onDelete, formatDate, isLongPressActiv
       <div className={styles.convContent}>
         <div className={styles.convHeader}>
           <span className={styles.convTitle}>
-            {conv.otherUser?.pseudo || conv.otherUser?.prenom || 'Partenaire'}
+            {formatDisplayName(conv.otherUser, 'Partenaire')}
           </span>
           <span className={styles.convDate}>
             {formatDate(conv.lastMessage?.timestamp || conv.createdAt)}

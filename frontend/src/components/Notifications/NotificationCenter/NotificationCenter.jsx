@@ -4,6 +4,7 @@ import { useWebSocket } from '../../../contexts/WebSocketContext';
 import { useChat } from '../../../contexts/ChatContext';
 import { secureApiCall } from '../../../utils/authService';
 import endpoints from '../../../shared/api/endpoints';
+import ConfirmModal from '../../Modal/ConfirmModal';
 import {
   BellIcon,
   MessageCircleIcon,
@@ -18,7 +19,8 @@ const NOTIFICATION_TYPES = {
   MESSAGE: 'message',
   SYSTEM: 'system',
   ACTIVITY: 'activity',
-  ADMIN: 'admin'
+  ADMIN: 'admin',
+  SUPPORT: 'support'
 };
 
 // Icônes SVG par type
@@ -27,7 +29,8 @@ const TypeIcons = {
   match: <HeartIcon size={18} filled />,
   system: <BellIcon size={18} />,
   activity: <ActivityIcon size={18} />,
-  admin: <CrownIcon size={18} />
+  admin: <CrownIcon size={18} />,
+  support: <MessageCircleIcon size={18} />
 };
 
 export default function NotificationCenter({ className = '', mode = 'dropdown', onClose }) {
@@ -35,10 +38,11 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
   const webSocketContext = useWebSocket();
   const chatContext = useChat();
   const { on, isConnected } = webSocketContext || {};
-  const { openMatchChatById } = chatContext || {};
+  const { openMatchChatById, openAIChat } = chatContext || {};
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [isLoading] = useState(false);
+  const [rejectionModal, setRejectionModal] = useState({ isOpen: false, programName: '', reason: '' });
   const dropdownRef = useRef(null);
 
   // En mode panel, toujours "ouvert"
@@ -147,7 +151,56 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
   const handleNotificationClick = useCallback(async (notification) => {
     markAsRead(notification.id);
 
-    // Pour les messages, ouvrir directement la conversation dans le modal
+    // Pour les notifications de programme refusé, afficher un modal avec la raison
+    if (notification.type === 'system' && notification.metadata?.action === 'rejected') {
+      setRejectionModal({
+        isOpen: true,
+        programName: notification.metadata.programName || 'Programme',
+        reason: notification.metadata.reason || 'Aucune raison spécifiée'
+      });
+      setIsOpen(false);
+      if (isPanel && onClose) {
+        onClose();
+      }
+      return;
+    }
+
+    // Pour les notifications de programme approuvé, rediriger vers la page programmes
+    if (notification.type === 'system' && notification.metadata?.action === 'approved') {
+      navigate('/programs');
+      setIsOpen(false);
+      if (isPanel && onClose) {
+        onClose();
+      }
+      return;
+    }
+
+    // Pour les notifications support
+    if (notification.type === 'support') {
+      // Si c'est une notification admin (a un lien vers /admin/support-tickets), naviguer vers la page
+      if (notification.link && notification.link.includes('/admin/')) {
+        navigate(notification.link);
+        setIsOpen(false);
+        if (isPanel && onClose) {
+          onClose();
+        }
+        return;
+      }
+      // Sinon c'est une notification user (réponse du support), ouvrir le chat IA
+      if (openAIChat) {
+        const conversationId = notification.metadata?.conversationId;
+        if (conversationId) {
+          openAIChat(conversationId);
+          setIsOpen(false);
+          if (isPanel && onClose) {
+            onClose();
+          }
+          return;
+        }
+      }
+    }
+
+    // Pour les messages match, ouvrir directement la conversation dans le modal
     if (notification.type === 'message' && notification.link && openMatchChatById) {
       // Extraire le conversationId du link: /matching?conversation=xxx
       const match = notification.link.match(/conversation=([a-f0-9]+)/i);
@@ -177,7 +230,7 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
     if (isPanel && onClose) {
       onClose();
     }
-  }, [markAsRead, navigate, isPanel, onClose, openMatchChatById]);
+  }, [markAsRead, navigate, isPanel, onClose, openMatchChatById, openAIChat]);
 
   // Fermer le dropdown au clic extérieur
   useEffect(() => {
@@ -328,37 +381,72 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
   // Mode panel : afficher directement le contenu sans wrapper dropdown
   if (isPanel) {
     return (
-      <div className={`${styles.panelContainer} ${className}`}>
-        {notificationContent}
-      </div>
+      <>
+        <div className={`${styles.panelContainer} ${className}`}>
+          {notificationContent}
+        </div>
+        <ConfirmModal
+          isOpen={rejectionModal.isOpen}
+          onClose={() => setRejectionModal({ isOpen: false, programName: '', reason: '' })}
+          onConfirm={() => {
+            setRejectionModal({ isOpen: false, programName: '', reason: '' });
+            navigate('/programs');
+          }}
+          title={`Programme "${rejectionModal.programName}" refusé`}
+          message={`Raison du refus :\n\n${rejectionModal.reason}`}
+          confirmText="Voir mes programmes"
+          type="warning"
+          showCancel={false}
+        />
+      </>
     );
   }
 
+  // Modal de refus de programme
+  const rejectionModalElement = (
+    <ConfirmModal
+      isOpen={rejectionModal.isOpen}
+      onClose={() => setRejectionModal({ isOpen: false, programName: '', reason: '' })}
+      onConfirm={() => {
+        setRejectionModal({ isOpen: false, programName: '', reason: '' });
+        navigate('/programs');
+      }}
+      title={`Programme "${rejectionModal.programName}" refusé`}
+      message={`Raison du refus :\n\n${rejectionModal.reason}`}
+      confirmText="Voir mes programmes"
+      type="warning"
+      showCancel={false}
+    />
+  );
+
   // Mode dropdown (comportement par défaut)
   return (
-    <div className={`${styles.container} ${className}`} ref={dropdownRef}>
-      {/* Icône avec badge */}
-      <button
-        className={styles.iconButton}
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} non lues)` : ''}`}
-        aria-expanded={isOpen}
-      >
-        <BellIcon size={22} />
-        {unreadCount > 0 && (
-          <span className={styles.badge}>
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
-      </button>
+    <>
+      <div className={`${styles.container} ${className}`} ref={dropdownRef}>
+        {/* Icône avec badge */}
+        <button
+          className={styles.iconButton}
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} non lues)` : ''}`}
+          aria-expanded={isOpen}
+        >
+          <BellIcon size={22} />
+          {unreadCount > 0 && (
+            <span className={styles.badge}>
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </button>
 
-      {/* Dropdown */}
-      {isOpen && (
-        <div className={styles.dropdown}>
-          {notificationContent}
-        </div>
-      )}
-    </div>
+        {/* Dropdown */}
+        {isOpen && (
+          <div className={styles.dropdown}>
+            {notificationContent}
+          </div>
+        )}
+      </div>
+      {rejectionModalElement}
+    </>
   );
 }
 
