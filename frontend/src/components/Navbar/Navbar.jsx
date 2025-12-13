@@ -139,14 +139,9 @@ export default function Navbar() {
   useEffect(() => {
     if (isChatOpen && !isDesktop) {
       setOpen(true);
-      // Si une conversation est active, aller directement dessus
-      if (chatView === 'conversation' && activeConversation) {
-        setCurrentView('activeChat');
-      } else {
-        setCurrentView('history');
-      }
+      setCurrentView('history');
     }
-  }, [isChatOpen, isDesktop, chatView, activeConversation]);
+  }, [isChatOpen, isDesktop]);
 
   // Bloquer le scroll du body quand la popup ou le menu est ouvert
   useEffect(() => {
@@ -811,8 +806,8 @@ export default function Navbar() {
         {/* Separator for desktop only */}
         {isDesktop && <div className={styles.separator} />}
 
-        {/* Main navigation - hidden when in active chat on mobile */}
-        <div className={`${styles.mainNav} ${currentView === 'activeChat' && !isDesktop ? styles.mainNavHidden : ''}`}>
+        {/* Main navigation - hidden when viewing a conversation on mobile */}
+        <div className={`${styles.mainNav} ${chatView === 'conversation' && activeConversation && !isDesktop ? styles.mainNavHidden : ''}`}>
           {mainLinks.map((link, index) => {
             const Element = link.isAction ? 'button' : 'a';
             const props = link.isAction ? {} : { href: link.path };
