@@ -67,7 +67,6 @@ async function syncSubscriptionWithServer() {
       });
 
       if (response.ok) {
-        console.log('✅ Subscription synchronisée avec le serveur');
         return { synced: true };
       }
     }

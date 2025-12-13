@@ -139,9 +139,14 @@ export default function Navbar() {
   useEffect(() => {
     if (isChatOpen && !isDesktop) {
       setOpen(true);
-      setCurrentView('history');
+      // Si une conversation est active, aller directement dessus
+      if (chatView === 'conversation' && activeConversation) {
+        setCurrentView('activeChat');
+      } else {
+        setCurrentView('history');
+      }
     }
-  }, [isChatOpen, isDesktop]);
+  }, [isChatOpen, isDesktop, chatView, activeConversation]);
 
   // Bloquer le scroll du body quand la popup ou le menu est ouvert
   useEffect(() => {
