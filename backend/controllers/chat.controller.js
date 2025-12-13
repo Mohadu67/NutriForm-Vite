@@ -8,42 +8,45 @@ const { v4: uuidv4 } = require('uuid');
 const logger = require('../utils/logger.js');
 
 // Helper pour notifier tous les admins (avec WebSocket optionnel)
+// Refactorisé pour être identique au matching qui fonctionne
 async function notifyAdmins(title, message, link, metadata = {}, io = null) {
   try {
     const admins = await User.find({ role: 'admin' }).select('_id');
-    logger.info(`📢 notifyAdmins: ${admins.length} admin(s) trouvé(s), io=${!!io}, notifyUser=${!!io?.notifyUser}`);
 
-    for (const admin of admins) {
-      const notification = await Notification.create({
-        userId: admin._id,
-        type: 'support',
-        title,
-        message,
-        link,
-        metadata
-      });
+    if (admins.length === 0) {
+      return;
+    }
 
-      // Envoyer en temps réel via WebSocket si disponible
-      if (io && io.notifyUser) {
-        // Convertir en objet simple pour éviter les problèmes de sérialisation Mongoose
-        const notifData = {
-          _id: notification._id.toString(),
-          id: notification._id.toString(),
-          type: notification.type,
-          title: notification.title,
-          message: notification.message,
-          link: notification.link,
-          metadata: notification.metadata,
-          read: notification.read,
-          createdAt: notification.createdAt,
-          timestamp: notification.createdAt
-        };
-        logger.info(`📢 Envoi WebSocket à admin ${admin._id}: ${title}`);
-        io.notifyUser(admin._id.toString(), 'new_notification', notifData);
+    // 1. D'abord envoyer via WebSocket (comme matching qui fonctionne)
+    if (io && io.notifyUser) {
+      for (const admin of admins) {
+        const notifId = `support-${Date.now()}-${admin._id}`;
+        io.notifyUser(admin._id.toString(), 'new_notification', {
+          id: notifId,
+          type: 'support',
+          title,
+          message,
+          link,
+          metadata,
+          timestamp: new Date().toISOString(),
+          read: false
+        });
       }
     }
 
-    logger.info(`📢 Notification envoyée à ${admins.length} admin(s): ${title}`);
+    // 2. Puis sauvegarder en base (comme matching qui fonctionne)
+    const notificationsToCreate = admins.map(admin => ({
+      userId: admin._id,
+      type: 'support',
+      title,
+      message,
+      link,
+      metadata
+    }));
+
+    await Notification.create(notificationsToCreate).catch(err =>
+      logger.error('Erreur sauvegarde notifications admin:', err)
+    );
   } catch (error) {
     logger.error('Erreur notifyAdmins:', error);
   }
