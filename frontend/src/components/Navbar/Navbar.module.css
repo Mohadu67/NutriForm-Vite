@@ -230,7 +230,6 @@
   width: 100%;
   padding: var(--dock-padding);
   min-height: 56px;
-  background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
 }

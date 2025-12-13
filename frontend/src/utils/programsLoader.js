@@ -63,7 +63,6 @@ async function loadMongoPrograms(types = 'all') {
     }
 
     const url = `${API_URL}/programs/public?${queryParams.toString()}`;
-    console.log('[programsLoader] Fetching MongoDB programs from:', url);
 
     const res = await fetch(url, {
       credentials: 'include', // Important pour les cookies en production cross-domain
@@ -76,8 +75,6 @@ async function loadMongoPrograms(types = 'all') {
 
     const data = await res.json();
     const programs = data.programs || [];
-
-    console.log('[programsLoader] Loaded', programs.length, 'MongoDB programs');
 
     // Normaliser les programmes MongoDB pour avoir un champ 'id' comme les programmes JSON
     return programs.map(program => ({

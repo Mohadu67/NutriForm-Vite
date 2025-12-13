@@ -245,9 +245,7 @@ export default function MatchingPageFuturistic() {
         toast.error('Erreur: ID du match manquant');
         return;
       }
-      console.log('handleStartChat: matchId =', matchId);
       const response = await getOrCreateConversation(matchId);
-      console.log('handleStartChat: response =', response);
 
       if (!response?.conversation?._id) {
         console.error('handleStartChat: conversation._id manquant dans la réponse', response);
@@ -306,15 +304,12 @@ export default function MatchingPageFuturistic() {
       setRelikingId(userId);
       const response = await relikeProfile(userId);
 
-      console.log('[handleRelike] Response:', response);
-
       // Retirer de la liste des rejetés et décrémenter le compteur
       setRejectedProfiles(prev => prev.filter(p => p._id !== userId));
       setRejectedCount(prev => Math.max(0, prev - 1));
 
       // Si c'est un match mutuel, l'ajouter à la liste
       if (response.isMutual && response.match) {
-        console.log('[handleRelike] Adding mutual match:', response.match);
         setMutualMatches(prev => [...prev, response.match]);
         toast.success('C\'est un match ! 🎉');
       } else {

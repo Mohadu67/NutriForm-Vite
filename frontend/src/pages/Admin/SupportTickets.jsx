@@ -67,8 +67,6 @@ export default function SupportTickets() {
   const handleSelectTicket = async (ticketId) => {
     try {
       const { ticket, messages: msgs } = await getSupportTicketById(ticketId);
-      console.log('📩 Ticket chargé:', ticket);
-      console.log('📩 Messages:', msgs);
       setSelectedTicket(ticket);
       setMessages(msgs || []);
       setReplyMessage('');
