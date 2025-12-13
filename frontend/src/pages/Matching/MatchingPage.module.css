@@ -1,106 +1,159 @@
 /* ========================================
-   MATCHING PAGE - REFONTE COMPLETE
-   Design: Glassmorphism, Mobile-First, A11y
+   MATCHING PAGE - MAGICAL EDITION
+   Design: Modern Glassmorphism, Mobile-First
    ======================================== */
 
-/* ========== CSS VARIABLES ========== */
+/* ========== CSS VARIABLES (using design tokens) ========== */
 :root {
-  --matching-primary: #f7b186;
-  --matching-primary-dark: #e9a070;
-  --matching-primary-light: #ffd4b8;
-  --matching-secondary: #b8ddd1;
-  --matching-accent: #8b5cf6;
-  --matching-success: #10b981;
-  --matching-danger: #ef4444;
+  --matching-primary: var(--color-primary-500, #f7b186);
+  --matching-primary-dark: var(--color-primary-600, #e9a070);
+  --matching-primary-light: var(--color-primary-200, #fde4d3);
+  --matching-secondary: var(--color-secondary-300, #b8ddd1);
+  --matching-accent: var(--color-accent-500, #8b5cf6);
+  --matching-success: var(--color-success, #10b981);
+  --matching-danger: var(--color-danger, #ef4444);
 
-  --matching-text-primary: #1a202c;
-  --matching-text-secondary: #64748b;
-  --matching-text-muted: #94a3b8;
+  --matching-text-primary: var(--color-neutral-800, #1e293b);
+  --matching-text-secondary: var(--color-neutral-500, #64748b);
+  --matching-text-muted: var(--color-neutral-400, #94a3b8);
 
-  --matching-bg-glass: rgba(255, 255, 255, 0.7);
-  --matching-bg-glass-strong: rgba(255, 255, 255, 0.85);
-  --matching-border-glass: rgba(255, 255, 255, 0.3);
-  --matching-shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.08);
-  --matching-shadow-medium: 0 12px 40px rgba(0, 0, 0, 0.12);
-  --matching-shadow-glow: 0 8px 32px rgba(247, 177, 134, 0.25);
+  --matching-bg-glass: var(--glass-bg, rgba(255, 255, 255, 0.75));
+  --matching-bg-glass-strong: var(--glass-bg-strong, rgba(255, 255, 255, 0.9));
+  --matching-border-glass: var(--glass-border, rgba(255, 255, 255, 0.3));
+  --matching-shadow-soft: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.1));
+  --matching-shadow-medium: var(--shadow-lg, 0 12px 40px rgba(0, 0, 0, 0.12));
+  --matching-shadow-glow: var(--shadow-glow-primary, 0 8px 32px rgba(247, 177, 134, 0.3));
 
-  --matching-radius-sm: 12px;
-  --matching-radius-md: 16px;
-  --matching-radius-lg: 24px;
-  --matching-radius-xl: 32px;
+  --matching-radius-sm: var(--radius-md, 0.75rem);
+  --matching-radius-md: var(--radius-lg, 1rem);
+  --matching-radius-lg: var(--radius-xl, 1.5rem);
+  --matching-radius-xl: var(--radius-2xl, 2rem);
 
-  --matching-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --matching-transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --matching-transition: var(--transition-base, 250ms cubic-bezier(0.4, 0, 0.2, 1));
+  --matching-transition-bounce: var(--transition-bounce, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
 /* Dark mode variables */
 :global(body.dark),
 :global(html.dark) {
-  --matching-text-primary: #f1f5f9;
-  --matching-text-secondary: #94a3b8;
-  --matching-text-muted: #64748b;
+  --matching-text-primary: var(--color-neutral-100, #f1f5f9);
+  --matching-text-secondary: var(--color-neutral-400, #94a3b8);
+  --matching-text-muted: var(--color-neutral-500, #64748b);
 
-  --matching-bg-glass: rgba(30, 41, 59, 0.7);
-  --matching-bg-glass-strong: rgba(30, 41, 59, 0.85);
+  --matching-bg-glass: rgba(30, 41, 59, 0.8);
+  --matching-bg-glass-strong: rgba(30, 41, 59, 0.92);
   --matching-border-glass: rgba(255, 255, 255, 0.1);
-  --matching-shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --matching-shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-/* ========== BASE CONTAINER ========== */
+/* ========== BASE CONTAINER (Mobile-first: 320px+) ========== */
 .container {
   min-height: 100vh;
   min-height: 100dvh;
   max-width: 460px;
   margin: 0 auto;
-  padding: 88px 16px 100px;
+  padding: 80px 12px 90px;
   position: relative;
 }
 
-/* ========== ANIMATED BACKGROUND ========== */
+/* ========== AMBIENT BACKGROUND (Performance optimized) ========== */
 .particlesContainer {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: -1;
   overflow: hidden;
-  opacity: 0.6;
 }
 
-.particle {
+/* Ambient gradient orbs - GPU accelerated, battery-friendly */
+.particlesContainer::before,
+.particlesContainer::after {
+  content: '';
   position: absolute;
-  background: linear-gradient(135deg, var(--matching-primary), var(--matching-secondary));
   border-radius: 50%;
-  opacity: 0.4;
-  animation: particleFloat linear infinite;
-  will-change: transform, opacity;
+  filter: blur(80px);
+  opacity: 0.5;
+  will-change: transform;
 }
 
-@keyframes particleFloat {
-  0% {
-    transform: translateY(100vh) translateX(0) scale(0.8);
-    opacity: 0;
+.particlesContainer::before {
+  width: 60vmax;
+  height: 60vmax;
+  top: -20%;
+  left: -15%;
+  background: radial-gradient(
+    circle,
+    rgba(247, 177, 134, 0.4) 0%,
+    rgba(247, 177, 134, 0.1) 50%,
+    transparent 70%
+  );
+  animation: ambientOrb1 25s ease-in-out infinite;
+}
+
+.particlesContainer::after {
+  width: 50vmax;
+  height: 50vmax;
+  bottom: -10%;
+  right: -10%;
+  background: radial-gradient(
+    circle,
+    rgba(184, 221, 209, 0.4) 0%,
+    rgba(184, 221, 209, 0.1) 50%,
+    transparent 70%
+  );
+  animation: ambientOrb2 30s ease-in-out infinite;
+}
+
+@keyframes ambientOrb1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
   }
-  15% { opacity: 0.4; }
-  85% { opacity: 0.4; }
-  100% {
-    transform: translateY(-20vh) translateX(30px) scale(1.2);
-    opacity: 0;
+  25% {
+    transform: translate(5%, 10%) scale(1.05);
+  }
+  50% {
+    transform: translate(10%, 5%) scale(1);
+  }
+  75% {
+    transform: translate(5%, -5%) scale(1.02);
   }
 }
 
-:global(body.dark) .particle,
-:global(html.dark) .particle {
+@keyframes ambientOrb2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-8%, -5%) scale(1.03);
+  }
+  66% {
+    transform: translate(-3%, 8%) scale(0.98);
+  }
+}
+
+:global(body.dark) .particlesContainer::before,
+:global(html.dark) .particlesContainer::before {
   opacity: 0.25;
+}
+
+:global(body.dark) .particlesContainer::after,
+:global(html.dark) .particlesContainer::after {
+  opacity: 0.2;
+}
+
+/* Keep .particle for backward compatibility but hide it */
+.particle {
+  display: none;
 }
 
 /* ========== HEADER ========== */
 .header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .header h1 {
-  font-size: clamp(1.75rem, 5vw, 2.25rem);
+  font-size: 1.5rem;
   font-weight: 800;
   background: linear-gradient(135deg, var(--matching-primary) 0%, var(--matching-primary-dark) 100%);
   -webkit-background-clip: text;
@@ -121,9 +174,9 @@
 .statsContainer {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .statCard {
@@ -132,7 +185,7 @@
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--matching-border-glass);
   border-radius: var(--matching-radius-lg);
-  padding: 16px 12px;
+  padding: 12px 8px;
   text-align: center;
   transition: var(--matching-transition);
 }
@@ -167,7 +220,7 @@
 }
 
 .statValue {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: var(--matching-primary);
   line-height: 1.1;
@@ -193,9 +246,14 @@
 /* ========== PROGRESS RING ========== */
 .progressRing {
   position: relative;
-  width: 88px;
-  height: 88px;
+  width: 72px;
+  height: 72px;
   flex-shrink: 0;
+}
+
+.progressRing svg {
+  width: 100%;
+  height: 100%;
 }
 
 .progressRingBg {
@@ -224,7 +282,7 @@
 }
 
 .progressRingNumber {
-  font-size: 1.375rem;
+  font-size: 1.125rem;
   font-weight: 800;
   color: var(--matching-primary);
   line-height: 1;
@@ -320,9 +378,11 @@
   border: 1px solid var(--matching-border-glass);
   border-radius: var(--matching-radius-xl);
   overflow: hidden;
-  box-shadow: var(--matching-shadow-medium);
+  box-shadow: var(--matching-shadow-medium), inset 0 1px 1px rgba(255, 255, 255, 0.4);
   position: relative;
   transition: var(--matching-transition);
+  transform-style: preserve-3d;
+  perspective: 1000px;
 }
 
 .matchCardClickable {
@@ -330,7 +390,9 @@
 }
 
 .matchCardClickable:hover {
-  border-color: rgba(247, 177, 134, 0.2);
+  border-color: rgba(247, 177, 134, 0.3);
+  box-shadow: var(--matching-shadow-glow), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  transform: translateY(-4px);
 }
 
 .matchCardClickable:focus-visible {
@@ -339,67 +401,102 @@
 }
 
 .matchCardInner {
-  padding: 24px 20px;
+  padding: 18px 16px;
 }
 
 /* Card Animations */
 .matchCard.enter {
-  animation: cardEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: cardEnter 0.6s var(--ease-bounce, cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
 .matchCard.likeExit {
-  animation: cardSwipeRight 0.4s ease-out forwards;
+  animation: cardSwipeRight 0.5s ease-out forwards;
 }
 
 .matchCard.rejectExit {
-  animation: cardSwipeLeft 0.4s ease-out forwards;
+  animation: cardSwipeLeft 0.5s ease-out forwards;
 }
 
 @keyframes cardEnter {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(24px) scale(0.96);
+    transform: translateY(40px) scale(0.9) rotateX(10deg);
   }
-  to {
+  100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) rotateX(0);
   }
 }
 
 @keyframes cardSwipeRight {
-  to {
+  0% {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg);
+  }
+  100% {
     opacity: 0;
-    transform: translateX(120%) rotate(12deg);
+    transform: translateX(150%) rotate(20deg);
   }
 }
 
 @keyframes cardSwipeLeft {
-  to {
+  0% {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg);
+  }
+  100% {
     opacity: 0;
-    transform: translateX(-120%) rotate(-12deg);
+    transform: translateX(-150%) rotate(-20deg);
   }
 }
 
-/* Swipe Visual Feedback */
-.matchCard.swipeRight::before,
-.matchCard.swipeLeft::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 5;
-  transition: opacity 0.2s ease;
-}
-
+/* Swipe Visual Feedback - LIKE indicator */
 .matchCard.swipeRight::before {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), transparent);
-  border: 2px solid rgba(16, 185, 129, 0.3);
+  content: 'LIKE';
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  padding: 8px 16px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 3px solid var(--matching-success);
+  border-radius: var(--matching-radius-md);
+  color: var(--matching-success);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  transform: rotate(-15deg);
+  z-index: 10;
+  animation: indicatorPop 0.2s var(--ease-bounce, cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
+/* Swipe Visual Feedback - NOPE indicator */
 .matchCard.swipeLeft::before {
-  background: linear-gradient(135deg, rgba(148, 163, 184, 0.15), transparent);
-  border: 2px solid rgba(148, 163, 184, 0.3);
+  content: 'NOPE';
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  padding: 8px 16px;
+  background: rgba(148, 163, 184, 0.15);
+  border: 3px solid var(--matching-text-muted);
+  border-radius: var(--matching-radius-md);
+  color: var(--matching-text-muted);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  transform: rotate(15deg);
+  z-index: 10;
+  animation: indicatorPop 0.2s var(--ease-bounce, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+
+@keyframes indicatorPop {
+  0% {
+    opacity: 0;
+    transform: rotate(-15deg) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-15deg) scale(1);
+  }
 }
 
 /* Card Header */
@@ -454,8 +551,8 @@
 }
 
 .cardAvatar {
-  width: 112px;
-  height: 112px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid rgba(247, 177, 134, 0.25);
@@ -469,15 +566,15 @@
 }
 
 .cardAvatarPlaceholder {
-  width: 112px;
-  height: 112px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--matching-primary), var(--matching-primary-dark));
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 2.75rem;
+  font-size: 2.25rem;
   font-weight: 800;
   border: 4px solid rgba(247, 177, 134, 0.25);
 }
@@ -489,7 +586,7 @@
 }
 
 .profileSection h2 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: var(--matching-text-primary);
   margin: 0 0 8px;
@@ -636,67 +733,127 @@
 .actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .rejectBtn,
 .likeBtn {
-  padding: 16px 20px;
+  padding: 14px 16px;
   border-radius: var(--matching-radius-lg);
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 700;
   cursor: pointer;
-  transition: var(--matching-transition);
+  transition: all 0.3s var(--ease-bounce, cubic-bezier(0.34, 1.56, 0.64, 1));
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer effect on hover */
+.rejectBtn::after,
+.likeBtn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.rejectBtn:hover::after,
+.likeBtn:hover::after {
+  left: 100%;
 }
 
 .rejectBtn:focus-visible,
 .likeBtn:focus-visible {
   outline: 2px solid var(--matching-primary);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 .btnIcon {
-  font-size: 1.25rem;
+  font-size: 1.375rem;
   display: flex;
+  transition: transform 0.3s var(--ease-bounce, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+
+.rejectBtn:hover:not(:disabled) .btnIcon,
+.likeBtn:hover:not(:disabled) .btnIcon {
+  transform: scale(1.15);
 }
 
 .rejectBtn {
   background: var(--matching-bg-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: var(--matching-text-muted);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--matching-text-secondary);
   border: 2px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
 .rejectBtn:hover:not(:disabled) {
-  transform: translateY(-3px);
-  border-color: rgba(148, 163, 184, 0.35);
-  box-shadow: var(--matching-shadow-soft);
+  transform: translateY(-4px) scale(1.02);
+  border-color: rgba(148, 163, 184, 0.4);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  color: var(--matching-text-primary);
 }
 
 .rejectBtn:active:not(:disabled) {
-  transform: translateY(-1px);
+  transform: translateY(-2px) scale(1);
 }
 
 .likeBtn {
   background: linear-gradient(135deg, var(--matching-primary), var(--matching-primary-dark));
   color: white;
-  box-shadow: 0 6px 24px rgba(247, 177, 134, 0.4);
+  box-shadow:
+    0 8px 24px rgba(247, 177, 134, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
 .likeBtn:hover:not(:disabled) {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 32px rgba(247, 177, 134, 0.5);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 16px 40px rgba(247, 177, 134, 0.5),
+    0 0 0 4px rgba(247, 177, 134, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.4);
 }
 
 .likeBtn:active:not(:disabled) {
-  transform: translateY(-1px);
+  transform: translateY(-2px) scale(1);
+}
+
+/* Pulse animation for Like button */
+.likeBtn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--matching-primary), var(--matching-primary-dark));
+  opacity: 0;
+  animation: likePulse 2s ease-in-out infinite;
+}
+
+@keyframes likePulse {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.05);
+  }
 }
 
 .rejectBtn:disabled,
@@ -704,6 +861,12 @@
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+.rejectBtn:disabled::after,
+.likeBtn:disabled::after,
+.likeBtn:disabled::before {
+  display: none;
 }
 
 /* ========== EMPTY STATE ========== */
@@ -1131,7 +1294,7 @@
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(247, 177, 134, 0.2);
   border-radius: var(--matching-radius-xl);
-  padding: 36px 24px 28px;
+  padding: 28px 18px 24px;
   max-width: 380px;
   width: 100%;
   text-align: center;
@@ -1435,7 +1598,7 @@
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--matching-border-glass);
   border-radius: var(--matching-radius-xl);
-  padding: 28px 20px;
+  padding: 24px 16px;
   max-width: 400px;
   width: 100%;
   max-height: 85vh;
@@ -1480,7 +1643,10 @@
 
 .profileDetailHeader {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
   margin-bottom: 20px;
   padding-bottom: 18px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
@@ -1546,6 +1712,7 @@
   color: var(--matching-text-secondary);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
   margin: 0 0 10px;
   flex-wrap: wrap;
@@ -1564,6 +1731,7 @@
 .profileDetailBadges {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 6px;
 }
 
@@ -1681,22 +1849,124 @@
 }
 
 /* ========== RESPONSIVE - MOBILE FIRST ========== */
+/* Base styles are for 320px+ (smallest mobile) */
+/* Progressive enhancement with min-width queries */
+
+@media (min-width: 380px) {
+  .container {
+    padding: 84px 16px 95px;
+  }
+
+  .header {
+    margin-bottom: 24px;
+  }
+
+  .header h1 {
+    font-size: 1.75rem;
+  }
+
+  .statsContainer {
+    gap: 10px;
+  }
+
+  .statCard {
+    padding: 14px 10px;
+  }
+
+  .statValue {
+    font-size: 1.625rem;
+  }
+
+  .progressRing {
+    width: 80px;
+    height: 80px;
+  }
+
+  .progressRingNumber {
+    font-size: 1.25rem;
+  }
+
+  .matchCardInner {
+    padding: 22px 18px;
+  }
+
+  .cardAvatar,
+  .cardAvatarPlaceholder {
+    width: 104px;
+    height: 104px;
+  }
+
+  .cardAvatarPlaceholder {
+    font-size: 2.5rem;
+  }
+
+  .profileSection h2 {
+    font-size: 1.375rem;
+  }
+
+  .actions {
+    gap: 12px;
+  }
+
+  .rejectBtn,
+  .likeBtn {
+    padding: 16px 20px;
+    font-size: 0.9375rem;
+  }
+
+  .matchPopup {
+    padding: 32px 22px 26px;
+  }
+
+  .profileDetailModal {
+    padding: 26px 18px;
+  }
+
+  .profileDetailHeader {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+    gap: 16px;
+  }
+
+  .profileDetailLocation {
+    justify-content: flex-start;
+  }
+
+  .profileDetailBadges {
+    justify-content: flex-start;
+  }
+}
+
 @media (min-width: 480px) {
   .container {
     padding: 96px 20px 100px;
   }
 
+  .header h1 {
+    font-size: clamp(1.75rem, 5vw, 2.25rem);
+  }
+
   .statsContainer {
     gap: 16px;
+    margin-bottom: 24px;
   }
 
   .statCard {
     padding: 18px 16px;
   }
 
+  .statValue {
+    font-size: 1.75rem;
+  }
+
   .progressRing {
-    width: 96px;
-    height: 96px;
+    width: 92px;
+    height: 92px;
+  }
+
+  .progressRingNumber {
+    font-size: 1.375rem;
   }
 
   .matchCardInner {
@@ -1709,89 +1979,30 @@
     height: 120px;
   }
 
+  .cardAvatarPlaceholder {
+    font-size: 2.75rem;
+  }
+
   .profileSection h2 {
     font-size: 1.625rem;
   }
-}
-
-@media (max-width: 380px) {
-  .container {
-    padding: 80px 12px 90px;
-  }
-
-  .header h1 {
-    font-size: 1.5rem;
-  }
-
-  .statsContainer {
-    gap: 8px;
-  }
-
-  .statCard {
-    padding: 12px 8px;
-  }
-
-  .statValue {
-    font-size: 1.5rem;
-  }
-
-  .progressRing {
-    width: 76px;
-    height: 76px;
-  }
-
-  .progressRingNumber {
-    font-size: 1.125rem;
-  }
-
-  .matchCardInner {
-    padding: 18px 16px;
-  }
-
-  .cardAvatar,
-  .cardAvatarPlaceholder {
-    width: 96px;
-    height: 96px;
-  }
-
-  .cardAvatarPlaceholder {
-    font-size: 2.25rem;
-  }
-
-  .profileSection h2 {
-    font-size: 1.25rem;
-  }
 
   .actions {
-    gap: 10px;
+    gap: 14px;
   }
 
   .rejectBtn,
   .likeBtn {
-    padding: 14px 16px;
-    font-size: 0.875rem;
+    padding: 18px 24px;
+    font-size: 1rem;
   }
 
   .matchPopup {
-    padding: 28px 18px 24px;
+    padding: 36px 24px 28px;
   }
 
   .profileDetailModal {
-    padding: 24px 16px;
-  }
-
-  .profileDetailHeader {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .profileDetailLocation {
-    justify-content: center;
-  }
-
-  .profileDetailBadges {
-    justify-content: center;
+    padding: 28px 20px;
   }
 }
 
