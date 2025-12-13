@@ -5,6 +5,46 @@ import { useWebSocket } from "../../contexts/WebSocketContext";
 import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
 import { storage } from "../../shared/utils/storage";
 import { getConversations } from "../../shared/api/matchChat";
+
+/**
+ * Check if a user object indicates premium status
+ * Centralized logic for premium detection
+ */
+const checkPremiumStatus = (userData, cachedSubscription = null) => {
+  if (!userData && !cachedSubscription) return false;
+
+  // Check user data properties
+  if (userData) {
+    const userIsPremium =
+      userData?.subscription?.tier === 'premium' ||
+      userData?.subscription?.hasSubscription === true ||
+      userData?.isPremium === true ||
+      userData?.tier === 'premium' ||
+      userData?.subscriptionTier === 'premium' ||
+      userData?.plan === 'premium' ||
+      userData?.role === 'premium' ||
+      userData?.hasPremium === true ||
+      userData?.premium === true ||
+      userData?.hasMatches === true ||
+      userData?.canMatch === true;
+
+    if (userIsPremium) return true;
+  }
+
+  // Check cached subscription
+  if (cachedSubscription) {
+    try {
+      const subscription = typeof cachedSubscription === 'string'
+        ? JSON.parse(cachedSubscription)
+        : cachedSubscription;
+      return subscription?.tier === 'premium' || subscription?.hasSubscription === true;
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
+};
 import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
 import UnifiedChatPanel from "../Chat/UnifiedChatPanel.jsx";
@@ -49,31 +89,10 @@ export default function Navbar() {
     }
   });
   const [isPremium, setIsPremium] = useState(() => {
-    // Initialiser avec la valeur du localStorage
     try {
       const user = storage.get('user');
-      if (user) {
-        // Vérifier toutes les propriétés possibles pour le premium
-        return user?.subscription?.tier === 'premium' ||
-               user?.subscription?.hasSubscription === true ||
-               user?.isPremium === true ||
-               user?.tier === 'premium' ||
-               user?.subscriptionTier === 'premium' ||
-               user?.plan === 'premium' ||
-               user?.hasPremium === true ||
-               user?.premium === true;
-      }
-      // Vérifier aussi le cache subscriptionStatus
       const cachedSub = storage.get('subscriptionStatus');
-      if (cachedSub) {
-        try {
-          const subscription = typeof cachedSub === 'string' ? JSON.parse(cachedSub) : cachedSub;
-          return subscription?.tier === 'premium' || subscription?.hasSubscription === true;
-        } catch {
-          return false;
-        }
-      }
-      return false;
+      return checkPremiumStatus(user, cachedSub);
     } catch {
       return false;
     }
@@ -98,28 +117,8 @@ export default function Navbar() {
 
     // Vérifier aussi le statut premium depuis le cache
     if (hasUser) {
-      const userIsPremium = user?.subscription?.tier === 'premium' ||
-                           user?.subscription?.hasSubscription === true ||
-                           user?.isPremium === true ||
-                           user?.tier === 'premium' ||
-                           user?.subscriptionTier === 'premium' ||
-                           user?.plan === 'premium' ||
-                           user?.hasPremium === true ||
-                           user?.premium === true;
-
-      // Vérifier aussi le cache subscriptionStatus
-      let cachedPremium = false;
       const cachedSub = storage.get('subscriptionStatus');
-      if (cachedSub) {
-        try {
-          const subscription = typeof cachedSub === 'string' ? JSON.parse(cachedSub) : cachedSub;
-          cachedPremium = subscription?.tier === 'premium' || subscription?.hasSubscription === true;
-        } catch {
-          cachedPremium = false;
-        }
-      }
-
-      const finalPremium = userIsPremium || cachedPremium;
+      const finalPremium = checkPremiumStatus(user, cachedSub);
       if (finalPremium !== isPremium) {
         setIsPremium(finalPremium);
       }
@@ -264,48 +263,21 @@ export default function Navbar() {
 
           setIsLoggedIn(true);
 
-          // Vérifier toutes les propriétés possibles pour le premium
-          const userHasPremium = userData?.subscription?.tier === 'premium' ||
-                                userData?.subscription?.hasSubscription === true ||
-                                userData?.isPremium === true ||
-                                userData?.tier === 'premium' ||
-                                userData?.subscriptionTier === 'premium' ||
-                                userData?.plan === 'premium' ||
-                                userData?.role === 'premium' ||
-                                userData?.hasPremium === true ||
-                                userData?.premium === true ||
-                                // Check si l'utilisateur a des matchs (signe de premium)
-                                userData?.hasMatches === true ||
-                                userData?.canMatch === true;
-
-
-          // Vérifier aussi dans le cache storage comme source de vérité alternative
-          let cachedPremium = false;
-          try {
-            const cachedSub = storage.get('subscriptionStatus');
-            if (cachedSub) {
-              const subscription = JSON.parse(cachedSub);
-              cachedPremium = subscription?.tier === 'premium' || subscription?.hasSubscription === true;
-            }
-          } catch {
-            cachedPremium = false;
-          }
-
-          // Si premium trouvé dans les données OU dans le cache
-          const finalPremiumStatus = userHasPremium || cachedPremium;
+          // Check premium status using centralized helper
+          const cachedSub = storage.get('subscriptionStatus');
+          const finalPremiumStatus = checkPremiumStatus(userData, cachedSub);
 
           if (finalPremiumStatus) {
             setIsPremium(true);
-            // Mettre à jour le cache si pas déjà fait
-            if (!cachedPremium) {
+            // Update cache if not already set
+            if (!cachedSub) {
               storage.set('subscriptionStatus', JSON.stringify({
                 tier: 'premium',
                 hasSubscription: true
               }));
             }
           } else {
-            // Pour les utilisateurs qui peuvent avoir premium mais non détecté
-            // Vérifier s'ils ont déjà utilisé des fonctionnalités premium
+            // Check if user has previously used premium features
             const hasUsedPremiumFeatures = localStorage.getItem('hasUsedMatching') === 'true';
             if (hasUsedPremiumFeatures) {
               setIsPremium(true);
@@ -536,13 +508,8 @@ export default function Navbar() {
   // Close chat history and go back to navigation
   const closeChatHistory = useCallback(() => {
     setCurrentView('navigation');
-    if (isDesktop) {
-      closeChat();
-    } else {
-      setOpen(false);
-      closeChat();
-    }
-  }, [isDesktop, closeChat]);
+    closeChat();
+  }, [closeChat]);
 
   // Handle notifications button click - open notifications panel on mobile
   const handleNotificationsClick = useCallback(() => {
@@ -569,7 +536,11 @@ export default function Navbar() {
       )}
 
       {/* Main Dock Navigation - Always visible */}
-      <nav className={`${styles.dock} ${open && !isDesktop ? styles.dockExpanded : ''}`} role="navigation" aria-label="Main navigation">
+      <nav
+        className={`${styles.dock} ${open && !isDesktop ? styles.dockExpanded : ''}`}
+        role="navigation"
+        aria-label="Main navigation"
+      >
         {/* Mobile Expanded Content */}
         {open && !isDesktop && (
           <>
@@ -835,8 +806,8 @@ export default function Navbar() {
         {/* Separator for desktop only */}
         {isDesktop && <div className={styles.separator} />}
 
-        {/* Main navigation - always visible */}
-        <div className={styles.mainNav}>
+        {/* Main navigation - hidden when in active chat on mobile */}
+        <div className={`${styles.mainNav} ${currentView === 'activeChat' && !isDesktop ? styles.mainNavHidden : ''}`}>
           {mainLinks.map((link, index) => {
             const Element = link.isAction ? 'button' : 'a';
             const props = link.isAction ? {} : { href: link.path };
