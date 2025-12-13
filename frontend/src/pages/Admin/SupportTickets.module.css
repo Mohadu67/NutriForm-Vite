@@ -162,34 +162,54 @@
 }
 
 .ticketItem {
-  padding: 15px;
+  padding: 16px;
   border: 2px solid #e0e0e0;
-  border-radius: 10px;
+  border-radius: 12px;
   margin-bottom: 12px;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .ticketItem:hover {
   border-color: #f7b186;
   background: #fff8f4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.15);
 }
 
 .ticketItemActive {
   border-color: #f7b186;
   background: #fff3eb;
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.2);
 }
 
-.ticketItem h4 {
-  font-size: 1rem;
-  font-weight: 600;
+.ticketHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ticketUserName {
+  font-size: 1.1rem;
+  font-weight: 700;
   color: #333;
-  margin: 10px 0 8px 0;
+}
+
+.ticketMessage {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 12px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .ticketBadges {
   display: flex;
   gap: 8px;
-  margin-bottom: 8px;
   flex-wrap: wrap;
 }
 
@@ -240,15 +260,10 @@
   color: #c62828;
 }
 
-.ticketMeta {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 4px;
-}
-
 .ticketDate {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #999;
+  white-space: nowrap;
 }
 
 /* Ticket Detail */
@@ -263,26 +278,41 @@
 }
 
 .detailHeader {
-  padding: 20px;
+  padding: 24px;
   border-bottom: 1px solid #e0e0e0;
   display: flex;
   justify-content: space-between;
-  align-items: start;
-  gap: 15px;
-  background: #f8f9fa;
+  align-items: flex-start;
+  gap: 20px;
+  background: linear-gradient(135deg, #fff8f4 0%, #fff3eb 100%);
   border-radius: 12px 12px 0 0;
 }
 
-.detailHeader h3 {
-  font-size: 1.3rem;
+.detailInfo {
+  flex: 1;
+}
+
+.detailUserName {
+  font-size: 1.5rem;
   font-weight: 700;
   color: #333;
-  margin: 0 0 8px 0;
+  margin-bottom: 8px;
+}
+
+.detailMessage {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid #f7b186;
 }
 
 .detailMeta {
-  font-size: 0.95rem;
-  color: #666;
+  font-size: 0.85rem;
+  color: #888;
 }
 
 .actionButtons {
@@ -581,26 +611,35 @@
     font-size: 0.75rem;
   }
 
-  .ticketMeta {
-    font-size: 0.85rem;
+  .ticketUserName {
+    font-size: 1rem;
+  }
+
+  .ticketMessage {
+    font-size: 0.9rem;
   }
 
   .ticketDate {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
   .detailHeader {
     flex-direction: column;
-    padding: 15px;
+    padding: 16px;
     gap: 12px;
   }
 
-  .detailHeader h3 {
-    font-size: 1.15rem;
+  .detailUserName {
+    font-size: 1.25rem;
+  }
+
+  .detailMessage {
+    font-size: 0.95rem;
+    padding: 10px 14px;
   }
 
   .detailMeta {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
 
   .actionButtons {

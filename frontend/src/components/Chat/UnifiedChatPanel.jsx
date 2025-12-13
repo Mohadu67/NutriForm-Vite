@@ -10,6 +10,8 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [sending, setSending] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -19,6 +21,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
   const [showMessageOptions, setShowMessageOptions] = useState(null);
 
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const initialMessageSentRef = useRef(false);
   const hasLoadedInitialMessages = useRef(false);
 
@@ -29,16 +32,17 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
   // WebSocket context
   const { joinConversation, leaveConversation, on, isConnected } = useWebSocket();
 
-  // Charger les messages initiaux
+  // Charger les messages initiaux (avec pagination)
   const loadInitialMessages = useCallback(async () => {
     if (!conversationIdToUse) return;
 
     try {
       setLoading(true);
       let msgs = [];
+      let moreAvailable = false;
 
       if (isMatchChat) {
-        const { messages: matchMsgs } = await getMessages(conversationIdToUse, { limit: 100 });
+        const { messages: matchMsgs } = await getMessages(conversationIdToUse, { limit: 30 });
         msgs = matchMsgs || [];
 
         // Trouver l'ID de l'utilisateur courant
@@ -47,8 +51,9 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
         const myUserId = participants.find(p => p._id !== otherUserId)?._id || participants.find(p => p !== otherUserId);
         setCurrentUserId(myUserId);
       } else {
-        const { messages: aiMsgs } = await getChatHistory(conversationIdToUse);
+        const { messages: aiMsgs, hasMore: more } = await getChatHistory(conversationIdToUse, { limit: 20 });
         msgs = aiMsgs || [];
+        moreAvailable = more;
 
         // Vérifier escalation
         const hasEscalated = msgs.some(msg => msg.escalated === true);
@@ -58,6 +63,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       }
 
       setMessages(msgs);
+      setHasMore(moreAvailable);
       hasLoadedInitialMessages.current = true;
 
       // Marquer comme lus si match chat
@@ -70,6 +76,55 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       setLoading(false);
     }
   }, [conversationIdToUse, isMatchChat, matchConversation]);
+
+  // Charger plus de messages (scroll vers le haut)
+  const loadMoreMessages = useCallback(async () => {
+    if (!conversationIdToUse || loadingMore || !hasMore || isMatchChat) return;
+
+    const firstMessage = messages[0];
+    if (!firstMessage?._id) return;
+
+    try {
+      setLoadingMore(true);
+
+      // Sauvegarder la hauteur de scroll avant de charger
+      const container = messagesContainerRef.current;
+      const previousScrollHeight = container?.scrollHeight || 0;
+
+      const { messages: olderMsgs, hasMore: more } = await getChatHistory(conversationIdToUse, {
+        limit: 20,
+        before: firstMessage._id
+      });
+
+      if (olderMsgs && olderMsgs.length > 0) {
+        setMessages(prev => [...olderMsgs, ...prev]);
+        setHasMore(more);
+
+        // Restaurer la position de scroll après le rendu
+        requestAnimationFrame(() => {
+          if (container) {
+            const newScrollHeight = container.scrollHeight;
+            container.scrollTop = newScrollHeight - previousScrollHeight;
+          }
+        });
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      // Erreur silencieuse
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [conversationIdToUse, loadingMore, hasMore, messages, isMatchChat]);
+
+  // Détection du scroll vers le haut pour charger plus
+  const handleScroll = useCallback((e) => {
+    const container = e.target;
+    // Si proche du haut (moins de 100px), charger plus
+    if (container.scrollTop < 100 && hasMore && !loadingMore) {
+      loadMoreMessages();
+    }
+  }, [hasMore, loadingMore, loadMoreMessages]);
 
   // Vérifier authentification
   useEffect(() => {
@@ -204,26 +259,27 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
         const response = await sendChatMessage(content, conversationId);
 
-        // Gérer différents formats de réponse
-        let botContent = '';
-        if (response.botResponse) {
-          botContent = typeof response.botResponse === 'string'
-            ? response.botResponse
-            : response.botResponse?.content || '';
-        } else if (response.message) {
-          // Fallback sur message si botResponse n'existe pas
-          botContent = typeof response.message === 'string'
-            ? response.message
-            : response.message?.content || '';
+        // Si escaladé, pas de réponse bot à afficher
+        if (response.escalated) {
+          setEscalated(true);
+          // Ne pas ajouter de message bot - l'utilisateur attend une réponse humaine
         } else {
-          botContent = "Désolé, je n'ai pas pu générer une réponse.";
-        }
+          // Gérer différents formats de réponse
+          let botContent = '';
+          if (response.botResponse) {
+            botContent = typeof response.botResponse === 'string'
+              ? response.botResponse
+              : response.botResponse?.content || '';
+          } else {
+            botContent = "Désolé, je n'ai pas pu générer une réponse.";
+          }
 
-        setMessages(prev => [...prev, {
-          role: 'bot',
-          content: botContent,
-          createdAt: new Date()
-        }]);
+          setMessages(prev => [...prev, {
+            role: 'bot',
+            content: botContent,
+            createdAt: new Date()
+          }]);
+        }
 
         const newConvId = response.conversationId;
 
@@ -363,7 +419,11 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       )}
 
       {/* Messages */}
-      <div className={styles.chatMessages}>
+      <div
+        className={styles.chatMessages}
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+      >
         {loading ? (
           <div className={styles.loadingState}>
             <div className={styles.spinner}></div>
@@ -374,7 +434,21 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
             <p>👋 {isMatchChat ? 'Commencez la conversation !' : 'Pose-moi une question !'}</p>
           </div>
         ) : (
-          messages.map((msg, index) => {
+          <>
+            {/* Indicateur de chargement de messages plus anciens */}
+            {loadingMore && (
+              <div className={styles.loadingMore}>
+                <div className={styles.miniSpinner}></div>
+                <span>Chargement...</span>
+              </div>
+            )}
+            {/* Indicateur qu'il y a plus de messages */}
+            {hasMore && !loadingMore && (
+              <div className={styles.hasMoreIndicator}>
+                <span>↑ Scrollez pour voir plus</span>
+              </div>
+            )}
+            {messages.map((msg, index) => {
             const isUserMessage = isMatchChat
               ? (msg.senderId?._id === currentUserId || msg.senderId === currentUserId)
               : msg.role === 'user';
@@ -440,7 +514,8 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
                 </div>
               </div>
             );
-          })
+          })}
+          </>
         )}
         <div ref={messagesEndRef} />
       </div>

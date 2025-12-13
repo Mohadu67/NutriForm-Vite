@@ -1,15 +1,27 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import styles from "./RepeatSessionModal.module.css";
 
 export default function RepeatSessionModal({ session, onAccept, onDecline }) {
 
+  // Bloquer le scroll du body quand le modal est ouvert
   useEffect(() => {
-    // Empêcher le scroll du body quand le modal est ouvert
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, []);
+    if (session) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [session]);
 
   if (!session) return null;
 
@@ -31,7 +43,7 @@ export default function RepeatSessionModal({ session, onAccept, onDecline }) {
     ? Math.round(session.durationSec / 60)
     : null;
 
-  return (
+  const modalContent = (
     <div className={styles.overlay} onClick={onDecline}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
@@ -91,4 +103,6 @@ export default function RepeatSessionModal({ session, onAccept, onDecline }) {
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

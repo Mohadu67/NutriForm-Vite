@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import styles from "./EchauffementModal.module.css";
 
 const getWarmupData = (muscleGroups, warmupDatabase) => {
@@ -89,11 +90,27 @@ const getWarmupData = (muscleGroups, warmupDatabase) => {
 
 export default function EchauffementModal({ onStart, onSkip, muscleGroups = [] }) {
   const [warmupDatabase, setWarmupDatabase] = useState(null);
-  const [warmupTime, setWarmupTime] = useState(300); 
+  const [warmupTime, setWarmupTime] = useState(300);
   const [isWarmingUp, setIsWarmingUp] = useState(false);
   const [timerInterval, setTimerInterval] = useState(null);
 
-  
+  // Bloquer le scroll du body quand le modal est ouvert
+  useEffect(() => {
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
+
   useEffect(() => {
     fetch('/data/warmups.json')
       .then(res => res.json())
@@ -148,7 +165,7 @@ export default function EchauffementModal({ onStart, onSkip, muscleGroups = [] }
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  return (
+  const modalContent = (
     <div className={styles.overlay}>
       <div className={styles.modal}>
         {!isWarmingUp ? (
@@ -224,4 +241,6 @@ export default function EchauffementModal({ onStart, onSkip, muscleGroups = [] }
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

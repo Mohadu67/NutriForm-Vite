@@ -1,6 +1,7 @@
 const SupportTicket = require('../models/SupportTicket');
 const ChatMessage = require('../models/ChatMessage');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const logger = require('../utils/logger.js');
 
 /**
@@ -111,6 +112,32 @@ async function replyToTicket(req, res) {
 
     const populatedMessage = await ChatMessage.findById(adminMessage._id)
       .populate('adminId', 'pseudo prenom');
+
+    // Émettre le message via WebSocket pour temps réel
+    const io = req.app.get('io');
+    if (io && io.emitNewMessage) {
+      io.emitNewMessage(ticket.conversationId, populatedMessage);
+    }
+
+    // Notifier l'utilisateur de la réponse du support
+    try {
+      const notification = await Notification.create({
+        userId: ticket.userId,
+        type: 'support',
+        title: '💬 Réponse du support',
+        message: `${message.substring(0, 50)}${message.length > 50 ? '...' : ''}`,
+        metadata: { ticketId: ticket._id, conversationId: ticket.conversationId }
+      });
+
+      // Envoyer la notification en temps réel via WebSocket
+      if (io && io.notifyUser) {
+        io.notifyUser(ticket.userId.toString(), 'new_notification', notification);
+      }
+
+      logger.info(`📢 Notification envoyée à l'utilisateur ${ticket.userId} pour réponse support`);
+    } catch (notifError) {
+      logger.error('Erreur notification user:', notifError);
+    }
 
     res.status(200).json({
       message: populatedMessage,
