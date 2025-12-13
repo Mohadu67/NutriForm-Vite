@@ -356,6 +356,7 @@ export default function ProgramsAdmin() {
               <label>Cycles d'entraînement</label>
               <CycleEditor
                 cycles={formData.cycles}
+                programType={formData.type}
                 onChange={(updatedCycles) => setFormData(prev => ({ ...prev, cycles: updatedCycles }))}
               />
             </div>

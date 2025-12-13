@@ -173,7 +173,15 @@
   gap: 0.375rem;
 }
 
-.formGroup label {
+.formGroupFull {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  grid-column: 1 / -1;
+}
+
+.formGroup label,
+.formGroupFull label {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-text);
@@ -200,6 +208,63 @@
 .formGroup input::placeholder {
   color: var(--color-text-secondary);
   opacity: 0.6;
+}
+
+/* ============================================
+   ERROR STATES
+   ============================================ */
+
+.hasError label {
+  color: #ef4444 !important;
+  font-weight: 700;
+}
+
+.hasError label::after {
+  content: ' ⚠';
+  color: #ef4444;
+}
+
+.errorMsg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ef4444;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: linear-gradient(145deg, #fef2f2, #fee2e2);
+  border-radius: 8px;
+  border-left: 3px solid #ef4444;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.inputError {
+  border-color: #ef4444 !important;
+  background: linear-gradient(145deg, #fef2f2, #fee2e2) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-3px); }
+  40%, 80% { transform: translateX(3px); }
+}
+
+.inputError:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15) !important;
 }
 
 /* ============================================
@@ -255,6 +320,17 @@
 
   .formGroup input::placeholder {
     color: var(--color-text-dark-secondary);
+  }
+
+  .errorMsg {
+    background: linear-gradient(145deg, #450a0a, #7f1d1d);
+    border-color: #ef4444;
+    color: #fca5a5;
+  }
+
+  .inputError {
+    background: linear-gradient(145deg, #450a0a, #7f1d1d) !important;
+    border-color: #ef4444 !important;
   }
 }
 

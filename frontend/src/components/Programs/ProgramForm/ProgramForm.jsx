@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styles from './ProgramForm.module.css';
 import { PlusIcon, XIcon, ArrowUpIcon, ArrowDownIcon } from '../ProgramIcons';
+import ExerciseSelector from '../ExerciseSelector/ExerciseSelector';
 
 export default function ProgramForm({ onSave, onCancel, initialData = null, isAdmin = false }) {
   const [formData, setFormData] = useState(initialData || {
@@ -21,7 +22,10 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
 
   const [currentCycle, setCurrentCycle] = useState({
     type: 'exercise',
+    exerciseId: '',
     exerciseName: '',
+    exerciseImage: '',
+    exerciseType: '',
     durationSec: '',
     intensity: 5,
     restSec: '',
@@ -97,8 +101,27 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
   };
 
   const handleAddCycle = () => {
-    if (currentCycle.type === 'exercise' && !currentCycle.exerciseName) {
-      setErrors({ cycle: 'Le nom de l\'exercice est requis' });
+    const cycleErrors = {};
+
+    if (currentCycle.type === 'exercise') {
+      if (!currentCycle.exerciseName) {
+        cycleErrors.exerciseName = 'Sélectionne un exercice';
+      }
+      if (!currentCycle.durationSec || parseInt(currentCycle.durationSec) < 5) {
+        cycleErrors.durationSec = 'Durée min. 5 secondes';
+      }
+      if (!currentCycle.intensity || parseInt(currentCycle.intensity) < 1 || parseInt(currentCycle.intensity) > 10) {
+        cycleErrors.intensity = 'Intensité entre 1 et 10';
+      }
+    } else {
+      // rest ou transition
+      if (!currentCycle.restSec || parseInt(currentCycle.restSec) < 5) {
+        cycleErrors.restSec = 'Durée min. 5 secondes';
+      }
+    }
+
+    if (Object.keys(cycleErrors).length > 0) {
+      setErrors(prev => ({ ...prev, ...cycleErrors }));
       return;
     }
 
@@ -106,14 +129,17 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
       order: formData.cycles.length + 1,
       type: currentCycle.type,
       ...(currentCycle.type === 'exercise' && {
+        exerciseId: currentCycle.exerciseId,
         exerciseName: currentCycle.exerciseName,
-        durationSec: parseInt(currentCycle.durationSec) || 0,
+        exerciseImage: currentCycle.exerciseImage,
+        exerciseType: currentCycle.exerciseType,
+        durationSec: parseInt(currentCycle.durationSec),
         intensity: parseInt(currentCycle.intensity)
       }),
-      ...(currentCycle.type === 'rest' || currentCycle.type === 'transition') && {
-        restSec: parseInt(currentCycle.restSec) || 0,
+      ...((currentCycle.type === 'rest' || currentCycle.type === 'transition') && {
+        restSec: parseInt(currentCycle.restSec),
         notes: currentCycle.notes
-      }
+      })
     };
 
     setFormData(prev => ({
@@ -124,7 +150,10 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
     // Reset current cycle
     setCurrentCycle({
       type: 'exercise',
+      exerciseId: '',
       exerciseName: '',
+      exerciseImage: '',
+      exerciseType: '',
       durationSec: '',
       intensity: 5,
       restSec: '',
@@ -416,54 +445,84 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
 
             {currentCycle.type === 'exercise' ? (
               <>
-                <div className={styles.formGroup}>
-                  <label>Nom de l'exercice *</label>
-                  <input
-                    type="text"
-                    value={currentCycle.exerciseName}
-                    onChange={(e) => setCurrentCycle(prev => ({ ...prev, exerciseName: e.target.value }))}
-                    placeholder="Ex: Burpees"
-                    className={errors.cycle ? styles.error : ''}
+                <div className={`${styles.formGroup} ${errors.exerciseName ? styles.hasError : ''}`}>
+                  <label>Exercice *</label>
+                  <ExerciseSelector
+                    programType={formData.type}
+                    value={{
+                      exerciseId: currentCycle.exerciseId,
+                      exerciseName: currentCycle.exerciseName,
+                      exerciseImage: currentCycle.exerciseImage
+                    }}
+                    onChange={(selected) => {
+                      setCurrentCycle(prev => ({
+                        ...prev,
+                        exerciseId: selected.exerciseId,
+                        exerciseName: selected.exerciseName,
+                        exerciseImage: selected.exerciseImage,
+                        exerciseType: selected.exerciseType
+                      }));
+                      setErrors(prev => ({ ...prev, exerciseName: null }));
+                    }}
+                    hasError={!!errors.exerciseName}
                   />
+                  {errors.exerciseName && <span className={styles.errorMsg}>{errors.exerciseName}</span>}
                 </div>
 
                 <div className={styles.formRow}>
-                  <div className={styles.formGroup}>
-                    <label>Durée (secondes)</label>
+                  <div className={`${styles.formGroup} ${errors.durationSec ? styles.hasError : ''}`}>
+                    <label>Durée (secondes) *</label>
                     <input
                       type="number"
                       value={currentCycle.durationSec}
-                      onChange={(e) => setCurrentCycle(prev => ({ ...prev, durationSec: e.target.value }))}
-                      min="0"
+                      onChange={(e) => {
+                        setCurrentCycle(prev => ({ ...prev, durationSec: e.target.value }));
+                        setErrors(prev => ({ ...prev, durationSec: null }));
+                      }}
+                      min="5"
+                      placeholder="Ex: 30"
+                      className={errors.durationSec ? styles.inputError : ''}
                     />
+                    {errors.durationSec && <span className={styles.errorMsg}>{errors.durationSec}</span>}
                   </div>
 
-                  <div className={styles.formGroup}>
-                    <label>Intensité (1-10)</label>
+                  <div className={`${styles.formGroup} ${errors.intensity ? styles.hasError : ''}`}>
+                    <label>Intensité (1-10) *</label>
                     <input
                       type="number"
                       value={currentCycle.intensity}
-                      onChange={(e) => setCurrentCycle(prev => ({ ...prev, intensity: e.target.value }))}
+                      onChange={(e) => {
+                        setCurrentCycle(prev => ({ ...prev, intensity: e.target.value }));
+                        setErrors(prev => ({ ...prev, intensity: null }));
+                      }}
                       min="1"
                       max="10"
+                      className={errors.intensity ? styles.inputError : ''}
                     />
+                    {errors.intensity && <span className={styles.errorMsg}>{errors.intensity}</span>}
                   </div>
                 </div>
               </>
             ) : (
               <>
-                <div className={styles.formGroup}>
-                  <label>Durée du repos (secondes)</label>
+                <div className={`${styles.formGroup} ${errors.restSec ? styles.hasError : ''}`}>
+                  <label>Durée du repos (secondes) *</label>
                   <input
                     type="number"
                     value={currentCycle.restSec}
-                    onChange={(e) => setCurrentCycle(prev => ({ ...prev, restSec: e.target.value }))}
-                    min="0"
+                    onChange={(e) => {
+                      setCurrentCycle(prev => ({ ...prev, restSec: e.target.value }));
+                      setErrors(prev => ({ ...prev, restSec: null }));
+                    }}
+                    min="5"
+                    placeholder="Ex: 15"
+                    className={errors.restSec ? styles.inputError : ''}
                   />
+                  {errors.restSec && <span className={styles.errorMsg}>{errors.restSec}</span>}
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Notes</label>
+                  <label>Notes (optionnel)</label>
                   <input
                     type="text"
                     value={currentCycle.notes}
@@ -487,7 +546,13 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
                 <div key={index} className={styles.cycleItem}>
                   <div className={styles.cycleOrder}>#{cycle.order}</div>
                   <div className={styles.cycleContent}>
-                    <div className={styles.cycleType}>{cycle.type === 'exercise' ? '🏋️' : cycle.type === 'rest' ? '😌' : '➡️'}</div>
+                    {cycle.type === 'exercise' && cycle.exerciseImage ? (
+                      <img src={cycle.exerciseImage} alt="" className={styles.cycleImage} />
+                    ) : (
+                      <div className={styles.cycleType}>
+                        {cycle.type === 'exercise' ? '🏋️' : cycle.type === 'rest' ? '😌' : '➡️'}
+                      </div>
+                    )}
                     <div className={styles.cycleDetails}>
                       <strong>
                         {cycle.type === 'exercise'
