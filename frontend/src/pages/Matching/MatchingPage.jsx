@@ -4,6 +4,8 @@ import { toast } from 'sonner';
 import { useChat } from '../../contexts/ChatContext';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
+import ProgressRing from '../../components/ProgressRing/ProgressRing';
+import ProfileDetailModal from '../../components/ProfileDetailModal/ProfileDetailModal';
 import { getMatchSuggestions, likeProfile, rejectProfile, getMutualMatches, unlikeProfile, getRejectedProfiles, relikeProfile } from '../../shared/api/matching';
 import { getMyProfile } from '../../shared/api/profile';
 import { getOrCreateConversation } from '../../shared/api/matchChat';
@@ -16,9 +18,6 @@ import {
   XIcon,
   MailIcon,
   UsersIcon,
-  CalendarIcon,
-  StarIcon,
-  DumbbellIcon,
   CheckCircleIcon,
   TrashIcon,
   TargetIcon
@@ -48,178 +47,7 @@ const FITNESS_LEVEL_LABELS = {
   expert: 'Expert'
 };
 
-// Composant particules flottantes
-const FloatingParticles = () => {
-  const particles = Array.from({ length: 20 }, (_, i) => ({
-    id: i,
-    left: Math.random() * 100,
-    animationDelay: Math.random() * 5,
-    animationDuration: 10 + Math.random() * 10,
-    size: 2 + Math.random() * 4
-  }));
-
-  return (
-    <div className={styles.particlesContainer}>
-      {particles.map(particle => (
-        <div
-          key={particle.id}
-          className={styles.particle}
-          style={{
-            left: `${particle.left}%`,
-            animationDelay: `${particle.animationDelay}s`,
-            animationDuration: `${particle.animationDuration}s`,
-            width: `${particle.size}px`,
-            height: `${particle.size}px`,
-          }}
-        />
-      ))}
-    </div>
-  );
-};
-
-// Composant progress ring circulaire
-const ProgressRing = ({ current, total }) => {
-  const radius = 40;
-  const circumference = 2 * Math.PI * radius;
-  const progress = total > 0 ? (current / total) * 100 : 0;
-  const offset = circumference - (progress / 100) * circumference;
-
-  return (
-    <div className={styles.progressRing}>
-      <svg width="100" height="100">
-        <circle
-          className={styles.progressRingBg}
-          cx="50"
-          cy="50"
-          r={radius}
-          strokeWidth="6"
-        />
-        <circle
-          className={styles.progressRingCircle}
-          cx="50"
-          cy="50"
-          r={radius}
-          strokeWidth="6"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-        />
-      </svg>
-      <div className={styles.progressRingText}>
-        <span className={styles.progressRingNumber}>{current}</span>
-        <span className={styles.progressRingLabel}>restants</span>
-      </div>
-    </div>
-  );
-};
-
-// Composant ProfileDetailModal - Affiche le profil complet
-const ProfileDetailModal = ({ user, matchId, matchScore, onClose, onStartChat }) => {
-  if (!user) return null;
-
-  return (
-    <div className={styles.profileDetailOverlay} onClick={onClose}>
-      <div className={styles.profileDetailModal} onClick={e => e.stopPropagation()}>
-        <button className={styles.profileDetailClose} onClick={onClose}>
-          <XIcon size={24} />
-        </button>
-
-        <div className={styles.profileDetailHeader}>
-          <div className={styles.profileDetailAvatarWrapper}>
-            {(user.photo || user.profilePicture) ? (
-              <img src={user.photo || user.profilePicture} alt={user.username} className={styles.profileDetailAvatar} />
-            ) : (
-              <div className={styles.profileDetailAvatarPlaceholder}>
-                {user.username?.[0]?.toUpperCase() || '?'}
-              </div>
-            )}
-            {matchScore && (
-              <div className={styles.profileDetailScoreBadge}>{matchScore}%</div>
-            )}
-          </div>
-
-          <div className={styles.profileDetailInfo}>
-            <h2>{user.username}{user.age ? `, ${user.age} ans` : ''}</h2>
-            <p className={styles.profileDetailLocation}>
-              <GlobeIcon size={16} />
-              {user.location?.city || 'Ville inconnue'}
-              {user.distance && (
-                <span className={styles.profileDetailDistance}>
-                  à {user.distance < 1 ? '< 1' : Math.round(user.distance)} km
-                </span>
-              )}
-            </p>
-            <div className={styles.profileDetailBadges}>
-              {user.isVerified && (
-                <span className={styles.verifiedBadgeSmall}>
-                  <CheckCircleIcon size={14} /> Vérifié
-                </span>
-              )}
-              {user.fitnessLevel && (
-                <span className={styles.levelBadgeSmall}>
-                  <DumbbellIcon size={14} /> {FITNESS_LEVEL_LABELS[user.fitnessLevel]}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {user.bio && (
-          <div className={styles.profileDetailSection}>
-            <h4>À propos</h4>
-            <p>{user.bio}</p>
-          </div>
-        )}
-
-        {user.workoutTypes?.length > 0 && (
-          <div className={styles.profileDetailSection}>
-            <h4>Sports pratiqués</h4>
-            <div className={styles.profileDetailTags}>
-              {user.workoutTypes.map((sport, idx) => (
-                <span key={idx} className={styles.profileDetailTag}>
-                  {WORKOUT_ICONS[sport] || '🎯'} {sport}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {user.availability?.length > 0 && (
-          <div className={styles.profileDetailSection}>
-            <h4>Disponibilités</h4>
-            <div className={styles.profileDetailTags}>
-              {user.availability.map((slot, idx) => (
-                <span key={idx} className={styles.profileDetailTag}>
-                  <CalendarIcon size={14} /> {slot}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {user.goals?.length > 0 && (
-          <div className={styles.profileDetailSection}>
-            <h4>Objectifs</h4>
-            <div className={styles.profileDetailTags}>
-              {user.goals.map((goal, idx) => (
-                <span key={idx} className={styles.profileDetailTag}>
-                  <StarIcon size={14} /> {goal}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {onStartChat && matchId && (
-          <div className={styles.profileDetailActions}>
-            <button className={styles.profileDetailChatBtn} onClick={() => onStartChat(matchId, user._id)}>
-              <MailIcon size={20} /> Envoyer un message
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+// Background animé géré par CSS (voir particlesContainer)
 
 export default function MatchingPageFuturistic() {
   const navigate = useNavigate();
@@ -509,7 +337,7 @@ export default function MatchingPageFuturistic() {
       <>
         <Navbar />
         <div className={styles.container}>
-          <FloatingParticles />
+          <div className={styles.particlesContainer} aria-hidden="true" />
           <div className={styles.loadingState}>
             <div className={styles.spinner}></div>
             <p>Recherche de partenaires parfaits...</p>
@@ -524,7 +352,7 @@ export default function MatchingPageFuturistic() {
     <>
       <Navbar />
       <div className={styles.container}>
-        <FloatingParticles />
+        <div className={styles.particlesContainer} aria-hidden="true" />
 
         <div className={styles.header}>
           <h1>Trouve ton partenaire</h1>

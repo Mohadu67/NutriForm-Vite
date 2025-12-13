@@ -1,0 +1,357 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   HARMONITH DESIGN TOKENS
+   Système de design centralisé - Version 1.0
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ═══════════════════════════════════════════════════
+     COULEURS - Palette Harmonith
+     ═══════════════════════════════════════════════════ */
+
+  /* Primary - Peach/Coral (Action) */
+  --color-primary-50: #fff8f5;
+  --color-primary-100: #fef3eb;
+  --color-primary-200: #fde4d3;
+  --color-primary-300: #fbd0b5;
+  --color-primary-400: #f9bc97;
+  --color-primary-500: #f7b186;
+  --color-primary-600: #e9a070;
+  --color-primary-700: #d4895a;
+  --color-primary-800: #b87045;
+  --color-primary-900: #8c5433;
+
+  /* Secondary - Sage Green (Selection) */
+  --color-secondary-50: #f4faf8;
+  --color-secondary-100: #e8f5f1;
+  --color-secondary-200: #d1ebe3;
+  --color-secondary-300: #b8ddd1;
+  --color-secondary-400: #9fcfbf;
+  --color-secondary-500: #86c1ad;
+  --color-secondary-600: #6db39b;
+  --color-secondary-700: #549589;
+  --color-secondary-800: #3b7777;
+  --color-secondary-900: #225965;
+
+  /* Accent - Purple (Premium/Special) */
+  --color-accent-400: #a78bfa;
+  --color-accent-500: #8b5cf6;
+  --color-accent-600: #7c3aed;
+
+  /* Neutrals */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #F7F6F2;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+
+  /* Semantic */
+  --color-success-light: #d1fae5;
+  --color-success: #10b981;
+  --color-success-dark: #059669;
+  --color-warning-light: #fef3c7;
+  --color-warning: #f59e0b;
+  --color-warning-dark: #d97706;
+  --color-danger-light: #fee2e2;
+  --color-danger: #ef4444;
+  --color-danger-dark: #dc2626;
+  --color-info-light: #dbeafe;
+  --color-info: #3b82f6;
+  --color-info-dark: #2563eb;
+
+  /* ═══════════════════════════════════════════════════
+     TYPOGRAPHIE
+     ═══════════════════════════════════════════════════ */
+
+  --font-family: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: var(--font-family);
+
+  /* Tailles */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+
+  /* Poids */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+
+  /* Line heights */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+
+  /* ═══════════════════════════════════════════════════
+     ESPACEMENTS (base 4px)
+     ═══════════════════════════════════════════════════ */
+
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* ═══════════════════════════════════════════════════
+     BORDER RADIUS
+     ═══════════════════════════════════════════════════ */
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-3xl: 2.5rem;
+  --radius-full: 9999px;
+
+  /* ═══════════════════════════════════════════════════
+     SHADOWS
+     ═══════════════════════════════════════════════════ */
+
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 4px 12px rgb(0 0 0 / 0.08);
+  --shadow-md: 0 8px 24px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 12px 40px rgb(0 0 0 / 0.12);
+  --shadow-xl: 0 20px 50px rgb(0 0 0 / 0.15);
+  --shadow-2xl: 0 25px 60px rgb(0 0 0 / 0.2);
+
+  /* Glow shadows */
+  --shadow-glow-primary: 0 8px 32px rgb(247 177 134 / 0.3);
+  --shadow-glow-primary-lg: 0 12px 48px rgb(247 177 134 / 0.4);
+  --shadow-glow-secondary: 0 8px 32px rgb(184 221 209 / 0.3);
+  --shadow-glow-success: 0 8px 32px rgb(16 185 129 / 0.3);
+  --shadow-glow-danger: 0 8px 32px rgb(239 68 68 / 0.3);
+  --shadow-glow-accent: 0 8px 32px rgb(139 92 246 / 0.3);
+
+  /* Glass effect */
+  --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.08), inset 0 1px 1px rgb(255 255 255 / 0.4);
+  --shadow-glass-hover: 0 16px 48px rgb(0 0 0 / 0.12), inset 0 1px 1px rgb(255 255 255 / 0.5);
+
+  /* ═══════════════════════════════════════════════════
+     GLASSMORPHISM
+     ═══════════════════════════════════════════════════ */
+
+  --glass-bg: rgb(255 255 255 / 0.75);
+  --glass-bg-strong: rgb(255 255 255 / 0.9);
+  --glass-bg-subtle: rgb(255 255 255 / 0.5);
+  --glass-border: rgb(255 255 255 / 0.3);
+  --glass-border-strong: rgb(255 255 255 / 0.5);
+  --glass-blur: 20px;
+  --glass-blur-lg: 40px;
+
+  /* ═══════════════════════════════════════════════════
+     TRANSITIONS & ANIMATIONS
+     ═══════════════════════════════════════════════════ */
+
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+
+  --transition-fast: var(--duration-fast) var(--ease-in-out);
+  --transition-base: var(--duration-base) var(--ease-in-out);
+  --transition-slow: var(--duration-slow) var(--ease-in-out);
+  --transition-bounce: var(--duration-slow) var(--ease-bounce);
+  --transition-spring: var(--duration-slower) var(--ease-spring);
+
+  /* ═══════════════════════════════════════════════════
+     Z-INDEX SCALE
+     ═══════════════════════════════════════════════════ */
+
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 500;
+  --z-fixed: 1000;
+  --z-modal-backdrop: 1500;
+  --z-modal: 2000;
+  --z-popover: 2500;
+  --z-tooltip: 3000;
+  --z-max: 9999;
+
+  /* ═══════════════════════════════════════════════════
+     BREAKPOINTS (pour référence)
+     ═══════════════════════════════════════════════════ */
+
+  --breakpoint-xs: 375px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+}
+
+/* ═══════════════════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════════════════ */
+
+.dark,
+[data-theme="dark"] {
+  --color-neutral-0: #0c0e12;
+  --color-neutral-50: #12151b;
+  --color-neutral-100: #1e2330;
+  --color-neutral-200: #2a3142;
+  --color-neutral-300: #3d4659;
+  --color-neutral-400: #5c6578;
+  --color-neutral-500: #8891a3;
+  --color-neutral-600: #a6b0c0;
+  --color-neutral-700: #c5cdd9;
+  --color-neutral-800: #e2e7ef;
+  --color-neutral-900: #f5f7fa;
+
+  --glass-bg: rgb(30 35 48 / 0.8);
+  --glass-bg-strong: rgb(30 35 48 / 0.95);
+  --glass-bg-subtle: rgb(30 35 48 / 0.6);
+  --glass-border: rgb(255 255 255 / 0.1);
+  --glass-border-strong: rgb(255 255 255 / 0.15);
+
+  --shadow-sm: 0 4px 12px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 8px 24px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 12px 40px rgb(0 0 0 / 0.6);
+  --shadow-glass: 0 8px 32px rgb(0 0 0 / 0.4), inset 0 1px 1px rgb(255 255 255 / 0.05);
+}
+
+/* ═══════════════════════════════════════════════════
+   ANIMATIONS KEYFRAMES
+   ═══════════════════════════════════════════════════ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  70% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.1); }
+  50% { transform: scale(1); }
+  75% { transform: scale(1.15); }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgb(247 177 134 / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgb(247 177 134 / 0.5);
+  }
+}
+
+/* Ambient background animation */
+@keyframes ambientMove {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translate(2%, 1%) rotate(0.5deg) scale(1.02);
+  }
+  50% {
+    transform: translate(0, 2%) rotate(0deg) scale(1);
+  }
+  75% {
+    transform: translate(-2%, 1%) rotate(-0.5deg) scale(1.02);
+  }
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
