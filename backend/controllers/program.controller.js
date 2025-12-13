@@ -7,39 +7,45 @@ const logger = require("../utils/logger");
 const { sanitizeProgram } = require("../utils/sanitizer");
 
 // Helper pour notifier tous les admins
+// Refactorisé pour être identique au matching qui fonctionne
 async function notifyAdminsProgram(title, message, link, metadata = {}, io = null) {
   try {
     const admins = await User.find({ role: 'admin' }).select('_id');
-    logger.info(`📢 notifyAdminsProgram: ${admins.length} admin(s) trouvé(s), io=${!!io}, notifyUser=${!!io?.notifyUser}`);
 
-    for (const admin of admins) {
-      const notification = await Notification.create({
-        userId: admin._id,
-        type: 'admin',
-        title,
-        message,
-        link,
-        metadata
-      });
-      if (io && io.notifyUser) {
-        // Convertir en objet simple pour éviter les problèmes de sérialisation Mongoose
-        const notifData = {
-          _id: notification._id.toString(),
-          id: notification._id.toString(),
-          type: notification.type,
-          title: notification.title,
-          message: notification.message,
-          link: notification.link,
-          metadata: notification.metadata,
-          read: notification.read,
-          createdAt: notification.createdAt,
-          timestamp: notification.createdAt
-        };
-        logger.info(`📢 Envoi WebSocket à admin ${admin._id}: ${title}`);
-        io.notifyUser(admin._id.toString(), 'new_notification', notifData);
+    if (admins.length === 0) {
+      return;
+    }
+
+    // 1. D'abord envoyer via WebSocket (comme matching qui fonctionne)
+    if (io && io.notifyUser) {
+      for (const admin of admins) {
+        const notifId = `program-${Date.now()}-${admin._id}`;
+        io.notifyUser(admin._id.toString(), 'new_notification', {
+          id: notifId,
+          type: 'admin',
+          title,
+          message,
+          link,
+          metadata,
+          timestamp: new Date().toISOString(),
+          read: false
+        });
       }
     }
-    logger.info(`📢 Notification programme envoyée à ${admins.length} admin(s): ${title}`);
+
+    // 2. Puis sauvegarder en base (comme matching qui fonctionne)
+    const notificationsToCreate = admins.map(admin => ({
+      userId: admin._id,
+      type: 'admin',
+      title,
+      message,
+      link,
+      metadata
+    }));
+
+    await Notification.create(notificationsToCreate).catch(err =>
+      logger.error('Erreur sauvegarde notifications programme:', err)
+    );
   } catch (error) {
     logger.error('Erreur notifyAdminsProgram:', error);
   }
@@ -1004,39 +1010,36 @@ async function approveProgram(req, res) {
     program.isPublic = true;
     await program.save();
 
-    // Notifier l'utilisateur de l'approbation
+    // Notifier l'utilisateur de l'approbation (comme matching qui fonctionne)
     if (program.userId) {
       try {
-        const notification = await Notification.create({
+        const io = req.app.get('io');
+        const notifId = `program-approved-${Date.now()}-${program.userId}`;
+        const notifData = {
+          id: notifId,
+          type: 'system',
+          title: '✅ Programme approuvé !',
+          message: `Ton programme "${program.name}" a été approuvé et est maintenant public ! 🎉`,
+          link: '/programs',
+          metadata: { programId: program._id, action: 'approved' },
+          timestamp: new Date().toISOString(),
+          read: false
+        };
+
+        // 1. D'abord envoyer via WebSocket
+        if (io && io.notifyUser) {
+          io.notifyUser(program.userId.toString(), 'new_notification', notifData);
+        }
+
+        // 2. Puis sauvegarder en base
+        await Notification.create({
           userId: program.userId,
           type: 'system',
           title: '✅ Programme approuvé !',
           message: `Ton programme "${program.name}" a été approuvé et est maintenant public ! 🎉`,
           link: '/programs',
           metadata: { programId: program._id, action: 'approved' }
-        });
-
-        // Envoyer en temps réel via WebSocket
-        const io = req.app.get('io');
-        if (io && io.notifyUser) {
-          // Convertir en objet simple pour éviter les problèmes de sérialisation Mongoose
-          const notifData = {
-            _id: notification._id.toString(),
-            id: notification._id.toString(),
-            type: notification.type,
-            title: notification.title,
-            message: notification.message,
-            link: notification.link,
-            metadata: notification.metadata,
-            read: notification.read,
-            createdAt: notification.createdAt,
-            timestamp: notification.createdAt
-          };
-          logger.info(`📢 Envoi WebSocket à user ${program.userId}: programme approuvé`);
-          io.notifyUser(program.userId.toString(), 'new_notification', notifData);
-        }
-
-        logger.info(`📢 Notification d'approbation envoyée à l'utilisateur ${program.userId}`);
+        }).catch(err => logger.error('Erreur sauvegarde notification approbation:', err));
       } catch (notifError) {
         logger.error('Erreur notification approbation programme:', notifError);
       }
@@ -1082,46 +1085,44 @@ async function rejectProgram(req, res) {
     program.isPublic = false;
     await program.save();
 
-    // Notifier l'utilisateur du refus
+    // Notifier l'utilisateur du refus (comme matching qui fonctionne)
     if (program.userId) {
       try {
-        const notification = await Notification.create({
-          userId: program.userId,
+        const io = req.app.get('io');
+        const notifId = `program-reject-${Date.now()}-${program.userId}`;
+        const notifMessage = reason
+          ? `Ton programme "${program.name}" n'a pas été approuvé. Raison : ${reason.substring(0, 150)}`
+          : `Ton programme "${program.name}" n'a pas été approuvé. Contacte le support pour plus d'infos.`;
+        const notifData = {
+          id: notifId,
           type: 'system',
           title: '❌ Programme refusé',
-          message: reason
-            ? `Ton programme "${program.name}" n'a pas été approuvé. Raison : ${reason.substring(0, 150)}`
-            : `Ton programme "${program.name}" n'a pas été approuvé. Contacte le support pour plus d'infos.`,
+          message: notifMessage,
           link: '/programs',
           metadata: {
             programId: program._id,
             action: 'rejected',
             reason: reason || 'Aucune raison spécifiée',
             programName: program.name
-          }
-        });
+          },
+          timestamp: new Date().toISOString(),
+          read: false
+        };
 
-        // Envoyer en temps réel via WebSocket
-        const io = req.app.get('io');
+        // 1. D'abord envoyer via WebSocket
         if (io && io.notifyUser) {
-          // Convertir en objet simple pour éviter les problèmes de sérialisation Mongoose
-          const notifData = {
-            _id: notification._id.toString(),
-            id: notification._id.toString(),
-            type: notification.type,
-            title: notification.title,
-            message: notification.message,
-            link: notification.link,
-            metadata: notification.metadata,
-            read: notification.read,
-            createdAt: notification.createdAt,
-            timestamp: notification.createdAt
-          };
-          logger.info(`📢 Envoi WebSocket à user ${program.userId}: programme refusé`);
           io.notifyUser(program.userId.toString(), 'new_notification', notifData);
         }
 
-        logger.info(`📢 Notification de refus envoyée à l'utilisateur ${program.userId}`);
+        // 2. Puis sauvegarder en base
+        await Notification.create({
+          userId: program.userId,
+          type: 'system',
+          title: '❌ Programme refusé',
+          message: notifMessage,
+          link: '/programs',
+          metadata: notifData.metadata
+        }).catch(err => logger.error('Erreur sauvegarde notification refus:', err));
       } catch (notifError) {
         logger.error('Erreur notification refus programme:', notifError);
       }

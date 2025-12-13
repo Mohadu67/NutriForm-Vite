@@ -119,36 +119,32 @@ async function replyToTicket(req, res) {
       io.emitNewMessage(ticket.conversationId, populatedMessage);
     }
 
-    // Notifier l'utilisateur de la réponse du support
+    // Notifier l'utilisateur de la réponse du support (comme matching qui fonctionne)
     try {
-      const notification = await Notification.create({
+      const notifId = `support-reply-${Date.now()}-${ticket.userId}`;
+      const notifData = {
+        id: notifId,
+        type: 'support',
+        title: '💬 Réponse du support',
+        message: `${message.substring(0, 50)}${message.length > 50 ? '...' : ''}`,
+        metadata: { ticketId: ticket._id, conversationId: ticket.conversationId },
+        timestamp: new Date().toISOString(),
+        read: false
+      };
+
+      // 1. D'abord envoyer via WebSocket
+      if (io && io.notifyUser) {
+        io.notifyUser(ticket.userId.toString(), 'new_notification', notifData);
+      }
+
+      // 2. Puis sauvegarder en base
+      await Notification.create({
         userId: ticket.userId,
         type: 'support',
         title: '💬 Réponse du support',
         message: `${message.substring(0, 50)}${message.length > 50 ? '...' : ''}`,
         metadata: { ticketId: ticket._id, conversationId: ticket.conversationId }
-      });
-
-      // Envoyer la notification en temps réel via WebSocket
-      if (io && io.notifyUser) {
-        // Convertir en objet simple pour éviter les problèmes de sérialisation Mongoose
-        const notifData = {
-          _id: notification._id.toString(),
-          id: notification._id.toString(),
-          type: notification.type,
-          title: notification.title,
-          message: notification.message,
-          link: notification.link,
-          metadata: notification.metadata,
-          read: notification.read,
-          createdAt: notification.createdAt,
-          timestamp: notification.createdAt
-        };
-        logger.info(`📢 Envoi WebSocket à user ${ticket.userId}: réponse support`);
-        io.notifyUser(ticket.userId.toString(), 'new_notification', notifData);
-      }
-
-      logger.info(`📢 Notification envoyée à l'utilisateur ${ticket.userId} pour réponse support`);
+      }).catch(err => logger.error('Erreur sauvegarde notification support:', err));
     } catch (notifError) {
       logger.error('Erreur notification user:', notifError);
     }
