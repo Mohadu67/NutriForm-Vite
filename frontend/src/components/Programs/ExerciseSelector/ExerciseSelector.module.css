@@ -1,0 +1,334 @@
+/* ============================================
+   EXERCISE SELECTOR - Mobile First
+   ============================================ */
+
+.selector {
+  position: relative;
+  width: 100%;
+}
+
+/* Input Wrapper */
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(145deg, #ffffff, #f8f9fa);
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.inputWrapper:focus-within {
+  border-color: #f7b186;
+  box-shadow: 0 0 0 4px rgba(247, 177, 134, 0.15), 0 4px 12px rgba(247, 177, 134, 0.1);
+  transform: translateY(-1px);
+}
+
+.inputWrapper.inputError {
+  border-color: #ef4444;
+  background: linear-gradient(145deg, #fef2f2, #fee2e2);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+/* Selected Image */
+.selectedImage {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid #f7b186;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.2);
+}
+
+/* Input Field */
+.input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  font-weight: 500;
+  background: transparent;
+  min-width: 0;
+  color: #1f2937;
+}
+
+.input::placeholder {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Buttons */
+.clearBtn,
+.toggleBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: #9ca3af;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clearBtn:hover {
+  background: #fef2f2;
+  color: #ef4444;
+  transform: scale(1.1);
+}
+
+.toggleBtn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.toggleBtn:active {
+  transform: scale(0.95);
+}
+
+/* Dropdown */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 25px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 320px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  animation: slideDown 0.25s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading & Empty States */
+.loading,
+.empty {
+  padding: 24px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.loading::before {
+  content: '⏳';
+  display: block;
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* List */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+}
+
+/* List Item */
+.item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+}
+
+.item:last-child {
+  margin-bottom: 0;
+}
+
+.item:hover {
+  background: linear-gradient(145deg, #fef7f2, #fef3ec);
+  transform: translateX(4px);
+}
+
+.item:active {
+  transform: scale(0.98);
+}
+
+.item.selected {
+  background: linear-gradient(145deg, #fef3ec, #fed7aa);
+  border-left: 4px solid #f7b186;
+  padding-left: 10px;
+}
+
+/* Item Image */
+.itemImage {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: linear-gradient(145deg, #f3f4f6, #e5e7eb);
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.item:hover .itemImage {
+  border-color: #f7b186;
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.25);
+}
+
+/* Item Info */
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.itemName {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemMeta {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  text-transform: capitalize;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Scrollbar */
+.dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dropdown::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+.dropdown::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #f7b186, #e89a6f);
+  border-radius: 4px;
+}
+
+.dropdown::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #e89a6f, #d9845c);
+}
+
+/* ============================================
+   TABLET & DESKTOP
+   ============================================ */
+
+@media (min-width: 768px) {
+  .inputWrapper {
+    padding: 10px 16px;
+  }
+
+  .selectedImage {
+    width: 44px;
+    height: 44px;
+  }
+
+  .dropdown {
+    max-height: 350px;
+  }
+
+  .item {
+    padding: 14px 16px;
+  }
+
+  .itemImage {
+    width: 56px;
+    height: 56px;
+  }
+
+  .itemName {
+    font-size: 1rem;
+  }
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+:global(.dark) .inputWrapper {
+  background: linear-gradient(145deg, #1f2937, #111827);
+  border-color: #374151;
+}
+
+:global(.dark) .inputWrapper:focus-within {
+  border-color: #f7b186;
+}
+
+:global(.dark) .inputWrapper.inputError {
+  background: linear-gradient(145deg, #450a0a, #7f1d1d);
+  border-color: #ef4444;
+}
+
+:global(.dark) .input {
+  color: #f3f4f6;
+}
+
+:global(.dark) .input::placeholder {
+  color: #9ca3af;
+}
+
+:global(.dark) .dropdown {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+:global(.dark) .item:hover {
+  background: linear-gradient(145deg, #374151, #4b5563);
+}
+
+:global(.dark) .item.selected {
+  background: linear-gradient(145deg, #374151, #4b5563);
+}
+
+:global(.dark) .itemName {
+  color: #f3f4f6;
+}
+
+:global(.dark) .itemMeta {
+  color: #9ca3af;
+}
+
+:global(.dark) .itemImage {
+  background: linear-gradient(145deg, #374151, #4b5563);
+}
