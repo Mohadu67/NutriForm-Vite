@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './ProfileDetailModal.module.css';
 import {
   GlobeIcon,
@@ -43,9 +45,39 @@ const FITNESS_LEVEL_LABELS = {
  * @param {Function} [props.onStartChat] - Start chat handler (matchId, userId) => void
  */
 const ProfileDetailModal = ({ user, matchId, matchScore, onClose, onStartChat }) => {
+  // Bloquer le scroll du body quand le modal est ouvert
+  useEffect(() => {
+    if (user) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [user]);
+
+  // Fermer avec Escape
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && user) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [user, onClose]);
+
   if (!user) return null;
 
-  return (
+  const modalContent = (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
         <button className={styles.closeBtn} onClick={onClose} aria-label="Fermer">
@@ -148,6 +180,8 @@ const ProfileDetailModal = ({ user, matchId, matchScore, onClose, onStartChat })
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default ProfileDetailModal;

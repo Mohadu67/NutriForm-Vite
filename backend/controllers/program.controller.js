@@ -2,8 +2,32 @@ const mongoose = require("mongoose");
 const WorkoutProgram = require("../models/WorkoutProgram");
 const WorkoutSession = require("../models/WorkoutSession");
 const User = require("../models/User");
+const Notification = require("../models/Notification");
 const logger = require("../utils/logger");
 const { sanitizeProgram } = require("../utils/sanitizer");
+
+// Helper pour notifier tous les admins
+async function notifyAdminsProgram(title, message, link, metadata = {}, io = null) {
+  try {
+    const admins = await User.find({ role: 'admin' }).select('_id');
+    for (const admin of admins) {
+      const notification = await Notification.create({
+        userId: admin._id,
+        type: 'admin',
+        title,
+        message,
+        link,
+        metadata
+      });
+      if (io && io.notifyUser) {
+        io.notifyUser(admin._id.toString(), 'new_notification', notification);
+      }
+    }
+    logger.info(`📢 Notification programme envoyée à ${admins.length} admin(s): ${title}`);
+  } catch (error) {
+    logger.error('Erreur notifyAdminsProgram:', error);
+  }
+}
 
 
 // Constantes de validation pour prévenir injection NoSQL
@@ -374,10 +398,20 @@ async function updateProgram(req, res) {
       }
     });
 
-    // Seul l'admin peut modifier isPublic et isActive (booleans non sanitizés)
+    // Seul l'admin peut modifier isPublic, status et isActive (booleans non sanitizés)
     if (isAdmin) {
       if (req.body.isPublic !== undefined) {
         program.isPublic = Boolean(req.body.isPublic);
+        // Synchroniser status avec isPublic
+        program.status = program.isPublic ? 'public' : 'private';
+      }
+      if (req.body.status !== undefined) {
+        const validStatuses = ['private', 'pending', 'public'];
+        if (validStatuses.includes(req.body.status)) {
+          program.status = req.body.status;
+          // Synchroniser isPublic avec status
+          program.isPublic = req.body.status === 'public';
+        }
       }
       if (req.body.isActive !== undefined) {
         program.isActive = Boolean(req.body.isActive);
@@ -882,6 +916,18 @@ async function proposeToPublic(req, res) {
     program.status = 'pending';
     await program.save();
 
+    // Notifier les admins (avec WebSocket temps réel si disponible)
+    const user = await User.findById(userId).select('pseudo prenom email');
+    const userName = user?.pseudo || user?.prenom || user?.email || 'Utilisateur';
+    const io = req.app.get('io');
+    await notifyAdminsProgram(
+      '📝 Programme à valider',
+      `${userName} propose "${program.name}" pour publication`,
+      '/admin/programs',
+      { programId: program._id, userId },
+      io
+    );
+
     logger.info(`Programme ${id} proposé au public par user ${userId}`);
 
     return res.status(200).json({
@@ -942,6 +988,30 @@ async function approveProgram(req, res) {
     program.isPublic = true;
     await program.save();
 
+    // Notifier l'utilisateur de l'approbation
+    if (program.userId) {
+      try {
+        const notification = await Notification.create({
+          userId: program.userId,
+          type: 'system',
+          title: '✅ Programme approuvé !',
+          message: `Ton programme "${program.name}" a été approuvé et est maintenant public ! 🎉`,
+          link: '/programs',
+          metadata: { programId: program._id, action: 'approved' }
+        });
+
+        // Envoyer en temps réel via WebSocket
+        const io = req.app.get('io');
+        if (io && io.notifyUser) {
+          io.notifyUser(program.userId.toString(), 'new_notification', notification);
+        }
+
+        logger.info(`📢 Notification d'approbation envoyée à l'utilisateur ${program.userId}`);
+      } catch (notifError) {
+        logger.error('Erreur notification approbation programme:', notifError);
+      }
+    }
+
     logger.info(`Programme ${id} approuvé par admin ${req.user.id}`);
 
     return res.status(200).json({
@@ -981,6 +1051,37 @@ async function rejectProgram(req, res) {
     program.status = 'private';
     program.isPublic = false;
     await program.save();
+
+    // Notifier l'utilisateur du refus
+    if (program.userId) {
+      try {
+        const notification = await Notification.create({
+          userId: program.userId,
+          type: 'system',
+          title: '❌ Programme refusé',
+          message: reason
+            ? `Ton programme "${program.name}" n'a pas été approuvé. Raison : ${reason.substring(0, 150)}`
+            : `Ton programme "${program.name}" n'a pas été approuvé. Contacte le support pour plus d'infos.`,
+          link: '/programs',
+          metadata: {
+            programId: program._id,
+            action: 'rejected',
+            reason: reason || 'Aucune raison spécifiée',
+            programName: program.name
+          }
+        });
+
+        // Envoyer en temps réel via WebSocket
+        const io = req.app.get('io');
+        if (io && io.notifyUser) {
+          io.notifyUser(program.userId.toString(), 'new_notification', notification);
+        }
+
+        logger.info(`📢 Notification de refus envoyée à l'utilisateur ${program.userId}`);
+      } catch (notifError) {
+        logger.error('Erreur notification refus programme:', notifError);
+      }
+    }
 
     logger.info(`Programme ${id} rejeté par admin ${req.user.id}. Raison: ${reason}`);
 
@@ -1058,12 +1159,12 @@ async function createAdminProgram(req, res) {
 }
 
 /**
- * Modifier un programme admin (Admin uniquement)
+ * Modifier un programme (Admin uniquement)
+ * Permet de modifier les programmes admin ET les programmes utilisateurs publics
  */
 async function updateAdminProgram(req, res) {
   try {
     const { id } = req.params;
-    const updates = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: "invalid_program_id" });
@@ -1075,9 +1176,8 @@ async function updateAdminProgram(req, res) {
       return res.status(404).json({ error: "program_not_found" });
     }
 
-    if (program.createdBy !== 'admin') {
-      return res.status(403).json({ error: "not_admin_program" });
-    }
+    // Admin peut modifier ses propres programmes ET les programmes utilisateurs (publics ou non)
+    // Pas de restriction sur createdBy pour permettre la gestion complète
 
     // Sanitize toutes les entrées utilisateur
     const sanitized = sanitizeProgram(req.body);
@@ -1097,10 +1197,23 @@ async function updateAdminProgram(req, res) {
       }
     });
 
-    // Champs admin (booleans/strings non sanitizés)
-    if (req.body.status !== undefined) program.status = req.body.status;
-    if (req.body.isPublic !== undefined) program.isPublic = Boolean(req.body.isPublic);
-    if (req.body.isActive !== undefined) program.isActive = Boolean(req.body.isActive);
+    // Champs admin (booleans/strings non sanitizés) avec synchronisation isPublic/status
+    if (req.body.isPublic !== undefined) {
+      program.isPublic = Boolean(req.body.isPublic);
+      // Synchroniser status avec isPublic
+      program.status = program.isPublic ? 'public' : 'private';
+    }
+    if (req.body.status !== undefined) {
+      const validStatuses = ['private', 'pending', 'public'];
+      if (validStatuses.includes(req.body.status)) {
+        program.status = req.body.status;
+        // Synchroniser isPublic avec status
+        program.isPublic = req.body.status === 'public';
+      }
+    }
+    if (req.body.isActive !== undefined) {
+      program.isActive = Boolean(req.body.isActive);
+    }
 
     await program.save();
 

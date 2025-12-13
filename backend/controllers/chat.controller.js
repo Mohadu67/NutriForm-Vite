@@ -3,8 +3,36 @@ const ChatMessage = require('../models/ChatMessage');
 const SupportTicket = require('../models/SupportTicket');
 const AIConversation = require('../models/AIConversation');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../utils/logger.js');
+
+// Helper pour notifier tous les admins (avec WebSocket optionnel)
+async function notifyAdmins(title, message, link, metadata = {}, io = null) {
+  try {
+    const admins = await User.find({ role: 'admin' }).select('_id');
+
+    for (const admin of admins) {
+      const notification = await Notification.create({
+        userId: admin._id,
+        type: 'support',
+        title,
+        message,
+        link,
+        metadata
+      });
+
+      // Envoyer en temps réel via WebSocket si disponible
+      if (io && io.notifyUser) {
+        io.notifyUser(admin._id.toString(), 'new_notification', notification);
+      }
+    }
+
+    logger.info(`📢 Notification envoyée à ${admins.length} admin(s): ${title}`);
+  } catch (error) {
+    logger.error('Erreur notifyAdmins:', error);
+  }
+}
 
 // Initialiser OpenAI (optionnel)
 let openai = null;
@@ -120,6 +148,18 @@ async function sendMessage(req, res) {
       ticket.messageCount += 1;
       await ticket.save();
 
+      // Notifier les admins du nouveau message (avec WebSocket temps réel)
+      const user = await User.findById(userId);
+      const userName = user?.pseudo || user?.prenom || 'Utilisateur';
+      const io = req.app.get('io');
+      await notifyAdmins(
+        '💬 Nouveau message support',
+        `${userName}: "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"`,
+        '/admin/support-tickets',
+        { ticketId: ticket._id, conversationId: convId, userId },
+        io
+      );
+
       return res.status(200).json({
         conversationId: convId,
         message: userMessage,
@@ -186,16 +226,19 @@ async function sendMessage(req, res) {
 
     // Si escalade nécessaire, créer un ticket
     if (shouldEscalate) {
-      await escalateToHuman(userId, convId, message);
+      const io = req.app.get('io');
+      await escalateToHuman(userId, convId, message, '', io);
     }
 
     // Sauvegarder/mettre à jour la conversation IA dans la base de données
+    // Utiliser la réponse du bot comme dernier message (ou le message user si escaladé)
+    const lastMessageContent = botResponse?.content || botResponse || message.trim();
     await AIConversation.findOneAndUpdate(
       { userId, conversationId: convId },
       {
         userId,
         conversationId: convId,
-        lastMessage: message.trim(),
+        lastMessage: lastMessageContent.substring(0, 100) + (lastMessageContent.length > 100 ? '...' : ''),
         escalated: shouldEscalate,
         ticketId: shouldEscalate ? (await SupportTicket.findOne({ conversationId: convId }))?._id : null,
         isActive: true
@@ -939,7 +982,7 @@ Si le problème persiste, je peux te mettre en contact avec notre équipe techni
 Voici comment réinitialiser ton mot de passe :
 
 📋 **Procédure simple :**
-1. Va sur la page de connexion (http://localhost:5173/)
+1. Va sur la page de connexion
 2. Clique sur **"Mot de passe oublié ?"** sous le formulaire
 3. Entre l'adresse email associée à ton compte
 4. Tu recevras un email avec un lien de réinitialisation
@@ -969,7 +1012,7 @@ Tu as d'autres problèmes de connexion ? Dis-moi ! 😊`;
 Pour te connecter :
 
 📋 **Étapes :**
-1. Va sur http://localhost:5173/
+1. Va sur la page d'accueil Harmonith
 2. Clique sur "Se connecter" en haut à droite
 3. Entre ton email et mot de passe
 4. Clique sur "Connexion"
@@ -1003,7 +1046,7 @@ Besoin d'aide supplémentaire ? Je suis là ! 💪`;
 Bienvenue ! Créer ton compte est super simple :
 
 📋 **Étapes d'inscription :**
-1. Va sur http://localhost:5173/
+1. Va sur la page d'accueil Harmonith
 2. Clique sur **"S'inscrire"** en haut à droite
 3. Remplis le formulaire :
    • Email valide
@@ -1348,19 +1391,82 @@ On prévoit le support multilingue pour les prochains mois. Inscris-toi à la ne
 Tu as besoin d'aide en anglais ? Je peux essayer de t'aider en anglais si nécessaire ! 😊`;
   }
 
-  // ========== RÉPONSE GÉNÉRIQUE (catch-all) ==========
+  // ========== DEMANDE DE PARLER À UN HUMAIN ==========
+  else if (containsAny(userMessage, ['humain', 'vraie personne', 'agent', 'conseiller', 'support', 'aide', 'parler a quelqu', 'vrai humain', 'pas un robot', 'pas un bot'])) {
+    reply = `🤝 Je comprends que tu souhaites parler à un humain !
+
+Si tu as besoin d'une aide personnalisée, je peux te mettre en contact avec notre équipe support.
+
+💡 **Avant de continuer**, je peux peut-être t'aider avec :
+• Questions sur l'app et ses fonctionnalités
+• Conseils d'entraînement généraux
+• Problèmes techniques courants
+• Gestion de ton abonnement
+
+📞 **Veux-tu parler à un conseiller ?**
+Réponds "parler à un agent" et je transmets ta demande à notre équipe !
+
+En attendant, n'hésite pas à me poser ta question, je fais de mon mieux pour t'aider ! 😊`;
+  }
+
+  // ========== QUI ES-TU / C'EST QUOI ==========
+  else if (containsAny(userMessage, ['qui es tu', 'tu es qui', 'c\'est quoi', 'harmonith c\'est quoi', 'qu\'est ce que', 'comment ca marche', 'explique', 'presente'])) {
+    reply = `🌟 **Bienvenue sur Harmonith !**
+
+Harmonith est ton application fitness complète :
+
+🏋️ **Entraînement :**
+• Bibliothèque d'exercices avec vidéos
+• Programmes personnalisés (HIIT, circuit, tabata...)
+• Chronomètre et suivi en temps réel
+
+📊 **Suivi & Stats (Premium) :**
+• Dashboard avec graphiques de progression
+• Heatmap d'activité
+• Badges et Leaderboard
+
+🤝 **Communauté :**
+• Matching de partenaires sportifs
+• Chat avec tes buddies d'entraînement
+
+💰 **Tarifs :**
+• Version gratuite : Exercices + calculateurs
+• Premium : 3,99€/mois (7 jours gratuits)
+
+Je suis ton assistant IA et je peux répondre à tes questions ! Qu'est-ce qui t'intéresse ? 😊`;
+  }
+
+  // ========== RÉPONSE GÉNÉRIQUE AMÉLIORÉE (catch-all) ==========
   else {
-    reply = `👋 Salut ! Je suis l'assistant Harmonith.
+    // Analyser le message pour suggérer des topics
+    const suggestions = [];
+    if (msg.length < 10) {
+      suggestions.push("💡 Essaie d'être plus précis dans ta question !");
+    }
 
-Je peux t'aider avec :
-• 🏋️ Entraînement et exercices
-• 🤝 Matching de partenaires sportifs
-• 📊 Dashboard et statistiques
-• 💎 Abonnement Premium (3,99€/mois)
-• 🔐 Compte et connexion
-• 🛠️ Problèmes techniques
+    reply = `🤔 Je ne suis pas sûr de comprendre ta demande.
 
-Pose-moi ta question ! 😊`;
+Voici ce que je peux t'aider à faire :
+
+**🏋️ Fitness & Entraînement**
+• "Comment muscler mes pectoraux ?"
+• "C'est quoi le HIIT ?"
+• "Programme débutant"
+
+**📱 Fonctionnalités Harmonith**
+• "Comment fonctionne le matching ?"
+• "C'est quoi Premium ?"
+• "Comment voir mes stats ?"
+
+**🔧 Compte & Support**
+• "Mot de passe oublié"
+• "Problème de connexion"
+• "J'ai un bug"
+
+💬 **Besoin d'aide humaine ?**
+Tape "parler à un agent" pour contacter notre équipe !
+
+Reformule ta question ou choisis un sujet ci-dessus ! 😊`;
   }
 
   return await ChatMessage.create({
@@ -1373,22 +1479,45 @@ Pose-moi ta question ! 😊`;
 }
 
 /**
- * Récupérer l'historique d'une conversation
- * GET /api/chat/history/:conversationId
+ * Récupérer l'historique d'une conversation (avec pagination)
+ * GET /api/chat/history/:conversationId?limit=20&before=messageId
  */
 async function getChatHistory(req, res) {
   try {
     const { conversationId } = req.params;
+    const { limit = 20, before } = req.query;
     const userId = req.userId;
 
-    const messages = await ChatMessage.find({
-      userId,
-      conversationId
-    })
-      .sort({ createdAt: 1 })
+    const query = { userId, conversationId };
+
+    // Si "before" est fourni, charger les messages plus anciens que ce message
+    if (before) {
+      const beforeMessage = await ChatMessage.findById(before);
+      if (beforeMessage) {
+        query.createdAt = { $lt: beforeMessage.createdAt };
+      }
+    }
+
+    // Récupérer les messages (triés du plus récent au plus ancien pour pagination)
+    const messages = await ChatMessage.find(query)
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
       .populate('adminId', 'pseudo prenom');
 
-    res.status(200).json({ messages });
+    // Inverser pour afficher du plus ancien au plus récent
+    messages.reverse();
+
+    // Compter le total de messages pour savoir s'il y en a plus
+    const totalCount = await ChatMessage.countDocuments({ userId, conversationId });
+    const hasMore = before
+      ? messages.length === parseInt(limit)
+      : totalCount > parseInt(limit);
+
+    res.status(200).json({
+      messages,
+      hasMore,
+      totalCount
+    });
   } catch (error) {
     logger.error('Erreur getChatHistory:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération de l\'historique.' });
@@ -1420,8 +1549,9 @@ async function escalateConversation(req, res) {
       role: 'user'
     }).sort({ createdAt: -1 });
 
-    // Créer le ticket
-    ticket = await escalateToHuman(userId, conversationId, lastMessage?.content || 'Demande d\'aide', reason);
+    // Créer le ticket (avec WebSocket temps réel)
+    const io = req.app.get('io');
+    ticket = await escalateToHuman(userId, conversationId, lastMessage?.content || 'Demande d\'aide', reason, io);
 
     res.status(200).json({
       message: 'Conversation escaladée vers le support.',
@@ -1436,8 +1566,9 @@ async function escalateConversation(req, res) {
 /**
  * Fonction helper pour créer un ticket support
  */
-async function escalateToHuman(userId, conversationId, lastMessage, reason = '') {
+async function escalateToHuman(userId, conversationId, lastMessage, reason = '', io = null) {
   const user = await User.findById(userId);
+  const userName = user?.pseudo || user?.prenom || user?.email || 'Utilisateur';
 
   const ticket = await SupportTicket.create({
     userId,
@@ -1455,7 +1586,16 @@ async function escalateToHuman(userId, conversationId, lastMessage, reason = '')
     { $set: { escalated: true } }
   );
 
-  logger.info(`🎫 Ticket créé : ${ticket._id} pour user ${user.pseudo || user.email}`);
+  // Notifier les admins (avec WebSocket temps réel si disponible)
+  await notifyAdmins(
+    '🎫 Nouveau ticket support',
+    `${userName} demande de l'aide: "${lastMessage.substring(0, 50)}${lastMessage.length > 50 ? '...' : ''}"`,
+    '/admin/support-tickets',
+    { ticketId: ticket._id, conversationId, userId },
+    io
+  );
+
+  logger.info(`🎫 Ticket créé : ${ticket._id} pour user ${userName}`);
 
   return ticket;
 }
