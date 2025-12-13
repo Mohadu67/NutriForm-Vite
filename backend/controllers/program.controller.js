@@ -10,6 +10,8 @@ const { sanitizeProgram } = require("../utils/sanitizer");
 async function notifyAdminsProgram(title, message, link, metadata = {}, io = null) {
   try {
     const admins = await User.find({ role: 'admin' }).select('_id');
+    logger.info(`📢 notifyAdminsProgram: ${admins.length} admin(s) trouvé(s), io=${!!io}, notifyUser=${!!io?.notifyUser}`);
+
     for (const admin of admins) {
       const notification = await Notification.create({
         userId: admin._id,
@@ -20,7 +22,21 @@ async function notifyAdminsProgram(title, message, link, metadata = {}, io = nul
         metadata
       });
       if (io && io.notifyUser) {
-        io.notifyUser(admin._id.toString(), 'new_notification', notification);
+        // Convertir en objet simple pour éviter les problèmes de sérialisation Mongoose
+        const notifData = {
+          _id: notification._id.toString(),
+          id: notification._id.toString(),
+          type: notification.type,
+          title: notification.title,
+          message: notification.message,
+          link: notification.link,
+          metadata: notification.metadata,
+          read: notification.read,
+          createdAt: notification.createdAt,
+          timestamp: notification.createdAt
+        };
+        logger.info(`📢 Envoi WebSocket à admin ${admin._id}: ${title}`);
+        io.notifyUser(admin._id.toString(), 'new_notification', notifData);
       }
     }
     logger.info(`📢 Notification programme envoyée à ${admins.length} admin(s): ${title}`);
@@ -1003,7 +1019,21 @@ async function approveProgram(req, res) {
         // Envoyer en temps réel via WebSocket
         const io = req.app.get('io');
         if (io && io.notifyUser) {
-          io.notifyUser(program.userId.toString(), 'new_notification', notification);
+          // Convertir en objet simple pour éviter les problèmes de sérialisation Mongoose
+          const notifData = {
+            _id: notification._id.toString(),
+            id: notification._id.toString(),
+            type: notification.type,
+            title: notification.title,
+            message: notification.message,
+            link: notification.link,
+            metadata: notification.metadata,
+            read: notification.read,
+            createdAt: notification.createdAt,
+            timestamp: notification.createdAt
+          };
+          logger.info(`📢 Envoi WebSocket à user ${program.userId}: programme approuvé`);
+          io.notifyUser(program.userId.toString(), 'new_notification', notifData);
         }
 
         logger.info(`📢 Notification d'approbation envoyée à l'utilisateur ${program.userId}`);
@@ -1074,7 +1104,21 @@ async function rejectProgram(req, res) {
         // Envoyer en temps réel via WebSocket
         const io = req.app.get('io');
         if (io && io.notifyUser) {
-          io.notifyUser(program.userId.toString(), 'new_notification', notification);
+          // Convertir en objet simple pour éviter les problèmes de sérialisation Mongoose
+          const notifData = {
+            _id: notification._id.toString(),
+            id: notification._id.toString(),
+            type: notification.type,
+            title: notification.title,
+            message: notification.message,
+            link: notification.link,
+            metadata: notification.metadata,
+            read: notification.read,
+            createdAt: notification.createdAt,
+            timestamp: notification.createdAt
+          };
+          logger.info(`📢 Envoi WebSocket à user ${program.userId}: programme refusé`);
+          io.notifyUser(program.userId.toString(), 'new_notification', notifData);
         }
 
         logger.info(`📢 Notification de refus envoyée à l'utilisateur ${program.userId}`);

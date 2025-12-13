@@ -301,6 +301,30 @@ exports.changePassword = async (req, res) => {
   }
 };
 
+// Endpoint pour récupérer un token WebSocket
+exports.getWsToken = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const user = await User.findById(userId).select('email role');
+
+    if (!user) {
+      return res.status(401).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    // Générer un token WebSocket
+    const token = jwt.sign(
+      { id: userId, email: user.email, role: user.role },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: '7d' }
+    );
+
+    return res.json({ token });
+  } catch (error) {
+    logger.error('Erreur getWsToken:', error);
+    return res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
 exports.logout = async (req, res) => {
   try {
     // Supprimer le cookie httpOnly

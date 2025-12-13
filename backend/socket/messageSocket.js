@@ -30,17 +30,19 @@ const authenticateSocket = async (socket, next) => {
     const cookieToken = extractTokenFromCookie(socket.handshake.headers.cookie);
     const token = authToken || cookieToken;
 
-    logger.info(`🔌 WebSocket Auth: authToken=${!!authToken}, cookieToken=${!!cookieToken}`);
+    // Log détaillé pour debug en production
+    const origin = socket.handshake.headers.origin || 'unknown';
+    logger.info(`🔌 WebSocket Auth attempt from ${origin}: authToken=${!!authToken}, cookieToken=${!!cookieToken}`);
 
     if (!token) {
-      logger.warn('WebSocket: Aucun token trouvé');
+      logger.warn(`WebSocket: Aucun token trouvé (origin: ${origin})`);
       return next(new Error('Authentication error: No token provided'));
     }
 
     const decoded = jwt.verify(token, config.jwtSecret);
     // Le token contient 'id' pas 'userId'
     const userId = decoded.userId || decoded.id;
-    logger.info(`🔌 WebSocket Auth: userId=${userId}`);
+    logger.info(`🔌 WebSocket Auth SUCCESS: userId=${userId}`);
     socket.userId = userId;
     next();
   } catch (error) {

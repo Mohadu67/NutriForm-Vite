@@ -131,7 +131,21 @@ async function replyToTicket(req, res) {
 
       // Envoyer la notification en temps réel via WebSocket
       if (io && io.notifyUser) {
-        io.notifyUser(ticket.userId.toString(), 'new_notification', notification);
+        // Convertir en objet simple pour éviter les problèmes de sérialisation Mongoose
+        const notifData = {
+          _id: notification._id.toString(),
+          id: notification._id.toString(),
+          type: notification.type,
+          title: notification.title,
+          message: notification.message,
+          link: notification.link,
+          metadata: notification.metadata,
+          read: notification.read,
+          createdAt: notification.createdAt,
+          timestamp: notification.createdAt
+        };
+        logger.info(`📢 Envoi WebSocket à user ${ticket.userId}: réponse support`);
+        io.notifyUser(ticket.userId.toString(), 'new_notification', notifData);
       }
 
       logger.info(`📢 Notification envoyée à l'utilisateur ${ticket.userId} pour réponse support`);
