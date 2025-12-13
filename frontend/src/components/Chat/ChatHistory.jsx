@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useChat } from '../../contexts/ChatContext';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 import { isAuthenticated } from '../../shared/api/auth';
@@ -9,6 +9,94 @@ import Avatar from '../Shared/Avatar';
 import Alert from '../MessageAlerte/Alert/Alert';
 import { BotIcon, MessageCircleIcon, OnlineIcon } from '../Icons/GlobalIcons';
 import styles from './ChatHistory.module.css';
+
+// Composant ConversationItem avec support long press
+function ConversationItem({ conv, onOpen, onDelete, formatDate, isLongPressActive, onLongPress, onCancelLongPress }) {
+  const timerRef = useRef(null);
+  const touchStartPos = useRef({ x: 0, y: 0 });
+
+  const handleTouchStart = (e) => {
+    touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    timerRef.current = setTimeout(() => {
+      // Vibration feedback si disponible
+      if (navigator.vibrate) navigator.vibrate(50);
+      onLongPress();
+    }, 500);
+  };
+
+  const handleTouchMove = (e) => {
+    // Annuler si l'utilisateur bouge trop (scroll)
+    const dx = Math.abs(e.touches[0].clientX - touchStartPos.current.x);
+    const dy = Math.abs(e.touches[0].clientY - touchStartPos.current.y);
+    if (dx > 10 || dy > 10) {
+      clearTimeout(timerRef.current);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    clearTimeout(timerRef.current);
+  };
+
+  const handleClick = () => {
+    if (isLongPressActive) {
+      onCancelLongPress();
+    } else {
+      onOpen();
+    }
+  };
+
+  return (
+    <div
+      className={`${styles.conversationItem} ${isLongPressActive ? styles.longPressActive : ''}`}
+      onClick={handleClick}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      <div className={styles.avatarContainer}>
+        <Avatar
+          src={conv.otherUser?.profile?.profilePicture}
+          name={conv.otherUser?.pseudo || conv.otherUser?.prenom || 'User'}
+          size="md"
+          className={styles.convProfileImage}
+        />
+        {conv.unreadCount > 0 && (
+          <span className={styles.unreadBadge}>
+            {conv.unreadCount > 1 ? conv.unreadCount : ''}
+          </span>
+        )}
+      </div>
+      <div className={styles.convContent}>
+        <div className={styles.convHeader}>
+          <span className={styles.convTitle}>
+            {conv.otherUser?.pseudo || conv.otherUser?.prenom || 'Partenaire'}
+          </span>
+          <span className={styles.convDate}>
+            {formatDate(conv.lastMessage?.timestamp || conv.createdAt)}
+          </span>
+        </div>
+        <p className={styles.convPreview}>
+          {conv.lastMessage?.content?.substring(0, 50) || 'Nouvelle conversation'}
+          {conv.lastMessage?.content?.length > 50 && '...'}
+        </p>
+      </div>
+
+      {/* Bouton supprimer - visible sur desktop (hover) ou après long press sur mobile */}
+      <button
+        className={`${styles.deleteBtn} ${isLongPressActive ? styles.deleteBtnVisible : ''}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(e);
+          onCancelLongPress();
+        }}
+        title="Supprimer la conversation"
+      >
+        🗑️
+      </button>
+    </div>
+  );
+}
 
 export default function ChatHistory({ onLogin }) {
   const { openAIChat, openMatchChat, consumeRefreshFlag } = useChat();
@@ -21,6 +109,7 @@ export default function ChatHistory({ onLogin }) {
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, type: null });
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const [longPressTarget, setLongPressTarget] = useState(null); // Pour afficher l'option de suppression
   const cacheTimeRef = useState({ ai: 0, match: 0 })[0];
   const CACHE_DURATION = 30000; // 30 secondes de cache
 
@@ -346,46 +435,16 @@ export default function ChatHistory({ onLogin }) {
                 </div>
               ) : (
                 matchConversations.map((conv) => (
-                  <div
+                  <ConversationItem
                     key={conv._id}
-                    className={styles.conversationItem}
-                    onClick={() => openMatchChat(conv)}
-                  >
-                    <div className={styles.avatarContainer}>
-                      <Avatar
-                        src={conv.otherUser?.profile?.profilePicture}
-                        name={conv.otherUser?.pseudo || conv.otherUser?.prenom || 'User'}
-                        size="md"
-                        className={styles.convProfileImage}
-                      />
-                      {conv.unreadCount > 0 && (
-                        <span className={styles.unreadBadge}>
-                          {conv.unreadCount > 1 ? conv.unreadCount : ''}
-                        </span>
-                      )}
-                    </div>
-                    <div className={styles.convContent}>
-                      <div className={styles.convHeader}>
-                        <span className={styles.convTitle}>
-                          {conv.otherUser?.pseudo || conv.otherUser?.prenom || 'Partenaire'}
-                        </span>
-                        <span className={styles.convDate}>
-                          {formatDate(conv.lastMessage?.timestamp || conv.createdAt)}
-                        </span>
-                      </div>
-                      <p className={styles.convPreview}>
-                        {conv.lastMessage?.content?.substring(0, 50) || 'Nouvelle conversation'}
-                        {conv.lastMessage?.content?.length > 50 && '...'}
-                      </p>
-                    </div>
-                    <button
-                      className={styles.deleteBtn}
-                      onClick={(e) => handleDeleteMatchConversation(conv._id, e)}
-                      title="Supprimer la conversation"
-                    >
-                      🗑️
-                    </button>
-                  </div>
+                    conv={conv}
+                    onOpen={() => openMatchChat(conv)}
+                    onDelete={(e) => handleDeleteMatchConversation(conv._id, e)}
+                    formatDate={formatDate}
+                    isLongPressActive={longPressTarget === conv._id}
+                    onLongPress={() => setLongPressTarget(conv._id)}
+                    onCancelLongPress={() => setLongPressTarget(null)}
+                  />
                 ))
               )}
             </div>

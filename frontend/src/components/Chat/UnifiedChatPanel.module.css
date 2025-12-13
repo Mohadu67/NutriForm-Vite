@@ -588,12 +588,14 @@
   /* Main panel adjustments for mobile keyboard */
   .chatPanel {
     height: 100%;
-    max-height: 100vh;
-    max-height: 100dvh;
+    max-height: 100%;
     position: relative;
     display: flex;
     flex-direction: column;
-    overflow: visible;
+    /* IMPORTANT: Hidden to prevent outer scroll */
+    overflow: hidden;
+    /* Prevent pull-to-refresh and bouncing */
+    overscroll-behavior: none;
   }
 
   .chatMessages {
@@ -601,16 +603,12 @@
     gap: var(--space-md);
     flex: 1 1 auto;
     min-height: 0;
+    /* Only this element should scroll */
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
-    /* Fix scrolling issues on iOS */
-    position: relative;
-    z-index: 1;
-    /* Prevent momentum scrolling from going outside bounds */
-    scroll-padding-top: 10px;
-    scroll-padding-bottom: 10px;
+    /* Contain scroll within this element */
+    overscroll-behavior: contain;
     /* Ensure touch events work properly */
     touch-action: pan-y;
     /* Fix for iOS Safari scroll bug */
@@ -633,16 +631,20 @@
   .chatInputContainer {
     padding: var(--space-md) var(--space-lg);
     gap: 10px;
-    position: sticky;
-    bottom: 0;
+    /* Fixed at bottom, not sticky */
+    flex-shrink: 0;
     background: var(--color-bg);
     z-index: 10;
     padding-bottom: max(env(safe-area-inset-bottom), var(--space-md));
+    /* Prevent this from scrolling */
+    touch-action: none;
   }
 
   .chatInput {
     padding: 10px 14px;
     font-size: var(--font-size-sm);
+    /* Re-enable touch for input */
+    touch-action: manipulation;
   }
 
   /* Prevent zoom on input focus on iOS */
@@ -653,6 +655,8 @@
   .sendBtn {
     width: 44px;
     height: 44px;
+    /* Re-enable touch for button */
+    touch-action: manipulation;
   }
 
   .escalateContainer {
