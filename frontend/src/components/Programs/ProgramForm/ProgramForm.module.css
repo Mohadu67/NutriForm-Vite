@@ -306,6 +306,14 @@
   font-size: 1.5rem;
 }
 
+.cycleImage {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
 .cycleDetails {
   display: flex;
   flex-direction: column;
@@ -437,31 +445,61 @@ select:disabled {
   background-color: var(--color-surface-disabled, #f5f5f5);
 }
 
-/* Amélioration feedback erreurs */
-.error {
-  color: var(--color-error, #dc3545);
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
+/* ============================================
+   ERROR STATES - Amélioration feedback
+   ============================================ */
+
+.hasError label {
+  color: #ef4444 !important;
+  font-weight: 600;
+}
+
+.hasError label::after {
+  content: ' ⚠';
+  color: #ef4444;
+}
+
+.errorMsg {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 6px;
+  color: #ef4444;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: linear-gradient(145deg, #fef2f2, #fee2e2);
+  border-radius: 8px;
+  border-left: 3px solid #ef4444;
+  animation: slideIn 0.3s ease;
 }
 
-.error::before {
-  content: '⚠️';
-  font-size: 1rem;
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.inputError,
-.textareaError {
-  border-color: var(--color-error, #dc3545) !important;
-  background-color: rgba(220, 53, 69, 0.05);
+.inputError {
+  border-color: #ef4444 !important;
+  background: linear-gradient(145deg, #fef2f2, #fee2e2) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+  animation: shake 0.4s ease-in-out;
 }
 
-.inputError:focus,
-.textareaError:focus {
-  outline-color: var(--color-error, #dc3545);
-  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15);
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-3px); }
+  40%, 80% { transform: translateX(3px); }
+}
+
+.inputError:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15) !important;
 }
 
 /* Mobile responsive */
