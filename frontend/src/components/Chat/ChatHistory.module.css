@@ -100,6 +100,34 @@
   transform: scale(0.95);
 }
 
+/* Long press active state - mobile */
+.longPressActive {
+  background: rgba(220, 53, 69, 0.08) !important;
+  border-color: rgba(220, 53, 69, 0.3) !important;
+  transform: scale(0.98);
+}
+
+.deleteBtnVisible {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+  animation: popIn 0.2s ease-out;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+:global(.dark) .longPressActive {
+  background: rgba(220, 53, 69, 0.15) !important;
+}
+
 :global(.dark) .deleteBtn {
   background: rgba(220, 53, 69, 0.15);
   border-color: rgba(220, 53, 69, 0.4);

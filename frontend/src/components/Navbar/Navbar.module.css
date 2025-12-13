@@ -1134,11 +1134,10 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: visible; /* Changed from hidden to visible to allow child scroll */
+  /* Hidden to prevent outer scroll - only chatMessages inside should scroll */
+  overflow: hidden;
   position: relative;
   height: 100%;
-  /* Ensure smooth scrolling on mobile */
-  -webkit-overflow-scrolling: touch;
 }
 
 /* Chat header with close button */
@@ -1351,14 +1350,12 @@
   .mobileChatPanel {
     flex: 1 1 auto;
     min-height: 0;
-    overflow: visible; /* Allow child elements to scroll */
+    /* Hidden - only chatMessages inside should scroll */
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     position: relative;
-    /* Ensure proper stacking context */
     z-index: 1;
-    /* Prevent horizontal scrolling */
-    overflow-x: hidden;
   }
 
   .chatHistoryHeader {
