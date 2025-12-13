@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { storage } from '../shared/utils/storage';
-import { isAuthenticated } from '../utils/authService';
+import { isAuthenticated, secureApiCall } from '../utils/authService';
 
 const WebSocketContext = createContext(null);
 
@@ -22,9 +22,28 @@ export function WebSocketProvider({ children }) {
   const MAX_RECONNECT_ATTEMPTS = 5;
 
   /**
+   * Récupérer le token WebSocket depuis le serveur si nécessaire
+   */
+  const fetchWsToken = useCallback(async () => {
+    try {
+      const response = await secureApiCall('/ws-token');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.token) {
+          storage.set('wsToken', data.token);
+          return data.token;
+        }
+      }
+    } catch (error) {
+      console.error('[WebSocket] Failed to fetch token:', error);
+    }
+    return null;
+  }, []);
+
+  /**
    * Connexion au serveur WebSocket
    */
-  const connect = useCallback(() => {
+  const connect = useCallback(async () => {
     // Ne pas reconnecter si déjà connecté
     if (socketRef.current?.connected) {
       return;
@@ -36,8 +55,17 @@ export function WebSocketProvider({ children }) {
       return;
     }
 
-    // Récupérer le token pour WebSocket
-    const wsToken = storage.get('wsToken');
+    // Récupérer le token pour WebSocket (ou le chercher sur le serveur)
+    let wsToken = storage.get('wsToken');
+    if (!wsToken) {
+      wsToken = await fetchWsToken();
+    }
+
+    // Log pour debug
+    if (import.meta.env.DEV) {
+      console.log('[WebSocket] Connecting to:', BACKEND_URL);
+      console.log('[WebSocket] Token available:', !!wsToken);
+    }
 
     // Créer la connexion Socket.io
     const newSocket = io(BACKEND_URL, {
@@ -75,15 +103,16 @@ export function WebSocketProvider({ children }) {
       }
     });
 
-    newSocket.on('connect_error', () => {
+    newSocket.on('connect_error', (error) => {
       setIsConnected(false);
+      console.error('[WebSocket] Connection error:', error.message);
     });
 
     socketRef.current = newSocket;
     setSocket(newSocket);
 
     return newSocket;
-  }, []);
+  }, [fetchWsToken]);
 
   /**
    * Déconnexion du serveur WebSocket

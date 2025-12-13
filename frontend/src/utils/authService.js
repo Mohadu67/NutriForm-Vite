@@ -155,6 +155,7 @@ export async function logout() {
   storage.remove("lastActivity");
   storage.remove("rememberMe");
   storage.remove("cachedDisplayName");
+  storage.remove("wsToken"); // Supprimer le token WebSocket
 
   sessionStore.remove("user");
   sessionStore.remove("userId");

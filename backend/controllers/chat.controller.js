@@ -11,6 +11,7 @@ const logger = require('../utils/logger.js');
 async function notifyAdmins(title, message, link, metadata = {}, io = null) {
   try {
     const admins = await User.find({ role: 'admin' }).select('_id');
+    logger.info(`📢 notifyAdmins: ${admins.length} admin(s) trouvé(s), io=${!!io}, notifyUser=${!!io?.notifyUser}`);
 
     for (const admin of admins) {
       const notification = await Notification.create({
@@ -24,7 +25,21 @@ async function notifyAdmins(title, message, link, metadata = {}, io = null) {
 
       // Envoyer en temps réel via WebSocket si disponible
       if (io && io.notifyUser) {
-        io.notifyUser(admin._id.toString(), 'new_notification', notification);
+        // Convertir en objet simple pour éviter les problèmes de sérialisation Mongoose
+        const notifData = {
+          _id: notification._id.toString(),
+          id: notification._id.toString(),
+          type: notification.type,
+          title: notification.title,
+          message: notification.message,
+          link: notification.link,
+          metadata: notification.metadata,
+          read: notification.read,
+          createdAt: notification.createdAt,
+          timestamp: notification.createdAt
+        };
+        logger.info(`📢 Envoi WebSocket à admin ${admin._id}: ${title}`);
+        io.notifyUser(admin._id.toString(), 'new_notification', notifData);
       }
     }
 
