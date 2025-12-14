@@ -5,6 +5,7 @@ const User = require("../models/User");
 const Notification = require("../models/Notification");
 const logger = require("../utils/logger");
 const { sanitizeProgram } = require("../utils/sanitizer");
+const { sendNotificationToUser } = require('../services/pushNotification.service');
 
 // Helper pour notifier tous les admins
 // Refactorisé pour être identique au matching qui fonctionne
@@ -46,6 +47,18 @@ async function notifyAdminsProgram(title, message, link, metadata = {}, io = nul
     await Notification.create(notificationsToCreate).catch(err =>
       logger.error('Erreur sauvegarde notifications programme:', err)
     );
+
+    // 3. Envoyer push notification à chaque admin
+    for (const admin of admins) {
+      sendNotificationToUser(admin._id, {
+        type: 'admin',
+        title,
+        body: message,
+        icon: '/icon-192x192.png',
+        badge: '/badge-72x72.png',
+        data: { url: link, ...metadata }
+      }).catch(err => logger.error('Erreur push admin programme:', err));
+    }
   } catch (error) {
     logger.error('Erreur notifyAdminsProgram:', error);
   }
@@ -1040,6 +1053,16 @@ async function approveProgram(req, res) {
           link: '/programs',
           metadata: { programId: program._id, action: 'approved' }
         }).catch(err => logger.error('Erreur sauvegarde notification approbation:', err));
+
+        // 3. Envoyer push notification à l'utilisateur
+        sendNotificationToUser(program.userId, {
+          type: 'system',
+          title: '✅ Programme approuvé !',
+          body: `Ton programme "${program.name}" est maintenant public ! 🎉`,
+          icon: '/icon-192x192.png',
+          badge: '/badge-72x72.png',
+          data: { url: '/programs', programId: program._id.toString() }
+        }).catch(err => logger.error('Erreur push approbation programme:', err));
       } catch (notifError) {
         logger.error('Erreur notification approbation programme:', notifError);
       }
@@ -1123,6 +1146,16 @@ async function rejectProgram(req, res) {
           link: '/programs',
           metadata: notifData.metadata
         }).catch(err => logger.error('Erreur sauvegarde notification refus:', err));
+
+        // 3. Envoyer push notification à l'utilisateur
+        sendNotificationToUser(program.userId, {
+          type: 'system',
+          title: '❌ Programme refusé',
+          body: `Ton programme "${program.name}" n'a pas été approuvé.`,
+          icon: '/icon-192x192.png',
+          badge: '/badge-72x72.png',
+          data: { url: '/programs', programId: program._id.toString() }
+        }).catch(err => logger.error('Erreur push refus programme:', err));
       } catch (notifError) {
         logger.error('Erreur notification refus programme:', notifError);
       }

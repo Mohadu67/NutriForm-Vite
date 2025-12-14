@@ -6,6 +6,7 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../utils/logger.js');
+const { sendNotificationToUser } = require('../services/pushNotification.service');
 
 // Helper pour notifier tous les admins (avec WebSocket optionnel)
 // Refactorisé pour être identique au matching qui fonctionne
@@ -47,6 +48,18 @@ async function notifyAdmins(title, message, link, metadata = {}, io = null) {
     await Notification.create(notificationsToCreate).catch(err =>
       logger.error('Erreur sauvegarde notifications admin:', err)
     );
+
+    // 3. Envoyer push notification à chaque admin
+    for (const admin of admins) {
+      sendNotificationToUser(admin._id, {
+        type: 'support',
+        title,
+        body: message,
+        icon: '/icon-192x192.png',
+        badge: '/badge-72x72.png',
+        data: { url: link, ...metadata }
+      }).catch(err => logger.error('Erreur push admin:', err));
+    }
   } catch (error) {
     logger.error('Erreur notifyAdmins:', error);
   }
@@ -192,6 +205,58 @@ async function sendMessage(req, res) {
     let shouldEscalate = false;
     let confidence = 0;
 
+    // Compter les messages de cette conversation pour déterminer si on affiche le bouton escalade
+    const messageCount = await ChatMessage.countDocuments({ conversationId: convId });
+    const showEscalateButton = messageCount >= 3; // Afficher après 3 messages (inclut celui qu'on vient d'ajouter)
+
+    // Détecter demande explicite de parler à un agent AVANT de générer une réponse
+    const msgLower = normalizeText(message);
+    const explicitEscalateRequest = containsAny(message, [
+      'parler a un agent', 'parler à un agent', 'parler un agent',
+      'parler a quelqu\'un', 'parler à quelqu\'un',
+      'agent humain', 'vrai humain', 'vraie personne',
+      'contacter support', 'contacter le support',
+      'besoin d\'aide humaine', 'aide humaine',
+      'transferer', 'transférer', 'escalader'
+    ]);
+
+    if (explicitEscalateRequest) {
+      // L'utilisateur demande explicitement un agent -> escalader immédiatement
+      shouldEscalate = true;
+      const io = req.app.get('io');
+      await escalateToHuman(userId, convId, message, 'Demande explicite utilisateur', io);
+
+      botResponse = await ChatMessage.create({
+        userId,
+        conversationId: convId,
+        role: 'bot',
+        content: "✅ Votre demande a été transmise à notre équipe support ! Un conseiller humain vous répondra dans les plus brefs délais. Vous pouvez continuer à écrire ici, vos messages lui seront directement envoyés. 🙏",
+        metadata: { confidence: 1, escalated: true }
+      });
+
+      // Sauvegarder la conversation
+      await AIConversation.findOneAndUpdate(
+        { userId, conversationId: convId },
+        {
+          userId,
+          conversationId: convId,
+          lastMessage: botResponse.content.substring(0, 100),
+          escalated: true,
+          ticketId: (await SupportTicket.findOne({ conversationId: convId }))?._id,
+          isActive: true
+        },
+        { upsert: true, new: true }
+      );
+
+      return res.status(200).json({
+        conversationId: convId,
+        message: userMessage,
+        botResponse,
+        escalated: true,
+        showEscalateButton: true
+      });
+    }
+
     if (openai) {
       // Mode avec OpenAI
       try {
@@ -268,7 +333,9 @@ async function sendMessage(req, res) {
       conversationId: convId,
       message: userMessage,
       botResponse,
-      escalated: shouldEscalate
+      escalated: shouldEscalate,
+      showEscalateButton,
+      messageCount
     });
 
   } catch (error) {

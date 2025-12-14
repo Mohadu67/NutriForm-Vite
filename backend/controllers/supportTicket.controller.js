@@ -3,6 +3,7 @@ const ChatMessage = require('../models/ChatMessage');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const logger = require('../utils/logger.js');
+const { sendNotificationToUser } = require('../services/pushNotification.service');
 
 /**
  * Récupérer tous les tickets (admin)
@@ -145,6 +146,16 @@ async function replyToTicket(req, res) {
         message: `${message.substring(0, 50)}${message.length > 50 ? '...' : ''}`,
         metadata: { ticketId: ticket._id, conversationId: ticket.conversationId }
       }).catch(err => logger.error('Erreur sauvegarde notification support:', err));
+
+      // 3. Envoyer push notification à l'utilisateur
+      sendNotificationToUser(ticket.userId, {
+        type: 'support',
+        title: '💬 Réponse du support',
+        body: `${message.substring(0, 100)}${message.length > 100 ? '...' : ''}`,
+        icon: '/icon-192x192.png',
+        badge: '/badge-72x72.png',
+        data: { url: '/chat', conversationId: ticket.conversationId }
+      }).catch(err => logger.error('Erreur push user support:', err));
     } catch (notifError) {
       logger.error('Erreur notification user:', notifError);
     }
