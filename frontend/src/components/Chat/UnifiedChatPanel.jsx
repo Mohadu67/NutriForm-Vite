@@ -19,6 +19,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
   const [escalating, setEscalating] = useState(false);
   const [deletingMessage, setDeletingMessage] = useState(null);
   const [showMessageOptions, setShowMessageOptions] = useState(null);
+  const [showEscalateButton, setShowEscalateButton] = useState(false);
 
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
@@ -259,24 +260,35 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
         const response = await sendChatMessage(content, conversationId);
 
-        // Si escaladé, pas de réponse bot à afficher
+        // Mettre à jour le flag showEscalateButton depuis la réponse serveur
+        if (response.showEscalateButton) {
+          setShowEscalateButton(true);
+        }
+
+        // Gérer le flag escalated
         if (response.escalated) {
           setEscalated(true);
-          // Ne pas ajouter de message bot - l'utilisateur attend une réponse humaine
-        } else {
-          // Gérer différents formats de réponse
-          let botContent = '';
-          if (response.botResponse) {
-            botContent = typeof response.botResponse === 'string'
-              ? response.botResponse
-              : response.botResponse?.content || '';
-          } else {
-            botContent = "Désolé, je n'ai pas pu générer une réponse.";
-          }
+          setShowEscalateButton(true); // Toujours afficher le bouton une fois escaladé
+        }
 
+        // Afficher la réponse du bot (même en cas d'escalade, le serveur envoie un message de confirmation)
+        if (response.botResponse) {
+          const botContent = typeof response.botResponse === 'string'
+            ? response.botResponse
+            : response.botResponse?.content || '';
+
+          if (botContent) {
+            setMessages(prev => [...prev, {
+              role: 'bot',
+              content: botContent,
+              createdAt: new Date()
+            }]);
+          }
+        } else if (!response.escalated) {
+          // Seulement si pas escaladé et pas de réponse, afficher erreur
           setMessages(prev => [...prev, {
             role: 'bot',
-            content: botContent,
+            content: "Désolé, je n'ai pas pu générer une réponse.",
             createdAt: new Date()
           }]);
         }
@@ -385,8 +397,8 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
   return (
     <div className={styles.chatPanel}>
-      {/* Bouton escalade (uniquement pour chat IA) */}
-      {!isMatchChat && conversationId && (
+      {/* Bouton escalade (uniquement pour chat IA, après 3 messages ou demande explicite) */}
+      {!isMatchChat && (conversationId || showEscalateButton) && (
         <div className={styles.escalateContainer}>
           <button
             onClick={handleEscalate}
