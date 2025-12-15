@@ -1,0 +1,194 @@
+/* Active Challenges Container */
+.container {
+  background: var(--paper);
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.header:hover {
+  background: rgba(247, 177, 134, 0.05);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--couleur-bouton-action);
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.badge {
+  background: var(--couleur-bouton-action);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Stats Row */
+.statsRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.08), rgba(184, 221, 209, 0.08));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.statValue {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--couleur-bouton-action);
+}
+
+.statLabel {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statDivider {
+  width: 1px;
+  height: 30px;
+  background: var(--line);
+}
+
+/* Challenges List */
+.challengesList {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.showMoreBtn {
+  background: none;
+  border: none;
+  color: var(--couleur-bouton-action);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.showMoreBtn:hover {
+  opacity: 0.8;
+}
+
+/* No Challenges */
+.noChallenges {
+  padding: 1rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Empty State */
+.emptyState {
+  padding: 2rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.emptyIcon {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+.emptyState p {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.emptyHint {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Create Button */
+.createBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: calc(100% - 1.5rem);
+  margin: 0 0.75rem 0.75rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, var(--couleur-bouton-action), #e89e6e);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
+}
+
+.createBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(247, 177, 134, 0.4);
+}
+
+.createBtn span {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .statsRow {
+    gap: 1rem;
+    padding: 0.5rem;
+  }
+
+  .statValue {
+    font-size: 1rem;
+  }
+
+  .statLabel {
+    font-size: 0.65rem;
+  }
+}

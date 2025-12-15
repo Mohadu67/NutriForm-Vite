@@ -1,7 +1,15 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { secureApiCall, isAuthenticated } from '../../utils/authService';
+import { storage } from '../../shared/utils/storage';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
+import ActiveChallenges from './components/ActiveChallenges';
+import ChallengeModal from './components/ChallengeModal';
+import ChallengeSentCard from './components/ChallengeSentCard';
+import LeagueProgress, { LeagueBadge } from './components/LeagueProgress';
+import BadgeDisplay from './components/BadgeDisplay';
+import { useChallenges, useBadges, LEAGUE_INFO } from './hooks/useChallenges';
+import { XIcon } from '../../components/Icons/GlobalIcons';
 import styles from './Leaderboard.module.css';
 import logger from '../../shared/utils/logger.js';
 
@@ -29,6 +37,15 @@ const CrownIcon = () => (
   </svg>
 );
 
+const SwordsIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
+    <line x1="13" x2="19" y1="19" y2="13" />
+    <line x1="16" x2="20" y1="16" y2="20" />
+    <line x1="19" x2="21" y1="21" y2="19" />
+  </svg>
+);
+
 const RefreshIcon = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
@@ -44,14 +61,33 @@ const Leaderboard = () => {
   const [isOptedIn, setIsOptedIn] = useState(false);
   const [optInLoading, setOptInLoading] = useState(false);
   const [userRank, setUserRank] = useState(null);
+  const [userEntry, setUserEntry] = useState(null);
   const [refreshLoading, setRefreshLoading] = useState(false);
 
-  // Check if user is logged in
-  const isLoggedIn = useMemo(() => {
-    return isAuthenticated();
-  }, []);
+  // Challenge modal state
+  const [challengeModalOpen, setChallengeModalOpen] = useState(false);
+  const [selectedOpponent, setSelectedOpponent] = useState(null);
+  const [challengeLoading, setChallengeLoading] = useState(false);
+  const [challengeSentOpen, setChallengeSentOpen] = useState(false);
+  const [lastChallengeType, setLastChallengeType] = useState('sessions');
+  const [lastOpponentName, setLastOpponentName] = useState('');
 
-  // Fetch leaderboard data (public endpoint)
+  // Hooks
+  const {
+    challenges,
+    stats: challengeStats,
+    createChallenge,
+    acceptChallenge,
+    declineChallenge,
+    cancelChallenge
+  } = useChallenges();
+
+  const { badges: userBadges } = useBadges();
+
+  const isLoggedIn = useMemo(() => isAuthenticated(), []);
+  const currentUserId = useMemo(() => storage.get('userId'), []);
+
+  // Fetch leaderboard data
   const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -76,7 +112,7 @@ const Leaderboard = () => {
     }
   }, [period, category]);
 
-  // Check opt-in status (only if logged in)
+  // Check opt-in status
   const checkOptInStatus = useCallback(async () => {
     if (!isLoggedIn) return;
 
@@ -87,6 +123,7 @@ const Leaderboard = () => {
       if (data.success) {
         setIsOptedIn(data.isOptedIn);
         if (data.isOptedIn && data.data) {
+          setUserEntry(data.data);
           const userId = data.data.userId;
           const rankResponse = await fetch(
             `${import.meta.env.VITE_API_URL || ''}/leaderboard/user/${userId}/rank?period=${period}&type=${category}`
@@ -95,8 +132,6 @@ const Leaderboard = () => {
           if (rankData.success) {
             setUserRank(rankData.rank);
           }
-        } else {
-          logger.error("User is not opted in to leaderboard");
         }
       }
     } catch (err) {
@@ -140,6 +175,7 @@ const Leaderboard = () => {
       if (data.success) {
         setIsOptedIn(false);
         setUserRank(null);
+        setUserEntry(null);
         fetchLeaderboard();
       }
     } catch (err) {
@@ -158,7 +194,6 @@ const Leaderboard = () => {
       const data = await response.json();
 
       if (data.success) {
-        // Rafraîchir les données du leaderboard après la mise à jour
         await fetchLeaderboard();
         await checkOptInStatus();
       }
@@ -169,8 +204,31 @@ const Leaderboard = () => {
     }
   };
 
+  // Challenge handlers
+  const handleChallengeUser = (entry) => {
+    if (!isLoggedIn || !isOptedIn) return;
+    if (entry.userId === currentUserId) return;
+
+    setSelectedOpponent(entry);
+    setChallengeModalOpen(true);
+  };
+
+  const handleCreateChallenge = async (opponentId, type, duration) => {
+    setChallengeLoading(true);
+    const result = await createChallenge(opponentId, type, duration);
+    setChallengeLoading(false);
+
+    if (result.success) {
+      setLastChallengeType(type);
+      setLastOpponentName(selectedOpponent?.displayName || selectedOpponent?.pseudo || '');
+      setChallengeModalOpen(false);
+      setChallengeSentOpen(true);
+    }
+
+    return result;
+  };
+
   const getStatValue = (entry) => {
-    // Combinaison période + type
     if (category === 'muscu') {
       if (period === 'week') return entry.stats?.muscuThisWeekSessions || 0;
       if (period === 'month') return entry.stats?.muscuThisMonthSessions || 0;
@@ -181,12 +239,6 @@ const Leaderboard = () => {
       if (period === 'month') return entry.stats?.cardioThisMonthSessions || 0;
       return entry.stats?.cardioSessions || 0;
     }
-    if (category === 'poids_corps') {
-      if (period === 'week') return entry.stats?.poidsCorpsThisWeekSessions || 0;
-      if (period === 'month') return entry.stats?.poidsCorpsThisMonthSessions || 0;
-      return entry.stats?.poidsCorpsSessions || 0;
-    }
-    // Type 'all' - filtrer uniquement par période
     if (period === 'week') return entry.stats?.thisWeekSessions || 0;
     if (period === 'month') return entry.stats?.thisMonthSessions || 0;
     return entry.stats?.totalSessions || 0;
@@ -201,7 +253,6 @@ const Leaderboard = () => {
   const getCategoryLabel = () => {
     if (category === 'muscu') return 'Musculation';
     if (category === 'cardio') return 'Cardio';
-    if (category === 'poids_corps') return 'Poids du corps';
     return 'Général';
   };
 
@@ -222,6 +273,70 @@ const Leaderboard = () => {
             <p className={styles.subtitle}>Les meilleurs athlètes de la communauté</p>
           </header>
 
+          {/* User rank - subtle top bar */}
+          {isLoggedIn && isOptedIn && (
+            <div className={styles.userRankBar}>
+              <div className={styles.rankInfo}>
+                {userRank ? (
+                  <>
+                    <span className={styles.rankLabel}>Ton classement</span>
+                    <div className={styles.rankBadge}>
+                      <span className={styles.rankHash}>#</span>
+                      <span className={styles.rankNumber}>{userRank}</span>
+                    </div>
+                    <span className={styles.rankCategory}>{getCategoryLabel()}</span>
+                  </>
+                ) : (
+                  <span className={styles.rankLoading}>Chargement...</span>
+                )}
+              </div>
+              <div className={styles.rankActions}>
+                <button
+                  className={styles.rankRefreshBtn}
+                  onClick={handleRefreshProfile}
+                  disabled={refreshLoading}
+                  title="Actualiser"
+                >
+                  {refreshLoading ? (
+                    <div className={styles.miniSpinner}></div>
+                  ) : (
+                    <RefreshIcon size={14} />
+                  )}
+                </button>
+                <button
+                  className={styles.rankExitBtn}
+                  onClick={handleOptOut}
+                  disabled={optInLoading}
+                  title="Quitter le classement"
+                >
+                  <XIcon size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* League Progress (si connecté et opté in) */}
+          {isLoggedIn && isOptedIn && userEntry && (
+            <LeagueProgress
+              league={userEntry.league || 'starter'}
+              xp={userEntry.xp || 0}
+              badges={userBadges}
+              challengeStats={userEntry.challengeStats}
+            />
+          )}
+
+          {/* Active Challenges (si connecté) */}
+          {isLoggedIn && isOptedIn && (
+            <ActiveChallenges
+              challenges={challenges}
+              currentUserId={currentUserId}
+              onAccept={acceptChallenge}
+              onDecline={declineChallenge}
+              onCancel={cancelChallenge}
+              stats={challengeStats}
+            />
+          )}
+
           {/* Opt-in Banner */}
           {isLoggedIn && !isOptedIn && (
             <div className={styles.optInBanner}>
@@ -229,44 +344,12 @@ const Leaderboard = () => {
                 <span className={styles.optInEmoji}>🏆</span>
                 <div className={styles.optInText}>
                   <strong>Rejoins le classement !</strong>
-                  <span>Compare tes performances avec la communauté</span>
+                  <span>Compare tes performances et défie la communauté</span>
                 </div>
               </div>
               <button className={styles.optInBtn} onClick={handleOptIn} disabled={optInLoading}>
                 {optInLoading ? 'Inscription...' : 'Rejoindre'}
               </button>
-            </div>
-          )}
-
-          {/* User rank */}
-          {isLoggedIn && isOptedIn && (
-            <div className={styles.userRankBanner}>
-              {userRank ? (
-                <>
-                  <span>Tu es</span>
-                  <strong className={styles.userRankNumber}>#{userRank}</strong>
-                  <span>en {getCategoryLabel()}</span>
-                </>
-              ) : (
-                <span>Chargement de ton rang...</span>
-              )}
-              <div className={styles.userRankActions}>
-                <button
-                  className={styles.refreshBtn}
-                  onClick={handleRefreshProfile}
-                  disabled={refreshLoading}
-                  title="Rafraîchir mon profil"
-                >
-                  {refreshLoading ? (
-                    <div className={styles.loadingSpinner}></div>
-                  ) : (
-                    <RefreshIcon size={18} />
-                  )}
-                </button>
-                <button className={styles.optOutBtn} onClick={handleOptOut} disabled={optInLoading}>
-                  Quitter
-                </button>
-              </div>
             </div>
           )}
 
@@ -326,6 +409,7 @@ const Leaderboard = () => {
                         )}
                       </div>
                       <div className={styles.podiumName}>{podium[1].displayName}</div>
+                      {podium[1].league && <LeagueBadge league={podium[1].league} size="small" />}
                       <div className={styles.podiumStats}>
                         <strong>{getStatValue(podium[1])}</strong>
                         <span>séances</span>
@@ -337,6 +421,15 @@ const Leaderboard = () => {
                         </div>
                       )}
                       <div className={styles.podiumBar}></div>
+                      {isLoggedIn && isOptedIn && podium[1].userId !== currentUserId && (
+                        <button
+                          className={styles.challengeBtn}
+                          onClick={() => handleChallengeUser(podium[1])}
+                          title="Défier"
+                        >
+                          <SwordsIcon size={14} />
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -352,6 +445,7 @@ const Leaderboard = () => {
                         )}
                       </div>
                       <div className={styles.podiumName}>{podium[0].displayName}</div>
+                      {podium[0].league && <LeagueBadge league={podium[0].league} size="small" />}
                       <div className={styles.podiumStats}>
                         <strong>{getStatValue(podium[0])}</strong>
                         <span>séances</span>
@@ -363,6 +457,15 @@ const Leaderboard = () => {
                         </div>
                       )}
                       <div className={styles.podiumBar}></div>
+                      {isLoggedIn && isOptedIn && podium[0].userId !== currentUserId && (
+                        <button
+                          className={styles.challengeBtn}
+                          onClick={() => handleChallengeUser(podium[0])}
+                          title="Défier"
+                        >
+                          <SwordsIcon size={14} />
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -377,6 +480,7 @@ const Leaderboard = () => {
                         )}
                       </div>
                       <div className={styles.podiumName}>{podium[2].displayName}</div>
+                      {podium[2].league && <LeagueBadge league={podium[2].league} size="small" />}
                       <div className={styles.podiumStats}>
                         <strong>{getStatValue(podium[2])}</strong>
                         <span>séances</span>
@@ -388,6 +492,15 @@ const Leaderboard = () => {
                         </div>
                       )}
                       <div className={styles.podiumBar}></div>
+                      {isLoggedIn && isOptedIn && podium[2].userId !== currentUserId && (
+                        <button
+                          className={styles.challengeBtn}
+                          onClick={() => handleChallengeUser(podium[2])}
+                          title="Défier"
+                        >
+                          <SwordsIcon size={14} />
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -407,7 +520,10 @@ const Leaderboard = () => {
                         )}
                       </div>
                       <div className={styles.listInfo}>
-                        <div className={styles.listName}>{entry.displayName}</div>
+                        <div className={styles.listNameRow}>
+                          <span className={styles.listName}>{entry.displayName}</span>
+                          {entry.league && <LeagueBadge league={entry.league} size="small" />}
+                        </div>
                         {entry.stats?.currentStreak > 0 && (
                           <div className={styles.listStreak}>
                             <FireIcon size={12} />
@@ -419,6 +535,15 @@ const Leaderboard = () => {
                         <strong>{getStatValue(entry)}</strong>
                         <span>{getStatLabel()}</span>
                       </div>
+                      {isLoggedIn && isOptedIn && entry.userId !== currentUserId && (
+                        <button
+                          className={styles.listChallengeBtn}
+                          onClick={() => handleChallengeUser(entry)}
+                          title="Défier"
+                        >
+                          <SwordsIcon size={14} />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -427,6 +552,30 @@ const Leaderboard = () => {
           )}
         </div>
       </main>
+
+      {/* Challenge Modal */}
+      <ChallengeModal
+        isOpen={challengeModalOpen}
+        onClose={() => {
+          setChallengeModalOpen(false);
+          setSelectedOpponent(null);
+        }}
+        onSubmit={handleCreateChallenge}
+        opponent={selectedOpponent}
+        loading={challengeLoading}
+      />
+
+      {/* Challenge Sent Success Card */}
+      <ChallengeSentCard
+        isOpen={challengeSentOpen}
+        onClose={() => {
+          setChallengeSentOpen(false);
+          setSelectedOpponent(null);
+        }}
+        opponentName={lastOpponentName}
+        challengeType={lastChallengeType}
+      />
+
       <Footer />
     </>
   );

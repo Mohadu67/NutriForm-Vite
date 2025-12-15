@@ -1,0 +1,184 @@
+/* Badge Display Container */
+.container {
+  display: flex;
+  gap: 0.35rem;
+}
+
+/* Badge Item */
+.badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--canvas);
+  border: 2px solid var(--rarity-color, var(--line));
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.badge:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.badge.empty {
+  border-style: dashed;
+  opacity: 0.4;
+  cursor: default;
+}
+
+.badge.empty:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Sizes */
+.small .badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+
+.small .icon {
+  font-size: 0.85rem;
+}
+
+.medium .badge {
+  width: 32px;
+  height: 32px;
+}
+
+.medium .icon {
+  font-size: 1rem;
+}
+
+.large .badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+}
+
+.large .icon {
+  font-size: 1.5rem;
+}
+
+/* Rarity Dot */
+.rarityDot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: var(--rarity-color);
+  border-radius: 50%;
+  border: 2px solid var(--paper);
+}
+
+/* Badge Grid (Full View) */
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.category {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.categoryTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.categoryBadges {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.75rem;
+}
+
+.gridBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0.5rem;
+  background: var(--canvas);
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.gridBadge.unlocked {
+  border-color: var(--rarity-color);
+  background: linear-gradient(135deg, rgba(var(--rarity-color), 0.1), transparent);
+}
+
+.gridBadge.locked {
+  opacity: 0.5;
+  filter: grayscale(0.8);
+}
+
+.gridBadge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.gridIcon {
+  font-size: 1.75rem;
+}
+
+.gridName {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.lockIcon {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+/* Inline Badge */
+.inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inline.small {
+  font-size: 0.85rem;
+}
+
+.inline.medium {
+  font-size: 1rem;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .categoryBadges {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .gridBadge {
+    padding: 0.5rem;
+  }
+
+  .gridIcon {
+    font-size: 1.5rem;
+  }
+}
