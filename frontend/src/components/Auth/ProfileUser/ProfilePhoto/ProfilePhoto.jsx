@@ -47,15 +47,10 @@ export default function ProfilePhoto({ user }) {
       if (data.success) {
         setPhoto(data.photo);
 
-        const userStr = storage.get("user");
-        if (userStr) {
-          try {
-            const userData = JSON.parse(userStr);
-            userData.photo = data.photo;
-            storage.set("user", JSON.stringify(userData));
-          } catch (e) {
-            logger.error("Failed to update user photo in storage:", e);
-          }
+        const userData = storage.get("user");
+        if (userData) {
+          userData.photo = data.photo;
+          storage.set("user", userData);
         }
 
         setMessage({ type: "success", text: "Photo mise à jour avec succès" });
@@ -101,15 +96,10 @@ export default function ProfilePhoto({ user }) {
       if (data.success) {
         setPhoto(null);
 
-        const userStr = storage.get("user");
-        if (userStr) {
-          try {
-            const userData = JSON.parse(userStr);
-            userData.photo = null;
-            storage.set("user", JSON.stringify(userData));
-          } catch (e) {
-            logger.error("Failed to remove user photo from storage:", e);
-          }
+        const userData = storage.get("user");
+        if (userData) {
+          userData.photo = null;
+          storage.set("user", userData);
         }
 
         setMessage({ type: "success", text: "Photo supprimée avec succès" });

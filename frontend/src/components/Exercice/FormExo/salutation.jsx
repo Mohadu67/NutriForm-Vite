@@ -9,7 +9,7 @@ export default function Salutation({ className = "", seedKey = "static" }) {
 
   useEffect(() => {
     try {
-      const cached = JSON.parse(storage.get("user") || "null");
+      const cached = storage.get("user") || null;
       const cachedName =
         cached?.prenom ||
         cached?.pseudo ||

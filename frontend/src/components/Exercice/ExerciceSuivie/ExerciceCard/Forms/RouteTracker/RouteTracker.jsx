@@ -129,10 +129,10 @@ function useVibration() {
 function useRouteStorage(storageKey) {
   const save = (data) => {
     try {
-      storage.set(storageKey, JSON.stringify({
+      storage.set(storageKey, {
         ...data,
         savedAt: Date.now()
-      }));
+      });
     } catch (error) {
       logger.error("Erreur sauvegarde:", error);
     }

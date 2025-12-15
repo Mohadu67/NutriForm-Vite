@@ -1,11 +1,23 @@
 const fs = require('fs');
 const logger = require('./utils/logger.js');
-if (fs.existsSync('.env.local')) {
-  require('dotenv').config({ path: '.env.local' });
-  logger.info('📁 Chargement de .env.local');
-} else {
-  require('dotenv').config();
-  logger.info('📁 Chargement de .env');
+
+// Chargement des variables d'environnement selon NODE_ENV
+const nodeEnv = process.env.NODE_ENV || 'development';
+const envFiles = nodeEnv === 'production'
+  ? ['.env.production', '.env.prod', '.env']
+  : ['.env.local', '.env.development', '.env'];
+
+let envLoaded = false;
+for (const envFile of envFiles) {
+  if (fs.existsSync(envFile)) {
+    require('dotenv').config({ path: envFile });
+    logger.info(`📁 Chargement de ${envFile} (NODE_ENV=${nodeEnv})`);
+    envLoaded = true;
+    break;
+  }
+}
+if (!envLoaded) {
+  logger.warn('⚠️ Aucun fichier .env trouvé');
 }
 logger.info('🔑 JWT_SECRET:', process.env.JWT_SECRET ? '✅ Défini' : '❌ NON DÉFINI');
 const cookieParser = require('cookie-parser');
@@ -74,7 +86,6 @@ logger.info('📍 URI:', config.mongoUri.replace(/\/\/.*@/, '//*****@')); // Mas
 
 mongoose
   .connect(config.mongoUri, {
-    dbName: 'nutriform',
     authSource: 'admin',
     serverSelectionTimeoutMS: 10000, // Timeout après 10 secondes
     socketTimeoutMS: 45000,

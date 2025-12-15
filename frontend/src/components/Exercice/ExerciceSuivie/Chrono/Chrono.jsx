@@ -585,7 +585,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
             stopAndReset();
           }}
           session={savedSession}
-          user={JSON.parse(storage.get('user') || '{}')}
+          user={storage.get('user') || {}}
         />
       )}
     </>
