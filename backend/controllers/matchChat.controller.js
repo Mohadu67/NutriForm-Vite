@@ -17,6 +17,7 @@ async function getConversations(req, res) {
   try {
     const userId = req.userId;
     const limit = parseInt(req.query.limit) || 50; // Limite par défaut de 50 conversations
+    const io = req.app.get('io'); // Pour vérifier si les utilisateurs sont en ligne
 
     // Optimisation: récupérer les conversations avec populate, mais limiter les champs
     const conversations = await Conversation.find({
@@ -64,6 +65,15 @@ async function getConversations(req, res) {
 
       const profile = profilesMap.get(otherUser._id.toString()) || {};
       const unreadCount = conv.unreadCount?.[userId.toString()] || 0;
+      const otherUnreadCount = conv.unreadCount?.[otherUser._id.toString()] || 0;
+
+      // Vérifier si l'autre utilisateur est en ligne (connecté au WebSocket)
+      const otherUserOnline = io && io.isUserOnline ? io.isUserOnline(otherUser._id.toString()) : false;
+
+      // Si j'ai envoyé le dernier message, vérifier si l'autre l'a lu (son unreadCount = 0)
+      const lastMsgSenderId = conv.lastMessage?.senderId?.toString();
+      const iSentLastMessage = lastMsgSenderId === userId.toString();
+      const lastMessageRead = iSentLastMessage ? (otherUnreadCount === 0) : null;
 
       return {
         _id: conv._id,
@@ -80,7 +90,9 @@ async function getConversations(req, res) {
             profilePicture: otherUser.photo
           }
         },
-        unreadCount
+        unreadCount,
+        otherUserOnline, // true si l'autre est connecté au WebSocket
+        lastMessageRead // true si mon message a été lu, false si pas lu, null si c'est pas moi qui ai envoyé
       };
     }).filter(Boolean); // Enlever les null
 
@@ -349,10 +361,18 @@ async function sendMessage(req, res) {
     // Récupérer les infos de l'expéditeur pour les notifications
     const senderUser = await User.findById(userId).select('pseudo photo');
 
-    // Envoyer une notification dans le NotificationCenter via WebSocket
-    logger.info(`🔔 Tentative envoi notification: io=${!!io}, notifyUser=${!!io?.notifyUser}, senderUser=${!!senderUser}`);
-    if (io && io.notifyUser && senderUser) {
-      logger.info(`🔔 Envoi new_notification à user ${receiverId}`);
+    // Vérifier si le destinataire est dans la conversation (pas besoin de notif)
+    let receiverInConversation = false;
+    if (io) {
+      const roomName = `conversation:${conversationId}`;
+      const socketsInRoom = await io.in(roomName).fetchSockets();
+      receiverInConversation = socketsInRoom.some(s => s.userId === receiverId.toString());
+      logger.info(`🔍 Receiver ${receiverId} dans la conv: ${receiverInConversation}`);
+    }
+
+    // Envoyer une notification UNIQUEMENT si le destinataire n'est pas dans la conversation
+    if (!receiverInConversation && io && io.notifyUser && senderUser) {
+      logger.info(`🔔 Envoi new_notification à user ${receiverId} (pas dans la conv)`);
       io.notifyUser(receiverId.toString(), 'new_notification', {
         id: `msg-${message._id}-${Date.now()}`,
         type: 'message',
@@ -363,16 +383,16 @@ async function sendMessage(req, res) {
         read: false,
         link: `/matching?conversation=${conversationId}`
       });
-    }
 
-    // Envoyer une notification push au destinataire
-    if (senderUser) {
+      // Envoyer une notification push au destinataire (seulement si pas dans la conv)
       notifyNewMessage(receiverId, {
         senderName: senderUser.pseudo || 'Un utilisateur',
         senderPhoto: senderUser.photo,
-        message: sanitizedContent.substring(0, 100), // Limiter à 100 caractères
+        message: sanitizedContent.substring(0, 100),
         conversationId: conversationId
       }).catch(err => logger.error('Erreur notification message:', err));
+    } else if (receiverInConversation) {
+      logger.info(`🔕 Pas de notification pour ${receiverId} (déjà dans la conv)`);
     }
 
     res.status(201).json({ message: messageObj });
@@ -498,6 +518,7 @@ async function markAsRead(req, res) {
     if (messageIds.length > 0) {
       const io = req.app.get('io');
       if (io) {
+        // Notifier la conversation (pour ceux qui sont dans le chat)
         io.to(`conversation:${conversationId}`).emit('messages_read', {
           conversationId,
           messageIds,
@@ -509,6 +530,19 @@ async function markAsRead(req, res) {
           conversationId,
           unreadDecrement: messageIds.length
         });
+
+        // Notifier aussi les expéditeurs des messages (pour mettre à jour ✓✓ dans leur liste de conv)
+        // Trouver l'autre participant (l'expéditeur des messages qu'on vient de lire)
+        const otherParticipantId = conversation.participants.find(
+          p => p.toString() !== userId.toString()
+        );
+        if (otherParticipantId) {
+          io.to(`user:${otherParticipantId}`).emit('messages_read', {
+            conversationId,
+            messageIds,
+            readBy: userId
+          });
+        }
 
         logger.info(`📖 WebSocket: ${messageIds.length} messages marqués comme lus dans conversation ${conversationId}`);
       }

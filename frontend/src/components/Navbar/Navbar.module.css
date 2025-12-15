@@ -99,6 +99,63 @@
   }
 }
 
+/* ========================================
+   TABLET RESPONSIVE (768px - 1189px)
+   Navbar mobile plus large pour iPad
+   ======================================== */
+
+@media (min-width: 768px) and (max-width: 1189px) {
+  .dock {
+    max-width: 600px;
+    padding: 14px 20px;
+  }
+
+  .dockExpanded {
+    max-width: 600px;
+    width: 90%;
+  }
+
+  .mainNav {
+    gap: 12px;
+  }
+
+  .mainNav .dockItem {
+    padding: 12px 18px;
+    gap: 10px;
+  }
+
+  .mainNav .dockIcon {
+    font-size: 22px;
+  }
+
+  .mainNav .dockLabel {
+    font-size: 14px;
+  }
+
+  /* Menu étendu plus spacieux */
+  .expandedContent {
+    padding: 20px;
+  }
+
+  .navItem {
+    padding: 16px 20px;
+    gap: 14px;
+  }
+
+  .navIcon {
+    font-size: 26px;
+  }
+
+  .navLabel {
+    font-size: 16px;
+  }
+
+  .utilityBtn {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+}
+
 
 /* ========================================
    LOGO
@@ -526,10 +583,11 @@
 }
 
 /* ========================================
-   TABLET & DESKTOP (min-width: 768px)
+   DESKTOP ONLY (min-width: 1190px)
+   iPad/tablettes restent en mode mobile pour éviter l'overflow
    ======================================== */
 
-@media (min-width: 768px) {
+@media (min-width: 1190px) {
   /* Container principal - barre horizontale pleine largeur */
   .dock {
     position: fixed;
@@ -1328,9 +1386,10 @@
 
 /* ========================================
    MOBILE SPECIFIC - Keyboard Handling
+   Inclut iPad/tablettes (< 1190px)
    ======================================== */
 
-@media (max-width: 768px) {
+@media (max-width: 1189px) {
   /* Better mobile keyboard handling */
   .mobilePanel {
     position: fixed;

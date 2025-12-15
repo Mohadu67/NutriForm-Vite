@@ -7,11 +7,15 @@ const User = require('../models/User');
 const auth = require('../middlewares/auth.middleware');
 const logger = require('../utils/logger.js');
 
-// Configuration Cloudinary
+// Configuration Cloudinary (credentials requis dans .env)
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+  logger.warn('⚠️ Cloudinary credentials manquants dans .env - Upload de photos désactivé');
+}
+
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dbkulqwrt',
-  api_key: process.env.CLOUDINARY_API_KEY || '491896755629941',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'PzrPFEEtNS6YAJ65vMP4AiDGkPs'
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 // Configuration du stockage Cloudinary
@@ -48,7 +52,12 @@ const upload = multer({
 
 router.post('/profile-photo', auth, upload.single('photo'), async (req, res) => {
   try {
+    logger.info('📸 Upload photo - userId:', req.userId);
+    logger.info('📸 Upload photo - file:', req.file ? 'présent' : 'absent');
+    logger.info('📸 Upload photo - body keys:', Object.keys(req.body || {}));
+
     if (!req.file) {
+      logger.warn('📸 Upload photo - Aucun fichier reçu');
       return res.status(400).json({
         success: false,
         message: 'Aucune photo fournie'
@@ -154,6 +163,9 @@ router.delete('/profile-photo', auth, async (req, res) => {
 
 
 router.use((error, req, res, next) => {
+  logger.error('📸 Upload error:', error.message);
+  logger.error('📸 Upload error stack:', error.stack);
+
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({

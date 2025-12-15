@@ -7,7 +7,7 @@ import messageNotificationService from '../../services/messageNotificationServic
  * À placer dans le composant principal de l'app
  */
 export default function MessageNotificationManager() {
-  const { openMatchChat, openChat, openMatchChatById, openAIChat } = useChat();
+  const { openMatchChat, openChat, openMatchChatById, openAIChat } = useChat() || {};
 
   useEffect(() => {
     // Écouter l'événement pour ouvrir une conversation match

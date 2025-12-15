@@ -7,6 +7,17 @@ class MessageNotificationService {
     this.lastCheckedTimestamp = Date.now();
     this.notifiedMessageIds = new Set();
     this.isActive = false;
+    this.activeConversationId = null;
+
+    // Écouter les événements d'ouverture/fermeture de conversation
+    if (typeof window !== 'undefined') {
+      window.addEventListener('conversationOpened', (e) => {
+        this.activeConversationId = e.detail?.conversationId || null;
+      });
+      window.addEventListener('conversationClosed', () => {
+        this.activeConversationId = null;
+      });
+    }
   }
 
   /**
@@ -89,6 +100,9 @@ class MessageNotificationService {
   showNotification(conversation) {
     if (Notification.permission !== 'granted') return;
     if (document.hasFocus()) return; // Pas de notification si l'app est active
+
+    // Ne pas notifier si l'utilisateur est sur cette conversation
+    if (this.activeConversationId === conversation._id) return;
 
     const senderName = conversation.otherUser?.name || 'Nouveau message';
     const messageContent = conversation.lastMessage?.content || 'Nouveau message';

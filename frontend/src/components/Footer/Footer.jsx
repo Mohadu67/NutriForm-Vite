@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { storage } from '../../shared/utils/storage';
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import Logo from "../Logo/Logo";
 import NavLinks from "../Navbar/Navlinks.jsx";
@@ -21,7 +21,8 @@ export default function Footer() {
     }
     return !!storage.get("user");
   });
-  const location = useLocation();
+  // Utilise window.location au lieu de useLocation pour éviter les problèmes Safari
+  const [path, setPath] = useState("/");
 
   const CORE_LINKS = [
     { label: "Outils", path: "/outils", special: true },
@@ -30,14 +31,17 @@ export default function Footer() {
   ];
 
   useEffect(() => {
+    // Définir le path côté client
+    if (typeof window !== "undefined") {
+      setPath((window.location.pathname || "/").toLowerCase());
+    }
+
     const onStorage = () => setIsLoggedIn(!!storage.get("user"));
     window.addEventListener("storage", onStorage);
 
     onStorage();
     return () => window.removeEventListener("storage", onStorage);
   }, []);
-
-  const path = (location.pathname || "/").toLowerCase();
   const isHomePage = path === "/";
 
   const links = useMemo(() => {

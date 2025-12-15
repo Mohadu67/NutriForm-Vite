@@ -79,8 +79,11 @@ export default function Dashboard() {
     extractSessionCalories,
     weeklyCalories,
     rmTests,
+    rmTestsByExercice,
     weightPoints,
-    allSessionsSorted
+    allSessionsSorted,
+    userSessions,
+    setUserSessions
   } = useDashboardData(sessions, records);
 
   const {
@@ -102,6 +105,17 @@ export default function Dashboard() {
     setShowBadgesPopup
   } = useBadges(stats, records);
 
+  // Callbacks pour mettre à jour le state après suppression/renommage de session
+  const handleSessionDeleted = useCallback((sessionId) => {
+    setUserSessions(prev => prev.filter(s => (s.id || s._id) !== sessionId));
+  }, [setUserSessions]);
+
+  const handleSessionRenamed = useCallback((sessionId, newName) => {
+    setUserSessions(prev => prev.map(s =>
+      (s.id || s._id) === sessionId ? { ...s, name: newName } : s
+    ));
+  }, [setUserSessions]);
+
   const {
     editingSessionId,
     editingSessionName,
@@ -113,7 +127,7 @@ export default function Dashboard() {
     handleSaveSessionName,
     handleCancelEdit,
     handleDeleteSession
-  } = useSessionManagement();
+  } = useSessionManagement(handleSessionDeleted, handleSessionRenamed);
 
   const capitalizedName = useMemo(() => {
     // Si pas de displayName, essayer de récupérer depuis le storage
@@ -197,14 +211,12 @@ export default function Dashboard() {
                   <span>Historique illimité, tous les badges, heatmap et plus encore</span>
                 </div>
               </div>
-              <Button
-                variant="primary"
-                size="sm"
+              <button
                 onClick={() => navigate('/pricing')}
                 className={style.upsellButton}
               >
                 7 jours gratuits
-              </Button>
+              </button>
             </div>
           )}
 
@@ -262,18 +274,25 @@ export default function Dashboard() {
             weightChange={weightChange}
           />
 
-          {/* 1RM History */}
+          {/* 1RM History - Groupé par exercice avec scroll horizontal */}
           {rmTests.length > 0 && (
             <section className={style.rmSection}>
               <h2 className={style.sectionTitle}>Historique 1RM</h2>
-              <div className={style.rmList}>
-                {rmTests.slice(0, 5).map((test, index) => (
-                  <div key={index} className={style.rmItem}>
-                    <div className={style.rmInfo}>
-                      <span className={style.rmExercice}>{test.exercice}</span>
-                      <span className={style.rmDate}>{formatDate(test.date)}</span>
+              <div className={style.rmByExercice}>
+                {Object.entries(rmTestsByExercice).map(([exercice, tests]) => (
+                  <div key={exercice} className={style.rmExerciceRow}>
+                    <div className={style.rmExerciceHeader}>
+                      <span className={style.rmExerciceName}>{exercice}</span>
+                      <span className={style.rmExerciceCount}>{tests.length} test{tests.length > 1 ? 's' : ''}</span>
                     </div>
-                    <span className={style.rmValue}>{test.rm} kg</span>
+                    <div className={style.rmScrollContainer}>
+                      {tests.map((test, index) => (
+                        <div key={index} className={style.rmCard}>
+                          <span className={style.rmCardValue}>{test.rm} kg</span>
+                          <span className={style.rmCardDate}>{formatDate(test.date)}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
