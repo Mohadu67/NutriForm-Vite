@@ -164,8 +164,7 @@
 
 /* ========== SECTIONS ========== */
 .formSection {
-  padding: 60px 20px;
-  background: var(--paper, #ffffff);
+  padding: 0;
 }
 
 .infoSection {
@@ -305,7 +304,6 @@
     height: 180px;
   }
 
-  .formSection,
   .infoSection {
     padding: 80px 24px;
   }
@@ -328,6 +326,148 @@
 @media (min-width: 1024px) {
   .tipsGrid {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ========== FLEMME CARD ========== */
+.flemmeCard {
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--line, rgba(0,0,0,.08));
+  border-radius: 16px;
+  padding: 1.5rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.flemmeHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.flemmeIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.15), rgba(247, 177, 134, 0.08));
+  flex-shrink: 0;
+}
+
+.flemmeIcon {
+  color: #f7b186;
+  width: 24px;
+  height: 24px;
+}
+
+.flemmeHeaderText h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0 0 0.125rem;
+}
+
+.flemmeHeaderText p {
+  font-size: 0.8rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
+}
+
+.flemmeTips {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.flemmeTip {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  background: var(--couleur-principale, #f7f6f2);
+  border-radius: 12px;
+  border-left: 3px solid #f7b186;
+}
+
+.tipNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f7b186;
+  color: #111;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.tipContent h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+  margin: 0 0 0.25rem;
+}
+
+.tipContent p {
+  font-size: 0.8rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.flemmeFooter {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line, rgba(0,0,0,.08));
+  text-align: center;
+}
+
+.flemmeQuote {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--muted, #6b7280);
+  margin: 0;
+}
+
+.flemmeQuote strong {
+  color: #f7b186;
+  font-style: normal;
+}
+
+@media (min-width: 768px) {
+  .flemmeCard {
+    padding: 2rem 1.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .flemmeIconWrapper {
+    width: 48px;
+    height: 48px;
+  }
+
+  .flemmeIcon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .flemmeHeaderText h3 {
+    font-size: 1.25rem;
+  }
+
+  .flemmeTip {
+    padding: 1rem;
+  }
+
+  .tipContent h4 {
+    font-size: 0.95rem;
+  }
+
+  .tipContent p {
+    font-size: 0.85rem;
   }
 }
 

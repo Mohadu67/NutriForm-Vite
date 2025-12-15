@@ -188,7 +188,7 @@ export default function SuivieCard({ exo, value, onChange }) {
     const done = isExerciseDone(payload);
     const enriched = { ...payload, done };
     try {
-      storage.set(storageKeyFromExo(exo), JSON.stringify(enriched));
+      storage.set(storageKeyFromExo(exo), enriched);
     } catch (e) {
       logger.error("Failed to auto-save exercise data to storage:", e);
     }

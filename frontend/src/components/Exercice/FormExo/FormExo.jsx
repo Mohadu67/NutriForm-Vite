@@ -1,9 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { storage } from '../../../shared/utils/storage';
 import styles from "./FormExo.module.css";
 import DynamiChoice from "../DynamiChoice/DynamiChoice.jsx";
 import Progress from "../BarreDetape/Etapes.jsx";
-import Salutation from "./salutation.jsx";
 import SuivieExo from "../ExerciceSuivie/SuivieExo.jsx";
 import ChercherExo from "../ExerciceSuivie/MoteurRechercheUser/ChercherExo.jsx";
 import SuivieSeance from "../../History/SessionTracking/SuivieSeance.jsx";
@@ -15,10 +14,110 @@ import { secureApiCall, getCurrentUser } from "../../../utils/authService.js";
 import { loadExercises } from "../../../utils/exercisesLoader.js";
 import logger from '../../../shared/utils/logger.js';
 
+// SVG Icon for welcome screen
+const DumbbellIcon = ({ size = 48, className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M6.5 6.5a2 2 0 0 1 2-2h.5a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-.5a2 2 0 0 1-2-2V6.5Z" />
+    <path d="M17.5 6.5a2 2 0 0 0-2-2h-.5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h.5a2 2 0 0 0 2-2V6.5Z" />
+    <path d="M11 12h2" />
+    <path d="M4.5 8.5a1 1 0 0 1 1-1h.5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-.5a1 1 0 0 1-1-1v-7Z" />
+    <path d="M19.5 8.5a1 1 0 0 0-1-1h-.5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h.5a1 1 0 0 0 1-1v-7Z" />
+  </svg>
+);
+
+// Scroll indicator chevron icon
+const ChevronDownIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M6 9l6 6 6-6" />
+  </svg>
+);
+
+// Titres dynamiques et accrocheurs pour chaque section
+const HERO_TITLES = {
+  withName: [
+    (name) => `Salut ${name}, prêt à tout casser ?`,
+    (name) => `${name} est dans la place !`,
+    (name) => `Hey ${name}, on transpire aujourd'hui ?`,
+    (name) => `${name}, mode bête activé ?`,
+    (name) => `Alors ${name}, on se bouge ?`,
+    (name) => `${name}, c'est l'heure de briller`,
+    (name) => `Yo ${name}, les muscles t'attendent`,
+  ],
+  withoutName: [
+    "Prêt à soulever des montagnes ?",
+    "C'est l'heure de transpirer",
+    "Les excuses, c'est fini",
+    "Aujourd'hui, tu deviens légende",
+    "Mode warrior activé",
+    "Les muscles n'attendent pas",
+    "On va tout déchirer",
+  ]
+};
+
+const HERO_SUBTITLES = [
+  "Construis ta séance sur mesure",
+  "Ta meilleure version commence ici",
+  "Chaque rep compte, chaque set aussi",
+  "Le canapé peut attendre",
+  "Ton futur toi te remerciera",
+  "Moins de blabla, plus de gains",
+];
+
+const BUILDER_TITLES = [
+  "Compose ton programme",
+  "Choisis tes armes",
+  "Construis ta légende",
+  "Prépare le terrain",
+  "À toi de jouer",
+  "Mission du jour",
+];
+
+const SUIVI_TITLES = [
+  "Ton palmarès",
+  "Tes exploits récents",
+  "La preuve que t'assures",
+  "Ton historique de champion",
+  "Tes stats de warrior",
+  "Le chemin parcouru",
+];
+
+const SCROLL_HINTS = [
+  "Voir mon historique",
+  "Découvrir mes stats",
+  "Explorer mes séances",
+  "Mes performances",
+  "En savoir plus",
+];
+
+// Helper pour sélectionner un élément aléatoire
+const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
 export default function FormExo({ user: userProp }) {
   const user = userProp || getCurrentUser();
   const [sessionName, setSessionName] = useState(() => {
-    try { return JSON.parse(storage.get("formSessionName")) || ""; } catch { return ""; }
+    try { return storage.get("formSessionName") || ""; } catch { return ""; }
   });
   const [currentStep, setCurrentStep] = useState(() => {
     try { return parseInt(storage.get("formCurrentStep"), 10) || 0; } catch { return 0; }
@@ -27,10 +126,10 @@ export default function FormExo({ user: userProp }) {
     try { return storage.get("formMode") || "builder"; } catch { return "builder"; }
   });
   const [selectedExercises, setSelectedExercises] = useState(() => {
-    try { return JSON.parse(storage.get("formSelectedExercises")) || []; } catch { return []; }
+    try { return storage.get("formSelectedExercises") || []; } catch { return []; }
   });
   const [searchDraft, setSearchDraft] = useState(() => {
-    try { return JSON.parse(storage.get("dynamiSelected")) || []; } catch { return []; }
+    try { return storage.get("dynamiSelected") || []; } catch { return []; }
   });
   const [showSummary, setShowSummary] = useState(false);
   const [lastStats, setLastStats] = useState(null);
@@ -41,37 +140,96 @@ export default function FormExo({ user: userProp }) {
   const [lastWeekSession, setLastWeekSession] = useState(null);
   const [hasCheckedLastWeek, setHasCheckedLastWeek] = useState(false);
   const [dynamiKey, setDynamiKey] = useState(0);
-  useEffect(() => { try { storage.set("formSessionName", JSON.stringify(sessionName)); } catch (e) { logger.error("Failed to save sessionName:", e); } }, [sessionName]);
+  const [checkingLastWeek, setCheckingLastWeek] = useState(false);
+
+  // Afficher l'écran d'accueil seulement si on est au début (step 0, mode builder, pas d'exercices sélectionnés)
+  const [showWelcome, setShowWelcome] = useState(() => {
+    try {
+      const savedStep = parseInt(storage.get("formCurrentStep"), 10) || 0;
+      const savedMode = storage.get("formMode") || "builder";
+      const savedExercises = storage.get("formSelectedExercises") || [];
+      // Afficher welcome si on est vraiment au début
+      return savedMode === "builder" && savedStep === 0 && savedExercises.length === 0;
+    } catch {
+      return true;
+    }
+  });
+  useEffect(() => { try { storage.set("formSessionName", sessionName); } catch (e) { logger.error("Failed to save sessionName:", e); } }, [sessionName]);
   useEffect(() => { try { storage.set("formCurrentStep", String(currentStep)); } catch (e) { logger.error("Failed to save currentStep:", e); } }, [currentStep]);
   useEffect(() => { try { storage.set("formMode", mode); } catch (e) { logger.error("Failed to save mode:", e); } }, [mode]);
-  useEffect(() => { try { storage.set("formSelectedExercises", JSON.stringify(selectedExercises)); } catch (e) { logger.error("Failed to save selectedExercises:", e); } }, [selectedExercises]);
-  useEffect(() => {
-    const checkLastWeekSession = async () => {
-      if (hasCheckedLastWeek) return;
-      if (!user || !(user.id || user._id)) return;
-      if (mode !== "builder" || currentStep !== 0) return;
+  useEffect(() => { try { storage.set("formSelectedExercises", selectedExercises); } catch (e) { logger.error("Failed to save selectedExercises:", e); } }, [selectedExercises]);
 
-      try {
-        const response = await secureApiCall("/workouts/last-week-session");
-        if (!response.ok) {
-          setHasCheckedLastWeek(true);
-          return;
-        }
+  // Refs for scroll snap navigation
+  const pageWrapperRef = useRef(null);
+  const builderSectionRef = useRef(null);
 
+  // Scroll to builder section (used by scroll indicator)
+  const scrollToBuilder = useCallback(() => {
+    if (builderSectionRef.current) {
+      builderSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
+
+  // Scroll down to info section
+  const scrollToInfo = useCallback(() => {
+    // Scroll vers la section info en bas de page
+    const infoSection = document.querySelector('[class*="infoSection"]');
+    if (infoSection) {
+      infoSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
+
+  // Titres dynamiques sélectionnés aléatoirement au montage
+  const dynamicTitles = useMemo(() => {
+    let userName = null;
+    try {
+      const cached = storage.get("user") || null;
+      userName = cached?.prenom || cached?.pseudo || cached?.displayName ||
+        (cached?.email ? String(cached.email).split("@")[0] : null);
+      if (userName) {
+        userName = userName.charAt(0).toUpperCase() + userName.slice(1);
+      }
+    } catch {}
+
+    const heroTitle = userName
+      ? pickRandom(HERO_TITLES.withName)(userName)
+      : pickRandom(HERO_TITLES.withoutName);
+
+    return {
+      hero: heroTitle,
+      heroSubtitle: pickRandom(HERO_SUBTITLES),
+      builder: pickRandom(BUILDER_TITLES),
+      suivi: pickRandom(SUIVI_TITLES),
+      scrollHint: pickRandom(SCROLL_HINTS),
+    };
+  }, []);
+
+  // Fonction appelée quand l'utilisateur clique sur "Commencer"
+  const handleStartSession = async () => {
+    // Si pas d'utilisateur connecté, passer directement au formulaire
+    if (!user || !(user.id || user._id)) {
+      setShowWelcome(false);
+      return;
+    }
+
+    setCheckingLastWeek(true);
+    try {
+      const response = await secureApiCall("/workouts/last-week-session");
+      if (response.ok) {
         const data = await response.json();
         if (data.session && Array.isArray(data.session.entries) && data.session.entries.length > 0) {
           setLastWeekSession(data.session);
           setShowRepeatModal(true);
+          setCheckingLastWeek(false);
+          return;
         }
-        setHasCheckedLastWeek(true);
-      } catch (error) {
-        logger.error("Erreur lors de la récupération de la séance:", error);
-        setHasCheckedLastWeek(true);
       }
-    };
-
-    checkLastWeekSession();
-  }, [user, mode, currentStep, hasCheckedLastWeek]);
+    } catch (error) {
+      logger.error("Erreur lors de la récupération de la séance:", error);
+    }
+    setCheckingLastWeek(false);
+    setShowWelcome(false);
+  };
 
   const defaultExerciseName = useMemo(() => "Exercice", []);
 
@@ -159,6 +317,8 @@ export default function FormExo({ user: userProp }) {
             setLastItems([]);
             setLastStats(null);
             setLastSummary(null);
+            setHasCheckedLastWeek(false);
+            setShowWelcome(true); // Revenir à l'écran d'accueil
             try {
               const KEYS = [
                 "dynamiSelected",
@@ -310,14 +470,14 @@ export default function FormExo({ user: userProp }) {
       setDynamiKey(prev => prev + 1); // Force le remontage de DynamiChoice
 
       try {
-        storage.set("formSelectedExercises", JSON.stringify(exercises));
-        storage.set("dynamiSelected", JSON.stringify(exercises));
-        storage.set("formSessionName", JSON.stringify(lastWeekSession.name || ""));
+        storage.set("formSelectedExercises", exercises);
+        storage.set("dynamiSelected", exercises);
+        storage.set("formSessionName", lastWeekSession.name || "");
         storage.set("formCurrentStep", "3");
         // Sauvegarder les muscles pour filtrer les exercices proposés
         if (muscleIds.length > 0) {
-          storage.set("dynamiMuscle", JSON.stringify(muscleIds));
-          storage.set("dynamiType", JSON.stringify("muscu"));
+          storage.set("dynamiMuscle", muscleIds);
+          storage.set("dynamiType", "muscu");
           storage.set("dynamiStep", "3");
         }
       } catch (e) {
@@ -359,13 +519,13 @@ export default function FormExo({ user: userProp }) {
       setDynamiKey(prev => prev + 1); // Force le remontage de DynamiChoice
 
       try {
-        storage.set("formSelectedExercises", JSON.stringify(exercises));
-        storage.set("dynamiSelected", JSON.stringify(exercises));
-        storage.set("formSessionName", JSON.stringify(lastWeekSession.name || ""));
+        storage.set("formSelectedExercises", exercises);
+        storage.set("dynamiSelected", exercises);
+        storage.set("formSessionName", lastWeekSession.name || "");
         storage.set("formCurrentStep", "3");
         if (muscleIds.length > 0) {
-          storage.set("dynamiMuscle", JSON.stringify(muscleIds));
-          storage.set("dynamiType", JSON.stringify("muscu"));
+          storage.set("dynamiMuscle", muscleIds);
+          storage.set("dynamiType", "muscu");
           storage.set("dynamiStep", "3");
         }
       } catch (e) {
@@ -376,10 +536,11 @@ export default function FormExo({ user: userProp }) {
 
   const handleDeclineRepeat = () => {
     setShowRepeatModal(false);
+    setShowWelcome(false); // Passer au formulaire
   };
 
   return (
-    <div className={styles.form}>
+    <div className={styles.pageWrapper} ref={pageWrapperRef}>
       {showRepeatModal && lastWeekSession && (
         <RepeatSessionModal
           session={lastWeekSession}
@@ -388,27 +549,61 @@ export default function FormExo({ user: userProp }) {
         />
       )}
 
-      {mode === "builder" ? (
-        <Salutation className={styles.title} />
-      ) : (
-        <Salutation className={styles.title} />
-      )}
-
-      {mode === "builder" && (
-        <div className={styles.sessionName}>
-          <label>Nom de la séance</label>
-          <input
-            type="text"
-            placeholder="ex: Jambes du lundi"
-            value={sessionName}
-            onChange={(e) => setSessionName(e.target.value)}
-          />
-        </div>
-      )}
-
-      {mode === "builder" ? (
+      {/* Écran d'accueil - Hero Section + Info Section */}
+      {showWelcome && mode === "builder" && !showRepeatModal ? (
         <>
-          <Progress steps={steps} currentStep={currentStep} onStepChange={setCurrentStep} />
+        <section className={styles.heroSection}>
+          <div className={styles.form}>
+            <div className={styles.welcomeCard}>
+              <div className={styles.welcomeIconWrapper}>
+                <DumbbellIcon size={42} className={styles.welcomeIcon} />
+              </div>
+              <div className={styles.welcomeContent}>
+                <h1 className={styles.welcomeTitle}>
+                  {dynamicTitles.hero}
+                </h1>
+                <p className={styles.welcomeSubtitle}>
+                  {dynamicTitles.heroSubtitle}
+                </p>
+              </div>
+              <button
+                className={styles.welcomeButton}
+                onClick={handleStartSession}
+                disabled={checkingLastWeek}
+              >
+                {checkingLastWeek ? (
+                  <>
+                    <span className={styles.spinner}></span>
+                    Chargement...
+                  </>
+                ) : "Commencer"}
+              </button>
+            </div>
+            {/* Scroll indicator - cliquable */}
+            <div
+              className={styles.scrollHint}
+              onClick={scrollToInfo}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && scrollToInfo()}
+            >
+              <ChevronDownIcon className={styles.scrollHintIcon} />
+              <span>J'ai la flemme !</span>
+            </div>
+          </div>
+        </section>
+
+        </>
+      ) : (
+        <>
+          {/* Builder Section */}
+          <section className={styles.builderSection} ref={builderSectionRef}>
+            <div className={styles.form}>
+
+
+              {mode === "builder" ? (
+                <>
+                  <Progress steps={steps} currentStep={currentStep} onStepChange={setCurrentStep} />
 
           <DynamiChoice
             key={dynamiKey}
@@ -418,8 +613,8 @@ export default function FormExo({ user: userProp }) {
               const next = Array.isArray(arr) ? arr : [];
               setSelectedExercises(next);
               try {
-                storage.set("formSelectedExercises", JSON.stringify(next));
-                storage.set("dynamiSelected", JSON.stringify(next));
+                storage.set("formSelectedExercises", next);
+                storage.set("dynamiSelected", next);
                 storage.set("dynamiHasTouched", "1");
               } catch (e) {
                 logger.error("Failed to save results to localStorage:", e);
@@ -429,8 +624,8 @@ export default function FormExo({ user: userProp }) {
               const next = Array.isArray(arr) ? arr : [];
               setSelectedExercises(next);
               try {
-                storage.set("formSelectedExercises", JSON.stringify(next));
-                storage.set("dynamiSelected", JSON.stringify(next));
+                storage.set("formSelectedExercises", next);
+                storage.set("dynamiSelected", next);
                 storage.set("dynamiHasTouched", "1");
               } catch (e) {
                 logger.error("Failed to save changes to localStorage:", e);
@@ -448,7 +643,7 @@ export default function FormExo({ user: userProp }) {
               setSearchDraft(safe);
               setSearchCb(() => cb);
               try {
-                storage.set("dynamiSelected", JSON.stringify(safe));
+                storage.set("dynamiSelected", safe);
                 storage.set("dynamiHasTouched", "1");
               } catch (e) {
                 logger.error("Failed to save search draft to localStorage:", e);
@@ -466,7 +661,7 @@ export default function FormExo({ user: userProp }) {
             onBack={(updated) => {
               if (Array.isArray(updated)) {
                 setSelectedExercises(updated);
-                try { storage.set("formSelectedExercises", JSON.stringify(updated)); } catch (e) {
+                try { storage.set("formSelectedExercises", updated); } catch (e) {
                   logger.error("Failed to save updated exercises:", e);
                 }
               }
@@ -592,8 +787,8 @@ export default function FormExo({ user: userProp }) {
             setSelectedExercises(merged);
             setSearchDraft(merged);
             try {
-              storage.set("dynamiSelected", JSON.stringify(merged));
-              storage.set("formSelectedExercises", JSON.stringify(merged));
+              storage.set("dynamiSelected", merged);
+              storage.set("formSelectedExercises", merged);
             } catch (e) {
               logger.error("Failed to save merged exercises:", e);
             }
@@ -614,13 +809,24 @@ export default function FormExo({ user: userProp }) {
               }
             }, 100);
           }}
-        />
+              />
+            )}
+            </div>
+          </section>
+        </>
       )}
 
-      {user && (user.id || user._id) ? (
-        <SuivieSeance user={user} />
-      ) : (
-        <ConseilJour />
+      {/* Suivi Section - Visible seulement quand l'utilisateur a lancé une séance */}
+      {!showWelcome && (
+        <section className={styles.suiviSection}>
+          <div className={styles.form}>
+            {user && (user.id || user._id) ? (
+              <SuivieSeance user={user} />
+            ) : (
+              <ConseilJour />
+            )}
+          </div>
+        </section>
       )}
     </div>
   );

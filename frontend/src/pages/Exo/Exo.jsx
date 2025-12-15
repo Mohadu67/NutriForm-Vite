@@ -106,6 +106,53 @@ export default function ExoPage () {
 
         {/* Info Section */}
         <section className={`${styles.infoSection} ${styles.fadeIn}`}>
+          {/* Carte Flemme - Conseils motivation */}
+          <article className={styles.flemmeCard}>
+            <div className={styles.flemmeHeader}>
+              <div className={styles.flemmeIconWrapper}>
+                <svg className={styles.flemmeIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                </svg>
+              </div>
+              <div className={styles.flemmeHeaderText}>
+                <h3>La flemme ? On connaît.</h3>
+                <p>Voici comment la vaincre en 3 étapes</p>
+              </div>
+            </div>
+
+            <div className={styles.flemmeTips}>
+              <div className={styles.flemmeTip}>
+                <span className={styles.tipNumber}>1</span>
+                <div className={styles.tipContent}>
+                  <h4>La règle des 5 minutes</h4>
+                  <p>Engage-toi à faire seulement 5 minutes. Une fois lancé, tu continueras naturellement. Le plus dur c'est de commencer.</p>
+                </div>
+              </div>
+
+              <div className={styles.flemmeTip}>
+                <span className={styles.tipNumber}>2</span>
+                <div className={styles.tipContent}>
+                  <h4>Prépare ta tenue la veille</h4>
+                  <p>Moins tu as de décisions à prendre, plus c'est facile. Pose tes affaires de sport bien en vue.</p>
+                </div>
+              </div>
+
+              <div className={styles.flemmeTip}>
+                <span className={styles.tipNumber}>3</span>
+                <div className={styles.tipContent}>
+                  <h4>Pense au "toi d'après"</h4>
+                  <p>Tu ne regretteras jamais une séance faite, mais tu regretteras celle que tu as zappée. Fais-le pour ton futur toi.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.flemmeFooter}>
+              <p className={styles.flemmeQuote}>
+                "La motivation te fait commencer, <strong>l'habitude te fait continuer</strong>."
+              </p>
+            </div>
+          </article>
+
           <article className={styles.contentBlock}>
             <h2>Comment choisir ses exercices ?</h2>
             <p>

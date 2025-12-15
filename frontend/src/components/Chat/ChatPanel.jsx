@@ -151,7 +151,7 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
         conversations = conversations.slice(0, 20);
       }
 
-      storage.set('chatConversations', JSON.stringify(conversations));
+      storage.set('chatConversations', conversations);
     } catch (err) {
     }
   };

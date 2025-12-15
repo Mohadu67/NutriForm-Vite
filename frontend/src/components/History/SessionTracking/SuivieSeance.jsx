@@ -162,7 +162,12 @@ export default function SuivieSeance({
       try {
         const response = await secureApiCall("/history/summary");
         if (!response.ok) throw new Error("bad status");
-        const json = await response.json();
+        const text = await response.text();
+        if (!text || text.trim() === "") {
+          if (!cancelled) setServerData(null);
+          return;
+        }
+        const json = JSON.parse(text);
         if (!cancelled) setServerData(json);
       } catch (err) {
         if (!cancelled) setError("no-server");

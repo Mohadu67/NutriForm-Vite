@@ -271,20 +271,20 @@ export default function Navbar() {
             setIsPremium(true);
             // Update cache if not already set
             if (!cachedSub) {
-              storage.set('subscriptionStatus', JSON.stringify({
+              storage.set('subscriptionStatus', {
                 tier: 'premium',
                 hasSubscription: true
-              }));
+              });
             }
           } else {
             // Check if user has previously used premium features
             const hasUsedPremiumFeatures = localStorage.getItem('hasUsedMatching') === 'true';
             if (hasUsedPremiumFeatures) {
               setIsPremium(true);
-              storage.set('subscriptionStatus', JSON.stringify({
+              storage.set('subscriptionStatus', {
                 tier: 'premium',
                 hasSubscription: true
-              }));
+              });
             } else {
               setIsPremium(false);
             }

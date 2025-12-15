@@ -1,16 +1,24 @@
+/* Mobile First */
 .container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  margin-top: var(--space-4);
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .container {
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
 }
 
 .stateMessage {
   background: var(--nf-surface);
   border: 1px solid var(--nf-surface-border);
-  border-radius: 18px;
-  padding: var(--space-3) var(--space-4);
-  font-size: 0.95rem;
+  border-radius: 14px;
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.9rem;
   color: var(--nf-muted);
 }
 
@@ -22,24 +30,38 @@
 
 .summaryGrid {
   display: grid;
-  gap: 15px;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 540px) {
+  .summaryGrid {
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
 }
 
 .statCard {
   background: var(--nf-surface);
   border: 1px solid var(--nf-surface-border);
-  border-radius: 18px;
-  padding: 24px;
+  border-radius: 14px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
   width: 100%;
 }
 
+@media (min-width: 640px) {
+  .statCard {
+    padding: 18px 20px;
+    border-radius: 16px;
+  }
+}
+
 .cardTitle {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.9rem;
+  font-weight: 600;
   color: var(--nf-ink);
   margin: 0;
 }
@@ -53,66 +75,52 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: var(--space-4);
-  padding-top: var(--space-1);
+  gap: var(--space-2);
+  padding-top: 4px;
 }
 
 .metricRow + .metricRow {
   border-top: 1px solid var(--nf-surface-border);
-  margin-top: var(--space-2);
-  padding-top: var(--space-2);
+  margin-top: 6px;
+  padding-top: 6px;
 }
 
 .metricLabel {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
   color: var(--nf-muted);
 }
 
 .metricValue {
-  font-size: 1.4rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--nf-ink);
   text-align: right;
+}
+
+@media (min-width: 640px) {
+  .metricValue {
+    font-size: 1.3rem;
+  }
 }
 
 .metricValueAccent {
   color: var(--nf-accent, #f7b186);
 }
 
-.sectionTitle {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--nf-ink);
-}
 
 .emptyState {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--nf-muted);
   text-align: center;
-  padding: var(--space-4);
-  border-radius: 16px;
+  padding: var(--space-3);
+  border-radius: 12px;
   background: var(--nf-surface);
   border: 1px dashed var(--nf-surface-border);
 }
 
-@media (max-width: 600px) {
-  .summaryGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .statCard {
-    padding: 20px;
-  }
-
-  .metricValue {
-    font-size: 1.25rem;
-  }
-
-}
 
 :global(body.dark) .statCard,
 :global(html.dark) .statCard,
@@ -137,15 +145,17 @@
   color: #ffb3b3;
 }
 
+/* Mobile First */
 .bottomSection {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  margin-top: var(--space-4);
+  gap: var(--space-2);
+  margin-top: var(--space-2);
 }
 
-@media (max-width: 540px) {
+@media (min-width: 640px) {
   .bottomSection {
     gap: var(--space-3);
+    margin-top: var(--space-3);
   }
 }

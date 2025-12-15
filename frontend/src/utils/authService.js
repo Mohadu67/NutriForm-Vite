@@ -40,7 +40,18 @@ export async function login(identifier, password, remember = false) {
     body: JSON.stringify({ identifier, password, remember }),
   });
 
-  const data = await response.json();
+  // Gérer les réponses vides
+  const text = await response.text();
+  if (!text || text.trim() === "") {
+    return { success: false, message: "Réponse vide du serveur" };
+  }
+
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return { success: false, message: "Réponse invalide du serveur" };
+  }
 
   if (response.ok && data.user) {
     // Token envoyé via cookie httpOnly (sécurisé contre XSS)

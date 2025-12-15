@@ -29,14 +29,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [ordered, setOrdered] = useState(() => {
-    try {
-      const v = storage.get("dynamiSelected");
-      return v ? JSON.parse(v) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [ordered, setOrdered] = useState([]);
   const [dismissed, setDismissed] = useState(() => {
     try {
       const v = storage.get("dynamiDismissed");
@@ -122,28 +115,31 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
 
   useEffect(() => {
     if (Array.isArray(results) && results.length > 0) {
-      try { storage.set("dynamiLastResults", JSON.stringify(results)); } catch (e) {
+      try { storage.set("dynamiLastResults", results); } catch (e) {
         logger.error("Failed to save dynamiLastResults:", e);
       }
     }
   }, [results]);
 
   const prevFilterKeyRef = useRef(filterKey);
+
   useEffect(() => {
+    // Si les filtres n'ont pas changé, ne rien faire
     if (prevFilterKeyRef.current === filterKey) return;
 
-    // Ne réinitialiser que si l'utilisateur n'a pas touché à la sélection
-    if (hasTouched) {
-      prevFilterKeyRef.current = filterKey;
-      return;
-    }
+    // Quand les filtres changent, réinitialiser avec les nouveaux résultats
     prevFilterKeyRef.current = filterKey;
     setDismissed(new Set());
     setHasTouched(false);
-
-
     setOrdered(Array.isArray(results) && results.length > 0 ? results.slice() : []);
-  }, [filterKey, results, hasTouched]);
+
+    try {
+      storage.remove("dynamiDismissed");
+      storage.set("dynamiHasTouched", "0");
+    } catch (e) {
+      logger.error("Failed to reset localStorage on filter change:", e);
+    }
+  }, [filterKey, results]);
 
   useEffect(() => {
     if (Array.isArray(results) && results.length > 0 && Array.isArray(ordered) && ordered.length === 0 && !hasTouched) {
@@ -264,7 +260,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   }, []);
 
   useEffect(() => {
-    try { storage.set("dynamiDismissed", JSON.stringify(Array.from(dismissed))); } catch (e) {
+    try { storage.set("dynamiDismissed", Array.from(dismissed)); } catch (e) {
       logger.error("Failed to save dynamiDismissed:", e);
     }
   }, [dismissed]);

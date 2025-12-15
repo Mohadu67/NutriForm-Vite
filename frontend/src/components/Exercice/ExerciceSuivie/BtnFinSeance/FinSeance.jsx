@@ -55,7 +55,7 @@ export default function FinSeance({ items = [], onFinish, sessionData }) {
     if (onFinish) onFinish({ ok: failCount === 0, okCount, failCount, errors: errs });
   }
 
-  const user = JSON.parse(storage.get('user') || '{}');
+  const user = storage.get('user') || {};
 
   if (done) {
     return (
