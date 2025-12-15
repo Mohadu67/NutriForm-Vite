@@ -133,46 +133,17 @@ export default function Dashboard() {
     return name.charAt(0).toUpperCase() + name.slice(1);
   }, [displayName]);
 
-  // Paywall pour utilisateurs gratuits
-  if (subscriptionTier === 'free') {
-    return (
-      <>
-        <Header />
-        <div className={style.paywallContainer}>
-          <div className={style.paywallContent}>
-            <div className={style.paywallIcon}>🔒</div>
-            <h1 className={style.paywallTitle}>Dashboard Premium</h1>
-            <p className={style.paywallSubtitle}>
-              Le Dashboard est réservé aux membres Premium. Passez Premium pour sauvegarder vos séances et suivre votre progression.
-            </p>
-            <div className={style.paywallCard}>
-              <h3 className={style.paywallCardTitle}>Avec Premium, débloquez :</h3>
-              <ul className={style.paywallFeatures}>
-                <li className={style.paywallFeature}>Sauvegarde illimitée de vos séances</li>
-                <li className={style.paywallFeature}>Dashboard complet avec statistiques</li>
-                <li className={style.paywallFeature}>Historique complet de progression</li>
-                <li className={style.paywallFeature}>Badges & Gamification</li>
-                <li className={style.paywallFeature}>Participation au Leaderboard</li>
-                <li className={style.paywallFeature}>Export CSV de vos données</li>
-              </ul>
-            </div>
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => navigate('/pricing')}
-              className={style.paywallButton}
-            >
-              Découvrir Premium - 3,99€/mois
-            </Button>
-            <p className={style.paywallNotice}>
-              🎉 7 jours d'essai gratuit - Sans engagement
-            </p>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
-  }
+  // Déterminer si l'utilisateur est gratuit
+  const isFreeUser = subscriptionTier === 'free';
+
+  // Pour les gratuits : limiter à 5 dernières séances
+  const limitedRecentSessions = isFreeUser ? recentSessions.slice(0, 5) : recentSessions;
+
+  // Pour les gratuits : limiter à 3 badges starter (IDs réels de useBadges.js)
+  const STARTER_BADGE_IDS = ['first', 'five', 'streak3'];
+  const limitedBadges = isFreeUser
+    ? badges.filter(b => STARTER_BADGE_IDS.includes(b.id))
+    : badges;
 
   return (
     <>
@@ -216,6 +187,27 @@ export default function Dashboard() {
             </p>
           </header>
 
+          {/* Upsell Banner pour utilisateurs gratuits */}
+          {isFreeUser && (
+            <div className={style.upsellBanner}>
+              <div className={style.upsellContent}>
+                <span className={style.upsellIcon}>⭐</span>
+                <div className={style.upsellText}>
+                  <strong>Passez Premium</strong>
+                  <span>Historique illimité, tous les badges, heatmap et plus encore</span>
+                </div>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigate('/pricing')}
+                className={style.upsellButton}
+              >
+                7 jours gratuits
+              </Button>
+            </div>
+          )}
+
           {status === "loading" && <p className={style.loading}>Chargement...</p>}
           {status === "error" && <p className={style.error}>{error}</p>}
 
@@ -245,7 +237,7 @@ export default function Dashboard() {
 
           {/* Recent Activity */}
           <RecentActivity
-            recentSessions={recentSessions}
+            recentSessions={limitedRecentSessions}
             editingSessionId={editingSessionId}
             editingSessionName={editingSessionName}
             formatDate={formatDate}
@@ -256,6 +248,8 @@ export default function Dashboard() {
             onCancelEdit={handleCancelEdit}
             onDeleteSession={handleDeleteSession}
             onEditSessionNameChange={setEditingSessionName}
+            isFreeUser={isFreeUser}
+            totalSessions={recentSessions.length}
           />
 
           {/* Cardio Stats */}
@@ -286,8 +280,8 @@ export default function Dashboard() {
             </section>
           )}
 
-          {/* Weight Chart */}
-          {weightPoints.length >= 2 && (
+          {/* Weight Chart - Premium only */}
+          {weightPoints.length >= 2 && !isFreeUser && (
             <section className={style.chartSection}>
               <h2 className={style.sectionTitle}>Évolution du poids</h2>
               <div className={style.miniChart}>
@@ -311,6 +305,20 @@ export default function Dashboard() {
                     );
                   })}
                 </div>
+              </div>
+            </section>
+          )}
+
+          {/* Teaser graphique pour gratuits */}
+          {isFreeUser && weightPoints.length >= 2 && (
+            <section className={style.premiumTeaser}>
+              <div className={style.premiumTeaserContent}>
+                <span className={style.premiumTeaserIcon}>📈</span>
+                <h3>Graphiques de progression</h3>
+                <p>Visualisez votre évolution avec des graphiques détaillés</p>
+                <Button variant="outline-primary" size="sm" onClick={() => navigate('/pricing')}>
+                  Débloquer avec Premium
+                </Button>
               </div>
             </section>
           )}
@@ -351,7 +359,7 @@ export default function Dashboard() {
               </button>
             </div>
             <div className={style.badgesGrid}>
-              {badges.map((badge) => (
+              {limitedBadges.map((badge) => (
                 <div
                   key={badge.id}
                   className={`${style.badgeItem} ${badge.unlocked ? style.badgeUnlocked : style.badgeLocked}`}
@@ -362,6 +370,14 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
+            {isFreeUser && badges.length > limitedBadges.length && (
+              <div className={style.badgesUpsell}>
+                <p>🏆 {badges.length - limitedBadges.length} badges supplémentaires avec Premium</p>
+                <Button variant="primary" size="sm" onClick={() => { setShowBadgesPopup(false); navigate('/pricing'); }}>
+                  Débloquer tous les badges
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}
