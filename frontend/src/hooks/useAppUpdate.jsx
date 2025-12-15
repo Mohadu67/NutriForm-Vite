@@ -10,25 +10,6 @@ export function useAppUpdate() {
   const [newVersion, setNewVersion] = useState(null);
 
   useEffect(() => {
-    // Désactivé temporairement
-    return () => {};
-  }, []);
-
-  useEffect(() => {
-    return () => {};
-  }, []);
-
-  const applyUpdate = () => {};
-
-  return { updateAvailable: false, newVersion: null, applyUpdate };
-}
-
-/*
-export function useAppUpdate_OLD() {
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [newVersion, setNewVersion] = useState(null);
-
-  useEffect(() => {
     // Vérifier si le service worker est supporté
     if (!('serviceWorker' in navigator)) {
       return;
@@ -69,6 +50,9 @@ export function useAppUpdate_OLD() {
             }
           });
         });
+
+        // Forcer une vérification de mise à jour au démarrage
+        registration.update();
       } catch (error) {
         logger.error('Erreur lors de la vérification des mises à jour:', error);
       }
@@ -76,14 +60,14 @@ export function useAppUpdate_OLD() {
 
     checkForUpdates();
 
-    // Vérifier périodiquement les mises à jour (toutes les 60 minutes)
+    // Vérifier périodiquement les mises à jour (toutes les 5 minutes)
     const interval = setInterval(() => {
       navigator.serviceWorker.getRegistration().then((registration) => {
         if (registration) {
           registration.update();
         }
       });
-    }, 60 * 60 * 1000);
+    }, 5 * 60 * 1000);
 
     return () => {
       navigator.serviceWorker.removeEventListener('message', handleMessage);
@@ -111,4 +95,3 @@ export function useAppUpdate_OLD() {
     applyUpdate,
   };
 }
-*/
