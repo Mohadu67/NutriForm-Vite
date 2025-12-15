@@ -116,7 +116,7 @@ async function sendDailyMotivation() {
             await sendNotificationToUser(user._id, {
               title: DAILY_TEMPLATES.streak_congrats.title,
               body: DAILY_TEMPLATES.streak_congrats.getBody(streak),
-              data: { type: 'streak_congrats', url: '/classement' }
+              data: { type: 'streak_congrats', url: '/leaderboard' }
             });
             notificationsSent++;
           }
@@ -313,7 +313,7 @@ async function sendWeeklyRecap() {
               calories: weeklyCalories[0]?.total || 0,
               rank
             }),
-            data: { type: 'weekly_recap', url: '/classement' }
+            data: { type: 'weekly_recap', url: '/leaderboard' }
           });
           notificationsSent++;
         }

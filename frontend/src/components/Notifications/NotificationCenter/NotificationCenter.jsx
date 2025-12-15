@@ -5,6 +5,7 @@ import { useChat } from '../../../contexts/ChatContext';
 import { secureApiCall } from '../../../utils/authService';
 import endpoints from '../../../shared/api/endpoints';
 import ConfirmModal from '../../Modal/ConfirmModal';
+import SessionCongratsModal from '../../Modal/SessionCongratsModal';
 import {
   BellIcon,
   MessageCircleIcon,
@@ -43,6 +44,14 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
   const [notifications, setNotifications] = useState([]);
   const [isLoading] = useState(false);
   const [rejectionModal, setRejectionModal] = useState({ isOpen: false, programName: '', reason: '' });
+  const [sessionModal, setSessionModal] = useState({
+    isOpen: false,
+    sessionData: null,
+    opponentName: '',
+    opponentAvatar: null,
+    challengeId: null,
+    sessionUserId: null
+  });
   const dropdownRef = useRef(null);
 
   // En mode panel, toujours "ouvert"
@@ -215,6 +224,33 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
       }
     }
 
+    // Pour les notifications de séance challenge, afficher le modal
+    if (notification.type === 'activity' && notification.metadata?.action === 'challenge_session') {
+      setSessionModal({
+        isOpen: true,
+        sessionData: notification.metadata.sessionInfo || null,
+        opponentName: notification.metadata.opponentName || 'Adversaire',
+        opponentAvatar: notification.avatar || null,
+        challengeId: notification.metadata.challengeId || null,
+        sessionUserId: notification.metadata.sessionUserId || null
+      });
+      setIsOpen(false);
+      if (isPanel && onClose) {
+        onClose();
+      }
+      return;
+    }
+
+    // Pour les notifications activity (challenges, badges, etc.), toujours aller vers /leaderboard
+    if (notification.type === 'activity') {
+      navigate('/leaderboard');
+      setIsOpen(false);
+      if (isPanel && onClose) {
+        onClose();
+      }
+      return;
+    }
+
     // Pour les autres types, navigation classique
     if (notification.link) {
       navigate(notification.link);
@@ -378,6 +414,18 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
     </>
   );
 
+  // Fonction de fermeture du modal session
+  const closeSessionModal = () => {
+    setSessionModal({
+      isOpen: false,
+      sessionData: null,
+      opponentName: '',
+      opponentAvatar: null,
+      challengeId: null,
+      sessionUserId: null
+    });
+  };
+
   // Mode panel : afficher directement le contenu sans wrapper dropdown
   if (isPanel) {
     return (
@@ -397,6 +445,15 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
           confirmText="Voir mes programmes"
           type="warning"
           showCancel={false}
+        />
+        <SessionCongratsModal
+          isOpen={sessionModal.isOpen}
+          onClose={closeSessionModal}
+          sessionData={sessionModal.sessionData}
+          opponentName={sessionModal.opponentName}
+          opponentAvatar={sessionModal.opponentAvatar}
+          challengeId={sessionModal.challengeId}
+          sessionUserId={sessionModal.sessionUserId}
         />
       </>
     );
@@ -446,6 +503,15 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
         )}
       </div>
       {rejectionModalElement}
+      <SessionCongratsModal
+        isOpen={sessionModal.isOpen}
+        onClose={closeSessionModal}
+        sessionData={sessionModal.sessionData}
+        opponentName={sessionModal.opponentName}
+        opponentAvatar={sessionModal.opponentAvatar}
+        challengeId={sessionModal.challengeId}
+        sessionUserId={sessionModal.sessionUserId}
+      />
     </>
   );
 }
