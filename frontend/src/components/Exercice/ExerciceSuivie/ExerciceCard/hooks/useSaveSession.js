@@ -62,8 +62,9 @@ export default function useSaveSession() {
       const data = await apiSaveSession(body);
       return { ok: true, skipped: false, data };
     } catch (e) {
-      setError(e?.message || String(e));
-      return { ok: false, error: e };
+      const isPremiumRequired = e?.isPremiumRequired || e?.status === 403;
+      setError(isPremiumRequired ? 'premium_required' : (e?.message || String(e)));
+      return { ok: false, error: e, isPremiumRequired };
     } finally {
       setSaving(false);
     }

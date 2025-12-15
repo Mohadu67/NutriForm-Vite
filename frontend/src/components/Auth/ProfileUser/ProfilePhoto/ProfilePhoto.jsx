@@ -38,11 +38,16 @@ export default function ProfilePhoto({ user }) {
         body: formData
       });
 
-      if (!response.ok) {
+      let data;
+      try {
+        data = await response.json();
+      } catch {
         throw new Error(`Erreur ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || `Erreur ${response.status}: ${response.statusText}`);
+      }
 
       if (data.success) {
         setPhoto(data.photo);
@@ -60,7 +65,7 @@ export default function ProfilePhoto({ user }) {
       }
     } catch (err) {
       logger.error("Erreur upload photo:", err);
-      setMessage({ type: "error", text: "Erreur lors de l'upload de la photo" });
+      setMessage({ type: "error", text: err.message || "Erreur lors de l'upload de la photo" });
     } finally {
       setUploading(false);
     }

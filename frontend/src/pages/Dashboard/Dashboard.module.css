@@ -854,55 +854,122 @@
 }
 
 .rmSection .sectionTitle {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.rmList {
+/* Nouveau layout: groupé par exercice avec scroll horizontal */
+.rmByExercice {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rmExerciceRow {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.rmItem {
+.rmExerciceHeader {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
-  background: var(--couleur-principale, #f7f6f2);
-  border-radius: 8px;
+  justify-content: space-between;
+  padding: 0 4px;
 }
 
-:global(body.dark) .rmItem,
-:global(html.dark) .rmItem {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.rmInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.rmExercice {
-  font-size: 0.85rem;
-  font-weight: 600;
+.rmExerciceName {
+  font-size: 0.95rem;
+  font-weight: 700;
   color: var(--ink, #222325);
 }
 
-:global(body.dark) .rmExercice,
-:global(html.dark) .rmExercice {
+:global(body.dark) .rmExerciceName,
+:global(html.dark) .rmExerciceName {
   color: #f5f7fa;
 }
 
-.rmDate {
-  font-size: 0.7rem;
+.rmExerciceCount {
+  font-size: 0.75rem;
   color: var(--muted, #6b7280);
+  background: var(--couleur-principale, #f7f6f2);
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
-.rmValue {
-  font-size: 1rem;
-  font-weight: 700;
+:global(body.dark) .rmExerciceCount,
+:global(html.dark) .rmExerciceCount {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.rmScrollContainer {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 4px 0 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+.rmScrollContainer::-webkit-scrollbar {
+  height: 4px;
+}
+
+.rmScrollContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rmScrollContainer::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
+:global(body.dark) .rmScrollContainer::-webkit-scrollbar-thumb,
+:global(html.dark) .rmScrollContainer::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.rmCard {
+  flex-shrink: 0;
+  min-width: 90px;
+  padding: 12px 14px;
+  background: var(--couleur-principale, #f7f6f2);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  scroll-snap-align: start;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rmCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+:global(body.dark) .rmCard,
+:global(html.dark) .rmCard {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+:global(body.dark) .rmCard:hover,
+:global(html.dark) .rmCard:hover {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.rmCardValue {
+  font-size: 1.1rem;
+  font-weight: 800;
   color: var(--couleur-bouton-action, #f7b186);
+}
+
+.rmCardDate {
+  font-size: 0.7rem;
+  color: var(--muted, #6b7280);
+  white-space: nowrap;
 }
 
 /* ========== CHART SECTION ========== */
@@ -1741,16 +1808,21 @@
 
 .upsellButton {
   flex-shrink: 0;
-  background: var(--couleur-bouton-action, #f7b186) !important;
-  border-color: var(--couleur-bouton-action, #f7b186) !important;
-  color: var(--couleur-text-bouton, #111) !important;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--couleur-bouton-action, #f7b186);
+  border-radius: 8px;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111);
   font-weight: 600;
+  font-size: 0.9rem;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .upsellButton:hover {
-  background: #e9a070 !important;
-  border-color: #e9a070 !important;
+  background: #e9a070;
+  border-color: #e9a070;
 }
 
 /* Premium Teaser - locked feature preview */

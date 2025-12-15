@@ -134,6 +134,12 @@ export function WebSocketProvider({ children }) {
 
     socketRef.current.emit('join_conversation', conversationId);
     setActiveConversationId(conversationId);
+
+    // Notifier la présence sur cette conversation
+    socketRef.current.emit('user_presence', { conversationId, isPresent: true });
+
+    // Émettre un événement global pour le service de notifications
+    window.dispatchEvent(new CustomEvent('conversationOpened', { detail: { conversationId } }));
   }, []);
 
   /**
@@ -142,11 +148,17 @@ export function WebSocketProvider({ children }) {
   const leaveConversation = useCallback((conversationId) => {
     if (!socketRef.current || !conversationId) return;
 
+    // Notifier la fin de présence
+    socketRef.current.emit('user_presence', { conversationId, isPresent: false });
+
     socketRef.current.emit('leave_conversation', conversationId);
 
     if (activeConversationId === conversationId) {
       setActiveConversationId(null);
     }
+
+    // Émettre un événement global pour le service de notifications
+    window.dispatchEvent(new CustomEvent('conversationClosed', { detail: { conversationId } }));
   }, [activeConversationId]);
 
   /**
@@ -165,6 +177,16 @@ export function WebSocketProvider({ children }) {
     if (!socketRef.current || !conversationId) return;
 
     socketRef.current.emit('mark_read', { conversationId, messageIds });
+  }, []);
+
+  /**
+   * Signaler présence dans ChatHistory (liste des conversations)
+   * Permet aux autres de savoir si on peut VOIR leurs messages (✓✓ gris)
+   */
+  const setChatListPresence = useCallback((isPresent) => {
+    if (!socketRef.current) return;
+
+    socketRef.current.emit('chat_list_presence', { isPresent });
   }, []);
 
   /**
@@ -233,6 +255,7 @@ export function WebSocketProvider({ children }) {
     leaveConversation,
     setTyping,
     markAsRead,
+    setChatListPresence,
     on,
     off
   };

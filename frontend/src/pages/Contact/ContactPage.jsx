@@ -11,7 +11,7 @@ import styles from "./ContactPage.module.css";
 export default function ContactPage() {
   usePageTitle("FAQ");
   const faqSectionRef = useRef(null);
-  const { openChat } = useChat();
+  const { openChat } = useChat() || {};
 
   const scrollToFaq = () => {
     faqSectionRef.current?.scrollIntoView({ behavior: 'smooth' });

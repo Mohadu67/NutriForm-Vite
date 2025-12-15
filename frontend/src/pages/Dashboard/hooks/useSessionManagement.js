@@ -5,8 +5,10 @@ import logger from "../../../shared/utils/logger";
 
 /**
  * Hook pour gérer les sessions (édition, suppression)
+ * @param {Function} onSessionDeleted - Callback appelé après suppression réussie (reçoit sessionId)
+ * @param {Function} onSessionRenamed - Callback appelé après renommage réussi (reçoit sessionId, newName)
  */
-export const useSessionManagement = () => {
+export const useSessionManagement = (onSessionDeleted, onSessionRenamed) => {
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [editingSessionName, setEditingSessionName] = useState("");
   const [showSessionsPopup, setShowSessionsPopup] = useState(false);
@@ -43,9 +45,15 @@ export const useSessionManagement = () => {
       await updateSession(sessionId, { name: nameToSave.trim() });
       setEditingSessionId(null);
       showSuccess('Séance renommée avec succès !');
+      // Mettre à jour le state local
+      onSessionRenamed?.(sessionId, nameToSave.trim());
     } catch (err) {
       logger.error("Erreur lors du renommage de la séance:", err);
-      showError("Impossible de renommer la séance");
+      if (err?.isPremiumRequired || err?.status === 403) {
+        showError("Passe Premium pour modifier tes séances ✨");
+      } else {
+        showError("Impossible de renommer la séance");
+      }
       setEditingSessionId(null);
     }
   };
@@ -82,11 +90,17 @@ export const useSessionManagement = () => {
     try {
       await deleteSession(sessionId);
       showSuccess('Séance supprimée avec succès !');
+      // Mettre à jour le state local
+      onSessionDeleted?.(sessionId);
     } catch (err) {
       logger.error("Erreur lors de la suppression de la séance:", err);
-      showError("Impossible de supprimer la séance");
+      if (err?.isPremiumRequired || err?.status === 403) {
+        showError("Passe Premium pour supprimer tes séances ✨");
+      } else {
+        showError("Impossible de supprimer la séance");
+      }
     }
-  }, []);
+  }, [onSessionDeleted]);
 
   return {
     editingSessionId,

@@ -8,7 +8,7 @@ import { MessageCircleIcon, BotIcon, OnlineIcon } from '../Icons/GlobalIcons';
 import styles from './ChatWidget.module.css';
 
 export default function ChatWidget() {
-  const { isChatOpen: isOpen, toggleChat } = useChat();
+  const { isChatOpen: isOpen, toggleChat } = useChat() || {};
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [conversationId, setConversationId] = useState(null);

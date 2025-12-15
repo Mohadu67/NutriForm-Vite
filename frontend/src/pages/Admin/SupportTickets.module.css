@@ -321,6 +321,27 @@
   flex-wrap: wrap;
 }
 
+.btnChat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.btnChat:hover {
+  background: #e9a070;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+}
+
 .btnProgress {
   padding: 10px 20px;
   background: #fff3cd;
@@ -647,6 +668,7 @@
     gap: 8px;
   }
 
+  .btnChat,
   .btnProgress,
   .btnResolve,
   .btnReopen,
@@ -711,6 +733,7 @@
     flex-direction: column;
   }
 
+  .btnChat,
   .btnProgress,
   .btnResolve,
   .btnReopen,

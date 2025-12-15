@@ -1,7 +1,15 @@
-import { SaveIcon, ChartIcon, LightbulbIcon } from "../../../components/Navbar/NavIcons";
+import { SaveIcon, ChartIcon, LightbulbIcon, CheckIcon } from "../../../components/Navbar/NavIcons";
 import styles from "./ResultatsRM.module.css";
 
-export default function ResultatsRM({ data, onSave }) {
+// Icône de chargement
+const LoadingIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.spinIcon}>
+    <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+    <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
+  </svg>
+);
+
+export default function ResultatsRM({ data, onSave, saving }) {
   const { rm, exercice, poids, reps } = data;
 
   return (
@@ -35,9 +43,9 @@ export default function ResultatsRM({ data, onSave }) {
         </div>
 
         {onSave && (
-          <button onClick={onSave} className={styles.saveBtn}>
-            <SaveIcon size={18} />
-            Sauvegarder ce test
+          <button onClick={onSave} className={styles.saveBtn} disabled={saving}>
+            {saving ? <LoadingIcon size={18} /> : <SaveIcon size={18} />}
+            {saving ? 'Sauvegarde...' : 'Sauvegarder ce test'}
           </button>
         )}
       </div>

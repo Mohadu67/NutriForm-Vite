@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { MdArrowBack } from 'react-icons/md';
+import { MdArrowBack, MdChat } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
+import { useChat } from '../../contexts/ChatContext';
 import {
   getAllSupportTickets,
   getSupportTicketById,
@@ -19,6 +20,7 @@ import logger from '../../shared/utils/logger.js';
 
 export default function SupportTickets() {
   const navigate = useNavigate();
+  const { openAIChat } = useChat() || {};
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -220,6 +222,12 @@ export default function SupportTickets() {
     setModalConfig(prev => ({ ...prev, isOpen: false }));
   };
 
+  const handleOpenConversation = () => {
+    if (selectedTicket?.conversationId && openAIChat) {
+      openAIChat(selectedTicket.conversationId);
+    }
+  };
+
   const getStatusBadge = (status) => {
     const statusMap = {
       open: { text: 'Ouvert', class: styles.statusOpen },
@@ -374,6 +382,11 @@ export default function SupportTickets() {
                     </div>
                   </div>
                   <div className={styles.actionButtons}>
+                    {selectedTicket.conversationId && (
+                      <button className={styles.btnChat} onClick={handleOpenConversation}>
+                        <MdChat /> Voir conversation
+                      </button>
+                    )}
                     {selectedTicket.status === 'open' && (
                       <button className={styles.btnProgress} onClick={handleMoveToProgress}>
                         → En cours

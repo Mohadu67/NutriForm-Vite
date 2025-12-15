@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useChat } from '../../contexts/ChatContext';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 import { isAuthenticated } from '../../shared/api/auth';
+import { storage } from '../../shared/utils/storage';
 import { getConversations, deleteConversation as deleteMatchConv } from '../../shared/api/matchChat';
 import { getAIConversations, deleteAIConversation } from '../../shared/api/chat';
 import { getSubscriptionStatus } from '../../shared/api/subscription';
@@ -11,10 +13,49 @@ import Alert from '../MessageAlerte/Alert/Alert';
 import { BotIcon, MessageCircleIcon, OnlineIcon } from '../Icons/GlobalIcons';
 import styles from './ChatHistory.module.css';
 
+// Composant pour les indicateurs de lecture - 3 états
+// ✓ gris = envoyé (destinataire pas dans ChatHistory)
+// ✓✓ gris = vu/livré (destinataire dans ChatHistory, voit le msg dans la liste)
+// ✓✓ vert = lu (destinataire a ouvert LA conversation)
+function ReadReceipt({ isSentByMe, isDelivered, isRead }) {
+  if (!isSentByMe) return null;
+
+  let checkmarks = '✓';
+  let color = '#999';
+
+  if (isRead) {
+    checkmarks = '✓✓';
+    color = '#4CAF50'; // vert = lu
+  } else if (isDelivered) {
+    checkmarks = '✓✓';
+    color = '#999'; // gris = vu dans la liste mais pas lu
+  }
+
+  return (
+    <span style={{
+      fontSize: '0.85rem',
+      color,
+      fontWeight: 'bold'
+    }}>
+      {checkmarks}
+    </span>
+  );
+}
+
 // Composant ConversationItem avec support long press
-function ConversationItem({ conv, onOpen, onDelete, formatDate, isLongPressActive, onLongPress, onCancelLongPress }) {
+function ConversationItem({ conv, onOpen, onDelete, formatDate, isLongPressActive, onLongPress, onCancelLongPress, currentUserId }) {
   const timerRef = useRef(null);
   const touchStartPos = useRef({ x: 0, y: 0 });
+
+  // Vérifier si le dernier message a été envoyé par moi
+  const lastMsgSenderId = String(conv.lastMessage?.senderId?._id || conv.lastMessage?.senderId || '');
+  const isSentByMe = currentUserId && lastMsgSenderId === String(currentUserId);
+
+  // 3 états:
+  // - isDelivered: l'autre est dans ChatHistory (peut voir le msg dans la liste)
+  // - isRead: l'autre a ouvert LA conversation (lu)
+  const isDelivered = conv.otherUserInChatList === true;
+  const isRead = conv.lastMessageRead === true;
 
   const handleTouchStart = (e) => {
     touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -78,8 +119,11 @@ function ConversationItem({ conv, onOpen, onDelete, formatDate, isLongPressActiv
           </span>
         </div>
         <p className={styles.convPreview}>
-          {conv.lastMessage?.content?.substring(0, 50) || 'Nouvelle conversation'}
-          {conv.lastMessage?.content?.length > 50 && '...'}
+          <span className={styles.convPreviewText}>
+            {conv.lastMessage?.content?.substring(0, 50) || 'Nouvelle conversation'}
+            {conv.lastMessage?.content?.length > 50 && '...'}
+          </span>
+          <ReadReceipt isSentByMe={isSentByMe} isDelivered={isDelivered} isRead={isRead} />
         </p>
       </div>
 
@@ -100,17 +144,20 @@ function ConversationItem({ conv, onOpen, onDelete, formatDate, isLongPressActiv
 }
 
 export default function ChatHistory({ onLogin }) {
-  const { openAIChat, openMatchChat, consumeRefreshFlag } = useChat();
-  const { on, isConnected } = useWebSocket();
+  const navigate = useNavigate();
+  const { openAIChat, openMatchChat, consumeRefreshFlag, closeChat } = useChat() || {};
+  const { on, isConnected, setChatListPresence } = useWebSocket() || {};
   const [conversations, setConversations] = useState([]);
   const [matchConversations, setMatchConversations] = useState([]);
   const [isAuth, setIsAuth] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '', variant: 'error' });
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, type: null });
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [longPressTarget, setLongPressTarget] = useState(null); // Pour afficher l'option de suppression
+  const [currentUserId, setCurrentUserId] = useState(null);
   const cacheTimeRef = useState({ ai: 0, match: 0 })[0];
   const CACHE_DURATION = 30000; // 30 secondes de cache
 
@@ -119,6 +166,16 @@ export default function ChatHistory({ onLogin }) {
     const checkAuth = async () => {
       const auth = await isAuthenticated();
       setIsAuth(auth);
+
+      // Récupérer l'ID utilisateur courant et son rôle
+      const user = storage.get('user');
+      if (user?._id || user?.id) {
+        setCurrentUserId(user._id || user.id);
+      }
+      // Vérifier si admin ou support
+      if (user?.role === 'admin' || user?.role === 'support') {
+        setIsAdmin(true);
+      }
 
       // Check premium status from API
       if (auth) {
@@ -133,13 +190,26 @@ export default function ChatHistory({ onLogin }) {
     checkAuth();
   }, []);
 
-  // Charger les conversations au premier affichage du composant
+  // Signaler présence dans ChatHistory (pour les indicateurs ✓✓ gris)
   useEffect(() => {
-    if (isAuth && !hasLoadedOnce) {
+    if (isConnected && isAuth && setChatListPresence) {
+      // Signaler qu'on est dans ChatHistory
+      setChatListPresence(true);
+
+      // Signaler qu'on quitte ChatHistory au démontage
+      return () => {
+        setChatListPresence(false);
+      };
+    }
+  }, [isConnected, isAuth, setChatListPresence]);
+
+  // Charger les conversations au premier affichage du composant (attendre que currentUserId soit défini)
+  useEffect(() => {
+    if (isAuth && currentUserId && !hasLoadedOnce) {
       setHasLoadedOnce(true);
       loadAllConversations(true); // Force le chargement au premier affichage
     }
-  }, [isAuth, hasLoadedOnce]);
+  }, [isAuth, hasLoadedOnce, currentUserId]);
 
   // Recharger les conversations quand isPremium change (passage de false à true)
   useEffect(() => {
@@ -304,10 +374,13 @@ export default function ChatHistory({ onLogin }) {
         const updated = [...prev];
 
         if (lastMessage) {
+          // Si c'est moi qui ai envoyé ce message, lastMessageRead = false (pas encore lu)
+          const iSentIt = currentUserId && String(lastMessage.senderId) === String(currentUserId);
           updated[convIndex] = {
             ...updated[convIndex],
             lastMessage: lastMessage,
-            updatedAt: lastMessage.timestamp
+            updatedAt: lastMessage.timestamp,
+            lastMessageRead: iSentIt ? false : null // false si j'ai envoyé, null si c'est l'autre
           };
         }
 
@@ -334,14 +407,73 @@ export default function ChatHistory({ onLogin }) {
       loadAllConversations(true);
     };
 
+    // Écouter quand des messages sont lus (pour mettre à jour les ✓✓)
+    const handleMessagesRead = ({ conversationId, readBy }) => {
+      setMatchConversations(prev => prev.map(conv => {
+        if (conv._id === conversationId) {
+          // Si c'est l'autre qui a lu (pas moi), marquer lastMessageRead = true
+          const iReadIt = currentUserId && String(readBy) === String(currentUserId);
+          if (iReadIt) {
+            // C'est moi qui ai lu, juste mettre unreadCount à 0
+            return { ...conv, unreadCount: 0 };
+          } else {
+            // L'autre a lu mon message, mettre lastMessageRead à true
+            return { ...conv, lastMessageRead: true };
+          }
+        }
+        return conv;
+      }));
+    };
+
+    // Écouter quand un utilisateur se connecte (pour mettre à jour ✓ -> ✓✓)
+    const handleUserOnline = ({ userId }) => {
+      setMatchConversations(prev => prev.map(conv => {
+        // Si l'autre utilisateur de cette conv vient de se connecter
+        if (conv.otherUser?._id === userId) {
+          return { ...conv, otherUserOnline: true };
+        }
+        return conv;
+      }));
+    };
+
+    // Écouter quand un utilisateur se déconnecte (pour mettre à jour ✓✓ -> ✓)
+    const handleUserOffline = ({ userId }) => {
+      setMatchConversations(prev => prev.map(conv => {
+        // Si l'autre utilisateur de cette conv vient de se déconnecter
+        if (conv.otherUser?._id === userId) {
+          return { ...conv, otherUserOnline: false, otherUserInChatList: false };
+        }
+        return conv;
+      }));
+    };
+
+    // Écouter quand un utilisateur ouvre/ferme ChatHistory (pour ✓✓ gris = vu dans la liste)
+    const handleChatListStatus = ({ userId, isInChatList }) => {
+      setMatchConversations(prev => prev.map(conv => {
+        // Si l'autre utilisateur de cette conv entre/sort de ChatHistory
+        if (String(conv.otherUser?._id) === String(userId)) {
+          return { ...conv, otherUserInChatList: isInChatList };
+        }
+        return conv;
+      }));
+    };
+
     const cleanupUpdate = on('conversation_updated', handleConversationUpdate);
     const cleanupRestored = on('conversation_restored', handleConversationRestored);
+    const cleanupRead = on('messages_read', handleMessagesRead);
+    const cleanupOnline = on('user_online', handleUserOnline);
+    const cleanupOffline = on('user_offline', handleUserOffline);
+    const cleanupChatList = on('user_chat_list_status', handleChatListStatus);
 
     return () => {
       cleanupUpdate?.();
       cleanupRestored?.();
+      cleanupRead?.();
+      cleanupOnline?.();
+      cleanupOffline?.();
+      cleanupChatList?.();
     };
-  }, [isConnected, isAuth, on]);
+  }, [isConnected, isAuth, on, currentUserId]);
 
   return (
     <div className={styles.chatHistory}>
@@ -389,7 +521,15 @@ export default function ChatHistory({ onLogin }) {
                 <div
                   key={conversations[0].conversationId || conversations[0].id}
                   className={`${styles.conversationItem} ${styles.pinnedItem}`}
-                  onClick={() => openAIChat(conversations[0].conversationId || conversations[0].id)}
+                  onClick={() => {
+                    // Si admin/support et conversation escaladée, rediriger vers la page support
+                    if (isAdmin && conversations[0].escalated) {
+                      closeChat?.(); // Fermer le panneau chat
+                      navigate('/admin/support-tickets');
+                    } else {
+                      openAIChat(conversations[0].conversationId || conversations[0].id);
+                    }
+                  }}
                 >
                   <div className={styles.convContent}>
                     <div className={styles.convHeader}>
@@ -445,6 +585,7 @@ export default function ChatHistory({ onLogin }) {
                     isLongPressActive={longPressTarget === conv._id}
                     onLongPress={() => setLongPressTarget(conv._id)}
                     onCancelLongPress={() => setLongPressTarget(null)}
+                    currentUserId={currentUserId}
                   />
                 ))
               )}

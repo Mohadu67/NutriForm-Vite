@@ -20,17 +20,24 @@ async function apiCall(endpoint, options = {}) {
   const url = `${API_URL}${endpoint}`;
   const isFormData = options.body instanceof FormData;
 
-  const defaultOptions = {
+  // Copier les options pour ne pas modifier l'original
+  const fetchOptions = {
     credentials: 'include', // Envoie automatiquement les cookies httpOnly
-    headers: isFormData ? {
-      ...options.headers,
-    } : {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    ...options,
   };
 
-  const response = await fetch(url, { ...defaultOptions, ...options });
+  // Pour FormData, supprimer explicitement les headers pour laisser le browser gérer le Content-Type avec boundary
+  if (isFormData) {
+    delete fetchOptions.headers;
+  } else {
+    // Pour les autres requêtes, ajouter Content-Type JSON
+    fetchOptions.headers = {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    };
+  }
+
+  const response = await fetch(url, fetchOptions);
   return response;
 }
 

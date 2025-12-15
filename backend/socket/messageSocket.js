@@ -5,6 +5,12 @@ const config = require('../config');
 // Map pour stocker les utilisateurs connectés: userId -> socketId
 const connectedUsers = new Map();
 
+// Map pour stocker les utilisateurs présents dans chaque conversation: conversationId -> Set<userId>
+const conversationPresence = new Map();
+
+// Map pour stocker les utilisateurs qui ont ChatHistory ouvert (peuvent voir les messages dans la liste)
+const usersInChatList = new Set();
+
 /**
  * Extraire le token depuis les cookies
  */
@@ -78,16 +84,47 @@ module.exports = (io) => {
     // Informer l'utilisateur qu'il est connecté
     socket.emit('connected', { userId, socketId: socket.id });
 
+    // Notifier tous les utilisateurs que cet utilisateur est en ligne
+    socket.broadcast.emit('user_online', { userId: userId.toString() });
+
     // Rejoindre une conversation
     socket.on('join_conversation', (conversationId) => {
       socket.join(`conversation:${conversationId}`);
       logger.info(`👥 User ${userId} a rejoint la conversation ${conversationId}`);
+
+      // Notifier le nouvel arrivant des utilisateurs déjà présents dans cette conversation
+      const presentUsers = conversationPresence.get(conversationId);
+      if (presentUsers && presentUsers.size > 0) {
+        presentUsers.forEach(presentUserId => {
+          if (presentUserId !== userId.toString()) {
+            // Envoyer la présence des autres utilisateurs au nouvel arrivant
+            socket.emit('user_presence', {
+              conversationId,
+              userId: presentUserId,
+              isPresent: true
+            });
+            logger.info(`👁️ Notifié ${userId} que ${presentUserId} est présent dans ${conversationId}`);
+          }
+        });
+      }
+
       socket.emit('conversation_joined', { conversationId });
     });
 
     // Quitter une conversation
     socket.on('leave_conversation', (conversationId) => {
       socket.leave(`conversation:${conversationId}`);
+
+      // Nettoyer la présence de l'utilisateur dans cette conversation
+      const userIdStr = userId.toString();
+      const presentUsers = conversationPresence.get(conversationId);
+      if (presentUsers) {
+        presentUsers.delete(userIdStr);
+        if (presentUsers.size === 0) {
+          conversationPresence.delete(conversationId);
+        }
+      }
+
       logger.info(`👋 User ${userId} a quitté la conversation ${conversationId}`);
     });
 
@@ -98,6 +135,54 @@ module.exports = (io) => {
         isTyping,
         conversationId
       });
+    });
+
+    // Notification de présence dans une conversation
+    socket.on('user_presence', ({ conversationId, isPresent }) => {
+      const userIdStr = userId.toString();
+
+      // Mettre à jour le tracking de présence
+      if (isPresent) {
+        if (!conversationPresence.has(conversationId)) {
+          conversationPresence.set(conversationId, new Set());
+        }
+        conversationPresence.get(conversationId).add(userIdStr);
+      } else {
+        const presentUsers = conversationPresence.get(conversationId);
+        if (presentUsers) {
+          presentUsers.delete(userIdStr);
+          if (presentUsers.size === 0) {
+            conversationPresence.delete(conversationId);
+          }
+        }
+      }
+
+      // Broadcaster aux autres utilisateurs dans la conversation
+      socket.to(`conversation:${conversationId}`).emit('user_presence', {
+        conversationId,
+        userId: userIdStr,
+        isPresent
+      });
+      logger.info(`👁️ User ${userId} presence in ${conversationId}: ${isPresent}`);
+    });
+
+    // Notification de présence dans ChatHistory (liste des conversations)
+    // Permet de savoir si l'autre peut VOIR le message dans sa liste (✓✓ gris)
+    socket.on('chat_list_presence', ({ isPresent }) => {
+      const userIdStr = userId.toString();
+
+      if (isPresent) {
+        usersInChatList.add(userIdStr);
+      } else {
+        usersInChatList.delete(userIdStr);
+      }
+
+      // Notifier tous les autres utilisateurs
+      socket.broadcast.emit('user_chat_list_status', {
+        userId: userIdStr,
+        isInChatList: isPresent
+      });
+      logger.info(`📋 User ${userId} chat list presence: ${isPresent}`);
     });
 
     // Marquer comme lu en temps réel
@@ -111,8 +196,37 @@ module.exports = (io) => {
 
     // Déconnexion
     socket.on('disconnect', () => {
-      connectedUsers.delete(userId.toString());
+      const userIdStr = userId.toString();
+      connectedUsers.delete(userIdStr);
       logger.info(`🔌 WebSocket: Utilisateur ${userId} déconnecté`);
+
+      // Nettoyer la présence dans ChatHistory
+      if (usersInChatList.has(userIdStr)) {
+        usersInChatList.delete(userIdStr);
+        socket.broadcast.emit('user_chat_list_status', {
+          userId: userIdStr,
+          isInChatList: false
+        });
+      }
+
+      // Nettoyer la présence de l'utilisateur dans toutes les conversations
+      conversationPresence.forEach((presentUsers, conversationId) => {
+        if (presentUsers.has(userIdStr)) {
+          presentUsers.delete(userIdStr);
+          // Notifier les autres utilisateurs dans cette conversation
+          socket.to(`conversation:${conversationId}`).emit('user_presence', {
+            conversationId,
+            userId: userIdStr,
+            isPresent: false
+          });
+          if (presentUsers.size === 0) {
+            conversationPresence.delete(conversationId);
+          }
+        }
+      });
+
+      // Notifier tous les utilisateurs que cet utilisateur est hors ligne
+      socket.broadcast.emit('user_offline', { userId: userIdStr });
     });
 
     // Gestion des erreurs

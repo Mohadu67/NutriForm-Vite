@@ -9,6 +9,7 @@ import EchauffementModal from "./EchauffementModal";
 import SaveLoadingAnimation from "./SaveLoadingAnimation";
 import ShareModal from "../../../Share/ShareModal";
 import logger from '../../../../shared/utils/logger.js';
+import { showError } from '../../../../utils/confirmDialog.jsx';
 
 function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onStart = null, onFinish = () => {} }) {
   const { save, saving } = useSaveSession();
@@ -392,6 +393,13 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
         setShowConfirm(false);
         // Ouvrir directement le modal de partage
         setShowShareModal(true);
+      } else if (res?.isPremiumRequired) {
+        // Free user trying to save
+        showError("Passe Premium pour sauvegarder tes séances ✨");
+        if (typeof onFinish === 'function') {
+          onFinish({ durationSec: finalSec, savedCount: 0, calories, doneExercises, totalExercises, summary });
+        }
+        stopAndReset();
       } else {
         if (typeof onFinish === 'function') {
           onFinish({ durationSec: finalSec, savedCount, calories, doneExercises, totalExercises, summary });
@@ -400,6 +408,9 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
       }
     } catch (err) {
       logger.error('[Chrono] save failed', err);
+      if (err?.isPremiumRequired || err?.status === 403) {
+        showError("Passe Premium pour sauvegarder tes séances ✨");
+      }
       if (typeof onFinish === 'function') {
         onFinish({ durationSec: finalSec, savedCount: 0, calories, doneExercises, totalExercises, summary });
       }
