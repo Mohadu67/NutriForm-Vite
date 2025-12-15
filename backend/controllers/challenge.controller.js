@@ -1,0 +1,577 @@
+const Challenge = require('../models/Challenge');
+const User = require('../models/User');
+const LeaderboardEntry = require('../models/LeaderboardEntry');
+const WorkoutSession = require('../models/WorkoutSession');
+const Notification = require('../models/Notification');
+const logger = require('../utils/logger');
+const { sendNotificationToUser } = require('../services/pushNotification.service');
+
+// Templates de notifications
+const NOTIFICATION_TEMPLATES = {
+  challenge_received: {
+    title: "⚔️ Nouveau défi!",
+    getBody: (data) => `@${data.challengerName} te défie: ${data.typeLabel} sur ${data.duration} jours!`
+  },
+  challenge_accepted: {
+    title: "🔥 Défi accepté!",
+    getBody: (data) => `@${data.challengedName} relève le défi! C'est parti pour ${data.duration} jours!`
+  },
+  challenge_declined: {
+    title: "😔 Défi refusé",
+    getBody: (data) => `@${data.challengedName} a décliné ton défi.`
+  },
+  challenge_update_losing: {
+    title: "📊 Tu peux le rattraper!",
+    getBody: (data) => `Plus que ${data.diff} ${data.metric} pour dépasser @${data.opponentName}!`
+  },
+  challenge_update_winning: {
+    title: "💪 Tu mènes!",
+    getBody: (data) => `Tu as ${data.diff} ${data.metric} d'avance sur @${data.opponentName}!`
+  },
+  challenge_ending_soon: {
+    title: "⏰ Dernière ligne droite!",
+    getBody: (data) => `24h restantes contre @${data.opponentName}. Score: ${data.yourScore}-${data.theirScore}`
+  },
+  challenge_won: {
+    title: "🏆 VICTOIRE!",
+    getBody: (data) => `Tu as battu @${data.opponentName}! +50 XP gagnés!`
+  },
+  challenge_lost: {
+    title: "😤 Défaite...",
+    getBody: (data) => `@${data.opponentName} l'emporte ${data.theirScore}-${data.yourScore}. Revanche?`
+  },
+  challenge_draw: {
+    title: "🤝 Égalité!",
+    getBody: (data) => `Match nul contre @${data.opponentName}! ${data.score}-${data.score}`
+  }
+};
+
+// Obtenir le label du type de défi
+function getTypeLabel(type) {
+  const labels = {
+    sessions: 'séances',
+    streak: 'jours de streak',
+    calories: 'calories',
+    duration: 'minutes'
+  };
+  return labels[type] || type;
+}
+
+// Calculer le score d'un utilisateur pour un type de défi
+async function calculateScore(userId, type, startDate) {
+  const query = {
+    userId,
+    createdAt: { $gte: startDate }
+  };
+
+  switch (type) {
+    case 'sessions':
+      return await WorkoutSession.countDocuments(query);
+
+    case 'calories':
+      const caloriesResult = await WorkoutSession.aggregate([
+        { $match: query },
+        { $group: { _id: null, total: { $sum: '$caloriesBurned' } } }
+      ]);
+      return caloriesResult[0]?.total || 0;
+
+    case 'duration':
+      const durationResult = await WorkoutSession.aggregate([
+        { $match: query },
+        { $group: { _id: null, total: { $sum: '$durationMin' } } }
+      ]);
+      return durationResult[0]?.total || 0;
+
+    case 'streak':
+      // Pour le streak, on compte les jours consécutifs depuis startDate
+      const entry = await LeaderboardEntry.findOne({ userId });
+      return entry?.stats?.currentStreak || 0;
+
+    default:
+      return 0;
+  }
+}
+
+// Créer un nouveau défi
+exports.createChallenge = async (req, res) => {
+  try {
+    const challengerId = req.userId || req.user?.id;
+    const { challengedId, type, duration = 7 } = req.body;
+
+    // Validations
+    if (!challengedId || !type) {
+      return res.status(400).json({
+        success: false,
+        message: 'challengedId et type sont requis'
+      });
+    }
+
+    if (challengerId.toString() === challengedId.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tu ne peux pas te défier toi-même!'
+      });
+    }
+
+    // Vérifier que les deux utilisateurs existent et sont dans le leaderboard
+    const [challenger, challenged] = await Promise.all([
+      User.findById(challengerId),
+      User.findById(challengedId)
+    ]);
+
+    if (!challenger || !challenged) {
+      return res.status(404).json({
+        success: false,
+        message: 'Utilisateur non trouvé'
+      });
+    }
+
+    // Vérifier qu'il n'y a pas déjà un défi actif entre ces deux utilisateurs
+    const existingChallenge = await Challenge.findOne({
+      $or: [
+        { challengerId, challengedId, status: { $in: ['pending', 'active'] } },
+        { challengerId: challengedId, challengedId: challengerId, status: { $in: ['pending', 'active'] } }
+      ]
+    });
+
+    if (existingChallenge) {
+      return res.status(400).json({
+        success: false,
+        message: 'Un défi est déjà en cours avec cet utilisateur'
+      });
+    }
+
+    // Créer le défi
+    const challenge = await Challenge.create({
+      challengerId,
+      challengerName: challenger.pseudo || challenger.prenom,
+      challengerAvatar: challenger.photo,
+      challengedId,
+      challengedName: challenged.pseudo || challenged.prenom,
+      challengedAvatar: challenged.photo,
+      type,
+      duration,
+      status: 'pending'
+    });
+
+    // Envoyer notification au défié
+    try {
+      const notifTitle = NOTIFICATION_TEMPLATES.challenge_received.title;
+      const notifBody = NOTIFICATION_TEMPLATES.challenge_received.getBody({
+        challengerName: challenge.challengerName,
+        typeLabel: getTypeLabel(type),
+        duration
+      });
+
+      // 1. Sauvegarder en base de données
+      const savedNotif = await Notification.create({
+        userId: challengedId,
+        type: 'activity',
+        title: notifTitle,
+        message: notifBody,
+        link: '/classement',
+        avatar: challenge.challengerAvatar,
+        metadata: {
+          challengeId: challenge._id.toString(),
+          challengerId: challengerId.toString(),
+          action: 'challenge_received'
+        }
+      });
+
+      // 2. Envoyer via WebSocket
+      const io = req.app.get('io');
+      if (io && io.notifyUser) {
+        io.notifyUser(challengedId.toString(), 'new_notification', {
+          id: savedNotif._id.toString(),
+          type: 'activity',
+          title: notifTitle,
+          message: notifBody,
+          link: '/classement',
+          avatar: challenge.challengerAvatar,
+          timestamp: new Date().toISOString(),
+          read: false
+        });
+      }
+
+      // 3. Envoyer notification push
+      const pushPayload = {
+        type: 'challenge_received',
+        title: notifTitle,
+        body: notifBody,
+        icon: challenge.challengerAvatar || '/icon-192x192.png',
+        badge: '/badge-72x72.png',
+        data: {
+          type: 'challenge_received',
+          challengeId: challenge._id.toString(),
+          url: '/classement'
+        }
+      };
+      await sendNotificationToUser(challengedId, pushPayload);
+    } catch (notifErr) {
+      logger.error('Erreur envoi notification challenge:', notifErr);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Défi envoyé!',
+      data: challenge
+    });
+
+  } catch (error) {
+    logger.error('Erreur création défi:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la création du défi'
+    });
+  }
+};
+
+// Accepter un défi
+exports.acceptChallenge = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { id } = req.params;
+
+    const challenge = await Challenge.findById(id);
+
+    if (!challenge) {
+      return res.status(404).json({
+        success: false,
+        message: 'Défi non trouvé'
+      });
+    }
+
+    if (challenge.challengedId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Tu ne peux pas accepter ce défi'
+      });
+    }
+
+    if (challenge.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'Ce défi ne peut plus être accepté'
+      });
+    }
+
+    // Calculer les scores de départ
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + challenge.duration);
+
+    const [challengerStartScore, challengedStartScore] = await Promise.all([
+      calculateScore(challenge.challengerId, challenge.type, startDate),
+      calculateScore(challenge.challengedId, challenge.type, startDate)
+    ]);
+
+    // Mettre à jour le défi
+    challenge.status = 'active';
+    challenge.startDate = startDate;
+    challenge.endDate = endDate;
+    challenge.challengerStartScore = challengerStartScore;
+    challenge.challengedStartScore = challengedStartScore;
+    challenge.challengerScore = 0;
+    challenge.challengedScore = 0;
+    await challenge.save();
+
+    // Notifier le challenger
+    try {
+      const notifPayload = {
+        type: 'challenge_accepted',
+        title: NOTIFICATION_TEMPLATES.challenge_accepted.title,
+        body: NOTIFICATION_TEMPLATES.challenge_accepted.getBody({
+          challengedName: challenge.challengedName,
+          duration: challenge.duration
+        }),
+        icon: challenge.challengedAvatar || '/icon-192x192.png',
+        badge: '/badge-72x72.png',
+        data: {
+          type: 'challenge_accepted',
+          challengeId: challenge._id.toString(),
+          url: '/classement'
+        }
+      };
+      await sendNotificationToUser(challenge.challengerId, notifPayload);
+    } catch (notifErr) {
+      logger.error('Erreur envoi notification accept:', notifErr);
+    }
+
+    res.json({
+      success: true,
+      message: 'Défi accepté! Que le meilleur gagne!',
+      data: challenge
+    });
+
+  } catch (error) {
+    logger.error('Erreur acceptation défi:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de l\'acceptation du défi'
+    });
+  }
+};
+
+// Refuser un défi
+exports.declineChallenge = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { id } = req.params;
+
+    const challenge = await Challenge.findById(id);
+
+    if (!challenge) {
+      return res.status(404).json({
+        success: false,
+        message: 'Défi non trouvé'
+      });
+    }
+
+    if (challenge.challengedId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Tu ne peux pas refuser ce défi'
+      });
+    }
+
+    if (challenge.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'Ce défi ne peut plus être refusé'
+      });
+    }
+
+    challenge.status = 'declined';
+    await challenge.save();
+
+    // Notifier le challenger
+    try {
+      const notifPayload = {
+        type: 'challenge_declined',
+        title: NOTIFICATION_TEMPLATES.challenge_declined.title,
+        body: NOTIFICATION_TEMPLATES.challenge_declined.getBody({
+          challengedName: challenge.challengedName
+        }),
+        icon: challenge.challengedAvatar || '/icon-192x192.png',
+        badge: '/badge-72x72.png',
+        data: {
+          type: 'challenge_declined',
+          challengeId: challenge._id.toString(),
+          url: '/classement'
+        }
+      };
+      await sendNotificationToUser(challenge.challengerId, notifPayload);
+    } catch (notifErr) {
+      logger.error('Erreur envoi notification decline:', notifErr);
+    }
+
+    res.json({
+      success: true,
+      message: 'Défi refusé',
+      data: challenge
+    });
+
+  } catch (error) {
+    logger.error('Erreur refus défi:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors du refus du défi'
+    });
+  }
+};
+
+// Annuler un défi (seulement si pending et créateur)
+exports.cancelChallenge = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { id } = req.params;
+
+    const challenge = await Challenge.findById(id);
+
+    if (!challenge) {
+      return res.status(404).json({
+        success: false,
+        message: 'Défi non trouvé'
+      });
+    }
+
+    if (challenge.challengerId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Tu ne peux pas annuler ce défi'
+      });
+    }
+
+    if (challenge.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'Ce défi ne peut plus être annulé'
+      });
+    }
+
+    challenge.status = 'cancelled';
+    await challenge.save();
+
+    res.json({
+      success: true,
+      message: 'Défi annulé',
+      data: challenge
+    });
+
+  } catch (error) {
+    logger.error('Erreur annulation défi:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de l\'annulation du défi'
+    });
+  }
+};
+
+// Obtenir mes défis
+exports.getMyChallenges = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { status } = req.query;
+
+    let query = {
+      $or: [
+        { challengerId: userId },
+        { challengedId: userId }
+      ]
+    };
+
+    if (status) {
+      query.status = status;
+    }
+
+    const challenges = await Challenge.find(query)
+      .sort({ updatedAt: -1 })
+      .limit(50);
+
+    // Séparer par statut
+    const active = challenges.filter(c => c.status === 'active');
+    const pending = challenges.filter(c => c.status === 'pending');
+    const completed = challenges.filter(c => c.status === 'completed');
+
+    res.json({
+      success: true,
+      data: {
+        active,
+        pending,
+        completed,
+        all: challenges
+      }
+    });
+
+  } catch (error) {
+    logger.error('Erreur récupération défis:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la récupération des défis'
+    });
+  }
+};
+
+// Obtenir un défi par ID
+exports.getChallengeById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+
+    const challenge = await Challenge.findById(id);
+
+    if (!challenge) {
+      return res.status(404).json({
+        success: false,
+        message: 'Défi non trouvé'
+      });
+    }
+
+    // Vérifier que l'utilisateur est participant
+    const isParticipant =
+      challenge.challengerId.toString() === userId.toString() ||
+      challenge.challengedId.toString() === userId.toString();
+
+    if (!isParticipant) {
+      return res.status(403).json({
+        success: false,
+        message: 'Tu ne peux pas voir ce défi'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: challenge
+    });
+
+  } catch (error) {
+    logger.error('Erreur récupération défi:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la récupération du défi'
+    });
+  }
+};
+
+// Statistiques de défis d'un utilisateur
+exports.getChallengeStats = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const [totalChallenges, wins, losses, draws] = await Promise.all([
+      Challenge.countDocuments({
+        $or: [{ challengerId: userId }, { challengedId: userId }],
+        status: 'completed'
+      }),
+      Challenge.countDocuments({
+        winnerId: userId,
+        status: 'completed'
+      }),
+      Challenge.countDocuments({
+        $or: [{ challengerId: userId }, { challengedId: userId }],
+        winnerId: { $ne: userId, $ne: null },
+        status: 'completed'
+      }),
+      Challenge.countDocuments({
+        $or: [{ challengerId: userId }, { challengedId: userId }],
+        winnerId: null,
+        status: 'completed'
+      })
+    ]);
+
+    const activeChallenges = await Challenge.countDocuments({
+      $or: [{ challengerId: userId }, { challengedId: userId }],
+      status: 'active'
+    });
+
+    const pendingReceived = await Challenge.countDocuments({
+      challengedId: userId,
+      status: 'pending'
+    });
+
+    res.json({
+      success: true,
+      data: {
+        total: totalChallenges,
+        wins,
+        losses,
+        draws,
+        winRate: totalChallenges > 0 ? Math.round((wins / totalChallenges) * 100) : 0,
+        activeChallenges,
+        pendingReceived
+      }
+    });
+
+  } catch (error) {
+    logger.error('Erreur stats défis:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la récupération des stats'
+    });
+  }
+};
+
+// Exporter les fonctions utilitaires pour les CRON jobs
+exports.calculateScore = calculateScore;
+exports.NOTIFICATION_TEMPLATES = NOTIFICATION_TEMPLATES;
+exports.getTypeLabel = getTypeLabel;

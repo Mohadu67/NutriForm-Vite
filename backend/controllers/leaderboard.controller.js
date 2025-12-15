@@ -49,7 +49,7 @@ exports.getLeaderboard = async (req, res) => {
     const leaderboard = await LeaderboardEntry.find({ visibility: 'public' })
       .sort({ [sortField]: -1 })
       .limit(parseInt(limit))
-      .select('-userId -createdAt -updatedAt -__v')
+      .select('-createdAt -updatedAt -__v')
       .lean();
 
     // Ajouter le rang

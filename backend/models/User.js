@@ -78,7 +78,17 @@ const userSchema = new mongoose.Schema(
     verificationToken: { type: String, default: null, select: false },
     verificationExpires: { type: Date, default: null, select: false },
     resetPasswordToken: { type: String, default: null, index: true, select: false },
-    resetPasswordExpires: { type: Date, default: null, select: false }
+    resetPasswordExpires: { type: Date, default: null, select: false },
+
+    // Préférences de notifications
+    notificationPreferences: {
+      dailyReminder: { type: Boolean, default: true },
+      dailyReminderTime: { type: String, default: '09:00' },
+      challengeUpdates: { type: Boolean, default: true },
+      leaderboardUpdates: { type: Boolean, default: true },
+      streakReminders: { type: Boolean, default: true },
+      weeklyRecap: { type: Boolean, default: true }
+    }
   },
   { timestamps: true }
 );

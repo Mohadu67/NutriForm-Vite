@@ -53,8 +53,12 @@ const matchChatRoutes = require('./routes/matchChat.route.js');
 const pushNotificationRoutes = require('./routes/pushNotification.route.js');
 const recipeRoutes = require('./routes/recipe.route.js');
 const notificationRoutes = require('./routes/notification.route.js');
+const challengeRoutes = require('./routes/challenge.route.js');
+const badgeRoutes = require('./routes/badge.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
+const { startChallengeCron } = require('./cron/challengeCron');
+const { startDailyNotificationCron } = require('./cron/dailyNotificationCron');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -209,6 +213,8 @@ app.use('/api/match-chat', matchChatRoutes);
 app.use('/api/push', pushNotificationRoutes);
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/challenges', challengeRoutes);
+app.use('/api/badges', badgeRoutes);
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
@@ -257,6 +263,8 @@ if (process.env.NODE_ENV !== 'test') {
       logger.info('⏰ Démarrage des tâches planifiées...');
       startNewsletterCron();
       startLeaderboardCron();
+      startChallengeCron();
+      startDailyNotificationCron();
     } else {
       logger.warn('⚠️  Tâches planifiées désactivées - MongoDB non connecté');
       // Réessayer après connexion
@@ -264,6 +272,8 @@ if (process.env.NODE_ENV !== 'test') {
         logger.info('⏰ Démarrage des tâches planifiées (après connexion MongoDB)...');
         startNewsletterCron();
         startLeaderboardCron();
+        startChallengeCron();
+        startDailyNotificationCron();
       });
     }
   });
