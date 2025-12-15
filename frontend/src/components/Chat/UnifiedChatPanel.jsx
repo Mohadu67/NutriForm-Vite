@@ -297,7 +297,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
         // Mettre à jour storage
         if (newConvId) {
-          const savedConversations = JSON.parse(storage.get('chatConversations') || '[]');
+          const savedConversations = storage.get('chatConversations') || [];
           const convIndex = savedConversations.findIndex(c => c.id === newConvId);
           if (convIndex >= 0) {
             savedConversations[convIndex].lastMessage = content;
@@ -310,7 +310,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
               updatedAt: new Date()
             });
           }
-          storage.set('chatConversations', JSON.stringify(savedConversations));
+          storage.set('chatConversations', savedConversations);
         }
       }
 
@@ -355,11 +355,11 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       }]);
 
       // Mettre à jour storage
-      const savedConversations = JSON.parse(storage.get('chatConversations') || '[]');
+      const savedConversations = storage.get('chatConversations') || [];
       const convIndex = savedConversations.findIndex(c => c.id === conversationId);
       if (convIndex >= 0) {
         savedConversations[convIndex].escalated = true;
-        storage.set('chatConversations', JSON.stringify(savedConversations));
+        storage.set('chatConversations', savedConversations);
       }
     } catch (err) {
       setMessages(prev => [...prev, {

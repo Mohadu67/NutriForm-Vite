@@ -41,17 +41,12 @@ export default function useHistoryData() {
         setUser(data);
         storage.set("cachedDisplayName", finalName);
 
-        const userStr = storage.get("user");
-        if (userStr) {
-          try {
-            const userData = JSON.parse(userStr);
-            const updatedUser = { ...userData, ...data };
-            storage.set("user", JSON.stringify(updatedUser));
-          } catch {
-            storage.set("user", JSON.stringify(data));
-          }
+        const userData = storage.get("user");
+        if (userData) {
+          const updatedUser = { ...userData, ...data };
+          storage.set("user", updatedUser);
         } else {
-          storage.set("user", JSON.stringify(data));
+          storage.set("user", data);
         }
       })
       .catch((err) => {

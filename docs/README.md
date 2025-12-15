@@ -360,68 +360,104 @@ cd ..
 
 ### Variables d'environnement
 
-#### Backend (`backend/.env`)
+Le projet utilise une séparation des fichiers d'environnement :
+
+| Fichier | Usage | Chargé quand |
+|---------|-------|--------------|
+| `.env.local` | Développement local | `npm run dev` |
+| `.env.production` | Production | `npm run build` / `NODE_ENV=production` |
+| `.env.example` | Template (à copier) | Jamais (référence) |
+
+> ⚠️ Les fichiers `.env.local` et `.env.production` sont dans `.gitignore` et ne doivent JAMAIS être commités.
+
+#### Backend - Développement (`backend/.env.local`)
 
 ```env
-# MongoDB
-MONGODB_URI=mongodb://localhost:27017/harmonith
-# ou MongoDB Atlas : mongodb+srv://user:password@cluster.mongodb.net/harmonith
-
-# JWT
-JWT_SECRET=votre_secret_jwt_ultra_securise_32_caracteres_minimum
-
-# Server
-PORT=5000
 NODE_ENV=development
+PORT=3000
+BACKEND_BASE_URL=http://localhost:3000
+FRONTEND_BASE_URL=http://localhost:5173
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 
-# Frontend URL
-FRONTEND_URL=http://localhost:3000
+# MongoDB local
+MONGODB_URI=mongodb://localhost:27017/harmonith
 
-# Stripe (Paiements)
+# JWT (différent de prod pour sécurité)
+JWT_SECRET=dev_secret_local_32_chars_minimum
+
+# Encryption
+ENCRYPTION_SECRET=dev_encryption_secret_32_chars_minimum
+
+# reCAPTCHA désactivé en local
+RECAPTCHA_DISABLED=true
+
+# Stripe (clés TEST)
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_PRICE_ID=price_...
 
-# SendGrid (Emails)
-SENDGRID_API_KEY=SG...
-EMAIL_FROM=noreply@harmonith.com
-
-# Cloudinary (Images)
+# Cloudinary
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
-
-# OpenAI (Chat AI)
-OPENAI_API_KEY=sk-...
-
-# Web Push (Notifications)
-VAPID_PUBLIC_KEY=BF...
-VAPID_PRIVATE_KEY=...
-VAPID_EMAIL=contact@harmonith.com
-
-# Google reCAPTCHA
-RECAPTCHA_SECRET_KEY=6Le...
-
-# Trust Proxy (Production)
-TRUST_PROXY=true
 ```
 
-#### Frontend (`frontend/.env`)
+#### Backend - Production (`backend/.env.production`)
 
 ```env
-# API Backend
-VITE_API_URL=http://localhost:5000
+NODE_ENV=production
+PORT=3000
+BACKEND_BASE_URL=https://api.harmonith.fr
+FRONTEND_BASE_URL=https://harmonith.fr
+ALLOWED_ORIGINS=https://harmonith.fr,https://www.harmonith.fr
 
-# Stripe Public Key
-VITE_STRIPE_PUBLIC_KEY=pk_test_...
+# MongoDB Atlas
+MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/harmonith
 
-# Google reCAPTCHA
+# JWT (secret fort et unique)
+JWT_SECRET=votre_secret_jwt_ultra_securise_64_caracteres_minimum
+
+# Encryption
+ENCRYPTION_SECRET=votre_encryption_secret_64_caracteres
+
+# reCAPTCHA activé
+RECAPTCHA_DISABLED=false
+RECAPTCHA_SECRET_KEY=6Le...
+
+# Stripe (clés LIVE)
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_ID=price_...
+
+# SMTP
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_USER=contact@harmonith.fr
+SMTP_PASS=...
+
+# VAPID (Push Notifications)
+VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=mailto:contact@harmonith.fr
+
+# OpenAI (optionnel)
+OPENAI_API_KEY=sk-...
+```
+
+#### Frontend - Développement (`frontend/.env.local`)
+
+```env
+VITE_API_URL=http://localhost:3000/api
+VITE_RECAPTCHA_SITE_KEY=
+VITE_VAPID_PUBLIC_KEY=
+```
+
+#### Frontend - Production (`frontend/.env.production`)
+
+```env
+VITE_API_URL=https://api.harmonith.fr/api
 VITE_RECAPTCHA_SITE_KEY=6Le...
-
-# Microsoft Clarity (Analytics)
-VITE_CLARITY_ID=your_clarity_id
-
-# Web Push Public Key
 VITE_VAPID_PUBLIC_KEY=BF...
 ```
 

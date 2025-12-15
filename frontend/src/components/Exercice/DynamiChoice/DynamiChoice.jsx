@@ -133,28 +133,55 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   }, [step]);
 
   useEffect(() => {
-    try { storage.set("dynamiType", JSON.stringify(typeId)); } catch (e) {
+    try { storage.set("dynamiType", typeId); } catch (e) {
       logger.error("Failed to save dynamiType:", e);
     }
   }, [typeId]);
 
   useEffect(() => {
-    try { storage.set("dynamiEquip", JSON.stringify(equipIds)); } catch (e) {
+    try { storage.set("dynamiEquip", equipIds); } catch (e) {
       logger.error("Failed to save dynamiEquip:", e);
     }
   }, [equipIds]);
 
   useEffect(() => {
-    try { storage.set("dynamiMuscle", JSON.stringify(muscleIds)); } catch (e) {
+    try { storage.set("dynamiMuscle", muscleIds); } catch (e) {
       logger.error("Failed to save dynamiMuscle:", e);
     }
   }, [muscleIds]);
 
   useEffect(() => {
-    try { storage.set("dynamiSelected", JSON.stringify(selectedExercises)); } catch (e) {
+    try { storage.set("dynamiSelected", selectedExercises); } catch (e) {
       logger.error("Failed to save dynamiSelected:", e);
     }
   }, [selectedExercises]);
+
+  // Réinitialiser selectedExercises quand les filtres changent
+  const filterKeyRef = useRef(null);
+  useEffect(() => {
+    const eq = Array.isArray(equipIds) ? [...equipIds].sort() : [];
+    const mu = Array.isArray(muscleIds) ? [...muscleIds].sort() : [];
+    const currentKey = JSON.stringify({ typeId: typeId || null, equip: eq, muscle: mu });
+
+    if (filterKeyRef.current === null) {
+      // Premier rendu, juste sauvegarder la clé
+      filterKeyRef.current = currentKey;
+      return;
+    }
+
+    if (filterKeyRef.current !== currentKey) {
+      // Les filtres ont changé, réinitialiser la sélection
+      filterKeyRef.current = currentKey;
+      setSelectedExercises([]);
+      try {
+        storage.remove("dynamiSelected");
+        storage.remove("dynamiDismissed");
+        storage.set("dynamiHasTouched", "0");
+      } catch (e) {
+        logger.error("Failed to clear selection on filter change:", e);
+      }
+    }
+  }, [typeId, equipIds, muscleIds]);
 
   useEffect(() => {
     if (didInitFromSelections.current) return;

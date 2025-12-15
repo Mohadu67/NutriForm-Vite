@@ -15,7 +15,7 @@ function storageKey(it) {
 }
 function saveSaved(it, data) {
   try {
-    storage.set(storageKey(it), JSON.stringify(data ?? null));
+    storage.set(storageKey(it), data ?? null);
   } catch (e) {
     logger.error("Failed to save exercise data:", e);
   }
@@ -36,13 +36,13 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onFinis
 
   function getPersistedSelection() {
     try {
-      const a = JSON.parse(storage.get("formSelectedExercises"));
+      const a = storage.get("formSelectedExercises");
       if (Array.isArray(a) && a.length) return a;
     } catch (e) {
       logger.error("Failed to load formSelectedExercises:", e);
     }
     try {
-      const b = JSON.parse(storage.get("dynamiSelected"));
+      const b = storage.get("dynamiSelected");
       if (Array.isArray(b) && b.length) return b;
     } catch (e) {
       logger.error("Failed to load dynamiSelected:", e);
