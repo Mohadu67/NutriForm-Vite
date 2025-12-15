@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import style from "../Dashboard.module.css";
 
 /**
@@ -16,8 +17,13 @@ export const RecentActivity = ({
   onSaveSessionName,
   onCancelEdit,
   onDeleteSession,
-  onEditSessionNameChange
+  onEditSessionNameChange,
+  isFreeUser = false,
+  totalSessions = 0
 }) => {
+  const navigate = useNavigate();
+  const hiddenSessions = totalSessions - recentSessions.length;
+
   if (recentSessions.length === 0) {
     return null;
   }
@@ -70,6 +76,14 @@ export const RecentActivity = ({
           </div>
         ))}
       </div>
+      {isFreeUser && hiddenSessions > 0 && (
+        <div className={style.sessionsUpsell}>
+          <span>📊 {hiddenSessions} séance{hiddenSessions > 1 ? 's' : ''} de plus dans ton historique</span>
+          <button onClick={() => navigate('/pricing')} className={style.sessionsUpsellLink}>
+            Voir tout avec Premium
+          </button>
+        </div>
+      )}
     </section>
   );
 };

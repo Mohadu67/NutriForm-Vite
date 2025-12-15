@@ -34,8 +34,7 @@ function storageKeyFromExo(exo) {
 }
 function loadSavedDraft(exo) {
   try {
-    const raw = storage.get(storageKeyFromExo(exo));
-    return raw ? JSON.parse(raw) : null;
+    return storage.get(storageKeyFromExo(exo)) || null;
   } catch {
     return null;
   }

@@ -5,11 +5,11 @@ import Main from "./Main/Main.jsx";
 
 export default function Home() {
   useEffect(() => {
-    document.title = "Harmonith – Tu t'entraînes, je t'accompagne.";
+    document.title = "Harmonith – Ton coach fitness gratuit | 300+ exercices, programmes et recettes";
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', "Calcule ton IMC, tes besoins caloriques et crée ton programme d'entraînement personnalisé avec Harmonith, progresser, ça devient facile.");
+      metaDescription.setAttribute('content', "Plateforme fitness 100% gratuite : 300+ exercices avec suivi intelligent, programmes personnalisés, recettes healthy et calculateurs (IMC, calories, 1RM). Commence ta transformation dès maintenant.");
     }
   }, []);
 
