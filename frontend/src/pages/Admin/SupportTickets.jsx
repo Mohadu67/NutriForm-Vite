@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { MdArrowBack, MdChat } from 'react-icons/md';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
@@ -20,6 +20,7 @@ import logger from '../../shared/utils/logger.js';
 
 export default function SupportTickets() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { openAIChat } = useChat() || {};
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -66,6 +67,16 @@ export default function SupportTickets() {
     loadTickets();
     loadStats();
   }, [loadTickets, loadStats]);
+
+  // Auto-sélectionner le ticket depuis l'URL
+  useEffect(() => {
+    const ticketId = searchParams.get('ticket');
+    if (ticketId && tickets.length > 0 && !selectedTicket) {
+      handleSelectTicket(ticketId);
+      // Nettoyer l'URL après sélection
+      setSearchParams({});
+    }
+  }, [tickets, searchParams, selectedTicket]);
 
   const handleSelectTicket = async (ticketId) => {
     try {

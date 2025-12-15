@@ -6,6 +6,9 @@ const LeaderboardEntry = require("../models/LeaderboardEntry");
 const { calculateUserStats } = require("./leaderboard.controller");
 const Challenge = require("../models/Challenge");
 const { calculateScore } = require("./challenge.controller");
+const { sendNotificationToUser } = require("../services/pushNotification.service");
+const Notification = require("../models/Notification");
+const User = require("../models/User");
 let HistoryModel = null;
 try { HistoryModel = require("../models/History"); } catch (_) { HistoryModel = null; }
 
@@ -27,30 +30,56 @@ async function updateLeaderboardForUser(userId) {
 }
 
 // Mise à jour des scores des challenges actifs après une séance
-async function updateChallengeScoresForUser(userId) {
+async function updateChallengeScoresForUser(userId, sessionData = null, io = null) {
   try {
+    // Convertir en ObjectId si nécessaire
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+
     // Trouver tous les challenges actifs où l'utilisateur participe
     const activeChallenges = await Challenge.find({
       status: 'active',
       $or: [
-        { challengerId: userId },
-        { challengedId: userId }
+        { challengerId: userObjectId },
+        { challengedId: userObjectId }
       ]
     });
 
-    if (activeChallenges.length === 0) return;
+    if (activeChallenges.length === 0) {
+      logger.info(`⚔️ Aucun challenge actif pour userId: ${userId}`);
+      return;
+    }
+
+    logger.info(`⚔️ ${activeChallenges.length} challenge(s) actif(s) trouvé(s) pour userId: ${userId}`);
+
+    // Récupérer les infos de l'utilisateur
+    const user = await User.findById(userId).select('pseudo prenom photo');
+    const userName = user?.pseudo || user?.prenom || 'Un adversaire';
+    const userAvatar = user?.photo || null;
 
     for (const challenge of activeChallenges) {
       try {
+        logger.info(`⚔️ Processing challenge ${challenge._id}, type=${challenge.type}, startDate=${challenge.startDate}`);
+        logger.info(`⚔️ Current stored scores: challenger=${challenge.challengerScore}, challenged=${challenge.challengedScore}`);
+        logger.info(`⚔️ Start scores: challengerStart=${challenge.challengerStartScore}, challengedStart=${challenge.challengedStartScore}`);
+
         // Calculer les nouveaux scores depuis le début du défi
         const [challengerScore, challengedScore] = await Promise.all([
           calculateScore(challenge.challengerId, challenge.type, challenge.startDate),
           calculateScore(challenge.challengedId, challenge.type, challenge.startDate)
         ]);
 
+        logger.info(`⚔️ Calculated raw scores: challengerScore=${challengerScore}, challengedScore=${challengedScore}`);
+
         // Calculer la progression (depuis le début du défi)
         const challengerProgress = challengerScore - challenge.challengerStartScore;
         const challengedProgress = challengedScore - challenge.challengedStartScore;
+
+        logger.info(`⚔️ Progress: challengerProgress=${challengerProgress}, challengedProgress=${challengedProgress}`);
+
+        // Vérifier si le score a changé pour envoyer une notification
+        const isChallenger = challenge.challengerId.toString() === userObjectId.toString();
+        const oldScore = isChallenger ? challenge.challengerScore : challenge.challengedScore;
+        const newScore = isChallenger ? challengerProgress : challengedProgress;
 
         // Mettre à jour le défi
         challenge.challengerScore = challengerProgress;
@@ -58,6 +87,99 @@ async function updateChallengeScoresForUser(userId) {
         await challenge.save();
 
         logger.info(`⚔️ Challenge ${challenge._id} mis à jour: ${challengerProgress} vs ${challengedProgress}`);
+        logger.info(`⚔️ Score change: oldScore=${oldScore}, newScore=${newScore}, isChallenger=${isChallenger}`);
+
+        // Notifier le joueur actuel de la mise à jour de son score
+        if (io && io.notifyUser) {
+          io.notifyUser(userId.toString(), 'challenge_score_update', {
+            challengeId: challenge._id.toString(),
+            challengerScore: challengerProgress,
+            challengedScore: challengedProgress
+          });
+        }
+
+        // Toujours notifier l'adversaire quand une séance est terminée pendant un challenge
+        const opponentId = isChallenger ? challenge.challengedId : challenge.challengerId;
+        const opponentScore = isChallenger ? challengedProgress : challengerProgress;
+        const diff = newScore - opponentScore;
+
+        logger.info(`📬 Envoi notification à l'adversaire ${opponentId}...`);
+
+        // Construire le titre et message
+        const notifTitle = `💪 ${userName} vient de s'entraîner!`;
+        let statusMessage = '';
+        if (diff > 0) {
+          statusMessage = `Il passe en tête! Score: ${newScore} vs ${opponentScore}`;
+        } else if (diff < 0) {
+          statusMessage = `Tu mènes toujours! Score: ${opponentScore} vs ${newScore}`;
+        } else {
+          statusMessage = `Égalité! Score: ${newScore} - ${opponentScore}`;
+        }
+
+        // Préparer les infos de session pour la notification
+        const sessionInfo = sessionData ? {
+          sessionId: sessionData._id?.toString(),
+          sessionName: sessionData.name || 'Séance',
+          duration: sessionData.durationSec || 0,
+          calories: sessionData.calories || 0,
+          exerciseCount: sessionData.entries?.length || 0
+        } : null;
+
+        // 1. Sauvegarder en base de données
+        const savedNotif = await Notification.create({
+          userId: opponentId,
+          type: 'activity',
+          title: notifTitle,
+          message: statusMessage,
+          link: '/leaderboard',
+          avatar: userAvatar,
+          metadata: {
+            action: 'challenge_session',
+            challengeId: challenge._id.toString(),
+            sessionUserId: userId.toString(),
+            opponentName: userName,
+            sessionInfo,
+            canCongratulate: true
+          }
+        });
+
+        // 2. Envoyer via WebSocket pour temps réel
+        if (io && io.notifyUser) {
+          io.notifyUser(opponentId.toString(), 'new_notification', {
+            id: savedNotif._id.toString(),
+            type: 'activity',
+            title: notifTitle,
+            message: statusMessage,
+            link: '/leaderboard',
+            avatar: userAvatar,
+            timestamp: new Date().toISOString(),
+            read: false,
+            metadata: savedNotif.metadata
+          });
+
+          // Envoyer aussi le score update à l'adversaire pour rafraîchir son UI
+          io.notifyUser(opponentId.toString(), 'challenge_score_update', {
+            challengeId: challenge._id.toString(),
+            challengerScore: challengerProgress,
+            challengedScore: challengedProgress
+          });
+        }
+
+        // 3. Envoyer notification push
+        sendNotificationToUser(opponentId, {
+          type: 'challenge_session',
+          title: notifTitle,
+          body: statusMessage,
+          icon: userAvatar || '/icon-192x192.png',
+          data: {
+            type: 'challenge_session',
+            challengeId: challenge._id.toString(),
+            sessionUserId: userId.toString(),
+            url: '/leaderboard'
+          }
+        }).catch(err => logger.error('Erreur notification challenge session:', err.message));
+
+        logger.info(`📬 Notification séance envoyée à ${opponentId} pour challenge ${challenge._id}`);
       } catch (err) {
         logger.error(`Erreur mise à jour challenge ${challenge._id}:`, err.message);
       }
@@ -331,8 +453,9 @@ async function createSession(req, res) {
       logger.error('Erreur async leaderboard update:', err.message)
     );
 
-    // Mise à jour des scores des challenges actifs en arrière-plan
-    updateChallengeScoresForUser(userId).catch(err =>
+    // Mise à jour des scores des challenges actifs en arrière-plan (avec données séance pour notification)
+    const io = req.app.get('io');
+    updateChallengeScoresForUser(userId, doc, io).catch(err =>
       logger.error('Erreur async challenge scores update:', err.message)
     );
 

@@ -27,4 +27,7 @@ router.post('/:id/decline', challengeController.declineChallenge);
 // Annuler un défi (seulement si pending)
 router.post('/:id/cancel', challengeController.cancelChallenge);
 
+// Envoyer des félicitations
+router.post('/congratulate', challengeController.sendCongratulations);
+
 module.exports = router;

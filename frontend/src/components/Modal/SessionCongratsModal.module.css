@@ -1,0 +1,266 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease;
+  padding: 20px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 420px;
+  width: 100%;
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 24px 20px;
+  background: linear-gradient(135deg, #f7b186 0%, #f5a06f 100%);
+  color: white;
+}
+
+.avatarSection {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.avatarPlaceholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.headerText h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.closeBtn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  font-size: 1.5rem;
+  color: white;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.body {
+  padding: 24px;
+}
+
+.sessionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.statCard {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.statIcon {
+  font-size: 1.5rem;
+}
+
+.statValue {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.noData {
+  text-align: center;
+  color: #888;
+  font-size: 0.95rem;
+}
+
+.footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px;
+  background: #f8f9fa;
+}
+
+.closeAction,
+.congratsBtn {
+  flex: 1;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.closeAction {
+  background: white;
+  color: #666;
+  border: 2px solid #dee2e6;
+}
+
+.closeAction:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+.congratsBtn {
+  background: linear-gradient(135deg, #f7b186 0%, #f5a06f 100%);
+  color: white;
+}
+
+.congratsBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.4);
+}
+
+.congratsBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.congratsBtn.sent {
+  background: linear-gradient(135deg, #4caf50 0%, #43a047 100%);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .overlay {
+    padding: 15px;
+  }
+
+  .modal {
+    max-width: 100%;
+  }
+
+  .header {
+    padding: 20px;
+  }
+
+  .avatar,
+  .avatarPlaceholder {
+    width: 48px;
+    height: 48px;
+  }
+
+  .headerText h3 {
+    font-size: 1.1rem;
+  }
+
+  .body {
+    padding: 20px;
+  }
+
+  .statsGrid {
+    gap: 8px;
+  }
+
+  .statCard {
+    padding: 12px 8px;
+  }
+
+  .statIcon {
+    font-size: 1.3rem;
+  }
+
+  .statValue {
+    font-size: 1rem;
+  }
+
+  .footer {
+    flex-direction: column-reverse;
+    padding: 16px 20px;
+  }
+
+  .closeAction,
+  .congratsBtn {
+    width: 100%;
+  }
+}

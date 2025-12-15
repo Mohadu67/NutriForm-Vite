@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { secureApiCall, isAuthenticated } from '../../utils/authService';
 import { storage } from '../../shared/utils/storage';
+import { useWebSocket } from '../../contexts/WebSocketContext';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import ActiveChallenges from './components/ActiveChallenges';
@@ -84,6 +85,10 @@ const Leaderboard = () => {
 
   const { badges: userBadges } = useBadges();
 
+  // WebSocket pour mises à jour en temps réel
+  const webSocketContext = useWebSocket();
+  const { on, isConnected } = webSocketContext || {};
+
   const isLoggedIn = useMemo(() => isAuthenticated(), []);
   const currentUserId = useMemo(() => storage.get('userId'), []);
 
@@ -143,6 +148,30 @@ const Leaderboard = () => {
     fetchLeaderboard();
     checkOptInStatus();
   }, [fetchLeaderboard, checkOptInStatus]);
+
+  // Écouter les mises à jour WebSocket pour rafraîchir le leaderboard
+  useEffect(() => {
+    if (!isConnected || !on) return;
+
+    const cleanups = [];
+
+    // Rafraîchir le leaderboard quand on reçoit une mise à jour de score
+    cleanups.push(on('challenge_score_update', () => {
+      logger.info('Challenge score update received, refreshing leaderboard...');
+      fetchLeaderboard();
+    }));
+
+    // Rafraîchir aussi quand on reçoit une notification de challenge
+    cleanups.push(on('new_notification', (notification) => {
+      const challengeActions = ['challenge_session', 'challenge_received', 'challenge_accepted', 'challenge_declined'];
+      if (notification.metadata?.action && challengeActions.includes(notification.metadata.action)) {
+        logger.info('Challenge notification received, refreshing leaderboard...');
+        fetchLeaderboard();
+      }
+    }));
+
+    return () => cleanups.forEach(cleanup => cleanup && cleanup());
+  }, [on, isConnected, fetchLeaderboard]);
 
   const handleOptIn = async () => {
     if (!isLoggedIn) return;
@@ -506,46 +535,49 @@ const Leaderboard = () => {
                 </div>
               )}
 
-              {/* List */}
+              {/* List - Rest of participants */}
               {restOfList.length > 0 && (
-                <div className={styles.list}>
-                  {restOfList.map((entry) => (
-                    <div key={entry._id} className={styles.listItem}>
-                      <div className={styles.listRank}>#{entry.rank}</div>
-                      <div className={styles.listAvatar}>
-                        {entry.avatarUrl ? (
-                          <img src={entry.avatarUrl} alt="" />
-                        ) : (
-                          <span>{entry.displayName?.charAt(0).toUpperCase()}</span>
-                        )}
-                      </div>
-                      <div className={styles.listInfo}>
-                        <div className={styles.listNameRow}>
-                          <span className={styles.listName}>{entry.displayName}</span>
-                          {entry.league && <LeagueBadge league={entry.league} size="small" />}
+                <div className={styles.listSection}>
+                  <h3 className={styles.listTitle}>Classement complet</h3>
+                  <div className={styles.list}>
+                    {restOfList.map((entry, index) => (
+                      <div key={entry._id} className={styles.listItem}>
+                        <div className={styles.listRank}>#{entry.rank || index + 4}</div>
+                        <div className={styles.listAvatar}>
+                          {entry.avatarUrl ? (
+                            <img src={entry.avatarUrl} alt="" />
+                          ) : (
+                            <span>{entry.displayName?.charAt(0).toUpperCase()}</span>
+                          )}
                         </div>
-                        {entry.stats?.currentStreak > 0 && (
-                          <div className={styles.listStreak}>
-                            <FireIcon size={12} />
-                            {entry.stats.currentStreak}j
+                        <div className={styles.listInfo}>
+                          <div className={styles.listNameRow}>
+                            <span className={styles.listName}>{entry.displayName}</span>
+                            {entry.league && <LeagueBadge league={entry.league} size="small" />}
                           </div>
+                          {entry.stats?.currentStreak > 0 && (
+                            <div className={styles.listStreak}>
+                              <FireIcon size={12} />
+                              {entry.stats.currentStreak}j
+                            </div>
+                          )}
+                        </div>
+                        <div className={styles.listStats}>
+                          <strong>{getStatValue(entry)}</strong>
+                          <span>{getStatLabel()}</span>
+                        </div>
+                        {isLoggedIn && isOptedIn && entry.userId !== currentUserId && (
+                          <button
+                            className={styles.listChallengeBtn}
+                            onClick={() => handleChallengeUser(entry)}
+                            title="Défier"
+                          >
+                            <SwordsIcon size={14} />
+                          </button>
                         )}
                       </div>
-                      <div className={styles.listStats}>
-                        <strong>{getStatValue(entry)}</strong>
-                        <span>{getStatLabel()}</span>
-                      </div>
-                      {isLoggedIn && isOptedIn && entry.userId !== currentUserId && (
-                        <button
-                          className={styles.listChallengeBtn}
-                          onClick={() => handleChallengeUser(entry)}
-                          title="Défier"
-                        >
-                          <SwordsIcon size={14} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </>

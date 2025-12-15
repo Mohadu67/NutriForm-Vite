@@ -550,6 +550,28 @@
    LIST (Rest of participants)
    ======================================== */
 
+.listSection {
+  margin-top: 1rem;
+}
+
+.listTitle {
+  font-family: var(--font-titre, sans-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.listTitle::before {
+  content: '📊';
+  font-size: 1rem;
+}
+
 .list {
   display: flex;
   flex-direction: column;
