@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useChat } from "../../contexts/ChatContext";
 import { useWebSocket } from "../../contexts/WebSocketContext";
 import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
@@ -73,9 +73,10 @@ import {
 } from "./NavIcons";
 
 export default function Navbar() {
-  const { isChatOpen, chatView, activeConversation, openChat, closeChat, backToHistory } = useChat();
-  const { on, isConnected } = useWebSocket();
-  const location = useLocation();
+  const { isChatOpen, chatView, activeConversation, openChat, closeChat, backToHistory } = useChat() || {};
+  const { on, isConnected } = useWebSocket() || {};
+  // Utilise window.location pour le path initial afin d'éviter les problèmes Safari
+  // useNavigate est gardé car il n'est utilisé que dans les handlers (après hydration)
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
@@ -100,11 +101,17 @@ export default function Navbar() {
   const [darkMode, setDarkMode] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState('login');
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const [isDesktop, setIsDesktop] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1190 : true);
   const [currentView, setCurrentView] = useState('navigation'); // Pour mobile: 'navigation', 'history' ou 'notifications'
   const [unreadCount, setUnreadCount] = useState(0);
+  const [path, setPath] = useState("/");
 
-  const path = useMemo(() => (location.pathname || "/").toLowerCase(), [location.pathname]);
+  // Définir le path côté client pour éviter les erreurs Safari avec useLocation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setPath((window.location.pathname || "/").toLowerCase());
+    }
+  }, []);
 
   // Vérifier le statut de connexion et premium à chaque changement de route
   useEffect(() => {
@@ -125,10 +132,10 @@ export default function Navbar() {
     }
   }, [location.pathname]);
 
-  // Detect desktop mode
+  // Detect desktop mode (1190px pour éviter les problèmes sur iPad/tablettes)
   useEffect(() => {
     const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 768);
+      setIsDesktop(window.innerWidth >= 1190);
     };
 
     window.addEventListener('resize', handleResize);

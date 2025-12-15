@@ -1,29 +1,41 @@
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { useLocation } from "react-router-dom";
 
+// Utilise window.location au lieu de useLocation pour éviter les problèmes de contexte React Router sur Safari
 function CanonicalLink() {
-  const location = useLocation();
-  const baseUrl = "https://harmonith.fr";
+  const [canonicalUrl, setCanonicalUrl] = useState(null);
 
-  // Retirer le trailing slash pour une URL cohérente
-  let pathname = location.pathname.replace(/\/$/, '') || '/';
+  useEffect(() => {
+    // Exécuté uniquement côté client après le montage
+    if (typeof window === 'undefined') return;
 
-  // Remplacer /calories par /calorie pour la version canonique
-  pathname = pathname === '/calories' ? '/calorie' : pathname;
+    const baseUrl = "https://harmonith.fr";
+    let pathname = (window.location.pathname || '/').replace(/\/$/, '') || '/';
+    const search = window.location.search || '';
 
-  // Pour /outils avec paramètres tool=imc ou tool=cal, rediriger vers /imc ou /calorie
-  if (pathname === '/outils' && location.search) {
-    const params = new URLSearchParams(location.search);
-    const tool = params.get('tool');
-    if (tool === 'imc') {
-      pathname = '/imc';
-    } else if (tool === 'cal') {
+    // Remplacer /calories par /calorie pour la version canonique
+    if (pathname === '/calories') {
       pathname = '/calorie';
     }
-  }
 
-  // Ne jamais inclure les paramètres de recherche dans l'URL canonique
-  const canonicalUrl = `${baseUrl}${pathname === '/' ? '/' : pathname}`;
+    // Pour /outils avec paramètres tool=imc ou tool=cal, rediriger vers /imc ou /calorie
+    if (pathname === '/outils' && search) {
+      const params = new URLSearchParams(search);
+      const tool = params.get('tool');
+      if (tool === 'imc') {
+        pathname = '/imc';
+      } else if (tool === 'cal') {
+        pathname = '/calorie';
+      }
+    }
+
+    setCanonicalUrl(`${baseUrl}${pathname === '/' ? '/' : pathname}`);
+  }, []);
+
+  // Ne rien rendre tant que l'URL n'est pas calculée côté client
+  if (!canonicalUrl) {
+    return null;
+  }
 
   return (
     <Helmet>

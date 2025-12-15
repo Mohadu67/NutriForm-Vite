@@ -47,12 +47,15 @@ async function request(path, options = {}) {
   }
 
   if (!res.ok) {
+    const errorCode = data?.error || '';
     const msg = (data && (data.error || data.message)) || `request_failed_${res.status}`;
     const err = new Error(msg);
     err.status = res.status;
+    err.code = errorCode;
     err.data = data;
     err.url = path;
     err.method = (options.method || 'GET').toUpperCase();
+    err.isPremiumRequired = res.status === 403 && errorCode === 'premium_required';
     throw err;
   }
   return data;

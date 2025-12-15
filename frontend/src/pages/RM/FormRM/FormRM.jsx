@@ -1,11 +1,20 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { LightbulbIcon } from "../../../components/Navbar/NavIcons";
 import styles from "./FormRM.module.css";
+
+// Icône chevron simple
+const ChevronDown = ({ size = 18, className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+);
 
 export default function FormRM({ onResult }) {
   const [poids, setPoids] = useState("");
   const [reps, setReps] = useState("");
   const [exercice, setExercice] = useState("Développé couché");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const exercices = [
     "Développé couché",
@@ -18,6 +27,22 @@ export default function FormRM({ onResult }) {
     "Dips",
     "Autre"
   ];
+
+  // Fermer le dropdown si on clique ailleurs
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectExercice = (ex) => {
+    setExercice(ex);
+    setIsDropdownOpen(false);
+  };
 
   const calculateRM = (weight, repetitions) => {
     // Formule d'Epley (la plus populaire)
@@ -82,21 +107,36 @@ export default function FormRM({ onResult }) {
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.formGrid}>
           <div className={styles.inputGroup}>
-            <label htmlFor="exercice" className={styles.label}>
+            <label className={styles.label}>
               Exercice
             </label>
-            <select
-              id="exercice"
-              value={exercice}
-              onChange={(e) => setExercice(e.target.value)}
-              className={styles.select}
-            >
-              {exercices.map((ex) => (
-                <option key={ex} value={ex}>
-                  {ex}
-                </option>
-              ))}
-            </select>
+            <div className={styles.customSelect} ref={dropdownRef}>
+              <button
+                type="button"
+                className={`${styles.selectButton} ${isDropdownOpen ? styles.selectButtonOpen : ''}`}
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                aria-expanded={isDropdownOpen}
+                aria-haspopup="listbox"
+              >
+                <span>{exercice}</span>
+                <ChevronDown size={18} className={`${styles.chevron} ${isDropdownOpen ? styles.chevronOpen : ''}`} />
+              </button>
+              {isDropdownOpen && (
+                <ul className={styles.optionsList} role="listbox">
+                  {exercices.map((ex) => (
+                    <li
+                      key={ex}
+                      role="option"
+                      aria-selected={exercice === ex}
+                      className={`${styles.option} ${exercice === ex ? styles.optionSelected : ''}`}
+                      onClick={() => handleSelectExercice(ex)}
+                    >
+                      {ex}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
 
           <div className={styles.inputGroup}>

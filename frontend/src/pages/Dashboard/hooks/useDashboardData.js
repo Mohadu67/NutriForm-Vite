@@ -175,6 +175,22 @@ export const useDashboardData = (sessions, records) => {
       .sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [records]);
 
+  // Tests RM groupés par exercice (pour affichage en lignes scrollables)
+  const rmTestsByExercice = useMemo(() => {
+    const grouped = {};
+    rmTests.forEach((test) => {
+      if (!grouped[test.exercice]) {
+        grouped[test.exercice] = [];
+      }
+      grouped[test.exercice].push(test);
+    });
+    // Trier chaque groupe par date (plus récent d'abord dans chaque ligne)
+    Object.keys(grouped).forEach((exercice) => {
+      grouped[exercice].sort((a, b) => new Date(b.date) - new Date(a.date));
+    });
+    return grouped;
+  }, [rmTests]);
+
   // Stats cardio
   const getEntryDistanceKm = useCallback((entry) => {
     if (!entry || typeof entry !== 'object') return 0;
@@ -403,6 +419,7 @@ export const useDashboardData = (sessions, records) => {
     extractSessionCalories,
     weeklyCalories,
     rmTests,
+    rmTestsByExercice,
     weightPoints,
     allSessionsSorted,
     userSessions,

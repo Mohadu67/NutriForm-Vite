@@ -112,7 +112,7 @@ const ProgressRing = ({ current, total }) => {
 
 export default function MatchingPageFuturistic() {
   const navigate = useNavigate();
-  const { openMatchChat } = useChat();
+  const { openMatchChat } = useChat() || {};
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [matches, setMatches] = useState([]);

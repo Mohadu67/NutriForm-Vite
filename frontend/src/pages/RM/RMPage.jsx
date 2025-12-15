@@ -12,6 +12,7 @@ import styles from "./RMPage.module.css";
 export default function RMPage() {
   usePageTitle("Calculateur 1RM");
   const [rmData, setRmData] = useState(null);
+  const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
   const showToast = (message, type = 'info') => {
@@ -86,12 +87,14 @@ export default function RMPage() {
 
   // Fonction pour sauvegarder le test RM
   const handleSaveTest = async () => {
-    if (!rmData) return;
+    if (!rmData || saving) return;
 
     if (!isAuthenticated()) {
       showToast("Connecte-toi pour sauvegarder tes tests de 1RM et suivre ta progression !", "warning");
       return;
     }
+
+    setSaving(true);
 
     const testData = {
       type: "rm",
@@ -136,6 +139,8 @@ export default function RMPage() {
       }
     } catch (error) {
       showToast("Erreur de connexion au serveur", "error");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -150,7 +155,7 @@ export default function RMPage() {
         <FormRM onResult={(data) => setRmData(data)} />
         {rmData && (
           <>
-            <ResultatsRM data={rmData} onSave={handleSaveTest} />
+            <ResultatsRM data={rmData} onSave={handleSaveTest} saving={saving} />
             <TableauCharges rm={rmData.rm} />
           </>
         )}

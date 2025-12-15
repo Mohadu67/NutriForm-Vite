@@ -20,18 +20,23 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
   const [deletingMessage, setDeletingMessage] = useState(null);
   const [showMessageOptions, setShowMessageOptions] = useState(null);
   const [showEscalateButton, setShowEscalateButton] = useState(false);
+  const [isOtherTyping, setIsOtherTyping] = useState(false);
+  const [isOtherPresent, setIsOtherPresent] = useState(false);
+  const [isOtherInChatList, setIsOtherInChatList] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const initialMessageSentRef = useRef(false);
   const hasLoadedInitialMessages = useRef(false);
+  const initialScrollDoneRef = useRef(false); // Pour éviter les scrolls multiples
 
   const isMatchChat = !!matchConversation;
   const conversationIdToUse = isMatchChat ? matchConversation?._id : conversationId;
   const conversationType = isMatchChat ? 'match' : 'ai';
 
   // WebSocket context
-  const { joinConversation, leaveConversation, on, isConnected } = useWebSocket();
+  const { joinConversation, leaveConversation, on, isConnected, setTyping, markAsRead } = useWebSocket() || {};
 
   // Charger les messages initiaux (avec pagination)
   const loadInitialMessages = useCallback(async () => {
@@ -42,17 +47,22 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       let msgs = [];
       let moreAvailable = false;
 
+      let myUserId = currentUserId;
+      const INITIAL_LIMIT = 15; // Charger peu de messages au début pour un affichage rapide
+
       if (isMatchChat) {
-        const { messages: matchMsgs } = await getMessages(conversationIdToUse, { limit: 30 });
+        const { messages: matchMsgs } = await getMessages(conversationIdToUse, { limit: INITIAL_LIMIT });
         msgs = matchMsgs || [];
+        // S'il y a exactement INITIAL_LIMIT messages, il y en a probablement plus
+        moreAvailable = msgs.length === INITIAL_LIMIT;
 
         // Trouver l'ID de l'utilisateur courant
         const participants = matchConversation?.participants || [];
         const otherUserId = matchConversation?.otherUser?._id;
-        const myUserId = participants.find(p => p._id !== otherUserId)?._id || participants.find(p => p !== otherUserId);
+        myUserId = participants.find(p => p._id !== otherUserId)?._id || participants.find(p => p !== otherUserId);
         setCurrentUserId(myUserId);
       } else {
-        const { messages: aiMsgs, hasMore: more } = await getChatHistory(conversationIdToUse, { limit: 20 });
+        const { messages: aiMsgs, hasMore: more } = await getChatHistory(conversationIdToUse, { limit: INITIAL_LIMIT });
         msgs = aiMsgs || [];
         moreAvailable = more;
 
@@ -69,7 +79,30 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
       // Marquer comme lus si match chat
       if (isMatchChat && conversationIdToUse) {
-        markMessagesAsRead(conversationIdToUse).catch(() => {});
+        // Notifier via WebSocket pour mise à jour instantanée chez l'autre utilisateur
+        const unreadIds = msgs.filter(m => !m.read && m.senderId !== myUserId && m.senderId?._id !== myUserId).map(m => m._id);
+
+        // Appeler l'API qui persiste ET émet le WebSocket event
+        try {
+          await markMessagesAsRead(conversationIdToUse);
+          // Mettre à jour localement les messages comme lus
+          if (unreadIds.length > 0) {
+            setMessages(prev => prev.map(msg =>
+              unreadIds.includes(msg._id) ? { ...msg, read: true, readAt: new Date() } : msg
+            ));
+          }
+        } catch (err) {
+          console.error('Erreur markMessagesAsRead:', err);
+        }
+
+        // Aussi notifier via WebSocket si besoin (pour le cas où l'API n'émet pas)
+        if (unreadIds.length > 0 && markAsRead) {
+          markAsRead(conversationIdToUse, unreadIds);
+        }
+      }
+      // Marquer le scroll initial comme à faire
+      if (msgs.length > 0) {
+        initialScrollDoneRef.current = true;
       }
     } catch (error) {
       // Erreur silencieuse
@@ -78,12 +111,34 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     }
   }, [conversationIdToUse, isMatchChat, matchConversation]);
 
+  // Scroll vers le bas APRÈS que le loading spinner disparaisse
+  useEffect(() => {
+    if (!loading && initialScrollDoneRef.current && messagesContainerRef.current) {
+      // Reset pour ne pas re-scroller
+      initialScrollDoneRef.current = false;
+      const container = messagesContainerRef.current;
+      // Forcer scroll instantané (override CSS scroll-behavior: smooth)
+      container.style.scrollBehavior = 'auto';
+      container.scrollTop = container.scrollHeight;
+      // Restaurer smooth pour les scrolls utilisateur
+      requestAnimationFrame(() => {
+        container.style.scrollBehavior = 'smooth';
+      });
+    }
+  }, [loading]);
+
+  // Reset du flag scroll quand on change de conversation
+  useEffect(() => {
+    initialScrollDoneRef.current = false;
+    hasLoadedInitialMessages.current = false;
+  }, [conversationIdToUse]);
+
   // Charger plus de messages (scroll vers le haut)
   const loadMoreMessages = useCallback(async () => {
-    if (!conversationIdToUse || loadingMore || !hasMore || isMatchChat) return;
+    if (!conversationIdToUse || loadingMore || !hasMore) return;
 
     const firstMessage = messages[0];
-    if (!firstMessage?._id) return;
+    if (!firstMessage?._id && !firstMessage?.createdAt) return;
 
     try {
       setLoadingMore(true);
@@ -92,14 +147,31 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       const container = messagesContainerRef.current;
       const previousScrollHeight = container?.scrollHeight || 0;
 
-      const { messages: olderMsgs, hasMore: more } = await getChatHistory(conversationIdToUse, {
-        limit: 20,
-        before: firstMessage._id
-      });
+      let olderMsgs = [];
+      let moreAvailable = false;
+
+      if (isMatchChat) {
+        // Pagination pour match chat - utiliser createdAt du premier message
+        const beforeDate = firstMessage.createdAt;
+        const { messages: matchMsgs } = await getMessages(conversationIdToUse, {
+          limit: 20,
+          before: beforeDate
+        });
+        olderMsgs = matchMsgs || [];
+        moreAvailable = olderMsgs.length === 20; // S'il y a 20 messages, il y en a peut-être plus
+      } else {
+        // Pagination pour AI chat
+        const { messages: aiMsgs, hasMore: more } = await getChatHistory(conversationIdToUse, {
+          limit: 20,
+          before: firstMessage._id
+        });
+        olderMsgs = aiMsgs || [];
+        moreAvailable = more;
+      }
 
       if (olderMsgs && olderMsgs.length > 0) {
         setMessages(prev => [...olderMsgs, ...prev]);
-        setHasMore(more);
+        setHasMore(moreAvailable);
 
         // Restaurer la position de scroll après le rendu
         requestAnimationFrame(() => {
@@ -112,7 +184,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
         setHasMore(false);
       }
     } catch (error) {
-      // Erreur silencieuse
+      console.error('Erreur loadMoreMessages:', error);
     } finally {
       setLoadingMore(false);
     }
@@ -173,13 +245,35 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
         setTimeout(() => {
           messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
+
+        // Marquer comme lu instantanément si c'est un message de l'autre utilisateur
+        const isFromOther = message.senderId !== currentUserId && message.senderId?._id !== currentUserId;
+        if (isMatchChat && isFromOther && message._id) {
+          // Via API pour persister + émettre WebSocket
+          markMessagesAsRead(conversationIdToUse)
+            .then(() => {
+              // Mettre à jour localement
+              setMessages(prev => prev.map(msg =>
+                msg._id === message._id ? { ...msg, read: true, readAt: new Date() } : msg
+              ));
+            })
+            .catch(err => console.error('Erreur markMessagesAsRead:', err));
+
+          // Via WebSocket pour notification instantanée à l'autre utilisateur
+          if (markAsRead) {
+            markAsRead(conversationIdToUse, [message._id]);
+          }
+        }
       }
     };
 
     const handleMessagesRead = ({ conversationId: convId, messageIds }) => {
       if (convId === conversationIdToUse) {
+        // Convertir tous les IDs en strings pour comparaison fiable
+        const messageIdStrings = messageIds.map(id => String(id));
         setMessages(prev => prev.map(msg => {
-          if (messageIds.includes(msg._id)) {
+          const msgIdStr = String(msg._id);
+          if (messageIdStrings.includes(msgIdStr)) {
             return { ...msg, read: true, readAt: new Date() };
           }
           return msg;
@@ -187,20 +281,52 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       }
     };
 
+    // Écouter le typing de l'autre utilisateur (backend émet 'user_typing')
+    const handleTyping = ({ conversationId: convId, userId: typingUserId, isTyping }) => {
+      // Comparaison en string pour éviter les problèmes de type ObjectId vs string
+      if (convId === conversationIdToUse && String(typingUserId) !== String(currentUserId)) {
+        setIsOtherTyping(isTyping);
+        // Auto-reset après 3 secondes si pas de mise à jour
+        if (isTyping) {
+          setTimeout(() => setIsOtherTyping(false), 3000);
+        }
+      }
+    };
+
+    // Écouter la présence de l'autre utilisateur dans cette conversation
+    const handlePresence = ({ conversationId: convId, userId, isPresent }) => {
+      // Comparaison en string pour éviter les problèmes de type ObjectId vs string
+      if (convId === conversationIdToUse && String(userId) !== String(currentUserId)) {
+        setIsOtherPresent(isPresent);
+      }
+    };
+
+    // Écouter si l'autre utilisateur est dans ChatHistory (peut voir le msg dans la liste)
+    const otherUserId = matchConversation?.otherUser?._id;
+    const handleChatListStatus = ({ userId, isInChatList }) => {
+      if (otherUserId && String(userId) === String(otherUserId)) {
+        setIsOtherInChatList(isInChatList);
+      }
+    };
+
     // Écouter les événements
     const cleanupNewMessage = on('new_message', handleNewMessage);
     const cleanupMessagesRead = on('messages_read', handleMessagesRead);
+    const cleanupTyping = on('user_typing', handleTyping); // backend émet 'user_typing'
+    const cleanupPresence = on('user_presence', handlePresence);
+    const cleanupChatList = on('user_chat_list_status', handleChatListStatus);
 
     return () => {
       cleanupNewMessage?.();
       cleanupMessagesRead?.();
+      cleanupTyping?.();
+      cleanupPresence?.();
+      cleanupChatList?.();
     };
-  }, [isConnected, conversationIdToUse, on]);
+  }, [isConnected, conversationIdToUse, on, currentUserId, matchConversation]);
 
-  // Auto-scroll
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  // Note: Auto-scroll supprimé ici - géré dans loadInitialMessages, handleNewMessage et handleSendMessage
+  // Cela évite de scroller vers le bas quand on charge l'historique (scroll vers le haut)
 
   // Gérer le message initial
   useEffect(() => {
@@ -232,6 +358,12 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     // Vider l'input immédiatement
     setInputMessage('');
     setSending(true);
+
+    // Arrêter l'indicateur de typing
+    if (isMatchChat && setTyping && conversationIdToUse) {
+      clearTimeout(typingTimeoutRef.current);
+      setTyping(conversationIdToUse, false);
+    }
 
     try {
       if (isMatchChat) {
@@ -517,12 +649,34 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
                     {formatTimestamp(msg.createdAt)}
                   </span>
 
-                  {/* Indicateur de lecture pour les messages match */}
-                  {isMatchChat && isUserMessage && (
-                    <span className={styles.readStatus}>
-                      {msg.read ? '✓✓' : '✓'}
-                    </span>
-                  )}
+                  {/* Indicateur de lecture pour les messages match - 3 états */}
+                  {/* ✓ gris = envoyé, ✓✓ gris = vu dans liste, ✓✓ vert = lu */}
+                  {isMatchChat && isUserMessage && (() => {
+                    const isRead = msg.read || isOtherPresent;
+                    const isDelivered = isOtherInChatList;
+
+                    let checkmarks = '✓';
+                    let color = '#999';
+
+                    if (isRead) {
+                      checkmarks = '✓✓';
+                      color = '#4CAF50'; // vert = lu
+                    } else if (isDelivered) {
+                      checkmarks = '✓✓';
+                      color = '#999'; // gris = vu dans la liste
+                    }
+
+                    return (
+                      <span style={{
+                        marginLeft: '6px',
+                        fontSize: '0.85rem',
+                        fontWeight: 'bold',
+                        color
+                      }}>
+                        {checkmarks}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
             );
@@ -532,12 +686,33 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Indicateur de typing */}
+      {isMatchChat && isOtherTyping && (
+        <div className={styles.typingIndicator}>
+          <span className={styles.typingDot}></span>
+          <span className={styles.typingDot}></span>
+          <span className={styles.typingDot}></span>
+          <span className={styles.typingText}>écrit...</span>
+        </div>
+      )}
+
       {/* Input */}
       <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className={styles.chatInputContainer}>
         <input
           type="text"
           value={inputMessage}
-          onChange={(e) => setInputMessage(e.target.value)}
+          onChange={(e) => {
+            setInputMessage(e.target.value);
+            // Envoyer l'indicateur de typing (debounced)
+            if (isMatchChat && setTyping && conversationIdToUse) {
+              setTyping(conversationIdToUse, true);
+              // Reset après 2 secondes d'inactivité
+              clearTimeout(typingTimeoutRef.current);
+              typingTimeoutRef.current = setTimeout(() => {
+                setTyping(conversationIdToUse, false);
+              }, 2000);
+            }
+          }}
           placeholder="Écrivez votre message..."
           className={styles.chatInput}
           disabled={sending || !isAuth}
