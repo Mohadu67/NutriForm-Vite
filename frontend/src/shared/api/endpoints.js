@@ -66,6 +66,16 @@ export const endpoints = {
     markAllRead: "/notifications/read-all",
     delete: (notificationId) => `/notifications/${notificationId}`,
     clearAll: "/notifications/clear",
+  },
+  challenges: {
+    list: "/challenges",
+    stats: "/challenges/stats",
+    byId: (id) => `/challenges/${id}`,
+    create: "/challenges",
+    accept: (id) => `/challenges/${id}/accept`,
+    decline: (id) => `/challenges/${id}/decline`,
+    cancel: (id) => `/challenges/${id}/cancel`,
+    congratulate: "/challenges/congratulate",
   }
 };
 export default endpoints;

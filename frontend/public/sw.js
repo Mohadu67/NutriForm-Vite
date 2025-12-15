@@ -190,6 +190,15 @@ self.addEventListener('push', (event) => {
       { action: 'close', title: 'Plus tard', icon: '/favicon.png' }
     ];
     options.requireInteraction = true;
+  } else if (type === 'challenge_session') {
+    options.actions = [
+      { action: 'view', title: 'Voir la séance', icon: '/favicon.png' },
+      { action: 'close', title: 'Fermer', icon: '/favicon.png' }
+    ];
+  } else if (type === 'congratulations') {
+    options.actions = [
+      { action: 'view', title: 'Voir', icon: '/favicon.png' }
+    ];
   } else if (type.startsWith('challenge_')) {
     options.actions = [
       { action: 'view', title: 'Voir', icon: '/favicon.png' }
@@ -209,7 +218,15 @@ self.addEventListener('notificationclick', (event) => {
 
   const action = event.action;
   const data = event.notification.data || {};
-  const urlToOpen = data?.url || '/';
+
+  // Déterminer l'URL à ouvrir
+  let urlToOpen = data?.url || '/';
+
+  // Forcer /leaderboard pour les notifications challenge/activity
+  const challengeTypes = ['challenge_received', 'challenge_accepted', 'challenge_declined', 'challenge_update', 'challenge_ending', 'badge_unlocked', 'challenge_session', 'congratulations'];
+  if (challengeTypes.includes(data?.type) || urlToOpen.includes('classement')) {
+    urlToOpen = '/leaderboard';
+  }
 
   // Si l'utilisateur clique sur "Fermer", ne rien faire
   if (action === 'close') {

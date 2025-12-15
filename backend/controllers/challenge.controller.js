@@ -59,32 +59,41 @@ function getTypeLabel(type) {
 
 // Calculer le score d'un utilisateur pour un type de défi
 async function calculateScore(userId, type, startDate) {
+  const mongoose = require('mongoose');
+  const userObjectId = new mongoose.Types.ObjectId(userId);
+
   const query = {
-    userId,
-    createdAt: { $gte: startDate }
+    userId: userObjectId,
+    createdAt: { $gte: startDate },
+    status: 'finished' // Ne compter que les séances terminées
   };
+
+  logger.info(`📊 calculateScore: userId=${userId}, type=${type}, startDate=${startDate}`);
 
   switch (type) {
     case 'sessions':
-      return await WorkoutSession.countDocuments(query);
+      const count = await WorkoutSession.countDocuments(query);
+      logger.info(`📊 Sessions count: ${count}`);
+      return count;
 
     case 'calories':
       const caloriesResult = await WorkoutSession.aggregate([
         { $match: query },
-        { $group: { _id: null, total: { $sum: '$caloriesBurned' } } }
+        { $group: { _id: null, total: { $sum: '$calories' } } }
       ]);
       return caloriesResult[0]?.total || 0;
 
     case 'duration':
+      // durationSec est en secondes, on retourne en minutes
       const durationResult = await WorkoutSession.aggregate([
         { $match: query },
-        { $group: { _id: null, total: { $sum: '$durationMin' } } }
+        { $group: { _id: null, total: { $sum: '$durationSec' } } }
       ]);
-      return durationResult[0]?.total || 0;
+      return Math.round((durationResult[0]?.total || 0) / 60);
 
     case 'streak':
       // Pour le streak, on compte les jours consécutifs depuis startDate
-      const entry = await LeaderboardEntry.findOne({ userId });
+      const entry = await LeaderboardEntry.findOne({ userId: userObjectId });
       return entry?.stats?.currentStreak || 0;
 
     default:
@@ -169,7 +178,7 @@ exports.createChallenge = async (req, res) => {
         type: 'activity',
         title: notifTitle,
         message: notifBody,
-        link: '/classement',
+        link: '/leaderboard',
         avatar: challenge.challengerAvatar,
         metadata: {
           challengeId: challenge._id.toString(),
@@ -186,7 +195,7 @@ exports.createChallenge = async (req, res) => {
           type: 'activity',
           title: notifTitle,
           message: notifBody,
-          link: '/classement',
+          link: '/leaderboard',
           avatar: challenge.challengerAvatar,
           timestamp: new Date().toISOString(),
           read: false
@@ -203,7 +212,7 @@ exports.createChallenge = async (req, res) => {
         data: {
           type: 'challenge_received',
           challengeId: challenge._id.toString(),
-          url: '/classement'
+          url: '/leaderboard'
         }
       };
       await sendNotificationToUser(challengedId, pushPayload);
@@ -277,22 +286,56 @@ exports.acceptChallenge = async (req, res) => {
 
     // Notifier le challenger
     try {
-      const notifPayload = {
+      const notifTitle = NOTIFICATION_TEMPLATES.challenge_accepted.title;
+      const notifBody = NOTIFICATION_TEMPLATES.challenge_accepted.getBody({
+        challengedName: challenge.challengedName,
+        duration: challenge.duration
+      });
+
+      // 1. Sauvegarder en base de données
+      const savedNotif = await Notification.create({
+        userId: challenge.challengerId,
+        type: 'activity',
+        title: notifTitle,
+        message: notifBody,
+        link: '/leaderboard',
+        avatar: challenge.challengedAvatar,
+        metadata: {
+          challengeId: challenge._id.toString(),
+          challengedId: challenge.challengedId.toString(),
+          action: 'challenge_accepted'
+        }
+      });
+
+      // 2. Envoyer via WebSocket
+      const io = req.app.get('io');
+      if (io && io.notifyUser) {
+        io.notifyUser(challenge.challengerId.toString(), 'new_notification', {
+          id: savedNotif._id.toString(),
+          type: 'activity',
+          title: notifTitle,
+          message: notifBody,
+          link: '/leaderboard',
+          avatar: challenge.challengedAvatar,
+          timestamp: new Date().toISOString(),
+          read: false,
+          metadata: savedNotif.metadata
+        });
+      }
+
+      // 3. Envoyer notification push
+      sendNotificationToUser(challenge.challengerId, {
         type: 'challenge_accepted',
-        title: NOTIFICATION_TEMPLATES.challenge_accepted.title,
-        body: NOTIFICATION_TEMPLATES.challenge_accepted.getBody({
-          challengedName: challenge.challengedName,
-          duration: challenge.duration
-        }),
+        title: notifTitle,
+        body: notifBody,
         icon: challenge.challengedAvatar || '/icon-192x192.png',
         badge: '/badge-72x72.png',
         data: {
           type: 'challenge_accepted',
           challengeId: challenge._id.toString(),
-          url: '/classement'
+          url: '/leaderboard'
         }
-      };
-      await sendNotificationToUser(challenge.challengerId, notifPayload);
+      }).catch(err => logger.error('Erreur push notification accept:', err.message));
     } catch (notifErr) {
       logger.error('Erreur envoi notification accept:', notifErr);
     }
@@ -346,21 +389,55 @@ exports.declineChallenge = async (req, res) => {
 
     // Notifier le challenger
     try {
-      const notifPayload = {
+      const notifTitle = NOTIFICATION_TEMPLATES.challenge_declined.title;
+      const notifBody = NOTIFICATION_TEMPLATES.challenge_declined.getBody({
+        challengedName: challenge.challengedName
+      });
+
+      // 1. Sauvegarder en base de données
+      const savedNotif = await Notification.create({
+        userId: challenge.challengerId,
+        type: 'activity',
+        title: notifTitle,
+        message: notifBody,
+        link: '/leaderboard',
+        avatar: challenge.challengedAvatar,
+        metadata: {
+          challengeId: challenge._id.toString(),
+          challengedId: challenge.challengedId.toString(),
+          action: 'challenge_declined'
+        }
+      });
+
+      // 2. Envoyer via WebSocket
+      const io = req.app.get('io');
+      if (io && io.notifyUser) {
+        io.notifyUser(challenge.challengerId.toString(), 'new_notification', {
+          id: savedNotif._id.toString(),
+          type: 'activity',
+          title: notifTitle,
+          message: notifBody,
+          link: '/leaderboard',
+          avatar: challenge.challengedAvatar,
+          timestamp: new Date().toISOString(),
+          read: false,
+          metadata: savedNotif.metadata
+        });
+      }
+
+      // 3. Envoyer notification push
+      sendNotificationToUser(challenge.challengerId, {
         type: 'challenge_declined',
-        title: NOTIFICATION_TEMPLATES.challenge_declined.title,
-        body: NOTIFICATION_TEMPLATES.challenge_declined.getBody({
-          challengedName: challenge.challengedName
-        }),
+        title: notifTitle,
+        body: notifBody,
         icon: challenge.challengedAvatar || '/icon-192x192.png',
         badge: '/badge-72x72.png',
         data: {
           type: 'challenge_declined',
           challengeId: challenge._id.toString(),
-          url: '/classement'
+          url: '/leaderboard'
         }
-      };
-      await sendNotificationToUser(challenge.challengerId, notifPayload);
+      }).catch(err => logger.error('Erreur push notification decline:', err.message));
     } catch (notifErr) {
       logger.error('Erreur envoi notification decline:', notifErr);
     }
@@ -567,6 +644,85 @@ exports.getChallengeStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la récupération des stats'
+    });
+  }
+};
+
+// Envoyer des félicitations à un adversaire
+exports.sendCongratulations = async (req, res) => {
+  try {
+    const userId = req.userId || req.user?.id;
+    const { challengeId, targetUserId } = req.body;
+
+    if (!targetUserId) {
+      return res.status(400).json({
+        success: false,
+        message: 'targetUserId requis'
+      });
+    }
+
+    // Récupérer les infos de l'utilisateur qui félicite
+    const sender = await User.findById(userId).select('pseudo prenom photo');
+    const senderName = sender?.pseudo || sender?.prenom || 'Un utilisateur';
+    const senderAvatar = sender?.photo || null;
+
+    // Créer la notification de félicitations
+    const notifTitle = '🎉 Félicitations!';
+    const notifBody = `${senderName} te félicite pour ta séance!`;
+
+    // 1. Sauvegarder en base de données
+    const savedNotif = await Notification.create({
+      userId: targetUserId,
+      type: 'activity',
+      title: notifTitle,
+      message: notifBody,
+      link: '/leaderboard',
+      avatar: senderAvatar,
+      metadata: {
+        action: 'congratulations',
+        fromUserId: userId.toString(),
+        fromUserName: senderName,
+        challengeId: challengeId || null
+      }
+    });
+
+    // 2. Envoyer via WebSocket
+    const io = req.app.get('io');
+    if (io && io.notifyUser) {
+      io.notifyUser(targetUserId.toString(), 'new_notification', {
+        id: savedNotif._id.toString(),
+        type: 'activity',
+        title: notifTitle,
+        message: notifBody,
+        link: '/leaderboard',
+        avatar: senderAvatar,
+        timestamp: new Date().toISOString(),
+        read: false
+      });
+    }
+
+    // 3. Envoyer notification push
+    sendNotificationToUser(targetUserId, {
+      type: 'congratulations',
+      title: notifTitle,
+      body: notifBody,
+      icon: senderAvatar || '/icon-192x192.png',
+      data: {
+        type: 'congratulations',
+        url: '/leaderboard'
+      }
+    }).catch(err => logger.error('Erreur notification félicitations:', err.message));
+
+    res.json({
+      success: true,
+      message: 'Félicitations envoyées!'
+    });
+
+  } catch (error) {
+    logger.error('Erreur envoi félicitations:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de l\'envoi des félicitations'
     });
   }
 };

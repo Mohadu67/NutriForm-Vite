@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { secureApiCall } from '../../../utils/authService';
+import { useWebSocket } from '../../../contexts/WebSocketContext';
 import logger from '../../../shared/utils/logger';
 
 export function useChallenges() {
+  const webSocketContext = useWebSocket();
+  const { on, isConnected } = webSocketContext || {};
   const [challenges, setChallenges] = useState({
     active: [],
     pending: [],
@@ -129,6 +132,30 @@ export function useChallenges() {
     fetchChallenges();
     fetchStats();
   }, [fetchChallenges, fetchStats]);
+
+  // Écouter les mises à jour via WebSocket
+  useEffect(() => {
+    if (!isConnected || !on) return;
+
+    const cleanups = [];
+
+    // Rafraîchir quand on reçoit une notification de challenge
+    cleanups.push(on('new_notification', (notification) => {
+      const challengeActions = ['challenge_session', 'challenge_received', 'challenge_accepted', 'challenge_declined'];
+      if (notification.metadata?.action && challengeActions.includes(notification.metadata.action)) {
+        logger.info('Challenge notification received, refreshing challenges...');
+        fetchChallenges();
+      }
+    }));
+
+    // Rafraîchir quand on reçoit une mise à jour de score direct
+    cleanups.push(on('challenge_score_update', (data) => {
+      logger.info('Challenge score update received, refreshing challenges...', data);
+      fetchChallenges();
+    }));
+
+    return () => cleanups.forEach(cleanup => cleanup && cleanup());
+  }, [on, isConnected, fetchChallenges]);
 
   return {
     challenges,

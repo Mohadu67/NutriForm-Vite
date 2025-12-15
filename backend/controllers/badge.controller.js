@@ -156,7 +156,7 @@ exports.checkAndAwardBadges = async (userId) => {
                 data: {
                   type: 'badge_unlocked',
                   badgeCode: badgeCheck.code,
-                  url: '/classement'
+                  url: '/leaderboard'
                 }
               });
             } catch (notifErr) {

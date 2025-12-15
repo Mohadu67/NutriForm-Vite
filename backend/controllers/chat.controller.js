@@ -1675,7 +1675,7 @@ async function escalateToHuman(userId, conversationId, lastMessage, reason = '',
   await notifyAdmins(
     '🎫 Nouveau ticket support',
     `${userName} demande de l'aide: "${lastMessage.substring(0, 50)}${lastMessage.length > 50 ? '...' : ''}"`,
-    '/admin/support-tickets',
+    `/admin/support-tickets?ticket=${ticket._id}`,
     { ticketId: ticket._id, conversationId, userId },
     io
   );

@@ -60,7 +60,7 @@ async function updateChallengeScores() {
               data: {
                 type: 'challenge_update',
                 challengeId: challenge._id.toString(),
-                url: '/classement'
+                url: '/leaderboard'
               }
             });
             notificationsSent++;
@@ -75,7 +75,7 @@ async function updateChallengeScores() {
               data: {
                 type: 'challenge_update',
                 challengeId: challenge._id.toString(),
-                url: '/classement'
+                url: '/leaderboard'
               }
             });
             notificationsSent++;
@@ -101,7 +101,7 @@ async function updateChallengeScores() {
               data: {
                 type: 'challenge_ending',
                 challengeId: challenge._id.toString(),
-                url: '/classement'
+                url: '/leaderboard'
               }
             }),
             sendNotificationToUser(challenge.challengedId, {
@@ -114,7 +114,7 @@ async function updateChallengeScores() {
               data: {
                 type: 'challenge_ending',
                 challengeId: challenge._id.toString(),
-                url: '/classement'
+                url: '/leaderboard'
               }
             })
           ]);
@@ -188,7 +188,7 @@ async function checkCompletedChallenges() {
             data: {
               type: 'challenge_won',
               challengeId: challenge._id.toString(),
-              url: '/classement'
+              url: '/leaderboard'
             }
           });
 
@@ -203,7 +203,7 @@ async function checkCompletedChallenges() {
             data: {
               type: 'challenge_lost',
               challengeId: challenge._id.toString(),
-              url: '/classement'
+              url: '/leaderboard'
             }
           });
 
@@ -235,7 +235,7 @@ async function checkCompletedChallenges() {
               data: {
                 type: 'challenge_draw',
                 challengeId: challenge._id.toString(),
-                url: '/classement'
+                url: '/leaderboard'
               }
             }),
             sendNotificationToUser(challenge.challengedId, {
@@ -247,7 +247,7 @@ async function checkCompletedChallenges() {
               data: {
                 type: 'challenge_draw',
                 challengeId: challenge._id.toString(),
-                url: '/classement'
+                url: '/leaderboard'
               }
             })
           ]);
