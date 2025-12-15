@@ -2,8 +2,70 @@ const mongoose = require("mongoose");
 const WorkoutSession = require("../models/WorkoutSession");
 const { computeSessionFromEntries } = require("../services/calorie.service");
 const logger = require('../utils/logger.js');
+const LeaderboardEntry = require("../models/LeaderboardEntry");
+const { calculateUserStats } = require("./leaderboard.controller");
+const Challenge = require("../models/Challenge");
+const { calculateScore } = require("./challenge.controller");
 let HistoryModel = null;
 try { HistoryModel = require("../models/History"); } catch (_) { HistoryModel = null; }
+
+// Mise à jour du leaderboard après une séance
+async function updateLeaderboardForUser(userId) {
+  try {
+    const entry = await LeaderboardEntry.findOne({ userId });
+    if (!entry) return; // L'utilisateur n'est pas inscrit au leaderboard
+
+    const stats = await calculateUserStats(userId);
+    await LeaderboardEntry.findByIdAndUpdate(entry._id, {
+      stats,
+      lastUpdated: new Date()
+    });
+    logger.info(`🏆 Leaderboard mis à jour pour userId: ${userId}`);
+  } catch (err) {
+    logger.error(`Erreur mise à jour leaderboard pour ${userId}:`, err.message);
+  }
+}
+
+// Mise à jour des scores des challenges actifs après une séance
+async function updateChallengeScoresForUser(userId) {
+  try {
+    // Trouver tous les challenges actifs où l'utilisateur participe
+    const activeChallenges = await Challenge.find({
+      status: 'active',
+      $or: [
+        { challengerId: userId },
+        { challengedId: userId }
+      ]
+    });
+
+    if (activeChallenges.length === 0) return;
+
+    for (const challenge of activeChallenges) {
+      try {
+        // Calculer les nouveaux scores depuis le début du défi
+        const [challengerScore, challengedScore] = await Promise.all([
+          calculateScore(challenge.challengerId, challenge.type, challenge.startDate),
+          calculateScore(challenge.challengedId, challenge.type, challenge.startDate)
+        ]);
+
+        // Calculer la progression (depuis le début du défi)
+        const challengerProgress = challengerScore - challenge.challengerStartScore;
+        const challengedProgress = challengedScore - challenge.challengedStartScore;
+
+        // Mettre à jour le défi
+        challenge.challengerScore = challengerProgress;
+        challenge.challengedScore = challengedProgress;
+        await challenge.save();
+
+        logger.info(`⚔️ Challenge ${challenge._id} mis à jour: ${challengerProgress} vs ${challengedProgress}`);
+      } catch (err) {
+        logger.error(`Erreur mise à jour challenge ${challenge._id}:`, err.message);
+      }
+    }
+  } catch (err) {
+    logger.error(`Erreur mise à jour challenges pour ${userId}:`, err.message);
+  }
+}
 
 function getUserId(req) {
   if (req.user && req.user.id) return req.user.id;
@@ -263,6 +325,16 @@ async function createSession(req, res) {
       entries: normalized,
       clientSummary: summary
     });
+
+    // Mise à jour du leaderboard en arrière-plan (ne bloque pas la réponse)
+    updateLeaderboardForUser(userId).catch(err =>
+      logger.error('Erreur async leaderboard update:', err.message)
+    );
+
+    // Mise à jour des scores des challenges actifs en arrière-plan
+    updateChallengeScoresForUser(userId).catch(err =>
+      logger.error('Erreur async challenge scores update:', err.message)
+    );
 
     return res.status(201).json(doc);
   } catch (err) {

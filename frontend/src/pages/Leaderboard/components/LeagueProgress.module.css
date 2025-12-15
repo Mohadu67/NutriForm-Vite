@@ -1,0 +1,206 @@
+/* League Progress Container */
+.container {
+  background: var(--paper);
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* League Section */
+.leagueSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.leagueIcon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  background: linear-gradient(135deg, rgba(var(--league-color), 0.15), transparent);
+  border: 2px solid var(--league-color);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.leagueInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.leagueLabel {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.leagueName {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.xpBadge {
+  background: linear-gradient(135deg, var(--couleur-bouton-action), #e89e6e);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.4rem 0.75rem;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
+}
+
+/* Progress Section */
+.progressSection {
+  margin-bottom: 1rem;
+}
+
+.progressBar {
+  height: 8px;
+  background: var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.nextLeague {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Stats Row */
+.statsRow {
+  display: flex;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.statIcon {
+  font-size: 1.25rem;
+}
+
+.statContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.statValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.statLabel {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+/* Compact Version */
+.compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--canvas);
+  padding: 0.35rem 0.65rem;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+}
+
+.compactIcon {
+  font-size: 1rem;
+}
+
+.compactName {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.compactXp {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+/* League Badge (inline) */
+.leagueBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(var(--league-color), 0.2), transparent);
+  border-radius: 50%;
+}
+
+.leagueBadge.small {
+  width: 20px;
+  height: 20px;
+  font-size: 0.7rem;
+}
+
+.leagueBadge.medium {
+  width: 26px;
+  height: 26px;
+  font-size: 0.9rem;
+}
+
+.leagueBadge.large {
+  width: 36px;
+  height: 36px;
+  font-size: 1.25rem;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .leagueIcon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.75rem;
+  }
+
+  .leagueName {
+    font-size: 1.1rem;
+  }
+
+  .statsRow {
+    flex-wrap: wrap;
+  }
+
+  .statItem {
+    min-width: 45%;
+  }
+}

@@ -184,6 +184,16 @@ self.addEventListener('push', (event) => {
       { action: 'reply', title: 'Répondre', icon: '/favicon.png' },
       { action: 'close', title: 'Fermer', icon: '/favicon.png' }
     ];
+  } else if (type === 'challenge_received') {
+    options.actions = [
+      { action: 'view', title: 'Voir le défi', icon: '/favicon.png' },
+      { action: 'close', title: 'Plus tard', icon: '/favicon.png' }
+    ];
+    options.requireInteraction = true;
+  } else if (type.startsWith('challenge_')) {
+    options.actions = [
+      { action: 'view', title: 'Voir', icon: '/favicon.png' }
+    ];
   }
 
   event.waitUntil(
