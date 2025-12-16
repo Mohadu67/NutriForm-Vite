@@ -13,7 +13,6 @@ const checkAndSendNewsletters = async () => {
     });
 
     if (newslettersToSend.length === 0) {
-      logger.info('📭 Aucune newsletter à envoyer pour le moment');
       return;
     }
 
@@ -54,14 +53,12 @@ const checkAndSendNewsletters = async () => {
 
 
 const startNewsletterCron = () => {
-  
-  
-  cron.schedule('0 9 * * *', async () => {
-    logger.info('🔄 Vérification quotidienne des newsletters programmées...');
+  // Vérifier toutes les 5 minutes pour envoyer les newsletters programmées
+  cron.schedule('*/5 * * * *', async () => {
     await checkAndSendNewsletters();
   });
 
-  logger.info('✅ Cron job newsletter démarré (tous les jours à 9h00)');
+  logger.info('✅ Cron job newsletter démarré (toutes les 5 minutes)');
 };
 
 
