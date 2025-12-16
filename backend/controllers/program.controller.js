@@ -7,26 +7,60 @@ const logger = require("../utils/logger");
 const { sanitizeProgram } = require("../utils/sanitizer");
 const { sendNotificationToUser } = require('../services/pushNotification.service');
 const { notifyAdmins } = require('../services/adminNotification.service');
+const {
+  VALID_TYPES,
+  VALID_DIFFICULTIES,
+  VALID_CYCLE_TYPES,
+  PAGINATION,
+  CYCLE_DURATION,
+  PROGRAM_LIMITS
+} = require('../constants/programValidation');
 
-// Wrapper pour compatibilité avec l'ancienne signature
-async function notifyAdminsProgram(title, message, link, metadata = {}, io = null) {
-  return notifyAdmins({
+// Alias pour compatibilité
+const MAX_LIMIT = PAGINATION.MAX_LIMIT;
+const MAX_SKIP = PAGINATION.MAX_SKIP;
+
+/**
+ * Notifier un utilisateur avec WebSocket + base + push
+ */
+async function notifyProgramUser(userId, io, { title, message, link, metadata, pushBody }) {
+  const notifId = `program-${metadata.action}-${Date.now()}-${userId}`;
+  const notifData = {
+    id: notifId,
+    type: 'system',
     title,
     message,
     link,
-    type: 'admin',
     metadata,
-    io,
-    icon: '/assets/icons/notif-workout.svg'
-  });
+    timestamp: new Date().toISOString(),
+    read: false
+  };
+
+  // 1. WebSocket
+  if (io?.notifyUser) {
+    io.notifyUser(userId.toString(), 'new_notification', notifData);
+  }
+
+  // 2. Base de données
+  await Notification.create({
+    userId,
+    type: 'system',
+    title,
+    message,
+    link,
+    metadata
+  }).catch(err => logger.error('Erreur sauvegarde notification programme:', err));
+
+  // 3. Push notification
+  sendNotificationToUser(userId, {
+    type: 'system',
+    title,
+    body: pushBody || message,
+    icon: '/icon-192x192.png',
+    badge: '/badge-72x72.png',
+    data: { url: link, programId: metadata.programId?.toString() }
+  }).catch(err => logger.error('Erreur push notification programme:', err));
 }
-
-
-// Constantes de validation pour prévenir injection NoSQL
-const VALID_TYPES = ["hiit", "circuit", "superset", "amrap", "emom", "tabata", "custom"];
-const VALID_DIFFICULTIES = ["débutant", "intermédiaire", "avancé"];
-const MAX_LIMIT = 100;
-const MAX_SKIP = 10000;
 /**
  * Récupérer tous les programmes publics (accessibles sans connexion)
  */
@@ -218,15 +252,13 @@ async function createProgram(req, res) {
       return res.status(400).json({ error: "invalid_name_length" });
     }
 
-    // Validation du type
-    const validTypes = ["hiit", "circuit", "superset", "amrap", "emom", "tabata", "custom"];
-    if (!validTypes.includes(type)) {
+    // Validation du type (utilise constantes importées)
+    if (!VALID_TYPES.includes(type)) {
       return res.status(400).json({ error: "invalid_type" });
     }
 
-    // Validation de la difficulté
-    const validDifficulties = ["débutant", "intermédiaire", "avancé"];
-    if (difficulty && !validDifficulties.includes(difficulty)) {
+    // Validation de la difficulté (utilise constantes importées)
+    if (difficulty && !VALID_DIFFICULTIES.includes(difficulty)) {
       return res.status(400).json({ error: "invalid_difficulty" });
     }
 
@@ -238,7 +270,7 @@ async function createProgram(req, res) {
     for (let i = 0; i < cycles.length; i++) {
       const cycle = cycles[i];
 
-      if (!cycle.type || !["exercise", "rest", "transition"].includes(cycle.type)) {
+      if (!cycle.type || !VALID_CYCLE_TYPES.includes(cycle.type)) {
         return res.status(400).json({
           error: "invalid_cycle_type",
           cycleIndex: i
@@ -912,13 +944,15 @@ async function proposeToPublic(req, res) {
     const user = await User.findById(userId).select('pseudo prenom email');
     const userName = user?.pseudo || user?.prenom || user?.email || 'Utilisateur';
     const io = req.app.get('io');
-    await notifyAdminsProgram(
-      '📝 Programme à valider',
-      `${userName} propose "${program.name}" pour publication`,
-      '/admin/programs',
-      { programId: program._id, userId },
-      io
-    );
+    await notifyAdmins({
+      title: '📝 Programme à valider',
+      message: `${userName} propose "${program.name}" pour publication`,
+      link: '/admin/programs',
+      type: 'admin',
+      metadata: { programId: program._id, userId },
+      io,
+      icon: '/assets/icons/notif-workout.svg'
+    });
 
     logger.info(`Programme ${id} proposé au public par user ${userId}`);
 
@@ -980,49 +1014,16 @@ async function approveProgram(req, res) {
     program.isPublic = true;
     await program.save();
 
-    // Notifier l'utilisateur de l'approbation (comme matching qui fonctionne)
+    // Notifier l'utilisateur de l'approbation
     if (program.userId) {
-      try {
-        const io = req.app.get('io');
-        const notifId = `program-approved-${Date.now()}-${program.userId}`;
-        const notifData = {
-          id: notifId,
-          type: 'system',
-          title: '✅ Programme approuvé !',
-          message: `Ton programme "${program.name}" a été approuvé et est maintenant public ! 🎉`,
-          link: '/programs',
-          metadata: { programId: program._id, action: 'approved' },
-          timestamp: new Date().toISOString(),
-          read: false
-        };
-
-        // 1. D'abord envoyer via WebSocket
-        if (io && io.notifyUser) {
-          io.notifyUser(program.userId.toString(), 'new_notification', notifData);
-        }
-
-        // 2. Puis sauvegarder en base
-        await Notification.create({
-          userId: program.userId,
-          type: 'system',
-          title: '✅ Programme approuvé !',
-          message: `Ton programme "${program.name}" a été approuvé et est maintenant public ! 🎉`,
-          link: '/programs',
-          metadata: { programId: program._id, action: 'approved' }
-        }).catch(err => logger.error('Erreur sauvegarde notification approbation:', err));
-
-        // 3. Envoyer push notification à l'utilisateur
-        sendNotificationToUser(program.userId, {
-          type: 'system',
-          title: '✅ Programme approuvé !',
-          body: `Ton programme "${program.name}" est maintenant public ! 🎉`,
-          icon: '/icon-192x192.png',
-          badge: '/badge-72x72.png',
-          data: { url: '/programs', programId: program._id.toString() }
-        }).catch(err => logger.error('Erreur push approbation programme:', err));
-      } catch (notifError) {
-        logger.error('Erreur notification approbation programme:', notifError);
-      }
+      const io = req.app.get('io');
+      await notifyProgramUser(program.userId, io, {
+        title: '✅ Programme approuvé !',
+        message: `Ton programme "${program.name}" a été approuvé et est maintenant public ! 🎉`,
+        link: '/programs',
+        metadata: { programId: program._id, action: 'approved' },
+        pushBody: `Ton programme "${program.name}" est maintenant public ! 🎉`
+      });
     }
 
     logger.info(`Programme ${id} approuvé par admin ${req.user.id}`);
@@ -1065,57 +1066,25 @@ async function rejectProgram(req, res) {
     program.isPublic = false;
     await program.save();
 
-    // Notifier l'utilisateur du refus (comme matching qui fonctionne)
+    // Notifier l'utilisateur du refus
     if (program.userId) {
-      try {
-        const io = req.app.get('io');
-        const notifId = `program-reject-${Date.now()}-${program.userId}`;
-        const notifMessage = reason
-          ? `Ton programme "${program.name}" n'a pas été approuvé. Raison : ${reason.substring(0, 150)}`
-          : `Ton programme "${program.name}" n'a pas été approuvé. Contacte le support pour plus d'infos.`;
-        const notifData = {
-          id: notifId,
-          type: 'system',
-          title: '❌ Programme refusé',
-          message: notifMessage,
-          link: '/programs',
-          metadata: {
-            programId: program._id,
-            action: 'rejected',
-            reason: reason || 'Aucune raison spécifiée',
-            programName: program.name
-          },
-          timestamp: new Date().toISOString(),
-          read: false
-        };
+      const io = req.app.get('io');
+      const notifMessage = reason
+        ? `Ton programme "${program.name}" n'a pas été approuvé. Raison : ${reason.substring(0, 150)}`
+        : `Ton programme "${program.name}" n'a pas été approuvé. Contacte le support pour plus d'infos.`;
 
-        // 1. D'abord envoyer via WebSocket
-        if (io && io.notifyUser) {
-          io.notifyUser(program.userId.toString(), 'new_notification', notifData);
-        }
-
-        // 2. Puis sauvegarder en base
-        await Notification.create({
-          userId: program.userId,
-          type: 'system',
-          title: '❌ Programme refusé',
-          message: notifMessage,
-          link: '/programs',
-          metadata: notifData.metadata
-        }).catch(err => logger.error('Erreur sauvegarde notification refus:', err));
-
-        // 3. Envoyer push notification à l'utilisateur
-        sendNotificationToUser(program.userId, {
-          type: 'system',
-          title: '❌ Programme refusé',
-          body: `Ton programme "${program.name}" n'a pas été approuvé.`,
-          icon: '/icon-192x192.png',
-          badge: '/badge-72x72.png',
-          data: { url: '/programs', programId: program._id.toString() }
-        }).catch(err => logger.error('Erreur push refus programme:', err));
-      } catch (notifError) {
-        logger.error('Erreur notification refus programme:', notifError);
-      }
+      await notifyProgramUser(program.userId, io, {
+        title: '❌ Programme refusé',
+        message: notifMessage,
+        link: '/programs',
+        metadata: {
+          programId: program._id,
+          action: 'rejected',
+          reason: reason || 'Aucune raison spécifiée',
+          programName: program.name
+        },
+        pushBody: `Ton programme "${program.name}" n'a pas été approuvé.`
+      });
     }
 
     logger.info(`Programme ${id} rejeté par admin ${req.user.id}. Raison: ${reason}`);
