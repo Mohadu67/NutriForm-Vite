@@ -6,13 +6,10 @@ import svgr from "vite-plugin-svgr";
 export default defineConfig(async ({ mode }) => {
   // lazy/dynamic import of the app logger to avoid executing app code
   // at Vite config evaluation time (fixes "Cannot read properties of undefined (reading 'DEV')").
-  let logger
   try {
-    const mod = await import('./src/shared/utils/logger.js')
-    logger = mod?.default ?? mod
-  } catch (err) {
-    // if logger cannot be imported in the build environment, provide a noop fallback
-    logger = { info: () => {}, warn: () => {}, error: () => {} }
+    await import('./src/shared/utils/logger.js')
+  } catch {
+    // if logger cannot be imported in the build environment, continue silently
   }
 
   return ({
