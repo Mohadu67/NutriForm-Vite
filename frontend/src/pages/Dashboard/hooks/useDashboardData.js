@@ -425,34 +425,57 @@ export const useDashboardData = (sessions, records) => {
 
   // Distribution musculaire basée sur les exercices des sessions
   const muscleStats = useMemo(() => {
-    if (!userSessions.length || !exercisesDb.length) return {};
+    if (!userSessions.length) return {};
 
-    // Créer un map pour retrouver les exercices par nom/id
+    // Créer un map pour retrouver les exercices par ID/slug uniquement (pas par nom)
     const exerciseMap = new Map();
     exercisesDb.forEach((exercise) => {
+      // Utiliser uniquement les identifiants uniques, pas le nom
       const identifiers = [
         exercise.id,
         exercise._id,
         exercise.slug,
-        exercise.name,
       ].filter(Boolean).map((id) => String(id).toLowerCase());
       identifiers.forEach((id) => exerciseMap.set(id, exercise));
     });
 
     const muscleCount = {};
 
+    const addMuscle = (muscle) => {
+      const key = String(muscle || "").toLowerCase().trim();
+      if (key && key !== "undefined" && key !== "null") {
+        muscleCount[key] = (muscleCount[key] || 0) + 1;
+      }
+    };
+
     userSessions.forEach((session) => {
       const entries = session?.entries || session?.items || session?.exercises || [];
       entries.forEach((entry) => {
-        // Chercher l'exercice dans la DB
+        if (!entry) return;
+
+        // 1. Priorité aux muscles stockés directement dans l'entrée
+        const entryMuscles = entry.muscles;
+        if (Array.isArray(entryMuscles) && entryMuscles.length > 0) {
+          entryMuscles.forEach(addMuscle);
+          return;
+        }
+
+        // 2. Utiliser muscle ou muscleGroup de l'entrée
+        if (entry.muscle) {
+          addMuscle(entry.muscle);
+          return;
+        }
+        if (entry.muscleGroup) {
+          addMuscle(entry.muscleGroup);
+          return;
+        }
+
+        // 3. Fallback: chercher dans la DB par ID/slug uniquement
         const identifiers = [
-          entry?.exerciseId,
-          entry?.id,
-          entry?._id,
-          entry?.slug,
-          entry?.name,
-          entry?.exerciseName,
-          entry?.exoName,
+          entry.exerciseId,
+          entry.id,
+          entry._id,
+          entry.slug,
         ].filter(Boolean).map((id) => String(id).toLowerCase());
 
         let matchedExercise = null;
@@ -463,20 +486,12 @@ export const useDashboardData = (sessions, records) => {
           }
         }
 
-        // Compter les muscles
-        if (matchedExercise?.muscles) {
-          matchedExercise.muscles.forEach((muscle) => {
-            const key = String(muscle || "").toLowerCase().trim();
-            if (key) {
-              muscleCount[key] = (muscleCount[key] || 0) + 1;
-            }
-          });
+        if (matchedExercise?.muscles && matchedExercise.muscles.length > 0) {
+          matchedExercise.muscles.forEach(addMuscle);
         } else if (matchedExercise?.primaryMuscle) {
-          const key = String(matchedExercise.primaryMuscle).toLowerCase().trim();
-          if (key) {
-            muscleCount[key] = (muscleCount[key] || 0) + 1;
-          }
+          addMuscle(matchedExercise.primaryMuscle);
         }
+        // Si aucun match, on ne compte pas (évite les faux positifs)
       });
     });
 
