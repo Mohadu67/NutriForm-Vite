@@ -3,6 +3,7 @@ const Match = require('../models/Match');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { notifyNewMatch } = require('../services/pushNotification.service');
+const { calculateMatchScore } = require('../services/matchingAlgorithm.service');
 const logger = require('../utils/logger.js');
 
 /**
@@ -139,103 +140,6 @@ exports.getMatchSuggestions = async (req, res) => {
     res.status(500).json({ error: 'Erreur lors de la recherche de matches.' });
   }
 };
-
-// Calculer le score de compatibilité entre deux profils
-function calculateMatchScore(profile1, profile2) {
-  const breakdown = {
-    proximityScore: 0,
-    workoutTypeScore: 0,
-    fitnessLevelScore: 0,
-    availabilityScore: 0
-  };
-
-  // 1. Score de proximité (40 points max)
-  const distance = profile1.distanceTo(profile2);
-  if (distance !== null) {
-    if (distance < 0.5) {
-      breakdown.proximityScore = 40; // Hyper-local: même quartier
-    } else if (distance < 1) {
-      breakdown.proximityScore = 35;
-    } else if (distance < 2) {
-      breakdown.proximityScore = 30;
-    } else if (distance < 5) {
-      breakdown.proximityScore = 20;
-    } else if (distance < 10) {
-      breakdown.proximityScore = 10;
-    } else if (distance < 20) {
-      breakdown.proximityScore = 5;
-    }
-  }
-
-  // Bonus si même quartier (hyper-local)
-  if (profile1.location?.neighborhood &&
-      profile1.location.neighborhood === profile2.location?.neighborhood) {
-    breakdown.proximityScore = Math.min(40, breakdown.proximityScore + 10);
-  }
-
-  // 2. Score de compatibilité workout types (25 points max)
-  const myTypes = profile1.matchPreferences.preferredWorkoutTypes?.length > 0
-    ? profile1.matchPreferences.preferredWorkoutTypes
-    : profile1.workoutTypes;
-  const theirTypes = profile2.workoutTypes || [];
-
-  if (myTypes.length > 0 && theirTypes.length > 0) {
-    const commonTypes = myTypes.filter(type => theirTypes.includes(type));
-    const compatibility = commonTypes.length / Math.max(myTypes.length, theirTypes.length);
-    breakdown.workoutTypeScore = Math.round(compatibility * 25);
-  }
-
-  // 3. Score de compatibilité fitness level (20 points max)
-  const myPreferredLevels = profile1.matchPreferences.preferredFitnessLevels?.length > 0
-    ? profile1.matchPreferences.preferredFitnessLevels
-    : [profile1.fitnessLevel];
-
-  if (myPreferredLevels.includes(profile2.fitnessLevel)) {
-    breakdown.fitnessLevelScore = 20; // Match parfait
-  } else {
-    // Score partiel si niveau adjacent
-    const levelOrder = ['beginner', 'intermediate', 'advanced', 'expert'];
-    const myLevelIndex = levelOrder.indexOf(profile1.fitnessLevel);
-    const theirLevelIndex = levelOrder.indexOf(profile2.fitnessLevel);
-    const levelDiff = Math.abs(myLevelIndex - theirLevelIndex);
-
-    if (levelDiff === 1) {
-      breakdown.fitnessLevelScore = 15; // Niveau adjacent
-    } else if (levelDiff === 2) {
-      breakdown.fitnessLevelScore = 8;
-    }
-  }
-
-  // 4. Score de disponibilité commune (15 points max)
-  const hasCommon = profile1.hasCommonAvailability(profile2);
-  if (hasCommon) {
-    breakdown.availabilityScore = 15;
-  } else if (profile1.availability && profile2.availability) {
-    // Score partiel si même jour mais horaires différents
-    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-    let sameDayCount = 0;
-
-    for (const day of days) {
-      const myHasSlot = profile1.availability[day]?.length > 0;
-      const theirHasSlot = profile2.availability[day]?.length > 0;
-      if (myHasSlot && theirHasSlot) {
-        sameDayCount++;
-      }
-    }
-
-    if (sameDayCount > 0) {
-      breakdown.availabilityScore = Math.min(10, sameDayCount * 2);
-    }
-  }
-
-  // Score total
-  const total = Object.values(breakdown).reduce((sum, score) => sum + score, 0);
-
-  return {
-    total: Math.round(total),
-    breakdown
-  };
-}
 
 // Liker un profil / créer ou mettre à jour un match
 exports.likeProfile = async (req, res) => {
