@@ -109,7 +109,7 @@ async function updateChallengeScoresForUser(userId, sessionData = null, io = nul
         const notifTitle = `💪 ${userName} vient de s'entraîner!`;
         let statusMessage = '';
         if (diff > 0) {
-          statusMessage = `Il passe en tête! Score: ${newScore} vs ${opponentScore}`;
+          statusMessage = `Passe en tête! Score: ${newScore} vs ${opponentScore}`;
         } else if (diff < 0) {
           statusMessage = `Tu mènes toujours! Score: ${opponentScore} vs ${newScore}`;
         } else {
