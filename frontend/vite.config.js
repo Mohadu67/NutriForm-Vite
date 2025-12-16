@@ -42,8 +42,26 @@ export default defineConfig(async ({ mode }) => {
       // Optimisation du bundle
       rollupOptions: {
         output: {
-          // Désactiver manualChunks pour éviter les problèmes de React sur Safari
-          // Le code splitting automatique de Vite est plus fiable
+          manualChunks(id) {
+            // Vendor chunks - separés pour meilleur caching
+            if (id.includes('node_modules')) {
+              if (id.includes('react-dom') || id.includes('react-router')) {
+                return 'vendor-react';
+              }
+              if (id.includes('framer-motion')) {
+                return 'vendor-ui';
+              }
+              if (id.includes('leaflet') || id.includes('react-leaflet')) {
+                return 'vendor-maps';
+              }
+              if (id.includes('recharts') || id.includes('d3-')) {
+                return 'vendor-charts';
+              }
+              if (id.includes('socket.io')) {
+                return 'vendor-socket';
+              }
+            }
+          }
         }
       },
       // Suppression des logger.info en production
