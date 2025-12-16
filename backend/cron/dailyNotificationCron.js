@@ -8,35 +8,35 @@ const { sendNotificationToUser } = require('../services/pushNotification.service
 // Templates de notifications quotidiennes
 const DAILY_TEMPLATES = {
   no_session_yesterday: {
-    title: "💪 C'est le moment!",
+    title: "C'est le moment!",
     body: "Une séance aujourd'hui? Ta progression t'attend!"
   },
   streak_reminder: {
-    title: "🔥 Streak en danger!",
+    title: "Streak en danger!",
     getBody: (streak) => `Ne perds pas ta streak de ${streak} jours! Fais une séance.`
   },
   streak_congrats: {
-    title: "🔥 Streak incroyable!",
+    title: "Streak incroyable!",
     getBody: (streak) => `${streak} jours consécutifs! Tu es en feu!`
   },
   close_to_top_10: {
-    title: "📈 Top 10 en vue!",
+    title: "Top 10 en vue!",
     getBody: (diff) => `Plus que ${diff} séances pour entrer dans le top 10!`
   },
   inactive_3_days: {
-    title: "😴 Tu nous manques!",
+    title: "Tu nous manques!",
     body: "Une petite séance pour reprendre le rythme?"
   },
   inactive_7_days: {
-    title: "🏃 Reviens en force!",
+    title: "Reviens en force!",
     body: "Tes rivaux avancent... Montre-leur ce que tu vaux!"
   },
   weekly_recap: {
-    title: "📊 Récap de ta semaine",
+    title: "Récap de ta semaine",
     getBody: (data) => `${data.sessions} séances, ${data.calories} kcal brûlées. Rang #${data.rank}`
   },
   new_week_motivation: {
-    title: "🚀 Nouvelle semaine!",
+    title: "Nouvelle semaine!",
     body: "C'est reparti! Fixe-toi un objectif pour cette semaine."
   }
 };
@@ -95,6 +95,7 @@ async function sendDailyMotivation() {
             await sendNotificationToUser(user._id, {
               title: DAILY_TEMPLATES.streak_reminder.title,
               body: DAILY_TEMPLATES.streak_reminder.getBody(streak),
+              icon: '/assets/icons/notif-streak.svg',
               data: { type: 'daily_reminder', url: '/dashboard' }
             });
           } else {
@@ -102,6 +103,7 @@ async function sendDailyMotivation() {
             await sendNotificationToUser(user._id, {
               title: DAILY_TEMPLATES.no_session_yesterday.title,
               body: DAILY_TEMPLATES.no_session_yesterday.body,
+              icon: '/assets/icons/notif-workout.svg',
               data: { type: 'daily_reminder', url: '/dashboard' }
             });
           }
@@ -116,6 +118,7 @@ async function sendDailyMotivation() {
             await sendNotificationToUser(user._id, {
               title: DAILY_TEMPLATES.streak_congrats.title,
               body: DAILY_TEMPLATES.streak_congrats.getBody(streak),
+              icon: '/assets/icons/notif-streak.svg',
               data: { type: 'streak_congrats', url: '/leaderboard' }
             });
             notificationsSent++;
@@ -169,8 +172,9 @@ async function sendStreakReminders() {
         if (!sessionToday) {
           // Envoyer rappel urgent
           await sendNotificationToUser(user._id, {
-            title: "⚠️ Streak en danger!",
+            title: "Streak en danger!",
             body: `Plus que quelques heures pour garder ta streak de ${entry.stats.currentStreak} jours!`,
+            icon: '/assets/icons/notif-streak.svg',
             data: { type: 'streak_danger', url: '/dashboard' }
           });
           notificationsSent++;
@@ -230,6 +234,7 @@ async function notifyInactiveUsers() {
           await sendNotificationToUser(user._id, {
             title: DAILY_TEMPLATES.inactive_7_days.title,
             body: DAILY_TEMPLATES.inactive_7_days.body,
+            icon: '/assets/icons/notif-workout.svg',
             data: { type: 'inactive_reminder', url: '/dashboard' }
           });
           notificationsSent++;
@@ -237,6 +242,7 @@ async function notifyInactiveUsers() {
           await sendNotificationToUser(user._id, {
             title: DAILY_TEMPLATES.inactive_3_days.title,
             body: DAILY_TEMPLATES.inactive_3_days.body,
+            icon: '/assets/icons/notif-workout.svg',
             data: { type: 'inactive_reminder', url: '/dashboard' }
           });
           notificationsSent++;
@@ -313,6 +319,7 @@ async function sendWeeklyRecap() {
               calories: weeklyCalories[0]?.total || 0,
               rank
             }),
+            icon: '/assets/icons/notif-victory.svg',
             data: { type: 'weekly_recap', url: '/leaderboard' }
           });
           notificationsSent++;

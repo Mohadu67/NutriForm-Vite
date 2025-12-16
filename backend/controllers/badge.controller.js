@@ -151,8 +151,9 @@ exports.checkAndAwardBadges = async (userId) => {
             // Envoyer notification
             try {
               await sendNotificationToUser(userId, {
-                title: '🎖️ Nouveau badge!',
+                title: 'Nouveau badge!',
                 body: `Tu as débloqué "${result.badgeInfo.name}"! +${result.xpReward} XP`,
+                icon: '/assets/icons/notif-badge.svg',
                 data: {
                   type: 'badge_unlocked',
                   badgeCode: badgeCheck.code,

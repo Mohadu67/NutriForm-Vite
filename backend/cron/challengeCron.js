@@ -57,6 +57,7 @@ async function updateChallengeScores() {
                 metric,
                 opponentName: challenge.challengerName
               }),
+              icon: '/assets/icons/notif-challenge.svg',
               data: {
                 type: 'challenge_update',
                 challengeId: challenge._id.toString(),
@@ -72,6 +73,7 @@ async function updateChallengeScores() {
                 metric,
                 opponentName: challenge.challengedName
               }),
+              icon: '/assets/icons/notif-challenge.svg',
               data: {
                 type: 'challenge_update',
                 challengeId: challenge._id.toString(),
@@ -98,6 +100,7 @@ async function updateChallengeScores() {
                 yourScore: challengerProgress,
                 theirScore: challengedProgress
               }),
+              icon: '/assets/icons/notif-challenge.svg',
               data: {
                 type: 'challenge_ending',
                 challengeId: challenge._id.toString(),
@@ -111,6 +114,7 @@ async function updateChallengeScores() {
                 yourScore: challengedProgress,
                 theirScore: challengerProgress
               }),
+              icon: '/assets/icons/notif-challenge.svg',
               data: {
                 type: 'challenge_ending',
                 challengeId: challenge._id.toString(),
@@ -185,6 +189,7 @@ async function checkCompletedChallenges() {
             body: NOTIFICATION_TEMPLATES.challenge_won.getBody({
               opponentName: loserName
             }),
+            icon: '/assets/icons/notif-victory.svg',
             data: {
               type: 'challenge_won',
               challengeId: challenge._id.toString(),
@@ -200,6 +205,7 @@ async function checkCompletedChallenges() {
               theirScore: winnerScore,
               yourScore: loserScore
             }),
+            icon: '/assets/icons/notif-challenge.svg',
             data: {
               type: 'challenge_lost',
               challengeId: challenge._id.toString(),
@@ -232,6 +238,7 @@ async function checkCompletedChallenges() {
                 opponentName: challenge.challengedName,
                 score: challenge.challengerScore
               }),
+              icon: '/assets/icons/notif-challenge.svg',
               data: {
                 type: 'challenge_draw',
                 challengeId: challenge._id.toString(),
@@ -244,6 +251,7 @@ async function checkCompletedChallenges() {
                 opponentName: challenge.challengerName,
                 score: challenge.challengedScore
               }),
+              icon: '/assets/icons/notif-challenge.svg',
               data: {
                 type: 'challenge_draw',
                 challengeId: challenge._id.toString(),

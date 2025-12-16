@@ -309,7 +309,7 @@ exports.likeProfile = async (req, res) => {
             io.notifyUser(user1._id.toString(), 'new_notification', {
               id: `match-${match._id}-${Date.now()}`,
               type: 'match',
-              title: 'Match mutuel ! 🎉',
+              title: 'Match mutuel !',
               message: `${user2.pseudo || 'Un utilisateur'} et toi êtes maintenant matchés !`,
               avatar: user2.photo,
               timestamp: new Date().toISOString(),
@@ -321,7 +321,7 @@ exports.likeProfile = async (req, res) => {
             io.notifyUser(user2._id.toString(), 'new_notification', {
               id: `match-${match._id}-${Date.now()}`,
               type: 'match',
-              title: 'Match mutuel ! 🎉',
+              title: 'Match mutuel !',
               message: `${user1.pseudo || 'Un utilisateur'} et toi êtes maintenant matchés !`,
               avatar: user1.photo,
               timestamp: new Date().toISOString(),
@@ -335,7 +335,7 @@ exports.likeProfile = async (req, res) => {
             {
               userId: user1._id,
               type: 'match',
-              title: 'Match mutuel ! 🎉',
+              title: 'Match mutuel !',
               message: `${user2.pseudo || 'Un utilisateur'} et toi êtes maintenant matchés !`,
               avatar: user2.photo,
               link: '/matching',
@@ -344,7 +344,7 @@ exports.likeProfile = async (req, res) => {
             {
               userId: user2._id,
               type: 'match',
-              title: 'Match mutuel ! 🎉',
+              title: 'Match mutuel !',
               message: `${user1.pseudo || 'Un utilisateur'} et toi êtes maintenant matchés !`,
               avatar: user1.photo,
               link: '/matching',

@@ -66,10 +66,10 @@ async function sendNotificationToUser(userId, payload) {
 async function notifyNewMatch(userId, matchData) {
   const payload = {
     type: 'new_match',
-    title: 'Nouveau Match ! 🎉',
+    title: 'Nouveau Match !',
     body: `${matchData.username} a liké ton profil !`,
-    icon: matchData.photo || '/icon-192x192.png',
-    badge: '/badge-72x72.png',
+    icon: matchData.photo || '/assets/icons/notif-match.svg',
+    badge: '/assets/icons/badge-72x72.png',
     data: {
       url: '/matching',
       matchId: matchData.matchId
@@ -85,10 +85,10 @@ async function notifyNewMatch(userId, matchData) {
 async function notifyNewMessage(userId, messageData) {
   const payload = {
     type: 'new_message',
-    title: `💬 ${messageData.senderName}`,
+    title: `${messageData.senderName}`,
     body: messageData.message,
-    icon: messageData.senderPhoto || '/icon-192x192.png',
-    badge: '/badge-72x72.png',
+    icon: messageData.senderPhoto || '/assets/icons/notif-message.svg',
+    badge: '/assets/icons/badge-72x72.png',
     data: {
       url: '/chat',
       conversationId: messageData.conversationId
