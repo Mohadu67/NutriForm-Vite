@@ -13,16 +13,20 @@ import { initializeNotifications } from "./services/notificationService.js";
 import MessageNotificationManager from "./components/Chat/MessageNotificationManager.jsx";
 import CookieConsent from "./components/CookieConsent";
 
-// Pages principales - chargées immédiatement (pour SEO et performance initiale)
+// Pages critiques - chargées immédiatement (SEO + landing)
 import Home from "./pages/Accueil/Home.jsx";
-import ImcPage from "./pages/Imc/ImcPage.jsx"
-import CaloriePage from "./pages/Calorie/CaloriePage.jsx";
-import ContactPage from "./pages/Contact/ContactPage.jsx";
-import AboutPage from "./pages/About/AboutPage.jsx";
-import ExoPage from "./pages/Exo/Exo.jsx";
-import ProgramsPage from "./pages/Programs/Programs.jsx";
-import PageOutils from "./pages/OutilsCalcul/PageOutils.jsx";
 import NotFound from "./pages/NotFound/NotFound.jsx";
+
+// Pages calculateurs - lazy loaded (non-critiques pour landing)
+const ImcPage = lazy(() => import("./pages/Imc/ImcPage.jsx"));
+const CaloriePage = lazy(() => import("./pages/Calorie/CaloriePage.jsx"));
+const PageOutils = lazy(() => import("./pages/OutilsCalcul/PageOutils.jsx"));
+
+// Pages secondaires - lazy loaded
+const ContactPage = lazy(() => import("./pages/Contact/ContactPage.jsx"));
+const AboutPage = lazy(() => import("./pages/About/AboutPage.jsx"));
+const ExoPage = lazy(() => import("./pages/Exo/Exo.jsx"));
+const ProgramsPage = lazy(() => import("./pages/Programs/Programs.jsx"));
 
 // Pages RGPD - lazy loaded
 const MentionsLegales = lazy(() => import("./pages/RGPD/MentionsLegales.jsx"));
