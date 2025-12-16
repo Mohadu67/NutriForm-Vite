@@ -1,23 +1,9 @@
-import React, { useCallback } from "react";
-import { toast } from 'sonner';
+import React from "react";
+import { useCookieConsent } from "../../hooks/useCookieConsent";
 import styles from "./Rgpd.module.css";
-import logger from '../../shared/utils/logger.js';
 
 export default function CookiesPolicy() {
-  const openConsentPanel = useCallback(() => {
-    try {
-
-        if (window?.tarteaucitron?.userInterface?.openPanel) {
-        window.tarteaucitron.userInterface.openPanel();
-      } else {
-        toast.warning(
-          "Le gestionnaire de consentement n'est pas disponible pour le moment. Réessayez après le chargement de la page."
-        );
-      }
-    } catch (e) {
-      logger.error("Failed to open consent panel:", e);
-    }
-  }, []);
+  const { resetConsent, analyticsEnabled } = useCookieConsent();
 
   return (
     <main className={styles.container}>
@@ -26,12 +12,12 @@ export default function CookiesPolicy() {
         <p className={styles.updated}>Dernière mise à jour : 17 août 2025</p>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>1. Qu’est-ce qu’un cookie&nbsp;?</h2>
+          <h2 className={styles.h2}>1. Qu'est-ce qu'un cookie&nbsp;?</h2>
           <p className={styles.p}>
             Un cookie est un petit fichier déposé sur votre appareil lorsque vous
             visitez un site. Il permet, par exemple, de mémoriser vos préférences ou
-            de mesurer l’audience du site. Certains cookies sont strictement
-            nécessaires au fonctionnement du site, d’autres nécessitent votre
+            de mesurer l'audience du site. Certains cookies sont strictement
+            nécessaires au fonctionnement du site, d'autres nécessitent votre
             consentement.
           </p>
         </section>
@@ -39,45 +25,40 @@ export default function CookiesPolicy() {
         <section className={styles.section}>
           <h2 className={styles.h2}>2. Gestion du consentement</h2>
           <p className={styles.p}>
-            Nous utilisons un gestionnaire de consentement (tarteaucitron.js) pour
-            vous permettre d’accepter ou refuser les cookies non essentiels.
+            Nous utilisons un gestionnaire de consentement intégré pour
+            vous permettre d'accepter ou refuser les cookies non essentiels.
           </p>
-          <button type="button" onClick={openConsentPanel} className={styles.btn}>
-            Gérer mes préférences cookies
+          <p className={styles.note}>
+            Statut actuel : Cookies analytics <b>{analyticsEnabled ? "acceptés" : "refusés"}</b>
+          </p>
+          <button type="button" onClick={resetConsent} className={styles.btn}>
+            Modifier mes préférences cookies
           </button>
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>3. Cookies que nous pouvons utiliser</h2>
+          <h2 className={styles.h2}>3. Cookies que nous utilisons</h2>
           <ul className={styles.list}>
             <li>
-              <b>Cookies strictement nécessaires</b> (ex. anti-fraude, équilibrage
-              de charge, préférences techniques). Base légale&nbsp;: intérêt
-              légitime. Durée&nbsp;: session ou courte durée.
+              <b>Cookies strictement nécessaires</b> – Session utilisateur, préférences
+              d'affichage (thème sombre/clair). Base légale&nbsp;: intérêt légitime.
+              Durée&nbsp;: session ou 1 an maximum.
             </li>
             <li>
-              <b>Mesure d’audience</b> (ex. statistiques de fréquentation via un
-              service tiers). Base légale&nbsp;: consentement. Durée&nbsp;:
-              variable selon le fournisseur.
-            </li>
-            <li>
-              <b>Fonctionnels</b> (ex. mémorisation d’une préférence d’affichage).
-              Base légale&nbsp;: consentement. Durée&nbsp;: limitée.
+              <b>Mesure d'audience (Analytics)</b> – Google Analytics et Microsoft Clarity
+              pour comprendre comment vous utilisez le site et l'améliorer.
+              Base légale&nbsp;: consentement. Durée&nbsp;: 2 ans maximum.
             </li>
           </ul>
-          <p className={styles.note}>
-            La liste exacte des services et leur durée sont visibles dans le
-            panneau de consentement. Vous pouvez modifier vos choix à tout moment.
-          </p>
         </section>
 
         <section className={styles.section}>
           <h2 className={styles.h2}>4. Comment modifier vos choix&nbsp;?</h2>
           <p className={styles.p}>
-            Vous pouvez rouvrir le panneau de gestion des cookies via le bouton
-            ci-dessus, ou via le lien «&nbsp;Cookies&nbsp;» affiché en bas du site
-            (si présent). Vous pouvez aussi configurer votre navigateur pour bloquer
-            certains cookies.
+            Vous pouvez modifier vos préférences à tout moment via le bouton
+            ci-dessus. Cela réinitialisera votre choix et vous permettra de
+            re-sélectionner vos préférences. Vous pouvez aussi configurer votre
+            navigateur pour bloquer certains cookies.
           </p>
         </section>
 

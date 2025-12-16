@@ -190,9 +190,11 @@ async function updateChallengeScoresForUser(userId, sessionData = null, io = nul
 }
 
 function getUserId(req) {
+  // SÉCURITÉ: N'utiliser QUE l'ID de l'utilisateur authentifié
+  // Ne jamais accepter userId depuis body/query (risque NoSQL injection)
   if (req.user && req.user.id) return req.user.id;
   if (req.user && req.user._id) return req.user._id;
-  return req.body.userId || req.query.userId || null;
+  return null;
 }
 
 function dayRangeUtc(yyyyMmDd) {
@@ -483,6 +485,10 @@ async function getSessions(req, res) {
     }
 
     if (cursor) {
+      // Valider que le cursor est un ObjectId valide
+      if (!mongoose.isValidObjectId(cursor)) {
+        return res.status(400).json({ error: "invalid_cursor" });
+      }
       q._id = { $lt: new mongoose.Types.ObjectId(cursor) };
     }
 

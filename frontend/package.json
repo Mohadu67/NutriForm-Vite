@@ -35,8 +35,7 @@
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.26.2",
     "socket.io-client": "^4.8.1",
-    "sonner": "^2.0.7",
-    "tarteaucitronjs": "^1.22.0"
+    "sonner": "^2.0.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",

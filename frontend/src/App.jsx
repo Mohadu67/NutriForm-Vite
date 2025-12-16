@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
 import { Toaster } from 'sonner';
-import Clarity from '@microsoft/clarity';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
 import UpdateBanner from "./components/UpdateBanner/UpdateBanner.jsx";
@@ -12,6 +11,7 @@ import { ChatProvider } from "./contexts/ChatContext.jsx";
 import { WebSocketProvider } from "./contexts/WebSocketContext.jsx";
 import { initializeNotifications } from "./services/notificationService.js";
 import MessageNotificationManager from "./components/Chat/MessageNotificationManager.jsx";
+import CookieConsent from "./components/CookieConsent";
 
 // Pages principales - chargées immédiatement (pour SEO et performance initiale)
 import Home from "./pages/Accueil/Home.jsx";
@@ -58,13 +58,9 @@ const RecipeForm = lazy(() => import("./pages/Admin/RecipeForm.jsx"));
 
 export default function App() {
   useEffect(() => {
-    // Clarity et notifications uniquement côté client
+    // Notifications uniquement côté client
+    // Note: Analytics (GA + Clarity) sont gérés par le composant CookieConsent
     if (typeof window !== 'undefined') {
-      Clarity.init("thd0hih6t5");
-      // Note: Session management is now handled server-side via httpOnly cookies
-      // No need for client-side session checks anymore
-
-      // Initialiser les notifications push
       initializeNotifications();
     }
   }, []);
@@ -79,6 +75,7 @@ export default function App() {
           <CanonicalLink />
           <NotificationPrompt />
           <MessageNotificationManager />
+          <CookieConsent />
           <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             {/* Pages principales - chargées immédiatement */}
