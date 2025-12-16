@@ -274,7 +274,7 @@ export default function Dashboard() {
           {stats.totalSessions > 0 && (
             <section className={style.heatmapSection}>
               <h2 className={style.sectionTitle}>Répartition musculaire</h2>
-              <MuscleHeatmap muscleStats={muscleStats} />
+              <MuscleHeatmap sessions={userSessions} />
             </section>
           )}
 
