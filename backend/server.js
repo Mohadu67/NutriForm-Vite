@@ -143,12 +143,18 @@ app.use(helmet({
 
 
 const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: process.env.NODE_ENV === 'production' ? 2000 : 5000, 
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'production' ? 2000 : 5000,
   message: 'Trop de requêtes depuis cette IP, réessayez plus tard.',
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
+    // Whitelist pour les tests de charge (ajouter ton IP ici)
+    const whitelistedIPs = process.env.RATE_LIMIT_WHITELIST?.split(',') || [];
+    const clientIP = req.ip || req.connection.remoteAddress;
+    if (whitelistedIPs.some(ip => clientIP.includes(ip))) {
+      return true;
+    }
 
     const publicRoutes = ['/api/health', '/uploads', '/api/subscriptions/webhook'];
     return publicRoutes.some(route => req.path.startsWith(route));
