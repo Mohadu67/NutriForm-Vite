@@ -21,7 +21,7 @@ const NOTIFICATION_TEMPLATES = {
     getBody: (data) => `@${data.challengedName} a décliné ton défi.`
   },
   challenge_update_losing: {
-    title: "Tu peux le rattraper!",
+    title: "Rattrape ton retard!",
     getBody: (data) => `Plus que ${data.diff} ${data.metric} pour dépasser @${data.opponentName}!`
   },
   challenge_update_winning: {
