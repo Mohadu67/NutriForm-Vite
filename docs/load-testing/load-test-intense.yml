@@ -1,0 +1,39 @@
+config:
+  target: "https://api.harmonith.fr"
+  phases:
+    # Warm up - 15s @ 30 users/s
+    - duration: 15
+      arrivalRate: 30
+      name: "Warm up"
+    # Ramp up - 30s de 50 à 100 users/s
+    - duration: 30
+      arrivalRate: 50
+      rampTo: 100
+      name: "Ramp up"
+    # High load - 45s @ 100 users/s
+    - duration: 45
+      arrivalRate: 100
+      name: "High load"
+    # Stress - 30s @ 150 users/s
+    - duration: 30
+      arrivalRate: 150
+      name: "Stress test"
+
+scenarios:
+  - name: "Health check"
+    weight: 2
+    flow:
+      - get:
+          url: "/api/health"
+
+  - name: "Get exercises"
+    weight: 5
+    flow:
+      - get:
+          url: "/api/exercises"
+
+  - name: "Get exercises paginated"
+    weight: 3
+    flow:
+      - get:
+          url: "/api/exercises?page=1&limit=10"
