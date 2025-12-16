@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmonith - Pause en cours</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary-500: #f7b186;
+      --color-primary-600: #e9a070;
+      --color-secondary-500: #86c1ad;
+      --color-secondary-300: #b8ddd1;
+
+      --couleur-principale: #F7F6F2;
+      --paper: #ffffff;
+      --ink: #222325;
+      --muted: #6b7280;
+
+      --glass-bg: rgb(255 255 255 / 0.75);
+      --glass-border: rgb(255 255 255 / 0.3);
+      --shadow-glow-primary: 0 8px 32px rgb(247 177 134 / 0.3);
+      --shadow-glow-secondary: 0 8px 32px rgb(184 221 209 / 0.3);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --couleur-principale: #0c0e12;
+        --paper: #12151b;
+        --ink: #e9ecf1;
+        --muted: #a6b0bf;
+
+        --glass-bg: rgb(30 35 48 / 0.8);
+        --glass-border: rgb(255 255 255 / 0.1);
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+      background-color: var(--couleur-principale);
+      color: var(--ink);
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgb(247 177 134 / 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgb(184 221 209 / 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgb(139 92 246 / 0.05) 0%, transparent 50%);
+      animation: ambientMove 20s ease-in-out infinite;
+      z-index: -1;
+    }
+
+    @keyframes ambientMove {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(2%, 1%) rotate(0.5deg); }
+      50% { transform: translate(0, 2%) rotate(0deg); }
+      75% { transform: translate(-2%, 1%) rotate(-0.5deg); }
+    }
+
+    .container {
+      text-align: center;
+      padding: 2rem 2.5rem 2.5rem;
+      max-width: 420px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 1.5rem;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgb(0 0 0 / 0.08);
+    }
+
+    /* ===== MASCOTTE ANIMÉE ===== */
+    .logo-container {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 1rem;
+      position: relative;
+    }
+
+    .logo-container svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .personnage {
+      transform-origin: center 75%;
+      animation: respiration-haletante 1.2s ease-in-out infinite;
+    }
+
+    @keyframes respiration-haletante {
+      0%, 100% { transform: scaleY(1) scaleX(1); }
+      50% { transform: scaleY(1.025) scaleX(0.98); }
+    }
+
+    .corps {
+      transform-origin: center bottom;
+      animation: tremblement-doux 2s ease-in-out infinite;
+    }
+
+    @keyframes tremblement-doux {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-0.5px); }
+      50% { transform: translateX(0.3px); }
+      75% { transform: translateX(-0.3px); }
+    }
+
+    .tete {
+      transform-origin: center center;
+      animation: tete-bouge 2.5s ease-in-out infinite;
+    }
+
+    @keyframes tete-bouge {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-0.5px); }
+    }
+
+    .visage { transform-origin: 110px 50px; }
+
+    .oeil { animation: clignement 3s ease-in-out infinite; }
+    .oeil-gauche { animation-delay: 0s; }
+    .oeil-droit { animation-delay: 0.05s; }
+
+    @keyframes clignement {
+      0%, 90%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.1); }
+    }
+
+    .bouche { animation: bouche-fatigue 1.5s ease-in-out infinite; }
+
+    @keyframes bouche-fatigue {
+      0%, 100% { d: path("M105,62 Q110,65 115,62"); }
+      50% { d: path("M105,63 Q110,66 115,63"); }
+    }
+
+    .goutte-tombe { opacity: 0; }
+    .goutte-tombe-1 { animation: tomber-goutte 1.8s ease-in infinite; animation-delay: 0s; }
+    .goutte-tombe-2 { animation: tomber-goutte 2s ease-in infinite; animation-delay: 0.5s; }
+    .goutte-tombe-3 { animation: tomber-goutte 1.6s ease-in infinite; animation-delay: 1s; }
+    .goutte-tombe-4 { animation: tomber-goutte 2.2s ease-in infinite; animation-delay: 0.3s; }
+    .goutte-tombe-5 { animation: tomber-goutte 1.9s ease-in infinite; animation-delay: 0.8s; }
+    .goutte-tombe-6 { animation: tomber-goutte 2.1s ease-in infinite; animation-delay: 1.3s; }
+    .goutte-tombe-7 { animation: tomber-goutte 1.7s ease-in infinite; animation-delay: 0.6s; }
+
+    @keyframes tomber-goutte {
+      0% { opacity: 0; transform: translateY(0); }
+      5% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(60px); }
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+      color: var(--ink);
+    }
+
+    .highlight {
+      background: linear-gradient(90deg, var(--color-primary-500), var(--color-primary-600));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .message {
+      font-size: 1rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    .pulse-bar {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: rgb(247 177 134 / 0.1);
+      border-radius: 1rem;
+    }
+
+    .pulse-bar span {
+      width: 6px;
+      height: 32px;
+      background: linear-gradient(to top, var(--color-secondary-500), var(--color-secondary-300));
+      border-radius: 3px;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    .pulse-bar span:nth-child(1) { animation-delay: 0s; }
+    .pulse-bar span:nth-child(2) { animation-delay: 0.1s; }
+    .pulse-bar span:nth-child(3) { animation-delay: 0.2s; }
+    .pulse-bar span:nth-child(4) { animation-delay: 0.3s; }
+    .pulse-bar span:nth-child(5) { animation-delay: 0.4s; }
+    .pulse-bar span:nth-child(6) { animation-delay: 0.5s; }
+    .pulse-bar span:nth-child(7) { animation-delay: 0.4s; }
+    .pulse-bar span:nth-child(8) { animation-delay: 0.3s; }
+    .pulse-bar span:nth-child(9) { animation-delay: 0.2s; }
+
+    @keyframes pulse {
+      0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+      50% { transform: scaleY(1); opacity: 1; }
+    }
+
+    .timer {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+    }
+
+    .timer span {
+      color: var(--color-primary-500);
+      font-weight: 700;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-retry {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+      color: #111111;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      border: none;
+      box-shadow: var(--shadow-glow-primary);
+    }
+
+    .btn-retry:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgb(247 177 134 / 0.4);
+    }
+
+    .btn-retry:active { transform: translateY(0); }
+
+    .btn-retry svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .btn-notify {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: transparent;
+      color: var(--color-secondary-500);
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      border: 2px solid var(--color-secondary-500);
+    }
+
+    .btn-notify:hover {
+      background: var(--color-secondary-500);
+      color: #111111;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow-secondary);
+    }
+
+    .btn-notify:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-notify.subscribed {
+      background: var(--color-secondary-500);
+      color: #111111;
+      border-color: var(--color-secondary-500);
+    }
+
+    .btn-notify svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .logo {
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .logo span { color: var(--color-secondary-500); }
+
+    .notification-status {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 8px;
+      min-height: 20px;
+    }
+
+    .notification-status.success { color: var(--color-secondary-500); }
+    .notification-status.error { color: #ef4444; }
+
+    @media (max-width: 480px) {
+      .container {
+        margin: 1rem;
+        padding: 1.5rem;
+      }
+      h1 { font-size: 1.5rem; }
+      .logo-container {
+        width: 150px;
+        height: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo-container">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 230">
+        <defs>
+          <linearGradient id="sueurGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#b8e4f0;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#7cc8e0;stop-opacity:0.9" />
+          </linearGradient>
+          <style>
+            .st0 { fill: #f7f6f2; }
+            .st0, .st2, .st3 { stroke: #1d1d1b; stroke-miterlimit: 10; }
+            .st2 { fill: #b8ddd1; }
+            .st3 { fill: #f7b186; }
+          </style>
+        </defs>
+
+        <g class="personnage">
+          <g class="corps">
+            <path class="st2" d="M66.2,128.2c14.2-10.4,82-12.7,93.9,4.6,50.8,73.6-152.4,49.5-93.9-4.6Z"/>
+          </g>
+          <g class="tete">
+            <path class="st3" d="M151.7,89.4c-16-18-55-22.1-75.2-8.4-18.9,12.6-6.2,37.2,13.4,35.3,15-1.5,27.2,2.6,49.7-.5,14.1-2,23.2-14.4,12.2-26.2h-.1c0-.1,0-.1,0-.1Z"/>
+            <ellipse cx="85" cy="100" rx="8" ry="5" fill="#e8a07a" opacity="0.3"/>
+            <ellipse cx="140" cy="98" rx="7" ry="4.5" fill="#e8a07a" opacity="0.25"/>
+          </g>
+          <g class="visage">
+            <path class="st0" d="M132.1,53.9c8.6,15.9-5.1,17.4-24.1,15-24.3-3-30.9-15-23.4-23.6,10.5-12,25.9-19.9,47.4,8.5h0Z"/>
+            <ellipse cx="92" cy="58" rx="5" ry="3" fill="#e8a07a" opacity="0.35"/>
+            <ellipse cx="124" cy="56" rx="4.5" ry="2.8" fill="#e8a07a" opacity="0.3"/>
+            <path d="M94,42 Q99,44 104,42" fill="none" stroke="#1d1d1b" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M112,41 Q117,43 122,41" fill="none" stroke="#1d1d1b" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M95,56 Q98,57.5 102,56" fill="none" stroke="#1d1d1b" stroke-width="0.6" stroke-linecap="round" opacity="0.4"/>
+            <path d="M114,54 Q118,55.5 122,54" fill="none" stroke="#1d1d1b" stroke-width="0.6" stroke-linecap="round" opacity="0.4"/>
+            <g class="oeil oeil-gauche" style="transform-origin: 99px 51px;">
+              <ellipse cx="99" cy="51" rx="4" ry="4.5" fill="#1d1d1b"/>
+              <ellipse cx="97.5" cy="49.5" rx="1.2" ry="1.5" fill="#fff"/>
+            </g>
+            <g class="oeil oeil-droit" style="transform-origin: 118px 49px;">
+              <ellipse cx="118" cy="49" rx="4" ry="4.5" fill="#1d1d1b"/>
+              <ellipse cx="116.5" cy="47.5" rx="1.2" ry="1.5" fill="#fff"/>
+            </g>
+            <path class="bouche" d="M105,62 Q110,65 115,62" fill="none" stroke="#1d1d1b" stroke-width="1.4" stroke-linecap="round"/>
+          </g>
+        </g>
+
+        <g class="gouttes-container">
+          <g class="goutte-tombe goutte-tombe-1"><path d="M87,51 Q85,55 87,59 Q89,55 87,51" fill="url(#sueurGradient)"/></g>
+          <g class="goutte-tombe goutte-tombe-2"><path d="M130,48 Q128,52 130,56 Q132,52 130,48" fill="url(#sueurGradient)"/></g>
+          <g class="goutte-tombe goutte-tombe-3"><path d="M78,56 Q76,59 78,62 Q80,59 78,56" fill="url(#sueurGradient)"/></g>
+          <g class="goutte-tombe goutte-tombe-4"><path d="M72,105 Q70,109 72,113 Q74,109 72,105" fill="url(#sueurGradient)"/></g>
+          <g class="goutte-tombe goutte-tombe-5"><path d="M150,100 Q148,104 150,108 Q152,104 150,100" fill="url(#sueurGradient)"/></g>
+          <g class="goutte-tombe goutte-tombe-6"><path d="M95,130 Q93,134 95,138 Q97,134 95,130" fill="url(#sueurGradient)"/></g>
+          <g class="goutte-tombe goutte-tombe-7"><path d="M135,120 Q133,124 135,128 Q137,124 135,120" fill="url(#sueurGradient)"/></g>
+        </g>
+      </svg>
+    </div>
+
+    <h1><span class="highlight">Grosse séance</span> en cours !</h1>
+
+    <p class="message">
+      Ouf... Je suis essoufflé là !<br>
+      Laisse-moi reprendre mon souffle.
+    </p>
+
+    <div class="pulse-bar">
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
+    </div>
+
+    <p class="timer">Temps de récupération : <span id="countdown">60</span>s</p>
+
+    <div class="buttons">
+      <button class="btn-retry" onclick="window.location.reload()">
+        <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        Réessayer
+      </button>
+
+      <button class="btn-notify" id="notifyBtn" onclick="subscribeToNotification()">
+        <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+        <span id="notifyText">Me notifier quand c'est OK</span>
+      </button>
+    </div>
+
+    <p class="notification-status" id="notifStatus"></p>
+
+    <p class="logo">Harmonith · <span>Train Hard, Rest Smart</span></p>
+  </div>
+
+  <script>
+    // Countdown
+    let seconds = 60;
+    const countdownEl = document.getElementById('countdown');
+    const interval = setInterval(() => {
+      seconds--;
+      countdownEl.textContent = seconds;
+      if (seconds <= 0) {
+        clearInterval(interval);
+        window.location.reload();
+      }
+    }, 1000);
+
+    // VAPID public key (à remplacer par ta vraie clé)
+    const VAPID_PUBLIC_KEY = 'BLBx-hf2WrL2qEa0qKb-aCJbcxEvyn62GDYCUnarSlHfMMqcbqXr6WJHC9lDLN6RFbDoqFLePsrs-mLNv8eM5oA';
+
+    // Convertir la clé VAPID
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    }
+
+    // Souscrire aux notifications
+    async function subscribeToNotification() {
+      const btn = document.getElementById('notifyBtn');
+      const status = document.getElementById('notifStatus');
+      const text = document.getElementById('notifyText');
+
+      btn.disabled = true;
+      status.textContent = 'Activation en cours...';
+      status.className = 'notification-status';
+
+      try {
+        // Vérifier le support
+        if (!('serviceWorker' in navigator)) {
+          throw new Error('Service Worker non supporté');
+        }
+        if (!('PushManager' in window)) {
+          throw new Error('Notifications push non supportées');
+        }
+
+        // Demander la permission
+        const permission = await Notification.requestPermission();
+        if (permission === 'denied') {
+          throw new Error('Notifications bloquées dans les paramètres');
+        }
+        if (permission !== 'granted') {
+          throw new Error('Permission refusée');
+        }
+
+        status.textContent = 'Configuration...';
+
+        // Enregistrer le service worker
+        let registration = await navigator.serviceWorker.getRegistration();
+        if (!registration) {
+          try {
+            registration = await navigator.serviceWorker.register('/sw.js');
+            await navigator.serviceWorker.ready;
+          } catch (swError) {
+            console.error('Erreur SW:', swError);
+            throw new Error('Service Worker indisponible (testez en production)');
+          }
+        }
+
+        // S'abonner aux push
+        let subscription = await registration.pushManager.getSubscription();
+        if (!subscription) {
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+          });
+        }
+
+        status.textContent = 'Enregistrement...';
+
+        // Envoyer au serveur
+        const response = await fetch('/api/rate-limit/notify-when-ready', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription })
+        });
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.message || 'Erreur serveur');
+        }
+
+        // Succès
+        btn.classList.add('subscribed');
+        text.textContent = 'Tu seras notifié !';
+        status.textContent = 'Tu recevras une notification dans ~15 min';
+        status.className = 'notification-status success';
+
+      } catch (error) {
+        console.error('Erreur notification:', error);
+        status.textContent = error.message || 'Erreur lors de l\'activation';
+        status.className = 'notification-status error';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
