@@ -771,6 +771,7 @@ export default function FormExo({ user: userProp }) {
       ) : (
         <ChercherExo
           preselectedIds={searchDraft.map(e => e.id ?? e._id ?? e.slug ?? (e.name || e.title))}
+          preselectedExercises={searchDraft}
           onBack={() => setMode("builder")}
           onCancel={() => setMode("builder")}
           onConfirm={(picked) => {

@@ -423,6 +423,27 @@ export const useDashboardData = (sessions, records) => {
     return () => { cancelled = true; };
   }, []);
 
+  // Mapping des muscles secondaires selon le muscle principal
+  // Pondération: primaire = 1, secondaire = 0.5
+  const SECONDARY_MUSCLES = {
+    // Pectoraux -> triceps, épaules avant
+    pectoraux: ["triceps", "epaules"],
+    // Dos -> biceps, épaules arrière
+    "dos-lats": ["biceps", "avant-bras"],
+    "dos-superieur": ["biceps", "epaules"],
+    "dos-inferieur": ["biceps"],
+    dos: ["biceps", "avant-bras"],
+    // Épaules -> triceps (pour presses), biceps (pour tirages)
+    epaules: ["triceps"],
+    // Jambes composés
+    quadriceps: ["fessiers", "ischio"],
+    fessiers: ["quadriceps", "ischio"],
+    ischio: ["fessiers"],
+    // Bras (pas de secondaires significatifs)
+    biceps: [],
+    triceps: [],
+  };
+
   // Distribution musculaire basée sur les exercices des sessions
   const muscleStats = useMemo(() => {
     if (!userSessions.length) return {};
@@ -430,7 +451,6 @@ export const useDashboardData = (sessions, records) => {
     // Créer un map pour retrouver les exercices par ID/slug uniquement (pas par nom)
     const exerciseMap = new Map();
     exercisesDb.forEach((exercise) => {
-      // Utiliser uniquement les identifiants uniques, pas le nom
       const identifiers = [
         exercise.id,
         exercise._id,
@@ -441,11 +461,23 @@ export const useDashboardData = (sessions, records) => {
 
     const muscleCount = {};
 
-    const addMuscle = (muscle) => {
+    const addMuscle = (muscle, weight = 1) => {
       const key = String(muscle || "").toLowerCase().trim();
       if (key && key !== "undefined" && key !== "null") {
-        muscleCount[key] = (muscleCount[key] || 0) + 1;
+        muscleCount[key] = (muscleCount[key] || 0) + weight;
       }
+    };
+
+    const addMuscleWithSecondaries = (primaryMuscle) => {
+      const key = String(primaryMuscle || "").toLowerCase().trim();
+      if (!key) return;
+
+      // Ajouter le muscle primaire (poids 1)
+      addMuscle(key, 1);
+
+      // Ajouter les muscles secondaires (poids 0.5)
+      const secondaries = SECONDARY_MUSCLES[key] || [];
+      secondaries.forEach((secondary) => addMuscle(secondary, 0.5));
     };
 
     userSessions.forEach((session) => {
@@ -456,17 +488,18 @@ export const useDashboardData = (sessions, records) => {
         // 1. Priorité aux muscles stockés directement dans l'entrée
         const entryMuscles = entry.muscles;
         if (Array.isArray(entryMuscles) && entryMuscles.length > 0) {
-          entryMuscles.forEach(addMuscle);
+          // Premier muscle = primaire, les autres = déjà secondaires
+          entryMuscles.forEach((m, i) => addMuscle(m, i === 0 ? 1 : 0.7));
           return;
         }
 
-        // 2. Utiliser muscle ou muscleGroup de l'entrée
+        // 2. Utiliser muscle ou muscleGroup de l'entrée avec secondaires
         if (entry.muscle) {
-          addMuscle(entry.muscle);
+          addMuscleWithSecondaries(entry.muscle);
           return;
         }
         if (entry.muscleGroup) {
-          addMuscle(entry.muscleGroup);
+          addMuscleWithSecondaries(entry.muscleGroup);
           return;
         }
 
@@ -487,12 +520,16 @@ export const useDashboardData = (sessions, records) => {
         }
 
         if (matchedExercise?.muscles && matchedExercise.muscles.length > 0) {
-          matchedExercise.muscles.forEach(addMuscle);
+          matchedExercise.muscles.forEach((m, i) => addMuscle(m, i === 0 ? 1 : 0.7));
         } else if (matchedExercise?.primaryMuscle) {
-          addMuscle(matchedExercise.primaryMuscle);
+          addMuscleWithSecondaries(matchedExercise.primaryMuscle);
         }
-        // Si aucun match, on ne compte pas (évite les faux positifs)
       });
+    });
+
+    // Arrondir les valeurs pour l'affichage
+    Object.keys(muscleCount).forEach((key) => {
+      muscleCount[key] = Math.round(muscleCount[key] * 10) / 10;
     });
 
     return muscleCount;

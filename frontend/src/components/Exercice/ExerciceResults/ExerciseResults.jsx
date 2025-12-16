@@ -29,7 +29,15 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [ordered, setOrdered] = useState([]);
+  // Initialiser ordered depuis localStorage pour préserver la sélection après recherche
+  const [ordered, setOrdered] = useState(() => {
+    try {
+      const saved = storage.get("dynamiSelected");
+      return Array.isArray(saved) ? saved : (saved ? JSON.parse(saved) : []);
+    } catch {
+      return [];
+    }
+  });
   const [dismissed, setDismissed] = useState(() => {
     try {
       const v = storage.get("dynamiDismissed");
@@ -142,7 +150,18 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   }, [filterKey, results]);
 
   useEffect(() => {
+    // Ne remplir ordered que si vraiment vide ET pas touché ET pas de sélection sauvegardée
     if (Array.isArray(results) && results.length > 0 && Array.isArray(ordered) && ordered.length === 0 && !hasTouched) {
+      // Vérifier si on a des données sauvegardées qu'on devrait utiliser
+      try {
+        const saved = storage.get("dynamiSelected");
+        const savedArr = Array.isArray(saved) ? saved : (saved ? JSON.parse(saved) : []);
+        if (savedArr.length > 0) {
+          setOrdered(savedArr);
+          setHasTouched(true);
+          return;
+        }
+      } catch { /* ignore */ }
       setOrdered(results.slice());
     }
   }, [results, ordered, hasTouched]);
