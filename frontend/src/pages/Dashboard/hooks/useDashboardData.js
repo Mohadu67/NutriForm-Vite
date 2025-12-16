@@ -1,10 +1,12 @@
 import { useMemo, useCallback, useState, useEffect } from "react";
+import { loadExercises } from "../../../utils/exercisesLoader";
 
 /**
  * Hook personnalisé pour gérer toutes les données du Dashboard
  * Centralise la logique de calcul des statistiques
  */
 export const useDashboardData = (sessions, records) => {
+  const [exercisesDb, setExercisesDb] = useState([]);
   const [userSessions, setUserSessions] = useState([]);
 
   const parseDate = useCallback((raw) => {
@@ -171,6 +173,9 @@ export const useDashboardData = (sessions, records) => {
         exercice: r.exercice,
         rm: r.rm,
         date: r.date,
+        poids: r.poids,
+        reps: r.reps,
+        formulas: r.formulas || {},
       }))
       .sort((a, b) => new Date(b.date) - new Date(a.date));
   }, [records]);
@@ -404,6 +409,80 @@ export const useDashboardData = (sessions, records) => {
     };
   }, [imcPoints]);
 
+  // Charger la base d'exercices pour le mapping des muscles
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const exercises = await loadExercises("all");
+        if (!cancelled) setExercisesDb(exercises);
+      } catch {
+        // Ignore
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Distribution musculaire basée sur les exercices des sessions
+  const muscleStats = useMemo(() => {
+    if (!userSessions.length || !exercisesDb.length) return {};
+
+    // Créer un map pour retrouver les exercices par nom/id
+    const exerciseMap = new Map();
+    exercisesDb.forEach((exercise) => {
+      const identifiers = [
+        exercise.id,
+        exercise._id,
+        exercise.slug,
+        exercise.name,
+      ].filter(Boolean).map((id) => String(id).toLowerCase());
+      identifiers.forEach((id) => exerciseMap.set(id, exercise));
+    });
+
+    const muscleCount = {};
+
+    userSessions.forEach((session) => {
+      const entries = session?.entries || session?.items || session?.exercises || [];
+      entries.forEach((entry) => {
+        // Chercher l'exercice dans la DB
+        const identifiers = [
+          entry?.exerciseId,
+          entry?.id,
+          entry?._id,
+          entry?.slug,
+          entry?.name,
+          entry?.exerciseName,
+          entry?.exoName,
+        ].filter(Boolean).map((id) => String(id).toLowerCase());
+
+        let matchedExercise = null;
+        for (const id of identifiers) {
+          if (exerciseMap.has(id)) {
+            matchedExercise = exerciseMap.get(id);
+            break;
+          }
+        }
+
+        // Compter les muscles
+        if (matchedExercise?.muscles) {
+          matchedExercise.muscles.forEach((muscle) => {
+            const key = String(muscle || "").toLowerCase().trim();
+            if (key) {
+              muscleCount[key] = (muscleCount[key] || 0) + 1;
+            }
+          });
+        } else if (matchedExercise?.primaryMuscle) {
+          const key = String(matchedExercise.primaryMuscle).toLowerCase().trim();
+          if (key) {
+            muscleCount[key] = (muscleCount[key] || 0) + 1;
+          }
+        }
+      });
+    });
+
+    return muscleCount;
+  }, [userSessions, exercisesDb]);
+
   return {
     stats,
     weightData,
@@ -423,6 +502,7 @@ export const useDashboardData = (sessions, records) => {
     weightPoints,
     allSessionsSorted,
     userSessions,
-    setUserSessions
+    setUserSessions,
+    muscleStats,
   };
 };
