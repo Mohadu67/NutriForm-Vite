@@ -9,39 +9,39 @@ const { sendNotificationToUser } = require('../services/pushNotification.service
 // Templates de notifications
 const NOTIFICATION_TEMPLATES = {
   challenge_received: {
-    title: "⚔️ Nouveau défi!",
+    title: "Nouveau défi!",
     getBody: (data) => `@${data.challengerName} te défie: ${data.typeLabel} sur ${data.duration} jours!`
   },
   challenge_accepted: {
-    title: "🔥 Défi accepté!",
+    title: "Défi accepté!",
     getBody: (data) => `@${data.challengedName} relève le défi! C'est parti pour ${data.duration} jours!`
   },
   challenge_declined: {
-    title: "😔 Défi refusé",
+    title: "Défi refusé",
     getBody: (data) => `@${data.challengedName} a décliné ton défi.`
   },
   challenge_update_losing: {
-    title: "📊 Tu peux le rattraper!",
+    title: "Tu peux le rattraper!",
     getBody: (data) => `Plus que ${data.diff} ${data.metric} pour dépasser @${data.opponentName}!`
   },
   challenge_update_winning: {
-    title: "💪 Tu mènes!",
+    title: "Tu mènes!",
     getBody: (data) => `Tu as ${data.diff} ${data.metric} d'avance sur @${data.opponentName}!`
   },
   challenge_ending_soon: {
-    title: "⏰ Dernière ligne droite!",
+    title: "Dernière ligne droite!",
     getBody: (data) => `24h restantes contre @${data.opponentName}. Score: ${data.yourScore}-${data.theirScore}`
   },
   challenge_won: {
-    title: "🏆 VICTOIRE!",
+    title: "VICTOIRE!",
     getBody: (data) => `Tu as battu @${data.opponentName}! +50 XP gagnés!`
   },
   challenge_lost: {
-    title: "😤 Défaite...",
+    title: "Défaite...",
     getBody: (data) => `@${data.opponentName} l'emporte ${data.theirScore}-${data.yourScore}. Revanche?`
   },
   challenge_draw: {
-    title: "🤝 Égalité!",
+    title: "Égalité!",
     getBody: (data) => `Match nul contre @${data.opponentName}! ${data.score}-${data.score}`
   }
 };
@@ -207,8 +207,8 @@ exports.createChallenge = async (req, res) => {
         type: 'challenge_received',
         title: notifTitle,
         body: notifBody,
-        icon: challenge.challengerAvatar || '/icon-192x192.png',
-        badge: '/badge-72x72.png',
+        icon: '/assets/icons/notif-challenge.svg',
+        badge: '/assets/icons/badge-72x72.png',
         data: {
           type: 'challenge_received',
           challengeId: challenge._id.toString(),
@@ -328,8 +328,8 @@ exports.acceptChallenge = async (req, res) => {
         type: 'challenge_accepted',
         title: notifTitle,
         body: notifBody,
-        icon: challenge.challengedAvatar || '/icon-192x192.png',
-        badge: '/badge-72x72.png',
+        icon: '/assets/icons/notif-challenge.svg',
+        badge: '/assets/icons/badge-72x72.png',
         data: {
           type: 'challenge_accepted',
           challengeId: challenge._id.toString(),
@@ -430,8 +430,8 @@ exports.declineChallenge = async (req, res) => {
         type: 'challenge_declined',
         title: notifTitle,
         body: notifBody,
-        icon: challenge.challengedAvatar || '/icon-192x192.png',
-        badge: '/badge-72x72.png',
+        icon: '/assets/icons/notif-challenge.svg',
+        badge: '/assets/icons/badge-72x72.png',
         data: {
           type: 'challenge_declined',
           challengeId: challenge._id.toString(),
@@ -667,7 +667,7 @@ exports.sendCongratulations = async (req, res) => {
     const senderAvatar = sender?.photo || null;
 
     // Créer la notification de félicitations
-    const notifTitle = '🎉 Félicitations!';
+    const notifTitle = 'Félicitations!';
     const notifBody = `${senderName} te félicite pour ta séance!`;
 
     // 1. Sauvegarder en base de données
@@ -706,7 +706,7 @@ exports.sendCongratulations = async (req, res) => {
       type: 'congratulations',
       title: notifTitle,
       body: notifBody,
-      icon: senderAvatar || '/icon-192x192.png',
+      icon: '/assets/icons/notif-congrats.svg',
       data: {
         type: 'congratulations',
         url: '/leaderboard'

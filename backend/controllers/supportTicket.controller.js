@@ -126,7 +126,7 @@ async function replyToTicket(req, res) {
       const notifData = {
         id: notifId,
         type: 'support',
-        title: '💬 Réponse du support',
+        title: 'Réponse du support',
         message: `${message.substring(0, 50)}${message.length > 50 ? '...' : ''}`,
         metadata: { ticketId: ticket._id, conversationId: ticket.conversationId },
         timestamp: new Date().toISOString(),
@@ -142,7 +142,7 @@ async function replyToTicket(req, res) {
       await Notification.create({
         userId: ticket.userId,
         type: 'support',
-        title: '💬 Réponse du support',
+        title: 'Réponse du support',
         message: `${message.substring(0, 50)}${message.length > 50 ? '...' : ''}`,
         metadata: { ticketId: ticket._id, conversationId: ticket.conversationId }
       }).catch(err => logger.error('Erreur sauvegarde notification support:', err));
@@ -150,10 +150,10 @@ async function replyToTicket(req, res) {
       // 3. Envoyer push notification à l'utilisateur
       sendNotificationToUser(ticket.userId, {
         type: 'support',
-        title: '💬 Réponse du support',
+        title: 'Réponse du support',
         body: `${message.substring(0, 100)}${message.length > 100 ? '...' : ''}`,
-        icon: '/icon-192x192.png',
-        badge: '/badge-72x72.png',
+        icon: '/assets/icons/notif-support.svg',
+        badge: '/assets/icons/badge-72x72.png',
         data: { url: '/chat', conversationId: ticket.conversationId }
       }).catch(err => logger.error('Erreur push user support:', err));
     } catch (notifError) {
