@@ -18,7 +18,7 @@ export async function loadPrograms(types = 'all') {
 /**
  * Charger les programmes depuis JSON local
  */
-async function loadJSONPrograms(types = 'all') {
+async function _loadJSONPrograms(types = 'all') {
   const fileMap = {
     all: '/data/programs/programs.json',
   };
