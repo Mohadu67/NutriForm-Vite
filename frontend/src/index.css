@@ -36,8 +36,6 @@ button {
 }
 
 :root {
-  color-scheme: light dark;
-
   --couleur-principale: #F7F6F2;
   --couleur-bouton-action: #f7b186;
   --couleur-bouton-selection: #b8ddd1;
@@ -56,6 +54,7 @@ button {
 }
 
 .light {
+  color-scheme: light;
   --couleur-principale: #F7F6F2;
   --paper: #ffffff;
   --ink: #222325;
@@ -68,6 +67,7 @@ button {
 
 /* Dark mode manuel avec classe .dark */
 .dark {
+  color-scheme: dark;
   --couleur-principale: #0c0e12;
   --paper: #12151b;
   --ink: #e9ecf1;

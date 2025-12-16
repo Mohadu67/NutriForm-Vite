@@ -167,11 +167,22 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
           return suggestion;
         }
 
-        // Nouveau poids stable
+        // Nouveau poids avec reps maintenus ou augmentés
         if (weightDiff > 0 && repsDiff >= 0) {
           suggestion.weight = lastBest.weightKg;
           suggestion.reps = lastBest.reps;
-          suggestion.message = `🔥 Stabilise et pousse jusqu'à 12 reps`;
+
+          // Si déjà 12+ reps avec le nouveau poids = prêt à monter encore
+          if (lastBest.reps >= 12) {
+            suggestion.weight = lastBest.weightKg + increment;
+            suggestion.reps = 8;
+            suggestion.isProgression = true;
+            suggestion.progressionType = 'hypertrophy_weight_increase';
+            suggestion.message = `🚀 ${lastBest.reps} reps à +${weightDiff}kg ! → ${lastBest.weightKg + increment}kg × 8-10`;
+          } else {
+            // Moins de 12 reps = stabiliser vers 12
+            suggestion.message = `🔥 +${weightDiff}kg ! Stabilise et vise 12 reps`;
+          }
           return suggestion;
         }
       }
@@ -601,21 +612,41 @@ export function suggestRepsChallenge(currentSet, lastSessionData, currentSetInde
 
     // Si poids supérieur
     if (currentWeight > lastWeight) {
-      if (currentReps >= 8) {
+      const weightIncrease = currentWeight - lastWeight;
+      const increment = isLowerBody(exerciseName) ? 5 : 2.5;
+
+      // 12+ reps avec nouveau poids = prêt à monter encore !
+      if (currentReps >= 12) {
+        return {
+          type: 'hypertrophy_increase_weight',
+          targetReps: 8,
+          targetWeight: currentWeight + increment,
+          currentReps,
+          goal: 'hypertrophy',
+          message: `🚀 ${currentReps} reps à +${weightIncrease}kg ! Monte encore → ${currentWeight + increment}kg`
+        };
+      }
+
+      // 8-11 reps avec nouveau poids = stabilise et pousse vers 12
+      if (currentReps >= 8 && currentReps < 12) {
+        const remaining = 12 - currentReps;
         return {
           type: 'hypertrophy_new_weight_good',
           currentReps,
           goal: 'hypertrophy',
-          message: `🎯 ${currentReps} reps ! Pousse jusqu'à 12`
-        };
-      } else {
-        return {
-          type: 'hypertrophy_new_weight_low',
-          currentReps,
-          goal: 'hypertrophy',
-          message: `💪 ${currentReps} reps. Vise 8-12`
+          message: remaining <= 2
+            ? `🔥 +${weightIncrease}kg × ${currentReps} reps ! Encore ${remaining} pour progresser`
+            : `🎯 +${weightIncrease}kg ! Stabilise vers 12 reps`
         };
       }
+
+      // Moins de 8 reps = trop ambitieux, consolide
+      return {
+        type: 'hypertrophy_new_weight_low',
+        currentReps,
+        goal: 'hypertrophy',
+        message: `💪 +${weightIncrease}kg × ${currentReps} reps. Vise 8-12`
+      };
     }
   }
 
