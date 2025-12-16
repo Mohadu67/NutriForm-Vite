@@ -593,3 +593,77 @@
     font-size: 0.95rem;
   }
 }
+
+/* Dark mode */
+:global(.dark) .input,
+:global(body.dark) .input,
+:global(html.dark) .input,
+:global(.dark) .select,
+:global(body.dark) .select,
+:global(html.dark) .select {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f5f7fa;
+}
+
+:global(.dark) .input::placeholder,
+:global(body.dark) .input::placeholder,
+:global(html.dark) .input::placeholder {
+  color: #6b7280;
+}
+
+:global(.dark) .input:focus,
+:global(body.dark) .input:focus,
+:global(html.dark) .input:focus,
+:global(.dark) .select:focus,
+:global(body.dark) .select:focus,
+:global(html.dark) .select:focus {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--auth-peach);
+}
+
+:global(.dark) .subtitle,
+:global(body.dark) .subtitle,
+:global(html.dark) .subtitle,
+:global(.dark) .muted,
+:global(body.dark) .muted,
+:global(html.dark) .muted,
+:global(.dark) .successText,
+:global(body.dark) .successText,
+:global(html.dark) .successText {
+  color: #9ca3af;
+}
+
+:global(.dark) .loginWrapper,
+:global(body.dark) .loginWrapper,
+:global(html.dark) .loginWrapper {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+:global(.dark) .photoLabel,
+:global(body.dark) .photoLabel,
+:global(html.dark) .photoLabel {
+  background: rgba(247, 177, 134, 0.08);
+  border-color: rgba(247, 177, 134, 0.25);
+  color: #f5f7fa;
+}
+
+:global(.dark) .photoLabel:hover,
+:global(body.dark) .photoLabel:hover,
+:global(html.dark) .photoLabel:hover {
+  background: rgba(247, 177, 134, 0.15);
+}
+
+:global(.dark) .actionBtnSecondary,
+:global(body.dark) .actionBtnSecondary,
+:global(html.dark) .actionBtnSecondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f5f7fa;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+:global(.dark) .actionBtnSecondary:hover,
+:global(body.dark) .actionBtnSecondary:hover,
+:global(html.dark) .actionBtnSecondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
