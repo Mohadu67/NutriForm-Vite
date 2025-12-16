@@ -63,7 +63,17 @@ const conversationSchema = new mongoose.Schema(
     hiddenBy: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
-    }]
+    }],
+
+    // Paramètres par utilisateur (sourdine, messages temporaires)
+    settings: {
+      type: Map,
+      of: {
+        isMuted: { type: Boolean, default: false },
+        tempMessagesDuration: { type: Number, default: 0 } // en heures, 0 = désactivé
+      },
+      default: {}
+    }
   },
   {
     timestamps: true

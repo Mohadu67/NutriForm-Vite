@@ -1,0 +1,56 @@
+/* Link Preview - Compact */
+
+.previewCard {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  max-width: 280px;
+  transition: background 0.15s ease;
+  backdrop-filter: blur(4px);
+}
+
+:global(.dark) .previewCard {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.previewCard:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+:global(.dark) .previewCard:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.previewContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.previewDomain {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.previewTitle {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+:global(.dark) .previewTitle {
+  color: #f0f0f0;
+}

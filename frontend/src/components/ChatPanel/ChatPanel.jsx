@@ -4,9 +4,12 @@ import {
   getConversations,
   getMessages,
   sendMessage,
-  markMessagesAsRead
+  markMessagesAsRead,
+  deleteConversation,
+  updateConversationSettings
 } from '../../shared/api/matchChat';
 import { MessageCircleIcon } from '../Icons/GlobalIcons';
+import ChatSettings from '../Chat/ChatSettings';
 import styles from './ChatPanel.module.css';
 
 export default function ChatPanel({ isOpen, onClose }) {
@@ -17,6 +20,7 @@ export default function ChatPanel({ isOpen, onClose }) {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -91,6 +95,38 @@ export default function ChatPanel({ isOpen, onClose }) {
     setView('list');
     setActiveConversation(null);
     setMessages([]);
+  };
+
+  // Handlers pour les paramètres du chat
+  const handleDeleteConversation = async (conversationId) => {
+    try {
+      await deleteConversation(conversationId);
+      setConversations(prev => prev.filter(c => c._id !== conversationId));
+      goBackToList();
+      toast.success('Conversation supprimée');
+    } catch {
+      toast.error('Erreur lors de la suppression');
+    }
+  };
+
+  const handleMuteConversation = async (conversationId, isMuted) => {
+    try {
+      await updateConversationSettings(conversationId, { isMuted });
+      setActiveConversation(prev => prev ? { ...prev, isMuted } : null);
+      toast.success(isMuted ? 'Conversation mise en sourdine' : 'Notifications réactivées');
+    } catch {
+      toast.error('Erreur lors de la mise à jour');
+    }
+  };
+
+  const handleSetTempMessages = async (conversationId, duration) => {
+    try {
+      await updateConversationSettings(conversationId, { tempMessagesDuration: duration });
+      setActiveConversation(prev => prev ? { ...prev, tempMessagesDuration: duration } : null);
+      toast.success(duration > 0 ? `Messages temporaires (${duration}h)` : 'Messages temporaires désactivés');
+    } catch {
+      toast.error('Erreur lors de la mise à jour');
+    }
   };
 
   const formatTimestamp = (timestamp) => {
@@ -211,6 +247,9 @@ export default function ChatPanel({ isOpen, onClose }) {
                   }
                   alt={activeConversation?.otherUser.pseudo}
                   className={styles.chatAvatar}
+                  onClick={() => setShowSettings(true)}
+                  style={{ cursor: 'pointer' }}
+                  title="Paramètres du chat"
                 />
                 <div className={styles.chatUserDetails}>
                   <h3>{activeConversation?.otherUser.pseudo || 'Utilisateur'}</h3>
@@ -278,6 +317,17 @@ export default function ChatPanel({ isOpen, onClose }) {
           )}
         </div>
       </div>
+
+      {/* Modal paramètres du chat */}
+      {showSettings && activeConversation && (
+        <ChatSettings
+          conversation={activeConversation}
+          onClose={() => setShowSettings(false)}
+          onDelete={handleDeleteConversation}
+          onMute={handleMuteConversation}
+          onSetTempMessages={handleSetTempMessages}
+        />
+      )}
     </div>
   );
 }

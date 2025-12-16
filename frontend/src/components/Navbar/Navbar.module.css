@@ -1165,10 +1165,20 @@
   border-radius: var(--radius-full);
   object-fit: cover;
   border: 2px solid var(--color-border);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.chatProfileImage:hover {
+  transform: scale(1.08);
+  border-color: var(--color-primary);
 }
 
 :global(.dark) .chatProfileImage {
   border-color: rgba(255, 255, 255, 0.15);
+}
+
+:global(.dark) .chatProfileImage:hover {
+  border-color: var(--color-primary);
 }
 
 .chatProfileImageAI {

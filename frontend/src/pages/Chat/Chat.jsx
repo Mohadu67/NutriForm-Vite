@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
+import MessageContent from '../../components/Chat/MessageContent';
 import {
   getOrCreateConversation,
   getMessages,
@@ -10,6 +11,28 @@ import {
   markMessagesAsRead
 } from '../../shared/api/matchChat';
 import styles from './Chat.module.css';
+
+// Composant Message memoizé
+const ChatMessage = memo(function ChatMessage({ msg, isOwn, formatTime }) {
+  return (
+    <div className={`${styles.message} ${isOwn ? styles.messageSent : styles.messageReceived}`}>
+      <div className={styles.messageBubble}>
+        {msg.type === 'text' && (
+          <MessageContent content={msg.content} />
+        )}
+        {msg.type === 'location' && (
+          <div className={styles.locationMessage}>
+            <p>📍 {msg.content}</p>
+            {msg.metadata?.address && (
+              <p className={styles.address}>{msg.metadata.address}</p>
+            )}
+          </div>
+        )}
+        <span className={styles.timestamp}>{formatTime}</span>
+      </div>
+    </div>
+  );
+});
 
 export default function Chat() {
   const { matchId } = useParams();
@@ -88,44 +111,45 @@ export default function Chat() {
     }
   };
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
-  const formatTimestamp = (timestamp) => {
+  // Memoize le calcul de l'ID utilisateur courant
+  const currentUserId = useMemo(() => {
+    if (!conversation?.participants || !otherUser) return null;
+    return conversation.participants.find(p => p._id !== otherUser._id)?._id;
+  }, [conversation?.participants, otherUser]);
+
+  // Fonction de formatage stable (pure function)
+  const formatTimestamp = useCallback((timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diff = now - date;
 
-    // Moins de 1 minute
     if (diff < 60000) return 'À l\'instant';
-
-    // Moins de 1 heure
     if (diff < 3600000) {
       const mins = Math.floor(diff / 60000);
       return `Il y a ${mins} min`;
     }
 
-    // Aujourd'hui
     if (date.toDateString() === now.toDateString()) {
       return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     }
 
-    // Hier
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
     if (date.toDateString() === yesterday.toDateString()) {
       return `Hier à ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
     }
 
-    // Autre jour
     return date.toLocaleDateString('fr-FR', {
       day: 'numeric',
       month: 'short',
       hour: '2-digit',
       minute: '2-digit'
     });
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -203,31 +227,12 @@ export default function Chat() {
             </div>
           ) : (
             messages.map((msg) => (
-              <div
+              <ChatMessage
                 key={msg._id}
-                className={`${styles.message} ${
-                  msg.senderId._id === conversation.participants.find(p =>
-                    p._id !== otherUser._id
-                  )?._id ? styles.messageSent : styles.messageReceived
-                }`}
-              >
-                <div className={styles.messageBubble}>
-                  {msg.type === 'text' && (
-                    <p className={styles.messageContent}>{msg.content}</p>
-                  )}
-                  {msg.type === 'location' && (
-                    <div className={styles.locationMessage}>
-                      <p>📍 {msg.content}</p>
-                      {msg.metadata?.address && (
-                        <p className={styles.address}>{msg.metadata.address}</p>
-                      )}
-                    </div>
-                  )}
-                  <span className={styles.timestamp}>
-                    {formatTimestamp(msg.createdAt)}
-                  </span>
-                </div>
-              </div>
+                msg={msg}
+                isOwn={msg.senderId?._id === currentUserId || msg.senderId === currentUserId}
+                formatTime={formatTimestamp(msg.createdAt)}
+              />
             ))
           )}
           <div ref={messagesEndRef} />

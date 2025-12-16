@@ -25,7 +25,7 @@ async function getConversations(req, res) {
       isActive: true,
       hiddenBy: { $ne: userId }
     })
-      .select('_id participants matchId lastMessage isActive createdAt updatedAt unreadCount')
+      .select('_id participants matchId lastMessage isActive createdAt updatedAt unreadCount settings')
       .populate({
         path: 'participants',
         select: 'pseudo prenom photo'
@@ -92,7 +92,10 @@ async function getConversations(req, res) {
         },
         unreadCount,
         otherUserOnline, // true si l'autre est connecté au WebSocket
-        lastMessageRead // true si mon message a été lu, false si pas lu, null si c'est pas moi qui ai envoyé
+        lastMessageRead, // true si mon message a été lu, false si pas lu, null si c'est pas moi qui ai envoyé
+        // Paramètres du chat pour cet utilisateur
+        isMuted: conv.settings?.get?.(userId)?.isMuted || false,
+        tempMessagesDuration: conv.settings?.get?.(userId)?.tempMessagesDuration || 0
       };
     }).filter(Boolean); // Enlever les null
 
@@ -691,6 +694,57 @@ async function getUnreadCount(req, res) {
   }
 }
 
+/**
+ * Mettre à jour les paramètres d'une conversation
+ * PATCH /api/match-chat/conversation/:conversationId/settings
+ */
+async function updateConversationSettings(req, res) {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.userId;
+    const { isMuted, tempMessagesDuration } = req.body;
+
+    // Récupérer la conversation
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation non trouvée.' });
+    }
+
+    // Vérifier que l'utilisateur fait partie de la conversation
+    if (!conversation.includesUser(userId)) {
+      return res.status(403).json({ error: 'Vous ne faites pas partie de cette conversation.' });
+    }
+
+    // Initialiser les settings si nécessaire
+    if (!conversation.settings) {
+      conversation.settings = {};
+    }
+    if (!conversation.settings[userId]) {
+      conversation.settings[userId] = {};
+    }
+
+    // Mettre à jour les paramètres
+    if (typeof isMuted === 'boolean') {
+      conversation.settings[userId].isMuted = isMuted;
+    }
+    if (typeof tempMessagesDuration === 'number') {
+      conversation.settings[userId].tempMessagesDuration = tempMessagesDuration;
+    }
+
+    // Sauvegarder
+    conversation.markModified('settings');
+    await conversation.save();
+
+    res.status(200).json({
+      success: true,
+      settings: conversation.settings[userId]
+    });
+  } catch (error) {
+    logger.error('Erreur updateConversationSettings:', error);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour des paramètres.' });
+  }
+}
+
 module.exports = {
   getConversations,
   getOrCreateConversation,
@@ -700,5 +754,6 @@ module.exports = {
   deleteMessage,
   blockConversation,
   deleteConversation,
-  getUnreadCount
+  getUnreadCount,
+  updateConversationSettings
 };

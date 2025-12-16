@@ -95,6 +95,17 @@ export const deleteConversation = async (conversationId) => {
 };
 
 /**
+ * Mettre à jour les paramètres d'une conversation
+ * @param {string} conversationId - ID de la conversation
+ * @param {object} settings - { isMuted?, tempMessagesDuration? }
+ * @returns {Promise} Résultat
+ */
+export const updateConversationSettings = async (conversationId, settings) => {
+  const response = await client.patch(`/match-chat/conversation/${conversationId}/settings`, settings);
+  return response.data;
+};
+
+/**
  * Partager sa localisation dans le chat
  * @param {string} conversationId - ID de la conversation
  * @param {object} locationData - { latitude, longitude, address }

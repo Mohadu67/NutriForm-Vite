@@ -12,7 +12,8 @@ const {
   deleteMessage,
   blockConversation,
   deleteConversation,
-  getUnreadCount
+  getUnreadCount,
+  updateConversationSettings
 } = require('../controllers/matchChat.controller');
 
 /**
@@ -46,5 +47,8 @@ router.post('/:conversationId/block', auth, premium, blockConversation);
 
 // Supprimer une conversation complète
 router.delete('/conversation/:conversationId', auth, premium, deleteConversation);
+
+// Mettre à jour les paramètres d'une conversation
+router.patch('/conversation/:conversationId/settings', auth, premium, updateConversationSettings);
 
 module.exports = router;

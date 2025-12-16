@@ -1,0 +1,310 @@
+/* Chat Settings Modal */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 340px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+:global(.dark) .modal {
+  background: #1e2128;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, rgba(184, 221, 209, 0.2), rgba(247, 177, 134, 0.2));
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+:global(.dark) .header {
+  background: linear-gradient(135deg, rgba(184, 221, 209, 0.1), rgba(247, 177, 134, 0.1));
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.userInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.userInfo h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:global(.dark) .userInfo h3 {
+  color: #f7f6f2;
+}
+
+.userInfo p {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+:global(.dark) .userInfo p {
+  color: #999;
+}
+
+.closeBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  color: #666;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.closeBtn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+:global(.dark) .closeBtn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #999;
+}
+
+:global(.dark) .closeBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+/* Options */
+.options {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.03);
+  color: #1a1a1a;
+  font-size: 0.9rem;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.option:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+:global(.dark) .option {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f7f6f2;
+}
+
+:global(.dark) .option:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.option.active {
+  background: rgba(184, 221, 209, 0.2);
+}
+
+:global(.dark) .option.active {
+  background: rgba(184, 221, 209, 0.15);
+}
+
+.optionIcon {
+  font-size: 1.1rem;
+}
+
+.optionText {
+  flex: 1;
+}
+
+.optionBadge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  background: rgba(184, 221, 209, 0.5);
+  color: #2d5a4a;
+}
+
+:global(.dark) .optionBadge {
+  background: rgba(184, 221, 209, 0.3);
+  color: #b8ddd1;
+}
+
+/* Option Group (messages temporaires) */
+.optionGroup {
+  padding: 0.875rem 1rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.03);
+}
+
+:global(.dark) .optionGroup {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.optionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #1a1a1a;
+  font-size: 0.9rem;
+}
+
+:global(.dark) .optionHeader {
+  color: #f7f6f2;
+}
+
+.optionHint {
+  margin: 0.4rem 0 0.75rem 1.85rem;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.tempOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-left: 1.85rem;
+}
+
+.tempBtn {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  background: transparent;
+  color: #666;
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tempBtn:hover {
+  border-color: #f7b186;
+  color: #f7b186;
+}
+
+.tempBtn.tempActive {
+  background: #f7b186;
+  border-color: #f7b186;
+  color: #fff;
+}
+
+:global(.dark) .tempBtn {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #999;
+}
+
+:global(.dark) .tempBtn:hover {
+  border-color: #f7b186;
+  color: #f7b186;
+}
+
+:global(.dark) .tempBtn.tempActive {
+  background: #f7b186;
+  border-color: #f7b186;
+  color: #1a1a1a;
+}
+
+/* Danger (supprimer) */
+.option.danger {
+  color: #dc3545;
+}
+
+.option.danger:hover {
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.option.confirmMode {
+  background: #dc3545;
+  color: #fff;
+}
+
+.option.confirmMode:hover {
+  background: #c82333;
+}
+
+.cancelBtn {
+  padding: 0.75rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #666;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+
+.cancelBtn:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+:global(.dark) .cancelBtn {
+  color: #999;
+}
+
+:global(.dark) .cancelBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
