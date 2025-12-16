@@ -42,13 +42,15 @@ export default defineConfig(async ({ mode }) => {
           manualChunks(id) {
             // Vendor chunks - separés pour meilleur caching
             if (id.includes('node_modules')) {
-              if (id.includes('react-dom') || id.includes('react-router')) {
+              // React core DOIT être dans le même chunk que react-dom
+              if (id.includes('/react/') || id.includes('react-dom') || id.includes('react-router') || id.includes('scheduler')) {
                 return 'vendor-react';
               }
               if (id.includes('framer-motion')) {
                 return 'vendor-ui';
               }
-              if (id.includes('leaflet') || id.includes('react-leaflet')) {
+              // leaflet sans react-leaflet (react-leaflet reste dans le bundle principal)
+              if (id.includes('leaflet') && !id.includes('react-leaflet')) {
                 return 'vendor-maps';
               }
               if (id.includes('recharts') || id.includes('d3-')) {

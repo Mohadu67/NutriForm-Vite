@@ -61,6 +61,92 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
       const weightDiff = lastBest.weightKg - prevBest.weightKg;
       const repsDiff = lastBest.reps - prevBest.reps;
 
+      // Calcul du volume pour comparaison intelligente
+      const lastVolume = lastBest.weightKg * lastBest.reps;
+      const prevVolume = prevBest.weightKg * prevBest.reps;
+      const volumeDiff = lastVolume - prevVolume;
+      const volumePercent = prevVolume > 0 ? Math.round((volumeDiff / prevVolume) * 100) : 0;
+
+      // ================================================
+      // NOUVEAU: Gestion Poids ↓ + Reps ↑ (adaptation)
+      // ================================================
+      if (weightDiff < 0 && repsDiff > 0) {
+        // Le volume a-t-il augmenté malgré la baisse de poids ?
+        if (volumeDiff >= 0) {
+          // Volume maintenu ou augmenté = bonne adaptation
+          suggestion.weight = lastBest.weightKg;
+          suggestion.reps = lastBest.reps;
+          suggestion.progressionType = 'volume_maintained';
+          suggestion.message = `✅ ${Math.abs(weightDiff)}kg → +${repsDiff} reps. Volume OK !`;
+
+          // Si assez de reps, suggérer de remonter le poids
+          if (goal === 'hypertrophy' && lastBest.reps >= 12) {
+            suggestion.weight = lastBest.weightKg + increment;
+            suggestion.reps = 10;
+            suggestion.isProgression = true;
+            suggestion.message = `✅ Adaptation réussie ! Remonte à ${lastBest.weightKg + increment}kg × 10`;
+          } else if (goal === 'strength' && lastBest.reps >= 6) {
+            suggestion.weight = lastBest.weightKg + increment;
+            suggestion.reps = 4;
+            suggestion.isProgression = true;
+            suggestion.message = `✅ Bonne base ! Remonte à ${lastBest.weightKg + increment}kg × 4`;
+          }
+          return suggestion;
+        } else {
+          // Volume diminué mais plus de reps = phase d'adaptation
+          suggestion.weight = lastBest.weightKg;
+          suggestion.reps = lastBest.reps + 1;
+          suggestion.message = `💪 ${lastBest.weightKg}kg × ${lastBest.reps + 1}+ pour compenser`;
+          return suggestion;
+        }
+      }
+
+      // ================================================
+      // NOUVEAU: Gestion Poids ↓ + Reps ↓ (fatigue/déload)
+      // ================================================
+      if (weightDiff < 0 && repsDiff <= 0) {
+        suggestion.weight = lastBest.weightKg;
+        suggestion.reps = lastBest.reps;
+        suggestion.isDeload = true;
+
+        // Grande baisse = probable déload intentionnel
+        if (weightDiff <= -increment * 2) {
+          suggestion.progressionType = 'deload_week';
+          suggestion.message = `🧘 Déload détecté. Reste sur ${lastBest.weightKg}kg`;
+          return suggestion;
+        }
+
+        // Petite baisse + moins de reps = fatigue
+        suggestion.progressionType = 'fatigue_detected';
+        suggestion.message = `💤 Fatigue ? Consolide ${lastBest.weightKg}kg × ${Math.max(lastBest.reps, 8)}`;
+        return suggestion;
+      }
+
+      // ================================================
+      // NOUVEAU: Gestion Poids ↑ + Reps ↓ (progression force)
+      // ================================================
+      if (weightDiff > 0 && repsDiff < 0) {
+        // C'est normal de perdre des reps quand on monte en poids
+        if (repsDiff >= -3) {
+          suggestion.weight = lastBest.weightKg;
+          suggestion.reps = lastBest.reps;
+          suggestion.message = `🔥 +${weightDiff}kg ! Stabilise à ${lastBest.reps}+ reps`;
+
+          // Encourager à récupérer les reps perdues
+          if (goal === 'hypertrophy') {
+            suggestion.reps = Math.min(lastBest.reps + 2, 12);
+            suggestion.message = `🔥 +${weightDiff}kg ! Vise ${suggestion.reps} reps`;
+          }
+          return suggestion;
+        } else {
+          // Trop de reps perdues = poids peut-être trop ambitieux
+          suggestion.weight = lastBest.weightKg;
+          suggestion.reps = lastBest.reps;
+          suggestion.message = `⚠️ +${weightDiff}kg mais -${Math.abs(repsDiff)} reps. Consolide d'abord`;
+          return suggestion;
+        }
+      }
+
       // === HYPERTROPHIE ===
       if (goal === 'hypertrophy') {
         // Si tu as atteint 12+ reps
@@ -81,8 +167,8 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
           return suggestion;
         }
 
-        // Nouveau poids
-        if (weightDiff > 0) {
+        // Nouveau poids stable
+        if (weightDiff > 0 && repsDiff >= 0) {
           suggestion.weight = lastBest.weightKg;
           suggestion.reps = lastBest.reps;
           suggestion.message = `🔥 Stabilise et pousse jusqu'à 12 reps`;
@@ -108,13 +194,24 @@ function calculateMuscuProgression(last, previous, goal = 'hypertrophy', exercis
 
       // === FORCE ===
       if (goal === 'strength') {
-        // Pour la force, progression de poids prioritaire
-        if (lastBest.reps >= 5) {
+        // Vérifier si on a déjà atteint 5+ reps sur les 2 dernières séances
+        const consistentStrength = lastBest.reps >= 5 && prevBest.reps >= 5;
+
+        if (consistentStrength && weightDiff === 0) {
+          // 2 séances à 5+ reps = prêt à monter
           suggestion.weight = lastBest.weightKg + increment;
           suggestion.reps = 3;
           suggestion.isProgression = true;
           suggestion.progressionType = 'strength_increase';
-          suggestion.message = `⚡ ${lastBest.reps} reps → ${lastBest.weightKg + increment}kg × 3-5`;
+          suggestion.message = `⚡ 2 séances à 5+ reps ! → ${lastBest.weightKg + increment}kg × 3-5`;
+          return suggestion;
+        }
+
+        if (lastBest.reps >= 5 && prevBest.reps < 5) {
+          // Première fois à 5+ reps = consolider
+          suggestion.weight = lastBest.weightKg;
+          suggestion.reps = 5;
+          suggestion.message = `💪 Première fois à ${lastBest.reps} reps ! Confirme avant de monter`;
           return suggestion;
         }
 
@@ -237,23 +334,37 @@ function findBestSet(sets) {
   }, sets[0]);
 }
 
-// Détecte si c'est un exercice lower body (progression plus agressive)
+// Détecte si c'est un exercice lower body (progression plus agressive +5kg vs +2.5kg)
 function isLowerBody(exerciseNameOrSet) {
   // Accepte soit un nom d'exercice, soit un set avec exerciceName
   const name = typeof exerciseNameOrSet === 'string'
     ? exerciseNameOrSet
     : exerciseNameOrSet?.exerciseName || exerciseNameOrSet?.name || '';
 
-  const lowerBodyKeywords = [
-    'squat', 'jambe', 'leg', 'cuisse', 'quadriceps', 'ischio',
-    'mollet', 'calf', 'fessier', 'glute', 'deadlift', 'soulevé',
-    'presse', 'press', 'extension', 'curl', 'hack'
-  ];
-
   const normalized = String(name || '')
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
+
+  // Keywords spécifiques lower body (évite les faux positifs comme "bicep curl")
+  const lowerBodyKeywords = [
+    'squat', 'jambe', 'leg press', 'leg extension', 'leg curl',
+    'cuisse', 'quadriceps', 'ischio', 'hamstring',
+    'mollet', 'calf', 'fessier', 'glute', 'hip thrust',
+    'deadlift', 'souleve de terre', 'soulevé de terre',
+    'presse a cuisse', 'hack squat', 'goblet', 'lunge', 'fente'
+  ];
+
+  // Keywords qui indiquent upper body (pour éviter les faux positifs)
+  const upperBodyKeywords = [
+    'bicep', 'tricep', 'bras', 'arm', 'chest', 'pec',
+    'epaule', 'shoulder', 'dos', 'back', 'lat'
+  ];
+
+  // Si contient un keyword upper body, ce n'est pas lower body
+  if (upperBodyKeywords.some(keyword => normalized.includes(keyword))) {
+    return false;
+  }
 
   return lowerBodyKeywords.some(keyword => normalized.includes(keyword));
 }
