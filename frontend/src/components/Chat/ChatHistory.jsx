@@ -4,12 +4,13 @@ import { useChat } from '../../contexts/ChatContext';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 import { isAuthenticated } from '../../shared/api/auth';
 import { storage } from '../../shared/utils/storage';
-import { getConversations, deleteConversation as deleteMatchConv } from '../../shared/api/matchChat';
+import { getConversations, deleteConversation as deleteMatchConv, updateConversationSettings } from '../../shared/api/matchChat';
 import { getAIConversations, deleteAIConversation } from '../../shared/api/chat';
 import { getSubscriptionStatus } from '../../shared/api/subscription';
 import { formatDisplayName } from '../../shared/utils/string';
 import Avatar from '../Shared/Avatar';
 import Alert from '../MessageAlerte/Alert/Alert';
+import ChatSettings from './ChatSettings';
 import { BotIcon, MessageCircleIcon, OnlineIcon } from '../Icons/GlobalIcons';
 import styles from './ChatHistory.module.css';
 
@@ -43,7 +44,7 @@ function ReadReceipt({ isSentByMe, isDelivered, isRead }) {
 }
 
 // Composant ConversationItem avec support long press
-function ConversationItem({ conv, onOpen, onDelete, formatDate, isLongPressActive, onLongPress, onCancelLongPress, currentUserId }) {
+function ConversationItem({ conv, onOpen, onDelete, onOpenSettings, formatDate, isLongPressActive, onLongPress, onCancelLongPress, currentUserId }) {
   const timerRef = useRef(null);
   const touchStartPos = useRef({ x: 0, y: 0 });
 
@@ -96,7 +97,16 @@ function ConversationItem({ conv, onOpen, onDelete, formatDate, isLongPressActiv
       onTouchEnd={handleTouchEnd}
       onContextMenu={(e) => e.preventDefault()}
     >
-      <div className={styles.avatarContainer}>
+      <div
+        className={styles.avatarContainer}
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpenSettings?.();
+        }}
+        role="button"
+        tabIndex={0}
+        title="Paramètres du chat"
+      >
         <Avatar
           src={conv.otherUser?.profile?.profilePicture}
           name={formatDisplayName(conv.otherUser, 'User')}
@@ -107,6 +117,9 @@ function ConversationItem({ conv, onOpen, onDelete, formatDate, isLongPressActiv
           <span className={styles.unreadBadge}>
             {conv.unreadCount > 1 ? conv.unreadCount : ''}
           </span>
+        )}
+        {conv.isMuted && (
+          <span className={styles.mutedBadge}>🔕</span>
         )}
       </div>
       <div className={styles.convContent}>
@@ -158,6 +171,7 @@ export default function ChatHistory({ onLogin }) {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [longPressTarget, setLongPressTarget] = useState(null); // Pour afficher l'option de suppression
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [settingsConversation, setSettingsConversation] = useState(null); // Pour le modal settings
   const cacheTimeRef = useState({ ai: 0, match: 0 })[0];
   const CACHE_DURATION = 30000; // 30 secondes de cache
 
@@ -352,6 +366,52 @@ export default function ChatHistory({ onLogin }) {
 
   const cancelDelete = () => {
     setDeleteConfirm({ show: false, id: null, type: null });
+  };
+
+  // Handlers pour les paramètres du chat
+  const handleMuteConversation = async (conversationId, isMuted) => {
+    try {
+      await updateConversationSettings(conversationId, { isMuted });
+      setMatchConversations(prev => prev.map(conv =>
+        conv._id === conversationId ? { ...conv, isMuted } : conv
+      ));
+      setAlert({
+        show: true,
+        message: isMuted ? 'Conversation mise en sourdine' : 'Notifications réactivées',
+        variant: 'success'
+      });
+      setTimeout(() => setAlert({ show: false, message: '', variant: 'error' }), 2000);
+    } catch (err) {
+      setAlert({ show: true, message: 'Erreur lors de la mise à jour', variant: 'error' });
+    }
+  };
+
+  const handleSetTempMessages = async (conversationId, duration) => {
+    try {
+      await updateConversationSettings(conversationId, { tempMessagesDuration: duration });
+      setMatchConversations(prev => prev.map(conv =>
+        conv._id === conversationId ? { ...conv, tempMessagesDuration: duration } : conv
+      ));
+      setAlert({
+        show: true,
+        message: duration > 0 ? `Messages temporaires activés (${duration}h)` : 'Messages temporaires désactivés',
+        variant: 'success'
+      });
+      setTimeout(() => setAlert({ show: false, message: '', variant: 'error' }), 2000);
+    } catch (err) {
+      setAlert({ show: true, message: 'Erreur lors de la mise à jour', variant: 'error' });
+    }
+  };
+
+  const handleDeleteFromSettings = async (conversationId) => {
+    try {
+      await deleteMatchConv(conversationId);
+      setMatchConversations(prev => prev.filter(conv => conv._id !== conversationId));
+      setAlert({ show: true, message: 'Conversation supprimée', variant: 'success' });
+      setTimeout(() => setAlert({ show: false, message: '', variant: 'error' }), 2000);
+    } catch (err) {
+      setAlert({ show: true, message: 'Erreur lors de la suppression', variant: 'error' });
+    }
   };
 
   // Écouter les mises à jour de conversation via WebSocket
@@ -581,6 +641,7 @@ export default function ChatHistory({ onLogin }) {
                     conv={conv}
                     onOpen={() => openMatchChat(conv)}
                     onDelete={(e) => handleDeleteMatchConversation(conv._id, e)}
+                    onOpenSettings={() => setSettingsConversation(conv)}
                     formatDate={formatDate}
                     isLongPressActive={longPressTarget === conv._id}
                     onLongPress={() => setLongPressTarget(conv._id)}
@@ -623,6 +684,17 @@ export default function ChatHistory({ onLogin }) {
           Annuler
         </button>
       </Alert>
+
+      {/* Modal paramètres du chat */}
+      {settingsConversation && (
+        <ChatSettings
+          conversation={settingsConversation}
+          onClose={() => setSettingsConversation(null)}
+          onDelete={handleDeleteFromSettings}
+          onMute={handleMuteConversation}
+          onSetTempMessages={handleSetTempMessages}
+        />
+      )}
     </div>
   );
 }

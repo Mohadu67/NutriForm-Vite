@@ -1,0 +1,36 @@
+/* Message Content */
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.link {
+  color: #d97706;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(217, 119, 6, 0.4);
+  word-break: break-all;
+  font-weight: 500;
+}
+
+.link:hover {
+  color: #b45309;
+  text-decoration-color: rgba(180, 83, 9, 0.6);
+}
+
+:global(.dark) .link {
+  color: #fbbf24;
+  text-decoration-color: rgba(251, 191, 36, 0.4);
+}
+
+:global(.dark) .link:hover {
+  color: #fcd34d;
+  text-decoration-color: rgba(252, 211, 77, 0.6);
+}

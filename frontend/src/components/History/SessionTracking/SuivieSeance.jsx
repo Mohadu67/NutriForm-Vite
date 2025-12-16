@@ -351,66 +351,87 @@ export default function SuivieSeance({
     return Math.round(sum / values.length);
   }, [sessionDataset, serverData]);
 
-  const weightMetrics = useMemo(
-    () => [
-      { label: "IMC", value: toDisplay(formatStat("imc")), accent: false },
+  const getImcCategory = useCallback((imcValue) => {
+    const num = Number(imcValue);
+    if (!Number.isFinite(num)) return null;
+    if (num < 18.5) return { label: "Insuffisant", color: "#f0ad4e" };
+    if (num < 25) return { label: "Normal", color: "#5cb85c" };
+    if (num < 30) return { label: "Surpoids", color: "#f0ad4e" };
+    return { label: "Obésité", color: "#d9534f" };
+  }, []);
+
+  const weightMetrics = useMemo(() => {
+    const imcRaw = getRawStat("imc");
+    const imcFormatted = formatStat("imc");
+    const imcCat = getImcCategory(imcRaw);
+    const imcDisplay = imcFormatted && imcCat
+      ? `${imcFormatted} (${imcCat.label})`
+      : imcFormatted;
+
+    return [
       {
-        label: "Dernier poids",
+        label: "Poids actuel",
         value: toDisplay(formatFromKeys(["lastWeight", "latestWeight"])),
         accent: false,
       },
       {
-        label: "Poids initial",
-        value: toDisplay(formatStat("initialWeight")),
+        label: "IMC",
+        value: toDisplay(imcDisplay),
         accent: false,
       },
       {
-        label: "Poids actuel (calculé)",
-        value: toDisplay(formatStat("latestWeight")),
-        accent: false,
-      },
-      {
-        label: "Variation de poids",
+        label: "Progression",
         value: toDisplay(formatFromKeys(["weightChange", "variation"])),
         accent: true,
       },
-    ],
-    [formatStat, formatFromKeys, toDisplay]
-  );
+    ];
+  }, [formatStat, formatFromKeys, toDisplay, getRawStat, getImcCategory]);
 
   const calorieMetrics = useMemo(() => {
-    const daily = formatFromKeys(["calories", "dailyCalories"]);
-    const averagePerWorkout =
-      formatFromKeys(["avgCaloriesPerWorkout7d", "avgCaloriesPerWorkout"]) ??
-      (avgCaloriesPerSession != null ? `${avgCaloriesPerSession} kcal` : null);
     const lastBurned =
       formatStat("lastCaloriesBurned") ??
       (lastSessionCalories != null ? `${lastSessionCalories} kcal` : null);
     const weeklyBurned = formatFromKeys(["caloriesBurnedWeek", "calories7d"]);
+    const sessionsCount = getRawStat("workoutsCount7d");
+    const sessionsNum = Number(sessionsCount) || 0;
 
-    return [
+    // Calculer la moyenne à partir du total / nombre de séances (cohérent)
+    let averageValue = null;
+    if (weeklyBurned && sessionsNum > 1) {
+      const totalNum = parseInt(String(weeklyBurned).replace(/[^\d]/g, ''), 10);
+      if (totalNum > 0) {
+        averageValue = `${Math.round(totalNum / sessionsNum)} kcal`;
+      }
+    }
+
+    const metrics = [
       {
-        label: "Calories journalières",
-        value: toDisplay(daily),
+        label: "Dernière séance",
+        value: toDisplay(lastBurned),
         accent: true,
       },
-      {
-        label: "Calories moy./séance",
-        value: toDisplay(averagePerWorkout),
+    ];
+
+    // N'afficher la moyenne que s'il y a plus d'une séance (sinon c'est redondant)
+    if (sessionsNum > 1 && averageValue) {
+      metrics.push({
+        label: "Moyenne / séance",
+        value: averageValue,
         accent: false,
-      },
-      {
-        label: "Calories brûlées (dernière séance)",
-        value: toDisplay(lastBurned),
-        accent: false,
-      },
-      {
-        label: "Calories brûlées (7 jours)",
+      });
+    }
+
+    // Afficher le total avec le nombre de séances pour plus de clarté
+    if (weeklyBurned) {
+      metrics.push({
+        label: sessionsNum > 1 ? `Total 7j (${sessionsNum} séances)` : "Total 7 jours",
         value: toDisplay(weeklyBurned),
         accent: false,
-      },
-    ];
-  }, [formatFromKeys, formatStat, toDisplay, avgCaloriesPerSession, lastSessionCalories]);
+      });
+    }
+
+    return metrics;
+  }, [formatFromKeys, formatStat, toDisplay, lastSessionCalories, getRawStat]);
 
   const sessionMetrics = useMemo(
     () => [

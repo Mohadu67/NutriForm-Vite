@@ -55,6 +55,7 @@ const recipeRoutes = require('./routes/recipe.route.js');
 const notificationRoutes = require('./routes/notification.route.js');
 const challengeRoutes = require('./routes/challenge.route.js');
 const badgeRoutes = require('./routes/badge.route.js');
+const linkPreviewRoutes = require('./routes/linkPreview.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 const { startChallengeCron } = require('./cron/challengeCron');
@@ -136,7 +137,8 @@ app.use(helmet({
       frameSrc: ["'none'"]
     }
   },
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 
@@ -215,6 +217,7 @@ app.use('/api/recipes', recipeRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/badges', badgeRoutes);
+app.use('/api/link-preview', linkPreviewRoutes);
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
