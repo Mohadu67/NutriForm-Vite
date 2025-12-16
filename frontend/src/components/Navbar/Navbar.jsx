@@ -2,150 +2,63 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChat } from "../../contexts/ChatContext";
 import { useWebSocket } from "../../contexts/WebSocketContext";
+import { usePremiumStatus } from "../../hooks/usePremiumStatus";
 import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
 import { storage } from "../../shared/utils/storage";
-import { getConversations } from "../../shared/api/matchChat";
+import { getConversations, deleteConversation, updateConversationSettings } from "../../shared/api/matchChat";
 
-/**
- * Check if a user object indicates premium status
- * Centralized logic for premium detection
- */
-const checkPremiumStatus = (userData, cachedSubscription = null) => {
-  if (!userData && !cachedSubscription) return false;
-
-  // Check user data properties
-  if (userData) {
-    const userIsPremium =
-      userData?.subscription?.tier === 'premium' ||
-      userData?.subscription?.hasSubscription === true ||
-      userData?.isPremium === true ||
-      userData?.tier === 'premium' ||
-      userData?.subscriptionTier === 'premium' ||
-      userData?.plan === 'premium' ||
-      userData?.role === 'premium' ||
-      userData?.hasPremium === true ||
-      userData?.premium === true ||
-      userData?.hasMatches === true ||
-      userData?.canMatch === true;
-
-    if (userIsPremium) return true;
-  }
-
-  // Check cached subscription
-  if (cachedSubscription) {
-    try {
-      const subscription = typeof cachedSubscription === 'string'
-        ? JSON.parse(cachedSubscription)
-        : cachedSubscription;
-      return subscription?.tier === 'premium' || subscription?.hasSubscription === true;
-    } catch {
-      return false;
-    }
-  }
-
-  return false;
-};
 import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
-import UnifiedChatPanel from "../Chat/UnifiedChatPanel.jsx";
-import ChatHistory from "../Chat/ChatHistory.jsx";
-import ChatSettings from "../Chat/ChatSettings.jsx";
 import NotificationCenter from "../Notifications/NotificationCenter/NotificationCenter";
-import { deleteConversation, updateConversationSettings } from "../../shared/api/matchChat";
+import MobileExpandedMenu from "./MobileExpandedMenu.jsx";
+import DesktopChatOverlay from "./DesktopChatOverlay.jsx";
 
-// Import SVG Icons
 import {
-  ToolsIcon,
-  DumbbellIcon,
-  MessageIcon,
-  HomeIcon,
-  InfoIcon,
-  DashboardIcon,
-  SunIcon,
-  MoonIcon,
-  TrophyIcon,
-  UserIcon,
-  UsersIcon,
-  HelpCircleIcon,
-  UtensilsIcon,
-  CalendarIcon,
-  BellIcon,
-  BotIcon,
-  MessageCircleIcon
+  ToolsIcon, DumbbellIcon, MessageIcon, HomeIcon, InfoIcon,
+  DashboardIcon, SunIcon, MoonIcon, TrophyIcon, UserIcon,
+  UsersIcon, HelpCircleIcon, UtensilsIcon, CalendarIcon
 } from "./NavIcons";
 
 export default function Navbar() {
-  const { isChatOpen, chatView, activeConversation, openChat, closeChat, backToHistory } = useChat() || {};
-  const { on, isConnected } = useWebSocket() || {};
-  // Utilise window.location pour le path initial afin d'éviter les problèmes Safari
-  // useNavigate est gardé car il n'est utilisé que dans les handlers (après hydration)
   const navigate = useNavigate();
+  const { isChatOpen, chatView, activeConversation, openChat, closeChat } = useChat() || {};
+  const { on, isConnected } = useWebSocket() || {};
+  const { isPremium } = usePremiumStatus();
 
+  // State
   const [open, setOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    // Initialiser avec la valeur du localStorage
-    try {
-      const user = storage.get('user');
-      return Boolean(user);
-    } catch {
-      return false;
-    }
-  });
-  const [isPremium, setIsPremium] = useState(() => {
-    try {
-      const user = storage.get('user');
-      const cachedSub = storage.get('subscriptionStatus');
-      return checkPremiumStatus(user, cachedSub);
-    } catch {
-      return false;
-    }
-  });
+  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(storage.get('user')));
   const [darkMode, setDarkMode] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState('login');
   const [isDesktop, setIsDesktop] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1190 : true);
-  const [currentView, setCurrentView] = useState('navigation'); // Pour mobile: 'navigation', 'history' ou 'notifications'
+  const [currentView, setCurrentView] = useState('navigation');
   const [unreadCount, setUnreadCount] = useState(0);
   const [path, setPath] = useState("/");
   const [showChatSettings, setShowChatSettings] = useState(false);
 
-  // Définir le path côté client pour éviter les erreurs Safari avec useLocation
+  // Set path client-side
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setPath((window.location.pathname || "/").toLowerCase());
     }
   }, []);
 
-  // Vérifier le statut de connexion et premium à chaque changement de route
+  // Check login state on route change
   useEffect(() => {
     const user = storage.get('user');
     const hasUser = Boolean(user);
+    if (hasUser !== isLoggedIn) setIsLoggedIn(hasUser);
+  }, [location.pathname, isLoggedIn]);
 
-    if (hasUser !== isLoggedIn) {
-      setIsLoggedIn(hasUser);
-    }
-
-    // Vérifier aussi le statut premium depuis le cache
-    if (hasUser) {
-      const cachedSub = storage.get('subscriptionStatus');
-      const finalPremium = checkPremiumStatus(user, cachedSub);
-      if (finalPremium !== isPremium) {
-        setIsPremium(finalPremium);
-      }
-    }
-  }, [location.pathname]);
-
-  // Detect desktop mode (1190px pour éviter les problèmes sur iPad/tablettes)
+  // Desktop detection
   useEffect(() => {
-    const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 1190);
-    };
-
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1190);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Ouvrir le menu mobile automatiquement quand le chat est ouvert sur mobile
+  // Open mobile menu when chat opens on mobile
   useEffect(() => {
     if (isChatOpen && !isDesktop) {
       setOpen(true);
@@ -153,48 +66,37 @@ export default function Navbar() {
     }
   }, [isChatOpen, isDesktop]);
 
-  // Bloquer le scroll du body quand la popup ou le menu est ouvert
+  // Block body scroll when chat/menu open
   useEffect(() => {
-    // Sur mobile uniquement, utiliser la classe pour gérer le scroll
     if (!isDesktop && (open && (currentView === 'history' || isChatOpen))) {
       document.body.classList.add('chat-open');
     } else if (isChatOpen && isDesktop) {
-      // Sur desktop, garder l'ancien système
       document.body.style.overflow = 'hidden';
     } else {
       document.body.classList.remove('chat-open');
       document.body.style.overflow = '';
     }
-
     return () => {
       document.body.classList.remove('chat-open');
       document.body.style.overflow = '';
     };
   }, [isChatOpen, isDesktop, open, currentView]);
 
-  // Removed unused handleScroll function - can be re-added if needed for future features
-
-
-  // Apply theme to document
+  // Theme management
   const setDocumentTheme = useCallback((isDark) => {
-    if (typeof document === 'undefined' || typeof window === 'undefined') return;
-
+    if (typeof document === 'undefined') return;
     const root = document.documentElement;
     const body = document.body;
     const theme = isDark ? 'dark' : 'light';
-
     root.classList.toggle('dark', isDark);
     root.classList.toggle('light', !isDark);
     body.classList.toggle('dark', isDark);
     body.classList.toggle('light', !isDark);
-
     root.dataset.theme = theme;
     body.dataset.theme = theme;
-
     window.dispatchEvent(new CustomEvent('themechange', { detail: theme }));
   }, []);
 
-  // Toggle dark mode
   const toggleDarkMode = useCallback(() => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
@@ -202,8 +104,6 @@ export default function Navbar() {
     setDocumentTheme(newDarkMode);
   }, [darkMode, setDocumentTheme]);
 
-
-  // Initialize dark mode
   useEffect(() => {
     const savedTheme = storage.get('darkMode');
     const isDark = savedTheme === 'true';
@@ -211,152 +111,54 @@ export default function Navbar() {
     setDocumentTheme(isDark);
   }, [setDocumentTheme]);
 
-  // Gestion du hash pour ouvrir la popup de connexion
+  // Handle hash for login popup
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.substring(1); // Enlever le #
-      if (hash === 'login') {
-        setPopupView('login');
-        setIsPopupOpen(true);
-        // Nettoyer le hash après ouverture
-        window.history.replaceState(null, '', window.location.pathname + window.location.search);
-      } else if (hash === 'signup') {
-        setPopupView('create');
+      const hash = window.location.hash.substring(1);
+      if (hash === 'login' || hash === 'signup') {
+        setPopupView(hash === 'signup' ? 'create' : 'login');
         setIsPopupOpen(true);
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
       }
     };
-
-    // Vérifier au montage
     handleHashChange();
-
-    // Écouter les changements de hash
     window.addEventListener('hashchange', handleHashChange);
-
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Monitor login state and premium status - avec httpOnly cookies
+  // Monitor auth state
   useEffect(() => {
     let isMounted = true;
-    const retryCountRef = { current: 0 };
-    const MAX_RETRIES = 2;
-    let hasSucceeded = false;
-
     const updateLoginState = async () => {
-      // Si déjà réussi ou trop d'essais échoués, ne plus essayer
-      if (hasSucceeded || retryCountRef.current >= MAX_RETRIES) {
-        return;
-      }
-
-      // Vérifier d'abord si on a des données utilisateur en cache
-      const cachedUser = storage.get('user');
-      const hasLocalData = Boolean(cachedUser);
-
       try {
         const response = await secureApiCall('/me');
-
         if (!isMounted) return;
-
         if (response.ok) {
-          hasSucceeded = true;
-          retryCountRef.current = 0;
-
-          // Récupérer les données utilisateur
           const userData = await response.json();
-
-          // IMPORTANT: Stocker dans localStorage pour que isAuthenticated() fonctionne
           storage.set("user", userData);
           storage.set("userId", userData.id);
-
           setIsLoggedIn(true);
-
-          // Check premium status using centralized helper
-          const cachedSub = storage.get('subscriptionStatus');
-          const finalPremiumStatus = checkPremiumStatus(userData, cachedSub);
-
-          if (finalPremiumStatus) {
-            setIsPremium(true);
-            // Update cache if not already set
-            if (!cachedSub) {
-              storage.set('subscriptionStatus', {
-                tier: 'premium',
-                hasSubscription: true
-              });
-            }
-          } else {
-            // Check if user has previously used premium features
-            const hasUsedPremiumFeatures = localStorage.getItem('hasUsedMatching') === 'true';
-            if (hasUsedPremiumFeatures) {
-              setIsPremium(true);
-              storage.set('subscriptionStatus', {
-                tier: 'premium',
-                hasSubscription: true
-              });
-            } else {
-              setIsPremium(false);
-            }
-          }
-        } else if (response.status === 401) {
-          // IMPORTANT: Ne pas déconnecter immédiatement si on a des données locales
-          // Le 401 peut être temporaire (problème réseau, timing, etc.)
-          // On laisse l'utilisateur connecté visuellement et on réessaye
-          retryCountRef.current++;
-
-          if (retryCountRef.current >= MAX_RETRIES) {
-            hasSucceeded = true; // Arrêter les essais
-            // Seulement maintenant on peut déconnecter si vraiment pas authentifié
-            if (!hasLocalData) {
-              setIsLoggedIn(false);
-              setIsPremium(false);
-            }
-            // Si on avait des données locales, on garde l'état connecté
-            // Le prochain refresh validera l'authentification
-          }
+        } else if (response.status === 401 && !storage.get('user')) {
+          setIsLoggedIn(false);
         }
-      } catch (err) {
-        retryCountRef.current++;
-        // Si erreur 'Not authenticated', arrêter immédiatement
-        if (err.message === 'Not authenticated') {
-          hasSucceeded = true;
-          // Ne déconnecter que si pas de données locales
-          if (!hasLocalData) {
-            setIsLoggedIn(false);
-            setIsPremium(false);
-          }
-        } else if (retryCountRef.current >= MAX_RETRIES) {
-          // En cas d'erreur réseau, garder l'état actuel si on a des données locales
-          if (!hasLocalData) {
-            setIsLoggedIn(false);
-            setIsPremium(false);
-          }
-        }
+      } catch {
+        if (!storage.get('user')) setIsLoggedIn(false);
       }
     };
 
-    // Premier appel au montage
     updateLoginState();
 
-    // Écouter les événements de connexion personnalisés
     const handleLoginSuccess = () => {
-      hasSucceeded = false;
-      retryCountRef.current = 0;
-      invalidateAuthCache(); // Invalider le cache avant de refaire l'appel
+      invalidateAuthCache();
       updateLoginState();
     };
-
-    // Écouter les événements de déconnexion
     const handleLogoutEvent = () => {
       setIsLoggedIn(false);
-      setIsPremium(false);
       invalidateAuthCache();
     };
 
     window.addEventListener('userLoggedIn', handleLoginSuccess);
     window.addEventListener('userLogout', handleLogoutEvent);
-
     return () => {
       isMounted = false;
       window.removeEventListener('userLoggedIn', handleLoginSuccess);
@@ -364,7 +166,7 @@ export default function Navbar() {
     };
   }, []);
 
-  // Récupérer le compteur de messages non lus
+  // Unread messages count
   useEffect(() => {
     if (!isLoggedIn || !isPremium) {
       setUnreadCount(0);
@@ -376,179 +178,99 @@ export default function Navbar() {
         const { conversations } = await getConversations();
         const total = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
         setUnreadCount(total);
-      } catch (err) {
-        // Si erreur 401/403, l'utilisateur n'est pas authentifié ou pas premium
-        if (err?.response?.status === 401 || err?.response?.status === 403) {
-          setUnreadCount(0);
-        }
-        // Erreur silencieuse pour les autres cas
+      } catch {
+        setUnreadCount(0);
       }
     };
 
-    // Attendre 500ms avant le premier appel pour laisser le temps à l'auth de se mettre en place
-    const initialTimeout = setTimeout(updateUnreadCount, 500);
-
-    // Mettre à jour toutes les 60 secondes (fallback)
+    const timeout = setTimeout(updateUnreadCount, 500);
     const interval = setInterval(updateUnreadCount, 60000);
-
-    // Écouter les événements de nouveaux messages
     const handleNewMessage = () => updateUnreadCount();
     window.addEventListener('newMessage', handleNewMessage);
 
     return () => {
-      clearTimeout(initialTimeout);
+      clearTimeout(timeout);
       clearInterval(interval);
       window.removeEventListener('newMessage', handleNewMessage);
     };
   }, [isLoggedIn, isPremium]);
 
-  // Écouter les mises à jour de conversation via WebSocket
+  // WebSocket conversation updates
   useEffect(() => {
     if (!isConnected || !isLoggedIn || !isPremium) return;
-
-    const handleConversationUpdate = ({ unreadIncrement, unreadDecrement }) => {
-      if (unreadIncrement) {
-        // Incrémenter le badge immédiatement
-        setUnreadCount(prev => prev + 1);
-      } else if (unreadDecrement) {
-        // Décrémenter le badge
-        setUnreadCount(prev => Math.max(0, prev - unreadDecrement));
-      }
+    const handleUpdate = ({ unreadIncrement, unreadDecrement }) => {
+      if (unreadIncrement) setUnreadCount(prev => prev + 1);
+      else if (unreadDecrement) setUnreadCount(prev => Math.max(0, prev - unreadDecrement));
     };
-
-    const cleanup = on('conversation_updated', handleConversationUpdate);
-
-    return cleanup;
+    return on('conversation_updated', handleUpdate);
   }, [isConnected, isLoggedIn, isPremium, on]);
 
-  // Handlers pour les paramètres du chat
+  // Chat settings handlers
   const handleChatSettingsDelete = async (conversationId) => {
     try {
       await deleteConversation(conversationId);
       setShowChatSettings(false);
-      backToHistory?.();
-    } catch {
-      // Erreur silencieuse
-    }
+    } catch { /* silent */ }
   };
 
   const handleChatSettingsMute = async (conversationId, isMuted) => {
-    try {
-      await updateConversationSettings(conversationId, { isMuted });
-    } catch {
-      // Erreur silencieuse
-    }
+    try { await updateConversationSettings(conversationId, { isMuted }); } catch { /* silent */ }
   };
 
   const handleChatSettingsTempMessages = async (conversationId, duration) => {
-    try {
-      await updateConversationSettings(conversationId, { tempMessagesDuration: duration });
-    } catch {
-      // Erreur silencieuse
-    }
+    try { await updateConversationSettings(conversationId, { tempMessagesDuration: duration }); } catch { /* silent */ }
   };
 
-  // Main navigation links (always visible on mobile bottom nav) - Les plus importants
+  // Navigation links
   const mainLinks = useMemo(() => [
-    {
-      label: null, // Icon only for home
-      path: "/",
-      icon: <HomeIcon size={20} />
-    },
-    {
-      label: "Exercices",
-      path: "/exo",
-      icon: <DumbbellIcon size={20} />
-    },
-    {
-      label: "Programmes",
-      path: "/programs",
-      icon: <CalendarIcon size={20} />
-    }
+    { label: null, path: "/", icon: <HomeIcon size={20} /> },
+    { label: "Exercices", path: "/exo", icon: <DumbbellIcon size={20} /> },
+    { label: "Programmes", path: "/programs", icon: <CalendarIcon size={20} /> }
   ], []);
 
-  // Secondary navigation links (in expanded menu) - Les moins importants
   const secondaryLinks = useMemo(() => {
     const links = [];
-
-    // Dashboard visible SEULEMENT si connecté
     if (isLoggedIn) {
       links.push({ label: "Dashboard", path: "/dashboard", icon: <DashboardIcon size={28} /> });
     }
-
-    // Si premium: montrer Partenaires
     if (isLoggedIn && isPremium) {
-      links.push({
-        label: 'Partenaires',
-        path: "/matching",
-        icon: <UsersIcon size={28} />,
-        isPremium: true
-      });
+      links.push({ label: 'Partenaires', path: "/matching", icon: <UsersIcon size={28} />, isPremium: true });
     }
-
-    // Liens toujours visibles
     links.push(
       { label: 'Recettes', path: "/recettes", icon: <UtensilsIcon size={28} /> },
       { label: "Outils", path: "/outils", icon: <ToolsIcon size={28} /> },
-      { label: "À propos", path: "/about", icon: <InfoIcon size={28} /> },
+      { label: "A propos", path: "/about", icon: <InfoIcon size={28} /> },
       { label: 'FAQ', path: "/contact", icon: <HelpCircleIcon size={28} /> }
     );
-
     return links;
   }, [isLoggedIn, isPremium]);
 
-  // Close menu handler
+  // Handlers
   const closeMenu = useCallback(() => {
     setOpen(false);
     setCurrentView('navigation');
-    if (!isDesktop && isChatOpen) {
-      closeChat();
-    }
+    if (!isDesktop && isChatOpen) closeChat();
   }, [isDesktop, isChatOpen, closeChat]);
 
-  // Reset to navigation when opening (sauf si le chat est ouvert)
-  useEffect(() => {
-    if (open && !isDesktop && !isChatOpen) {
-      setCurrentView('navigation');
-    }
-  }, [open, isDesktop, isChatOpen]);
-
-  // Navigate and close menu
   const navigateAndClose = useCallback((targetPath) => {
     navigate(targetPath);
     setOpen(false);
   }, [navigate]);
 
-  // Open popup
   const openPopup = useCallback((view) => {
     setPopupView(view);
     setIsPopupOpen(true);
     setOpen(false);
   }, []);
 
-  // Open chat history from navigation
   const openChatHistory = useCallback(() => {
     setCurrentView('history');
-    if (isDesktop) {
-      openChat();
-    } else {
-      setOpen(true);
-    }
+    if (isDesktop) openChat();
+    else setOpen(true);
   }, [isDesktop, openChat]);
 
-  // Handle messages button click - always open chat history
-  const handleMessagesClick = useCallback(() => {
-    // Toujours ouvrir l'historique qui montre IA + Matchs
-    openChatHistory();
-  }, [openChatHistory]);
+  const handleMessagesClick = useCallback(() => openChatHistory(), [openChatHistory]);
 
-  // Close chat history and go back to navigation
-  const closeChatHistory = useCallback(() => {
-    setCurrentView('navigation');
-    closeChat();
-  }, [closeChat]);
-
-  // Handle notifications button click - open notifications panel on mobile
   const handleNotificationsClick = useCallback(() => {
     if (!isDesktop) {
       setCurrentView('notifications');
@@ -556,23 +278,16 @@ export default function Navbar() {
     }
   }, [isDesktop]);
 
-  // Close notifications panel
-  const closeNotificationsPanel = useCallback(() => {
-    setCurrentView('navigation');
-  }, []);
+  useEffect(() => {
+    if (open && !isDesktop && !isChatOpen) setCurrentView('navigation');
+  }, [open, isDesktop, isChatOpen]);
 
   return (
     <>
-      {/* Overlay - closes menu when clicked */}
-      {open && (
-        <div
-          className={styles.overlay}
-          onClick={closeMenu}
-          aria-hidden="true"
-        />
-      )}
+      {/* Overlay */}
+      {open && <div className={styles.overlay} onClick={closeMenu} aria-hidden="true" />}
 
-      {/* Main Dock Navigation - Always visible */}
+      {/* Main Dock Navigation */}
       <nav
         className={`${styles.dock} ${open && !isDesktop ? styles.dockExpanded : ''}`}
         role="navigation"
@@ -580,262 +295,56 @@ export default function Navbar() {
       >
         {/* Mobile Expanded Content */}
         {open && !isDesktop && (
-          <>
-            {/* Panel 1: Navigation */}
-            {currentView === 'navigation' && (
-              <div className={styles.expandedContent}>
-                {/* Header with Logo and Close */}
-                <header className={styles.navHeader}>
-                  <div className={styles.dockLogo}>
-                    <span className={styles.logoText}>Harmo</span>
-                    <span className={styles.logoAccent}>Nith</span>
-                  </div>
-                </header>
-
-                <div className={styles.menuScrollArea}>
-                  {/* Secondary Navigation Section */}
-                  <section className={styles.navSection} aria-labelledby="secondary-nav">
-                    <h2 id="secondary-nav" className={styles.navSectionTitle}>Plus d'options</h2>
-                    <nav className={styles.navLinks} role="menubar">
-                      {secondaryLinks.map((link, index) => {
-                        const Element = link.isAction ? 'button' : 'a';
-                        const props = link.isAction ? {} : { href: link.path };
-
-                        return (
-                          <Element
-                            key={link.path || `secondary-${index}`}
-                            {...props}
-                            className={`${styles.navItem} ${!link.isAction && path === link.path ? styles.navItemActive : ''} ${link.isPremium ? styles.premiumItem : ''}`}
-                            onClick={(e) => {
-                              if (!link.isAction) e.preventDefault();
-                              link.onClick ? link.onClick() : navigateAndClose(link.path);
-                            }}
-                            role="menuitem"
-                            aria-current={!link.isAction && path === link.path ? 'page' : undefined}
-                          >
-                            <span className={styles.navIcon}>{link.icon}</span>
-                            <span className={styles.navLabel}>{link.label}</span>
-                            {link.isPremium && <span className={styles.premiumBadge}>Premium</span>}
-                          </Element>
-                        );
-                      })}
-                    </nav>
-                  </section>
-
-                  {/* Utilities Section */}
-                  <section className={styles.navSection} aria-labelledby="utilities">
-                    <h2 id="utilities" className={styles.navSectionTitle}>Paramètres</h2>
-
-                    {/* Quick Actions */}
-                    <div className={styles.quickActions}>
-                      <button
-                        onClick={toggleDarkMode}
-                        className={styles.utilityBtn}
-                        aria-label={darkMode ? 'Activer le mode clair' : 'Activer le mode sombre'}
-                      >
-                        {darkMode ? <SunIcon size={20} /> : <MoonIcon size={20} />}
-                        <span>{darkMode ? 'Mode clair' : 'Mode sombre'}</span>
-                      </button>
-
-                      <button
-                        onClick={handleMessagesClick}
-                        className={styles.utilityBtn}
-                        aria-label="Messages"
-                        style={{ position: 'relative' }}
-                      >
-                        <MessageIcon size={20} />
-                        <span>Messages</span>
-                        {unreadCount > 0 && (
-                          <span className={styles.notificationBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
-                        )}
-                      </button>
-
-                      {isLoggedIn && (
-                        <button
-                          onClick={handleNotificationsClick}
-                          className={styles.utilityBtn}
-                          aria-label="Notifications"
-                        >
-                          <BellIcon size={20} />
-                          <span>Notifications</span>
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => navigateAndClose('/leaderboard')}
-                        className={styles.utilityBtn}
-                        aria-label="Voir le classement"
-                      >
-                        <TrophyIcon size={20} />
-                        <span>Classement</span>
-                      </button>
-
-                      <button
-                        onClick={() => openPopup(isLoggedIn ? 'profile' : 'login')}
-                        className={`${styles.utilityBtn} ${isLoggedIn ? styles.profileBtn : styles.loginBtn}`}
-                        aria-label={isLoggedIn ? 'Mon profil' : 'Se connecter'}
-                      >
-                        <UserIcon size={20} />
-                        <span>{isLoggedIn ? 'Mon profil' : 'Se connecter'}</span>
-                      </button>
-
-                    </div>
-                  </section>
-                </div>
-              </div>
-            )}
-
-            {/* Panel 2: Chat History */}
-            {currentView === 'history' && chatView === 'history' && (
-              <div className={styles.expandedContent}>
-                <div className={styles.chatHistoryHeader}>
-                  <button
-                    onClick={closeChatHistory}
-                    className={styles.chatCloseBtn}
-                    title="Retour"
-                    aria-label="Back to navigation"
-                  >
-                    ←
-                  </button>
-                  <h3><MessageCircleIcon size={18} /> Messages</h3>
-                </div>
-                <ChatHistory onLogin={() => { closeChat(); openPopup('login'); }} />
-              </div>
-            )}
-
-            {/* Panel 3: Conversation */}
-            {currentView === 'history' && chatView === 'conversation' && activeConversation && (
-              <div className={styles.expandedContent}>
-                <div className={styles.chatHistoryHeader}>
-                  <button
-                    onClick={backToHistory}
-                    className={styles.chatCloseBtn}
-                    title="Retour"
-                    aria-label="Back to chat history"
-                  >
-                    ←
-                  </button>
-                  <div className={styles.chatHeaderProfile}>
-                    {activeConversation.type === 'match' ? (
-                      <>
-                        <img
-                          src={activeConversation.data?.otherUser?.profile?.profilePicture || '/default-avatar.png'}
-                          alt={activeConversation.data?.otherUser?.pseudo || 'User'}
-                          className={styles.chatProfileImage}
-                          onClick={() => setShowChatSettings(true)}
-                          style={{ cursor: 'pointer' }}
-                          title="Paramètres du chat"
-                        />
-                        <h3>{activeConversation.data?.otherUser?.pseudo || activeConversation.data?.otherUser?.prenom || 'Chat'}</h3>
-                      </>
-                    ) : (
-                      <>
-                        <div className={styles.chatProfileImageAI}><BotIcon size={24} /></div>
-                        <h3>Assistant IA</h3>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className={styles.mobileChatPanel}>
-                  <UnifiedChatPanel
-                    conversationId={activeConversation.type === 'ai' ? activeConversation.conversationId : null}
-                    matchConversation={activeConversation.type === 'match' ? activeConversation.data : null}
-                    initialMessage={activeConversation.type === 'ai' ? activeConversation.initialMessage : ''}
-                    onClose={backToHistory}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Panel 4: Notifications */}
-            {currentView === 'notifications' && (
-              <div className={styles.expandedContent}>
-                <div className={styles.chatHistoryHeader}>
-                  <button
-                    onClick={closeNotificationsPanel}
-                    className={styles.chatCloseBtn}
-                    title="Retour"
-                    aria-label="Back to navigation"
-                  >
-                    ←
-                  </button>
-                  <h3><BellIcon size={18} /> Notifications</h3>
-                </div>
-                <NotificationCenter mode="panel" onClose={closeNotificationsPanel} />
-              </div>
-            )}
-          </>
+          <MobileExpandedMenu
+            currentView={currentView}
+            setCurrentView={setCurrentView}
+            secondaryLinks={secondaryLinks}
+            path={path}
+            navigateAndClose={navigateAndClose}
+            darkMode={darkMode}
+            toggleDarkMode={toggleDarkMode}
+            handleMessagesClick={handleMessagesClick}
+            handleNotificationsClick={handleNotificationsClick}
+            unreadCount={unreadCount}
+            isLoggedIn={isLoggedIn}
+            openPopup={openPopup}
+            closeChat={closeChat}
+            setShowChatSettings={setShowChatSettings}
+          />
         )}
-        {/* Desktop: Show full navigation */}
-        {(open || isDesktop) && isDesktop && (
-          <>
-            {/* Secondary links */}
-            <div className={styles.secondaryNav}>
-              {secondaryLinks.map((link, index) => {
-                const Element = link.isAction ? 'button' : 'a';
-                const props = link.isAction ? {} : { href: link.path };
 
-                return (
-                  <Element
-                    key={link.path || `action-${index}`}
-                    {...props}
-                    className={`${styles.dockItem} ${!link.isAction && path === link.path ? styles.dockItemActive : ''} ${link.isPremium ? styles.premiumItem : ''}`}
-                    onClick={(e) => {
-                      if (!link.isAction) e.preventDefault();
-                      link.onClick ? link.onClick() : navigateAndClose(link.path);
-                    }}
-                    title={link.label}
-                  >
-                    <span className={styles.dockIcon}>{link.icon}</span>
-                    <span className={styles.dockLabel}>{link.label}</span>
-                  </Element>
-                );
-              })}
+        {/* Desktop Navigation */}
+        {isDesktop && (
+          <>
+            <div className={styles.secondaryNav}>
+              {secondaryLinks.map((link, index) => (
+                <a
+                  key={link.path || `action-${index}`}
+                  href={link.path}
+                  className={`${styles.dockItem} ${path === link.path ? styles.dockItemActive : ''} ${link.isPremium ? styles.premiumItem : ''}`}
+                  onClick={(e) => { e.preventDefault(); navigateAndClose(link.path); }}
+                  title={link.label}
+                >
+                  <span className={styles.dockIcon}>{link.icon}</span>
+                  <span className={styles.dockLabel}>{link.label}</span>
+                </a>
+              ))}
             </div>
 
-            {/* Utilities */}
             <div className={styles.utilitiesExpanded}>
-              {/* Action buttons */}
               <div className={styles.iconsGroup}>
-                <button
-                  onClick={toggleDarkMode}
-                  className={styles.dockIconBtn}
-                  title={darkMode ? 'Light mode' : 'Dark mode'}
-                  aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                >
+                <button onClick={toggleDarkMode} className={styles.dockIconBtn} title={darkMode ? 'Light mode' : 'Dark mode'}>
                   {darkMode ? <SunIcon size={20} /> : <MoonIcon size={20} />}
                 </button>
-
-                <button
-                  onClick={handleMessagesClick}
-                  className={styles.dockIconBtn}
-                  title="Messages"
-                  aria-label="Messages"
-                  style={{ position: 'relative' }}
-                >
+                <button onClick={handleMessagesClick} className={styles.dockIconBtn} title="Messages" style={{ position: 'relative' }}>
                   <MessageIcon size={20} />
-                  {unreadCount > 0 && (
-                    <span className={styles.notificationBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
-                  )}
+                  {unreadCount > 0 && <span className={styles.notificationBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>}
                 </button>
-
                 {isLoggedIn && <NotificationCenter className={styles.dockIconBtn} />}
-
-                <button
-                  onClick={() => navigateAndClose('/leaderboard')}
-                  className={styles.dockIconBtn}
-                  title="Classement"
-                  aria-label="View leaderboard"
-                >
+                <button onClick={() => navigateAndClose('/leaderboard')} className={styles.dockIconBtn} title="Classement">
                   <TrophyIcon size={20} />
                 </button>
-
-                <button
-                  onClick={() => openPopup(isLoggedIn ? 'profile' : 'login')}
-                  className={styles.dockIconBtn}
-                  title={isLoggedIn ? 'Profil' : 'Connexion'}
-                  aria-label={isLoggedIn ? 'View profile' : 'Sign in'}
-                >
+                <button onClick={() => openPopup(isLoggedIn ? 'profile' : 'login')} className={styles.dockIconBtn} title={isLoggedIn ? 'Profil' : 'Connexion'}>
                   <UserIcon size={20} />
                 </button>
               </div>
@@ -843,74 +352,39 @@ export default function Navbar() {
           </>
         )}
 
-        {/* Separator for desktop only */}
         {isDesktop && <div className={styles.separator} />}
 
-        {/* Main navigation - hidden when viewing a conversation on mobile */}
+        {/* Main Navigation */}
         <div className={`${styles.mainNav} ${chatView === 'conversation' && activeConversation && !isDesktop ? styles.mainNavHidden : ''}`}>
-          {mainLinks.map((link, index) => {
-            const Element = link.isAction ? 'button' : 'a';
-            const props = link.isAction ? {} : { href: link.path };
+          {mainLinks.map((link, index) => (
+            <a
+              key={link.path || `action-${index}`}
+              href={link.path}
+              className={`${styles.dockItem} ${styles.mainDockItem} ${path === link.path ? styles.dockItemActive : ''} ${!link.label ? styles.iconOnly : ''}`}
+              onClick={(e) => { e.preventDefault(); navigate(link.path); }}
+              title={link.label || "Accueil"}
+            >
+              <span className={styles.dockIcon}>{link.icon}</span>
+              {link.label && <span className={styles.dockLabel}>{link.label}</span>}
+            </a>
+          ))}
 
-            return (
-              <Element
-                key={link.path || `action-${index}`}
-                {...props}
-                className={`${styles.dockItem} ${styles.mainDockItem} ${!link.isAction && path === link.path ? styles.dockItemActive : ''} ${!link.label ? styles.iconOnly : ''}`}
-                onClick={(e) => {
-                  if (!link.isAction) e.preventDefault();
-                  link.onClick ? link.onClick() : navigate(link.path);
-                }}
-                title={link.label || "Accueil"}
-              >
-                <span className={styles.dockIcon}>{link.icon}</span>
-                {link.label && <span className={styles.dockLabel}>{link.label}</span>}
-              </Element>
-            );
-          })}
-
-          {/* Expand/Collapse button - Mobile only */}
+          {/* Mobile expand button */}
           {!isDesktop && (
             <button
               className={`${styles.expandBtn} ${open ? styles.expandBtnOpen : ''}`}
               onClick={() => setOpen(!open)}
               aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'}
               aria-expanded={open}
-              title={open ? 'Fermer' : 'Plus'}
             >
               <span className={styles.expandIcon}>
                 {open ? (
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M18 6L6 18M6 6l12 12"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 ) : (
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M3 12h18M3 6h18M3 18h18"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 )}
               </span>
@@ -919,7 +393,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* User Authentication Popup */}
+      {/* User Popup */}
       <PopupUser
         open={isPopupOpen}
         view={popupView}
@@ -928,97 +402,29 @@ export default function Navbar() {
         onLoginSuccess={() => {
           setIsLoggedIn(true);
           setIsPopupOpen(false);
-
-          // Dispatcher un événement pour recharger les infos utilisateur
           window.dispatchEvent(new CustomEvent('userLoggedIn'));
-
-          // Si l'utilisateur était en train de s'abonner, ne pas le rediriger
           const wasSubscribing = sessionStorage.getItem('pendingSubscription');
-          if (wasSubscribing) {
-            sessionStorage.removeItem('pendingSubscription');
-            // Ne pas naviguer, laisser le flux d'abonnement continuer
-          } else {
-            navigate('/dashboard');
-          }
+          if (wasSubscribing) sessionStorage.removeItem('pendingSubscription');
+          else navigate('/dashboard');
         }}
         onLogout={() => {
           setIsLoggedIn(false);
           setPopupView('login');
           setIsPopupOpen(false);
-          if (location.pathname === '/dashboard') {
-            navigate('/');
-          }
+          if (location.pathname === '/dashboard') navigate('/');
         }}
       />
 
-      {/* Unified Chat Panel (Desktop) */}
+      {/* Desktop Chat Overlay */}
       {isChatOpen && isDesktop && (
-        <div className={styles.chatOverlay} onClick={closeChat}>
-          <div className={styles.chatPanelContainer} onClick={(e) => e.stopPropagation()}>
-            {chatView === 'history' ? (
-              <>
-                <div className={styles.chatPanelHeader}>
-                  <h3><MessageCircleIcon size={18} /> Messages</h3>
-                  <button onClick={closeChat} className={styles.chatCloseBtn}>
-                    ✕
-                  </button>
-                </div>
-                <div className={styles.chatPanelBody}>
-                  <ChatHistory onLogin={() => { closeChat(); openPopup('login'); }} />
-                </div>
-              </>
-            ) : chatView === 'conversation' && activeConversation ? (
-              <>
-                <div className={styles.chatPanelHeader}>
-                  <button onClick={backToHistory} className={styles.chatBackBtn}>
-                    ←
-                  </button>
-                  <div className={styles.chatHeaderProfile}>
-                    {activeConversation.type === 'match' ? (
-                      <>
-                        <img
-                          src={activeConversation.data?.otherUser?.profile?.profilePicture || '/default-avatar.png'}
-                          alt={activeConversation.data?.otherUser?.pseudo || 'User'}
-                          className={styles.chatProfileImage}
-                          onClick={() => setShowChatSettings(true)}
-                          style={{ cursor: 'pointer' }}
-                          title="Paramètres du chat"
-                        />
-                        <h3>{activeConversation.data?.otherUser?.pseudo || activeConversation.data?.otherUser?.prenom || 'Chat'}</h3>
-                      </>
-                    ) : (
-                      <>
-                        <div className={styles.chatProfileImageAI}><BotIcon size={24} /></div>
-                        <h3>Assistant IA</h3>
-                      </>
-                    )}
-                  </div>
-                  <button onClick={closeChat} className={styles.chatCloseBtn}>
-                    ✕
-                  </button>
-                </div>
-                <div className={styles.chatPanelBody}>
-                  <UnifiedChatPanel
-                    conversationId={activeConversation.type === 'ai' ? activeConversation.conversationId : null}
-                    matchConversation={activeConversation.type === 'match' ? activeConversation.data : null}
-                    initialMessage={activeConversation.type === 'ai' ? activeConversation.initialMessage : ''}
-                    onClose={backToHistory}
-                  />
-                </div>
-              </>
-            ) : null}
-          </div>
-        </div>
-      )}
-
-      {/* Modal paramètres du chat */}
-      {showChatSettings && activeConversation?.type === 'match' && activeConversation?.data && (
-        <ChatSettings
-          conversation={activeConversation.data}
-          onClose={() => setShowChatSettings(false)}
-          onDelete={handleChatSettingsDelete}
-          onMute={handleChatSettingsMute}
-          onSetTempMessages={handleChatSettingsTempMessages}
+        <DesktopChatOverlay
+          closeChat={closeChat}
+          openPopup={openPopup}
+          showChatSettings={showChatSettings}
+          setShowChatSettings={setShowChatSettings}
+          onChatSettingsDelete={handleChatSettingsDelete}
+          onChatSettingsMute={handleChatSettingsMute}
+          onChatSettingsTempMessages={handleChatSettingsTempMessages}
         />
       )}
     </>
