@@ -23,8 +23,8 @@ function saveSaved(it, data) {
 
 function loadSaved(it) {
   try {
-    const raw = storage.get(storageKey(it));
-    return raw ? JSON.parse(raw) : null;
+    // storage.get() retourne déjà un objet parsé (pas besoin de JSON.parse)
+    return storage.get(storageKey(it));
   } catch {
     return null;
   }

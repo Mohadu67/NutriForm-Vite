@@ -16,7 +16,7 @@ export function confirmDialog(message, options = {}) {
   } = options;
 
   return new Promise((resolve) => {
-    const toastId = toast.custom(
+    toast.custom(
       (t) => (
         <div style={{
           background: 'white',
