@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const logger = require('./utils/logger.js');
 
 // Chargement des variables d'environnement selon NODE_ENV
@@ -56,6 +57,7 @@ const notificationRoutes = require('./routes/notification.route.js');
 const challengeRoutes = require('./routes/challenge.route.js');
 const badgeRoutes = require('./routes/badge.route.js');
 const linkPreviewRoutes = require('./routes/linkPreview.route.js');
+const rateLimitRoutes = require('./routes/rateLimit.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 const { startChallengeCron } = require('./cron/challengeCron');
@@ -107,7 +109,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "https://www.googletagmanager.com", "https://www.google-analytics.com"],
+      scriptSrc: ["'self'", "https://www.googletagmanager.com", "https://www.google-analytics.com", "https://pagead2.googlesyndication.com", "https://*.googlesyndication.com"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: [
         "'self'",
@@ -145,9 +147,19 @@ app.use(helmet({
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'production' ? 2000 : 5000,
-  message: 'Trop de requêtes depuis cette IP, réessayez plus tard.',
   standardHeaders: true,
   legacyHeaders: false,
+  handler: (req, res) => {
+    // Si c'est une requête API, renvoyer du JSON
+    if (req.path.startsWith('/api/') || req.headers.accept?.includes('application/json')) {
+      return res.status(429).json({
+        success: false,
+        message: 'Trop de requêtes depuis cette IP, réessayez plus tard.'
+      });
+    }
+    // Sinon, renvoyer la page HTML fun
+    res.status(429).sendFile(path.join(__dirname, 'public', 'rate-limit.html'));
+  },
   skip: (req) => {
     // Whitelist pour les tests de charge (ajouter ton IP ici)
     const whitelistedIPs = process.env.RATE_LIMIT_WHITELIST?.split(',') || [];
@@ -156,7 +168,7 @@ const globalLimiter = rateLimit({
       return true;
     }
 
-    const publicRoutes = ['/api/health', '/uploads', '/api/subscriptions/webhook'];
+    const publicRoutes = ['/api/health', '/uploads', '/api/subscriptions/webhook', '/api/rate-limit'];
     return publicRoutes.some(route => req.path.startsWith(route));
   }
 });
@@ -188,8 +200,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(globalLimiter);
 
-
-const path = require('path');
 app.use('/uploads', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET');
@@ -224,6 +234,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/badges', badgeRoutes);
 app.use('/api/link-preview', linkPreviewRoutes);
+app.use('/api/rate-limit', rateLimitRoutes);
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');

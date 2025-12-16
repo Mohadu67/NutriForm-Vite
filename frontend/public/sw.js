@@ -203,6 +203,11 @@ self.addEventListener('push', (event) => {
     options.actions = [
       { action: 'view', title: 'Voir', icon: '/favicon.png' }
     ];
+  } else if (type === 'rate-limit-cleared') {
+    options.actions = [
+      { action: 'view', title: 'Revenir sur le site', icon: '/favicon.png' }
+    ];
+    options.requireInteraction = true;
   }
 
   event.waitUntil(
