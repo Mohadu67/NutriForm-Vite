@@ -2,29 +2,31 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const logger = require('../utils/logger.js');
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 async function authMiddleware(req, res, next) {
-  logger.info('🔐 Auth middleware - Path:', req.path);
-  logger.info('🍪 Cookies:', req.cookies);
-  logger.info('📋 Headers Authorization:', req.headers['authorization']);
+  // Logs de debug uniquement en dev (contiennent des infos sensibles)
+  if (isDev) {
+    logger.debug('🔐 Auth middleware - Path:', req.path);
+    logger.debug('🍪 Cookies présents:', !!req.cookies?.token);
+    logger.debug('📋 Header Authorization présent:', !!req.headers['authorization']);
+  }
 
   let token = null;
 
   // Priorité 1: Cookie httpOnly (sécurisé contre XSS)
   if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
-    logger.info('✅ Token trouvé dans cookie');
   }
   // Priorité 2: Header Authorization (pour API/mobile)
   else {
     const authHeader = req.headers['authorization'] || '';
     if (authHeader.toLowerCase().startsWith('bearer ')) {
       token = authHeader.slice(7).trim();
-      logger.info('✅ Token trouvé dans header');
     }
   }
 
   if (!token) {
-    logger.info('❌ Aucun token trouvé');
     return res.status(401).json({ message: 'Token requis.' });
   }
 
