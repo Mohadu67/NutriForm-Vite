@@ -99,3 +99,29 @@
 .warning .icon {
   color: #f59e0b;
 }
+
+/* Dark mode */
+:global(.dark) .toast,
+:global(body.dark) .toast,
+:global(html.dark) .toast {
+  background: #1e2028;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+:global(.dark) .message,
+:global(body.dark) .message,
+:global(html.dark) .message {
+  color: #f5f7fa;
+}
+
+:global(.dark) .closeButton,
+:global(body.dark) .closeButton,
+:global(html.dark) .closeButton {
+  color: #9ca3af;
+}
+
+:global(.dark) .closeButton:hover,
+:global(body.dark) .closeButton:hover,
+:global(html.dark) .closeButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
