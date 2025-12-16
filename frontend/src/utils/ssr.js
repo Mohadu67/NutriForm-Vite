@@ -1,6 +1,7 @@
 /**
  * Utilitaires pour gérer le SSR (Server-Side Rendering)
  */
+import React from 'react';
 
 // Vérifie si le code s'exécute côté client (navigateur)
 export const isClient = typeof window !== 'undefined';

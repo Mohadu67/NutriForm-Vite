@@ -90,8 +90,7 @@ export async function login(identifier, password, remember = false) {
 }
 
 export async function secureApiCall(endpoint, options = {}) {
-  try {
-    // Cache spécial pour /me pour éviter les appels multiples
+  // Cache spécial pour /me pour éviter les appels multiples
     if (endpoint === '/me' && (!options || !options.method || options.method === 'GET')) {
       const now = Date.now();
 
@@ -149,9 +148,6 @@ export async function secureApiCall(endpoint, options = {}) {
     }
 
     return response;
-  } catch (error) {
-    throw error;
-  }
 }
 
 export async function logout() {
