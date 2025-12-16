@@ -20,6 +20,7 @@ import { QuickActions } from "./components/QuickActions.jsx";
 import { RecentActivity } from "./components/RecentActivity.jsx";
 import { CardioStats } from "./components/CardioStats.jsx";
 import { BodyMetrics } from "./components/BodyMetrics.jsx";
+import { MuscleHeatmap } from "./components/MuscleHeatmap.jsx";
 
 // Hooks personnalisés pour la logique métier
 import { useDashboardData } from "./hooks/useDashboardData.js";
@@ -33,6 +34,7 @@ export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [subscriptionTier, setSubscriptionTier] = useState(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [expandedRmId, setExpandedRmId] = useState(null);
 
   // Vérification auth et subscription
   useEffect(() => {
@@ -83,7 +85,8 @@ export default function Dashboard() {
     weightPoints,
     allSessionsSorted,
     userSessions,
-    setUserSessions
+    setUserSessions,
+    muscleStats,
   } = useDashboardData(sessions, records);
 
   const {
@@ -267,6 +270,14 @@ export default function Dashboard() {
           {/* Cardio Stats */}
           <CardioStats sportStats={sportStats} />
 
+          {/* Muscle Heatmap */}
+          {stats.totalSessions > 0 && (
+            <section className={style.heatmapSection}>
+              <h2 className={style.sectionTitle}>Répartition musculaire</h2>
+              <MuscleHeatmap muscleStats={muscleStats} />
+            </section>
+          )}
+
           {/* Body Metrics */}
           <BodyMetrics
             weightData={weightData}
@@ -286,12 +297,42 @@ export default function Dashboard() {
                       <span className={style.rmExerciceCount}>{tests.length} test{tests.length > 1 ? 's' : ''}</span>
                     </div>
                     <div className={style.rmScrollContainer}>
-                      {tests.map((test, index) => (
-                        <div key={index} className={style.rmCard}>
-                          <span className={style.rmCardValue}>{test.rm} kg</span>
-                          <span className={style.rmCardDate}>{formatDate(test.date)}</span>
-                        </div>
-                      ))}
+                      {tests.map((test, index) => {
+                        const testId = `${exercice}-${index}`;
+                        const isExpanded = expandedRmId === testId;
+                        return (
+                          <div
+                            key={index}
+                            className={`${style.rmCard} ${isExpanded ? style.rmCardExpanded : ''}`}
+                            onClick={() => setExpandedRmId(isExpanded ? null : testId)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <span className={style.rmCardValue}>{test.rm} kg</span>
+                            <span className={style.rmCardDate}>{formatDate(test.date)}</span>
+                            {isExpanded && (test.poids || test.reps) && (
+                              <div className={style.rmCardDetails}>
+                                <div className={style.rmCalculation}>
+                                  {test.poids && test.reps && (
+                                    <span className={style.rmFormula}>
+                                      {test.poids} kg × {test.reps} reps
+                                    </span>
+                                  )}
+                                </div>
+                                {test.formulas && Object.keys(test.formulas).length > 0 && (
+                                  <div className={style.rmFormulas}>
+                                    {Object.entries(test.formulas).slice(0, 4).map(([name, value]) => (
+                                      <div key={name} className={style.rmFormulaItem}>
+                                        <span className={style.rmFormulaName}>{name}</span>
+                                        <span className={style.rmFormulaValue}>{Math.round(value)} kg</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}

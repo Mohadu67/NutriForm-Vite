@@ -626,6 +626,211 @@
   transform: scale(0.95);
 }
 
+/* Session expandable */
+.sessionItem {
+  flex-direction: column;
+}
+
+.sessionHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.sessionActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.expandIcon {
+  font-size: 0.7rem;
+  color: var(--muted, #6b7280);
+  transition: transform 0.2s ease;
+  padding: 4px;
+}
+
+.expandIconRotated {
+  transform: rotate(180deg);
+}
+
+.sessionItemExpanded {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
+  padding: 12px;
+  margin: -4px -12px;
+  border-bottom: none !important;
+}
+
+:global(body.dark) .sessionItemExpanded,
+:global(html.dark) .sessionItemExpanded {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.sessionExpanded {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line, rgba(0, 0, 0, 0.08));
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sessionExpanded::-webkit-scrollbar {
+  height: 4px;
+}
+
+.sessionExpanded::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+}
+
+.sessionExpanded::-webkit-scrollbar-thumb {
+  background: var(--couleur-bouton-action, #f7b186);
+  border-radius: 2px;
+}
+
+:global(body.dark) .sessionExpanded::-webkit-scrollbar-track,
+:global(html.dark) .sessionExpanded::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:global(body.dark) .sessionExpanded,
+:global(html.dark) .sessionExpanded {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.exerciseDetail {
+  background: var(--paper, #ffffff);
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  min-width: 180px;
+  max-width: 220px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+:global(body.dark) .exerciseDetail,
+:global(html.dark) .exerciseDetail {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.exerciseDetailExpanded {
+  min-width: 240px;
+  max-width: 280px;
+  background: var(--couleur-principale, #f7f6f2);
+}
+
+:global(body.dark) .exerciseDetailExpanded,
+:global(html.dark) .exerciseDetailExpanded {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.exerciseHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.exerciseName {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .exerciseName,
+:global(html.dark) .exerciseName {
+  color: #f5f7fa;
+}
+
+.exerciseType {
+  font-size: 1rem;
+}
+
+.exerciseSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.summaryBadge {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 3px 8px;
+  background: rgba(247, 177, 134, 0.15);
+  color: var(--couleur-bouton-action, #f7b186);
+  border-radius: 12px;
+}
+
+:global(body.dark) .summaryBadge,
+:global(html.dark) .summaryBadge {
+  background: rgba(247, 177, 134, 0.2);
+}
+
+.exerciseExpandHint {
+  display: block;
+  text-align: center;
+  font-size: 0.6rem;
+  color: var(--muted, #6b7280);
+  margin-top: 6px;
+  transition: transform 0.2s ease;
+}
+
+.exerciseExpandHintRotated {
+  transform: rotate(180deg);
+}
+
+.setsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line, rgba(0, 0, 0, 0.1));
+}
+
+.setItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 6px;
+}
+
+:global(body.dark) .setItem,
+:global(html.dark) .setItem {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.setNumber {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--couleur-bouton-action, #f7b186);
+  min-width: 40px;
+}
+
+.setInfo {
+  font-size: 0.8rem;
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .setInfo,
+:global(html.dark) .setInfo {
+  color: rgba(255, 255, 255, 0.85);
+}
+
 /* ========== METRICS SECTION ========== */
 .metricsSection {
   margin-bottom: 16px;
@@ -970,6 +1175,80 @@
   font-size: 0.7rem;
   color: var(--muted, #6b7280);
   white-space: nowrap;
+}
+
+/* Expanded 1RM card */
+.rmCardExpanded {
+  min-width: 140px;
+  background: var(--paper, #ffffff);
+  border: 1px solid var(--couleur-bouton-action, #f7b186);
+  box-shadow: 0 4px 16px rgba(247, 177, 134, 0.2);
+}
+
+:global(body.dark) .rmCardExpanded,
+:global(html.dark) .rmCardExpanded {
+  background: rgba(247, 177, 134, 0.1);
+  border-color: rgba(247, 177, 134, 0.4);
+}
+
+.rmCardDetails {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+:global(body.dark) .rmCardDetails,
+:global(html.dark) .rmCardDetails {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.rmCalculation {
+  margin-bottom: 6px;
+}
+
+.rmFormula {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+  background: rgba(0, 0, 0, 0.04);
+  padding: 3px 6px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+:global(body.dark) .rmFormula,
+:global(html.dark) .rmFormula {
+  color: #f5f7fa;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.rmFormulas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.rmFormulaItem {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  padding: 2px 0;
+}
+
+.rmFormulaName {
+  color: var(--muted, #6b7280);
+  text-transform: capitalize;
+}
+
+.rmFormulaValue {
+  font-weight: 600;
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .rmFormulaValue,
+:global(html.dark) .rmFormulaValue {
+  color: #f5f7fa;
 }
 
 /* ========== CHART SECTION ========== */
@@ -1910,6 +2189,25 @@
 
 .sessionsUpsellLink:hover {
   text-decoration: underline;
+}
+
+/* ========== MUSCLE HEATMAP SECTION ========== */
+.heatmapSection {
+  background: var(--paper, #ffffff);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+:global(body.dark) .heatmapSection,
+:global(html.dark) .heatmapSection {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.heatmapSection .sectionTitle {
+  margin-bottom: 16px;
 }
 
 /* Mobile responsiveness for freemium components */
