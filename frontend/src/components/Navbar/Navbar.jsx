@@ -49,7 +49,9 @@ import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
 import UnifiedChatPanel from "../Chat/UnifiedChatPanel.jsx";
 import ChatHistory from "../Chat/ChatHistory.jsx";
+import ChatSettings from "../Chat/ChatSettings.jsx";
 import NotificationCenter from "../Notifications/NotificationCenter/NotificationCenter";
+import { deleteConversation, updateConversationSettings } from "../../shared/api/matchChat";
 
 // Import SVG Icons
 import {
@@ -105,6 +107,7 @@ export default function Navbar() {
   const [currentView, setCurrentView] = useState('navigation'); // Pour mobile: 'navigation', 'history' ou 'notifications'
   const [unreadCount, setUnreadCount] = useState(0);
   const [path, setPath] = useState("/");
+  const [showChatSettings, setShowChatSettings] = useState(false);
 
   // Définir le path côté client pour éviter les erreurs Safari avec useLocation
   useEffect(() => {
@@ -418,6 +421,33 @@ export default function Navbar() {
     return cleanup;
   }, [isConnected, isLoggedIn, isPremium, on]);
 
+  // Handlers pour les paramètres du chat
+  const handleChatSettingsDelete = async (conversationId) => {
+    try {
+      await deleteConversation(conversationId);
+      setShowChatSettings(false);
+      backToHistory?.();
+    } catch {
+      // Erreur silencieuse
+    }
+  };
+
+  const handleChatSettingsMute = async (conversationId, isMuted) => {
+    try {
+      await updateConversationSettings(conversationId, { isMuted });
+    } catch {
+      // Erreur silencieuse
+    }
+  };
+
+  const handleChatSettingsTempMessages = async (conversationId, duration) => {
+    try {
+      await updateConversationSettings(conversationId, { tempMessagesDuration: duration });
+    } catch {
+      // Erreur silencieuse
+    }
+  };
+
   // Main navigation links (always visible on mobile bottom nav) - Les plus importants
   const mainLinks = useMemo(() => [
     {
@@ -692,6 +722,9 @@ export default function Navbar() {
                           src={activeConversation.data?.otherUser?.profile?.profilePicture || '/default-avatar.png'}
                           alt={activeConversation.data?.otherUser?.pseudo || 'User'}
                           className={styles.chatProfileImage}
+                          onClick={() => setShowChatSettings(true)}
+                          style={{ cursor: 'pointer' }}
+                          title="Paramètres du chat"
                         />
                         <h3>{activeConversation.data?.otherUser?.pseudo || activeConversation.data?.otherUser?.prenom || 'Chat'}</h3>
                       </>
@@ -947,6 +980,9 @@ export default function Navbar() {
                           src={activeConversation.data?.otherUser?.profile?.profilePicture || '/default-avatar.png'}
                           alt={activeConversation.data?.otherUser?.pseudo || 'User'}
                           className={styles.chatProfileImage}
+                          onClick={() => setShowChatSettings(true)}
+                          style={{ cursor: 'pointer' }}
+                          title="Paramètres du chat"
                         />
                         <h3>{activeConversation.data?.otherUser?.pseudo || activeConversation.data?.otherUser?.prenom || 'Chat'}</h3>
                       </>
@@ -973,6 +1009,17 @@ export default function Navbar() {
             ) : null}
           </div>
         </div>
+      )}
+
+      {/* Modal paramètres du chat */}
+      {showChatSettings && activeConversation?.type === 'match' && activeConversation?.data && (
+        <ChatSettings
+          conversation={activeConversation.data}
+          onClose={() => setShowChatSettings(false)}
+          onDelete={handleChatSettingsDelete}
+          onMute={handleChatSettingsMute}
+          onSetTempMessages={handleChatSettingsTempMessages}
+        />
       )}
     </>
   );

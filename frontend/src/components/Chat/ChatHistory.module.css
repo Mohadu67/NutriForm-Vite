@@ -182,6 +182,12 @@
 .avatarContainer {
   position: relative;
   flex-shrink: 0;
+  cursor: pointer;
+}
+
+.avatarContainer:hover .convProfileImage {
+  border-color: var(--color-primary);
+  transform: scale(1.05);
 }
 
 /* Profile Image */
@@ -614,6 +620,21 @@
   min-width: 12px;
   height: 12px;
   padding: 0;
+}
+
+.mutedBadge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  font-size: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
 }
 
 @keyframes pulseUnread {

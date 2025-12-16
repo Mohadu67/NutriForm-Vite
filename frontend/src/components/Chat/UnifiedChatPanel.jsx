@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { getMessages, sendMessage as sendMatchMessage, markMessagesAsRead, deleteMessage } from '../../shared/api/matchChat';
 import { isAuthenticated } from '../../shared/api/auth';
 import { storage } from '../../shared/utils/storage';
 import { useWebSocket } from '../../contexts/WebSocketContext';
+import MessageItem from './MessageItem';
 import styles from './UnifiedChatPanel.module.css';
 
 export default function UnifiedChatPanel({ conversationId, matchConversation, initialMessage }) {
@@ -455,7 +456,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     }
   };
 
-  const handleDeleteMessage = async (messageId) => {
+  const handleDeleteMessage = useCallback(async (messageId) => {
     if (!isMatchChat || !messageId) return;
 
     try {
@@ -465,11 +466,16 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       // Retirer le message de la liste locale
       setMessages(prev => prev.filter(msg => msg._id !== messageId));
     } catch (err) {
+      // Silent error
     } finally {
       setDeletingMessage(null);
       setShowMessageOptions(null);
     }
-  };
+  }, [isMatchChat]);
+
+  const handleToggleOptions = useCallback((messageId) => {
+    setShowMessageOptions(prev => prev === messageId ? null : messageId);
+  }, []);
 
   const handleEscalate = async () => {
     if (!conversationId || escalating || escalated) return;
@@ -502,29 +508,6 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     } finally {
       setEscalating(false);
     }
-  };
-
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now - date;
-
-    if (diff < 60000) return "À l'instant";
-    if (diff < 3600000) {
-      const mins = Math.floor(diff / 60000);
-      return `Il y a ${mins} min`;
-    }
-
-    if (date.toDateString() === now.toDateString()) {
-      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    }
-
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   };
 
   return (
@@ -593,94 +576,26 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
               </div>
             )}
             {messages.map((msg, index) => {
-            const isUserMessage = isMatchChat
-              ? (msg.senderId?._id === currentUserId || msg.senderId === currentUserId)
-              : msg.role === 'user';
+              const isUserMessage = isMatchChat
+                ? (msg.senderId?._id === currentUserId || msg.senderId === currentUserId)
+                : msg.role === 'user';
 
-            return (
-              <div
-                key={msg._id || index}
-                className={`${styles.message} ${
-                  isUserMessage ? styles.messageUser : styles.messageBot
-                } ${deletingMessage === msg._id ? styles.messageDeleting : ''}`}
-              >
-                <div className={styles.messageWrapper}>
-                  <div className={styles.messageContent}>
-                    {msg.type === 'session-share' && msg.metadata?.imageData ? (
-                      <div className={styles.sessionShare}>
-                        <img
-                          src={msg.metadata.imageData}
-                          alt="Session partagée"
-                          className={styles.sessionImage}
-                        />
-                        <p className={styles.sessionCaption}>{msg.content}</p>
-                      </div>
-                    ) : (
-                      <p>{msg.content}</p>
-                    )}
-                  </div>
-
-                  {/* Options de message (suppression) */}
-                  {isMatchChat && isUserMessage && msg._id && (
-                    <div className={styles.messageActions}>
-                      <button
-                        onClick={() => setShowMessageOptions(showMessageOptions === msg._id ? null : msg._id)}
-                        className={styles.messageOptionsBtn}
-                      >
-                        ⋮
-                      </button>
-                      {showMessageOptions === msg._id && (
-                        <div className={styles.messageOptions}>
-                          <button
-                            onClick={() => handleDeleteMessage(msg._id)}
-                            disabled={deletingMessage === msg._id}
-                            className={styles.deleteBtn}
-                          >
-                            {deletingMessage === msg._id ? 'Suppression...' : '🗑️ Supprimer'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className={styles.messageFooter}>
-                  <span className={styles.messageTime}>
-                    {formatTimestamp(msg.createdAt)}
-                  </span>
-
-                  {/* Indicateur de lecture pour les messages match - 3 états */}
-                  {/* ✓ gris = envoyé, ✓✓ gris = vu dans liste, ✓✓ vert = lu */}
-                  {isMatchChat && isUserMessage && (() => {
-                    const isRead = msg.read || isOtherPresent;
-                    const isDelivered = isOtherInChatList;
-
-                    let checkmarks = '✓';
-                    let color = '#999';
-
-                    if (isRead) {
-                      checkmarks = '✓✓';
-                      color = '#4CAF50'; // vert = lu
-                    } else if (isDelivered) {
-                      checkmarks = '✓✓';
-                      color = '#999'; // gris = vu dans la liste
-                    }
-
-                    return (
-                      <span style={{
-                        marginLeft: '6px',
-                        fontSize: '0.85rem',
-                        fontWeight: 'bold',
-                        color
-                      }}>
-                        {checkmarks}
-                      </span>
-                    );
-                  })()}
-                </div>
-              </div>
-            );
-          })}
+              return (
+                <MessageItem
+                  key={msg._id || index}
+                  msg={msg}
+                  isUserMessage={isUserMessage}
+                  isMatchChat={isMatchChat}
+                  currentUserId={currentUserId}
+                  isOtherPresent={isOtherPresent}
+                  isOtherInChatList={isOtherInChatList}
+                  deletingMessage={deletingMessage}
+                  showMessageOptions={showMessageOptions}
+                  onToggleOptions={handleToggleOptions}
+                  onDeleteMessage={handleDeleteMessage}
+                />
+              );
+            })}
           </>
         )}
         <div ref={messagesEndRef} />
