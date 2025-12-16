@@ -7,62 +7,19 @@ const Notification = require('../models/Notification');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../utils/logger.js');
 const { sendNotificationToUser } = require('../services/pushNotification.service');
+const { notifyAdmins: notifyAdminsService } = require('../services/adminNotification.service');
 
-// Helper pour notifier tous les admins (avec WebSocket optionnel)
-// Refactorisé pour être identique au matching qui fonctionne
+// Wrapper pour compatibilité avec l'ancienne signature
 async function notifyAdmins(title, message, link, metadata = {}, io = null) {
-  try {
-    const admins = await User.find({ role: 'admin' }).select('_id');
-
-    if (admins.length === 0) {
-      return;
-    }
-
-    // 1. D'abord envoyer via WebSocket (comme matching qui fonctionne)
-    if (io && io.notifyUser) {
-      for (const admin of admins) {
-        const notifId = `support-${Date.now()}-${admin._id}`;
-        io.notifyUser(admin._id.toString(), 'new_notification', {
-          id: notifId,
-          type: 'support',
-          title,
-          message,
-          link,
-          metadata,
-          timestamp: new Date().toISOString(),
-          read: false
-        });
-      }
-    }
-
-    // 2. Puis sauvegarder en base (comme matching qui fonctionne)
-    const notificationsToCreate = admins.map(admin => ({
-      userId: admin._id,
-      type: 'support',
-      title,
-      message,
-      link,
-      metadata
-    }));
-
-    await Notification.create(notificationsToCreate).catch(err =>
-      logger.error('Erreur sauvegarde notifications admin:', err)
-    );
-
-    // 3. Envoyer push notification à chaque admin
-    for (const admin of admins) {
-      sendNotificationToUser(admin._id, {
-        type: 'support',
-        title,
-        body: message,
-        icon: '/icon-192x192.png',
-        badge: '/badge-72x72.png',
-        data: { url: link, ...metadata }
-      }).catch(err => logger.error('Erreur push admin:', err));
-    }
-  } catch (error) {
-    logger.error('Erreur notifyAdmins:', error);
-  }
+  return notifyAdminsService({
+    title,
+    message,
+    link,
+    type: 'support',
+    metadata,
+    io,
+    icon: '/assets/icons/notif-support.svg'
+  });
 }
 
 // Initialiser OpenAI (optionnel)
