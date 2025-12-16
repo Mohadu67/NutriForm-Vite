@@ -8,17 +8,13 @@ const { sanitizeProgram } = require("../utils/sanitizer");
 const { sendNotificationToUser } = require('../services/pushNotification.service');
 const { notifyAdmins } = require('../services/adminNotification.service');
 const {
-  VALID_TYPES,
-  VALID_DIFFICULTIES,
-  VALID_CYCLE_TYPES,
-  PAGINATION,
-  CYCLE_DURATION,
-  PROGRAM_LIMITS
-} = require('../constants/programValidation');
-
-// Alias pour compatibilité
-const MAX_LIMIT = PAGINATION.MAX_LIMIT;
-const MAX_SKIP = PAGINATION.MAX_SKIP;
+  validatePagination,
+  validateType,
+  validateDifficulty,
+  validateTags,
+  validateProgramData
+} = require('../services/programValidation.service');
+const { VALID_TYPES, VALID_DIFFICULTIES } = require('../constants/programValidation');
 
 /**
  * Notifier un utilisateur avec WebSocket + base + push
@@ -62,58 +58,41 @@ async function notifyProgramUser(userId, io, { title, message, link, metadata, p
   }).catch(err => logger.error('Erreur push notification programme:', err));
 }
 /**
- * Récupérer tous les programmes publics (accessibles sans connexion)
+ * Recuperer tous les programmes publics (accessibles sans connexion)
  */
 async function getPublicPrograms(req, res) {
   try {
     const { type, difficulty, tags, limit = 50, skip = 0 } = req.query;
 
-    // Validation stricte de la pagination
-    const parsedLimit = parseInt(limit);
-    const parsedSkip = parseInt(skip);
-
-    if (isNaN(parsedLimit) || parsedLimit < 1 || parsedLimit > MAX_LIMIT) {
-      return res.status(400).json({ error: "invalid_limit", message: `Limit must be between 1 and ${MAX_LIMIT}` });
-    }
-
-    if (isNaN(parsedSkip) || parsedSkip < 0 || parsedSkip > MAX_SKIP) {
-      return res.status(400).json({ error: "invalid_skip", message: `Skip must be between 0 and ${MAX_SKIP}` });
+    // Validation pagination
+    const pagination = validatePagination(limit, skip);
+    if (!pagination.valid) {
+      return res.status(400).json({ error: "invalid_pagination", message: pagination.error });
     }
 
     const filter = {
-      $or: [
-        { isPublic: true },
-        { status: 'public' }
-      ],
+      $or: [{ isPublic: true }, { status: 'public' }],
       isActive: true
     };
 
-    // Whitelist stricte pour type
-    if (type && type !== 'all') {
-      if (!VALID_TYPES.includes(type)) {
-        return res.status(400).json({ error: "invalid_type", message: `Type must be one of: ${VALID_TYPES.join(', ')}` });
-      }
-      filter.type = type;
+    // Validation type
+    const typeResult = validateType(type);
+    if (!typeResult.valid) {
+      return res.status(400).json({ error: "invalid_type", message: typeResult.error });
     }
+    if (typeResult.type) filter.type = typeResult.type;
 
-    // Whitelist stricte pour difficulty
-    if (difficulty && difficulty !== 'all') {
-      if (!VALID_DIFFICULTIES.includes(difficulty)) {
-        return res.status(400).json({ error: "invalid_difficulty", message: `Difficulty must be one of: ${VALID_DIFFICULTIES.join(', ')}` });
-      }
-      filter.difficulty = difficulty;
+    // Validation difficulty
+    const diffResult = validateDifficulty(difficulty);
+    if (!diffResult.valid) {
+      return res.status(400).json({ error: "invalid_difficulty", message: diffResult.error });
     }
+    if (diffResult.difficulty) filter.difficulty = diffResult.difficulty;
 
-    // Sanitization stricte des tags
-    if (tags) {
-      const tagArray = tags.split(',')
-        .map(tag => tag.trim())
-        .filter(tag => tag.length > 0 && tag.length <= 30)
-        .slice(0, 10); // Limiter à 10 tags max
-
-      if (tagArray.length > 0) {
-        filter.tags = { $in: tagArray };
-      }
+    // Validation tags
+    const tagsResult = validateTags(tags);
+    if (tagsResult.tags.length > 0) {
+      filter.tags = { $in: tagsResult.tags };
     }
 
     const result = await WorkoutProgram.aggregate([
@@ -122,13 +101,11 @@ async function getPublicPrograms(req, res) {
         $facet: {
           programs: [
             { $sort: { usageCount: -1, createdAt: -1 } },
-            { $skip: parsedSkip },
-            { $limit: parsedLimit },
+            { $skip: pagination.skip },
+            { $limit: pagination.limit },
             { $project: { ratings: 0, userId: 0 } }
           ],
-          totalCount: [
-            { $count: 'count' }
-          ]
+          totalCount: [{ $count: 'count' }]
         }
       }
     ]).option({ maxTimeMS: 5000 });
@@ -141,9 +118,9 @@ async function getPublicPrograms(req, res) {
       programs,
       pagination: {
         total,
-        limit: parsedLimit,
-        skip: parsedSkip,
-        hasMore: total > parsedSkip + parsedLimit
+        limit: pagination.limit,
+        skip: pagination.skip,
+        hasMore: total > pagination.skip + pagination.limit
       }
     });
   } catch (err) {
@@ -216,155 +193,38 @@ async function getUserPrograms(req, res) {
 }
 
 /**
- * Créer un nouveau programme (Admin ou Premium)
+ * Creer un nouveau programme (Admin ou Premium)
  */
 async function createProgram(req, res) {
   try {
-    // Sanitize toutes les entrées utilisateur
     const sanitized = sanitizeProgram(req.body);
-
-    const {
-      name,
-      description,
-      type,
-      difficulty,
-      estimatedDuration,
-      tags,
-      muscleGroups,
-      equipment,
-      cycles,
-      coverImage,
-      instructions,
-      tips,
-      estimatedCalories
-    } = sanitized;
-
-    // isPublic est un boolean, ne pas sanitizer
+    const { name, description, type, difficulty, estimatedDuration, tags,
+            muscleGroups, equipment, cycles, coverImage, instructions,
+            tips, estimatedCalories } = sanitized;
     const isPublic = Boolean(req.body.isPublic);
 
-    // Validation des champs requis
-    if (!name || !type || !cycles || cycles.length === 0) {
-      return res.status(400).json({ error: "missing_required_fields" });
+    // Validation centralisee
+    const validation = validateProgramData(sanitized);
+    if (!validation.valid) {
+      return res.status(400).json({
+        error: validation.error,
+        message: validation.message,
+        cycleIndex: validation.cycleIndex
+      });
     }
 
-    // Validation du nom
-    if (name.trim().length < 3 || name.length > 100) {
-      return res.status(400).json({ error: "invalid_name_length" });
-    }
-
-    // Validation du type (utilise constantes importées)
-    if (!VALID_TYPES.includes(type)) {
-      return res.status(400).json({ error: "invalid_type" });
-    }
-
-    // Validation de la difficulté (utilise constantes importées)
-    if (difficulty && !VALID_DIFFICULTIES.includes(difficulty)) {
-      return res.status(400).json({ error: "invalid_difficulty" });
-    }
-
-    // Validation des cycles
-    if (!Array.isArray(cycles) || cycles.length === 0) {
-      return res.status(400).json({ error: "cycles_must_be_array" });
-    }
-
-    for (let i = 0; i < cycles.length; i++) {
-      const cycle = cycles[i];
-
-      if (!cycle.type || !VALID_CYCLE_TYPES.includes(cycle.type)) {
-        return res.status(400).json({
-          error: "invalid_cycle_type",
-          cycleIndex: i
-        });
-      }
-
-      if (cycle.type === "exercise" && !cycle.exerciseName) {
-        return res.status(400).json({
-          error: "exercise_name_required",
-          cycleIndex: i
-        });
-      }
-
-      // Validation des durées (doivent être positives et raisonnables)
-      if (cycle.type === "exercise") {
-        // Au moins une métrique doit être présente
-        const hasDuration = cycle.durationSec != null || cycle.durationMin != null;
-        const hasReps = cycle.reps != null;
-
-        if (!hasDuration && !hasReps) {
-          return res.status(400).json({
-            error: "missing_exercise_metrics",
-            message: "Un exercice doit avoir une durée (durationSec/durationMin) ou des répétitions (reps)",
-            cycleIndex: i
-          });
-        }
-
-        // Valider durationSec si présent
-        if (cycle.durationSec != null && (cycle.durationSec < 5 || cycle.durationSec > 600)) {
-          return res.status(400).json({
-            error: "invalid_exercise_duration",
-            message: "La durée d'exercice doit être entre 5 et 600 secondes",
-            cycleIndex: i
-          });
-        }
-      }
-
-      if (cycle.type === "rest" || cycle.type === "transition") {
-        if (cycle.restSec == null || cycle.restSec < 0 || cycle.restSec > 300) {
-          return res.status(400).json({
-            error: "invalid_rest_duration",
-            message: "La durée de repos doit être entre 0 et 300 secondes",
-            cycleIndex: i
-          });
-        }
-      }
-
-      if (cycle.intensity && (cycle.intensity < 1 || cycle.intensity > 10)) {
-        return res.status(400).json({
-          error: "invalid_intensity",
-          cycleIndex: i
-        });
-      }
-    }
-
-    // Validation des nombres
-    if (estimatedDuration && (estimatedDuration < 0 || estimatedDuration > 300)) {
-      return res.status(400).json({ error: "invalid_duration" });
-    }
-
-    if (estimatedCalories && (estimatedCalories < 0 || estimatedCalories > 2000)) {
-      return res.status(400).json({ error: "invalid_calories" });
-    }
-
-    // Vérifier si l'utilisateur est admin
     const isAdmin = req.user.role === 'admin';
-
-    const programData = {
-      name,
-      description,
-      type,
-      difficulty,
-      estimatedDuration,
-      tags,
-      muscleGroups,
-      equipment,
-      cycles,
-      coverImage,
-      isPublic: isAdmin ? isPublic : false, // Seul l'admin peut créer des programmes publics
-      status: isAdmin && isPublic ? 'public' : 'private', // Synchroniser status avec isPublic
+    const program = await WorkoutProgram.create({
+      name, description, type, difficulty, estimatedDuration, tags,
+      muscleGroups, equipment, cycles, coverImage, instructions, tips, estimatedCalories,
+      isPublic: isAdmin ? isPublic : false,
+      status: isAdmin && isPublic ? 'public' : 'private',
       isActive: true,
       createdBy: isAdmin ? 'admin' : 'user',
-      userId: isAdmin ? null : new mongoose.Types.ObjectId(req.user.id),
-      instructions,
-      tips,
-      estimatedCalories
-    };
-
-    const program = await WorkoutProgram.create(programData);
-
-    return res.status(201).json({
-      success: true,
-      program
+      userId: isAdmin ? null : new mongoose.Types.ObjectId(req.user.id)
     });
+
+    return res.status(201).json({ success: true, program });
   } catch (err) {
     logger.error("createProgram error:", err);
     return res.status(500).json({ error: "server_error" });
@@ -815,23 +675,17 @@ async function getFavorites(req, res) {
 }
 
 /**
- * Récupérer l'historique des sessions de programmes (Premium uniquement)
+ * Recuperer l'historique des sessions de programmes (Premium uniquement)
  */
 async function getProgramHistory(req, res) {
   try {
     const userId = req.user.id;
     const { limit = 20, skip = 0 } = req.query;
 
-    // Validation stricte de la pagination
-    const parsedLimit = parseInt(limit);
-    const parsedSkip = parseInt(skip);
-
-    if (isNaN(parsedLimit) || parsedLimit < 1 || parsedLimit > MAX_LIMIT) {
-      return res.status(400).json({ error: "invalid_limit", message: `Limit must be between 1 and ${MAX_LIMIT}` });
-    }
-
-    if (isNaN(parsedSkip) || parsedSkip < 0 || parsedSkip > MAX_SKIP) {
-      return res.status(400).json({ error: "invalid_skip", message: `Skip must be between 0 and ${MAX_SKIP}` });
+    // Validation pagination
+    const pagination = validatePagination(limit, skip);
+    if (!pagination.valid) {
+      return res.status(400).json({ error: "invalid_pagination", message: pagination.error });
     }
 
     const result = await WorkoutSession.aggregate([
@@ -846,43 +700,15 @@ async function getProgramHistory(req, res) {
         $facet: {
           sessions: [
             { $sort: { endedAt: -1, createdAt: -1 } },
-            { $skip: parsedSkip },
-            { $limit: parsedLimit },
-            {
-              $lookup: {
-                from: 'workoutprograms',
-                localField: 'programId',
-                foreignField: '_id',
-                as: 'program'
-              }
-            },
+            { $skip: pagination.skip },
+            { $limit: pagination.limit },
+            { $lookup: { from: 'workoutprograms', localField: 'programId', foreignField: '_id', as: 'program' } },
             { $unwind: { path: '$program', preserveNullAndEmptyArrays: true } },
-            {
-              $addFields: {
-                programId: {
-                  _id: '$program._id',
-                  name: '$program.name',
-                  type: '$program.type',
-                  difficulty: '$program.difficulty',
-                  estimatedCalories: '$program.estimatedCalories'
-                }
-              }
-            },
+            { $addFields: { programId: { _id: '$program._id', name: '$program.name', type: '$program.type', difficulty: '$program.difficulty', estimatedCalories: '$program.estimatedCalories' } } },
             { $project: { program: 0 } }
           ],
-          totalCount: [
-            { $count: 'count' }
-          ],
-          stats: [
-            {
-              $group: {
-                _id: null,
-                totalDuration: { $sum: "$durationSec" },
-                totalCalories: { $sum: "$calories" },
-                totalCycles: { $sum: "$cyclesCompleted" }
-              }
-            }
-          ]
+          totalCount: [{ $count: 'count' }],
+          stats: [{ $group: { _id: null, totalDuration: { $sum: "$durationSec" }, totalCalories: { $sum: "$calories" }, totalCycles: { $sum: "$cyclesCompleted" } } }]
         }
       }
     ]).option({ maxTimeMS: 5000 });
@@ -892,15 +718,8 @@ async function getProgramHistory(req, res) {
     const stats = result[0].stats[0] || { totalDuration: 0, totalCalories: 0, totalCycles: 0 };
 
     return res.status(200).json({
-      success: true,
-      sessions,
-      stats,
-      pagination: {
-        total,
-        limit: parsedLimit,
-        skip: parsedSkip,
-        hasMore: total > parsedSkip + parsedLimit
-      }
+      success: true, sessions, stats,
+      pagination: { total, limit: pagination.limit, skip: pagination.skip, hasMore: total > pagination.skip + pagination.limit }
     });
   } catch (err) {
     logger.error("getProgramHistory error:", err);
