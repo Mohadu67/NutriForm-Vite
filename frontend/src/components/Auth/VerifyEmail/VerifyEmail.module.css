@@ -77,3 +77,69 @@
 @keyframes cardIn { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
 @media (prefers-reduced-motion: reduce) { .card { animation: none; } .primaryBtn, .secondaryBtn { transition: none; } }
+
+/* Dark mode */
+:global(.dark) .container,
+:global(body.dark) .container,
+:global(html.dark) .container {
+  background: #0c0e12;
+}
+
+:global(.dark) .card,
+:global(body.dark) .card,
+:global(html.dark) .card {
+  background: #1e2028;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:global(.dark) .loadingCard,
+:global(body.dark) .loadingCard,
+:global(html.dark) .loadingCard {
+  background: linear-gradient(135deg, #1e2028 0%, #252830 100%);
+}
+
+:global(.dark) .successCard,
+:global(body.dark) .successCard,
+:global(html.dark) .successCard {
+  background: linear-gradient(135deg, #1a2e25 0%, #1e3a2f 55%, #224636 100%);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+:global(.dark) .errorCard,
+:global(body.dark) .errorCard,
+:global(html.dark) .errorCard {
+  background: linear-gradient(135deg, #2e1a1a 0%, #3a1e1e 55%, #462222 100%);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+:global(.dark) .title,
+:global(body.dark) .title,
+:global(html.dark) .title {
+  color: #f5f7fa;
+}
+
+:global(.dark) .titleSuccess,
+:global(body.dark) .titleSuccess,
+:global(html.dark) .titleSuccess {
+  color: #34d399;
+}
+
+:global(.dark) .titleError,
+:global(body.dark) .titleError,
+:global(html.dark) .titleError {
+  color: #f87171;
+}
+
+:global(.dark) .secondaryBtn,
+:global(body.dark) .secondaryBtn,
+:global(html.dark) .secondaryBtn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f5f7fa;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+:global(.dark) .secondaryBtn:hover,
+:global(body.dark) .secondaryBtn:hover,
+:global(html.dark) .secondaryBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}

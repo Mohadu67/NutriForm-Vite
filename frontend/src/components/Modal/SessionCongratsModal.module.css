@@ -264,3 +264,62 @@
     width: 100%;
   }
 }
+
+/* Dark mode */
+:global(.dark) .modal,
+:global(body.dark) .modal,
+:global(html.dark) .modal {
+  background: #1e2028;
+}
+
+:global(.dark) .sessionTitle,
+:global(body.dark) .sessionTitle,
+:global(html.dark) .sessionTitle {
+  color: #f5f7fa;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+:global(.dark) .statCard,
+:global(body.dark) .statCard,
+:global(html.dark) .statCard {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:global(.dark) .statValue,
+:global(body.dark) .statValue,
+:global(html.dark) .statValue {
+  color: #f5f7fa;
+}
+
+:global(.dark) .statLabel,
+:global(body.dark) .statLabel,
+:global(html.dark) .statLabel {
+  color: #9ca3af;
+}
+
+:global(.dark) .noData,
+:global(body.dark) .noData,
+:global(html.dark) .noData {
+  color: #9ca3af;
+}
+
+:global(.dark) .footer,
+:global(body.dark) .footer,
+:global(html.dark) .footer {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+:global(.dark) .closeAction,
+:global(body.dark) .closeAction,
+:global(html.dark) .closeAction {
+  background: transparent;
+  color: #d1d5db;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+:global(.dark) .closeAction:hover,
+:global(body.dark) .closeAction:hover,
+:global(html.dark) .closeAction:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}

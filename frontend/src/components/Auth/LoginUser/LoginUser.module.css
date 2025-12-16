@@ -451,3 +451,43 @@
     font-size: 0.95rem;
   }
 }
+
+/* Dark mode */
+:global(.dark) .input,
+:global(body.dark) .input,
+:global(html.dark) .input {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f5f7fa;
+}
+
+:global(.dark) .input::placeholder,
+:global(body.dark) .input::placeholder,
+:global(html.dark) .input::placeholder {
+  color: #6b7280;
+}
+
+:global(.dark) .input:focus,
+:global(body.dark) .input:focus,
+:global(html.dark) .input:focus {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--auth-peach);
+}
+
+:global(.dark) .subtitle,
+:global(body.dark) .subtitle,
+:global(html.dark) .subtitle {
+  color: #9ca3af;
+}
+
+:global(.dark) .loadingText,
+:global(body.dark) .loadingText,
+:global(html.dark) .loadingText {
+  color: #f5f7fa;
+}
+
+:global(.dark) .signupWrapper,
+:global(body.dark) .signupWrapper,
+:global(html.dark) .signupWrapper {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
