@@ -476,7 +476,11 @@ async function getSessions(req, res) {
     const { date, limit = 20, cursor } = req.query;
     const q = {
       userId: new mongoose.Types.ObjectId(userId),
-      status: 'finished' // Ne compter que les séances terminées
+      // Inclure finished + sessions sans status (anciennes données)
+      $or: [
+        { status: 'finished' },
+        { status: { $exists: false } }
+      ]
     };
 
     if (date) {
