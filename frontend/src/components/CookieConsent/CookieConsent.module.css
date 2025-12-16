@@ -1,0 +1,506 @@
+/* ========================================
+   COOKIE CONSENT - NutriForm
+   Mobile First + Light/Dark Mode
+   ======================================== */
+
+/* ========================================
+   BANNER (Mobile First)
+   ======================================== */
+
+.banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999999;
+  background: var(--paper, #ffffff);
+  border-top: 1px solid var(--line, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: slideUp 0.35s ease-out;
+}
+
+:global(.dark) .banner {
+  background: rgba(30, 30, 30, 0.98);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.15), rgba(247, 177, 134, 0.05));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f7b186;
+}
+
+:global(.dark) .icon {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.2), rgba(247, 177, 134, 0.1));
+}
+
+.text {
+  flex: 1;
+}
+
+.message {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ink, #1a1a1a);
+}
+
+:global(.dark) .message {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.link {
+  color: #f7b186;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link:hover {
+  color: #e89e6e;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btnAccept,
+.btnReject,
+.btnSettings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  min-height: 44px;
+}
+
+.btnAccept {
+  flex: 1;
+  background: #f7b186;
+  color: #111111;
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+}
+
+.btnAccept:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(247, 177, 134, 0.4);
+}
+
+.btnAccept:active {
+  transform: translateY(0);
+}
+
+.btnReject {
+  background: transparent;
+  color: var(--muted, #6b7280);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.12));
+}
+
+:global(.dark) .btnReject {
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btnReject:hover {
+  background: var(--canvas, #f5f5f5);
+}
+
+:global(.dark) .btnReject:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.btnSettings {
+  background: transparent;
+  color: var(--muted, #6b7280);
+  padding: 0.75rem;
+}
+
+:global(.dark) .btnSettings {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.btnSettings:hover {
+  color: #f7b186;
+}
+
+.settingsText {
+  display: none;
+}
+
+/* ========================================
+   MODAL OVERLAY
+   ======================================== */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: var(--paper, #ffffff);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  animation: modalSlideUp 0.3s ease-out;
+}
+
+:global(.dark) .modal {
+  background: #1e1e1e;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.modalIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.15), rgba(247, 177, 134, 0.05));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f7b186;
+}
+
+:global(.dark) .modalIcon {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.2), rgba(247, 177, 134, 0.1));
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink, #1a1a1a);
+}
+
+:global(.dark) .modalTitle {
+  color: #f7f6f2;
+}
+
+.modalDescription {
+  margin: 0 0 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--muted, #6b7280);
+}
+
+:global(.dark) .modalDescription {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ========================================
+   CATEGORIES
+   ======================================== */
+
+.categories {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.category {
+  background: var(--canvas, #f5f5f5);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+:global(.dark) .category {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.categoryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.categoryInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.categoryName {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--ink, #1a1a1a);
+}
+
+:global(.dark) .categoryName {
+  color: #f7f6f2;
+}
+
+.categoryBadge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(247, 177, 134, 0.15);
+  color: #e89e6e;
+}
+
+.categoryDescription {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--muted, #6b7280);
+}
+
+:global(.dark) .categoryDescription {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ========================================
+   TOGGLE SWITCH
+   ======================================== */
+
+.toggle {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--line, rgba(0, 0, 0, 0.15));
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  padding: 0;
+}
+
+:global(.dark) .toggle {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.toggle.toggleActive {
+  background: #f7b186;
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+.toggle.toggleActive .toggleThumb {
+  transform: translateX(20px);
+}
+
+/* ========================================
+   MODAL ACTIONS
+   ======================================== */
+
+.modalActions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btnPrimary,
+.btnSecondary {
+  flex: 1;
+  padding: 0.875rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  min-height: 48px;
+}
+
+.btnPrimary {
+  background: #f7b186;
+  color: #111111;
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+}
+
+.btnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(247, 177, 134, 0.4);
+}
+
+.btnSecondary {
+  background: transparent;
+  color: var(--muted, #6b7280);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.12));
+}
+
+:global(.dark) .btnSecondary {
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btnSecondary:hover {
+  background: var(--canvas, #f5f5f5);
+}
+
+:global(.dark) .btnSecondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.legalLink {
+  margin: 1rem 0 0;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.legalLink a {
+  color: var(--muted, #6b7280);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+:global(.dark) .legalLink a {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.legalLink a:hover {
+  color: #f7b186;
+}
+
+/* ========================================
+   TABLET+ (min-width: 640px)
+   ======================================== */
+
+@media (min-width: 640px) {
+  .banner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-radius: 16px 16px 0 0;
+    max-width: 700px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+  }
+
+  .content {
+    flex: 1;
+  }
+
+  .actions {
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+  }
+
+  .btnAccept {
+    flex: none;
+    padding: 0.75rem 1.25rem;
+  }
+
+  .btnSettings {
+    padding: 0.75rem 1rem;
+  }
+
+  .settingsText {
+    display: inline;
+  }
+
+  /* Modal desktop */
+  .overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .modal {
+    border-radius: 20px;
+    max-width: 480px;
+    max-height: 85vh;
+  }
+}
+
+/* ========================================
+   REDUCED MOTION
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .banner,
+  .modal,
+  .overlay,
+  .toggle,
+  .toggleThumb,
+  .btnAccept,
+  .btnPrimary {
+    animation: none;
+    transition: none;
+  }
+}

@@ -53,6 +53,17 @@ const RefreshIcon = ({ size = 18 }) => (
   </svg>
 );
 
+const ListIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="8" x2="21" y1="6" y2="6" />
+    <line x1="8" x2="21" y1="12" y2="12" />
+    <line x1="8" x2="21" y1="18" y2="18" />
+    <line x1="3" x2="3.01" y1="6" y2="6" />
+    <line x1="3" x2="3.01" y1="12" y2="12" />
+    <line x1="3" x2="3.01" y1="18" y2="18" />
+  </svg>
+);
+
 const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -370,7 +381,7 @@ const Leaderboard = () => {
           {isLoggedIn && !isOptedIn && (
             <div className={styles.optInBanner}>
               <div className={styles.optInContent}>
-                <span className={styles.optInEmoji}>🏆</span>
+                <span className={styles.optInEmoji}><TrophyIcon size={32} /></span>
                 <div className={styles.optInText}>
                   <strong>Rejoins le classement !</strong>
                   <span>Compare tes performances et défie la communauté</span>
@@ -538,7 +549,7 @@ const Leaderboard = () => {
               {/* List - Rest of participants */}
               {restOfList.length > 0 && (
                 <div className={styles.listSection}>
-                  <h3 className={styles.listTitle}>Classement complet</h3>
+                  <h3 className={styles.listTitle}><span className={styles.listTitleIcon}><ListIcon size={18} /></span>Classement complet</h3>
                   <div className={styles.list}>
                     {restOfList.map((entry, index) => (
                       <div key={entry._id} className={styles.listItem}>

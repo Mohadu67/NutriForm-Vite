@@ -578,17 +578,13 @@ export default function FormExo({ user: userProp }) {
                   </>
                 ) : "Commencer"}
               </button>
-            </div>
-            {/* Scroll indicator - cliquable */}
-            <div
-              className={styles.scrollHint}
-              onClick={scrollToInfo}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && scrollToInfo()}
-            >
-              <ChevronDownIcon className={styles.scrollHintIcon} />
-              <span>J'ai la flemme !</span>
+              <button
+                className={styles.skipButton}
+                onClick={scrollToInfo}
+                type="button"
+              >
+                J'ai la flemme !
+              </button>
             </div>
           </div>
         </section>
