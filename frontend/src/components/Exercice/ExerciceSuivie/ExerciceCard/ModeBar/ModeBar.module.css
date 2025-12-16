@@ -1,5 +1,16 @@
 /* Modern mode selector with visual buttons */
 
+/* Theme variables for ModeBar */
+:root {
+  --accent: #f7b186;
+  --accent-2: #ff8c5a;
+}
+
+:global(.dark) {
+  --accent: #f7b186;
+  --accent-2: #ff8c5a;
+}
+
 .modernModeBar {
   margin-bottom: 0;
 }
