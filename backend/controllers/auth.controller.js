@@ -6,6 +6,7 @@ const Subscription = require('../models/Subscription');
 const { sendVerifyEmail } = require('../services/mailer.service');
 const { validatePassword } = require('../utils/passwordValidator');
 const logger = require('../utils/logger.js');
+const config = require('../config');
 
 function frontBase() {
   const base = process.env.FRONTEND_BASE_URL || 'http://localhost:5173';
@@ -63,7 +64,7 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'secret',
+      config.jwtSecret,
       { expiresIn: '7d' }
     );
 
@@ -314,7 +315,7 @@ exports.getWsToken = async (req, res) => {
     // Générer un token WebSocket
     const token = jwt.sign(
       { id: userId, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'secret',
+      config.jwtSecret,
       { expiresIn: '7d' }
     );
 

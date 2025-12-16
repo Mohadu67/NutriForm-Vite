@@ -6,62 +6,19 @@ const Notification = require("../models/Notification");
 const logger = require("../utils/logger");
 const { sanitizeProgram } = require("../utils/sanitizer");
 const { sendNotificationToUser } = require('../services/pushNotification.service');
+const { notifyAdmins } = require('../services/adminNotification.service');
 
-// Helper pour notifier tous les admins
-// Refactorisé pour être identique au matching qui fonctionne
+// Wrapper pour compatibilité avec l'ancienne signature
 async function notifyAdminsProgram(title, message, link, metadata = {}, io = null) {
-  try {
-    const admins = await User.find({ role: 'admin' }).select('_id');
-
-    if (admins.length === 0) {
-      return;
-    }
-
-    // 1. D'abord envoyer via WebSocket (comme matching qui fonctionne)
-    if (io && io.notifyUser) {
-      for (const admin of admins) {
-        const notifId = `program-${Date.now()}-${admin._id}`;
-        io.notifyUser(admin._id.toString(), 'new_notification', {
-          id: notifId,
-          type: 'admin',
-          title,
-          message,
-          link,
-          metadata,
-          timestamp: new Date().toISOString(),
-          read: false
-        });
-      }
-    }
-
-    // 2. Puis sauvegarder en base (comme matching qui fonctionne)
-    const notificationsToCreate = admins.map(admin => ({
-      userId: admin._id,
-      type: 'admin',
-      title,
-      message,
-      link,
-      metadata
-    }));
-
-    await Notification.create(notificationsToCreate).catch(err =>
-      logger.error('Erreur sauvegarde notifications programme:', err)
-    );
-
-    // 3. Envoyer push notification à chaque admin
-    for (const admin of admins) {
-      sendNotificationToUser(admin._id, {
-        type: 'admin',
-        title,
-        body: message,
-        icon: '/icon-192x192.png',
-        badge: '/badge-72x72.png',
-        data: { url: link, ...metadata }
-      }).catch(err => logger.error('Erreur push admin programme:', err));
-    }
-  } catch (error) {
-    logger.error('Erreur notifyAdminsProgram:', error);
-  }
+  return notifyAdmins({
+    title,
+    message,
+    link,
+    type: 'admin',
+    metadata,
+    io,
+    icon: '/assets/icons/notif-workout.svg'
+  });
 }
 
 
