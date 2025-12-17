@@ -20,9 +20,9 @@
   margin: 0;
 }
 
-/* Logo Link
+/* Logo Link - Only direct children, not Navbar links
    -------------------------------------------------------------------------- */
-.header a {
+.header > a {
   display: inline-flex;
   align-items: center;
   text-decoration: none;
@@ -33,17 +33,17 @@
   min-width: 44px;
 }
 
-.header a:hover {
+.header > a:hover {
   transform: scale(1.05);
 }
 
-.header a:active {
+.header > a:active {
   transform: scale(0.98);
 }
 
 /* Focus States - Accessibility
    -------------------------------------------------------------------------- */
-.header a:focus-visible {
+.header > a:focus-visible {
   outline: 2px solid var(--couleur-bouton-action, #f7b186);
   outline-offset: 4px;
   border-radius: 0.5rem;
@@ -57,7 +57,7 @@
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   .header,
-  .header a {
+  .header > a {
     transition: none;
   }
 }
@@ -71,7 +71,7 @@
     gap: var(--header-gap-desktop);
   }
 
-  .header a {
+  .header > a {
     /* Desktop touch target can be smaller */
     min-height: auto;
     min-width: auto;
