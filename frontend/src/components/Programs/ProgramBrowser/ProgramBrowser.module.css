@@ -77,18 +77,23 @@
 }
 
 .title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0 0 0.5rem 0;
-  color: var(--color-text);
+  font-size: clamp(2.25rem, 7vw, 3.5rem);
+  font-weight: 800;
+  margin: 0 0 20px 0;
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), var(--couleur-bouton-selection, #b8ddd1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
   letter-spacing: -0.02em;
 }
 
 .subtitle {
-  font-size: 0.9375rem;
-  line-height: 1.6;
-  color: var(--color-text-secondary);
+  font-size: clamp(0.95rem, 2.5vw, 1.125rem);
+  line-height: 1.7;
+  color: var(--muted, #6b7280);
   margin: 0;
+  max-width: 520px;
 }
 
 .premiumActions {
