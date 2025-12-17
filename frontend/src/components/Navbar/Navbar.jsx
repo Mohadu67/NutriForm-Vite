@@ -225,7 +225,7 @@ export default function Navbar() {
   const mainLinks = useMemo(() => [
     { label: null, path: "/", icon: <HomeIcon size={20} /> },
     { label: "Exercices", path: "/exo", icon: <DumbbellIcon size={20} /> },
-    { label: "Programmes", path: "/programs", icon: <CalendarIcon size={20} /> }
+    { label: "Hits", path: "/programs", icon: <CalendarIcon size={20} /> }
   ], []);
 
   const secondaryLinks = useMemo(() => {
