@@ -5,16 +5,19 @@
 /* CSS Variables
    -------------------------------------------------------------------------- */
 .header {
-  --header-padding-mobile: 0.9375rem 1.25rem; /* 15px 20px */
-  --header-padding-desktop: 1.25rem 2rem; /* 20px 32px */
+  --header-padding-mobile: 0;
+  --header-padding-desktop: 0;
   --header-gap-mobile: 1rem;
   --header-gap-desktop: 2rem;
-  --header-margin-bottom-mobile: 1.5rem; /* 24px */
-  --header-margin-bottom-desktop: 2.5rem; /* 40px */
+  --header-margin-bottom-mobile: 0;
+  --header-margin-bottom-desktop: 0;
   --header-bg: var(--paper, #ffffff);
   --header-bg-dark: #1a1a1a;
   --header-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   --header-transition: background-color 0.3s ease, box-shadow 0.3s ease;
+
+  padding: 0;
+  margin: 0;
 }
 
 /* Logo Link
@@ -63,8 +66,8 @@
    -------------------------------------------------------------------------- */
 @media (min-width: 768px) {
   .header {
-    padding: var(--header-padding-desktop);
-    margin-bottom: var(--header-margin-bottom-desktop);
+    padding: 0;
+    margin: 0;
     gap: var(--header-gap-desktop);
   }
 
