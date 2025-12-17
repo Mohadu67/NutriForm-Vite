@@ -26,21 +26,33 @@
 .hero {
   text-align: center;
   margin-bottom: 1.5rem;
-  padding: 1.5rem 0;
+  padding: 80px 20px 40px;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .heroIcon {
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   margin: 0 auto 1rem;
-  background: #FFD700;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
   border: 2px solid transparent;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.35);
   animation: float 3s ease-in-out infinite;
 }
 
@@ -49,27 +61,32 @@
 }
 
 .heroIcon svg {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-6px); }
 }
 
 .title {
-  font-family: var(--font-titre, sans-serif);
-  font-size: 1.75rem;
+  font-size: clamp(2.25rem, 7vw, 3.5rem);
   color: var(--ink);
-  margin: 0 0 0.5rem;
-  font-weight: 700;
+  margin: 0 0 20px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), var(--couleur-bouton-selection, #b8ddd1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .subtitle {
-  color: var(--muted);
-  font-size: 0.9rem;
-  margin: 0;
+  color: var(--muted, #6b7280);
+  font-size: clamp(0.95rem, 2.5vw, 1.125rem);
+  margin: 0 auto;
+  line-height: 1.7;
+  max-width: 520px;
 }
 
 /* ========================================
@@ -740,36 +757,28 @@
 }
 
 /* ========================================
-   TABLET+ STYLES (min-width: 641px)
+   TABLET+ STYLES (min-width: 768px)
    ======================================== */
 
-@media (min-width: 641px) {
+@media (min-width: 768px) {
   .container {
-    padding: 2rem 1rem;
+    padding: 0 24px;
   }
 
   .hero {
-    padding: 2rem 0;
+    padding: 100px 24px 40px;
     margin-bottom: 2rem;
   }
 
   .heroIcon {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 1.5rem;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1.25rem;
   }
 
   .heroIcon svg {
-    width: 40px;
-    height: 40px;
-  }
-
-  .title {
-    font-size: 2.5rem;
-  }
-
-  .subtitle {
-    font-size: 1rem;
+    width: 32px;
+    height: 32px;
   }
 
   .optInBanner {

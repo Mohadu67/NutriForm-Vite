@@ -1,7 +1,7 @@
 .page {
   min-height: calc(100vh - 140px);
   background: var(--color-bg);
-  padding: 3rem 1rem;
+  padding: 100px 20px 120px;
 }
 
 .container {
@@ -89,15 +89,9 @@
   transform: translateX(0);
 }
 
-/* Mobile responsive */
-@media (min-width: 640px) {
+/* Tablet (768px+) */
+@media (min-width: 768px) {
   .page {
-    padding: 4rem 2rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .page {
-    padding: 5rem 2rem;
+    padding: 120px 24px 120px;
   }
 }
