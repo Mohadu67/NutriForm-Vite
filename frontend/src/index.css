@@ -154,7 +154,7 @@ body.chat-open {
 
 @media (min-width: 768px) {
   body {
-    padding-top: 100px;
+    padding-top: 0;
     padding-bottom: 0;
   }
 }
