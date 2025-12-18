@@ -4,7 +4,7 @@
 const CACHE_NAME = 'nutriform-v4';
 const API_CACHE = 'nutriform-api-v4';
 // Version basée sur timestamp pour forcer la détection de mise à jour
-const APP_VERSION = '2.0.0-' + '20251219';
+const APP_VERSION = '3.0.0-' + '20251219';
 
 // Événement d'installation
 self.addEventListener('install', (event) => {
