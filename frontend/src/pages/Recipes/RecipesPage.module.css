@@ -224,6 +224,36 @@
   color: #111;
 }
 
+/* Bouton Mes Recettes (Premium) */
+.myRecipesBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md, 0.75rem);
+  padding: var(--space-lg, 1rem) var(--space-2xl, 1.5rem);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-full, 9999px);
+  font-size: var(--font-size-base, 1rem);
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), var(--couleur-bouton-selection, #b8ddd1));
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  color: #111;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
+  font-weight: var(--font-weight-semibold, 600);
+  white-space: nowrap;
+}
+
+.myRecipesBtn svg {
+  color: #111;
+  transition: all 0.3s ease;
+}
+
+.myRecipesBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.4);
+}
+
 
 /* ===== MASONRY GRID MAGIQUE ===== */
 .content {

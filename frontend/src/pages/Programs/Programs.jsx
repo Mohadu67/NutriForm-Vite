@@ -200,6 +200,13 @@ export default function Programs() {
     setViewMode('create');
   };
 
+  const handleViewProgram = (program) => {
+    // Ouvrir le programme dans un nouvel onglet
+    if (program._id) {
+      window.open(`/programs/${program._id}`, '_blank');
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -258,6 +265,7 @@ export default function Programs() {
               onBack={handleBackToBrowse}
               onEdit={handleEditProgram}
               onSelectProgram={handleSelectProgram}
+              onView={handleViewProgram}
               refreshKey={myProgramsRefreshKey}
             />
           )}

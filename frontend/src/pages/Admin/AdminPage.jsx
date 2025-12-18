@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { MdStar, MdEmail, MdSupport, MdRestaurant, MdFitnessCenter } from 'react-icons/md';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
@@ -15,10 +15,17 @@ import AdminNewsletters from './components/AdminNewsletters.jsx';
 import AdminRecipes from './components/AdminRecipes.jsx';
 
 const ITEMS_PER_PAGE = 20;
+const VALID_SECTIONS = ['dashboard', 'reviews', 'newsletters', 'recipes', 'programs', 'support'];
 
 export default function AdminPage() {
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [searchParams] = useSearchParams();
+
+  // Lire la section depuis l'URL ou utiliser 'dashboard' par defaut
+  const initialSection = searchParams.get('section');
+  const [activeSection, setActiveSection] = useState(
+    VALID_SECTIONS.includes(initialSection) ? initialSection : "dashboard"
+  );
   const [reviews, setReviews] = useState([]);
   const [newsletters, setNewsletters] = useState([]);
   const [recipes, setRecipes] = useState([]);
@@ -60,6 +67,14 @@ export default function AdminPage() {
     activeSubscribers: newsletterStats.active,
     totalRecipes: recipes.length,
   }), [reviews, newsletterStats, recipes]);
+
+  // Mettre a jour la section si l'URL change
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (section && VALID_SECTIONS.includes(section)) {
+      setActiveSection(section);
+    }
+  }, [searchParams]);
 
   const showMessage = (type, text) => {
     setMessage({ type, text });

@@ -1,6 +1,9 @@
 /* Design System Tokens */
 @import './styles/design-tokens.css';
 
+/* Global Form Styles */
+@import './styles/forms.css';
+
 /* Reset and base */
 * {
   margin: 0;

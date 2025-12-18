@@ -41,7 +41,7 @@ const DAILY_TEMPLATES = {
   }
 };
 
-// Notifications quotidiennes de motivation (9h00)
+// Notifications quotidiennes de motivation (18h00 en semaine, 9h00 le weekend)
 async function sendDailyMotivation() {
   logger.info('📬 CRON: Envoi des notifications de motivation quotidiennes...');
 
@@ -339,8 +339,13 @@ async function sendWeeklyRecap() {
 
 // Démarrer les CRON jobs
 function startDailyNotificationCron() {
-  // Motivation quotidienne à 9h00
-  cron.schedule('0 9 * * *', sendDailyMotivation, {
+  // Motivation quotidienne à 18h00 en semaine (lundi-vendredi)
+  cron.schedule('0 18 * * 1-5', sendDailyMotivation, {
+    timezone: 'Europe/Paris'
+  });
+
+  // Motivation quotidienne à 9h00 le weekend (samedi-dimanche)
+  cron.schedule('0 9 * * 0,6', sendDailyMotivation, {
     timezone: 'Europe/Paris'
   });
 
