@@ -48,6 +48,83 @@ router.get('/liked', auth, recipeController.getLikedRecipes);
  */
 router.get('/saved', auth, requirePremium, recipeController.getSavedRecipes);
 
+// =====================================================
+// ROUTES UTILISATEUR PREMIUM - Recettes personnelles
+// IMPORTANT: Ces routes doivent être AVANT /:id sinon Express match "user" comme id
+// =====================================================
+
+/**
+ * @route   GET /api/recipes/user/my-recipes
+ * @desc    Obtenir les recettes personnelles de l'utilisateur
+ * @access  Private (Premium)
+ */
+router.get('/user/my-recipes', auth, requirePremium, recipeController.getUserRecipes);
+
+/**
+ * @route   POST /api/recipes/user
+ * @desc    Créer une recette personnelle
+ * @access  Private (Premium)
+ */
+router.post('/user', auth, requirePremium, recipeController.createUserRecipe);
+
+/**
+ * @route   PUT /api/recipes/user/:id
+ * @desc    Modifier une recette personnelle
+ * @access  Private (Premium)
+ */
+router.put('/user/:id', auth, requirePremium, recipeController.updateUserRecipe);
+
+/**
+ * @route   DELETE /api/recipes/user/:id
+ * @desc    Supprimer une recette personnelle
+ * @access  Private (Premium)
+ */
+router.delete('/user/:id', auth, requirePremium, recipeController.deleteUserRecipe);
+
+/**
+ * @route   POST /api/recipes/user/:id/propose
+ * @desc    Proposer une recette au public
+ * @access  Private (Premium)
+ */
+router.post('/user/:id/propose', auth, requirePremium, recipeController.proposeRecipeToPublic);
+
+/**
+ * @route   POST /api/recipes/user/:id/unpublish
+ * @desc    Retirer une recette du public pour modification
+ * @access  Private (Premium)
+ */
+router.post('/user/:id/unpublish', auth, requirePremium, recipeController.unpublishRecipe);
+
+// =====================================================
+// ROUTES ADMIN - Validation des recettes
+// IMPORTANT: Ces routes doivent être AVANT /:id sinon Express match "admin" comme id
+// =====================================================
+
+/**
+ * @route   GET /api/recipes/admin/pending
+ * @desc    Obtenir les recettes en attente de validation
+ * @access  Private (Admin)
+ */
+router.get('/admin/pending', adminMiddleware, recipeController.getPendingRecipes);
+
+/**
+ * @route   POST /api/recipes/admin/:id/approve
+ * @desc    Approuver une recette
+ * @access  Private (Admin)
+ */
+router.post('/admin/:id/approve', adminMiddleware, recipeController.approveRecipe);
+
+/**
+ * @route   POST /api/recipes/admin/:id/reject
+ * @desc    Rejeter une recette
+ * @access  Private (Admin)
+ */
+router.post('/admin/:id/reject', adminMiddleware, recipeController.rejectRecipe);
+
+// =====================================================
+// ROUTES AVEC PARAMETRE :id - DOIVENT ETRE EN DERNIER
+// =====================================================
+
 /**
  * @route   GET /api/recipes/:id
  * @desc    Obtenir le détail d'une recette
@@ -68,6 +145,10 @@ router.post('/:id/like', auth, recipeController.toggleLike);
  * @access  Private (Premium requis)
  */
 router.post('/:id/save', auth, requirePremium, recipeController.saveRecipe);
+
+// =====================================================
+// ROUTES ADMIN - CRUD Recettes officielles
+// =====================================================
 
 /**
  * @route   POST /api/recipes

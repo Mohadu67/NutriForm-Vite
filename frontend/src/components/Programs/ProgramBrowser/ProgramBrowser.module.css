@@ -117,14 +117,14 @@
 }
 
 .myProgramsButton {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  background: var(--color-surface, #ffffff);
+  color: var(--color-text, #1a1a1a);
+  border: 2px solid var(--color-border, rgba(0, 0, 0, 0.08));
 }
 
 .myProgramsButton:hover {
-  background: var(--hover-bg);
-  border-color: var(--primary-color);
+  background: rgba(247, 177, 134, 0.08);
+  border-color: var(--color-primary, #f7b186);
   transform: translateY(-2px);
 }
 

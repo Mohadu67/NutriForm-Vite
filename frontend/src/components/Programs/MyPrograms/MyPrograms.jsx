@@ -14,12 +14,19 @@ import {
   ClockIcon
 } from '../ProgramIcons';
 
-export default function MyPrograms({ onBack, onEdit, onSelectProgram, refreshKey }) {
+const EyeIcon = ({ size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+
+export default function MyPrograms({ onBack, onEdit, onSelectProgram, onView, refreshKey }) {
   const notify = useNotification();
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [proposingId, setProposingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [unpublishingId, setUnpublishingId] = useState(null);
 
   useEffect(() => {
     loadMyPrograms();
@@ -100,14 +107,45 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram, refreshKey
     }
   };
 
-  const getStatusBadge = (status) => {
+  const handleUnpublish = async (programId) => {
+    const confirmed = await notify.confirm('Veux-tu retirer ce programme du public pour le modifier ? Il ne sera plus visible par les autres utilisateurs jusqu\'à ce que tu le resoumettes.', {
+      title: 'Modifier le programme'
+    });
+    if (!confirmed) return;
+
+    setUnpublishingId(programId);
+    try {
+      const response = await secureApiCall(`/programs/${programId}/unpublish`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        loadMyPrograms();
+        notify.success('Programme retiré du public. Tu peux maintenant le modifier et le resoumettre.');
+      } else {
+        const error = await response.json();
+        notify.error(error.message || 'Erreur lors du retrait');
+      }
+    } catch (error) {
+      logger.error('Erreur unpublish:', error);
+      notify.error('Erreur lors du retrait du programme');
+    } finally {
+      setUnpublishingId(null);
+    }
+  };
+
+  const getStatusBadge = (status, rejectionReason) => {
     switch (status) {
       case 'public':
-        return <span className={`${styles.badge} ${styles.badgePublic}`}>✓ Public</span>;
+        return <span className={`${styles.badge} ${styles.badgePublic}`}>Public</span>;
       case 'pending':
-        return <span className={`${styles.badge} ${styles.badgePending}`}>⏳ En attente</span>;
+        return <span className={`${styles.badge} ${styles.badgePending}`}>En attente</span>;
       default:
-        return <span className={`${styles.badge} ${styles.badgePrivate}`}>🔒 Privé</span>;
+        return (
+          <span className={`${styles.badge} ${styles.badgePrivate}`} title={rejectionReason || ''}>
+            Prive {rejectionReason && '(refuse)'}
+          </span>
+        );
     }
   };
 
@@ -152,10 +190,16 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram, refreshKey
               <div className={styles.cardContent}>
                 <div className={styles.cardHeader}>
                   <h3>{program.name}</h3>
-                  {getStatusBadge(program.status)}
+                  {getStatusBadge(program.status, program.rejectionReason)}
                 </div>
 
                 <p className={styles.description}>{program.description}</p>
+
+                {program.rejectionReason && program.status === 'private' && (
+                  <div className={styles.rejectionReason}>
+                    <strong>Raison du refus:</strong> {program.rejectionReason}
+                  </div>
+                )}
 
                 <div className={styles.stats}>
                   <span className={styles.stat}>
@@ -171,6 +215,7 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram, refreshKey
                 </div>
 
                 <div className={styles.actions}>
+                  {/* Bouton Lancer - toujours visible */}
                   <button
                     onClick={() => onSelectProgram(program)}
                     className={styles.playBtn}
@@ -179,41 +224,75 @@ export default function MyPrograms({ onBack, onEdit, onSelectProgram, refreshKey
                     <PlayIcon size={16} />
                   </button>
 
-                  <button
-                    onClick={() => onEdit(program)}
-                    className={styles.editBtn}
-                    title="Modifier"
-                  >
-                    <EditIcon size={16} />
-                  </button>
+                  {/* Bouton Voir - pour les programmes publics */}
+                  {program.status === 'public' && (
+                    <button
+                      onClick={() => onView && onView(program)}
+                      className={styles.viewBtn}
+                      title="Voir le programme"
+                    >
+                      <EyeIcon size={16} />
+                    </button>
+                  )}
 
+                  {/* Bouton Modifier - pour les programmes prives */}
+                  {program.status === 'private' && (
+                    <button
+                      onClick={() => onEdit(program)}
+                      className={styles.editBtn}
+                      title="Modifier"
+                    >
+                      <EditIcon size={16} />
+                    </button>
+                  )}
+
+                  {/* Bouton Demander modification - pour les programmes publics ou en attente */}
+                  {(program.status === 'public' || program.status === 'pending') && (
+                    <button
+                      onClick={() => handleUnpublish(program._id)}
+                      disabled={unpublishingId === program._id}
+                      className={styles.editBtn}
+                      title={program.status === 'public' ? 'Retirer du public pour modifier' : 'Annuler et modifier'}
+                    >
+                      {unpublishingId === program._id ? (
+                        <span>...</span>
+                      ) : (
+                        <EditIcon size={16} />
+                      )}
+                    </button>
+                  )}
+
+                  {/* Bouton Proposer - pour les programmes prives */}
                   {program.status === 'private' && (
                     <button
                       onClick={() => handlePropose(program._id)}
-                      disabled={proposingId === program._id || program.status === 'pending'}
+                      disabled={proposingId === program._id}
                       className={styles.proposeBtn}
                       title="Proposer au public"
                     >
                       {proposingId === program._id ? (
-                        <span>⏳</span>
+                        <span>...</span>
                       ) : (
                         <ShareIcon size={16} />
                       )}
                     </button>
                   )}
 
-                  <button
-                    onClick={() => handleDelete(program._id)}
-                    disabled={deletingId === program._id}
-                    className={styles.deleteBtn}
-                    title="Supprimer"
-                  >
-                    {deletingId === program._id ? (
-                      <span>⏳</span>
-                    ) : (
-                      <TrashIcon size={16} />
-                    )}
-                  </button>
+                  {/* Bouton Supprimer - pour les programmes prives */}
+                  {program.status === 'private' && (
+                    <button
+                      onClick={() => handleDelete(program._id)}
+                      disabled={deletingId === program._id}
+                      className={styles.deleteBtn}
+                      title="Supprimer"
+                    >
+                      {deletingId === program._id ? (
+                        <span>...</span>
+                      ) : (
+                        <TrashIcon size={16} />
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

@@ -16,6 +16,7 @@ const {
   removeFromFavorites,
   getFavorites,
   proposeToPublic,
+  unpublishProgram,
   getPendingPrograms,
   approveProgram,
   rejectProgram,
@@ -58,6 +59,7 @@ router.patch("/session/:sessionId/complete", authMiddleware, requirePremium, com
 
 // Routes avec paramètres dynamiques Premium (avec rate limiting)
 router.post("/:id/propose", authMiddleware, requirePremium, proposeProgramLimiter, proposeToPublic);
+router.post("/:id/unpublish", authMiddleware, requirePremium, unpublishProgram);
 router.post("/:id/start", authMiddleware, requirePremium, startProgram);
 router.post("/:id/record-completion", authMiddleware, requirePremium, recordCompletedSession);
 router.post("/:id/rate", authMiddleware, requirePremium, rateProgramLimiter, rateProgram);

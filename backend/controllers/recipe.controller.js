@@ -1,6 +1,11 @@
 const Recipe = require('../models/Recipe');
 const UserProfile = require('../models/UserProfile');
+const User = require('../models/User');
+const mongoose = require('mongoose');
 const logger = require('../utils/logger');
+const { notifyAdmins } = require('../services/adminNotification.service');
+const { sendNotificationToUser } = require('../services/pushNotification.service');
+const Notification = require('../models/Notification');
 
 /**
  * @route   GET /api/recipes
@@ -541,6 +546,628 @@ exports.deleteRecipe = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la suppression de la recette'
+    });
+  }
+};
+
+// =====================================================
+// FONCTIONS POUR UTILISATEURS PREMIUM
+// =====================================================
+
+/**
+ * Helper: Notifier l'utilisateur d'une recette
+ */
+async function notifyRecipeUser(userId, io, { title, message, link, metadata, pushBody }) {
+  try {
+    // 1. WebSocket temps réel
+    if (io && io.notifyUser) {
+      io.notifyUser(userId.toString(), 'new_notification', {
+        id: `recipe-${Date.now()}-${userId}`,
+        type: 'system',
+        title,
+        message,
+        link,
+        metadata,
+        timestamp: new Date().toISOString(),
+        read: false
+      });
+    }
+
+    // 2. Sauvegarder en base
+    await Notification.create({
+      userId,
+      type: 'system',
+      title,
+      message,
+      link,
+      metadata
+    });
+
+    // 3. Push notification
+    sendNotificationToUser(userId, {
+      type: 'system',
+      title,
+      body: pushBody || message,
+      icon: '/assets/icons/notif-recipe.svg',
+      data: { type: 'recipe', url: link, ...metadata }
+    }).catch(err => logger.error(`Erreur push notification user ${userId}:`, err.message));
+
+  } catch (err) {
+    logger.error('Erreur notifyRecipeUser:', err);
+  }
+}
+
+/**
+ * @route   POST /api/recipes/user
+ * @desc    Créer une recette personnelle (User Premium)
+ * @access  Private (Premium)
+ */
+exports.createUserRecipe = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const recipeData = req.body;
+
+    // Validation basique
+    if (!recipeData.title) {
+      return res.status(400).json({
+        success: false,
+        message: 'Le titre est requis'
+      });
+    }
+
+    if (!recipeData.description) {
+      return res.status(400).json({
+        success: false,
+        message: 'La description est requise'
+      });
+    }
+
+    if (!recipeData.ingredients || recipeData.ingredients.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Au moins un ingrédient est requis'
+      });
+    }
+
+    if (!recipeData.instructions || recipeData.instructions.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Au moins une instruction est requise'
+      });
+    }
+
+    // Générer le slug
+    const baseSlug = recipeData.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    let slug = baseSlug;
+    let counter = 1;
+    while (await Recipe.findOne({ slug })) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    // Configurer la recette utilisateur
+    const newRecipeData = {
+      ...recipeData,
+      slug,
+      author: userId,
+      createdBy: 'user',
+      status: 'private',
+      isOfficial: false,
+      isPublished: false,
+      isPremium: false
+    };
+
+    // S'assurer que totalTime est calculé
+    if (newRecipeData.prepTime && newRecipeData.cookTime) {
+      newRecipeData.totalTime = parseInt(newRecipeData.prepTime) + parseInt(newRecipeData.cookTime);
+    }
+
+    const recipe = new Recipe(newRecipeData);
+    await recipe.save();
+
+    logger.info(`Recette "${recipe.title}" créée par user ${userId}`);
+
+    res.status(201).json({
+      success: true,
+      recipe
+    });
+  } catch (error) {
+    logger.error('Erreur createUserRecipe:', error);
+
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Erreur de validation',
+        errors: messages
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la création de la recette'
+    });
+  }
+};
+
+/**
+ * @route   GET /api/recipes/user/my-recipes
+ * @desc    Obtenir les recettes de l'utilisateur
+ * @access  Private (Premium)
+ */
+exports.getUserRecipes = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const recipes = await Recipe.find({ author: userId, createdBy: 'user' })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      recipes
+    });
+  } catch (error) {
+    logger.error('Erreur getUserRecipes:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la récupération des recettes'
+    });
+  }
+};
+
+/**
+ * @route   PUT /api/recipes/user/:id
+ * @desc    Modifier une recette personnelle (User Premium)
+ * @access  Private (Premium)
+ */
+exports.updateUserRecipe = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const updateData = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de recette invalide'
+      });
+    }
+
+    const recipe = await Recipe.findById(id);
+
+    if (!recipe) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recette introuvable'
+      });
+    }
+
+    // Vérifier que l'utilisateur est le propriétaire
+    if (!recipe.author || recipe.author.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Vous n\'êtes pas le propriétaire de cette recette'
+      });
+    }
+
+    // Si la recette est publique ou en attente, on ne peut plus la modifier
+    if (recipe.status !== 'private') {
+      return res.status(400).json({
+        success: false,
+        message: 'Vous ne pouvez modifier que les recettes privées'
+      });
+    }
+
+    // Régénérer le slug si le titre change
+    if (updateData.title && updateData.title !== recipe.title) {
+      const baseSlug = updateData.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+      let slug = baseSlug;
+      let counter = 1;
+      while (await Recipe.findOne({ slug, _id: { $ne: id } })) {
+        slug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+      updateData.slug = slug;
+    }
+
+    // Mettre à jour
+    const updatedRecipe = await Recipe.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    logger.info(`Recette ${id} modifiée par user ${userId}`);
+
+    res.json({
+      success: true,
+      recipe: updatedRecipe
+    });
+  } catch (error) {
+    logger.error('Erreur updateUserRecipe:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la modification de la recette'
+    });
+  }
+};
+
+/**
+ * @route   DELETE /api/recipes/user/:id
+ * @desc    Supprimer une recette personnelle (User Premium)
+ * @access  Private (Premium)
+ */
+exports.deleteUserRecipe = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de recette invalide'
+      });
+    }
+
+    const recipe = await Recipe.findById(id);
+
+    if (!recipe) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recette introuvable'
+      });
+    }
+
+    // Vérifier que l'utilisateur est le propriétaire
+    if (!recipe.author || recipe.author.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Vous n\'êtes pas le propriétaire de cette recette'
+      });
+    }
+
+    await Recipe.findByIdAndDelete(id);
+
+    logger.info(`Recette ${id} supprimée par user ${userId}`);
+
+    res.json({
+      success: true,
+      message: 'Recette supprimée avec succès'
+    });
+  } catch (error) {
+    logger.error('Erreur deleteUserRecipe:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la suppression de la recette'
+    });
+  }
+};
+
+/**
+ * @route   POST /api/recipes/user/:id/propose
+ * @desc    Proposer une recette au public (User Premium)
+ * @access  Private (Premium)
+ */
+exports.proposeRecipeToPublic = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de recette invalide'
+      });
+    }
+
+    const recipe = await Recipe.findById(id);
+
+    if (!recipe) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recette introuvable'
+      });
+    }
+
+    // Vérifier que l'utilisateur est le propriétaire
+    if (!recipe.author || recipe.author.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Vous n\'êtes pas le propriétaire de cette recette'
+      });
+    }
+
+    // Vérifier que la recette est privée
+    if (recipe.status !== 'private') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cette recette a déjà été proposée ou est publique'
+      });
+    }
+
+    // Valider que la recette a tous les champs requis pour publication
+    if (!recipe.image) {
+      return res.status(400).json({
+        success: false,
+        message: 'Une image est requise pour proposer la recette au public'
+      });
+    }
+
+    // Mettre le statut à "pending"
+    recipe.status = 'pending';
+    recipe.rejectionReason = undefined; // Reset si elle avait été rejetée avant
+    await recipe.save();
+
+    // Notifier les admins
+    const user = await User.findById(userId).select('pseudo prenom email');
+    const userName = user?.pseudo || user?.prenom || user?.email || 'Utilisateur';
+    const io = req.app.get('io');
+
+    await notifyAdmins({
+      title: '🍳 Recette à valider',
+      message: `${userName} propose la recette "${recipe.title}" pour publication`,
+      link: '/admin?section=recipes',
+      type: 'admin',
+      metadata: { recipeId: recipe._id, userId },
+      io,
+      icon: '/assets/icons/notif-recipe.svg'
+    });
+
+    logger.info(`Recette ${id} proposée au public par user ${userId}`);
+
+    res.json({
+      success: true,
+      message: 'Recette proposée avec succès',
+      recipe
+    });
+  } catch (error) {
+    logger.error('Erreur proposeRecipeToPublic:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la proposition de la recette'
+    });
+  }
+};
+
+/**
+ * @route   POST /api/recipes/user/:id/unpublish
+ * @desc    Retirer une recette du public pour la modifier (User Premium)
+ * @access  Private (Premium)
+ */
+exports.unpublishRecipe = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de recette invalide'
+      });
+    }
+
+    const recipe = await Recipe.findById(id);
+
+    if (!recipe) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recette introuvable'
+      });
+    }
+
+    // Verifier que l'utilisateur est le proprietaire
+    if (!recipe.author || recipe.author.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Vous n\'etes pas le proprietaire de cette recette'
+      });
+    }
+
+    // Verifier que la recette est publique ou en pending
+    if (recipe.status === 'private') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cette recette est deja privee'
+      });
+    }
+
+    // Remettre la recette en prive pour modification
+    recipe.status = 'private';
+    recipe.isPublished = false;
+    await recipe.save();
+
+    logger.info(`Recette ${id} retiree du public par user ${userId} pour modification`);
+
+    res.json({
+      success: true,
+      message: 'Recette retiree du public. Vous pouvez maintenant la modifier et la resoumettre.',
+      recipe
+    });
+  } catch (error) {
+    logger.error('Erreur unpublishRecipe:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors du retrait de la recette'
+    });
+  }
+};
+
+// =====================================================
+// FONCTIONS ADMIN
+// =====================================================
+
+/**
+ * @route   GET /api/recipes/admin/pending
+ * @desc    Obtenir les recettes en attente de validation (Admin)
+ * @access  Private (Admin)
+ */
+exports.getPendingRecipes = async (req, res) => {
+  try {
+    const recipes = await Recipe.find({ status: 'pending' })
+      .populate('author', 'pseudo email prenom')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      recipes
+    });
+  } catch (error) {
+    logger.error('Erreur getPendingRecipes:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la récupération des recettes en attente'
+    });
+  }
+};
+
+/**
+ * @route   POST /api/recipes/admin/:id/approve
+ * @desc    Approuver une recette (Admin)
+ * @access  Private (Admin)
+ */
+exports.approveRecipe = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de recette invalide'
+      });
+    }
+
+    const recipe = await Recipe.findById(id);
+
+    if (!recipe) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recette introuvable'
+      });
+    }
+
+    if (recipe.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cette recette n\'est pas en attente de validation'
+      });
+    }
+
+    // Approuver la recette
+    recipe.status = 'public';
+    recipe.isPublished = true;
+    recipe.rejectionReason = undefined;
+    await recipe.save();
+
+    // Notifier l'utilisateur
+    if (recipe.author) {
+      const io = req.app.get('io');
+      await notifyRecipeUser(recipe.author, io, {
+        title: '✅ Recette approuvée !',
+        message: `Ta recette "${recipe.title}" a été approuvée et est maintenant publique ! 🎉`,
+        link: `/recettes/${recipe.slug}`,
+        metadata: { recipeId: recipe._id, action: 'approved' },
+        pushBody: `Ta recette "${recipe.title}" est maintenant publique ! 🎉`
+      });
+    }
+
+    logger.info(`Recette ${id} approuvée par admin ${req.user.id}`);
+
+    res.json({
+      success: true,
+      message: 'Recette approuvée',
+      recipe
+    });
+  } catch (error) {
+    logger.error('Erreur approveRecipe:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de l\'approbation de la recette'
+    });
+  }
+};
+
+/**
+ * @route   POST /api/recipes/admin/:id/reject
+ * @desc    Rejeter une recette (Admin)
+ * @access  Private (Admin)
+ */
+exports.rejectRecipe = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de recette invalide'
+      });
+    }
+
+    const recipe = await Recipe.findById(id);
+
+    if (!recipe) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recette introuvable'
+      });
+    }
+
+    if (recipe.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cette recette n\'est pas en attente de validation'
+      });
+    }
+
+    // Rejeter la recette (revient à private)
+    recipe.status = 'private';
+    recipe.isPublished = false;
+    recipe.rejectionReason = reason || 'Aucune raison spécifiée';
+    await recipe.save();
+
+    // Notifier l'utilisateur
+    if (recipe.author) {
+      const io = req.app.get('io');
+      const notifMessage = reason
+        ? `Ta recette "${recipe.title}" n'a pas été approuvée. Raison : ${reason.substring(0, 150)}`
+        : `Ta recette "${recipe.title}" n'a pas été approuvée. Contacte le support pour plus d'infos.`;
+
+      await notifyRecipeUser(recipe.author, io, {
+        title: '❌ Recette refusée',
+        message: notifMessage,
+        link: '/recettes/mes-recettes',
+        metadata: {
+          recipeId: recipe._id,
+          action: 'rejected',
+          reason: reason || 'Aucune raison spécifiée',
+          recipeName: recipe.title
+        },
+        pushBody: `Ta recette "${recipe.title}" n'a pas été approuvée.`
+      });
+    }
+
+    logger.info(`Recette ${id} rejetée par admin ${req.user.id}. Raison: ${reason}`);
+
+    res.json({
+      success: true,
+      message: 'Recette rejetée',
+      reason
+    });
+  } catch (error) {
+    logger.error('Erreur rejectRecipe:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors du rejet de la recette'
     });
   }
 };

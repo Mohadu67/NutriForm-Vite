@@ -221,7 +221,7 @@ async function createProgram(req, res) {
       status: isAdmin && isPublic ? 'public' : 'private',
       isActive: true,
       createdBy: isAdmin ? 'admin' : 'user',
-      userId: isAdmin ? null : new mongoose.Types.ObjectId(req.user.id)
+      userId: new mongoose.Types.ObjectId(req.user.id) // Toujours associer au createur
     });
 
     return res.status(201).json({ success: true, program });
@@ -728,6 +728,53 @@ async function getProgramHistory(req, res) {
 }
 
 /**
+ * Retirer un programme du public pour modification (User Premium)
+ */
+async function unpublishProgram(req, res) {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "invalid_program_id" });
+    }
+
+    const program = await WorkoutProgram.findById(id);
+
+    if (!program) {
+      return res.status(404).json({ error: "program_not_found" });
+    }
+
+    // Vérifier que l'utilisateur est le créateur
+    if (!program.userId || program.userId.toString() !== userId) {
+      return res.status(403).json({ error: "not_program_owner" });
+    }
+
+    // Vérifier que le programme est public ou pending
+    if (program.status === 'private') {
+      return res.status(400).json({ error: "program_already_private" });
+    }
+
+    // Remettre en privé
+    program.status = 'private';
+    program.isPublic = false;
+    program.rejectionReason = null; // Effacer la raison de refus précédente
+    await program.save();
+
+    logger.info(`Programme ${id} retiré du public par user ${userId}`);
+
+    return res.status(200).json({
+      success: true,
+      message: "program_unpublished_successfully",
+      program
+    });
+  } catch (err) {
+    logger.error("unpublishProgram error:", err);
+    return res.status(500).json({ error: "server_error" });
+  }
+}
+
+/**
  * Proposer un programme personnel au public (User Premium)
  */
 async function proposeToPublic(req, res) {
@@ -757,6 +804,7 @@ async function proposeToPublic(req, res) {
 
     // Mettre le statut à "pending"
     program.status = 'pending';
+    program.rejectionReason = null; // Effacer la raison de refus précédente
     await program.save();
 
     // Notifier les admins (avec WebSocket temps réel si disponible)
@@ -883,6 +931,7 @@ async function rejectProgram(req, res) {
     // Rejeter le programme (revient à private)
     program.status = 'private';
     program.isPublic = false;
+    program.rejectionReason = reason || null;
     await program.save();
 
     // Notifier l'utilisateur du refus
@@ -1104,6 +1153,7 @@ module.exports = {
   removeFromFavorites,
   getFavorites,
   proposeToPublic,
+  unpublishProgram,
   getPendingPrograms,
   approveProgram,
   rejectProgram,

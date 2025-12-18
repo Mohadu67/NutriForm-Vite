@@ -22,7 +22,10 @@ const recipeSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    required: true
+    required: function() {
+      // Image requise seulement pour les recettes officielles (admin)
+      return this.createdBy === 'admin';
+    }
   },
 
   // Nutrition
@@ -120,6 +123,16 @@ const recipeSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  createdBy: {
+    type: String,
+    enum: ['admin', 'user'],
+    default: 'admin'
+  },
+  status: {
+    type: String,
+    enum: ['private', 'pending', 'public'],
+    default: 'private'
+  },
   isOfficial: {
     type: Boolean,
     default: true
@@ -131,6 +144,10 @@ const recipeSchema = new mongoose.Schema({
   isPremium: {
     type: Boolean,
     default: false
+  },
+  rejectionReason: {
+    type: String,
+    maxlength: 500
   }
 }, {
   timestamps: true
@@ -145,6 +162,8 @@ recipeSchema.index({ isPremium: 1, isPublished: 1 });
 recipeSchema.index({ 'nutrition.calories': 1 });
 recipeSchema.index({ views: -1 });
 recipeSchema.index({ averageRating: -1 });
+recipeSchema.index({ status: 1 });
+recipeSchema.index({ author: 1, status: 1 });
 
 // Méthode pour calculer le temps total automatiquement
 recipeSchema.pre('save', function(next) {

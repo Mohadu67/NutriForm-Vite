@@ -1,6 +1,9 @@
-import { MdRestaurant, MdEdit, MdDelete } from 'react-icons/md';
+import { useState, useEffect } from 'react';
+import { MdRestaurant, MdEdit, MdDelete, MdPendingActions } from 'react-icons/md';
 import SearchBar from '../../../components/SearchBar/SearchBar.jsx';
 import Pagination from '../../../components/Pagination/Pagination.jsx';
+import PendingRecipes from '../RecipesAdmin/PendingRecipes.jsx';
+import { secureApiCall } from '../../../utils/authService';
 import styles from '../AdminPage.module.css';
 
 export default function AdminRecipes({
@@ -17,13 +20,65 @@ export default function AdminRecipes({
   setRecipesPage,
   ITEMS_PER_PAGE
 }) {
+  const [showPending, setShowPending] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    fetchPendingCount();
+  }, []);
+
+  const fetchPendingCount = async () => {
+    try {
+      const response = await secureApiCall('/recipes/admin/pending');
+      if (response.ok) {
+        const data = await response.json();
+        setPendingCount(data.recipes?.length || 0);
+      }
+    } catch (error) {
+      console.error('Erreur chargement recettes pending:', error);
+    }
+  };
+
   return (
     <div className={styles.content}>
       <div className={styles.sectionHeader}>
         <button className={styles.btnPrimary} onClick={() => onNavigate("/admin/recipes/new")}>
           <MdEdit /> Nouvelle Recette
         </button>
+        <button
+          className={styles.btnSecondary}
+          onClick={() => setShowPending(true)}
+          style={{ position: 'relative' }}
+        >
+          <MdPendingActions /> Recettes en attente
+          {pendingCount > 0 && (
+            <span style={{
+              position: 'absolute',
+              top: '-8px',
+              right: '-8px',
+              background: '#ef4444',
+              color: 'white',
+              borderRadius: '50%',
+              width: '20px',
+              height: '20px',
+              fontSize: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 'bold'
+            }}>
+              {pendingCount}
+            </span>
+          )}
+        </button>
       </div>
+
+      {showPending && (
+        <PendingRecipes onClose={() => {
+          setShowPending(false);
+          fetchPendingCount();
+        }} />
+      )}
 
       {/* Search & Sort */}
       <div className={styles.searchSortWrapper}>

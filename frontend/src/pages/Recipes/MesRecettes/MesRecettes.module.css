@@ -1,4 +1,4 @@
-.myPrograms {
+.mesRecettes {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
@@ -13,10 +13,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 8px;
-  color: var(--color-text);
+  color: var(--color-text, #1f2937);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -24,21 +24,48 @@
 }
 
 .backButton:hover {
-  background: var(--hover-bg);
-  border-color: var(--primary-color);
+  background: var(--hover-bg, #f3f4f6);
+  border-color: var(--primary-color, #f7b186);
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .header h1 {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--color-text);
+  color: var(--color-text, #1f2937);
   margin: 0 0 0.5rem 0;
 }
 
 .subtitle {
   font-size: 1rem;
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary, #6b7280);
   margin: 0;
+}
+
+.createButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color, #f7b186);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.createButton:hover {
+  background: var(--primary-color-dark, #e39d6c);
+  transform: translateY(-2px);
 }
 
 /* Loading */
@@ -54,8 +81,8 @@
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid var(--color-border);
-  border-top-color: var(--primary-color);
+  border: 3px solid var(--color-border, #e5e7eb);
+  border-top-color: var(--primary-color, #f7b186);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 1rem;
@@ -69,6 +96,9 @@
 .empty {
   text-align: center;
   padding: 4rem 2rem;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
 }
 
 .emptyIcon {
@@ -79,14 +109,14 @@
 .empty h3 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-text, #1f2937);
   margin: 0 0 0.5rem 0;
 }
 
 .empty p {
   font-size: 1rem;
-  color: var(--color-text-secondary);
-  margin: 0;
+  color: var(--color-text-secondary, #6b7280);
+  margin: 0 0 1.5rem 0;
 }
 
 /* Grid */
@@ -98,8 +128,8 @@
 
 /* Card */
 .card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.3s;
@@ -108,14 +138,14 @@
 .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  border-color: var(--primary-color);
+  border-color: var(--primary-color, #f7b186);
 }
 
 .coverImage {
   width: 100%;
   height: 180px;
   overflow: hidden;
-  background: var(--color-background);
+  background: var(--color-background, #f9fafb);
 }
 
 .coverImage img {
@@ -139,7 +169,7 @@
 .cardHeader h3 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-text, #1f2937);
   margin: 0;
   flex: 1;
   overflow: hidden;
@@ -157,7 +187,7 @@
 
 .badgePrivate {
   background: rgba(107, 114, 128, 0.1);
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary, #6b7280);
 }
 
 .badgePending {
@@ -172,7 +202,7 @@
 
 .description {
   font-size: 0.9rem;
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary, #6b7280);
   margin: 0 0 1rem 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -182,12 +212,12 @@
 
 .rejectionReason {
   background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 8px;
   padding: 0.75rem;
-  margin-bottom: 1rem;
   font-size: 0.85rem;
   color: #ef4444;
+  margin-bottom: 1rem;
 }
 
 .rejectionReason strong {
@@ -201,7 +231,7 @@
   gap: 1rem;
   margin-bottom: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
 }
 
 .stat {
@@ -209,7 +239,27 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.85rem;
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary, #6b7280);
+}
+
+/* Nutrition */
+.nutrition {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.nutritionItem {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.nutritionLabel {
+  font-weight: 700;
+  color: var(--primary-color, #f7b186);
 }
 
 /* Actions */
@@ -221,10 +271,10 @@
 .actions button {
   flex: 1;
   padding: 0.75rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border, #e5e7eb);
   border-radius: 8px;
-  background: var(--color-background);
-  color: var(--color-text-secondary);
+  background: var(--color-background, #f9fafb);
+  color: var(--color-text-secondary, #6b7280);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -233,9 +283,9 @@
 }
 
 .actions button:hover {
-  background: var(--hover-bg);
-  border-color: var(--primary-color);
-  color: var(--color-text);
+  background: var(--hover-bg, #f3f4f6);
+  border-color: var(--primary-color, #f7b186);
+  color: var(--color-text, #1f2937);
 }
 
 .actions button:disabled {
@@ -244,16 +294,10 @@
   pointer-events: none;
 }
 
-.playBtn:hover {
-  background: var(--primary-color) !important;
-  color: white !important;
-  border-color: var(--primary-color) !important;
-}
-
 .viewBtn:hover {
-  background: rgba(107, 114, 128, 0.1) !important;
-  color: #6b7280 !important;
-  border-color: #6b7280 !important;
+  background: rgba(99, 102, 241, 0.1) !important;
+  color: #6366f1 !important;
+  border-color: #6366f1 !important;
 }
 
 .editBtn:hover {
@@ -276,8 +320,17 @@
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  .myPrograms {
+  .mesRecettes {
     padding: 1rem;
+  }
+
+  .headerContent {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .createButton {
+    justify-content: center;
   }
 
   .grid {

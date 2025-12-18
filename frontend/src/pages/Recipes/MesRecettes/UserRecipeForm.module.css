@@ -1,0 +1,354 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  color: var(--color-text, #1f2937);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 1.5rem;
+}
+
+.backBtn:hover {
+  background: var(--hover-bg, #f3f4f6);
+  border-color: var(--primary-color, #f7b186);
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text, #1f2937);
+  margin: 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.section h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text, #1f2937);
+  margin-bottom: 0.5rem;
+}
+
+.formGroup input,
+.formGroup textarea,
+.formGroup select {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--color-background, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  color: var(--color-text, #1f2937);
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus,
+.formGroup select:focus {
+  outline: none;
+  border-color: var(--primary-color, #f7b186);
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.1);
+}
+
+.formGroup textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #6b7280);
+  margin-top: 0.5rem;
+}
+
+.imagePreview {
+  max-width: 200px;
+  max-height: 150px;
+  margin-top: 0.5rem;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.nutritionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.pillsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pill {
+  padding: 0.5rem 1rem;
+  background: var(--color-background, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 20px;
+  color: var(--color-text-secondary, #6b7280);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pill:hover {
+  border-color: var(--primary-color, #f7b186);
+  color: var(--color-text, #1f2937);
+}
+
+.pillActive {
+  background: var(--primary-color, #f7b186);
+  border-color: var(--primary-color, #f7b186);
+  color: white;
+}
+
+.pillActive:hover {
+  background: var(--primary-color-dark, #e39d6c);
+  color: white;
+}
+
+/* Ingredients */
+.ingredientRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.ingredientRow input {
+  padding: 0.75rem;
+  background: var(--color-background, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  color: var(--color-text, #1f2937);
+  font-size: 0.9rem;
+}
+
+.ingredientRow input:focus {
+  outline: none;
+  border-color: var(--primary-color, #f7b186);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #6b7280);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.checkbox input {
+  width: auto;
+  margin: 0;
+}
+
+/* Instructions */
+.instructionRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
+  align-items: start;
+  margin-bottom: 0.75rem;
+}
+
+.stepNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--primary-color, #f7b186);
+  color: white;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  margin-top: 0.5rem;
+}
+
+.instructionRow textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--color-background, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  color: var(--color-text, #1f2937);
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.instructionRow textarea:focus {
+  outline: none;
+  border-color: var(--primary-color, #f7b186);
+}
+
+.removeBtn {
+  width: 32px;
+  height: 32px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  color: #ef4444;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.removeBtn:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.removeBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.addBtn {
+  padding: 0.75rem 1rem;
+  background: var(--color-background, #f9fafb);
+  border: 1px dashed var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  color: var(--color-text-secondary, #6b7280);
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.addBtn:hover {
+  border-color: var(--primary-color, #f7b186);
+  color: var(--primary-color, #f7b186);
+}
+
+/* Form Actions */
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.cancelBtn {
+  padding: 0.875rem 1.5rem;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  color: var(--color-text, #1f2937);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelBtn:hover {
+  background: var(--hover-bg, #f3f4f6);
+}
+
+.submitBtn {
+  padding: 0.875rem 2rem;
+  background: var(--primary-color, #f7b186);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submitBtn:hover {
+  background: var(--primary-color-dark, #e39d6c);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .ingredientRow {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ingredientRow input:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .instructionRow {
+    grid-template-columns: auto 1fr;
+  }
+
+  .instructionRow .removeBtn {
+    grid-column: 2;
+    justify-self: end;
+    margin-top: 0.5rem;
+  }
+
+  .formActions {
+    flex-direction: column;
+  }
+
+  .cancelBtn,
+  .submitBtn {
+    width: 100%;
+  }
+}
