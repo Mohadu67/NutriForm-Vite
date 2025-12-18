@@ -321,7 +321,7 @@ export default function Navbar() {
                 <a
                   key={link.path || `action-${index}`}
                   href={link.path}
-                  className={`${styles.dockItem} ${path === link.path ? styles.dockItemActive : ''} ${link.isPremium ? styles.premiumItem : ''}`}
+                  className={`${styles.dockItem} ${path === link.path ? styles.dockItemActive : ''}`}
                   onClick={(e) => { e.preventDefault(); navigateAndClose(link.path); }}
                   title={link.label}
                 >
