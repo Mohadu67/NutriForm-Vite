@@ -69,7 +69,7 @@ export default function MobileExpandedMenu({
                     <Element
                       key={link.path || `secondary-${index}`}
                       {...props}
-                      className={`${styles.navItem} ${!link.isAction && path === link.path ? styles.navItemActive : ''} ${link.isPremium ? styles.premiumItem : ''}`}
+                      className={`${styles.navItem} ${!link.isAction && path === link.path ? styles.navItemActive : ''}`}
                       onClick={(e) => {
                         if (!link.isAction) e.preventDefault();
                         link.onClick ? link.onClick() : navigateAndClose(link.path);
@@ -79,7 +79,6 @@ export default function MobileExpandedMenu({
                     >
                       <span className={styles.navIcon}>{link.icon}</span>
                       <span className={styles.navLabel}>{link.label}</span>
-                      {link.isPremium && <span className={styles.premiumBadge}>Premium</span>}
                     </Element>
                   );
                 })}
