@@ -434,30 +434,9 @@
   }
 }
 
-/* Premium items (matching) */
-.premiumItem::before {
-  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%);
-}
-
+/* Premium items (matching) - styles désactivés */
 .premiumItem {
   position: relative;
-  overflow: hidden;
-}
-
-.premiumItem::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.1) 0%, rgba(247, 177, 134, 0.1) 100%);
-  opacity: 0.6;
-  pointer-events: none;
-  z-index: 0;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .premiumItem:hover::after {
-    opacity: 0.8;
-  }
 }
 
 .premiumIconBtn {
@@ -600,26 +579,24 @@
     align-items: center;
     justify-content: flex-start;
     flex-wrap: nowrap;
-    gap: var(--space-lg);
+    gap: var(--space-xl);
 
-    padding: 0;
+    padding: 12px 40px;
     margin: 0;
     border-radius: 0;
     border: none;
+    border-bottom: 1px solid var(--color-border);
 
     background: var(--color-surface);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    box-shadow: var(--shadow-sm);
 
     z-index: var(--z-modal);
     overflow: visible;
-    padding: 15px 30px;
   }
 
   :global(.dark) .dock {
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-    box-shadow: var(--shadow-md);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
   }
 
   /* Reset dockExpanded sur desktop */
@@ -704,7 +681,7 @@
   /* ===== STYLES DES BOUTONS PRINCIPAUX ===== */
   .mainNav .dockItem {
     width: auto;
-    min-width: 95px;
+    min-width: auto;
     height: 40px;
 
     display: flex;
@@ -715,10 +692,10 @@
 
     padding: var(--space-sm) 14px;
     border-radius: 10px;
-    border: 1px solid transparent;
+    border: none;
     background: rgba(0, 0, 0, 0.04);
 
-    transition: all var(--transition-fast);
+    transition: color 0.2s ease;
     cursor: pointer;
   }
 
@@ -726,23 +703,14 @@
     background: rgba(255, 255, 255, 0.06);
   }
 
-  .mainNav .dockItem:hover {
-    background: rgba(247, 177, 134, 0.15);
-    border-color: var(--color-primary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .mainNav .dockItemActive {
-    background: transparent;
-    border-color: var(--color-primary);
-    box-shadow: none;
+  .mainNav .dockItem:hover .dockIcon,
+  .mainNav .dockItem:hover .dockLabel {
+    color: var(--color-primary);
   }
 
   .mainNav .dockItemActive .dockLabel,
   .mainNav .dockItemActive .dockIcon {
     color: var(--color-primary);
-    font-weight: var(--font-weight-bold);
   }
 
   .mainNav .dockIcon {
@@ -763,63 +731,54 @@
 
   .mainNav .iconOnly .dockIcon {
     margin: 0;
+    font-size: 22px;
   }
 
   /* ===== STYLES DES BOUTONS SECONDAIRES ===== */
   .secondaryNav .dockItem {
-    width: 80px;
-    height: 72px;
+    width: auto;
+    height: auto;
 
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
 
-    padding: 10px;
-    border-radius: 14px;
-    border: 1px solid transparent;
-    background: rgba(0, 0, 0, 0.035);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
 
-    transition: all var(--transition-base);
+    transition: color 0.2s ease;
     cursor: pointer;
   }
 
   :global(.dark) .secondaryNav .dockItem {
-    background: rgba(255, 255, 255, 0.05);
-  }
-
-  .secondaryNav .dockItem:hover {
-    background: rgba(247, 177, 134, 0.15);
-    border-color: rgba(247, 177, 134, 0.3);
-    transform: translateY(-3px) scale(1.04);
-    box-shadow: var(--shadow-md);
-  }
-
-  .secondaryNav .dockItemActive {
     background: transparent;
-    border-color: var(--color-primary);
-    box-shadow: none;
+  }
+
+  .secondaryNav .dockItem:hover .dockIcon,
+  .secondaryNav .dockItem:hover .dockLabel {
+    color: var(--color-primary);
   }
 
   .secondaryNav .dockItemActive .dockLabel,
   .secondaryNav .dockItemActive .dockIcon {
     color: var(--color-primary);
-    font-weight: var(--font-weight-bold);
   }
 
   .secondaryNav .dockIcon {
-    font-size: 30px;
+    font-size: 22px;
     flex-shrink: 0;
   }
 
   .secondaryNav .dockLabel {
     font-size: 11px;
-    font-weight: var(--font-weight-semibold);
+    font-weight: var(--font-weight-medium);
     text-align: center;
     line-height: 1.2;
   }
-
 
   /* ===== STYLES DES BOUTONS ICÔNES ===== */
   .iconsGroup {
@@ -829,8 +788,8 @@
   }
 
   .dockIconBtn {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     font-size: 18px;
 
     display: flex;
@@ -838,10 +797,10 @@
     justify-content: center;
 
     border-radius: 10px;
-    border: 1px solid var(--color-border);
+    border: none;
     background: rgba(0, 0, 0, 0.04);
 
-    transition: all var(--transition-fast);
+    transition: color 0.2s ease;
     cursor: pointer;
   }
 
@@ -850,15 +809,11 @@
   }
 
   .dockIconBtn:hover {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: #111;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-glow-primary);
+    color: var(--color-primary);
   }
 
   .dockIconBtn:active {
-    transform: translateY(0) scale(0.98);
+    opacity: 0.7;
   }
 }
 
