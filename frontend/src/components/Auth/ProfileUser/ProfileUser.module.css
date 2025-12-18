@@ -679,6 +679,151 @@
   box-shadow: 0 4px 12px rgba(184, 221, 209, 0.3);
 }
 
+/* === XP SECTION === */
+.xpContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.xpHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(184, 221, 209, 0.1), rgba(247, 177, 134, 0.08));
+  border-radius: 12px;
+  border: 1px solid rgba(184, 221, 209, 0.2);
+}
+
+.xpLeagueIcon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.xpInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.xpLeagueName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.xpTotal {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.5px;
+}
+
+.xpProgress {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.xpProgressBar {
+  height: 8px;
+  background: rgba(148, 163, 184, 0.15);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.xpProgressFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.xpProgressInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.xpNextLeague {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.xpEarnSection {
+  padding: 16px;
+  background: rgba(248, 250, 252, 0.5);
+  border-radius: 12px;
+  border: 1px solid rgba(184, 221, 209, 0.1);
+}
+
+.xpEarnTitle {
+  margin: 0 0 12px 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.xpEarnList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.xpEarnItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  border: 1px solid rgba(184, 221, 209, 0.08);
+}
+
+.xpEarnIcon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.xpEarnText {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.xpEarnValue {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #059669;
+  padding: 4px 8px;
+  background: rgba(16, 185, 129, 0.08);
+  border-radius: 6px;
+}
+
+.xpRewardsSection {
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.08), rgba(247, 177, 134, 0.12));
+  border-radius: 12px;
+  border: 1px solid rgba(247, 177, 134, 0.2);
+}
+
+.xpRewardsTitle {
+  margin: 0 0 8px 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.xpRewardsDescription {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
 /* === RESPONSIVE === */
 @media (max-width: 640px) {
   .body {
@@ -959,4 +1104,74 @@
 :global(body.dark) .contentArea::-webkit-scrollbar-thumb:hover,
 :global(html.dark) .contentArea::-webkit-scrollbar-thumb:hover {
   background: rgba(123, 196, 168, 0.3);
+}
+
+/* XP Section Dark Mode */
+:global(body.dark) .xpHeader,
+:global(html.dark) .xpHeader {
+  background: linear-gradient(135deg, rgba(123, 196, 168, 0.1), rgba(247, 177, 134, 0.08));
+  border-color: rgba(123, 196, 168, 0.2);
+}
+
+:global(body.dark) .xpTotal,
+:global(html.dark) .xpTotal {
+  color: #e2e8f0;
+}
+
+:global(body.dark) .xpProgressBar,
+:global(html.dark) .xpProgressBar {
+  background: rgba(148, 163, 184, 0.1);
+}
+
+:global(body.dark) .xpProgressInfo,
+:global(html.dark) .xpProgressInfo {
+  color: #94a3b8;
+}
+
+:global(body.dark) .xpNextLeague,
+:global(html.dark) .xpNextLeague {
+  color: #e2e8f0;
+}
+
+:global(body.dark) .xpEarnSection,
+:global(html.dark) .xpEarnSection {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(123, 196, 168, 0.1);
+}
+
+:global(body.dark) .xpEarnTitle,
+:global(html.dark) .xpEarnTitle {
+  color: #e2e8f0;
+}
+
+:global(body.dark) .xpEarnItem,
+:global(html.dark) .xpEarnItem {
+  background: rgba(30, 41, 59, 0.5);
+  border-color: rgba(123, 196, 168, 0.08);
+}
+
+:global(body.dark) .xpEarnText,
+:global(html.dark) .xpEarnText {
+  color: #cbd5e1;
+}
+
+:global(body.dark) .xpEarnValue,
+:global(html.dark) .xpEarnValue {
+  background: rgba(16, 185, 129, 0.15);
+}
+
+:global(body.dark) .xpRewardsSection,
+:global(html.dark) .xpRewardsSection {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.08), rgba(247, 177, 134, 0.12));
+  border-color: rgba(247, 177, 134, 0.2);
+}
+
+:global(body.dark) .xpRewardsTitle,
+:global(html.dark) .xpRewardsTitle {
+  color: #e2e8f0;
+}
+
+:global(body.dark) .xpRewardsDescription,
+:global(html.dark) .xpRewardsDescription {
+  color: #94a3b8;
 }

@@ -1,11 +1,18 @@
 const Recipe = require('../models/Recipe');
 const UserProfile = require('../models/UserProfile');
 const User = require('../models/User');
+const LeaderboardEntry = require('../models/LeaderboardEntry');
 const mongoose = require('mongoose');
 const logger = require('../utils/logger');
 const { notifyAdmins } = require('../services/adminNotification.service');
 const { sendNotificationToUser } = require('../services/pushNotification.service');
 const Notification = require('../models/Notification');
+
+// Constantes XP pour les recettes
+const XP_REWARDS = {
+  RECIPE_CREATED: 50,
+  RECIPE_APPROVED: 100
+};
 
 /**
  * @route   GET /api/recipes
@@ -669,11 +676,19 @@ exports.createUserRecipe = async (req, res) => {
     const recipe = new Recipe(newRecipeData);
     await recipe.save();
 
-    logger.info(`Recette "${recipe.title}" créée par user ${userId}`);
+    // Attribuer XP pour la création de recette
+    await LeaderboardEntry.findOneAndUpdate(
+      { userId: new mongoose.Types.ObjectId(userId) },
+      { $inc: { xp: XP_REWARDS.RECIPE_CREATED } },
+      { upsert: true }
+    );
+
+    logger.info(`Recette "${recipe.title}" créée par user ${userId} (+${XP_REWARDS.RECIPE_CREATED} XP)`);
 
     res.status(201).json({
       success: true,
-      recipe
+      recipe,
+      xpEarned: XP_REWARDS.RECIPE_CREATED
     });
   } catch (error) {
     logger.error('Erreur createUserRecipe:', error);
@@ -1068,19 +1083,26 @@ exports.approveRecipe = async (req, res) => {
     recipe.rejectionReason = undefined;
     await recipe.save();
 
-    // Notifier l'utilisateur
+    // Attribuer XP bonus pour l'approbation
     if (recipe.author) {
+      await LeaderboardEntry.findOneAndUpdate(
+        { userId: new mongoose.Types.ObjectId(recipe.author) },
+        { $inc: { xp: XP_REWARDS.RECIPE_APPROVED } },
+        { upsert: true }
+      );
+
+      // Notifier l'utilisateur avec l'XP gagnée
       const io = req.app.get('io');
       await notifyRecipeUser(recipe.author, io, {
         title: '✅ Recette approuvée !',
-        message: `Ta recette "${recipe.title}" a été approuvée et est maintenant publique ! 🎉`,
+        message: `Ta recette "${recipe.title}" a été approuvée et est maintenant publique ! +${XP_REWARDS.RECIPE_APPROVED} XP 🎉`,
         link: `/recettes/${recipe.slug}`,
-        metadata: { recipeId: recipe._id, action: 'approved' },
-        pushBody: `Ta recette "${recipe.title}" est maintenant publique ! 🎉`
+        metadata: { recipeId: recipe._id, action: 'approved', xpEarned: XP_REWARDS.RECIPE_APPROVED },
+        pushBody: `Ta recette "${recipe.title}" est maintenant publique ! +${XP_REWARDS.RECIPE_APPROVED} XP 🎉`
       });
     }
 
-    logger.info(`Recette ${id} approuvée par admin ${req.user.id}`);
+    logger.info(`Recette ${id} approuvée par admin ${req.user.id} (+${XP_REWARDS.RECIPE_APPROVED} XP pour l'auteur)`);
 
     res.json({
       success: true,
