@@ -160,23 +160,33 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
   const handleNotificationClick = useCallback(async (notification) => {
     markAsRead(notification.id);
 
-    // Pour les notifications de programme refusé, afficher un modal avec la raison
+    // Pour les notifications de programme/recette refuse, afficher un modal avec la raison
     if (notification.type === 'system' && notification.metadata?.action === 'rejected') {
+      // Si c'est une recette, utiliser le nom de la recette
+      const itemName = notification.metadata.recipeName || notification.metadata.programName || 'Element';
       setRejectionModal({
         isOpen: true,
-        programName: notification.metadata.programName || 'Programme',
-        reason: notification.metadata.reason || 'Aucune raison spécifiée'
+        programName: itemName,
+        reason: notification.metadata.reason || 'Aucune raison specifiee'
       });
       setIsOpen(false);
       if (isPanel && onClose) {
         onClose();
       }
+      // Si c'est une recette rejetee et qu'il y a un lien, naviguer apres fermeture du modal
+      // Le lien sera utilise via le bouton du modal ou navigation manuelle
       return;
     }
 
-    // Pour les notifications de programme approuvé, rediriger vers la page programmes
+    // Pour les notifications de programme/recette approuve
     if (notification.type === 'system' && notification.metadata?.action === 'approved') {
-      navigate('/programs');
+      // Si c'est une recette, utiliser le lien fourni (vers la page recette)
+      if (notification.metadata?.recipeId && notification.link) {
+        navigate(notification.link);
+      } else {
+        // Sinon c'est un programme, aller vers /programs
+        navigate('/programs');
+      }
       setIsOpen(false);
       if (isPanel && onClose) {
         onClose();

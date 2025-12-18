@@ -90,6 +90,9 @@ const WorkoutProgramSchema = new Schema({
     default: "private"
   },
 
+  // Raison du refus (si rejeté par admin)
+  rejectionReason: { type: String },
+
   // Créateur
   createdBy: {
     type: String,
