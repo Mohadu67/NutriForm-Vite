@@ -10,6 +10,7 @@ import { getMyProfile, updateProfile } from "../../../shared/api/profile.js";
 import { UserIcon, DiamondIcon, HeartIcon, SettingsIcon } from '../../Icons/GlobalIcons';
 import { storage } from "../../../shared/utils/storage";
 import logger from '../../../shared/utils/logger.js';
+import { LEAGUE_INFO, getLeagueForXP, getProgressToNextLeague } from '../../../pages/Leaderboard/hooks/useChallenges';
 
 const WORKOUT_TYPES = [
   { value: 'musculation', label: 'Musculation', icon: '💪' },
@@ -68,6 +69,9 @@ export default function ProfileUser({ onLogout }) {
   const [subscriptionInfo, setSubscriptionInfo] = useState(null);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
 
+  // XP state
+  const [xpData, setXpData] = useState(null);
+
   useEffect(() => {
     // Invalider le cache auth pour forcer un appel frais
     invalidateAuthCache();
@@ -75,6 +79,7 @@ export default function ProfileUser({ onLogout }) {
     fetchUserData();
     fetchSubscriptionInfo();
     fetchMatchingProfile();
+    fetchXpData();
   }, []);
 
   const fetchSubscriptionInfo = async () => {
@@ -100,6 +105,48 @@ export default function ProfileUser({ onLogout }) {
       });
     } catch (err) {
       logger.error('Erreur récupération profil matching:', err);
+    }
+  };
+
+  const fetchXpData = async () => {
+    try {
+      const response = await secureApiCall('/leaderboard/status', { method: 'GET' });
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        const xp = data.data.xp || 0;
+        const league = getLeagueForXP(xp);
+        const progress = getProgressToNextLeague(xp);
+        setXpData({
+          xp,
+          league,
+          leagueInfo: LEAGUE_INFO[league],
+          progress,
+          isOptedIn: data.isOptedIn,
+          challengeStats: data.data.challengeStats || {}
+        });
+      } else {
+        // User not in leaderboard yet, show 0 XP
+        setXpData({
+          xp: 0,
+          league: 'starter',
+          leagueInfo: LEAGUE_INFO.starter,
+          progress: getProgressToNextLeague(0),
+          isOptedIn: false,
+          challengeStats: {}
+        });
+      }
+    } catch (err) {
+      logger.error('Erreur récupération XP:', err);
+      // Set default values on error
+      setXpData({
+        xp: 0,
+        league: 'starter',
+        leagueInfo: LEAGUE_INFO.starter,
+        progress: getProgressToNextLeague(0),
+        isOptedIn: false,
+        challengeStats: {}
+      });
     }
   };
 
@@ -356,6 +403,87 @@ export default function ProfileUser({ onLogout }) {
                     ✏️ Modifier mes informations
                   </button>
                 </div>
+
+                {/* Section XP */}
+                {xpData && (
+                  <div className={styles.section}>
+                    <h3 className={styles.sectionTitle}>Mes Points d'Expérience</h3>
+                    <div className={styles.xpContainer}>
+                      <div className={styles.xpHeader}>
+                        <div className={styles.xpLeagueIcon} style={{ color: xpData.leagueInfo.color }}>
+                          {xpData.leagueInfo.icon}
+                        </div>
+                        <div className={styles.xpInfo}>
+                          <span className={styles.xpLeagueName} style={{ color: xpData.leagueInfo.color }}>
+                            {xpData.leagueInfo.name}
+                          </span>
+                          <span className={styles.xpTotal}>{xpData.xp} XP</span>
+                        </div>
+                      </div>
+
+                      {/* Progress bar vers prochaine ligue */}
+                      {xpData.progress.nextLeague && (
+                        <div className={styles.xpProgress}>
+                          <div className={styles.xpProgressBar}>
+                            <div
+                              className={styles.xpProgressFill}
+                              style={{
+                                width: `${xpData.progress.percentage}%`,
+                                background: `linear-gradient(90deg, ${xpData.leagueInfo.color}, ${LEAGUE_INFO[xpData.progress.nextLeague].color})`
+                              }}
+                            />
+                          </div>
+                          <div className={styles.xpProgressInfo}>
+                            <span>{xpData.progress.remaining} XP pour atteindre</span>
+                            <span className={styles.xpNextLeague}>
+                              {LEAGUE_INFO[xpData.progress.nextLeague].icon} {LEAGUE_INFO[xpData.progress.nextLeague].name}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Comment gagner des XP */}
+                      <div className={styles.xpEarnSection}>
+                        <h4 className={styles.xpEarnTitle}>Comment gagner des XP</h4>
+                        <div className={styles.xpEarnList}>
+                          <div className={styles.xpEarnItem}>
+                            <span className={styles.xpEarnIcon}>🍳</span>
+                            <span className={styles.xpEarnText}>Créer une recette</span>
+                            <span className={styles.xpEarnValue}>+50 XP</span>
+                          </div>
+                          <div className={styles.xpEarnItem}>
+                            <span className={styles.xpEarnIcon}>✅</span>
+                            <span className={styles.xpEarnText}>Recette approuvée</span>
+                            <span className={styles.xpEarnValue}>+100 XP</span>
+                          </div>
+                          <div className={styles.xpEarnItem}>
+                            <span className={styles.xpEarnIcon}>🏋️</span>
+                            <span className={styles.xpEarnText}>Créer un programme</span>
+                            <span className={styles.xpEarnValue}>+75 XP</span>
+                          </div>
+                          <div className={styles.xpEarnItem}>
+                            <span className={styles.xpEarnIcon}>✅</span>
+                            <span className={styles.xpEarnText}>Programme approuvé</span>
+                            <span className={styles.xpEarnValue}>+150 XP</span>
+                          </div>
+                          <div className={styles.xpEarnItem}>
+                            <span className={styles.xpEarnIcon}>⚔️</span>
+                            <span className={styles.xpEarnText}>Gagner un défi</span>
+                            <span className={styles.xpEarnValue}>+25-100 XP</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Utilisation des XP - à venir */}
+                      <div className={styles.xpRewardsSection}>
+                        <h4 className={styles.xpRewardsTitle}>Utiliser mes XP</h4>
+                        <p className={styles.xpRewardsDescription}>
+                          Bientôt disponible : utilisez vos XP pour obtenir des réductions chez nos partenaires ou payer une partie de votre abonnement !
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {isAdmin && (
                   <div className={styles.section}>

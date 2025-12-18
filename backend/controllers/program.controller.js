@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const WorkoutProgram = require("../models/WorkoutProgram");
 const WorkoutSession = require("../models/WorkoutSession");
 const User = require("../models/User");
+const LeaderboardEntry = require("../models/LeaderboardEntry");
 const Notification = require("../models/Notification");
 const logger = require("../utils/logger");
 const { sanitizeProgram } = require("../utils/sanitizer");
@@ -15,6 +16,12 @@ const {
   validateProgramData
 } = require('../services/programValidation.service');
 const { VALID_TYPES, VALID_DIFFICULTIES } = require('../constants/programValidation');
+
+// Constantes XP pour les programmes
+const XP_REWARDS = {
+  PROGRAM_CREATED: 75,
+  PROGRAM_APPROVED: 150
+};
 
 /**
  * Notifier un utilisateur avec WebSocket + base + push
@@ -224,7 +231,16 @@ async function createProgram(req, res) {
       userId: new mongoose.Types.ObjectId(req.user.id) // Toujours associer au createur
     });
 
-    return res.status(201).json({ success: true, program });
+    // Attribuer XP pour la création de programme
+    await LeaderboardEntry.findOneAndUpdate(
+      { userId: new mongoose.Types.ObjectId(req.user.id) },
+      { $inc: { xp: XP_REWARDS.PROGRAM_CREATED } },
+      { upsert: true }
+    );
+
+    logger.info(`Programme "${program.name}" créé par user ${req.user.id} (+${XP_REWARDS.PROGRAM_CREATED} XP)`);
+
+    return res.status(201).json({ success: true, program, xpEarned: XP_REWARDS.PROGRAM_CREATED });
   } catch (err) {
     logger.error("createProgram error:", err);
     return res.status(500).json({ error: "server_error" });
@@ -881,19 +897,26 @@ async function approveProgram(req, res) {
     program.isPublic = true;
     await program.save();
 
-    // Notifier l'utilisateur de l'approbation
+    // Attribuer XP bonus pour l'approbation
     if (program.userId) {
+      await LeaderboardEntry.findOneAndUpdate(
+        { userId: program.userId },
+        { $inc: { xp: XP_REWARDS.PROGRAM_APPROVED } },
+        { upsert: true }
+      );
+
+      // Notifier l'utilisateur avec l'XP gagnée
       const io = req.app.get('io');
       await notifyProgramUser(program.userId, io, {
         title: '✅ Programme approuvé !',
-        message: `Ton programme "${program.name}" a été approuvé et est maintenant public ! 🎉`,
+        message: `Ton programme "${program.name}" a été approuvé et est maintenant public ! +${XP_REWARDS.PROGRAM_APPROVED} XP 🎉`,
         link: '/programs',
-        metadata: { programId: program._id, action: 'approved' },
-        pushBody: `Ton programme "${program.name}" est maintenant public ! 🎉`
+        metadata: { programId: program._id, action: 'approved', xpEarned: XP_REWARDS.PROGRAM_APPROVED },
+        pushBody: `Ton programme "${program.name}" est maintenant public ! +${XP_REWARDS.PROGRAM_APPROVED} XP 🎉`
       });
     }
 
-    logger.info(`Programme ${id} approuvé par admin ${req.user.id}`);
+    logger.info(`Programme ${id} approuvé par admin ${req.user.id} (+${XP_REWARDS.PROGRAM_APPROVED} XP pour l'auteur)`);
 
     return res.status(200).json({
       success: true,
