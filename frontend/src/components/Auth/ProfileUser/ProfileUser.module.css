@@ -824,6 +824,108 @@
   line-height: 1.5;
 }
 
+/* XP Redemption Card */
+.xpRedeemCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.15);
+  border: 1px solid rgba(247, 177, 134, 0.3);
+}
+
+.xpRedeemInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.xpRedeemIcon {
+  font-size: 2rem;
+}
+
+.xpRedeemDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.xpRedeemTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.xpRedeemCost {
+  font-size: 0.875rem;
+  color: #f7b186;
+  font-weight: 600;
+}
+
+.xpRedeemBtn {
+  background: linear-gradient(135deg, #f7b186 0%, #e89a6f 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.xpRedeemBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.4);
+}
+
+.xpRedeemBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* XP Redemption Locked */
+.xpRedeemLocked {
+  text-align: center;
+  padding: 16px;
+}
+
+.xpRedeemLockedIcon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.xpRedeemLockedText {
+  margin: 0 0 12px 0;
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.xpRedeemProgress {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.xpRedeemProgressBar {
+  height: 100%;
+  background: linear-gradient(90deg, #f7b186, #e89a6f);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.xpRedeemProgressText {
+  font-size: 0.8125rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
 /* === RESPONSIVE === */
 @media (max-width: 640px) {
   .body {
@@ -1174,4 +1276,31 @@
 :global(body.dark) .xpRewardsDescription,
 :global(html.dark) .xpRewardsDescription {
   color: #94a3b8;
+}
+
+/* XP Redemption dark mode */
+:global(body.dark) .xpRedeemCard,
+:global(html.dark) .xpRedeemCard {
+  background: #2a2d38;
+  border-color: rgba(247, 177, 134, 0.3);
+}
+
+:global(body.dark) .xpRedeemTitle,
+:global(html.dark) .xpRedeemTitle {
+  color: #f5f7fa;
+}
+
+:global(body.dark) .xpRedeemLockedText,
+:global(html.dark) .xpRedeemLockedText {
+  color: #94a3b8;
+}
+
+:global(body.dark) .xpRedeemProgress,
+:global(html.dark) .xpRedeemProgress {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+:global(body.dark) .xpRedeemProgressText,
+:global(html.dark) .xpRedeemProgressText {
+  color: #9ca3af;
 }

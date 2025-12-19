@@ -15,7 +15,7 @@ async function requirePremium(req, res, next) {
       });
     }
 
-    // TOUJOURS vérifier Subscription.isActive() - ne jamais faire confiance au tier User seul
+    // 1. Vérifier l'abonnement Stripe
     const subscription = await Subscription.findOne({ userId: req.userId });
 
     if (subscription && subscription.isActive()) {
@@ -27,11 +27,22 @@ async function requirePremium(req, res, next) {
       return next();
     }
 
-    // L'abonnement n'est pas actif - rétrograder le User si nécessaire
+    // 2. Vérifier le Premium obtenu par XP
+    if (req.user.xpPremiumExpiresAt && req.user.xpPremiumExpiresAt > new Date()) {
+      // Premium XP actif
+      if (req.user.subscriptionTier !== 'premium') {
+        req.user.subscriptionTier = 'premium';
+        await req.user.save();
+      }
+      return next();
+    }
+
+    // Aucun abonnement actif - rétrograder le User si nécessaire
     if (req.user.subscriptionTier === 'premium') {
       req.user.subscriptionTier = 'free';
+      req.user.xpPremiumExpiresAt = null; // Nettoyer le champ expiré
       await req.user.save();
-      logger.info(`User ${req.userId} rétrogradé à free (subscription expirée)`);
+      logger.info(`User ${req.userId} rétrogradé à free (subscription/XP premium expiré)`);
     }
 
     return res.status(403).json({

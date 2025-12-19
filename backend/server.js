@@ -46,6 +46,7 @@ const reviewsRoutes = require('./routes/reviews.js');
 const uploadRoutes = require('./routes/upload.js');
 const leaderboardRoutes = require('./routes/leaderboard.route.js');
 const subscriptionRoutes = require('./routes/subscription.route.js');
+const xpRedemptionRoutes = require('./routes/xpRedemption.route.js');
 const chatRoutes = require('./routes/chat.route.js');
 const supportTicketRoutes = require('./routes/supportTicket.route.js');
 const profileRoutes = require('./routes/profile.route.js');
@@ -62,6 +63,7 @@ const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 const { startChallengeCron } = require('./cron/challengeCron');
 const { startDailyNotificationCron } = require('./cron/dailyNotificationCron');
+const { startXpPremiumCron } = require('./cron/xpPremiumCron');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -223,6 +225,7 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/xp-redemption', xpRedemptionRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/admin/support-tickets', supportTicketRoutes);
 app.use('/api/profile', profileRoutes);
@@ -285,6 +288,7 @@ if (process.env.NODE_ENV !== 'test') {
       startLeaderboardCron();
       startChallengeCron();
       startDailyNotificationCron();
+      startXpPremiumCron();
     } else {
       logger.warn('⚠️  Tâches planifiées désactivées - MongoDB non connecté');
       // Réessayer après connexion
@@ -294,6 +298,7 @@ if (process.env.NODE_ENV !== 'test') {
         startLeaderboardCron();
         startChallengeCron();
         startDailyNotificationCron();
+        startXpPremiumCron();
       });
     }
   });

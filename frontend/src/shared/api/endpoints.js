@@ -76,6 +76,11 @@ export const endpoints = {
     decline: (id) => `/challenges/${id}/decline`,
     cancel: (id) => `/challenges/${id}/cancel`,
     congratulate: "/challenges/congratulate",
+  },
+  xpRedemption: {
+    eligibility: "/xp-redemption/eligibility",
+    redeem: "/xp-redemption/redeem",
+    history: "/xp-redemption/history",
   }
 };
 export default endpoints;
