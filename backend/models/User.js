@@ -74,6 +74,10 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null
     },
+    xpPremiumExpiresAt: {
+      type: Date,
+      default: null
+    },
     emailVerifie: { type: Boolean, default: false },
     verificationToken: { type: String, default: null, select: false },
     verificationExpires: { type: Date, default: null, select: false },

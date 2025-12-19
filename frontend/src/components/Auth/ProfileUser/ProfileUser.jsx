@@ -7,6 +7,8 @@ import NotificationSettings from "../../Notifications/NotificationSettings.jsx";
 import { secureApiCall, logout, isAuthenticated, invalidateAuthCache } from "../../../utils/authService.js";
 import { getSubscriptionStatus, createCustomerPortalSession } from "../../../shared/api/subscription.js";
 import { getMyProfile, updateProfile } from "../../../shared/api/profile.js";
+import { redeemXpForPremium } from "../../../shared/api/xpRedemption.js";
+import RedeemXpModal from "../../RedeemXpModal/RedeemXpModal.jsx";
 import { UserIcon, DiamondIcon, HeartIcon, SettingsIcon } from '../../Icons/GlobalIcons';
 import { storage } from "../../../shared/utils/storage";
 import logger from '../../../shared/utils/logger.js';
@@ -71,6 +73,8 @@ export default function ProfileUser({ onLogout }) {
 
   // XP state
   const [xpData, setXpData] = useState(null);
+  const [showRedeemModal, setShowRedeemModal] = useState(false);
+  const [redeemLoading, setRedeemLoading] = useState(false);
 
   useEffect(() => {
     // Invalider le cache auth pour forcer un appel frais
@@ -147,6 +151,26 @@ export default function ProfileUser({ onLogout }) {
         isOptedIn: false,
         challengeStats: {}
       });
+    }
+  };
+
+  const handleRedeemXp = async (months) => {
+    setRedeemLoading(true);
+    try {
+      const result = await redeemXpForPremium(months);
+      if (result.success) {
+        // Rafraichir les donnees
+        await fetchXpData();
+        await fetchSubscriptionInfo();
+        setShowRedeemModal(false);
+        // Afficher un message de succes (toast ou alert)
+        alert(result.message);
+      }
+    } catch (err) {
+      logger.error('Erreur rachat XP:', err);
+      alert(err.response?.data?.error || 'Erreur lors de la conversion');
+    } finally {
+      setRedeemLoading(false);
     }
   };
 
@@ -474,13 +498,52 @@ export default function ProfileUser({ onLogout }) {
                         </div>
                       </div>
 
-                      {/* Utilisation des XP - à venir */}
+                      {/* Utilisation des XP pour Premium */}
                       <div className={styles.xpRewardsSection}>
                         <h4 className={styles.xpRewardsTitle}>Utiliser mes XP</h4>
-                        <p className={styles.xpRewardsDescription}>
-                          Bientôt disponible : utilisez vos XP pour obtenir des réductions chez nos partenaires ou payer une partie de votre abonnement !
-                        </p>
+
+                        {xpData.xp >= 10000 ? (
+                          <div className={styles.xpRedeemCard}>
+                            <div className={styles.xpRedeemInfo}>
+                              <span className={styles.xpRedeemIcon}>🎁</span>
+                              <div className={styles.xpRedeemDetails}>
+                                <span className={styles.xpRedeemTitle}>1 mois Premium gratuit</span>
+                                <span className={styles.xpRedeemCost}>10 000 XP</span>
+                              </div>
+                            </div>
+                            <button
+                              className={styles.xpRedeemBtn}
+                              onClick={() => setShowRedeemModal(true)}
+                              disabled={redeemLoading}
+                            >
+                              Utiliser
+                            </button>
+                          </div>
+                        ) : (
+                          <div className={styles.xpRedeemLocked}>
+                            <span className={styles.xpRedeemLockedIcon}>🔒</span>
+                            <p className={styles.xpRedeemLockedText}>Accumulez 10 000 XP pour obtenir 1 mois Premium gratuit !</p>
+                            <div className={styles.xpRedeemProgress}>
+                              <div
+                                className={styles.xpRedeemProgressBar}
+                                style={{ width: `${Math.min((xpData.xp / 10000) * 100, 100)}%` }}
+                              />
+                            </div>
+                            <span className={styles.xpRedeemProgressText}>
+                              {xpData.xp.toLocaleString()} / 10 000 XP ({Math.round((xpData.xp / 10000) * 100)}%)
+                            </span>
+                          </div>
+                        )}
                       </div>
+
+                      {/* Modal de rachat XP */}
+                      <RedeemXpModal
+                        isOpen={showRedeemModal}
+                        onClose={() => setShowRedeemModal(false)}
+                        onConfirm={handleRedeemXp}
+                        xpBalance={xpData.xp}
+                        loading={redeemLoading}
+                      />
                     </div>
                   </div>
                 )}
