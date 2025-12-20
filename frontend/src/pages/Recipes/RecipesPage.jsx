@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import RecipeCard from './components/RecipeCard';
@@ -9,7 +10,6 @@ import MesRecettes from './MesRecettes/MesRecettes';
 import UserRecipeForm from './MesRecettes/UserRecipeForm';
 import { useRecipes } from './hooks/useRecipes';
 import { useLikedRecipes } from './hooks/useLikedRecipes';
-import usePageTitle from '../../hooks/usePageTitle';
 import { usePremiumStatus } from '../../hooks/usePremiumStatus';
 import {
   SearchIcon,
@@ -21,8 +21,6 @@ import style from './RecipesPage.module.css';
 const VALID_VIEWS = ['browse', 'my-recipes', 'create', 'edit'];
 
 export default function RecipesPage() {
-  usePageTitle('Recettes santé');
-
   const { isPremium } = usePremiumStatus();
   const [searchParams] = useSearchParams();
 
@@ -180,6 +178,12 @@ export default function RecipesPage() {
 
   return (
     <>
+      <Helmet>
+        <title>Recettes Healthy et Fitness - Harmonith | Repas Equilibres</title>
+        <meta name="description" content="Decouvrez nos recettes sante adaptees a vos objectifs fitness : perte de poids, prise de masse, alimentation equilibree. Recettes faciles avec macros detaillees." />
+        <meta property="og:title" content="Recettes Healthy et Fitness - Harmonith" />
+        <meta property="og:description" content="Recettes sante adaptees a vos objectifs fitness avec macros detaillees." />
+      </Helmet>
       <Header />
       <main className={style.page}>
         <div className={style.container}>
