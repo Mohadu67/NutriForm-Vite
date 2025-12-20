@@ -7,12 +7,13 @@ import NotificationSettings from "../../Notifications/NotificationSettings.jsx";
 import { secureApiCall, logout, isAuthenticated, invalidateAuthCache } from "../../../utils/authService.js";
 import { getSubscriptionStatus, createCustomerPortalSession } from "../../../shared/api/subscription.js";
 import { getMyProfile, updateProfile } from "../../../shared/api/profile.js";
-import { redeemXpForPremium } from "../../../shared/api/xpRedemption.js";
+import { redeemXpForPremium, getXpRedemptionHistory } from "../../../shared/api/xpRedemption.js";
 import RedeemXpModal from "../../RedeemXpModal/RedeemXpModal.jsx";
-import { UserIcon, DiamondIcon, HeartIcon, SettingsIcon } from '../../Icons/GlobalIcons';
+import { UserIcon, DiamondIcon, HeartIcon, SettingsIcon, LockIcon, InfoIcon } from '../../Icons/GlobalIcons';
 import { storage } from "../../../shared/utils/storage";
 import logger from '../../../shared/utils/logger.js';
 import { LEAGUE_INFO, getLeagueForXP, getProgressToNextLeague } from '../../../pages/Leaderboard/hooks/useChallenges';
+import { useNotification } from '../../../hooks/useNotification.jsx';
 
 const WORKOUT_TYPES = [
   { value: 'musculation', label: 'Musculation', icon: '💪' },
@@ -38,6 +39,7 @@ const FITNESS_LEVELS = [
 
 export default function ProfileUser({ onLogout }) {
   const navigate = useNavigate();
+  const notify = useNotification();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile'); // profile, premium, matching, settings
@@ -75,6 +77,19 @@ export default function ProfileUser({ onLogout }) {
   const [xpData, setXpData] = useState(null);
   const [showRedeemModal, setShowRedeemModal] = useState(false);
   const [redeemLoading, setRedeemLoading] = useState(false);
+  const [redemptionHistory, setRedemptionHistory] = useState([]);
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  const fetchRedemptionHistory = async () => {
+    try {
+      const result = await getXpRedemptionHistory();
+      if (result.success) {
+        setRedemptionHistory(result.redemptions || []);
+      }
+    } catch (err) {
+      logger.error('Erreur récupération historique rachats:', err);
+    }
+  };
 
   useEffect(() => {
     // Invalider le cache auth pour forcer un appel frais
@@ -84,6 +99,7 @@ export default function ProfileUser({ onLogout }) {
     fetchSubscriptionInfo();
     fetchMatchingProfile();
     fetchXpData();
+    fetchRedemptionHistory();
   }, []);
 
   const fetchSubscriptionInfo = async () => {
@@ -162,13 +178,17 @@ export default function ProfileUser({ onLogout }) {
         // Rafraichir les donnees
         await fetchXpData();
         await fetchSubscriptionInfo();
+        await fetchRedemptionHistory();
         setShowRedeemModal(false);
-        // Afficher un message de succes (toast ou alert)
-        alert(result.message);
+        // Afficher animation de celebration
+        setShowCelebration(true);
+        setTimeout(() => setShowCelebration(false), 3000);
+        // Toast de succes
+        notify.success(`${months} mois Premium activé ! Profitez de vos avantages.`);
       }
     } catch (err) {
       logger.error('Erreur rachat XP:', err);
-      alert(err.response?.data?.error || 'Erreur lors de la conversion');
+      notify.error(err.response?.data?.error || 'Erreur lors de la conversion');
     } finally {
       setRedeemLoading(false);
     }
@@ -499,42 +519,79 @@ export default function ProfileUser({ onLogout }) {
                       </div>
 
                       {/* Utilisation des XP pour Premium */}
-                      <div className={styles.xpRewardsSection}>
-                        <h4 className={styles.xpRewardsTitle}>Utiliser mes XP</h4>
+                      <div
+                        className={styles.xpRewardsSection}
+                        onClick={() => navigate('/rewards')}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <div className={styles.xpRewardsTitleRow}>
+                          <h4 className={styles.xpRewardsTitle}>Utiliser mes XP</h4>
+                          <span className={styles.xpRewardsArrow}>→</span>
+                        </div>
 
-                        {xpData.xp >= 10000 ? (
-                          <div className={styles.xpRedeemCard}>
-                            <div className={styles.xpRedeemInfo}>
-                              <span className={styles.xpRedeemIcon}>🎁</span>
-                              <div className={styles.xpRedeemDetails}>
-                                <span className={styles.xpRedeemTitle}>1 mois Premium gratuit</span>
-                                <span className={styles.xpRedeemCost}>10 000 XP</span>
-                              </div>
-                            </div>
-                            <button
-                              className={styles.xpRedeemBtn}
-                              onClick={() => setShowRedeemModal(true)}
-                              disabled={redeemLoading}
-                            >
-                              Utiliser
-                            </button>
+                        <div className={styles.xpRewardsPreview}>
+                          <span className={styles.xpRewardsPreviewIcon}>🎁</span>
+                          <div className={styles.xpRewardsPreviewText}>
+                            <span className={styles.xpRewardsPreviewTitle}>Decouvre nos recompenses</span>
+                            <span className={styles.xpRewardsPreviewSub}>Premium, codes promo partenaires...</span>
                           </div>
-                        ) : (
-                          <div className={styles.xpRedeemLocked}>
-                            <span className={styles.xpRedeemLockedIcon}>🔒</span>
-                            <p className={styles.xpRedeemLockedText}>Accumulez 10 000 XP pour obtenir 1 mois Premium gratuit !</p>
-                            <div className={styles.xpRedeemProgress}>
-                              <div
-                                className={styles.xpRedeemProgressBar}
-                                style={{ width: `${Math.min((xpData.xp / 10000) * 100, 100)}%` }}
-                              />
-                            </div>
-                            <span className={styles.xpRedeemProgressText}>
-                              {xpData.xp.toLocaleString()} / 10 000 XP ({Math.round((xpData.xp / 10000) * 100)}%)
-                            </span>
-                          </div>
-                        )}
+                        </div>
                       </div>
+
+                      {/* Historique des rachats */}
+                      {redemptionHistory.length > 0 && (
+                        <div className={styles.xpHistorySection}>
+                          <h4 className={styles.xpHistoryTitle}>Historique des conversions</h4>
+                          <div className={styles.xpHistoryList}>
+                            {redemptionHistory.slice(0, 5).map((redemption) => (
+                              <div key={redemption._id} className={styles.xpHistoryItem}>
+                                <div className={styles.xpHistoryInfo}>
+                                  <span className={styles.xpHistoryIcon}>✨</span>
+                                  <div className={styles.xpHistoryDetails}>
+                                    <span className={styles.xpHistoryMonths}>
+                                      {redemption.monthsRedeemed} mois Premium
+                                    </span>
+                                    <span className={styles.xpHistoryDate}>
+                                      {new Date(redemption.createdAt).toLocaleDateString('fr-FR', {
+                                        day: 'numeric',
+                                        month: 'long',
+                                        year: 'numeric'
+                                      })}
+                                    </span>
+                                  </div>
+                                </div>
+                                <span className={styles.xpHistoryCost}>
+                                  -{redemption.xpSpent.toLocaleString()} XP
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Animation de celebration */}
+                      {showCelebration && (
+                        <div className={styles.celebrationOverlay}>
+                          <div className={styles.celebrationContent}>
+                            <span className={styles.celebrationIcon}>🎉</span>
+                            <h3 className={styles.celebrationTitle}>Félicitations !</h3>
+                            <p className={styles.celebrationText}>Vous êtes maintenant Premium</p>
+                            <div className={styles.confetti}>
+                              {[...Array(20)].map((_, i) => (
+                                <span
+                                  key={i}
+                                  className={styles.confettiPiece}
+                                  style={{
+                                    '--delay': `${Math.random() * 0.5}s`,
+                                    '--x': `${Math.random() * 100 - 50}vw`,
+                                    '--rotation': `${Math.random() * 360}deg`
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Modal de rachat XP */}
                       <RedeemXpModal
@@ -629,34 +686,85 @@ export default function ProfileUser({ onLogout }) {
                       )}
                     </div>
 
-                    {subscriptionInfo.tier === 'premium' && subscriptionInfo.isInTrial && subscriptionInfo.trialEnd && (
-                      <div className={styles.premiumInfo}>
-                        <p>Période d'essai expire le {new Date(subscriptionInfo.trialEnd).toLocaleDateString('fr-FR')}</p>
+                    {/* Premium via XP */}
+                    {subscriptionInfo.hasXpPremium && subscriptionInfo.xpPremiumExpiresAt && (
+                      <div className={styles.xpPremiumBox}>
+                        <div className={styles.xpPremiumHeader}>
+                          <span className={styles.xpPremiumIcon}>🎁</span>
+                          <span className={styles.xpPremiumTitle}>Premium via XP</span>
+                        </div>
+                        <p className={styles.xpPremiumExpiry}>
+                          Actif jusqu'au <strong>{new Date(subscriptionInfo.xpPremiumExpiresAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>
+                        </p>
+                        <p className={styles.xpPremiumNote}>
+                          Aucun paiement requis pendant cette période
+                        </p>
                       </div>
                     )}
 
-                    {subscriptionInfo.tier === 'premium' && !subscriptionInfo.isInTrial && subscriptionInfo.currentPeriodEnd && (
-                      <div className={styles.premiumInfo}>
-                        <p>
-                          {subscriptionInfo.cancelAtPeriodEnd ? 'Annulé - ' : 'Renouvellement le '}
-                          {new Date(subscriptionInfo.currentPeriodEnd).toLocaleDateString('fr-FR')}
-                        </p>
+                    {/* Abonnement Stripe actif */}
+                    {subscriptionInfo.hasSubscription && (
+                      <div className={styles.stripePremiumBox}>
+                        <div className={styles.stripePremiumHeader}>
+                          <span className={styles.stripePremiumIcon}>💳</span>
+                          <span className={styles.stripePremiumTitle}>Abonnement mensuel</span>
+                        </div>
+
+                        {subscriptionInfo.isInTrial && subscriptionInfo.trialEnd && (
+                          <p className={styles.stripePremiumInfo}>
+                            Essai gratuit jusqu'au <strong>{new Date(subscriptionInfo.trialEnd).toLocaleDateString('fr-FR')}</strong>
+                          </p>
+                        )}
+
+                        {!subscriptionInfo.isInTrial && subscriptionInfo.currentPeriodEnd && (
+                          <p className={styles.stripePremiumInfo}>
+                            {subscriptionInfo.cancelAtPeriodEnd
+                              ? `Annulé - Accès jusqu'au ${new Date(subscriptionInfo.currentPeriodEnd).toLocaleDateString('fr-FR')}`
+                              : `Prochain paiement le ${new Date(subscriptionInfo.currentPeriodEnd).toLocaleDateString('fr-FR')}`
+                            }
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Premium XP + Stripe : expliquer la combinaison */}
+                    {subscriptionInfo.hasXpPremium && subscriptionInfo.hasSubscription && (
+                      <div className={styles.combinedPremiumNote}>
+                        <InfoIcon size={16} />
+                        <span>Ton Premium XP s'applique en premier. Le paiement Stripe reprendra après expiration.</span>
+                      </div>
+                    )}
+
+                    {/* Aucun premium */}
+                    {!subscriptionInfo.hasXpPremium && !subscriptionInfo.hasSubscription && subscriptionInfo.tier === 'free' && (
+                      <div className={styles.noPremiumInfo}>
+                        <p>Tu n'as pas d'abonnement Premium actif.</p>
+                        <p className={styles.noPremiumHint}>Utilise tes XP ou souscris à un abonnement pour débloquer toutes les fonctionnalités.</p>
                       </div>
                     )}
                   </div>
 
                   <div className={styles.premiumActions}>
-                    {subscriptionInfo.tier === 'free' ? (
-                      <button className={styles.upgradeBtn} onClick={handleUpgrade}>
-                        🚀 Passer à Premium
-                      </button>
-                    ) : (
+                    {subscriptionInfo.tier === 'free' && !subscriptionInfo.hasXpPremium ? (
+                      <>
+                        <button className={styles.upgradeBtn} onClick={handleUpgrade}>
+                          🚀 S'abonner à Premium
+                        </button>
+                        <button className={styles.xpBtn} onClick={() => navigate('/rewards')}>
+                          🎁 Utiliser mes XP
+                        </button>
+                      </>
+                    ) : subscriptionInfo.hasSubscription ? (
                       <button
                         className={styles.manageBtn}
                         onClick={handleManageSubscription}
                         disabled={loadingSubscription}
                       >
-                        {loadingSubscription ? 'Chargement...' : 'Gérer mon abonnement'}
+                        {loadingSubscription ? 'Chargement...' : 'Gérer mon abonnement Stripe'}
+                      </button>
+                    ) : (
+                      <button className={styles.xpBtn} onClick={() => navigate('/rewards')}>
+                        🎁 Prolonger avec des XP
                       </button>
                     )}
                   </div>
@@ -830,7 +938,7 @@ export default function ProfileUser({ onLogout }) {
                   className={styles.editBtn}
                   onClick={() => setChangingPassword(true)}
                 >
-                  🔒 Changer mon mot de passe
+                  <LockIcon size={16} /> Changer mon mot de passe
                 </button>
               ) : (
                 <form onSubmit={handleChangePassword} className={styles.form}>

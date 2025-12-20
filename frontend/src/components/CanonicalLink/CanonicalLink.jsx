@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 
-// Utilise window.location au lieu de useLocation pour éviter les problèmes de contexte React Router sur Safari
+// Utilise window.location pour éviter les problèmes de contexte React Router sur Safari
 function CanonicalLink() {
-  const [canonicalUrl, setCanonicalUrl] = useState(null);
+  const [canonicalUrl, setCanonicalUrl] = useState("https://harmonith.fr/");
 
   useEffect(() => {
-    // Exécuté uniquement côté client après le montage
     if (typeof window === 'undefined') return;
 
     const baseUrl = "https://harmonith.fr";
@@ -31,11 +30,6 @@ function CanonicalLink() {
 
     setCanonicalUrl(`${baseUrl}${pathname === '/' ? '/' : pathname}`);
   }, []);
-
-  // Ne rien rendre tant que l'URL n'est pas calculée côté client
-  if (!canonicalUrl) {
-    return null;
-  }
 
   return (
     <Helmet>

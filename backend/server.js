@@ -59,6 +59,7 @@ const challengeRoutes = require('./routes/challenge.route.js');
 const badgeRoutes = require('./routes/badge.route.js');
 const linkPreviewRoutes = require('./routes/linkPreview.route.js');
 const rateLimitRoutes = require('./routes/rateLimit.route.js');
+const partnerRoutes = require('./routes/partner.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 const { startChallengeCron } = require('./cron/challengeCron');
@@ -238,6 +239,7 @@ app.use('/api/challenges', challengeRoutes);
 app.use('/api/badges', badgeRoutes);
 app.use('/api/link-preview', linkPreviewRoutes);
 app.use('/api/rate-limit', rateLimitRoutes);
+app.use('/api/partners', partnerRoutes);
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');

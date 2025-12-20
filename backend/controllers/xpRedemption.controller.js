@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const User = require('../models/User');
 const Subscription = require('../models/Subscription');
@@ -74,16 +73,12 @@ async function checkEligibility(req, res) {
  * POST /api/xp-redemption/redeem
  */
 async function redeemXpForPremium(req, res) {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     const userId = req.userId;
     const { months = 1 } = req.body;
 
     // Validation du nombre de mois
     if (months < 1 || months > MAX_MONTHS_REDEEMABLE) {
-      await session.abortTransaction();
       return res.status(400).json({
         error: `Vous pouvez racheter entre 1 et ${MAX_MONTHS_REDEEMABLE} mois`
       });
@@ -92,9 +87,8 @@ async function redeemXpForPremium(req, res) {
     const totalXpCost = months * XP_COST_PER_MONTH;
 
     // Recuperer les XP de l'utilisateur
-    const leaderboardEntry = await LeaderboardEntry.findOne({ userId }).session(session);
+    const leaderboardEntry = await LeaderboardEntry.findOne({ userId });
     if (!leaderboardEntry || leaderboardEntry.xp < totalXpCost) {
-      await session.abortTransaction();
       return res.status(400).json({
         error: 'XP insuffisants',
         required: totalXpCost,
@@ -103,13 +97,20 @@ async function redeemXpForPremium(req, res) {
     }
 
     // Recuperer user et abonnement
-    const user = await User.findById(userId).session(session);
-    const existingSubscription = await Subscription.findOne({ userId }).session(session);
+    const user = await User.findById(userId);
+    const existingSubscription = await Subscription.findOne({ userId });
 
     let premiumStartDate, premiumEndDate, subscriptionType;
 
     // Determiner le type de rachat
-    if (existingSubscription && existingSubscription.isActive()) {
+    // Verifier si l'abonnement Stripe est valide (ID reel, pas un ID de test local)
+    const hasValidStripeSubscription = existingSubscription &&
+      existingSubscription.isActive() &&
+      existingSubscription.stripeSubscriptionId &&
+      existingSubscription.stripeSubscriptionId.startsWith('sub_') &&
+      !existingSubscription.stripeSubscriptionId.includes('test_local');
+
+    if (hasValidStripeSubscription) {
       // User a un abonnement Stripe actif - etendre via Stripe
       subscriptionType = 'stripe_extended';
       premiumStartDate = new Date(existingSubscription.currentPeriodEnd);
@@ -124,14 +125,19 @@ async function redeemXpForPremium(req, res) {
 
         // Mettre a jour la subscription en base
         existingSubscription.currentPeriodEnd = premiumEndDate;
-        await existingSubscription.save({ session });
+        await existingSubscription.save();
 
       } catch (stripeError) {
-        logger.error('Erreur Stripe lors de l\'extension:', stripeError);
-        await session.abortTransaction();
-        return res.status(500).json({
-          error: 'Erreur lors de l\'extension de l\'abonnement Stripe'
-        });
+        // Si erreur Stripe (subscription introuvable, etc.), fallback sur XP-only
+        logger.warn('Erreur Stripe, fallback sur Premium XP:', stripeError.message);
+
+        subscriptionType = 'xp_paid';
+        premiumStartDate = new Date();
+        premiumEndDate = addMonths(premiumStartDate, months);
+
+        user.subscriptionTier = 'premium';
+        user.xpPremiumExpiresAt = premiumEndDate;
+        await user.save();
       }
 
     } else {
@@ -150,14 +156,14 @@ async function redeemXpForPremium(req, res) {
       // Mettre a jour le user
       user.subscriptionTier = 'premium';
       user.xpPremiumExpiresAt = premiumEndDate;
-      await user.save({ session });
+      await user.save();
     }
 
     // Deduire les XP
     const xpBalanceBefore = leaderboardEntry.xp;
     leaderboardEntry.xp -= totalXpCost;
     leaderboardEntry.updateLeague(); // Recalculer la ligue
-    await leaderboardEntry.save({ session });
+    await leaderboardEntry.save();
 
     // Creer l'enregistrement de rachat
     const redemption = new XPRedemption({
@@ -172,12 +178,9 @@ async function redeemXpForPremium(req, res) {
       stripeSubscriptionId: existingSubscription?.stripeSubscriptionId || null,
       status: 'active'
     });
-    await redemption.save({ session });
+    await redemption.save();
 
-    // Commit de la transaction
-    await session.commitTransaction();
-
-    // Envoyer notification (hors transaction)
+    // Envoyer notification
     try {
       const notifTitle = 'XP convertis en Premium !';
       const notifMessage = `Vous avez utilise ${totalXpCost.toLocaleString()} XP pour obtenir ${months} mois Premium !`;
@@ -238,11 +241,8 @@ async function redeemXpForPremium(req, res) {
     });
 
   } catch (error) {
-    await session.abortTransaction();
     logger.error('Erreur redeemXpForPremium:', error);
     res.status(500).json({ error: 'Erreur serveur lors du rachat' });
-  } finally {
-    session.endSession();
   }
 }
 
