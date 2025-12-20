@@ -172,9 +172,21 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
   // Compter les non lues
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  // Tracker le clic sur une notification
+  const trackClick = useCallback(async (notificationId) => {
+    try {
+      await secureApiCall(endpoints.notifications.trackClick(notificationId), {
+        method: 'POST'
+      });
+    } catch (error) {
+      console.error('Erreur trackClick:', error);
+    }
+  }, []);
+
   // Gérer le clic sur une notification
   const handleNotificationClick = useCallback(async (notification) => {
     markAsRead(notification.id);
+    trackClick(notification.id);
 
     // Pour les notifications de programme/recette refuse, afficher un modal avec la raison
     if (notification.type === 'system' && notification.metadata?.action === 'rejected') {
@@ -292,7 +304,7 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
     if (isPanel && onClose) {
       onClose();
     }
-  }, [markAsRead, navigate, isPanel, onClose, openMatchChatById, openAIChat]);
+  }, [markAsRead, trackClick, navigate, isPanel, onClose, openMatchChatById, openAIChat]);
 
   // Fermer le dropdown au clic extérieur
   useEffect(() => {

@@ -105,16 +105,64 @@ const ChartIcon = ({ size = 20 }) => (
   </svg>
 );
 
-const NOTIFICATION_OPTIONS = [
+const BadgeIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/>
+    <path d="m9 12 2 2 4-4"/>
+  </svg>
+);
+
+const StarIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+  </svg>
+);
+
+const LightbulbIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+    <path d="M9 18h6"/>
+    <path d="M10 22h4"/>
+  </svg>
+);
+
+const HeadphonesIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/>
+  </svg>
+);
+
+// Notifications Social
+const SOCIAL_OPTIONS = [
   { key: 'messages', label: 'Messages', description: 'Nouveaux messages et conversations', Icon: MessageIcon },
-  { key: 'matches', label: 'Matchs', description: 'Nouveaux matchs et demandes', Icon: HeartIcon },
-  { key: 'promoCodes', label: 'Codes promo', description: 'Nouveaux partenaires et offres', Icon: GiftIcon },
+  { key: 'matches', label: 'Matchs', description: 'Nouveaux matchs et demandes', Icon: HeartIcon }
+];
+
+// Notifications Contenu
+const CONTENT_OPTIONS = [
   { key: 'newPrograms', label: 'Programmes', description: 'Nouveaux programmes disponibles', Icon: DumbbellIcon },
   { key: 'newRecipes', label: 'Recettes', description: 'Nouvelles recettes publiees', Icon: ChefHatIcon },
+  { key: 'promoCodes', label: 'Codes promo', description: 'Nouveaux partenaires et offres', Icon: GiftIcon }
+];
+
+// Notifications Gamification
+const GAMIFICATION_OPTIONS = [
   { key: 'challengeUpdates', label: 'Defis', description: 'Mises a jour des defis', Icon: SwordsIcon },
   { key: 'leaderboardUpdates', label: 'Classement', description: 'Changements de position', Icon: TrophyIcon },
+  { key: 'badgeUnlocked', label: 'Badges', description: 'Nouveaux badges debloques', Icon: BadgeIcon },
+  { key: 'xpUpdates', label: 'XP', description: 'Gains et conversions XP', Icon: StarIcon }
+];
+
+// Notifications Rappels
+const REMINDER_OPTIONS = [
   { key: 'streakReminders', label: 'Rappels serie', description: 'Maintenir ta serie active', Icon: FlameIcon },
-  { key: 'weeklyRecapPush', label: 'Recap dimanche', description: 'Resume hebdo chaque dimanche', Icon: CalendarIcon }
+  { key: 'weeklyRecapPush', label: 'Recap dimanche', description: 'Resume hebdo chaque dimanche', Icon: CalendarIcon },
+  { key: 'contentCreationTips', label: 'Idees contenu', description: 'Rappels pour creer programmes/recettes', Icon: LightbulbIcon }
+];
+
+// Notifications Support
+const SUPPORT_OPTIONS = [
+  { key: 'supportReplies', label: 'Support', description: 'Reponses a tes tickets', Icon: HeadphonesIcon }
 ];
 
 const EMAIL_OPTIONS = [
@@ -262,8 +310,93 @@ const NotificationSettings = () => {
         {/* Options de notifications push */}
         {subscribed && !prefsLoading && (
           <div className={styles.optionsList}>
-            <p className={styles.optionsLabel}>Choisir les notifications à recevoir :</p>
-            {NOTIFICATION_OPTIONS.map(option => (
+            {/* Social */}
+            <p className={styles.optionsLabel}>Social</p>
+            {SOCIAL_OPTIONS.map(option => (
+              <div key={option.key} className={styles.optionItem}>
+                <div className={styles.optionInfo}>
+                  <span className={styles.optionIcon}><option.Icon size={18} /></span>
+                  <div>
+                    <span className={styles.optionLabel}>{option.label}</span>
+                    <span className={styles.optionDesc}>{option.description}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => updatePreference(option.key, !preferences[option.key])}
+                  disabled={savingPref === option.key}
+                  className={`${styles.optionToggle} ${preferences[option.key] !== false ? styles.optionOn : styles.optionOff}`}
+                >
+                  {savingPref === option.key ? '...' : preferences[option.key] !== false ? 'ON' : 'OFF'}
+                </button>
+              </div>
+            ))}
+
+            {/* Contenu */}
+            <p className={styles.optionsLabel}>Contenu</p>
+            {CONTENT_OPTIONS.map(option => (
+              <div key={option.key} className={styles.optionItem}>
+                <div className={styles.optionInfo}>
+                  <span className={styles.optionIcon}><option.Icon size={18} /></span>
+                  <div>
+                    <span className={styles.optionLabel}>{option.label}</span>
+                    <span className={styles.optionDesc}>{option.description}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => updatePreference(option.key, !preferences[option.key])}
+                  disabled={savingPref === option.key}
+                  className={`${styles.optionToggle} ${preferences[option.key] !== false ? styles.optionOn : styles.optionOff}`}
+                >
+                  {savingPref === option.key ? '...' : preferences[option.key] !== false ? 'ON' : 'OFF'}
+                </button>
+              </div>
+            ))}
+
+            {/* Gamification */}
+            <p className={styles.optionsLabel}>Gamification</p>
+            {GAMIFICATION_OPTIONS.map(option => (
+              <div key={option.key} className={styles.optionItem}>
+                <div className={styles.optionInfo}>
+                  <span className={styles.optionIcon}><option.Icon size={18} /></span>
+                  <div>
+                    <span className={styles.optionLabel}>{option.label}</span>
+                    <span className={styles.optionDesc}>{option.description}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => updatePreference(option.key, !preferences[option.key])}
+                  disabled={savingPref === option.key}
+                  className={`${styles.optionToggle} ${preferences[option.key] !== false ? styles.optionOn : styles.optionOff}`}
+                >
+                  {savingPref === option.key ? '...' : preferences[option.key] !== false ? 'ON' : 'OFF'}
+                </button>
+              </div>
+            ))}
+
+            {/* Rappels */}
+            <p className={styles.optionsLabel}>Rappels</p>
+            {REMINDER_OPTIONS.map(option => (
+              <div key={option.key} className={styles.optionItem}>
+                <div className={styles.optionInfo}>
+                  <span className={styles.optionIcon}><option.Icon size={18} /></span>
+                  <div>
+                    <span className={styles.optionLabel}>{option.label}</span>
+                    <span className={styles.optionDesc}>{option.description}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => updatePreference(option.key, !preferences[option.key])}
+                  disabled={savingPref === option.key}
+                  className={`${styles.optionToggle} ${preferences[option.key] !== false ? styles.optionOn : styles.optionOff}`}
+                >
+                  {savingPref === option.key ? '...' : preferences[option.key] !== false ? 'ON' : 'OFF'}
+                </button>
+              </div>
+            ))}
+
+            {/* Support */}
+            <p className={styles.optionsLabel}>Support</p>
+            {SUPPORT_OPTIONS.map(option => (
               <div key={option.key} className={styles.optionItem}>
                 <div className={styles.optionInfo}>
                   <span className={styles.optionIcon}><option.Icon size={18} /></span>
