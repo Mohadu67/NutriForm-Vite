@@ -74,6 +74,10 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null
     },
+    xpPremiumExpiresAt: {
+      type: Date,
+      default: null
+    },
     emailVerifie: { type: Boolean, default: false },
     verificationToken: { type: String, default: null, select: false },
     verificationExpires: { type: Date, default: null, select: false },
@@ -82,12 +86,30 @@ const userSchema = new mongoose.Schema(
 
     // Préférences de notifications
     notificationPreferences: {
-      dailyReminder: { type: Boolean, default: true },
-      dailyReminderTime: { type: String, default: '09:00' },
+      // Push notifications - Social
+      messages: { type: Boolean, default: true },
+      matches: { type: Boolean, default: true },
+      // Push notifications - Contenu
+      newPrograms: { type: Boolean, default: true },
+      newRecipes: { type: Boolean, default: true },
+      promoCodes: { type: Boolean, default: true },
+      // Push notifications - Gamification
       challengeUpdates: { type: Boolean, default: true },
       leaderboardUpdates: { type: Boolean, default: true },
+      badgeUnlocked: { type: Boolean, default: true },
+      xpUpdates: { type: Boolean, default: true },
+      // Push notifications - Rappels
       streakReminders: { type: Boolean, default: true },
-      weeklyRecap: { type: Boolean, default: true }
+      weeklyRecapPush: { type: Boolean, default: true },
+      contentCreationTips: { type: Boolean, default: true },
+      // Push notifications - Support
+      supportReplies: { type: Boolean, default: true },
+      // Email preferences
+      newsletter: { type: Boolean, default: true },
+      weeklyRecap: { type: Boolean, default: true },
+      // Legacy (keep for compatibility)
+      dailyReminder: { type: Boolean, default: true },
+      dailyReminderTime: { type: String, default: '09:00' }
     }
   },
   { timestamps: true }

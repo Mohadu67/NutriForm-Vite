@@ -568,6 +568,145 @@
   padding: 20px;
 }
 
+/* XP Premium Box */
+.xpPremiumBox {
+  margin-top: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.12), rgba(247, 177, 134, 0.06));
+  border: 1px solid rgba(247, 177, 134, 0.25);
+  border-radius: 12px;
+}
+
+.xpPremiumHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.xpPremiumIcon {
+  font-size: 1.25rem;
+}
+
+.xpPremiumTitle {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #c97a3c;
+}
+
+.xpPremiumExpiry {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.xpPremiumExpiry strong {
+  color: #c97a3c;
+}
+
+.xpPremiumNote {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #059669;
+  font-weight: 500;
+}
+
+/* Stripe Premium Box */
+.stripePremiumBox {
+  margin-top: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.04));
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 12px;
+}
+
+.stripePremiumHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.stripePremiumIcon {
+  font-size: 1.25rem;
+}
+
+.stripePremiumTitle {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #4f46e5;
+}
+
+.stripePremiumInfo {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.stripePremiumInfo strong {
+  color: #4f46e5;
+}
+
+/* Combined Premium Note */
+.combinedPremiumNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: #3b82f6;
+}
+
+.combinedPremiumNote svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* No Premium Info */
+.noPremiumInfo {
+  margin-top: 12px;
+}
+
+.noPremiumInfo p {
+  margin: 0 0 6px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.noPremiumHint {
+  font-size: 0.8rem !important;
+  color: #94a3b8 !important;
+}
+
+/* XP Button */
+.xpBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 20px;
+  margin-top: 10px;
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.15), rgba(247, 177, 134, 0.08));
+  border: 1px solid rgba(247, 177, 134, 0.3);
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #c97a3c;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.xpBtn:hover {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.25), rgba(247, 177, 134, 0.15));
+  border-color: rgba(247, 177, 134, 0.5);
+  transform: translateY(-2px);
+}
+
 /* === FORMS === */
 .form {
   display: flex;
@@ -808,13 +947,85 @@
   background: linear-gradient(135deg, rgba(247, 177, 134, 0.08), rgba(247, 177, 134, 0.12));
   border-radius: 12px;
   border: 1px solid rgba(247, 177, 134, 0.2);
+  transition: all 0.2s ease;
+}
+
+.xpRewardsSection:hover {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.15), rgba(247, 177, 134, 0.2));
+  border-color: rgba(247, 177, 134, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.2);
+}
+
+.xpRewardsTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
 
 .xpRewardsTitle {
-  margin: 0 0 8px 0;
+  margin: 0;
   font-size: 0.9375rem;
   font-weight: 700;
   color: #1e293b;
+}
+
+.xpRewardsArrow {
+  font-size: 1.25rem;
+  color: #e89a6f;
+  transition: transform 0.2s ease;
+}
+
+.xpRewardsSection:hover .xpRewardsArrow {
+  transform: translateX(4px);
+}
+
+.xpRewardsPreview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.xpRewardsPreviewIcon {
+  font-size: 2rem;
+}
+
+.xpRewardsPreviewText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.xpRewardsPreviewTitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.xpRewardsPreviewSub {
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.xpTermsLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(247, 177, 134, 0.15);
+  border: 1px solid rgba(247, 177, 134, 0.3);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #e89a6f;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.xpTermsLink:hover {
+  background: rgba(247, 177, 134, 0.25);
+  border-color: rgba(247, 177, 134, 0.5);
 }
 
 .xpRewardsDescription {
@@ -822,6 +1033,303 @@
   font-size: 0.875rem;
   color: #64748b;
   line-height: 1.5;
+}
+
+/* XP Redemption Card */
+.xpRedeemCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.15);
+  border: 1px solid rgba(247, 177, 134, 0.3);
+}
+
+.xpRedeemInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.xpRedeemIcon {
+  font-size: 2rem;
+}
+
+.xpRedeemDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.xpRedeemTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.xpRedeemCost {
+  font-size: 0.875rem;
+  color: #f7b186;
+  font-weight: 600;
+}
+
+.xpRedeemBtn {
+  background: linear-gradient(135deg, #f7b186 0%, #e89a6f 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.xpRedeemBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.4);
+}
+
+.xpRedeemBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* XP Redemption Locked */
+.xpRedeemLocked {
+  text-align: center;
+  padding: 16px;
+}
+
+.xpRedeemLockedIcon {
+  font-size: 2rem;
+  display: flex;
+  margin-bottom: 8px;
+  justify-content: center;
+}
+
+.xpRedeemLockedText {
+  margin: 0 0 12px 0;
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.xpRedeemProgress {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.xpRedeemProgressBar {
+  height: 100%;
+  background: linear-gradient(90deg, #f7b186, #e89a6f);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.xpRedeemProgressText {
+  font-size: 0.8125rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* === XP HISTORY SECTION === */
+.xpHistorySection {
+  padding: 16px;
+  background: rgba(248, 250, 252, 0.5);
+  border-radius: 12px;
+  border: 1px solid rgba(184, 221, 209, 0.1);
+}
+
+.xpHistoryTitle {
+  margin: 0 0 12px 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.xpHistoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.xpHistoryItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  border: 1px solid rgba(184, 221, 209, 0.12);
+  transition: all 0.2s ease;
+}
+
+.xpHistoryItem:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(184, 221, 209, 0.2);
+}
+
+.xpHistoryInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.xpHistoryIcon {
+  font-size: 1.25rem;
+}
+
+.xpHistoryDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.xpHistoryMonths {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.xpHistoryDate {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.xpHistoryCost {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e89a6f;
+  padding: 4px 10px;
+  background: rgba(247, 177, 134, 0.1);
+  border-radius: 6px;
+}
+
+/* === CELEBRATION ANIMATION === */
+.celebrationOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: celebrationFadeIn 0.3s ease-out;
+}
+
+@keyframes celebrationFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.celebrationContent {
+  text-align: center;
+  animation: celebrationBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes celebrationBounce {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.celebrationIcon {
+  font-size: 5rem;
+  display: block;
+  animation: celebrationPulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes celebrationPulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.1);
+  }
+}
+
+.celebrationTitle {
+  margin: 16px 0 8px;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.celebrationText {
+  margin: 0;
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.confetti {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.confettiPiece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: 50%;
+  left: 50%;
+  animation: confettiFall 3s ease-out forwards;
+  animation-delay: var(--delay);
+}
+
+.confettiPiece::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f7b186, #e89a6f, #b8ddd1, #10b981, #fbbf24);
+  background-size: 400% 400%;
+  border-radius: 2px;
+  transform: rotate(var(--rotation));
+  animation: confettiSpin 1s linear infinite;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translate(-50%, -50%) translateX(0) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translateX(var(--x)) translateY(100vh);
+    opacity: 0;
+  }
+}
+
+@keyframes confettiSpin {
+  to {
+    transform: rotate(calc(var(--rotation) + 360deg));
+  }
 }
 
 /* === RESPONSIVE === */
@@ -1091,6 +1599,83 @@
   color: #94a3b8;
 }
 
+/* XP Premium Box Dark Mode */
+:global(body.dark) .xpPremiumBox,
+:global(html.dark) .xpPremiumBox {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.08), rgba(247, 177, 134, 0.04));
+  border-color: rgba(247, 177, 134, 0.2);
+}
+
+:global(body.dark) .xpPremiumTitle,
+:global(html.dark) .xpPremiumTitle {
+  color: #f7b186;
+}
+
+:global(body.dark) .xpPremiumExpiry,
+:global(html.dark) .xpPremiumExpiry {
+  color: #e2e8f0;
+}
+
+:global(body.dark) .xpPremiumExpiry strong,
+:global(html.dark) .xpPremiumExpiry strong {
+  color: #f7b186;
+}
+
+:global(body.dark) .xpPremiumNote,
+:global(html.dark) .xpPremiumNote {
+  color: #34d399;
+}
+
+/* Stripe Premium Box Dark Mode */
+:global(body.dark) .stripePremiumBox,
+:global(html.dark) .stripePremiumBox {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.04));
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+:global(body.dark) .stripePremiumTitle,
+:global(html.dark) .stripePremiumTitle {
+  color: #a5b4fc;
+}
+
+:global(body.dark) .stripePremiumInfo,
+:global(html.dark) .stripePremiumInfo {
+  color: #cbd5e1;
+}
+
+:global(body.dark) .stripePremiumInfo strong,
+:global(html.dark) .stripePremiumInfo strong {
+  color: #a5b4fc;
+}
+
+/* Combined Premium Note Dark Mode */
+:global(body.dark) .combinedPremiumNote,
+:global(html.dark) .combinedPremiumNote {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+/* No Premium Info Dark Mode */
+:global(body.dark) .noPremiumInfo p,
+:global(html.dark) .noPremiumInfo p {
+  color: #94a3b8;
+}
+
+/* XP Button Dark Mode */
+:global(body.dark) .xpBtn,
+:global(html.dark) .xpBtn {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.12), rgba(247, 177, 134, 0.06));
+  border-color: rgba(247, 177, 134, 0.25);
+  color: #f7b186;
+}
+
+:global(body.dark) .xpBtn:hover,
+:global(html.dark) .xpBtn:hover {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.2), rgba(247, 177, 134, 0.1));
+  border-color: rgba(247, 177, 134, 0.4);
+}
+
 :global(body.dark) .formField label,
 :global(html.dark) .formField label {
   color: #cbd5e1;
@@ -1166,12 +1751,106 @@
   border-color: rgba(247, 177, 134, 0.2);
 }
 
+:global(body.dark) .xpRewardsSection:hover,
+:global(html.dark) .xpRewardsSection:hover {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.12), rgba(247, 177, 134, 0.18));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
 :global(body.dark) .xpRewardsTitle,
 :global(html.dark) .xpRewardsTitle {
   color: #e2e8f0;
 }
 
+:global(body.dark) .xpRewardsPreviewTitle,
+:global(html.dark) .xpRewardsPreviewTitle {
+  color: #f5f7fa;
+}
+
+:global(body.dark) .xpRewardsPreviewSub,
+:global(html.dark) .xpRewardsPreviewSub {
+  color: #94a3b8;
+}
+
 :global(body.dark) .xpRewardsDescription,
 :global(html.dark) .xpRewardsDescription {
   color: #94a3b8;
+}
+
+/* XP Redemption dark mode */
+:global(body.dark) .xpRedeemCard,
+:global(html.dark) .xpRedeemCard {
+  background: #2a2d38;
+  border-color: rgba(247, 177, 134, 0.3);
+}
+
+:global(body.dark) .xpRedeemTitle,
+:global(html.dark) .xpRedeemTitle {
+  color: #f5f7fa;
+}
+
+:global(body.dark) .xpRedeemLockedText,
+:global(html.dark) .xpRedeemLockedText {
+  color: #94a3b8;
+}
+
+:global(body.dark) .xpRedeemProgress,
+:global(html.dark) .xpRedeemProgress {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+:global(body.dark) .xpRedeemProgressText,
+:global(html.dark) .xpRedeemProgressText {
+  color: #9ca3af;
+}
+
+/* XP History dark mode */
+:global(body.dark) .xpHistorySection,
+:global(html.dark) .xpHistorySection {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(123, 196, 168, 0.1);
+}
+
+:global(body.dark) .xpHistoryTitle,
+:global(html.dark) .xpHistoryTitle {
+  color: #e2e8f0;
+}
+
+:global(body.dark) .xpHistoryItem,
+:global(html.dark) .xpHistoryItem {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(123, 196, 168, 0.1);
+}
+
+:global(body.dark) .xpHistoryItem:hover,
+:global(html.dark) .xpHistoryItem:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(123, 196, 168, 0.2);
+}
+
+:global(body.dark) .xpHistoryMonths,
+:global(html.dark) .xpHistoryMonths {
+  color: #e2e8f0;
+}
+
+:global(body.dark) .xpHistoryDate,
+:global(html.dark) .xpHistoryDate {
+  color: #94a3b8;
+}
+
+:global(body.dark) .xpHistoryCost,
+:global(html.dark) .xpHistoryCost {
+  background: rgba(247, 177, 134, 0.15);
+}
+
+:global(body.dark) .xpTermsLink,
+:global(html.dark) .xpTermsLink {
+  background: rgba(247, 177, 134, 0.1);
+  border-color: rgba(247, 177, 134, 0.25);
+}
+
+:global(body.dark) .xpTermsLink:hover,
+:global(html.dark) .xpTermsLink:hover {
+  background: rgba(247, 177, 134, 0.2);
+  border-color: rgba(247, 177, 134, 0.4);
 }

@@ -21,6 +21,7 @@ import { RecentActivity } from "./components/RecentActivity.jsx";
 import { CardioStats } from "./components/CardioStats.jsx";
 import { BodyMetrics } from "./components/BodyMetrics.jsx";
 import { MuscleHeatmap } from "./components/MuscleHeatmap.jsx";
+import { WeeklySummary } from "./components/WeeklySummary.jsx";
 
 // Hooks personnalisés pour la logique métier
 import { useDashboardData } from "./hooks/useDashboardData.js";
@@ -381,6 +382,15 @@ export default function Dashboard() {
                 </Button>
               </div>
             </section>
+          )}
+
+          {/* Weekly Summary - Resume motivant */}
+          {stats.totalSessions > 0 && (
+            <WeeklySummary
+              weeklySessions={stats.last7Days}
+              weeklyCalories={weeklyCalories}
+              userName={capitalizedName}
+            />
           )}
 
           {/* Empty State */}

@@ -9,6 +9,13 @@
    DOCK SPECIFIC VARIABLES
    ======================================== */
 
+/* Variable animable pour la bordure dynamique */
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
 :root {
   /* Dock dimensions */
   --dock-item-size: 56px;
@@ -237,8 +244,8 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
-/* Hover effects - only on devices with hover capability */
-@media (hover: hover) and (pointer: fine) {
+/* Hover effects - MOBILE/TABLET ONLY */
+@media (hover: hover) and (pointer: fine) and (max-width: 1189px) {
   .dockIconBtn:hover {
     background: var(--color-primary);
     border-color: var(--color-primary);
@@ -248,9 +255,11 @@
   }
 }
 
-.dockIconBtn:active {
-  transform: scale(0.95);
-  opacity: 0.9;
+@media (max-width: 1189px) {
+  .dockIconBtn:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+  }
 }
 
 /* ========================================
@@ -326,15 +335,18 @@
   font-size: inherit;
 }
 
-.dockItem::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%);
-  opacity: 0;
-  transition: opacity 0.3s var(--transition-smooth);
-  z-index: 0;
-  pointer-events: none;
+/* Effet gradient mobile uniquement */
+@media (max-width: 1189px) {
+  .dockItem::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%);
+    opacity: 0;
+    transition: opacity 0.3s var(--transition-smooth);
+    z-index: 0;
+    pointer-events: none;
+  }
 }
 
 .dockIcon {
@@ -366,8 +378,8 @@
   line-height: 1;
 }
 
-/* Hover effects - only on devices with hover capability */
-@media (hover: hover) and (pointer: fine) {
+/* Hover effects - MOBILE/TABLET ONLY */
+@media (hover: hover) and (pointer: fine) and (max-width: 1189px) {
   .dockItem:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-sm);
@@ -383,10 +395,12 @@
   }
 }
 
-/* Active state - works on touch and mouse */
-.dockItem:active {
-  transform: scale(0.97);
-  opacity: 0.9;
+/* Active state - MOBILE/TABLET ONLY */
+@media (max-width: 1189px) {
+  .dockItem:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+  }
 }
 
 /* Icon only (no label) - Home icon bigger */
@@ -424,7 +438,7 @@
   box-shadow: none;
 }
 
-@media (hover: hover) and (pointer: fine) {
+@media (hover: hover) and (pointer: fine) and (max-width: 1189px) {
   .dockItemActive:hover {
     transform: translateY(-4px) scale(1.08);
   }
@@ -689,19 +703,35 @@
     padding: var(--space-sm) 14px;
     border-radius: 10px;
     border: none;
-    background: rgba(0, 0, 0, 0.04);
+    background: transparent;
 
-    transition: color 0.2s ease;
     cursor: pointer;
+    position: relative;
+  }
+
+  /* Bordure dynamique qui se dessine depuis la droite */
+  .mainNav .dockItem::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    padding: 1px;
+    background: conic-gradient(from 90deg, var(--color-primary) var(--border-angle), transparent var(--border-angle));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    --border-angle: 0deg;
+    transition: --border-angle 0.5s ease-out;
+  }
+
+  .mainNav .dockItem:hover::before {
+    --border-angle: 360deg;
   }
 
   :global(.dark) .mainNav .dockItem {
-    background: rgba(255, 255, 255, 0.06);
-  }
-
-  .mainNav .dockItem:hover .dockIcon,
-  .mainNav .dockItem:hover .dockLabel {
-    color: var(--color-primary);
+    background: transparent;
   }
 
   .mainNav .dockItemActive .dockLabel,
@@ -746,17 +776,33 @@
     border: none;
     background: transparent;
 
-    transition: color 0.2s ease;
     cursor: pointer;
+    position: relative;
+  }
+
+  /* Bordure dynamique qui se dessine depuis la droite */
+  .secondaryNav .dockItem::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    padding: 1px;
+    background: conic-gradient(from 90deg, var(--color-primary) var(--border-angle), transparent var(--border-angle));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    --border-angle: 0deg;
+    transition: --border-angle 0.5s ease-out;
+  }
+
+  .secondaryNav .dockItem:hover::before {
+    --border-angle: 360deg;
   }
 
   :global(.dark) .secondaryNav .dockItem {
     background: transparent;
-  }
-
-  .secondaryNav .dockItem:hover .dockIcon,
-  .secondaryNav .dockItem:hover .dockLabel {
-    color: var(--color-primary);
   }
 
   .secondaryNav .dockItemActive .dockLabel,
@@ -794,18 +840,35 @@
 
     border-radius: 10px;
     border: none;
-    background: rgba(0, 0, 0, 0.04);
+    background: transparent;
 
-    transition: color 0.2s ease;
     cursor: pointer;
+    position: relative;
+  }
+
+  /* Bordure dynamique qui se dessine depuis la droite */
+  .dockIconBtn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    padding: 1px;
+    background: conic-gradient(from 90deg, var(--color-primary) var(--border-angle), transparent var(--border-angle));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    --border-angle: 0deg;
+    transition: --border-angle 0.5s ease-out;
+  }
+
+  .dockIconBtn:hover::before {
+    --border-angle: 360deg;
   }
 
   :global(.dark) .dockIconBtn {
-    background: rgba(255, 255, 255, 0.06);
-  }
-
-  .dockIconBtn:hover {
-    color: var(--color-primary);
+    background: transparent;
   }
 
   .dockIconBtn:active {

@@ -181,6 +181,104 @@ exports.clearAll = async (req, res) => {
   }
 };
 
+// Tracker un clic sur une notification
+exports.trackClick = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { notificationId } = req.params;
+
+    const mongoose = require('mongoose');
+    let notification;
+
+    if (mongoose.Types.ObjectId.isValid(notificationId)) {
+      notification = await Notification.findOneAndUpdate(
+        { _id: notificationId, userId },
+        {
+          $set: { clickedAt: new Date(), read: true },
+          $inc: { clickCount: 1 }
+        },
+        { new: true }
+      );
+    }
+
+    if (!notification) {
+      notification = await Notification.findOneAndUpdate(
+        { 'metadata.clientId': notificationId, userId },
+        {
+          $set: { clickedAt: new Date(), read: true },
+          $inc: { clickCount: 1 }
+        },
+        { new: true }
+      );
+    }
+
+    if (!notification) {
+      return res.json({ message: 'OK' });
+    }
+
+    res.json({ notification });
+  } catch (error) {
+    logger.error('Erreur trackClick:', error);
+    res.status(500).json({ error: 'Erreur lors du tracking du clic.' });
+  }
+};
+
+// Obtenir les statistiques de clics sur notifications
+exports.getClickStats = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const days = parseInt(req.query.days) || 30;
+
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    // Stats globales
+    const stats = await Notification.aggregate([
+      {
+        $match: {
+          userId: userId,
+          createdAt: { $gte: startDate }
+        }
+      },
+      {
+        $group: {
+          _id: '$type',
+          total: { $sum: 1 },
+          clicked: { $sum: { $cond: [{ $gt: ['$clickCount', 0] }, 1, 0] } },
+          totalClicks: { $sum: '$clickCount' }
+        }
+      }
+    ]);
+
+    // Taux de clic global
+    const globalStats = await Notification.aggregate([
+      {
+        $match: {
+          userId: userId,
+          createdAt: { $gte: startDate }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          clicked: { $sum: { $cond: [{ $gt: ['$clickCount', 0] }, 1, 0] } },
+          totalClicks: { $sum: '$clickCount' }
+        }
+      }
+    ]);
+
+    res.json({
+      byType: stats,
+      global: globalStats[0] || { total: 0, clicked: 0, totalClicks: 0 },
+      period: days
+    });
+  } catch (error) {
+    logger.error('Erreur getClickStats:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des stats.' });
+  }
+};
+
 // Helper: Créer une notification en interne (appelé depuis d'autres controllers)
 exports.createNotificationInternal = async (userId, data) => {
   try {

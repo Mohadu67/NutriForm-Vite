@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useChat } from '../../contexts/ChatContext';
+import { useNavigate } from 'react-router-dom';
 import messageNotificationService from '../../services/messageNotificationService';
 
 /**
@@ -8,6 +9,36 @@ import messageNotificationService from '../../services/messageNotificationServic
  */
 export default function MessageNotificationManager() {
   const { openMatchChat, openChat, openMatchChatById, openAIChat } = useChat() || {};
+  const navigate = useNavigate();
+  const hasCheckedUrl = useRef(false);
+
+  // Vérifier les query params au démarrage (pour les notifications cliquées quand l'app était fermée)
+  useEffect(() => {
+    if (hasCheckedUrl.current) return;
+    hasCheckedUrl.current = true;
+
+    const params = new URLSearchParams(window.location.search);
+    const openChatParam = params.get('openChat');
+    const conversationId = params.get('conversationId');
+    const chatType = params.get('chatType');
+
+    if (openChatParam === 'true' && conversationId) {
+      // Nettoyer l'URL sans recharger la page
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, '', cleanUrl);
+
+      // Attendre que l'app soit prête puis ouvrir le chat
+      setTimeout(() => {
+        if (chatType === 'match' && openMatchChatById) {
+          openMatchChatById(conversationId);
+        } else if (chatType === 'ai' && openAIChat) {
+          openAIChat(conversationId);
+        } else if (openChat) {
+          openChat();
+        }
+      }, 500);
+    }
+  }, [openMatchChatById, openAIChat, openChat]);
 
   useEffect(() => {
     // Écouter l'événement pour ouvrir une conversation match
@@ -32,7 +63,7 @@ export default function MessageNotificationManager() {
     // Écouter les messages du Service Worker (clic sur notification push)
     const handleServiceWorkerMessage = (event) => {
       if (event.data && event.data.type === 'NOTIFICATION_CLICK') {
-        const { data } = event.data;
+        const { url, data } = event.data;
 
         // Gérer selon le type de notification
         if (data?.type === 'new_message' && data?.conversationId) {
@@ -51,6 +82,9 @@ export default function MessageNotificationManager() {
               openAIChat(data.conversationId);
             }
           });
+        } else if (url && !url.includes('openChat=')) {
+          // Navigation standard pour les autres types de notifications
+          navigate(url);
         }
       }
     };
@@ -73,7 +107,7 @@ export default function MessageNotificationManager() {
         navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
       }
     };
-  }, [openMatchChat, openChat, openMatchChatById, openAIChat]);
+  }, [openMatchChat, openChat, openMatchChatById, openAIChat, navigate]);
 
   // Ce composant ne rend rien visuellement
   return null;

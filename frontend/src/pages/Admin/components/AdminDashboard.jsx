@@ -1,5 +1,6 @@
 import { MdStar, MdRateReview, MdSchedule, MdCheckCircle, MdGroups, MdFitnessCenter, MdEdit, MdSupport } from 'react-icons/md';
 import styles from '../AdminPage.module.css';
+import NotificationStats from './NotificationStats';
 
 export default function AdminDashboard({
   stats,
@@ -71,6 +72,9 @@ export default function AdminDashboard({
           {openTicketsCount > 0 && <span className={styles.actionBadge}>{openTicketsCount}</span>}
         </div>
       </div>
+
+      {/* Statistiques Notifications */}
+      <NotificationStats />
     </div>
   );
 }
