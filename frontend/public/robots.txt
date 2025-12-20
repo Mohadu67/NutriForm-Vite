@@ -1,14 +1,31 @@
 # robots.txt pour Harmonith
 User-agent: *
 Allow: /
+
+# Pages publiques indexables
 Allow: /outils
+Allow: /imc
+Allow: /calorie
 Allow: /exo
+Allow: /programs
+Allow: /recettes
 Allow: /about
 Allow: /contact
+Allow: /pricing
+Allow: /leaderboard
+Allow: /cookies
+Allow: /privacy-policy
+Allow: /mentions-legales
 
-# Bloquer les chemins d'administration si nécessaire
+# Bloquer les pages privées et admin
 Disallow: /admin/
 Disallow: /api/
+Disallow: /dashboard
+Disallow: /profile/
+Disallow: /matching
+Disallow: /chat/
+Disallow: /verify-email
+Disallow: /reset-password
 
 # Sitemap
 Sitemap: https://harmonith.fr/sitemap.xml

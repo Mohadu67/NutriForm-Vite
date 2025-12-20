@@ -46,6 +46,7 @@ const reviewsRoutes = require('./routes/reviews.js');
 const uploadRoutes = require('./routes/upload.js');
 const leaderboardRoutes = require('./routes/leaderboard.route.js');
 const subscriptionRoutes = require('./routes/subscription.route.js');
+const xpRedemptionRoutes = require('./routes/xpRedemption.route.js');
 const chatRoutes = require('./routes/chat.route.js');
 const supportTicketRoutes = require('./routes/supportTicket.route.js');
 const profileRoutes = require('./routes/profile.route.js');
@@ -58,10 +59,14 @@ const challengeRoutes = require('./routes/challenge.route.js');
 const badgeRoutes = require('./routes/badge.route.js');
 const linkPreviewRoutes = require('./routes/linkPreview.route.js');
 const rateLimitRoutes = require('./routes/rateLimit.route.js');
+const partnerRoutes = require('./routes/partner.route.js');
+const analyticsRoutes = require('./routes/analytics.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 const { startChallengeCron } = require('./cron/challengeCron');
 const { startDailyNotificationCron } = require('./cron/dailyNotificationCron');
+const { startXpPremiumCron } = require('./cron/xpPremiumCron');
+const { startContentCreationCron } = require('./cron/contentCreationCron');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -223,6 +228,7 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/xp-redemption', xpRedemptionRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/admin/support-tickets', supportTicketRoutes);
 app.use('/api/profile', profileRoutes);
@@ -235,6 +241,8 @@ app.use('/api/challenges', challengeRoutes);
 app.use('/api/badges', badgeRoutes);
 app.use('/api/link-preview', linkPreviewRoutes);
 app.use('/api/rate-limit', rateLimitRoutes);
+app.use('/api/partners', partnerRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
@@ -285,6 +293,8 @@ if (process.env.NODE_ENV !== 'test') {
       startLeaderboardCron();
       startChallengeCron();
       startDailyNotificationCron();
+      startXpPremiumCron();
+      startContentCreationCron();
     } else {
       logger.warn('⚠️  Tâches planifiées désactivées - MongoDB non connecté');
       // Réessayer après connexion
@@ -294,6 +304,8 @@ if (process.env.NODE_ENV !== 'test') {
         startLeaderboardCron();
         startChallengeCron();
         startDailyNotificationCron();
+        startXpPremiumCron();
+        startContentCreationCron();
       });
     }
   });

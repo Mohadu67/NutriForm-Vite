@@ -66,6 +66,12 @@ export const endpoints = {
     markAllRead: "/notifications/read-all",
     delete: (notificationId) => `/notifications/${notificationId}`,
     clearAll: "/notifications/clear",
+    trackClick: (notificationId) => `/notifications/${notificationId}/click`,
+    clickStats: "/notifications/stats/clicks",
+  },
+  analytics: {
+    weekly: "/analytics/weekly",
+    adminNotifications: "/analytics/admin/notifications",
   },
   challenges: {
     list: "/challenges",
@@ -76,6 +82,24 @@ export const endpoints = {
     decline: (id) => `/challenges/${id}/decline`,
     cancel: (id) => `/challenges/${id}/cancel`,
     congratulate: "/challenges/congratulate",
+  },
+  xpRedemption: {
+    eligibility: "/xp-redemption/eligibility",
+    redeem: "/xp-redemption/redeem",
+    history: "/xp-redemption/history",
+  },
+  partners: {
+    list: "/partners",
+    byId: (id) => `/partners/${id}`,
+    myRewards: "/partners/user/my-rewards",
+    checkRedemption: (partnerId) => `/partners/user/check/${partnerId}`,
+    redeem: (id) => `/partners/${id}/redeem`,
+    // Admin
+    adminList: "/partners/admin/all",
+    adminCreate: "/partners/admin",
+    adminUpdate: (id) => `/partners/admin/${id}`,
+    adminDelete: (id) => `/partners/admin/${id}`,
+    adminStats: (id) => `/partners/admin/${id}/stats`,
   }
 };
 export default endpoints;

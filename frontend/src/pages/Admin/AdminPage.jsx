@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { MdStar, MdEmail, MdSupport, MdRestaurant, MdFitnessCenter } from 'react-icons/md';
+import { MdStar, MdEmail, MdSupport, MdRestaurant, MdFitnessCenter, MdCardGiftcard } from 'react-icons/md';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import ConfirmModal from '../../components/Modal/ConfirmModal.jsx';
@@ -383,6 +383,7 @@ export default function AdminPage() {
           <button className={`${styles.navBtn} ${activeSection === "recipes" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("recipes")}><MdRestaurant /> Recettes</button>
           <button className={styles.navBtn} onClick={() => navigate("/admin/programs")}><MdFitnessCenter /> Programmes {pendingProgramsCount > 0 && <span className={styles.badge}>{pendingProgramsCount}</span>}</button>
           <button className={`${styles.navBtn} ${activeSection === "newsletter" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("newsletter")}><MdEmail /> Newsletter</button>
+          <button className={styles.navBtn} onClick={() => navigate("/admin/partners")}><MdCardGiftcard /> Nos Partenaires</button>
           <button className={styles.navBtn} onClick={() => navigate("/admin/support-tickets")}><MdSupport /> Support {openTicketsCount > 0 && <span className={styles.badge}>{openTicketsCount}</span>}</button>
         </div>
 

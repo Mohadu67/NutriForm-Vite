@@ -3,7 +3,7 @@
   <!-- Page d'accueil -->
   <url>
     <loc>https://harmonith.fr/</loc>
-    <lastmod>2025-12-11</lastmod>
+    <lastmod>2025-12-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -48,7 +48,7 @@
   <!-- Recettes -->
   <url>
     <loc>https://harmonith.fr/recettes</loc>
-    <lastmod>2025-12-11</lastmod>
+    <lastmod>2025-12-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -73,6 +73,14 @@
     <lastmod>2025-12-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+
+  <!-- Classement communautaire -->
+  <url>
+    <loc>https://harmonith.fr/leaderboard</loc>
+    <lastmod>2025-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
   </url>
 
   <!-- Pages légales -->

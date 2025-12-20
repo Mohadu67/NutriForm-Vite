@@ -337,10 +337,22 @@ async function getSubscriptionStatus(req, res) {
     const user = await User.findById(userId);
     const subscription = await Subscription.findOne({ userId });
 
-    if (!subscription) {
+    // Verifier si l'utilisateur a un premium XP actif
+    const hasXpPremium = user.xpPremiumExpiresAt && new Date(user.xpPremiumExpiresAt) > new Date();
+    const xpPremiumExpiresAt = hasXpPremium ? user.xpPremiumExpiresAt : null;
+
+    // Verifier si l'abonnement Stripe est valide (pas un ID de test local)
+    const hasValidStripeSubscription = subscription &&
+      subscription.stripeSubscriptionId &&
+      !subscription.stripeSubscriptionId.includes('test_local');
+
+    if (!subscription || !hasValidStripeSubscription) {
+      // Pas d'abonnement Stripe, mais peut-etre un premium XP
       return res.status(200).json({
-        tier: user.subscriptionTier || 'free',
+        tier: hasXpPremium ? 'premium' : (user.subscriptionTier || 'free'),
         hasSubscription: false,
+        hasXpPremium,
+        xpPremiumExpiresAt,
         trialEndsAt: user.trialEndsAt || null
       });
     }
@@ -348,6 +360,8 @@ async function getSubscriptionStatus(req, res) {
     res.status(200).json({
       tier: user.subscriptionTier || 'free',
       hasSubscription: true,
+      hasXpPremium,
+      xpPremiumExpiresAt,
       status: subscription.status,
       currentPeriodEnd: subscription.currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,

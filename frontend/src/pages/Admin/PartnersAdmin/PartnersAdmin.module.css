@@ -1,0 +1,629 @@
+/* PartnersAdmin - Design harmonieux avec le site */
+
+.admin {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 100px 2rem 2rem;
+  min-height: 100vh;
+  background: var(--couleur-principale, #f7f6f2);
+}
+
+:global(body.dark) .admin,
+:global(html.dark) .admin {
+  background: #0c0e12;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  font-size: 1.2rem;
+  color: var(--muted, #6b7280);
+}
+
+.backButton {
+  background: none;
+  border: none;
+  color: var(--couleur-bouton-action, #f7b186);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: opacity 0.2s;
+}
+
+.backButton:hover {
+  opacity: 0.8;
+}
+
+:global(body.dark) .backButton,
+:global(html.dark) .backButton {
+  color: var(--couleur-bouton-action, #f7b186);
+}
+
+.headerBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.headerBar h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0;
+}
+
+:global(body.dark) .headerBar h1,
+:global(html.dark) .headerBar h1 {
+  color: #f5f7fa;
+}
+
+.addButton {
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.25);
+}
+
+.addButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.35);
+}
+
+/* Form Container */
+.formContainer {
+  background: var(--paper, #ffffff);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+:global(body.dark) .formContainer,
+:global(html.dark) .formContainer {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.formContainer h2 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .formContainer h2,
+:global(html.dark) .formContainer h2 {
+  color: #f5f7fa;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.fieldset {
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.08));
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: var(--couleur-principale, #f7f6f2);
+}
+
+:global(body.dark) .fieldset,
+:global(html.dark) .fieldset {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.fieldset legend {
+  font-weight: 600;
+  color: var(--ink, #222325);
+  padding: 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+:global(body.dark) .fieldset legend,
+:global(html.dark) .fieldset legend {
+  color: #f5f7fa;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-weight: 500;
+  color: var(--ink, #222325);
+  font-size: 0.85rem;
+}
+
+:global(body.dark) .formGroup label,
+:global(html.dark) .formGroup label {
+  color: #e5e7eb;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.1));
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: var(--paper, #ffffff);
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .formGroup input,
+:global(body.dark) .formGroup select,
+:global(body.dark) .formGroup textarea,
+:global(html.dark) .formGroup input,
+:global(html.dark) .formGroup select,
+:global(html.dark) .formGroup textarea {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f5f7fa;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--couleur-bouton-action, #f7b186);
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.15);
+}
+
+.formGroup input::placeholder,
+.formGroup textarea::placeholder {
+  color: var(--muted, #6b7280);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  font-weight: 500;
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .checkboxLabel,
+:global(html.dark) .checkboxLabel {
+  color: #e5e7eb;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--couleur-bouton-action, #f7b186);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.cancelButton {
+  background: var(--couleur-principale, #f7f6f2);
+  color: var(--ink, #222325);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.1));
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+:global(body.dark) .cancelButton,
+:global(html.dark) .cancelButton {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.cancelButton:hover {
+  background: var(--line, rgba(0, 0, 0, 0.08));
+}
+
+:global(body.dark) .cancelButton:hover,
+:global(html.dark) .cancelButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.submitButton {
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.25);
+}
+
+.submitButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.35);
+}
+
+/* Partners List */
+.partnersList {
+  margin-top: 2rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--paper, #ffffff);
+  border-radius: 16px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+:global(body.dark) .empty,
+:global(html.dark) .empty {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.empty p {
+  color: var(--muted, #6b7280);
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.addButtonEmpty {
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.addButtonEmpty:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.35);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Partner Card */
+.partnerCard {
+  background: var(--paper, #ffffff);
+  border-radius: 16px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+:global(body.dark) .partnerCard,
+:global(html.dark) .partnerCard {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.partnerCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+:global(body.dark) .partnerCard:hover,
+:global(html.dark) .partnerCard:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--couleur-principale, #f7f6f2);
+  border-bottom: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+:global(body.dark) .cardHeader,
+:global(html.dark) .cardHeader {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: var(--paper, #ffffff);
+  padding: 4px;
+}
+
+:global(body.dark) .logo,
+:global(html.dark) .logo {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.logoPlaceholder {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), var(--couleur-bouton-selection, #b8ddd1));
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border-radius: 10px;
+}
+
+.cardInfo {
+  flex: 1;
+}
+
+.cardInfo h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .cardInfo h3,
+:global(html.dark) .cardInfo h3 {
+  color: #f5f7fa;
+}
+
+.category {
+  font-size: 0.75rem;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.statusBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.statusBadge.active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+:global(body.dark) .statusBadge.active,
+:global(html.dark) .statusBadge.active {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.statusBadge.inactive {
+  background: var(--line, rgba(0, 0, 0, 0.08));
+  color: var(--muted, #6b7280);
+}
+
+:global(body.dark) .statusBadge.inactive,
+:global(html.dark) .statusBadge.inactive {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.statusBadge.expired {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.statusBadge.upcoming {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.statusBadge.exhausted {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.cardBody {
+  padding: 1rem;
+  flex: 1;
+}
+
+.offerBadge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), var(--couleur-bouton-selection, #b8ddd1));
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.offerTitle {
+  color: var(--ink, #222325);
+  margin: 0 0 1rem 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+:global(body.dark) .offerTitle,
+:global(html.dark) .offerTitle {
+  color: #e5e7eb;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.xpCost {
+  color: var(--couleur-bouton-action, #f7b186);
+  font-weight: 700;
+}
+
+.redemptions {
+  color: var(--muted, #6b7280);
+}
+
+.promoCode {
+  display: block;
+  background: var(--couleur-principale, #f7f6f2);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 1rem;
+  text-align: center;
+  color: var(--couleur-bouton-action, #f7b186);
+  font-weight: 600;
+  border: 1px dashed var(--line, rgba(0, 0, 0, 0.1));
+  letter-spacing: 1px;
+}
+
+:global(body.dark) .promoCode,
+:global(html.dark) .promoCode {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.cardActions {
+  display: flex;
+  border-top: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+:global(body.dark) .cardActions,
+:global(html.dark) .cardActions {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.editButton,
+.deleteButton {
+  flex: 1;
+  padding: 0.875rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.editButton {
+  background: var(--couleur-principale, #f7f6f2);
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .editButton,
+:global(html.dark) .editButton {
+  background: rgba(255, 255, 255, 0.04);
+  color: #e5e7eb;
+}
+
+.editButton:hover {
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-text-bouton, #111111);
+}
+
+.deleteButton {
+  background: var(--paper, #ffffff);
+  color: #ef4444;
+}
+
+:global(body.dark) .deleteButton,
+:global(html.dark) .deleteButton {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.deleteButton:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .admin {
+    padding: 90px 1rem 1rem;
+  }
+
+  .headerBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .headerBar h1 {
+    font-size: 1.4rem;
+  }
+
+  .addButton {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .formActions {
+    flex-direction: column;
+  }
+
+  .cancelButton,
+  .submitButton {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .addButton:hover,
+  .addButtonEmpty:hover,
+  .submitButton:hover,
+  .partnerCard:hover {
+    transform: none;
+  }
+}
