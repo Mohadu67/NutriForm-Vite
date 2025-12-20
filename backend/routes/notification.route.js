@@ -18,6 +18,12 @@ router.put('/read-all', notificationController.markAllAsRead);
 // PUT /api/notifications/:notificationId/read - Marquer une notification comme lue
 router.put('/:notificationId/read', notificationController.markAsRead);
 
+// POST /api/notifications/:notificationId/click - Tracker un clic sur notification
+router.post('/:notificationId/click', notificationController.trackClick);
+
+// GET /api/notifications/stats/clicks - Statistiques de clics
+router.get('/stats/clicks', notificationController.getClickStats);
+
 // DELETE /api/notifications/clear - Supprimer toutes les notifications
 router.delete('/clear', notificationController.clearAll);
 

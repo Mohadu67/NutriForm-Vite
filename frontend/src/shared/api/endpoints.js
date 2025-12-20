@@ -66,6 +66,12 @@ export const endpoints = {
     markAllRead: "/notifications/read-all",
     delete: (notificationId) => `/notifications/${notificationId}`,
     clearAll: "/notifications/clear",
+    trackClick: (notificationId) => `/notifications/${notificationId}/click`,
+    clickStats: "/notifications/stats/clicks",
+  },
+  analytics: {
+    weekly: "/analytics/weekly",
+    adminNotifications: "/analytics/admin/notifications",
   },
   challenges: {
     list: "/challenges",
