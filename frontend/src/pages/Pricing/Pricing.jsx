@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import { createCheckoutSession, getSubscriptionStatus } from '../../shared/api/subscription';
@@ -64,6 +65,12 @@ export default function Pricing() {
 
   return (
     <>
+      <Helmet>
+        <title>Tarifs Premium - Harmonith | Abonnement Fitness</title>
+        <meta name="description" content="Decouvrez les offres Harmonith : gratuit ou Premium. Acces illimite aux programmes, recettes, GymBro et fonctionnalites exclusives." />
+        <meta property="og:title" content="Tarifs Premium - Harmonith" />
+        <meta property="og:description" content="Offres Harmonith : gratuit ou Premium avec acces illimite." />
+      </Helmet>
       <Navbar />
       <div className={styles.container}>
         <div className={styles.header}>

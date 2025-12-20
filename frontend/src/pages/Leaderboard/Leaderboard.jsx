@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { secureApiCall, isAuthenticated } from '../../utils/authService';
 import { storage } from '../../shared/utils/storage';
 import { useWebSocket } from '../../contexts/WebSocketContext';
@@ -301,6 +302,12 @@ const Leaderboard = () => {
 
   return (
     <>
+      <Helmet>
+        <title>Classement et Defis Fitness - Harmonith | Communaute Sportive</title>
+        <meta name="description" content="Rejoins la communaute Harmonith ! Classement des athletes, defis entre membres, badges et ligues. Progresse et defie tes amis." />
+        <meta property="og:title" content="Classement et Defis Fitness - Harmonith" />
+        <meta property="og:description" content="Classement des athletes, defis entre membres et badges a debloquer." />
+      </Helmet>
       <Header />
       <main className={styles.page}>
         <div className={styles.container}>
