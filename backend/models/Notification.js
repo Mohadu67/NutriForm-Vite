@@ -45,6 +45,16 @@ const notificationSchema = new mongoose.Schema({
     default: false
   },
 
+  // Tracking des clics
+  clickedAt: {
+    type: Date,
+    default: null
+  },
+  clickCount: {
+    type: Number,
+    default: 0
+  },
+
   // Métadonnées supplémentaires (conversationId, matchId, etc.)
   metadata: {
     type: mongoose.Schema.Types.Mixed,

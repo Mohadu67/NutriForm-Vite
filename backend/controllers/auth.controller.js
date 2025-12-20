@@ -412,15 +412,25 @@ exports.getNotificationPreferences = async (req, res) => {
 
     // Retourner les preferences avec valeurs par defaut
     const defaultPrefs = {
+      // Social
       messages: true,
-      promoCodes: true,
+      matches: true,
+      // Contenu
       newPrograms: true,
       newRecipes: true,
-      matches: true,
+      promoCodes: true,
+      // Gamification
       challengeUpdates: true,
       leaderboardUpdates: true,
+      badgeUnlocked: true,
+      xpUpdates: true,
+      // Rappels
       streakReminders: true,
       weeklyRecapPush: true,
+      contentCreationTips: true,
+      // Support
+      supportReplies: true,
+      // Email
       newsletter: true,
       weeklyRecap: true
     };
@@ -451,9 +461,18 @@ exports.updateNotificationPreferences = async (req, res) => {
 
     // Champs autorises
     const allowedFields = [
-      'messages', 'promoCodes', 'newPrograms', 'newRecipes',
-      'matches', 'challengeUpdates', 'leaderboardUpdates',
-      'streakReminders', 'weeklyRecapPush', 'newsletter', 'weeklyRecap'
+      // Social
+      'messages', 'matches',
+      // Contenu
+      'newPrograms', 'newRecipes', 'promoCodes',
+      // Gamification
+      'challengeUpdates', 'leaderboardUpdates', 'badgeUnlocked', 'xpUpdates',
+      // Rappels
+      'streakReminders', 'weeklyRecapPush', 'contentCreationTips',
+      // Support
+      'supportReplies',
+      // Email
+      'newsletter', 'weeklyRecap'
     ];
 
     // Construire l'objet de mise a jour

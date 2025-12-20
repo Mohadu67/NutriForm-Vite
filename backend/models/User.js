@@ -86,16 +86,24 @@ const userSchema = new mongoose.Schema(
 
     // Préférences de notifications
     notificationPreferences: {
-      // Push notifications
+      // Push notifications - Social
       messages: { type: Boolean, default: true },
-      promoCodes: { type: Boolean, default: true },
+      matches: { type: Boolean, default: true },
+      // Push notifications - Contenu
       newPrograms: { type: Boolean, default: true },
       newRecipes: { type: Boolean, default: true },
-      matches: { type: Boolean, default: true },
+      promoCodes: { type: Boolean, default: true },
+      // Push notifications - Gamification
       challengeUpdates: { type: Boolean, default: true },
       leaderboardUpdates: { type: Boolean, default: true },
+      badgeUnlocked: { type: Boolean, default: true },
+      xpUpdates: { type: Boolean, default: true },
+      // Push notifications - Rappels
       streakReminders: { type: Boolean, default: true },
       weeklyRecapPush: { type: Boolean, default: true },
+      contentCreationTips: { type: Boolean, default: true },
+      // Push notifications - Support
+      supportReplies: { type: Boolean, default: true },
       // Email preferences
       newsletter: { type: Boolean, default: true },
       weeklyRecap: { type: Boolean, default: true },

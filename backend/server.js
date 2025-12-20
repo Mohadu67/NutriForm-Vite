@@ -60,11 +60,13 @@ const badgeRoutes = require('./routes/badge.route.js');
 const linkPreviewRoutes = require('./routes/linkPreview.route.js');
 const rateLimitRoutes = require('./routes/rateLimit.route.js');
 const partnerRoutes = require('./routes/partner.route.js');
+const analyticsRoutes = require('./routes/analytics.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 const { startChallengeCron } = require('./cron/challengeCron');
 const { startDailyNotificationCron } = require('./cron/dailyNotificationCron');
 const { startXpPremiumCron } = require('./cron/xpPremiumCron');
+const { startContentCreationCron } = require('./cron/contentCreationCron');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -240,6 +242,7 @@ app.use('/api/badges', badgeRoutes);
 app.use('/api/link-preview', linkPreviewRoutes);
 app.use('/api/rate-limit', rateLimitRoutes);
 app.use('/api/partners', partnerRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
@@ -291,6 +294,7 @@ if (process.env.NODE_ENV !== 'test') {
       startChallengeCron();
       startDailyNotificationCron();
       startXpPremiumCron();
+      startContentCreationCron();
     } else {
       logger.warn('⚠️  Tâches planifiées désactivées - MongoDB non connecté');
       // Réessayer après connexion
@@ -301,6 +305,7 @@ if (process.env.NODE_ENV !== 'test') {
         startChallengeCron();
         startDailyNotificationCron();
         startXpPremiumCron();
+        startContentCreationCron();
       });
     }
   });
