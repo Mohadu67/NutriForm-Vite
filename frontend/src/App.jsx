@@ -32,6 +32,7 @@ const ProgramsPage = lazy(() => import("./pages/Programs/Programs.jsx"));
 const MentionsLegales = lazy(() => import("./pages/RGPD/MentionsLegales.jsx"));
 const CookiesPolicy = lazy(() => import("./pages/RGPD/CookiesPolicy.jsx"));
 const PrivacyPolicy = lazy(() => import("./pages/RGPD/PrivacyPolicy.jsx"));
+const CGV = lazy(() => import("./pages/RGPD/CGV.jsx"));
 
 // Auth - lazy loaded
 const VerifyEmail = lazy(() => import("./components/Auth/VerifyEmail/VerifyEmail.jsx"));
@@ -47,6 +48,7 @@ const AdminPage = lazy(() => import("./pages/Admin/AdminPage.jsx"));
 const NewsletterAdmin = lazy(() => import("./pages/Admin/NewsletterAdmin.jsx"));
 const SupportTickets = lazy(() => import("./pages/Admin/SupportTickets.jsx"));
 const ProgramsAdmin = lazy(() => import("./pages/Admin/ProgramsAdmin/ProgramsAdmin.jsx"));
+const PartnersAdmin = lazy(() => import("./pages/Admin/PartnersAdmin/PartnersAdmin.jsx"));
 
 // Profile & Matching - loaded directly to avoid Safari lazy loading issues
 import ProfileSetup from "./pages/Profile/ProfileSetup.jsx";
@@ -59,6 +61,9 @@ const Chat = lazy(() => import("./pages/Chat/Chat.jsx"));
 const RecipesPage = lazy(() => import("./pages/Recipes/RecipesPage.jsx"));
 const RecipeDetail = lazy(() => import("./pages/Recipes/RecipeDetail.jsx"));
 const RecipeForm = lazy(() => import("./pages/Admin/RecipeForm.jsx"));
+
+// Rewards - lazy loaded
+const RewardsPage = lazy(() => import("./pages/Rewards/RewardsPage.jsx"));
 
 export default function App() {
   useEffect(() => {
@@ -97,6 +102,7 @@ export default function App() {
             <Route path="/cookies" element={<CookiesPolicy />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/mentions-legales" element={<MentionsLegales />} />
+            <Route path="/cgv" element={<CGV />} />
 
             {/* Auth - lazy loaded */}
             <Route path="/verify-email" element={<VerifyEmail />} />
@@ -113,6 +119,7 @@ export default function App() {
             <Route path="/admin/newsletter/:id" element={<NewsletterAdmin />} />
             <Route path="/admin/support-tickets" element={<SupportTickets />} />
             <Route path="/admin/programs" element={<ProgramsAdmin />} />
+            <Route path="/admin/partners" element={<PartnersAdmin />} />
             <Route path="/admin/recipes/new" element={<RecipeForm />} />
             <Route path="/admin/recipes/:id/edit" element={<RecipeForm />} />
 
@@ -126,6 +133,9 @@ export default function App() {
             {/* Recipes - lazy loaded */}
             <Route path="/recettes" element={<RecipesPage />} />
             <Route path="/recettes/:id" element={<RecipeDetail />} />
+
+            {/* Rewards - lazy loaded */}
+            <Route path="/rewards" element={<RewardsPage />} />
 
             {/* 404 */}
             <Route path="*" element={<NotFound />} />

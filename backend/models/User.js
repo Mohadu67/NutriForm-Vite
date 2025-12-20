@@ -86,12 +86,22 @@ const userSchema = new mongoose.Schema(
 
     // Préférences de notifications
     notificationPreferences: {
-      dailyReminder: { type: Boolean, default: true },
-      dailyReminderTime: { type: String, default: '09:00' },
+      // Push notifications
+      messages: { type: Boolean, default: true },
+      promoCodes: { type: Boolean, default: true },
+      newPrograms: { type: Boolean, default: true },
+      newRecipes: { type: Boolean, default: true },
+      matches: { type: Boolean, default: true },
       challengeUpdates: { type: Boolean, default: true },
       leaderboardUpdates: { type: Boolean, default: true },
       streakReminders: { type: Boolean, default: true },
-      weeklyRecap: { type: Boolean, default: true }
+      weeklyRecapPush: { type: Boolean, default: true },
+      // Email preferences
+      newsletter: { type: Boolean, default: true },
+      weeklyRecap: { type: Boolean, default: true },
+      // Legacy (keep for compatibility)
+      dailyReminder: { type: Boolean, default: true },
+      dailyReminderTime: { type: String, default: '09:00' }
     }
   },
   { timestamps: true }

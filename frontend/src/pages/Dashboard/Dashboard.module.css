@@ -2210,6 +2210,170 @@
   margin-bottom: 16px;
 }
 
+/* ========== WEEKLY SUMMARY ========== */
+.weeklySummary {
+  background: var(--paper, #ffffff);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+:global(body.dark) .weeklySummary,
+:global(html.dark) .weeklySummary {
+  background: #1a1d24;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.weeklySummary_encourage {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08));
+  border-color: rgba(99, 102, 241, 0.15);
+}
+
+:global(body.dark) .weeklySummary_encourage,
+:global(html.dark) .weeklySummary_encourage {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+.weeklySummary_progress {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(6, 182, 212, 0.08));
+  border-color: rgba(59, 130, 246, 0.15);
+}
+
+:global(body.dark) .weeklySummary_progress,
+:global(html.dark) .weeklySummary_progress {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(6, 182, 212, 0.15));
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.weeklySummary_good {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.12), rgba(184, 221, 209, 0.12));
+  border-color: rgba(247, 177, 134, 0.2);
+}
+
+:global(body.dark) .weeklySummary_good,
+:global(html.dark) .weeklySummary_good {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.18), rgba(184, 221, 209, 0.18));
+  border-color: rgba(247, 177, 134, 0.3);
+}
+
+.weeklySummary_champion {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.1));
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+:global(body.dark) .weeklySummary_champion,
+:global(html.dark) .weeklySummary_champion {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(52, 211, 153, 0.18));
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.weeklySummaryIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+:global(body.dark) .weeklySummaryIcon,
+:global(html.dark) .weeklySummaryIcon {
+  background: rgba(30, 41, 59, 0.6);
+}
+
+.weeklySummary_encourage .weeklySummaryIcon {
+  color: #6366f1;
+}
+
+.weeklySummary_progress .weeklySummaryIcon {
+  color: #3b82f6;
+}
+
+.weeklySummary_good .weeklySummaryIcon {
+  color: #f7b186;
+}
+
+.weeklySummary_champion .weeklySummaryIcon {
+  color: #10b981;
+}
+
+.weeklySummaryContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.weeklySummaryTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .weeklySummaryTitle,
+:global(html.dark) .weeklySummaryTitle {
+  color: #f5f7fa;
+}
+
+.weeklySummaryMessage {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted, #6b7280);
+  line-height: 1.4;
+  max-width: 300px;
+}
+
+:global(body.dark) .weeklySummaryMessage,
+:global(html.dark) .weeklySummaryMessage {
+  color: #94a3b8;
+}
+
+.weeklySummaryStats {
+  display: flex;
+  gap: 24px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+:global(body.dark) .weeklySummaryStats,
+:global(html.dark) .weeklySummaryStats {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.weeklySummaryStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.weeklySummaryStatValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+}
+
+:global(body.dark) .weeklySummaryStatValue,
+:global(html.dark) .weeklySummaryStatValue {
+  color: #f5f7fa;
+}
+
+.weeklySummaryStatLabel {
+  font-size: 0.75rem;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 /* Mobile responsiveness for freemium components */
 @media (max-width: 480px) {
   .upsellBanner {

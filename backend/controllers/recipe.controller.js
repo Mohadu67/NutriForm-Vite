@@ -605,6 +605,33 @@ async function notifyRecipeUser(userId, io, { title, message, link, metadata, pu
 }
 
 /**
+ * Diffuser une notification à tous les utilisateurs connectés (nouveau contenu)
+ */
+function broadcastNewContent(io, { type, title, message, link, metadata }) {
+  if (!io) {
+    logger.warn('❌ broadcastNewContent: io instance not available');
+    return;
+  }
+
+  const notifId = `content-${type}-${Date.now()}`;
+  const notifData = {
+    id: notifId,
+    type: 'content',
+    title,
+    message,
+    link,
+    metadata,
+    timestamp: new Date().toISOString(),
+    read: false
+  };
+
+  // Broadcast via WebSocket à tous les utilisateurs connectés
+  const connectedSockets = io.sockets?.sockets?.size || 0;
+  logger.info(`📢 Broadcasting new_content to ${connectedSockets} connected sockets: ${title}`);
+  io.emit('new_content', notifData);
+}
+
+/**
  * @route   POST /api/recipes/user
  * @desc    Créer une recette personnelle (User Premium)
  * @access  Private (Premium)
@@ -1099,6 +1126,15 @@ exports.approveRecipe = async (req, res) => {
         link: `/recettes/${recipe.slug}`,
         metadata: { recipeId: recipe._id, action: 'approved', xpEarned: XP_REWARDS.RECIPE_APPROVED },
         pushBody: `Ta recette "${recipe.title}" est maintenant publique ! +${XP_REWARDS.RECIPE_APPROVED} XP 🎉`
+      });
+
+      // Notifier tous les utilisateurs connectés de la nouvelle recette
+      broadcastNewContent(io, {
+        type: 'recipe',
+        title: '🍽️ Nouvelle recette disponible !',
+        message: `Découvre "${recipe.title}" - ${recipe.category || 'Recette fitness'}`,
+        link: `/recettes/${recipe.slug}`,
+        metadata: { recipeId: recipe._id, recipeTitle: recipe.title, recipeSlug: recipe.slug }
       });
     }
 

@@ -397,3 +397,90 @@ exports.resendVerificationEmail = async (req, res) => {
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
+
+/**
+ * Recuperer les preferences de notifications
+ * GET /api/notification-preferences
+ */
+exports.getNotificationPreferences = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('notificationPreferences');
+
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable' });
+    }
+
+    // Retourner les preferences avec valeurs par defaut
+    const defaultPrefs = {
+      messages: true,
+      promoCodes: true,
+      newPrograms: true,
+      newRecipes: true,
+      matches: true,
+      challengeUpdates: true,
+      leaderboardUpdates: true,
+      streakReminders: true,
+      weeklyRecapPush: true,
+      newsletter: true,
+      weeklyRecap: true
+    };
+
+    const preferences = {
+      ...defaultPrefs,
+      ...(user.notificationPreferences || {})
+    };
+
+    res.json({ success: true, preferences });
+  } catch (err) {
+    logger.error('GET /notification-preferences:', err);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+/**
+ * Mettre a jour les preferences de notifications
+ * PUT /api/notification-preferences
+ */
+exports.updateNotificationPreferences = async (req, res) => {
+  try {
+    const { preferences } = req.body;
+
+    if (!preferences || typeof preferences !== 'object') {
+      return res.status(400).json({ message: 'Preferences invalides' });
+    }
+
+    // Champs autorises
+    const allowedFields = [
+      'messages', 'promoCodes', 'newPrograms', 'newRecipes',
+      'matches', 'challengeUpdates', 'leaderboardUpdates',
+      'streakReminders', 'weeklyRecapPush', 'newsletter', 'weeklyRecap'
+    ];
+
+    // Construire l'objet de mise a jour
+    const updateFields = {};
+    for (const field of allowedFields) {
+      if (typeof preferences[field] === 'boolean') {
+        updateFields[`notificationPreferences.${field}`] = preferences[field];
+      }
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(400).json({ message: 'Aucune preference valide fournie' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { $set: updateFields },
+      { new: true }
+    ).select('notificationPreferences');
+
+    res.json({
+      success: true,
+      message: 'Preferences mises a jour',
+      preferences: user.notificationPreferences
+    });
+  } catch (err) {
+    logger.error('PUT /notification-preferences:', err);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+};

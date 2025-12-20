@@ -1,6 +1,14 @@
 const axios = require('axios');
-const { JSDOM } = require('jsdom');
 const logger = require('../utils/logger');
+
+// Lazy load JSDOM pour éviter de bloquer le démarrage du serveur
+let JSDOM = null;
+const getJSDOM = () => {
+  if (!JSDOM) {
+    JSDOM = require('jsdom').JSDOM;
+  }
+  return JSDOM;
+};
 
 // Cache simple en mémoire pour éviter de refetch les mêmes URLs
 const previewCache = new Map();
@@ -51,8 +59,9 @@ exports.getLinkPreview = async (req, res) => {
       return res.status(400).json({ error: 'Contenu non HTML' });
     }
 
-    // Parser le HTML
-    const dom = new JSDOM(html);
+    // Parser le HTML (lazy load JSDOM)
+    const JSDOMClass = getJSDOM();
+    const dom = new JSDOMClass(html);
     const document = dom.window.document;
 
     // Extraire les métadonnées Open Graph

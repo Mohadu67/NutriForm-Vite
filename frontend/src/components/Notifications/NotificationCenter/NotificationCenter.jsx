@@ -11,7 +11,8 @@ import {
   MessageCircleIcon,
   HeartIcon,
   CrownIcon,
-  ActivityIcon
+  ActivityIcon,
+  SparklesIcon
 } from '../../Icons/GlobalIcons';
 import styles from './NotificationCenter.module.css';
 
@@ -21,7 +22,8 @@ const NOTIFICATION_TYPES = {
   SYSTEM: 'system',
   ACTIVITY: 'activity',
   ADMIN: 'admin',
-  SUPPORT: 'support'
+  SUPPORT: 'support',
+  CONTENT: 'content'
 };
 
 // Icônes SVG par type
@@ -31,7 +33,8 @@ const TypeIcons = {
   system: <BellIcon size={18} />,
   activity: <ActivityIcon size={18} />,
   admin: <CrownIcon size={18} />,
-  support: <MessageCircleIcon size={18} />
+  support: <MessageCircleIcon size={18} />,
+  content: <SparklesIcon size={18} />
 };
 
 export default function NotificationCenter({ className = '', mode = 'dropdown', onClose }) {
@@ -64,9 +67,13 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
       if (response.ok) {
         const data = await response.json();
         setNotifications(data.notifications || []);
+      } else {
+        // Log pour debug Safari
+        console.warn('[NotificationCenter] API response not OK:', response.status, response.statusText);
+        setNotifications([]);
       }
     } catch (error) {
-      console.error('Erreur chargement notifications:', error);
+      console.error('[NotificationCenter] Erreur chargement notifications:', error);
       setNotifications([]);
     }
   }, []);
@@ -112,6 +119,9 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
       (n.id === id || n._id === id) ? { ...n, read: true } : n
     ));
 
+    // Notifier le hook useNotificationCount
+    window.dispatchEvent(new CustomEvent('notificationRead'));
+
     // Sync serveur en arrière-plan
     try {
       const notifId = id;
@@ -128,6 +138,9 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
     // Mise à jour locale immédiate
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
 
+    // Notifier le hook useNotificationCount
+    window.dispatchEvent(new CustomEvent('notificationsCleared'));
+
     // Sync serveur
     try {
       await secureApiCall(endpoints.notifications.markAllRead, {
@@ -142,6 +155,9 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
   const clearAll = useCallback(async () => {
     // Mise à jour locale immédiate
     setNotifications([]);
+
+    // Notifier le hook useNotificationCount
+    window.dispatchEvent(new CustomEvent('notificationsCleared'));
 
     // Sync serveur
     try {
@@ -319,6 +335,24 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
 
     const cleanup = on('new_notification', (notification) => {
       addNotification(notification);
+    });
+
+    return cleanup;
+  }, [on, isConnected, addNotification]);
+
+  // Écouter les nouveaux contenus (programmes/recettes) via WebSocket
+  useEffect(() => {
+    if (!isConnected || !on) {
+      return;
+    }
+
+    const cleanup = on('new_content', (content) => {
+      // Ajouter comme notification temporaire (non sauvegardée en base)
+      addNotification({
+        ...content,
+        type: 'content',
+        read: false
+      });
     });
 
     return cleanup;

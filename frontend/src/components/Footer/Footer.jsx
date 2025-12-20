@@ -119,7 +119,7 @@ export default function Footer() {
 
         <div className={styles.legal}>
           <p>
-            <Link to="/mentions-legales">Mentions légales</Link> · © 2025 Mohammed HAMIANI. Tous droits réservés.
+            <Link to="/mentions-legales">Mentions legales</Link> · <Link to="/cgv">CGV</Link> · © 2025 Mohammed HAMIANI. Tous droits reserves.
           </p>
         </div>
       </footer>
