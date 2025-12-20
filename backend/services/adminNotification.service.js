@@ -133,7 +133,90 @@ async function notifySupport({ title, message, link, metadata = {}, io = null })
   logger.info(`${staffUsers.length} staff notifié(s) - support: ${title}`);
 }
 
+/**
+ * Notifie TOUS les utilisateurs d'un événement (nouveau partenaire, promo, etc.)
+ * @param {Object} options - Options de notification
+ * @param {string} options.title - Titre de la notification
+ * @param {string} options.message - Message de la notification
+ * @param {string} options.link - Lien vers la ressource
+ * @param {string} options.type - Type de notification
+ * @param {Object} options.metadata - Métadonnées additionnelles
+ * @param {Object} options.io - Instance Socket.IO (optionnel)
+ * @param {string} options.icon - Icône pour push notification (optionnel)
+ */
+async function notifyAllUsers({ title, message, link, type = 'promo', metadata = {}, io = null, icon = '/assets/icons/notif-reward.svg' }) {
+  try {
+    // Récupérer tous les utilisateurs actifs
+    const users = await User.find({ isActive: { $ne: false } }).select('_id');
+
+    if (users.length === 0) {
+      logger.info('Aucun utilisateur à notifier');
+      return;
+    }
+
+    const timestamp = Date.now();
+
+    // 1. Sauvegarder en base de données (bulk)
+    const notificationsToCreate = users.map(user => ({
+      userId: user._id,
+      type,
+      title,
+      message,
+      link,
+      metadata
+    }));
+
+    await Notification.insertMany(notificationsToCreate, { ordered: false }).catch(err =>
+      logger.error(`Erreur sauvegarde notifications ${type}:`, err)
+    );
+
+    // 2. Envoyer via WebSocket (temps réel) - par batch pour éviter surcharge
+    if (io && io.notifyUser) {
+      for (const user of users) {
+        const notifId = `${type}-${timestamp}-${user._id}`;
+        io.notifyUser(user._id.toString(), 'new_notification', {
+          id: notifId,
+          type,
+          title,
+          message,
+          link,
+          metadata,
+          timestamp: new Date().toISOString(),
+          read: false
+        });
+      }
+    }
+
+    // 3. Envoyer push notifications (en parallèle avec limite)
+    const BATCH_SIZE = 50;
+    for (let i = 0; i < users.length; i += BATCH_SIZE) {
+      const batch = users.slice(i, i + BATCH_SIZE);
+      await Promise.allSettled(
+        batch.map(user =>
+          sendNotificationToUser(user._id, {
+            type,
+            title,
+            body: message,
+            icon,
+            data: {
+              type,
+              url: link,
+              ...metadata
+            }
+          })
+        )
+      );
+    }
+
+    logger.info(`${users.length} utilisateur(s) notifié(s) - ${type}: ${title}`);
+
+  } catch (err) {
+    logger.error('Erreur notifyAllUsers:', err);
+  }
+}
+
 module.exports = {
   notifyAdmins,
-  notifySupport
+  notifySupport,
+  notifyAllUsers
 };

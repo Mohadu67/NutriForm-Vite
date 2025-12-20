@@ -64,6 +64,33 @@ async function notifyProgramUser(userId, io, { title, message, link, metadata, p
     data: { url: link, programId: metadata.programId?.toString() }
   }).catch(err => logger.error('Erreur push notification programme:', err));
 }
+
+/**
+ * Diffuser une notification à tous les utilisateurs connectés (nouveau contenu)
+ */
+function broadcastNewContent(io, { type, title, message, link, metadata }) {
+  if (!io) {
+    logger.warn('❌ broadcastNewContent: io instance not available');
+    return;
+  }
+
+  const notifId = `content-${type}-${Date.now()}`;
+  const notifData = {
+    id: notifId,
+    type: 'content',
+    title,
+    message,
+    link,
+    metadata,
+    timestamp: new Date().toISOString(),
+    read: false
+  };
+
+  // Broadcast via WebSocket à tous les utilisateurs connectés
+  const connectedSockets = io.sockets?.sockets?.size || 0;
+  logger.info(`📢 Broadcasting new_content to ${connectedSockets} connected sockets: ${title}`);
+  io.emit('new_content', notifData);
+}
 /**
  * Recuperer tous les programmes publics (accessibles sans connexion)
  */
@@ -913,6 +940,15 @@ async function approveProgram(req, res) {
         link: '/programs',
         metadata: { programId: program._id, action: 'approved', xpEarned: XP_REWARDS.PROGRAM_APPROVED },
         pushBody: `Ton programme "${program.name}" est maintenant public ! +${XP_REWARDS.PROGRAM_APPROVED} XP 🎉`
+      });
+
+      // Notifier tous les utilisateurs connectés du nouveau programme
+      broadcastNewContent(io, {
+        type: 'program',
+        title: '🆕 Nouveau programme disponible !',
+        message: `Découvre "${program.name}" - ${program.type || 'Programme fitness'}`,
+        link: '/programs',
+        metadata: { programId: program._id, programName: program.name, programType: program.type }
       });
     }
 

@@ -1,10 +1,10 @@
 // Service Worker pour NutriForm
 // Gère le cache et les notifications push
 
-const CACHE_NAME = 'nutriform-v4';
-const API_CACHE = 'nutriform-api-v4';
+const CACHE_NAME = 'nutriform-v5';
+const API_CACHE = 'nutriform-api-v5';
 // Version basée sur timestamp pour forcer la détection de mise à jour
-const APP_VERSION = '3.0.0-' + '20251219';
+const APP_VERSION = '3.0.0-20251220';
 
 // Événement d'installation
 self.addEventListener('install', (event) => {
@@ -215,6 +215,11 @@ self.addEventListener('notificationclick', (event) => {
   const action = event.action;
   const data = event.notification.data || {};
 
+  // Si l'utilisateur clique sur "Fermer", ne rien faire
+  if (action === 'close') {
+    return;
+  }
+
   // Déterminer l'URL à ouvrir
   let urlToOpen = data?.url || '/';
 
@@ -224,9 +229,15 @@ self.addEventListener('notificationclick', (event) => {
     urlToOpen = '/leaderboard';
   }
 
-  // Si l'utilisateur clique sur "Fermer", ne rien faire
-  if (action === 'close') {
-    return;
+  // Pour les messages, rediriger vers la page d'accueil avec les données en query
+  // L'app gérera l'ouverture du chat une fois chargée
+  if (data?.type === 'new_message' && data?.conversationId) {
+    urlToOpen = `/?openChat=true&conversationId=${data.conversationId}&chatType=match`;
+  }
+
+  // Pour les notifications support
+  if (data?.type === 'support' && data?.conversationId) {
+    urlToOpen = `/?openChat=true&conversationId=${data.conversationId}&chatType=ai`;
   }
 
   // Ouvrir ou focus la fenêtre de l'application
@@ -250,9 +261,10 @@ self.addEventListener('notificationclick', (event) => {
         }
       }
 
-      // Sinon, ouvrir une nouvelle fenêtre
+      // Sinon, ouvrir une nouvelle fenêtre avec l'URL complète
       if (clients.openWindow) {
-        return clients.openWindow(urlToOpen);
+        const fullUrl = new URL(urlToOpen, self.location.origin).href;
+        return clients.openWindow(fullUrl);
       }
     })
   );

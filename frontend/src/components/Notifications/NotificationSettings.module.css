@@ -1,0 +1,264 @@
+/* === NOTIFICATION SETTINGS === */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section {
+  background: rgba(184, 221, 209, 0.06);
+  border: 1px solid rgba(184, 221, 209, 0.12);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sectionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, rgba(184, 221, 209, 0.15), rgba(247, 177, 134, 0.1));
+  border-radius: 10px;
+  font-size: 1.1rem;
+  color: #64748b;
+}
+
+.sectionInfo {
+  flex: 1;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.sectionDesc {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* Toggle Button */
+.toggleBtn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggleOn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.toggleOff {
+  background: rgba(148, 163, 184, 0.15);
+  color: #64748b;
+}
+
+.toggleBtn:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.toggleBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Error */
+.error {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #dc2626;
+}
+
+.deniedHelp {
+  margin: 12px 0 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* Options List */
+.optionsList {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.optionsLabel {
+  margin: 16px 0 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.optionsLabel:first-child {
+  margin-top: 0;
+}
+
+.optionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.optionItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.optionInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.optionIcon {
+  font-size: 1.25rem;
+  width: 28px;
+  text-align: center;
+}
+
+.optionLabel {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.optionDesc {
+  display: block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* Option Toggle */
+.optionToggle {
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 50px;
+}
+
+.optionOn {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.optionOff {
+  background: rgba(148, 163, 184, 0.1);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.optionToggle:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.optionToggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* === DARK MODE === */
+:global(body.dark) .section,
+:global(html.dark) .section {
+  background: rgba(30, 41, 59, 0.4);
+  border-color: rgba(123, 196, 168, 0.1);
+}
+
+:global(body.dark) .sectionIcon,
+:global(html.dark) .sectionIcon {
+  background: linear-gradient(135deg, rgba(123, 196, 168, 0.15), rgba(247, 177, 134, 0.1));
+}
+
+:global(body.dark) .sectionTitle,
+:global(html.dark) .sectionTitle {
+  color: #e2e8f0;
+}
+
+:global(body.dark) .sectionDesc,
+:global(html.dark) .sectionDesc {
+  color: #94a3b8;
+}
+
+:global(body.dark) .toggleOff,
+:global(html.dark) .toggleOff {
+  background: rgba(71, 85, 105, 0.3);
+  color: #94a3b8;
+}
+
+:global(body.dark) .optionsList,
+:global(html.dark) .optionsList {
+  border-color: rgba(71, 85, 105, 0.2);
+}
+
+:global(body.dark) .optionsLabel,
+:global(html.dark) .optionsLabel {
+  color: #94a3b8;
+}
+
+:global(body.dark) .optionItem,
+:global(html.dark) .optionItem {
+  border-color: rgba(71, 85, 105, 0.15);
+}
+
+:global(body.dark) .optionLabel,
+:global(html.dark) .optionLabel {
+  color: #e2e8f0;
+}
+
+:global(body.dark) .optionDesc,
+:global(html.dark) .optionDesc {
+  color: #64748b;
+}
+
+:global(body.dark) .optionOn,
+:global(html.dark) .optionOn {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+}
+
+:global(body.dark) .optionOff,
+:global(html.dark) .optionOff {
+  background: rgba(71, 85, 105, 0.2);
+  border-color: rgba(71, 85, 105, 0.3);
+  color: #64748b;
+}
+
+:global(body.dark) .deniedHelp,
+:global(html.dark) .deniedHelp {
+  color: #64748b;
+}

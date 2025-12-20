@@ -29,6 +29,7 @@ export default function MobileExpandedMenu({
   handleMessagesClick,
   handleNotificationsClick,
   unreadCount,
+  notificationUnreadCount = 0,
   isLoggedIn,
   openPopup,
   closeChat,
@@ -114,10 +115,16 @@ export default function MobileExpandedMenu({
                   <button
                     onClick={handleNotificationsClick}
                     className={styles.utilityBtn}
-                    aria-label="Notifications"
+                    aria-label={`Notifications${notificationUnreadCount > 0 ? ` (${notificationUnreadCount} non lues)` : ''}`}
+                    style={{ position: 'relative' }}
                   >
                     <BellIcon size={20} />
                     <span>Notifications</span>
+                    {notificationUnreadCount > 0 && (
+                      <span className={styles.notificationBadge}>
+                        {notificationUnreadCount > 9 ? '9+' : notificationUnreadCount}
+                      </span>
+                    )}
                   </button>
                 )}
 

@@ -815,3 +815,386 @@
     align-items: flex-start;
   }
 }
+
+/* ========== NOTIFICATION STATS ========== */
+.notifStatsContainer {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 30px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.notifStatsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.notifStatsHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.periodSelector {
+  display: flex;
+  gap: 8px;
+}
+
+.periodSelector button {
+  padding: 6px 14px;
+  border: 1px solid #e0e0e0;
+  background: #f5f5f5;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.periodSelector button:hover {
+  border-color: #f7b186;
+  color: #f7b186;
+}
+
+.periodActive {
+  background: #f7b186 !important;
+  border-color: #f7b186 !important;
+  color: white !important;
+}
+
+.notifStatsLoading,
+.notifStatsError {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+}
+
+.notifStatsError {
+  color: #dc2626;
+}
+
+.notifStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.notifStatCard {
+  background: linear-gradient(135deg, #f7f7f7, #fff);
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.notifStatIcon {
+  font-size: 1.5rem;
+  color: #6366f1;
+  margin-bottom: 8px;
+}
+
+.notifStatValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.notifStatLabel {
+  font-size: 0.8rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Chart */
+.chartContainer {
+  margin-bottom: 30px;
+}
+
+.chartContainer h4 {
+  margin: 0 0 16px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.barChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 150px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.barGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.bars {
+  flex: 1;
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.barSent,
+.barClicked {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 0.3s ease;
+}
+
+.barSent {
+  background: linear-gradient(180deg, #818cf8, #6366f1);
+}
+
+.barClicked {
+  background: linear-gradient(180deg, #34d399, #10b981);
+}
+
+.barLabel {
+  font-size: 0.65rem;
+  color: #999;
+  margin-top: 6px;
+  white-space: nowrap;
+}
+
+.chartLegend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.chartLegend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* Type Stats */
+.typeStatsContainer {
+  margin-bottom: 30px;
+}
+
+.typeStatsContainer h4 {
+  margin: 0 0 16px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.typeStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.typeStatCard {
+  background: #f8f8f8;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.typeStatHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.typeStatName {
+  font-weight: 600;
+  color: #333;
+  text-transform: capitalize;
+}
+
+.typeStatRate {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.typeStatBar {
+  height: 6px;
+  background: #e5e5e5;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.typeStatProgress {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #10b981);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.typeStatDetails {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #999;
+}
+
+/* Top Notifications */
+.topNotifsContainer h4 {
+  margin: 0 0 16px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.topNotifsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.topNotifItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fafafa;
+  border-radius: 10px;
+  border: 1px solid #f0f0f0;
+}
+
+.topNotifRank {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7b186;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.topNotifInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topNotifTitle {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.topNotifType {
+  font-size: 0.75rem;
+  color: #999;
+  text-transform: capitalize;
+}
+
+.topNotifStats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.topNotifStats span:first-child {
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.topNotifClicks {
+  font-size: 0.75rem;
+  color: #10b981;
+}
+
+/* Dark mode */
+:global(body.dark) .notifStatsContainer,
+:global(html.dark) .notifStatsContainer {
+  background: #1a1d24;
+}
+
+:global(body.dark) .notifStatsHeader h3,
+:global(html.dark) .notifStatsHeader h3,
+:global(body.dark) .chartContainer h4,
+:global(html.dark) .chartContainer h4,
+:global(body.dark) .typeStatsContainer h4,
+:global(html.dark) .typeStatsContainer h4,
+:global(body.dark) .topNotifsContainer h4,
+:global(html.dark) .topNotifsContainer h4 {
+  color: #e2e8f0;
+}
+
+:global(body.dark) .notifStatCard,
+:global(html.dark) .notifStatCard {
+  background: linear-gradient(135deg, #1e2530, #252d3a);
+  border-color: rgba(255,255,255,0.08);
+}
+
+:global(body.dark) .notifStatValue,
+:global(html.dark) .notifStatValue {
+  color: #f5f7fa;
+}
+
+:global(body.dark) .typeStatCard,
+:global(html.dark) .typeStatCard {
+  background: rgba(255,255,255,0.05);
+}
+
+:global(body.dark) .typeStatName,
+:global(html.dark) .typeStatName {
+  color: #e2e8f0;
+}
+
+:global(body.dark) .topNotifItem,
+:global(html.dark) .topNotifItem {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.06);
+}
+
+:global(body.dark) .topNotifTitle,
+:global(html.dark) .topNotifTitle {
+  color: #e2e8f0;
+}
+
+@media (max-width: 768px) {
+  .notifStatsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .notifStatsHeader {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .barChart {
+    height: 120px;
+    overflow-x: auto;
+  }
+
+  .barGroup {
+    min-width: 30px;
+  }
+}

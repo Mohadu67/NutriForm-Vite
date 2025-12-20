@@ -25,10 +25,12 @@ import NotFound from './pages/NotFound/NotFound.jsx';
 const MentionsLegales = lazy(() => import('./pages/RGPD/MentionsLegales.jsx'));
 const CookiesPolicy = lazy(() => import('./pages/RGPD/CookiesPolicy.jsx'));
 const PrivacyPolicy = lazy(() => import('./pages/RGPD/PrivacyPolicy.jsx'));
+const CGV = lazy(() => import('./pages/RGPD/CGV.jsx'));
 
 const Leaderboard = lazy(() => import('./pages/Leaderboard/Leaderboard.jsx'));
 const RecipesPage = lazy(() => import('./pages/Recipes/RecipesPage.jsx'));
 const RecipeDetail = lazy(() => import('./pages/Recipes/RecipeDetail.jsx'));
+const RewardsPage = lazy(() => import('./pages/Rewards/RewardsPage.jsx'));
 
 // Version simplifiée de l'App pour le SSR (sans WebSocket, Chat, etc.)
 function ServerApp() {
@@ -51,11 +53,13 @@ function ServerApp() {
           <Route path="/cookies" element={<CookiesPolicy />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/mentions-legales" element={<MentionsLegales />} />
+          <Route path="/cgv" element={<CGV />} />
 
           {/* Autres pages publiques */}
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/recettes" element={<RecipesPage />} />
           <Route path="/recettes/:id" element={<RecipeDetail />} />
+          <Route path="/rewards" element={<RewardsPage />} />
 
           {/* 404 */}
           <Route path="*" element={<NotFound />} />

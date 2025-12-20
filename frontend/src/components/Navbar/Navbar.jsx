@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useChat } from "../../contexts/ChatContext";
 import { useWebSocket } from "../../contexts/WebSocketContext";
 import { usePremiumStatus } from "../../hooks/usePremiumStatus";
+import { useNotificationCount } from "../../hooks/useNotificationCount";
 import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
 import { storage } from "../../shared/utils/storage";
 import { getConversations, deleteConversation, updateConversationSettings } from "../../shared/api/matchChat";
@@ -24,6 +25,7 @@ export default function Navbar() {
   const { isChatOpen, chatView, activeConversation, openChat, closeChat } = useChat() || {};
   const { on, isConnected } = useWebSocket() || {};
   const { isPremium } = usePremiumStatus();
+  const { unreadCount: notificationUnreadCount } = useNotificationCount();
 
   // State
   const [open, setOpen] = useState(false);
@@ -234,7 +236,7 @@ export default function Navbar() {
       links.push({ label: "Dashboard", path: "/dashboard", icon: <DashboardIcon size={28} /> });
     }
     if (isLoggedIn && isPremium) {
-      links.push({ label: 'Partenaires', path: "/matching", icon: <UsersIcon size={28} />, isPremium: true });
+      links.push({ label: 'GymBro', path: "/matching", icon: <UsersIcon size={28} />, isPremium: true });
     }
     links.push(
       { label: 'Recettes', path: "/recettes", icon: <UtensilsIcon size={28} /> },
@@ -306,6 +308,7 @@ export default function Navbar() {
             handleMessagesClick={handleMessagesClick}
             handleNotificationsClick={handleNotificationsClick}
             unreadCount={unreadCount}
+            notificationUnreadCount={notificationUnreadCount}
             isLoggedIn={isLoggedIn}
             openPopup={openPopup}
             closeChat={closeChat}
