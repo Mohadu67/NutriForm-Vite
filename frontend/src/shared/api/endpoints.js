@@ -81,6 +81,19 @@ export const endpoints = {
     eligibility: "/xp-redemption/eligibility",
     redeem: "/xp-redemption/redeem",
     history: "/xp-redemption/history",
+  },
+  partners: {
+    list: "/partners",
+    byId: (id) => `/partners/${id}`,
+    myRewards: "/partners/user/my-rewards",
+    checkRedemption: (partnerId) => `/partners/user/check/${partnerId}`,
+    redeem: (id) => `/partners/${id}/redeem`,
+    // Admin
+    adminList: "/partners/admin/all",
+    adminCreate: "/partners/admin",
+    adminUpdate: (id) => `/partners/admin/${id}`,
+    adminDelete: (id) => `/partners/admin/${id}`,
+    adminStats: (id) => `/partners/admin/${id}/stats`,
   }
 };
 export default endpoints;

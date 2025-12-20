@@ -350,8 +350,8 @@ export default function MatchingPageFuturistic() {
         <div className={styles.particlesContainer} aria-hidden="true" />
 
         <div className={styles.header}>
-          <h1>Trouve ton partenaire</h1>
-          <p>Swipe pour découvrir des profils compatibles</p>
+          <h1>GymBro</h1>
+          <p>Trouve ton partenaire d'entrainement</p>
         </div>
 
         {/* Stats */}

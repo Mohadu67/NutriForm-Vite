@@ -260,7 +260,7 @@ async function notifyInactiveUsers() {
   }
 }
 
-// Récap hebdomadaire (Dimanche 18h00)
+// Récap hebdomadaire (Dimanche 10h00)
 async function sendWeeklyRecap() {
   logger.info('📊 CRON: Envoi des récaps hebdomadaires...');
 
@@ -269,19 +269,16 @@ async function sendWeeklyRecap() {
     const oneWeekAgo = new Date(now);
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    const entries = await LeaderboardEntry.find({
-      visibility: 'public'
-    }).populate('userId');
+    // Recuperer tous les users actifs
+    const users = await User.find({ isActive: { $ne: false } }).select('_id notificationPreferences prenom pseudo');
 
     let notificationsSent = 0;
 
-    for (const entry of entries) {
+    for (const user of users) {
       try {
-        const user = entry.userId;
-        if (!user) continue;
-
         const prefs = user.notificationPreferences || {};
-        if (prefs.leaderboardUpdates === false) continue;
+        // Verifier la preference weeklyRecapPush
+        if (prefs.weeklyRecapPush === false) continue;
 
         // Calculer les stats de la semaine
         const weeklySessions = await WorkoutSession.countDocuments({
@@ -304,29 +301,40 @@ async function sendWeeklyRecap() {
           }
         ]);
 
-        if (weeklySessions > 0) {
-          // Calculer le rang
-          const betterEntries = await LeaderboardEntry.countDocuments({
-            visibility: 'public',
-            'stats.thisWeekSessions': { $gt: entry.stats?.thisWeekSessions || 0 }
-          });
-          const rank = betterEntries + 1;
+        const calories = weeklyCalories[0]?.total || 0;
+        const userName = user.prenom || user.pseudo || 'Champion';
 
-          await sendNotificationToUser(user._id, {
-            title: DAILY_TEMPLATES.weekly_recap.title,
-            body: DAILY_TEMPLATES.weekly_recap.getBody({
-              sessions: weeklySessions,
-              calories: weeklyCalories[0]?.total || 0,
-              rank
-            }),
-            icon: '/assets/icons/notif-victory.svg',
-            data: { type: 'weekly_recap', url: '/leaderboard' }
-          });
-          notificationsSent++;
+        // Message motivant selon l'activite
+        let title, body;
+
+        if (weeklySessions === 0) {
+          // Aucune activite
+          title = 'Ta semaine t\'attend!';
+          body = `${userName}, c'est pas grave, on recommence! Viens voir ton dashboard et lance-toi cette semaine.`;
+        } else if (weeklySessions <= 2) {
+          // Peu d'activite
+          title = 'Bon debut!';
+          body = `${weeklySessions} seance${weeklySessions > 1 ? 's' : ''} cette semaine, c'est un debut! Continue sur ta lancee.`;
+        } else if (weeklySessions <= 4) {
+          // Activite moyenne
+          title = 'Belle semaine!';
+          body = `${weeklySessions} seances et ${calories} kcal brulees. Tu progresses bien, continue!`;
+        } else {
+          // Beaucoup d'activite
+          title = 'Semaine incroyable!';
+          body = `${weeklySessions} seances, ${calories} kcal! Tu es une machine, felicitations!`;
         }
 
+        await sendNotificationToUser(user._id, {
+          title,
+          body,
+          icon: '/assets/icons/notif-recap.svg',
+          data: { type: 'weekly_recap', url: '/dashboard' }
+        });
+        notificationsSent++;
+
       } catch (err) {
-        logger.error(`Erreur récap hebdo:`, err);
+        logger.error(`Erreur récap hebdo user ${user._id}:`, err.message);
       }
     }
 
@@ -359,8 +367,8 @@ function startDailyNotificationCron() {
     timezone: 'Europe/Paris'
   });
 
-  // Récap hebdomadaire le dimanche à 18h00
-  cron.schedule('0 18 * * 0', sendWeeklyRecap, {
+  // Récap hebdomadaire le dimanche à 10h00
+  cron.schedule('0 10 * * 0', sendWeeklyRecap, {
     timezone: 'Europe/Paris'
   });
 
