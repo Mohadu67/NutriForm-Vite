@@ -38,6 +38,9 @@ const CGV = lazy(() => import("./pages/RGPD/CGV.jsx"));
 const VerifyEmail = lazy(() => import("./components/Auth/VerifyEmail/VerifyEmail.jsx"));
 const ResetPassword = lazy(() => import("./components/Auth/ResetPassword/ResetPassword.jsx"));
 
+// Newsletter - lazy loaded
+const NewsletterUnsubscribe = lazy(() => import("./pages/Newsletter/NewsletterUnsubscribe.jsx"));
+
 // Dashboard & Leaderboard - lazy loaded (pages premium)
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard.jsx"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard/Leaderboard.jsx"));
@@ -107,6 +110,9 @@ export default function App() {
             {/* Auth - lazy loaded */}
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+
+            {/* Newsletter */}
+            <Route path="/newsletter/unsubscribe" element={<NewsletterUnsubscribe />} />
 
             {/* Dashboard & Premium - lazy loaded */}
             <Route path="/dashboard" element={<Dashboard />} />

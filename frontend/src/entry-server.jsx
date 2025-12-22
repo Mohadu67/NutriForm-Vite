@@ -21,6 +21,10 @@ const ExoPage = lazy(() => import('./pages/Exo/Exo.jsx'));
 import PageOutils from './pages/OutilsCalcul/PageOutils.jsx';
 import NotFound from './pages/NotFound/NotFound.jsx';
 
+// Pages publiques importantes pour le SEO
+const Pricing = lazy(() => import('./pages/Pricing/Pricing.jsx'));
+const Programs = lazy(() => import('./pages/Programs/Programs.jsx'));
+
 // Pages RGPD - lazy loaded
 const MentionsLegales = lazy(() => import('./pages/RGPD/MentionsLegales.jsx'));
 const CookiesPolicy = lazy(() => import('./pages/RGPD/CookiesPolicy.jsx'));
@@ -57,6 +61,8 @@ function ServerApp() {
 
           {/* Autres pages publiques */}
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/programs" element={<Programs />} />
           <Route path="/recettes" element={<RecipesPage />} />
           <Route path="/recettes/:id" element={<RecipeDetail />} />
           <Route path="/rewards" element={<RewardsPage />} />
