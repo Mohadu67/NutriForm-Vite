@@ -101,22 +101,37 @@ function matchTypes(exo, tSet) {
 }
 
 function gatherExerciseMuscleData(exo) {
-  const tokens = uniq(normArr([
+  // Collecter le muscle principal (prioritaire pour le filtrage)
+  const primaryTokens = uniq(normArr(toArray(exo.primaryMuscle)));
+  const primaryZoneSet = new Set();
+  primaryTokens.forEach((token) => {
+    const zones = ZONE_SYNONYM_INDEX.get(token);
+    if (zones) zones.forEach((zoneId) => primaryZoneSet.add(zoneId));
+  });
+
+  // Collecter tous les muscles (pour le scoring et fallback)
+  const allTokens = uniq(normArr([
     ...toArray(exo.muscles),
     ...toArray(exo.primaryMuscle),
     ...toArray(exo.muscle),
   ]));
 
-  const zoneSet = new Set();
-  tokens.forEach((token) => {
+  const allZoneSet = new Set();
+  allTokens.forEach((token) => {
     const zones = ZONE_SYNONYM_INDEX.get(token);
-    if (zones) zones.forEach((zoneId) => zoneSet.add(zoneId));
+    if (zones) zones.forEach((zoneId) => allZoneSet.add(zoneId));
   });
 
-  return { tokens, zoneSet };
+  return {
+    tokens: allTokens,
+    zoneSet: allZoneSet,
+    primaryTokens,
+    primaryZoneSet,
+    hasPrimaryMuscle: primaryTokens.length > 0
+  };
 }
 
-function matchMuscles(exerciseMuscleData, requestedZones, musclePolicy, fallbackTokens = []) {
+function matchMuscles(exerciseMuscleData, requestedZones, musclePolicy, fallbackTokens = [], usePrimaryOnly = true) {
   if (!requestedZones.length) {
     if (!fallbackTokens.length) {
       return { ok: true, count: 0, matchedZones: [] };
@@ -127,7 +142,13 @@ function matchMuscles(exerciseMuscleData, requestedZones, musclePolicy, fallback
       : { ok: false, count: 0, matchedZones: [] };
   }
 
-  const matchedZones = requestedZones.filter((zoneId) => exerciseMuscleData.zoneSet.has(zoneId));
+  // Si l'exercice a un primaryMuscle défini ET qu'on veut filtrer strictement,
+  // on ne matche que sur le muscle principal
+  const zoneSetToUse = (usePrimaryOnly && exerciseMuscleData.hasPrimaryMuscle)
+    ? exerciseMuscleData.primaryZoneSet
+    : exerciseMuscleData.zoneSet;
+
+  const matchedZones = requestedZones.filter((zoneId) => zoneSetToUse.has(zoneId));
 
   if (musclePolicy === "all" && matchedZones.length !== requestedZones.length) {
     return { ok: false, count: matchedZones.length, matchedZones };

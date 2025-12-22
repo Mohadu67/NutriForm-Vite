@@ -152,13 +152,30 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
       const entries = session?.entries || session?.items || session?.exercises || [];
       entries.forEach((entry) => {
         if (!entry) return;
-        const entryMuscles = entry.muscles;
-        if (Array.isArray(entryMuscles) && entryMuscles.length > 0) {
-          entryMuscles.forEach((m, i) => addMuscle(m, i === 0 ? 1 : 0.7));
+
+        // Priorité 1: Utiliser primaryMuscle si défini (le plus précis)
+        if (entry.primaryMuscle) {
+          addMuscle(entry.primaryMuscle, 1);
+          // Ajouter les muscles secondaires avec un poids réduit
+          const secondaries = entry.secondaryMuscles || [];
+          if (Array.isArray(secondaries)) {
+            secondaries.forEach((m) => addMuscle(m, 0.3));
+          }
           return;
         }
+
+        // Priorité 2: Utiliser muscle ou muscleGroup avec les secondaires calculés
         if (entry.muscle) { addMuscleWithSecondaries(entry.muscle); return; }
         if (entry.muscleGroup) { addMuscleWithSecondaries(entry.muscleGroup); return; }
+
+        // Fallback: Utiliser le tableau muscles (ancien comportement)
+        const entryMuscles = entry.muscles;
+        if (Array.isArray(entryMuscles) && entryMuscles.length > 0) {
+          // Prendre le premier comme principal, les autres comme secondaires
+          addMuscle(entryMuscles[0], 1);
+          entryMuscles.slice(1).forEach((m) => addMuscle(m, 0.3));
+          return;
+        }
       });
     });
 

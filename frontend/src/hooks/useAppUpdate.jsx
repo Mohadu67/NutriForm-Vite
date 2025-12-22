@@ -80,12 +80,17 @@ export function useAppUpdate() {
 
     navigator.serviceWorker.getRegistration().then((registration) => {
       if (registration && registration.waiting) {
+        // Écouter quand le nouveau SW prend le contrôle AVANT de recharger
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          window.location.reload();
+        }, { once: true });
+
         // Dire au SW en attente de prendre le contrôle
         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      } else {
+        // Pas de SW en attente, juste recharger
+        window.location.reload();
       }
-
-      // Recharger la page pour appliquer la mise à jour
-      window.location.reload();
     });
   };
 
