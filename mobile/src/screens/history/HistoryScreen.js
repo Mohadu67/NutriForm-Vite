@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { theme } from '../../theme';
 import apiClient from '../../api/client';
@@ -34,27 +35,59 @@ export default function HistoryScreen() {
   // Charger l'historique
   const loadHistory = useCallback(async () => {
     try {
-      const response = await apiClient.get(endpoints.history.list);
-      const historyData = response.data || [];
+      // Charger les séances locales (AsyncStorage)
+      const localHistory = await AsyncStorage.getItem('@workout_history');
+      const localSessions = localHistory ? JSON.parse(localHistory) : [];
 
-      // Filtrer et formater les sessions workout
-      const workoutSessions = Array.isArray(historyData)
-        ? historyData.filter(h =>
-            h.action?.toLowerCase().includes('workout') ||
-            h.action?.toLowerCase().includes('session') ||
-            h.meta?.entries?.length > 0
-          ).map(h => ({
-            id: h._id,
-            name: h.meta?.sessionName || h.meta?.label || h.action || 'Seance',
-            date: h.createdAt,
-            endedAt: h.createdAt,
-            durationMinutes: h.meta?.duration || h.meta?.durationMinutes,
-            caloriesBurned: h.meta?.caloriesBurned || h.meta?.kcal || 0,
-            entries: h.meta?.entries || h.meta?.exercises || [],
-          }))
-        : [];
+      // Formater les séances locales
+      const formattedLocalSessions = localSessions.map(s => ({
+        id: s.id,
+        name: s.exercises?.length > 0
+          ? s.exercises.map(e => e.exercice?.name).filter(Boolean).slice(0, 2).join(', ') || 'Seance'
+          : 'Seance',
+        date: s.startTime,
+        endedAt: s.endTime,
+        durationMinutes: s.duration || 0,
+        caloriesBurned: 0,
+        entries: s.exercises?.map(e => ({
+          name: e.exercice?.name,
+          type: e.exercice?.type || 'muscu',
+          sets: e.sets || [],
+        })) || [],
+        source: 'local',
+      }));
 
-      setSessions(workoutSessions);
+      // Charger aussi depuis l'API
+      let apiSessions = [];
+      try {
+        const response = await apiClient.get(endpoints.history.list);
+        const historyData = response.data || [];
+
+        apiSessions = Array.isArray(historyData)
+          ? historyData.filter(h =>
+              h.action?.toLowerCase().includes('workout') ||
+              h.action?.toLowerCase().includes('session') ||
+              h.meta?.entries?.length > 0
+            ).map(h => ({
+              id: h._id,
+              name: h.meta?.sessionName || h.meta?.label || h.action || 'Seance',
+              date: h.createdAt,
+              endedAt: h.createdAt,
+              durationMinutes: h.meta?.duration || h.meta?.durationMinutes,
+              caloriesBurned: h.meta?.caloriesBurned || h.meta?.kcal || 0,
+              entries: h.meta?.entries || h.meta?.exercises || [],
+              source: 'api',
+            }))
+          : [];
+      } catch (apiError) {
+        console.log('[HISTORY] API error (using local only):', apiError.message);
+      }
+
+      // Combiner et trier par date (plus récent en premier)
+      const allSessions = [...formattedLocalSessions, ...apiSessions]
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      setSessions(allSessions);
     } catch (error) {
       console.error('[HISTORY] Error loading:', error);
     } finally {
@@ -73,7 +106,7 @@ export default function HistoryScreen() {
   }, [loadHistory]);
 
   // Supprimer une seance
-  const handleDelete = useCallback((sessionId) => {
+  const handleDelete = useCallback((sessionId, source) => {
     Alert.alert(
       'Supprimer',
       'Supprimer cette seance de l\'historique ?',
@@ -84,7 +117,17 @@ export default function HistoryScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              // TODO: Appeler API delete
+              if (source === 'local') {
+                // Supprimer de AsyncStorage
+                const localHistory = await AsyncStorage.getItem('@workout_history');
+                if (localHistory) {
+                  const sessions = JSON.parse(localHistory);
+                  const updated = sessions.filter(s => s.id !== sessionId);
+                  await AsyncStorage.setItem('@workout_history', JSON.stringify(updated));
+                }
+              } else {
+                // TODO: Appeler API delete pour les sessions API
+              }
               setSessions(prev => prev.filter(s => s.id !== sessionId));
             } catch (error) {
               console.error('[HISTORY] Delete error:', error);
@@ -253,7 +296,7 @@ export default function HistoryScreen() {
         {/* Delete button */}
         <TouchableOpacity
           style={styles.deleteButton}
-          onPress={() => handleDelete(item.id)}
+          onPress={() => handleDelete(item.id, item.source)}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <Ionicons name="trash-outline" size={18} color="#EF4444" />
