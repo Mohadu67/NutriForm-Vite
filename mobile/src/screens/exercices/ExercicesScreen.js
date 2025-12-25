@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,14 +8,23 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
+  ScrollView,
+  Animated,
+  ActivityIndicator,
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { theme } from '../../theme';
 import { BodyPicker, ZONE_LABELS } from '../../components/BodyPicker';
+import { useWorkout } from '../../contexts/WorkoutContext';
+import { getExercises } from '../../api/exercises';
+
+// Cle storage pour favoris
+const FAVORITES_KEY = '@exercices_favorites';
 
 // Base de donnees locale des exercices
 const EXERCICES_DATA = [
@@ -45,6 +54,8 @@ const EXERCICES_DATA = [
   { id: 'rear-delt-fly', name: 'Oiseau', muscle: 'epaules', secondary: ['dos-superieur'], equipment: 'halteres', difficulty: 'debutant', type: 'muscu', image: null },
   { id: 'arnold-press', name: 'Arnold press', muscle: 'epaules', secondary: ['triceps'], equipment: 'halteres', difficulty: 'intermediaire', type: 'muscu', image: null },
   { id: 'shrugs', name: 'Shrugs', muscle: 'dos-superieur', secondary: [], equipment: 'halteres', difficulty: 'debutant', type: 'muscu', image: null },
+  { id: 'pike-pushups', name: 'Pompes pike', muscle: 'epaules', secondary: ['triceps'], equipment: 'poids_corps', difficulty: 'intermediaire', type: 'poids_du_corps', image: null },
+  { id: 'handstand-pushups', name: 'Pompes poirier', muscle: 'epaules', secondary: ['triceps'], equipment: 'poids_corps', difficulty: 'avance', type: 'poids_du_corps', image: null },
 
   // BICEPS
   { id: 'barbell-curl', name: 'Curl barre', muscle: 'biceps', secondary: [], equipment: 'barre', difficulty: 'debutant', type: 'muscu', image: null },
@@ -53,6 +64,7 @@ const EXERCICES_DATA = [
   { id: 'preacher-curl', name: 'Curl pupitre', muscle: 'biceps', secondary: [], equipment: 'barre', difficulty: 'intermediaire', type: 'muscu', image: null },
   { id: 'concentration-curl', name: 'Curl concentration', muscle: 'biceps', secondary: [], equipment: 'halteres', difficulty: 'debutant', type: 'muscu', image: null },
   { id: 'cable-curl', name: 'Curl poulie', muscle: 'biceps', secondary: [], equipment: 'poulie', difficulty: 'debutant', type: 'muscu', image: null },
+  { id: 'chin-ups', name: 'Tractions supination', muscle: 'biceps', secondary: ['dos-superieur'], equipment: 'poids_corps', difficulty: 'intermediaire', type: 'poids_du_corps', image: null },
 
   // TRICEPS
   { id: 'triceps-pushdown', name: 'Pushdown triceps', muscle: 'triceps', secondary: [], equipment: 'poulie', difficulty: 'debutant', type: 'muscu', image: null },
@@ -61,6 +73,8 @@ const EXERCICES_DATA = [
   { id: 'dips-triceps', name: 'Dips triceps', muscle: 'triceps', secondary: ['pectoraux'], equipment: 'poids_corps', difficulty: 'intermediaire', type: 'poids_du_corps', image: null },
   { id: 'close-grip-bench', name: 'Developpe serre', muscle: 'triceps', secondary: ['pectoraux'], equipment: 'barre', difficulty: 'intermediaire', type: 'muscu', image: null },
   { id: 'kickback', name: 'Kickback', muscle: 'triceps', secondary: [], equipment: 'halteres', difficulty: 'debutant', type: 'muscu', image: null },
+  { id: 'diamond-pushups', name: 'Pompes diamant', muscle: 'triceps', secondary: ['pectoraux'], equipment: 'poids_corps', difficulty: 'intermediaire', type: 'poids_du_corps', image: null },
+  { id: 'bench-dips', name: 'Dips sur banc', muscle: 'triceps', secondary: [], equipment: 'poids_corps', difficulty: 'debutant', type: 'poids_du_corps', image: null },
 
   // JAMBES - QUADRICEPS
   { id: 'squat', name: 'Squat', muscle: 'cuisses-externes', secondary: ['fessiers'], equipment: 'barre', difficulty: 'intermediaire', type: 'muscu', image: null },
@@ -69,22 +83,29 @@ const EXERCICES_DATA = [
   { id: 'leg-extension', name: 'Leg extension', muscle: 'cuisses-externes', secondary: [], equipment: 'machine', difficulty: 'debutant', type: 'muscu', image: null },
   { id: 'lunges', name: 'Fentes', muscle: 'cuisses-externes', secondary: ['fessiers'], equipment: 'halteres', difficulty: 'intermediaire', type: 'muscu', image: null },
   { id: 'bulgarian-split', name: 'Split squat bulgare', muscle: 'cuisses-externes', secondary: ['fessiers'], equipment: 'halteres', difficulty: 'intermediaire', type: 'muscu', image: null },
+  { id: 'pistol-squat', name: 'Pistol squat', muscle: 'cuisses-externes', secondary: ['fessiers'], equipment: 'poids_corps', difficulty: 'avance', type: 'poids_du_corps', image: null },
+  { id: 'jump-squat', name: 'Jump squat', muscle: 'cuisses-externes', secondary: ['fessiers', 'mollets'], equipment: 'poids_corps', difficulty: 'intermediaire', type: 'poids_du_corps', image: null },
+  { id: 'wall-sit', name: 'Chaise', muscle: 'cuisses-externes', secondary: [], equipment: 'poids_corps', difficulty: 'debutant', type: 'poids_du_corps', image: null },
 
   // JAMBES - ISCHIO
   { id: 'leg-curl', name: 'Leg curl', muscle: 'cuisses-internes', secondary: [], equipment: 'machine', difficulty: 'debutant', type: 'muscu', image: null },
   { id: 'romanian-deadlift', name: 'Souleve de terre roumain', muscle: 'cuisses-internes', secondary: ['fessiers', 'dos-inferieur'], equipment: 'barre', difficulty: 'intermediaire', type: 'muscu', image: null },
   { id: 'good-morning', name: 'Good morning', muscle: 'cuisses-internes', secondary: ['dos-inferieur'], equipment: 'barre', difficulty: 'intermediaire', type: 'muscu', image: null },
+  { id: 'nordic-curl', name: 'Nordic curl', muscle: 'cuisses-internes', secondary: [], equipment: 'poids_corps', difficulty: 'avance', type: 'poids_du_corps', image: null },
 
   // FESSIERS
   { id: 'hip-thrust', name: 'Hip thrust', muscle: 'fessiers', secondary: ['cuisses-internes'], equipment: 'barre', difficulty: 'intermediaire', type: 'muscu', image: null },
   { id: 'glute-bridge', name: 'Pont fessier', muscle: 'fessiers', secondary: [], equipment: 'poids_corps', difficulty: 'debutant', type: 'poids_du_corps', image: null },
   { id: 'cable-kickback', name: 'Kickback fessier', muscle: 'fessiers', secondary: [], equipment: 'poulie', difficulty: 'debutant', type: 'muscu', image: null },
   { id: 'sumo-squat', name: 'Squat sumo', muscle: 'fessiers', secondary: ['cuisses-internes'], equipment: 'halteres', difficulty: 'intermediaire', type: 'muscu', image: null },
+  { id: 'donkey-kicks', name: 'Donkey kicks', muscle: 'fessiers', secondary: [], equipment: 'poids_corps', difficulty: 'debutant', type: 'poids_du_corps', image: null },
+  { id: 'fire-hydrant', name: 'Fire hydrant', muscle: 'fessiers', secondary: [], equipment: 'poids_corps', difficulty: 'debutant', type: 'poids_du_corps', image: null },
 
   // MOLLETS
   { id: 'standing-calf', name: 'Mollets debout', muscle: 'mollets', secondary: [], equipment: 'machine', difficulty: 'debutant', type: 'muscu', image: null },
   { id: 'seated-calf', name: 'Mollets assis', muscle: 'mollets', secondary: [], equipment: 'machine', difficulty: 'debutant', type: 'muscu', image: null },
   { id: 'calf-press', name: 'Presse mollets', muscle: 'mollets', secondary: [], equipment: 'machine', difficulty: 'debutant', type: 'muscu', image: null },
+  { id: 'single-leg-calf', name: 'Mollets unilateral', muscle: 'mollets', secondary: [], equipment: 'poids_corps', difficulty: 'debutant', type: 'poids_du_corps', image: null },
 
   // ABDOS
   { id: 'crunch', name: 'Crunch', muscle: 'abdos-centre', secondary: [], equipment: 'poids_corps', difficulty: 'debutant', type: 'poids_du_corps', image: null },
@@ -94,6 +115,11 @@ const EXERCICES_DATA = [
   { id: 'bicycle-crunch', name: 'Crunch bicyclette', muscle: 'abdos-lateraux', secondary: ['abdos-centre'], equipment: 'poids_corps', difficulty: 'debutant', type: 'poids_du_corps', image: null },
   { id: 'cable-crunch', name: 'Crunch poulie', muscle: 'abdos-centre', secondary: [], equipment: 'poulie', difficulty: 'intermediaire', type: 'muscu', image: null },
   { id: 'ab-wheel', name: 'Roue abdominale', muscle: 'abdos-centre', secondary: [], equipment: 'accessoire', difficulty: 'avance', type: 'poids_du_corps', image: null },
+  { id: 'mountain-climbers', name: 'Mountain climbers', muscle: 'abdos-centre', secondary: ['epaules'], equipment: 'poids_corps', difficulty: 'intermediaire', type: 'poids_du_corps', image: null },
+  { id: 'dead-bug', name: 'Dead bug', muscle: 'abdos-centre', secondary: [], equipment: 'poids_corps', difficulty: 'debutant', type: 'poids_du_corps', image: null },
+  { id: 'v-ups', name: 'V-ups', muscle: 'abdos-centre', secondary: [], equipment: 'poids_corps', difficulty: 'intermediaire', type: 'poids_du_corps', image: null },
+  { id: 'side-plank', name: 'Planche laterale', muscle: 'abdos-lateraux', secondary: [], equipment: 'poids_corps', difficulty: 'intermediaire', type: 'poids_du_corps', image: null },
+  { id: 'hanging-leg-raise', name: 'Releve jambes suspendu', muscle: 'abdos-centre', secondary: [], equipment: 'poids_corps', difficulty: 'avance', type: 'poids_du_corps', image: null },
 
   // CARDIO
   { id: 'running', name: 'Course a pied', muscle: 'cardio', secondary: ['cuisses-externes', 'mollets'], equipment: 'aucun', difficulty: 'debutant', type: 'cardio', image: null },
@@ -101,6 +127,23 @@ const EXERCICES_DATA = [
   { id: 'rowing-machine', name: 'Rameur', muscle: 'cardio', secondary: ['dos-inferieur', 'biceps'], equipment: 'rameur', difficulty: 'intermediaire', type: 'cardio', image: null },
   { id: 'jump-rope', name: 'Corde a sauter', muscle: 'cardio', secondary: ['mollets'], equipment: 'corde', difficulty: 'debutant', type: 'cardio', image: null },
   { id: 'burpees', name: 'Burpees', muscle: 'cardio', secondary: ['pectoraux', 'cuisses-externes'], equipment: 'poids_corps', difficulty: 'intermediaire', type: 'cardio', image: null },
+  { id: 'jumping-jacks', name: 'Jumping jacks', muscle: 'cardio', secondary: [], equipment: 'aucun', difficulty: 'debutant', type: 'cardio', image: null },
+  { id: 'high-knees', name: 'Montees de genoux', muscle: 'cardio', secondary: ['abdos-centre'], equipment: 'aucun', difficulty: 'debutant', type: 'cardio', image: null },
+  { id: 'box-jumps', name: 'Box jumps', muscle: 'cardio', secondary: ['cuisses-externes', 'mollets'], equipment: 'accessoire', difficulty: 'intermediaire', type: 'cardio', image: null },
+  { id: 'stair-climber', name: 'Escalier', muscle: 'cardio', secondary: ['cuisses-externes', 'fessiers'], equipment: 'machine', difficulty: 'intermediaire', type: 'cardio', image: null },
+  { id: 'battle-ropes', name: 'Battle ropes', muscle: 'cardio', secondary: ['epaules', 'abdos-centre'], equipment: 'accessoire', difficulty: 'intermediaire', type: 'cardio', image: null },
+
+  // ETIREMENTS
+  { id: 'stretch-quad', name: 'Etirement quadriceps', muscle: 'cuisses-externes', secondary: [], equipment: 'aucun', difficulty: 'debutant', type: 'etirement', image: null },
+  { id: 'stretch-hamstring', name: 'Etirement ischio-jambiers', muscle: 'cuisses-internes', secondary: [], equipment: 'aucun', difficulty: 'debutant', type: 'etirement', image: null },
+  { id: 'stretch-chest', name: 'Etirement pectoraux', muscle: 'pectoraux', secondary: [], equipment: 'aucun', difficulty: 'debutant', type: 'etirement', image: null },
+  { id: 'stretch-back', name: 'Etirement dos', muscle: 'dos-superieur', secondary: ['dos-inferieur'], equipment: 'aucun', difficulty: 'debutant', type: 'etirement', image: null },
+  { id: 'stretch-shoulder', name: 'Etirement epaules', muscle: 'epaules', secondary: [], equipment: 'aucun', difficulty: 'debutant', type: 'etirement', image: null },
+  { id: 'stretch-hip', name: 'Etirement hanches', muscle: 'fessiers', secondary: ['cuisses-internes'], equipment: 'aucun', difficulty: 'debutant', type: 'etirement', image: null },
+  { id: 'child-pose', name: 'Posture de l\'enfant', muscle: 'dos-inferieur', secondary: ['epaules'], equipment: 'aucun', difficulty: 'debutant', type: 'etirement', image: null },
+  { id: 'cat-cow', name: 'Chat-vache', muscle: 'dos-inferieur', secondary: ['abdos-centre'], equipment: 'aucun', difficulty: 'debutant', type: 'etirement', image: null },
+  { id: 'pigeon-pose', name: 'Posture du pigeon', muscle: 'fessiers', secondary: ['cuisses-internes'], equipment: 'aucun', difficulty: 'intermediaire', type: 'etirement', image: null },
+  { id: 'cobra-stretch', name: 'Etirement cobra', muscle: 'abdos-centre', secondary: ['dos-inferieur'], equipment: 'aucun', difficulty: 'debutant', type: 'etirement', image: null },
 ];
 
 // Mapping muscles vers zones body picker
@@ -118,6 +161,7 @@ const MUSCLE_TO_ZONE = {
   'mollets': 'mollets',
   'abdos-centre': 'abdos-centre',
   'abdos-lateraux': 'abdos-lateraux',
+  'cardio': 'cardio',
 };
 
 const EQUIPMENT_LABELS = {
@@ -139,19 +183,140 @@ const DIFFICULTY_LABELS = {
   'avance': { label: 'Avance', color: '#EF4444' },
 };
 
+const TYPE_CONFIG = {
+  'muscu': { label: 'Muscu', icon: 'barbell', color: '#8B5CF6' },
+  'poids_du_corps': { label: 'Poids du corps', icon: 'body', color: '#06B6D4' },
+  'cardio': { label: 'Cardio', icon: 'heart', color: '#EF4444' },
+  'etirement': { label: 'Etirement', icon: 'flower', color: '#10B981' },
+};
+
+const EQUIPMENT_LIST = ['barre', 'halteres', 'poulie', 'machine', 'poids_corps', 'aucun'];
+
 export default function ExercicesScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation();
+  const { currentWorkout, isWorkoutActive, getCompletedSetsCount, getTotalSetsCount } = useWorkout();
 
   const [showBodyPicker, setShowBodyPicker] = useState(false);
   const [selectedMuscles, setSelectedMuscles] = useState([]);
   const [searchText, setSearchText] = useState('');
-  const [selectedEquipment, setSelectedEquipment] = useState(null);
+  const [selectedEquipments, setSelectedEquipments] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  // API states
+  const [exercises, setExercises] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Charger les exercices depuis l'API au demarrage
+  useEffect(() => {
+    loadExercises();
+    loadFavorites();
+  }, []);
+
+  const loadExercises = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await getExercises({ limit: 200 });
+
+      if (result.success && result.data.length > 0) {
+        // Transformer les donnees API vers le format attendu
+        const formattedExercises = result.data.map(exo => ({
+          id: exo.slug || exo.exoId,
+          exoId: exo.exoId,
+          name: exo.name,
+          muscle: exo.primaryMuscle,
+          secondary: exo.secondaryMuscles || [],
+          muscles: exo.muscles || [exo.primaryMuscle],
+          equipment: exo.equipment?.[0] || 'aucun',
+          equipmentList: exo.equipment || [],
+          difficulty: exo.difficulty || 'intermediaire',
+          type: exo.type?.[0] === 'poids-du-corps' ? 'poids_du_corps' : (exo.type?.[0] || exo.category || 'muscu'),
+          category: exo.category,
+          image: exo.mainImage,
+          explanation: exo.explanation,
+          slug: exo.slug,
+        }));
+        setExercises(formattedExercises);
+        console.log('[EXERCISES] Loaded', formattedExercises.length, 'from API');
+      } else {
+        // Fallback vers donnees locales
+        console.log('[EXERCISES] API failed, using local data');
+        setExercises(EXERCICES_DATA);
+      }
+    } catch (err) {
+      console.log('[EXERCISES] Error:', err.message);
+      setError(err.message);
+      setExercises(EXERCICES_DATA);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadFavorites = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(FAVORITES_KEY);
+      if (stored) {
+        setFavorites(JSON.parse(stored));
+      }
+    } catch (error) {
+      console.log('Erreur chargement favoris:', error);
+    }
+  };
+
+  const saveFavorites = async (newFavorites) => {
+    try {
+      await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(newFavorites));
+    } catch (error) {
+      console.log('Erreur sauvegarde favoris:', error);
+    }
+  };
+
+  const toggleFavorite = useCallback((exerciceId) => {
+    setFavorites(prev => {
+      const newFavorites = prev.includes(exerciceId)
+        ? prev.filter(id => id !== exerciceId)
+        : [...prev, exerciceId];
+      saveFavorites(newFavorites);
+      return newFavorites;
+    });
+  }, []);
+
+  // Toggle type selection
+  const toggleType = useCallback((type) => {
+    setSelectedTypes(prev =>
+      prev.includes(type)
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    );
+  }, []);
+
+  // Toggle equipment selection
+  const toggleEquipment = useCallback((equipment) => {
+    setSelectedEquipments(prev =>
+      prev.includes(equipment)
+        ? prev.filter(e => e !== equipment)
+        : [...prev, equipment]
+    );
+  }, []);
 
   // Filtrer les exercices
   const filteredExercices = useMemo(() => {
-    let results = [...EXERCICES_DATA];
+    let results = [...exercises];
+
+    // Filtre favoris
+    if (showFavoritesOnly) {
+      results = results.filter(ex => favorites.includes(ex.id));
+    }
+
+    // Filtre par types (multi-selection)
+    if (selectedTypes.length > 0) {
+      results = results.filter(ex => selectedTypes.includes(ex.type));
+    }
 
     // Filtre par recherche
     if (searchText.trim()) {
@@ -167,22 +332,21 @@ export default function ExercicesScreen() {
       results = results.filter(ex => {
         const exZone = MUSCLE_TO_ZONE[ex.muscle];
         if (selectedMuscles.includes(exZone)) return true;
-        // Verifier aussi les muscles secondaires
         return ex.secondary?.some(sec => selectedMuscles.includes(MUSCLE_TO_ZONE[sec]));
       });
     }
 
-    // Filtre par equipement
-    if (selectedEquipment) {
-      results = results.filter(ex => ex.equipment === selectedEquipment);
+    // Filtre par equipements (multi-selection)
+    if (selectedEquipments.length > 0) {
+      results = results.filter(ex => selectedEquipments.includes(ex.equipment));
     }
 
     return results;
-  }, [searchText, selectedMuscles, selectedEquipment]);
+  }, [exercises, searchText, selectedMuscles, selectedEquipments, selectedTypes, showFavoritesOnly, favorites]);
 
   const handleExercicePress = useCallback((exercice) => {
-    navigation.navigate('ExerciceDetail', { exercice });
-  }, [navigation]);
+    navigation.navigate('ExerciceDetail', { exercice, favorites, onToggleFavorite: toggleFavorite });
+  }, [navigation, favorites, toggleFavorite]);
 
   const handleApplyFilter = useCallback(() => {
     setShowBodyPicker(false);
@@ -195,13 +359,26 @@ export default function ExercicesScreen() {
   const handleClearAll = useCallback(() => {
     setSelectedMuscles([]);
     setSearchText('');
-    setSelectedEquipment(null);
+    setSelectedEquipments([]);
+    setSelectedTypes([]);
+    setShowFavoritesOnly(false);
   }, []);
 
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (selectedMuscles.length > 0) count++;
+    if (selectedEquipments.length > 0) count++;
+    if (selectedTypes.length > 0) count++;
+    if (showFavoritesOnly) count++;
+    return count;
+  }, [selectedMuscles, selectedEquipments, selectedTypes, showFavoritesOnly]);
+
   // Render exercice item
-  const renderExercice = ({ item }) => {
-    const difficulty = DIFFICULTY_LABELS[item.difficulty];
+  const renderExercice = useCallback(({ item }) => {
+    const difficulty = DIFFICULTY_LABELS[item.difficulty] || DIFFICULTY_LABELS.intermediaire;
     const muscleLabel = ZONE_LABELS[MUSCLE_TO_ZONE[item.muscle]] || item.muscle;
+    const isFavorite = favorites.includes(item.id);
+    const typeConfig = TYPE_CONFIG[item.type] || TYPE_CONFIG.muscu;
 
     return (
       <TouchableOpacity
@@ -209,14 +386,18 @@ export default function ExercicesScreen() {
         onPress={() => handleExercicePress(item)}
         activeOpacity={0.7}
       >
-        {/* Image placeholder */}
-        <View style={[styles.exerciceImage, isDark && styles.exerciceImageDark]}>
-          <Ionicons
-            name={item.type === 'cardio' ? 'heart' : item.type === 'poids_du_corps' ? 'body' : 'barbell'}
-            size={32}
-            color={theme.colors.primary}
+        {/* Image ou placeholder */}
+        {item.image ? (
+          <Image
+            source={{ uri: item.image }}
+            style={styles.exerciceImage}
+            resizeMode="cover"
           />
-        </View>
+        ) : (
+          <View style={[styles.exerciceImage, { backgroundColor: `${typeConfig.color}15` }]}>
+            <Ionicons name={typeConfig.icon} size={28} color={typeConfig.color} />
+          </View>
+        )}
 
         {/* Info */}
         <View style={styles.exerciceInfo}>
@@ -238,20 +419,58 @@ export default function ExercicesScreen() {
           </View>
         </View>
 
-        {/* Arrow */}
-        <Ionicons name="chevron-forward" size={20} color={isDark ? '#555' : '#CCC'} />
+        {/* Favorite button */}
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={() => toggleFavorite(item.id)}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons
+            name={isFavorite ? 'heart' : 'heart-outline'}
+            size={22}
+            color={isFavorite ? '#EF4444' : (isDark ? '#555' : '#CCC')}
+          />
+        </TouchableOpacity>
       </TouchableOpacity>
     );
-  };
+  }, [isDark, favorites, handleExercicePress, toggleFavorite]);
 
   const ListHeader = () => (
     <>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={[styles.title, isDark && styles.textDark]}>Exercices</Text>
-        <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
-          {filteredExercices.length} exercice{filteredExercices.length !== 1 ? 's' : ''} disponible{filteredExercices.length !== 1 ? 's' : ''}
-        </Text>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={[styles.title, isDark && styles.textDark]}>Exercices</Text>
+            <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
+              {filteredExercices.length} exercice{filteredExercices.length !== 1 ? 's' : ''}
+            </Text>
+          </View>
+          {/* Favorites toggle */}
+          <TouchableOpacity
+            style={[
+              styles.favoritesToggle,
+              showFavoritesOnly && styles.favoritesToggleActive,
+              isDark && !showFavoritesOnly && styles.favoritesToggleDark,
+            ]}
+            onPress={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          >
+            <Ionicons
+              name={showFavoritesOnly ? 'heart' : 'heart-outline'}
+              size={20}
+              color={showFavoritesOnly ? '#FFF' : (isDark ? '#888' : '#666')}
+            />
+            {favorites.length > 0 && (
+              <Text style={[
+                styles.favoritesCount,
+                showFavoritesOnly && styles.favoritesCountActive,
+                isDark && !showFavoritesOnly && styles.favoritesCountDark,
+              ]}>
+                {favorites.length}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search bar */}
@@ -271,14 +490,105 @@ export default function ExercicesScreen() {
         )}
       </View>
 
-      {/* Filter by muscle */}
+      {/* Type filter tabs - Multi-selection */}
+      <View style={styles.filterSectionHeader}>
+        <Text style={[styles.filterSectionTitle, isDark && styles.textMutedDark]}>Type d'exercice</Text>
+        {selectedTypes.length > 0 && (
+          <TouchableOpacity onPress={() => setSelectedTypes([])}>
+            <Text style={styles.clearSectionText}>Effacer</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.typeScroll}
+        contentContainerStyle={styles.typeScrollContent}
+      >
+        {Object.entries(TYPE_CONFIG).map(([key, config]) => {
+          const isSelected = selectedTypes.includes(key);
+          return (
+            <TouchableOpacity
+              key={key}
+              style={[
+                styles.typeTab,
+                isSelected && { backgroundColor: config.color },
+                isDark && !isSelected && styles.typeTabDark,
+              ]}
+              onPress={() => toggleType(key)}
+            >
+              {isSelected && (
+                <Ionicons name="checkmark-circle" size={16} color="#FFF" />
+              )}
+              <Ionicons
+                name={config.icon}
+                size={18}
+                color={isSelected ? '#FFF' : (isDark ? '#888' : '#666')}
+              />
+              <Text style={[
+                styles.typeTabText,
+                isSelected && styles.typeTabTextActive,
+                isDark && !isSelected && styles.typeTabTextDark,
+              ]}>
+                {config.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* Equipment filter - Multi-selection */}
+      <View style={styles.filterSectionHeader}>
+        <Text style={[styles.filterSectionTitle, isDark && styles.textMutedDark]}>Equipement</Text>
+        {selectedEquipments.length > 0 && (
+          <TouchableOpacity onPress={() => setSelectedEquipments([])}>
+            <Text style={styles.clearSectionText}>Effacer</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.equipmentScroll}
+        contentContainerStyle={styles.equipmentScrollContent}
+      >
+        {EQUIPMENT_LIST.map((equip) => {
+          const isSelected = selectedEquipments.includes(equip);
+          return (
+            <TouchableOpacity
+              key={equip}
+              style={[
+                styles.equipmentChip,
+                isSelected && styles.equipmentChipActive,
+                isDark && !isSelected && styles.equipmentChipDark,
+              ]}
+              onPress={() => toggleEquipment(equip)}
+            >
+              {isSelected && (
+                <Ionicons name="checkmark" size={14} color="#FFF" style={{ marginRight: 4 }} />
+              )}
+              <Text style={[
+                styles.equipmentChipText,
+                isSelected && styles.equipmentChipTextActive,
+                isDark && !isSelected && styles.equipmentChipTextDark,
+              ]}>
+                {EQUIPMENT_LABELS[equip]}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* Filter by muscle button */}
       <TouchableOpacity
         style={[styles.filterButton, isDark && styles.cardDark]}
         onPress={() => setShowBodyPicker(true)}
         activeOpacity={0.7}
       >
         <View style={styles.filterButtonContent}>
-          <Ionicons name="body" size={24} color={theme.colors.primary} />
+          <View style={[styles.filterIconContainer, selectedMuscles.length > 0 && styles.filterIconContainerActive]}>
+            <Ionicons name="body" size={22} color={selectedMuscles.length > 0 ? '#FFF' : theme.colors.primary} />
+          </View>
           <View style={styles.filterTextContainer}>
             <Text style={[styles.filterTitle, isDark && styles.textDark]}>
               Filtrer par muscle
@@ -290,60 +600,72 @@ export default function ExercicesScreen() {
             </Text>
           </View>
         </View>
-        <Ionicons name="chevron-forward" size={20} color={isDark ? '#666' : theme.colors.text.tertiary} />
+        {selectedMuscles.length > 0 ? (
+          <View style={styles.filterBadge}>
+            <Text style={styles.filterBadgeText}>{selectedMuscles.length}</Text>
+          </View>
+        ) : (
+          <Ionicons name="chevron-forward" size={20} color={isDark ? '#666' : theme.colors.text.tertiary} />
+        )}
       </TouchableOpacity>
 
-      {/* Selected filters chips */}
-      {(selectedMuscles.length > 0 || selectedEquipment) && (
-        <View style={styles.filtersContainer}>
-          <ScrollViewHorizontal style={styles.chipsScroll}>
-            {selectedMuscles.map((muscleId) => (
-              <TouchableOpacity
-                key={muscleId}
-                style={styles.filterChip}
-                onPress={() => setSelectedMuscles(prev => prev.filter(id => id !== muscleId))}
-              >
-                <Text style={styles.filterChipText}>{ZONE_LABELS[muscleId]}</Text>
-                <Ionicons name="close" size={14} color="#FFF" />
-              </TouchableOpacity>
-            ))}
-            {selectedEquipment && (
-              <TouchableOpacity
-                style={styles.filterChip}
-                onPress={() => setSelectedEquipment(null)}
-              >
-                <Text style={styles.filterChipText}>{EQUIPMENT_LABELS[selectedEquipment]}</Text>
-                <Ionicons name="close" size={14} color="#FFF" />
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity style={styles.clearAllChip} onPress={handleClearAll}>
-              <Ionicons name="trash-outline" size={16} color={theme.colors.primary} />
-            </TouchableOpacity>
-          </ScrollViewHorizontal>
+      {/* Active filters summary */}
+      {activeFiltersCount > 0 && (
+        <View style={styles.activeFiltersRow}>
+          <Text style={[styles.activeFiltersText, isDark && styles.activeFiltersTextDark]}>
+            {activeFiltersCount} filtre{activeFiltersCount > 1 ? 's' : ''} actif{activeFiltersCount > 1 ? 's' : ''}
+          </Text>
+          <TouchableOpacity onPress={handleClearAll}>
+            <Text style={styles.clearFiltersText}>Effacer tout</Text>
+          </TouchableOpacity>
         </View>
       )}
 
       {/* Results header */}
       <Text style={[styles.resultsHeader, isDark && styles.resultsHeaderDark]}>
-        {selectedMuscles.length > 0 || searchText ? 'Resultats' : 'Tous les exercices'}
+        {showFavoritesOnly ? 'Mes favoris' : (activeFiltersCount > 0 || searchText ? 'Resultats' : 'Tous les exercices')}
       </Text>
     </>
   );
 
   const EmptyState = () => (
     <View style={styles.emptyState}>
-      <Ionicons name="search-outline" size={48} color={isDark ? '#555' : '#CCC'} />
+      <View style={[styles.emptyIconContainer, isDark && styles.emptyIconContainerDark]}>
+        <Ionicons
+          name={showFavoritesOnly ? 'heart-outline' : 'search-outline'}
+          size={48}
+          color={isDark ? '#555' : '#CCC'}
+        />
+      </View>
       <Text style={[styles.emptyTitle, isDark && styles.emptyTitleDark]}>
-        Aucun exercice trouve
+        {showFavoritesOnly ? 'Aucun favori' : 'Aucun exercice trouve'}
       </Text>
       <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>
-        Essaie de modifier tes filtres ou ta recherche
+        {showFavoritesOnly
+          ? 'Ajoute des exercices a tes favoris en appuyant sur le coeur'
+          : 'Essaie de modifier tes filtres ou ta recherche'}
       </Text>
-      <TouchableOpacity style={styles.emptyButton} onPress={handleClearAll}>
-        <Text style={styles.emptyButtonText}>Effacer les filtres</Text>
-      </TouchableOpacity>
+      {(activeFiltersCount > 0 || searchText) && (
+        <TouchableOpacity style={styles.emptyButton} onPress={handleClearAll}>
+          <Text style={styles.emptyButtonText}>Effacer les filtres</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
+
+  // Loading state
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={[styles.loadingText, isDark && styles.loadingTextDark]}>
+            Chargement des exercices...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
@@ -355,6 +677,11 @@ export default function ExercicesScreen() {
         ListEmptyComponent={<EmptyState />}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        refreshing={loading}
+        onRefresh={loadExercises}
       />
 
       {/* Modal Body Picker */}
@@ -412,19 +739,31 @@ export default function ExercicesScreen() {
           </View>
         </SafeAreaView>
       </Modal>
+
+      {/* Floating Workout Button */}
+      {isWorkoutActive && currentWorkout && (
+        <TouchableOpacity
+          style={styles.floatingWorkoutButton}
+          onPress={() => navigation.navigate('WorkoutSession')}
+          activeOpacity={0.9}
+        >
+          <View style={styles.floatingWorkoutContent}>
+            <View style={styles.floatingWorkoutIcon}>
+              <Ionicons name="fitness" size={22} color="#FFF" />
+            </View>
+            <View style={styles.floatingWorkoutInfo}>
+              <Text style={styles.floatingWorkoutTitle}>Seance en cours</Text>
+              <Text style={styles.floatingWorkoutSubtitle}>
+                {currentWorkout.exercises.length} exercice{currentWorkout.exercises.length > 1 ? 's' : ''} • {getCompletedSetsCount()}/{getTotalSetsCount()} series
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#FFF" />
+          </View>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }
-
-// Horizontal ScrollView component
-const ScrollViewHorizontal = ({ children, style }) => {
-  const { ScrollView } = require('react-native');
-  return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={style}>
-      {children}
-    </ScrollView>
-  );
-};
 
 const styles = StyleSheet.create({
   container: {
@@ -434,12 +773,31 @@ const styles = StyleSheet.create({
   containerDark: {
     backgroundColor: '#1A1A1A',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: theme.colors.text.secondary,
+    marginTop: 8,
+  },
+  loadingTextDark: {
+    color: '#888',
+  },
   listContent: {
     padding: theme.spacing.lg,
     paddingBottom: theme.spacing.xl * 2,
   },
   header: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   title: {
     fontSize: theme.fontSize['2xl'],
@@ -456,6 +814,32 @@ const styles = StyleSheet.create({
   },
   textDark: {
     color: '#FFFFFF',
+  },
+  favoritesToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F0F0',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    gap: 6,
+  },
+  favoritesToggleActive: {
+    backgroundColor: '#EF4444',
+  },
+  favoritesToggleDark: {
+    backgroundColor: '#2A2A2A',
+  },
+  favoritesCount: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  favoritesCountActive: {
+    color: '#FFF',
+  },
+  favoritesCountDark: {
+    color: '#888',
   },
   searchBar: {
     flexDirection: 'row',
@@ -480,6 +864,90 @@ const styles = StyleSheet.create({
     color: theme.colors.text.primary,
     padding: 0,
   },
+  filterSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingHorizontal: 2,
+  },
+  filterSectionTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#666',
+  },
+  clearSectionText: {
+    fontSize: 12,
+    color: theme.colors.primary,
+    fontWeight: '500',
+  },
+  textMutedDark: {
+    color: '#888',
+  },
+  typeScroll: {
+    marginBottom: theme.spacing.md,
+  },
+  typeScrollContent: {
+    gap: 8,
+  },
+  typeTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F0F0',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    gap: 6,
+  },
+  typeTabDark: {
+    backgroundColor: '#2A2A2A',
+  },
+  typeTabText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#666',
+  },
+  typeTabTextActive: {
+    color: '#FFF',
+  },
+  typeTabTextDark: {
+    color: '#888',
+  },
+  equipmentScroll: {
+    marginBottom: theme.spacing.md,
+  },
+  equipmentScrollContent: {
+    gap: 8,
+  },
+  equipmentChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#FFF',
+  },
+  equipmentChipActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  equipmentChipDark: {
+    backgroundColor: '#2A2A2A',
+    borderColor: '#444',
+  },
+  equipmentChipText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  equipmentChipTextActive: {
+    color: '#FFF',
+    fontWeight: '500',
+  },
+  equipmentChipTextDark: {
+    color: '#888',
+  },
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -487,7 +955,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -498,6 +966,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+  },
+  filterIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: `${theme.colors.primary}15`,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterIconContainerActive: {
+    backgroundColor: theme.colors.primary,
   },
   filterTextContainer: {
     marginLeft: theme.spacing.md,
@@ -513,34 +992,37 @@ const styles = StyleSheet.create({
     color: theme.colors.text.secondary,
     marginTop: 2,
   },
-  filtersContainer: {
-    marginBottom: theme.spacing.md,
-  },
-  chipsScroll: {
-    flexDirection: 'row',
-  },
-  filterChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  filterBadge: {
     backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.full,
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.md,
-    marginRight: theme.spacing.sm,
-    gap: theme.spacing.xs,
-  },
-  filterChipText: {
-    color: '#FFFFFF',
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-  },
-  clearAllChip: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: `${theme.colors.primary}26`,
-    borderRadius: theme.borderRadius.full,
-    width: 32,
-    height: 32,
+  },
+  filterBadgeText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  activeFiltersRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+    paddingHorizontal: 4,
+  },
+  activeFiltersText: {
+    fontSize: 13,
+    color: '#666',
+  },
+  activeFiltersTextDark: {
+    color: '#888',
+  },
+  clearFiltersText: {
+    fontSize: 13,
+    color: theme.colors.primary,
+    fontWeight: '500',
   },
   resultsHeader: {
     fontSize: theme.fontSize.lg,
@@ -568,16 +1050,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#2A2A2A',
   },
   exerciceImage: {
-    width: 60,
-    height: 60,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: `${theme.colors.primary}15`,
+    width: 56,
+    height: 56,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: theme.spacing.md,
-  },
-  exerciceImageDark: {
-    backgroundColor: `${theme.colors.primary}25`,
   },
   exerciceInfo: {
     flex: 1,
@@ -620,15 +1098,29 @@ const styles = StyleSheet.create({
   equipmentTextDark: {
     color: '#666',
   },
+  favoriteButton: {
+    padding: 8,
+  },
   emptyState: {
     alignItems: 'center',
     paddingVertical: theme.spacing.xl * 2,
+  },
+  emptyIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#F5F5F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  emptyIconContainerDark: {
+    backgroundColor: '#2A2A2A',
   },
   emptyTitle: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.semibold,
     color: theme.colors.text.primary,
-    marginTop: theme.spacing.md,
   },
   emptyTitleDark: {
     color: '#FFFFFF',
@@ -638,6 +1130,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text.secondary,
     marginTop: theme.spacing.xs,
     textAlign: 'center',
+    paddingHorizontal: theme.spacing.xl,
   },
   emptyTextDark: {
     color: '#888',
@@ -708,5 +1201,47 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
+  },
+
+  // Floating Workout Button
+  floatingWorkoutButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 16,
+    right: 16,
+    backgroundColor: '#22C55E',
+    borderRadius: 16,
+    shadowColor: '#22C55E',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  floatingWorkoutContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+  },
+  floatingWorkoutIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  floatingWorkoutInfo: {
+    flex: 1,
+  },
+  floatingWorkoutTitle: {
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  floatingWorkoutSubtitle: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 13,
+    marginTop: 2,
   },
 });
