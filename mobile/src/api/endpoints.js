@@ -114,6 +114,15 @@ export const endpoints = {
     delete: (conversationId) => `/match-chat/conversation/${conversationId}`,
     settings: (conversationId) => `/match-chat/conversation/${conversationId}/settings`,
   },
+  exercises: {
+    list: "/exercises",
+    categories: "/exercises/categories",
+    muscles: "/exercises/muscles",
+    popular: "/exercises/popular",
+    byCategory: (category) => `/exercises/category/${category}`,
+    byMuscle: (muscle) => `/exercises/muscle/${muscle}`,
+    byId: (idOrSlug) => `/exercises/${idOrSlug}`,
+  },
 };
 
 export default endpoints;
