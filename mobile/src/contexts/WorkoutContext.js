@@ -23,33 +23,49 @@ export function WorkoutProvider({ children }) {
   //   ]
   // }
 
-  // Demarrer une nouvelle seance
+  // Demarrer une nouvelle seance (commence le timer)
   const startWorkout = useCallback(() => {
-    const workout = {
-      id: Date.now().toString(),
-      startTime: new Date().toISOString(),
-      exercises: [],
-    };
-    setCurrentWorkout(workout);
-    setIsWorkoutActive(true);
-    saveWorkout(workout);
-    return workout;
-  }, []);
-
-  // Ajouter un exercice a la seance
-  const addExercise = useCallback((exercice) => {
     setCurrentWorkout(prev => {
       if (!prev) {
-        // Si pas de seance active, en creer une
+        // Pas de préparation en cours, créer une nouvelle séance
         const newWorkout = {
           id: Date.now().toString(),
           startTime: new Date().toISOString(),
+          exercises: [],
+        };
+        setIsWorkoutActive(true);
+        saveWorkout(newWorkout);
+        return newWorkout;
+      }
+
+      // Une préparation existe, on la démarre juste
+      if (!prev.startTime) {
+        const updated = {
+          ...prev,
+          startTime: new Date().toISOString(),
+        };
+        setIsWorkoutActive(true);
+        saveWorkout(updated);
+        return updated;
+      }
+
+      return prev;
+    });
+  }, []);
+
+  // Ajouter un exercice a la seance (prépare la séance sans la démarrer)
+  const addExercise = useCallback((exercice) => {
+    setCurrentWorkout(prev => {
+      if (!prev) {
+        // Si pas de preparation en cours, en creer une (sans startTime)
+        const newWorkout = {
+          id: Date.now().toString(),
+          startTime: null, // Pas encore démarrée
           exercises: [{
             exercice,
             sets: [{ reps: 0, weight: 0, completed: false }],
           }],
         };
-        setIsWorkoutActive(true);
         saveWorkout(newWorkout);
         return newWorkout;
       }
@@ -83,6 +99,38 @@ export function WorkoutProvider({ children }) {
         ...prev,
         exercises: prev.exercises.filter(e => e.exercice.id !== exerciceId),
       };
+      saveWorkout(updated);
+      return updated;
+    });
+  }, []);
+
+  // Déplacer un exercice vers le haut
+  const moveExerciseUp = useCallback((exerciceId) => {
+    setCurrentWorkout(prev => {
+      if (!prev) return null;
+      const index = prev.exercises.findIndex(e => e.exercice.id === exerciceId);
+      if (index <= 0) return prev; // Déjà en première position
+
+      const exercises = [...prev.exercises];
+      [exercises[index - 1], exercises[index]] = [exercises[index], exercises[index - 1]];
+
+      const updated = { ...prev, exercises };
+      saveWorkout(updated);
+      return updated;
+    });
+  }, []);
+
+  // Déplacer un exercice vers le bas
+  const moveExerciseDown = useCallback((exerciceId) => {
+    setCurrentWorkout(prev => {
+      if (!prev) return null;
+      const index = prev.exercises.findIndex(e => e.exercice.id === exerciceId);
+      if (index < 0 || index >= prev.exercises.length - 1) return prev; // Déjà en dernière position
+
+      const exercises = [...prev.exercises];
+      [exercises[index], exercises[index + 1]] = [exercises[index + 1], exercises[index]];
+
+      const updated = { ...prev, exercises };
       saveWorkout(updated);
       return updated;
     });
@@ -276,6 +324,8 @@ export function WorkoutProvider({ children }) {
     startWorkout,
     addExercise,
     removeExercise,
+    moveExerciseUp,
+    moveExerciseDown,
     addSet,
     removeSet,
     updateSet,

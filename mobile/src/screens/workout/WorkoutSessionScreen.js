@@ -10,6 +10,8 @@ import {
   Alert,
   Animated,
   Vibration,
+  Image,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -126,24 +128,69 @@ const SetRow = ({ set, index, exerciceId, onUpdate, onToggle, onRemove, canRemov
 };
 
 // Exercise Card Component
-const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onToggleSet, onRemoveExercise, isDark }) => {
+const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onToggleSet, onRemoveExercise, onMoveUp, onMoveDown, isFirst, isLast, isDark }) => {
   const { exercice, sets } = exerciseData;
   const typeConfig = TYPE_CONFIG[exercice.type] || TYPE_CONFIG.muscu;
   const completedSets = sets.filter(s => s.completed).length;
+  const [showInstructions, setShowInstructions] = useState(false);
+
+  // Instructions par défaut (simplified version)
+  const getInstructions = () => {
+    if (exercice.explanation) return exercice.explanation.split('\n');
+    return [
+      'Placez-vous dans la position de depart correcte',
+      'Contractez les muscles cibles avant de commencer',
+      'Effectuez le mouvement de maniere lente et controlee',
+      'Expirez pendant l\'effort, inspirez lors du retour',
+      'Maintenez la tension musculaire tout au long du mouvement',
+    ];
+  };
 
   return (
     <View style={[styles.exerciseCard, isDark && styles.exerciseCardDark]}>
       {/* Header */}
       <View style={styles.exerciseHeader}>
-        <View style={[styles.exerciseIcon, { backgroundColor: `${typeConfig.color}20` }]}>
-          <Ionicons name={typeConfig.icon} size={20} color={typeConfig.color} />
-        </View>
+        {/* Image/Icon */}
+        <TouchableOpacity
+          style={[styles.exerciseIconContainer, { backgroundColor: `${typeConfig.color}20` }]}
+          onPress={() => setShowInstructions(true)}
+        >
+          {exercice.image ? (
+            <Image
+              source={{ uri: exercice.image }}
+              style={styles.exerciseImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <Ionicons name={typeConfig.icon} size={20} color={typeConfig.color} />
+          )}
+        </TouchableOpacity>
+
         <View style={styles.exerciseInfo}>
           <Text style={[styles.exerciseName, isDark && styles.textDark]}>{exercice.name}</Text>
           <Text style={[styles.exerciseProgress, isDark && styles.textMuted]}>
             {completedSets}/{sets.length} series
           </Text>
         </View>
+
+        {/* Reorder buttons */}
+        <View style={styles.reorderButtons}>
+          <TouchableOpacity
+            style={[styles.reorderButton, isFirst && styles.reorderButtonDisabled]}
+            onPress={() => !isFirst && onMoveUp(exercice.id)}
+            disabled={isFirst}
+          >
+            <Ionicons name="chevron-up" size={18} color={isFirst ? '#CCC' : theme.colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.reorderButton, isLast && styles.reorderButtonDisabled]}
+            onPress={() => !isLast && onMoveDown(exercice.id)}
+            disabled={isLast}
+          >
+            <Ionicons name="chevron-down" size={18} color={isLast ? '#CCC' : theme.colors.primary} />
+          </TouchableOpacity>
+        </View>
+
         <TouchableOpacity
           style={styles.removeExerciseButton}
           onPress={() => onRemoveExercise(exercice.id)}
@@ -151,6 +198,51 @@ const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onTogg
           <Ionicons name="trash-outline" size={20} color="#EF4444" />
         </TouchableOpacity>
       </View>
+
+      {/* Instructions Modal */}
+      <Modal
+        visible={showInstructions}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowInstructions(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowInstructions(false)}
+        >
+          <View style={[styles.instructionsModal, isDark && styles.instructionsModalDark]}>
+            {exercice.image && (
+              <Image
+                source={{ uri: exercice.image }}
+                style={styles.instructionsImage}
+                resizeMode="cover"
+              />
+            )}
+            <Text style={[styles.instructionsTitle, isDark && styles.textDark]}>
+              {exercice.name}
+            </Text>
+            <View style={styles.instructionsList}>
+              {getInstructions().map((instruction, index) => (
+                <View key={index} style={styles.instructionItem}>
+                  <View style={styles.instructionNumber}>
+                    <Text style={styles.instructionNumberText}>{index + 1}</Text>
+                  </View>
+                  <Text style={[styles.instructionText, isDark && styles.textDark]}>
+                    {instruction}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            <TouchableOpacity
+              style={styles.closeInstructionsButton}
+              onPress={() => setShowInstructions(false)}
+            >
+              <Text style={styles.closeInstructionsText}>Fermer</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Sets Header */}
       <View style={styles.setsHeader}>
@@ -194,11 +286,14 @@ export default function WorkoutSessionScreen({ navigation }) {
   const {
     currentWorkout,
     isWorkoutActive,
+    startWorkout,
     addSet,
     removeSet,
     updateSet,
     toggleSetComplete,
     removeExercise,
+    moveExerciseUp,
+    moveExerciseDown,
     finishWorkout,
     cancelWorkout,
     getCompletedSetsCount,
@@ -269,14 +364,17 @@ export default function WorkoutSessionScreen({ navigation }) {
     );
   }, [removeExercise]);
 
-  if (!currentWorkout || !isWorkoutActive) {
+  // Séance préparée mais pas encore démarrée
+  const isWorkoutPrepared = currentWorkout && !currentWorkout.startTime;
+
+  if (!currentWorkout) {
     return (
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
         <View style={styles.emptyContainer}>
           <Ionicons name="barbell-outline" size={80} color={isDark ? '#333' : '#DDD'} />
-          <Text style={[styles.emptyTitle, isDark && styles.textDark]}>Aucune seance active</Text>
+          <Text style={[styles.emptyTitle, isDark && styles.textDark]}>Aucune seance preparee</Text>
           <Text style={[styles.emptyText, isDark && styles.textMuted]}>
-            Ajoute des exercices depuis la page Exercices pour commencer une seance
+            Ajoute des exercices depuis la page Exercices pour preparer une seance
           </Text>
           <TouchableOpacity
             style={styles.startButton}
@@ -302,8 +400,12 @@ export default function WorkoutSessionScreen({ navigation }) {
           <Ionicons name="arrow-back" size={24} color={isDark ? '#FFF' : '#333'} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={[styles.headerTitle, isDark && styles.textDark]}>Seance en cours</Text>
-          <WorkoutTimer startTime={currentWorkout.startTime} isDark={isDark} />
+          <Text style={[styles.headerTitle, isDark && styles.textDark]}>
+            {isWorkoutPrepared ? 'Preparation' : 'Seance en cours'}
+          </Text>
+          {currentWorkout.startTime && (
+            <WorkoutTimer startTime={currentWorkout.startTime} isDark={isDark} />
+          )}
         </View>
         <TouchableOpacity onPress={handleCancelWorkout} style={styles.cancelButton}>
           <Ionicons name="close" size={24} color="#EF4444" />
@@ -338,6 +440,10 @@ export default function WorkoutSessionScreen({ navigation }) {
             onUpdateSet={updateSet}
             onToggleSet={toggleSetComplete}
             onRemoveExercise={handleRemoveExercise}
+            onMoveUp={moveExerciseUp}
+            onMoveDown={moveExerciseDown}
+            isFirst={index === 0}
+            isLast={index === currentWorkout.exercises.length - 1}
             isDark={isDark}
           />
         ))}
@@ -356,14 +462,28 @@ export default function WorkoutSessionScreen({ navigation }) {
 
       {/* Bottom Bar */}
       <View style={[styles.bottomBar, isDark && styles.bottomBarDark]}>
-        <TouchableOpacity
-          style={[styles.finishButton, completedSets === 0 && styles.finishButtonDisabled]}
-          onPress={handleFinishWorkout}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="checkmark-circle" size={22} color="#FFF" />
-          <Text style={styles.finishButtonText}>Terminer la seance</Text>
-        </TouchableOpacity>
+        {isWorkoutPrepared ? (
+          <TouchableOpacity
+            style={[styles.finishButton, styles.startWorkoutButton]}
+            onPress={() => {
+              startWorkout();
+              Vibration.vibrate(100);
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="play-circle" size={22} color="#FFF" />
+            <Text style={styles.finishButtonText}>Demarrer la seance</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[styles.finishButton, completedSets === 0 && styles.finishButtonDisabled]}
+            onPress={handleFinishWorkout}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="checkmark-circle" size={22} color="#FFF" />
+            <Text style={styles.finishButtonText}>Terminer la seance</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -492,12 +612,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  exerciseIcon: {
+  exerciseIconContainer: {
     width: 44,
     height: 44,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  exerciseImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
   },
   exerciseInfo: {
     flex: 1,
@@ -513,8 +639,89 @@ const styles = StyleSheet.create({
     color: '#888',
     marginTop: 2,
   },
+  reorderButtons: {
+    flexDirection: 'column',
+    marginRight: 8,
+  },
+  reorderButton: {
+    padding: 4,
+  },
+  reorderButtonDisabled: {
+    opacity: 0.3,
+  },
   removeExerciseButton: {
     padding: 8,
+  },
+
+  // Instructions Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  instructionsModal: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 20,
+    width: '100%',
+    maxHeight: '80%',
+  },
+  instructionsModalDark: {
+    backgroundColor: '#1E1E1E',
+  },
+  instructionsImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  instructionsTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  instructionsList: {
+    marginBottom: 16,
+  },
+  instructionItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+    gap: 12,
+  },
+  instructionNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  instructionNumberText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  instructionText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 20,
+  },
+  closeInstructionsButton: {
+    backgroundColor: theme.colors.primary,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  closeInstructionsText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 
   // Sets Header
@@ -660,6 +867,9 @@ const styles = StyleSheet.create({
   },
   finishButtonDisabled: {
     backgroundColor: '#22C55E80',
+  },
+  startWorkoutButton: {
+    backgroundColor: theme.colors.primary,
   },
   finishButtonText: {
     color: '#FFF',
