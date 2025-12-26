@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import ProfileScreen from '../../screens/profile/ProfileScreen';
 import SettingsScreen from '../../screens/profile/SettingsScreen';
+import ProfileSetupScreen from '../../screens/profile/ProfileSetupScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -69,7 +70,8 @@ export default function ProfileStack() {
     >
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
-      <Stack.Screen name="EditProfile" component={PlaceholderScreen} />
+      <Stack.Screen name="EditProfile" component={ProfileSetupScreen} />
+      <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
       <Stack.Screen name="Subscription" component={PlaceholderScreen} />
       <Stack.Screen name="Rewards" component={PlaceholderScreen} />
       <Stack.Screen name="Support" component={PlaceholderScreen} />

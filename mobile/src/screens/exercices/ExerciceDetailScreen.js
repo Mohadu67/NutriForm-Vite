@@ -10,6 +10,7 @@ import {
   Animated,
   Vibration,
   Alert,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -404,14 +405,22 @@ export default function ExerciceDetailScreen({ navigation, route }) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Image/GIF Placeholder */}
+        {/* Image/GIF de l'exercice */}
         <View style={[styles.imageContainer, isDark && styles.imageContainerDark]}>
-          <View style={[styles.imagePlaceholder, { backgroundColor: `${typeConfig.color}15` }]}>
-            <Ionicons name={typeConfig.icon} size={80} color={typeConfig.color} />
-            <Text style={[styles.imagePlaceholderText, isDark && styles.textMutedDark]}>
-              Animation bientot disponible
-            </Text>
-          </View>
+          {exercice.image ? (
+            <Image
+              source={{ uri: exercice.image }}
+              style={styles.exerciseImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={[styles.imagePlaceholder, { backgroundColor: `${typeConfig.color}15` }]}>
+              <Ionicons name={typeConfig.icon} size={80} color={typeConfig.color} />
+              <Text style={[styles.imagePlaceholderText, isDark && styles.textMutedDark]}>
+                Image non disponible
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Type badge */}
@@ -633,6 +642,10 @@ const styles = StyleSheet.create({
   },
   imageContainerDark: {
     backgroundColor: '#1E1E1E',
+  },
+  exerciseImage: {
+    width: '100%',
+    height: 200,
   },
   imagePlaceholder: {
     height: 200,

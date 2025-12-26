@@ -33,9 +33,12 @@ export default function NotificationsScreen() {
   const loadNotifications = useCallback(async () => {
     try {
       const response = await apiClient.get(endpoints.notifications.list);
-      setNotifications(response.data || []);
+      // L'API peut renvoyer { notifications: [] } ou directement un tableau
+      const data = response.data?.notifications || response.data || [];
+      setNotifications(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('[NOTIFICATIONS] Error loading:', error);
+      setNotifications([]);
     } finally {
       setLoading(false);
     }

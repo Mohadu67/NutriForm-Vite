@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const exerciseController = require('../controllers/exerciseController');
-const { authMiddleware } = require('../middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/auth.middleware');
 
 // ============ PUBLIC ROUTES ============
 

@@ -14,14 +14,14 @@ export const QuickActions = ({ navigation, subscriptionTier = 'free' }) => {
 
   return (
     <View style={styles.container}>
-      {/* Nouvelle séance */}
+      {/* Programmes */}
       <TouchableOpacity
         style={styles.primaryAction}
-        onPress={() => navigation?.navigate('Exercices')}
+        onPress={() => navigation?.navigate('Programmes')}
         activeOpacity={0.8}
       >
-        <Ionicons name="add" size={20} color="#FFFFFF" />
-        <Text style={styles.primaryActionText}>Séance</Text>
+        <Ionicons name="list" size={20} color="#FFFFFF" />
+        <Text style={styles.primaryActionText}>Programmes</Text>
       </TouchableOpacity>
 
       {/* Calculs santé */}
@@ -35,20 +35,6 @@ export const QuickActions = ({ navigation, subscriptionTier = 'free' }) => {
           Calculs
         </Text>
       </TouchableOpacity>
-
-      {/* GymBro - Premium only */}
-      {isPremium && (
-        <TouchableOpacity
-          style={[styles.secondaryAction, isDark && styles.secondaryActionDark]}
-          onPress={() => navigation?.navigate('Matching')}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="people" size={18} color={primaryColor} />
-          <Text style={[styles.secondaryActionText, { color: primaryColor }]}>
-            GymBro
-          </Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 };
