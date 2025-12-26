@@ -146,8 +146,9 @@ const EXERCICES_DATA = [
   { id: 'cobra-stretch', name: 'Etirement cobra', muscle: 'abdos-centre', secondary: ['dos-inferieur'], equipment: 'aucun', difficulty: 'debutant', type: 'etirement', image: null },
 ];
 
-// Mapping muscles vers zones body picker
+// Mapping muscles vers zones body picker (avec variantes API)
 const MUSCLE_TO_ZONE = {
+  // Format local
   'pectoraux': 'pectoraux',
   'dos-superieur': 'dos-superieur',
   'dos-inferieur': 'dos-inferieur',
@@ -162,6 +163,41 @@ const MUSCLE_TO_ZONE = {
   'abdos-centre': 'abdos-centre',
   'abdos-lateraux': 'abdos-lateraux',
   'cardio': 'cardio',
+
+  // Variantes possibles de l'API
+  'chest': 'pectoraux',
+  'pecs': 'pectoraux',
+  'back': 'dos-superieur',
+  'upper-back': 'dos-superieur',
+  'lower-back': 'dos-inferieur',
+  'shoulders': 'epaules',
+  'arms': 'biceps',
+  'forearms': 'avant-bras',
+  'quads': 'cuisses-externes',
+  'quadriceps': 'cuisses-externes',
+  'hamstrings': 'cuisses-internes',
+  'glutes': 'fessiers',
+  'calves': 'mollets',
+  'abs': 'abdos-centre',
+  'core': 'abdos-centre',
+  'obliques': 'abdos-lateraux',
+};
+
+const MUSCLE_LABELS = {
+  'pectoraux': 'Pectoraux',
+  'dos-superieur': 'Dos superieur',
+  'dos-inferieur': 'Dos inferieur',
+  'epaules': 'Epaules',
+  'biceps': 'Biceps',
+  'triceps': 'Triceps',
+  'avant-bras': 'Avant-bras',
+  'cuisses-externes': 'Quadriceps',
+  'cuisses-internes': 'Ischio-jambiers',
+  'fessiers': 'Fessiers',
+  'mollets': 'Mollets',
+  'abdos-centre': 'Abdominaux',
+  'abdos-lateraux': 'Obliques',
+  'cardio': 'Cardio',
 };
 
 const EQUIPMENT_LABELS = {
@@ -225,24 +261,114 @@ export default function ExercicesScreen() {
 
       if (result.success && result.data.length > 0) {
         // Transformer les donnees API vers le format attendu
-        const formattedExercises = result.data.map(exo => ({
-          id: exo.slug || exo.exoId,
-          exoId: exo.exoId,
-          name: exo.name,
-          muscle: exo.primaryMuscle,
-          secondary: exo.secondaryMuscles || [],
-          muscles: exo.muscles || [exo.primaryMuscle],
-          equipment: exo.equipment?.[0] || 'aucun',
-          equipmentList: exo.equipment || [],
-          difficulty: exo.difficulty || 'intermediaire',
-          type: exo.type?.[0] === 'poids-du-corps' ? 'poids_du_corps' : (exo.type?.[0] || exo.category || 'muscu'),
-          category: exo.category,
-          image: exo.mainImage,
-          explanation: exo.explanation,
-          slug: exo.slug,
-        }));
+        const formattedExercises = result.data.map(exo => {
+          // Normaliser le type de l'exercice
+          let exerciseType = 'muscu'; // valeur par défaut
+
+          // Le champ type est un tableau, chercher le type le plus spécifique
+          const types = exo.type || [exo.category];
+
+          // Mapper les différents formats de types de l'API
+          const typeMap = {
+            'poids-du-corps': 'poids_du_corps',
+            'poids du corps': 'poids_du_corps',
+            'bodyweight': 'poids_du_corps',
+            'stretching': 'etirement',
+            'étirement': 'etirement',
+            'cardio': 'cardio',
+            'hiit': 'cardio',
+            'muscu': 'muscu',
+            'musculation': 'muscu',
+          };
+
+          // Prioriser poids_du_corps si présent dans le tableau type
+          const hasBodyweight = types.some(t =>
+            ['poids-du-corps', 'poids du corps', 'bodyweight'].includes(t?.toLowerCase())
+          );
+
+          if (hasBodyweight) {
+            exerciseType = 'poids_du_corps';
+          } else if (types.length > 0) {
+            // Sinon prendre le premier type et le mapper
+            const apiType = types[0];
+            exerciseType = typeMap[apiType?.toLowerCase()] || apiType;
+          }
+
+          // Normaliser le muscle principal via le mapping
+          const normalizeMuscle = (muscleName) => {
+            if (!muscleName) return 'abdos-centre'; // défaut
+            const normalized = muscleName.toLowerCase().replace(/\s+/g, '-');
+            return MUSCLE_TO_ZONE[normalized] || MUSCLE_TO_ZONE[muscleName.toLowerCase()] || normalized;
+          };
+
+          // Normaliser l'équipement
+          const normalizeEquipment = (equipmentName) => {
+            if (!equipmentName) return 'aucun';
+            const equipMap = {
+              'poids-du-corps': 'poids_corps',
+              'poids du corps': 'poids_corps',
+              'bodyweight': 'poids_corps',
+              'body weight': 'poids_corps',
+              'barre': 'barre',
+              'barbell': 'barre',
+              'halteres': 'halteres',
+              'haltère': 'halteres',
+              'haltères': 'halteres',
+              'dumbbell': 'halteres',
+              'dumbbells': 'halteres',
+              'poulie': 'poulie',
+              'cable': 'poulie',
+              'machine': 'machine',
+              'aucun': 'aucun',
+              'none': 'aucun',
+            };
+            const normalized = equipmentName.toLowerCase().trim();
+            return equipMap[normalized] || normalized;
+          };
+
+          const primaryMuscle = normalizeMuscle(exo.primaryMuscle);
+          const secondaryMuscles = (exo.secondaryMuscles || []).map(m => normalizeMuscle(m));
+          const allMuscles = (exo.muscles || [exo.primaryMuscle]).map(m => normalizeMuscle(m));
+          const normalizedEquipment = normalizeEquipment(exo.equipment?.[0] || 'aucun');
+
+          return {
+            id: exo.slug || exo.exoId,
+            exoId: exo.exoId,
+            name: exo.name,
+            muscle: primaryMuscle,
+            secondary: secondaryMuscles,
+            muscles: allMuscles,
+            equipment: normalizedEquipment,
+            equipmentList: (exo.equipment || []).map(e => normalizeEquipment(e)),
+            difficulty: exo.difficulty || 'intermediaire',
+            type: exerciseType,
+            category: exo.category,
+            image: exo.mainImage,
+            explanation: exo.explanation,
+            slug: exo.slug,
+          };
+        });
         setExercises(formattedExercises);
         console.log('[EXERCISES] Loaded', formattedExercises.length, 'from API');
+
+        // Debug: afficher quelques muscles pour vérifier le mapping
+        if (formattedExercises.length > 0) {
+          const uniqueMuscles = [...new Set(formattedExercises.map(ex => ex.muscle))];
+          console.log('[EXERCISES] Unique muscles:', uniqueMuscles.slice(0, 10));
+
+          // Debug: afficher tous les équipements uniques
+          const uniqueEquipments = [...new Set(formattedExercises.map(ex => ex.equipment))];
+          console.log('[EXERCISES] Unique equipments found:', uniqueEquipments);
+
+          // Debug: afficher quelques exemples d'exercices avec leurs équipements
+          const samples = formattedExercises.slice(0, 5).map(ex => ({
+            name: ex.name,
+            equipment: ex.equipment,
+            type: ex.type,
+            muscle: ex.muscle
+          }));
+          console.log('[EXERCISES] Sample exercises:', samples);
+        }
       } else {
         // Fallback vers donnees locales
         console.log('[EXERCISES] API failed, using local data');
@@ -307,40 +433,98 @@ export default function ExercicesScreen() {
   // Filtrer les exercices
   const filteredExercices = useMemo(() => {
     let results = [...exercises];
+    console.log('[FILTER] Starting with', results.length, 'exercises');
 
     // Filtre favoris
     if (showFavoritesOnly) {
       results = results.filter(ex => favorites.includes(ex.id));
+      console.log('[FILTER] After favorites:', results.length);
     }
 
     // Filtre par types (multi-selection)
     if (selectedTypes.length > 0) {
+      console.log('[FILTER] Selected types:', selectedTypes);
       results = results.filter(ex => selectedTypes.includes(ex.type));
+      console.log('[FILTER] After type filter:', results.length);
     }
 
-    // Filtre par recherche
+    // Filtre par recherche (amélioré avec labels)
     if (searchText.trim()) {
       const search = searchText.toLowerCase().trim();
-      results = results.filter(ex =>
-        ex.name.toLowerCase().includes(search) ||
-        ex.muscle.toLowerCase().includes(search)
-      );
+      results = results.filter(ex => {
+        // Recherche dans le nom de l'exercice
+        if (ex.name.toLowerCase().includes(search)) return true;
+
+        // Recherche dans le muscle brut
+        if (ex.muscle.toLowerCase().includes(search)) return true;
+
+        // Recherche dans le label du muscle
+        const muscleLabel = MUSCLE_LABELS[ex.muscle];
+        if (muscleLabel && muscleLabel.toLowerCase().includes(search)) return true;
+
+        // Recherche dans les muscles secondaires
+        if (ex.secondary?.some(m => {
+          const label = MUSCLE_LABELS[m];
+          return m.toLowerCase().includes(search) || (label && label.toLowerCase().includes(search));
+        })) return true;
+
+        // Recherche dans l'équipement
+        const equipLabel = EQUIPMENT_LABELS[ex.equipment];
+        if (equipLabel && equipLabel.toLowerCase().includes(search)) return true;
+
+        return false;
+      });
     }
 
     // Filtre par muscles selectionnes
     if (selectedMuscles.length > 0) {
+      console.log('[FILTER] Selected muscles:', selectedMuscles);
+      const beforeMuscle = results.length;
       results = results.filter(ex => {
-        const exZone = MUSCLE_TO_ZONE[ex.muscle];
+        // Vérifier le muscle principal
+        const exZone = MUSCLE_TO_ZONE[ex.muscle] || ex.muscle;
         if (selectedMuscles.includes(exZone)) return true;
-        return ex.secondary?.some(sec => selectedMuscles.includes(MUSCLE_TO_ZONE[sec]));
+
+        // Vérifier dans muscles[] si disponible (format API)
+        if (ex.muscles?.some(m => {
+          const zone = MUSCLE_TO_ZONE[m] || m;
+          return selectedMuscles.includes(zone);
+        })) return true;
+
+        // Vérifier les muscles secondaires
+        if (ex.secondary?.some(sec => {
+          const zone = MUSCLE_TO_ZONE[sec] || sec;
+          return selectedMuscles.includes(zone);
+        })) return true;
+
+        return false;
       });
+      console.log('[FILTER] After muscle filter:', results.length, '(filtered out', beforeMuscle - results.length, ')');
     }
 
     // Filtre par equipements (multi-selection)
     if (selectedEquipments.length > 0) {
-      results = results.filter(ex => selectedEquipments.includes(ex.equipment));
+      console.log('[FILTER] Selected equipments:', selectedEquipments);
+      const beforeEquip = results.length;
+      results = results.filter(ex => {
+        const match = selectedEquipments.includes(ex.equipment);
+        if (!match) {
+          // Debug: afficher quelques exercices filtrés pour comprendre
+          if (beforeEquip - results.length < 5) {
+            console.log('[FILTER] Filtered out:', ex.name, '- equipment:', ex.equipment, '(expected:', selectedEquipments.join(','), ')');
+          }
+        }
+        return match;
+      });
+      console.log('[FILTER] After equipment filter:', results.length, '(filtered out', beforeEquip - results.length, ')');
+
+      // Debug: afficher quelques résultats pour vérification
+      if (results.length > 0 && results.length < 10) {
+        console.log('[FILTER] Remaining exercises:', results.map(ex => `${ex.name} (${ex.muscle}, ${ex.equipment})`).join(', '));
+      }
     }
 
+    console.log('[FILTER] Final result:', results.length, 'exercises');
     return results;
   }, [exercises, searchText, selectedMuscles, selectedEquipments, selectedTypes, showFavoritesOnly, favorites]);
 
@@ -435,7 +619,7 @@ export default function ExercicesScreen() {
     );
   }, [isDark, favorites, handleExercicePress, toggleFavorite]);
 
-  const ListHeader = () => (
+  const ListHeader = useMemo(() => (
     <>
       {/* Header */}
       <View style={styles.header}>
@@ -626,7 +810,7 @@ export default function ExercicesScreen() {
         {showFavoritesOnly ? 'Mes favoris' : (activeFiltersCount > 0 || searchText ? 'Resultats' : 'Tous les exercices')}
       </Text>
     </>
-  );
+  ), [isDark, filteredExercices.length, showFavoritesOnly, favorites, searchText, selectedTypes, selectedEquipments, selectedMuscles, activeFiltersCount]);
 
   const EmptyState = () => (
     <View style={styles.emptyState}>
@@ -673,7 +857,7 @@ export default function ExercicesScreen() {
         data={filteredExercices}
         keyExtractor={(item) => item.id}
         renderItem={renderExercice}
-        ListHeaderComponent={<ListHeader />}
+        ListHeaderComponent={ListHeader}
         ListEmptyComponent={<EmptyState />}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
@@ -682,6 +866,8 @@ export default function ExercicesScreen() {
         windowSize={5}
         refreshing={loading}
         onRefresh={loadExercises}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       />
 
       {/* Modal Body Picker */}
