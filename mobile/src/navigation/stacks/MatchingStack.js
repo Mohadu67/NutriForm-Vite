@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import MatchingScreen from '../../screens/matching/MatchingScreen';
+import MatchesListScreen from '../../screens/matching/MatchesListScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,6 +16,13 @@ export default function MatchingStack() {
       }}
     >
       <Stack.Screen name="Matching" component={MatchingScreen} />
+      <Stack.Screen
+        name="MatchesList"
+        component={MatchesListScreen}
+        options={{
+          animation: 'slide_from_right',
+        }}
+      />
     </Stack.Navigator>
   );
 }
