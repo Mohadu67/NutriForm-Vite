@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
@@ -40,24 +40,28 @@ export default function ProfileScreen() {
   const loadProfile = useCallback(async () => {
     try {
       const [profileRes, summaryRes, subRes] = await Promise.all([
-        apiClient.get(endpoints.profile.me).catch(() => ({ data: null })),
+        apiClient.get(endpoints.profile.me).catch(() => ({ data: { profile: null } })),
         apiClient.get(endpoints.history.summary).catch(() => ({ data: null })),
         apiClient.get(endpoints.subscription.status).catch(() => ({ data: { tier: 'free' } })),
       ]);
 
-      setProfile(profileRes.data);
+      setProfile(profileRes.data.profile); // Le backend retourne { profile: {...} }
       setStats(summaryRes.data);
       setSubscription(subRes.data);
     } catch (error) {
       console.error('[PROFILE] Error loading data:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
-  useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
+  // Recharger le profil quand on revient sur l'écran
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+    }, [loadProfile])
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -84,7 +88,7 @@ export default function ProfileScreen() {
   const displayName = user?.prenom || user?.pseudo || profile?.prenom || profile?.pseudo || 'Utilisateur';
   const email = user?.email || profile?.email || '';
   const pseudo = user?.pseudo || profile?.pseudo || '';
-  const avatarUrl = profile?.avatarUrl || profile?.photoUrl || user?.avatarUrl;
+  const avatarUrl = user?.photo || null;
   const isPremium = subscription?.tier === 'premium';
 
   // Stats calculees
@@ -243,6 +247,104 @@ export default function ProfileScreen() {
             </Text>
           </View>
         </View>
+
+        {/* Informations du profil */}
+        {profile && (
+          <View style={[styles.infoCard, isDark && styles.infoCardDark]}>
+            <View style={styles.infoHeader}>
+              <Ionicons name="person-outline" size={20} color={theme.colors.primary} />
+              <Text style={[styles.infoTitle, isDark && styles.textDark]}>
+                Informations du profil
+              </Text>
+            </View>
+
+            {profile.bio && (
+              <View style={styles.infoSection}>
+                <Text style={[styles.infoLabel, isDark && styles.textMutedDark]}>Bio</Text>
+                <Text style={[styles.infoValue, isDark && styles.textDark]}>
+                  {profile.bio}
+                </Text>
+              </View>
+            )}
+
+            <View style={styles.infoRow}>
+              {profile.age && (
+                <View style={styles.infoItem}>
+                  <Text style={[styles.infoLabel, isDark && styles.textMutedDark]}>Age</Text>
+                  <Text style={[styles.infoValue, isDark && styles.textDark]}>
+                    {profile.age} ans
+                  </Text>
+                </View>
+              )}
+
+              {profile.fitnessLevel && (
+                <View style={styles.infoItem}>
+                  <Text style={[styles.infoLabel, isDark && styles.textMutedDark]}>Niveau</Text>
+                  <Text style={[styles.infoValue, isDark && styles.textDark]}>
+                    {profile.fitnessLevel === 'beginner' ? 'Débutant' :
+                     profile.fitnessLevel === 'intermediate' ? 'Intermédiaire' : 'Avancé'}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {profile.location?.city && (
+              <View style={styles.infoSection}>
+                <Text style={[styles.infoLabel, isDark && styles.textMutedDark]}>Localisation</Text>
+                <View style={styles.locationRow}>
+                  <Ionicons name="location-outline" size={16} color={isDark ? '#888' : '#666'} />
+                  <Text style={[styles.infoValue, isDark && styles.textDark]}>
+                    {profile.location.city}
+                    {profile.location.postalCode && ` (${profile.location.postalCode})`}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {profile.workoutTypes && profile.workoutTypes.length > 0 && (
+              <View style={styles.infoSection}>
+                <Text style={[styles.infoLabel, isDark && styles.textMutedDark]}>
+                  Types d'entraînement
+                </Text>
+                <View style={styles.tagsContainer}>
+                  {profile.workoutTypes.map((type, index) => (
+                    <View
+                      key={index}
+                      style={[styles.tag, { backgroundColor: `${theme.colors.primary}20` }]}
+                    >
+                      <Text style={[styles.tagText, { color: theme.colors.primary }]}>
+                        {type}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            <View style={styles.infoSection}>
+              <View style={styles.switchInfo}>
+                <Text style={[styles.infoLabel, isDark && styles.textMutedDark]}>
+                  Matching activé
+                </Text>
+                <View style={styles.statusBadge}>
+                  <Ionicons
+                    name={profile?.isVisible ? "checkmark-circle" : "close-circle"}
+                    size={16}
+                    color={profile?.isVisible ? "#22C55E" : "#EF4444"}
+                  />
+                  <Text
+                    style={[
+                      styles.statusText,
+                      { color: profile?.isVisible ? "#22C55E" : "#EF4444" }
+                    ]}
+                  >
+                    {profile?.isVisible ? 'Activé' : 'Désactivé'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
 
         {/* Menu Options */}
         <View style={[styles.menuCard, isDark && styles.menuCardDark]}>
@@ -512,5 +614,94 @@ const styles = StyleSheet.create({
   },
   versionDark: {
     color: '#666666',
+  },
+  infoCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  infoCardDark: {
+    backgroundColor: '#2A2A2A',
+  },
+  infoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+    paddingBottom: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  infoTitle: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text.primary,
+  },
+  textDark: {
+    color: '#FFFFFF',
+  },
+  textMutedDark: {
+    color: '#888888',
+  },
+  infoSection: {
+    marginBottom: theme.spacing.md,
+  },
+  infoLabel: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.xs,
+  },
+  infoValue: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
+    lineHeight: 22,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+  },
+  infoItem: {
+    flex: 1,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
+  },
+  tag: {
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+  },
+  tagText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.medium,
+  },
+  switchInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  statusText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.medium,
   },
 });

@@ -20,7 +20,7 @@ function addMonths(date, months) {
   return result;
 }
 
-/**
+/**d
  * Verifier l'eligibilite au rachat XP
  * GET /api/xp-redemption/eligibility
  */
