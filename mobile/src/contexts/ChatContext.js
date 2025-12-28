@@ -56,7 +56,8 @@ export function ChatProvider({ children }) {
       const response = await matchChatApi.getConversations();
 
       // S'assurer que data est toujours un tableau
-      const data = Array.isArray(response) ? response : [];
+      // getConversations retourne { success, conversations } ou un tableau directement
+      const data = response?.conversations || (Array.isArray(response) ? response : []);
 
       // Ajouter la propriété isOwn au lastMessage de chaque conversation
       const conversationsWithIsOwn = data.map(conv => {
@@ -470,8 +471,9 @@ export function ChatProvider({ children }) {
   useEffect(() => {
     const loadUnreadCount = async () => {
       try {
-        const data = await matchChatApi.getUnreadCount();
-        setUnreadCount(data.unreadCount || 0);
+        const response = await matchChatApi.getUnreadCount();
+        // getUnreadCount retourne { success, count } ou { unreadCount }
+        setUnreadCount(response?.count ?? response?.unreadCount ?? 0);
       } catch (err) {
         logger.chat.error('Failed to load unread count', err);
       }

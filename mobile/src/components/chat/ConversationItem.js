@@ -106,6 +106,7 @@ const ConversationItem = React.memo(({ conversation, onPress }) => {
 
   // Infos de l'autre utilisateur
   const otherUser = conversation.otherUser;
+  // Nom d'affichage: pseudo > prenom > 'Utilisateur'
   const displayName = otherUser?.pseudo || otherUser?.prenom || 'Utilisateur';
   const avatarUrl = otherUser?.profile?.profilePicture || otherUser?.photo;
   const initials = displayName.split(' ').map(word => word[0]).join('').toUpperCase().substring(0, 2);

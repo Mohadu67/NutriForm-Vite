@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext, useCallback } fr
 import { secureStorage, storage } from '../services/storageService';
 import authService from '../api/auth';
 import websocketService from '../services/websocket';
+import notificationService from '../services/notificationService';
 
 /**
  * Contexte d'authentification
@@ -133,6 +134,10 @@ export function AuthProvider({ children }) {
 
       setUser(userData);
       await storeUserData(userData);
+
+      // Enregistrer pour les push notifications après connexion
+      console.log('[AUTH] Registering for push notifications...');
+      notificationService.registerForPushNotifications();
 
       console.log('[AUTH] Login successful');
       return userData;
@@ -376,6 +381,10 @@ export function AuthProvider({ children }) {
           console.log('[AUTH] Init: refreshing user from server...');
           await refreshUser();
           console.log('[AUTH] Init: user refreshed successfully');
+
+          // Enregistrer pour les push notifications (utilisateur déjà authentifié)
+          console.log('[AUTH] Init: registering for push notifications...');
+          notificationService.registerForPushNotifications();
         } catch (error) {
           console.error('[AUTH] Init: refresh failed:', error.message);
           // Si le refresh échoue, utiliser les données en cache si disponibles
