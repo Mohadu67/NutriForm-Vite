@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,9 +13,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
+import notificationService from '../../services/notificationService';
+import apiClient from '../../api/client';
 
 /**
  * SettingsScreen - Ecran parametres
@@ -33,6 +36,86 @@ export default function SettingsScreen() {
   const [weeklyReport, setWeeklyReport] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
+
+  // Charger les parametres sauvegardes
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const settings = await AsyncStorage.getItem('userSettings');
+        if (settings) {
+          const parsed = JSON.parse(settings);
+          setPushNotifications(parsed.pushNotifications ?? true);
+          setEmailNotifications(parsed.emailNotifications ?? true);
+          setWeeklyReport(parsed.weeklyReport ?? true);
+          setSoundEnabled(parsed.soundEnabled ?? true);
+          setVibrationEnabled(parsed.vibrationEnabled ?? true);
+        }
+      } catch (error) {
+        console.error('[SETTINGS] Error loading:', error);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  // Sauvegarder un parametre
+  const saveSetting = useCallback(async (key, value) => {
+    try {
+      const settings = await AsyncStorage.getItem('userSettings');
+      const parsed = settings ? JSON.parse(settings) : {};
+      parsed[key] = value;
+      await AsyncStorage.setItem('userSettings', JSON.stringify(parsed));
+    } catch (error) {
+      console.error('[SETTINGS] Error saving:', error);
+    }
+  }, []);
+
+  // Gerer le toggle des notifications push
+  const handlePushNotificationsToggle = useCallback(async (value) => {
+    setPushNotifications(value);
+    saveSetting('pushNotifications', value);
+
+    if (value) {
+      // Demander la permission et enregistrer
+      await notificationService.registerForPushNotifications();
+    }
+  }, [saveSetting]);
+
+  // Gerer le toggle des emails
+  const handleEmailNotificationsToggle = useCallback(async (value) => {
+    setEmailNotifications(value);
+    saveSetting('emailNotifications', value);
+
+    // Mettre a jour cote serveur
+    try {
+      await apiClient.patch('/profile/preferences', { emailNotifications: value });
+    } catch (error) {
+      console.error('[SETTINGS] Error updating email pref:', error);
+    }
+  }, [saveSetting]);
+
+  // Gerer le toggle du rapport hebdo
+  const handleWeeklyReportToggle = useCallback(async (value) => {
+    setWeeklyReport(value);
+    saveSetting('weeklyReport', value);
+
+    try {
+      await apiClient.patch('/profile/preferences', { weeklyReport: value });
+    } catch (error) {
+      console.error('[SETTINGS] Error updating weekly report pref:', error);
+    }
+  }, [saveSetting]);
+
+  // Gerer les sons
+  const handleSoundToggle = useCallback((value) => {
+    setSoundEnabled(value);
+    saveSetting('soundEnabled', value);
+  }, [saveSetting]);
+
+  // Gerer les vibrations
+  const handleVibrationToggle = useCallback((value) => {
+    setVibrationEnabled(value);
+    saveSetting('vibrationEnabled', value);
+  }, [saveSetting]);
 
   const handleDeleteAccount = useCallback(() => {
     Alert.alert(
@@ -86,21 +169,21 @@ export default function SettingsScreen() {
           label: 'Notifications push',
           type: 'switch',
           value: pushNotifications,
-          onValueChange: setPushNotifications,
+          onValueChange: handlePushNotificationsToggle,
         },
         {
           icon: 'mail',
           label: 'Emails de rappel',
           type: 'switch',
           value: emailNotifications,
-          onValueChange: setEmailNotifications,
+          onValueChange: handleEmailNotificationsToggle,
         },
         {
           icon: 'document-text',
           label: 'Rapport hebdomadaire',
           type: 'switch',
           value: weeklyReport,
-          onValueChange: setWeeklyReport,
+          onValueChange: handleWeeklyReportToggle,
         },
       ],
     },
@@ -112,14 +195,14 @@ export default function SettingsScreen() {
           label: 'Sons',
           type: 'switch',
           value: soundEnabled,
-          onValueChange: setSoundEnabled,
+          onValueChange: handleSoundToggle,
         },
         {
           icon: 'phone-portrait',
           label: 'Vibrations',
           type: 'switch',
           value: vibrationEnabled,
-          onValueChange: setVibrationEnabled,
+          onValueChange: handleVibrationToggle,
         },
       ],
     },

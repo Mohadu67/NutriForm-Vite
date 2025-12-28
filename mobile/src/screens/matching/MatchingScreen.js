@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,31 +6,38 @@ import {
   useColorScheme,
   TouchableOpacity,
   Image,
-  Animated,
-  PanResponder,
-  Dimensions,
+  FlatList,
+  RefreshControl,
   ActivityIndicator,
   Modal,
-  ScrollView,
-  RefreshControl,
+  Dimensions,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { theme } from '../../theme';
-import { getMatchSuggestions, likeProfile, rejectProfile, getMutualMatches } from '../../api/matching';
+import { getConversations, getUnreadCount } from '../../api/matchChat';
+import { getMutualMatches, getMatchSuggestions, likeProfile, rejectProfile } from '../../api/matching';
 import ProfileModal from '../../components/matching/ProfileModal';
+import useSwipeGesture from '../../hooks/useSwipeGesture';
+import logger from '../../services/logger';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
-const SWIPE_OUT_DURATION = 250;
+
+// Onglets
+const TABS = [
+  { key: 'messages', label: 'Messages', icon: 'chatbubbles' },
+  { key: 'discover', label: 'Découvrir', icon: 'people' },
+];
 
 const FITNESS_LEVELS = {
-  beginner: { label: 'Debutant', color: '#22C55E' },
-  intermediate: { label: 'Intermediaire', color: '#F59E0B' },
-  advanced: { label: 'Avance', color: '#EF4444' },
+  beginner: { label: 'Débutant', color: '#22C55E' },
+  intermediate: { label: 'Intermédiaire', color: '#F59E0B' },
+  advanced: { label: 'Avancé', color: '#EF4444' },
 };
 
 const WORKOUT_TYPE_ICONS = {
@@ -51,138 +58,109 @@ export default function MatchingScreen() {
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation();
 
+  const [activeTab, setActiveTab] = useState('messages');
+  const [conversations, setConversations] = useState([]);
+  const [mutualMatches, setMutualMatches] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
-  const [mutualMatches, setMutualMatches] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [pendingSuggestions, setPendingSuggestions] = useState(0);
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [newMatch, setNewMatch] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
 
-  // Animation values
-  const position = useRef(new Animated.ValueXY()).current;
-  const nextCardScale = useRef(new Animated.Value(0.92)).current;
-  const nextCardOpacity = useRef(new Animated.Value(0.7)).current;
-
-  // Refs for PanResponder to avoid stale closure
-  const actionLoadingRef = useRef(false);
-  const currentIndexRef = useRef(0);
-  const suggestionsLengthRef = useRef(0);
-  const swipeRightRef = useRef(null);
-  const swipeLeftRef = useRef(null);
-
-  // Keep refs in sync with state
-  useEffect(() => {
-    actionLoadingRef.current = actionLoading;
-  }, [actionLoading]);
-
-  useEffect(() => {
-    currentIndexRef.current = currentIndex;
-  }, [currentIndex]);
-
-  useEffect(() => {
-    suggestionsLengthRef.current = suggestions.length;
-  }, [suggestions]);
-
-  // Pan responder for swipe gestures
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => {
-        console.log('[SWIPE] onStartShouldSetPanResponder - actionLoading:', actionLoadingRef.current, 'currentIndex:', currentIndexRef.current, 'suggestionsLength:', suggestionsLengthRef.current);
-        return !actionLoadingRef.current && currentIndexRef.current < suggestionsLengthRef.current;
-      },
-      onMoveShouldSetPanResponder: () => !actionLoadingRef.current && currentIndexRef.current < suggestionsLengthRef.current,
-      onPanResponderMove: (_, gesture) => {
-        if (actionLoadingRef.current) return;
-        position.setValue({ x: gesture.dx, y: gesture.dy });
-        // Scale up next card as current card moves
-        const progress = Math.min(Math.abs(gesture.dx) / SWIPE_THRESHOLD, 1);
-        nextCardScale.setValue(0.92 + (0.08 * progress));
-        nextCardOpacity.setValue(0.7 + (0.3 * progress));
-      },
-      onPanResponderRelease: (_, gesture) => {
-        console.log('[SWIPE] onPanResponderRelease - dx:', gesture.dx, 'actionLoading:', actionLoadingRef.current, 'currentIndex:', currentIndexRef.current, 'suggestionsLength:', suggestionsLengthRef.current);
-        if (actionLoadingRef.current || currentIndexRef.current >= suggestionsLengthRef.current) {
-          console.log('[SWIPE] Resetting position - action in progress or no more cards');
-          resetPosition();
-          return;
+  // Swipe gesture hook
+  const {
+    panResponder,
+    position,
+    nextCardScale,
+    nextCardOpacity,
+    swipeRight,
+    swipeLeft,
+  } = useSwipeGesture({
+    items: suggestions,
+    currentIndex,
+    onSwipeRight: async (profile) => {
+      try {
+        const result = await likeProfile(profile.user._id);
+        if (result?.match?.isMutual) {
+          setNewMatch(profile);
+          setShowMatchModal(true);
+          setMutualMatches(prev => [{ ...profile, _id: result.match._id }, ...prev]);
         }
-        if (gesture.dx > SWIPE_THRESHOLD) {
-          console.log('[SWIPE] Swipe RIGHT detected');
-          if (swipeRightRef.current) {
-            swipeRightRef.current();
-          } else {
-            console.log('[SWIPE] ERROR: swipeRightRef.current is null!');
-          }
-        } else if (gesture.dx < -SWIPE_THRESHOLD) {
-          console.log('[SWIPE] Swipe LEFT detected');
-          if (swipeLeftRef.current) {
-            swipeLeftRef.current();
-          } else {
-            console.log('[SWIPE] ERROR: swipeLeftRef.current is null!');
-          }
-        } else {
-          console.log('[SWIPE] Swipe not far enough, resetting');
-          resetPosition();
-        }
-      },
-      onPanResponderTerminate: () => {
-        console.log('[SWIPE] onPanResponderTerminate - gesture was terminated');
-        resetPosition();
-      },
-    })
-  ).current;
+      } catch (err) {
+        logger.matching.error('Like error', err);
+      }
+    },
+    onSwipeLeft: async (profile) => {
+      try {
+        await rejectProfile(profile.user._id);
+      } catch (err) {
+        logger.matching.error('Reject error', err);
+      }
+    },
+    onNextCard: () => {
+      setCurrentIndex(prev => prev + 1);
+    },
+  });
 
-  // Load data
-  useEffect(() => {
-    loadData();
-  }, []);
-
+  // Charger les données
   const loadData = async () => {
     try {
       setLoading(true);
-      setError(null);
 
-      const [suggestionsRes, matchesRes] = await Promise.all([
-        getMatchSuggestions({ limit: 20 }),
+      const [convRes, matchesRes, suggestionsRes, unreadRes] = await Promise.all([
+        getConversations(),
         getMutualMatches(),
+        getMatchSuggestions({ limit: 20 }),
+        getUnreadCount(),
       ]);
 
-      console.log('[MATCHING] Suggestions response:', suggestionsRes);
-      console.log('[MATCHING] Mutual matches response:', matchesRes);
-
-      if (suggestionsRes?.matches) {
-        // Filtrer les profils déjà likés ou mutuels (ils sont déjà dans la liste des matches)
-        const filteredSuggestions = suggestionsRes.matches.filter(s => {
-          const shouldShow = !s.hasLiked && !s.isMutual;
-          console.log('[MATCHING] Filter check -', s.user?.username, ': hasLiked=', s.hasLiked, 'isMutual=', s.isMutual, 'shouldShow=', shouldShow);
-          return shouldShow;
-        });
-        setSuggestions(filteredSuggestions);
-        console.log('[MATCHING] Loaded', filteredSuggestions.length, 'suggestions (filtered from', suggestionsRes.matches.length, ')');
-      } else {
-        setSuggestions([]);
-        console.log('[MATCHING] No suggestions found');
+      // getConversations retourne { success, conversations }
+      if (convRes?.success && convRes.conversations) {
+        setConversations(convRes.conversations);
+        logger.matching.info('Conversations chargées:', convRes.conversations.length);
       }
 
+      // getMutualMatches retourne { matches: [...] }
       if (matchesRes?.matches) {
         setMutualMatches(matchesRes.matches);
-        console.log('[MATCHING] Loaded', matchesRes.matches.length, 'mutual matches');
-      } else {
-        setMutualMatches([]);
+        logger.matching.info('Matchs mutuels chargés:', matchesRes.matches.length);
+      }
+
+      // getMatchSuggestions retourne { matches: [...] }
+      if (suggestionsRes?.matches) {
+        const filtered = suggestionsRes.matches.filter(s => !s.hasLiked && !s.isMutual);
+        setSuggestions(filtered);
+        setPendingSuggestions(filtered.length);
+        logger.matching.info('Suggestions chargées:', filtered.length);
+      }
+
+      // getUnreadCount retourne { success, count }
+      if (unreadRes?.success) {
+        setUnreadCount(unreadRes.count || 0);
       }
     } catch (err) {
-      console.log('[MATCHING] Error:', err.message, err);
-      setError(err.message || 'Erreur lors du chargement des profils');
+      logger.matching.error('Error loading data', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // Rafraîchir quand l'écran est focus
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -190,117 +168,169 @@ export default function MatchingScreen() {
     loadData();
   }, []);
 
-  const resetPosition = () => {
-    Animated.spring(position, {
-      toValue: { x: 0, y: 0 },
-      friction: 5,
-      useNativeDriver: false,
-    }).start();
-    nextCardScale.setValue(0.92);
-    nextCardOpacity.setValue(0.7);
-  };
-
-  const swipeRight = useCallback(async () => {
-    console.log('[SWIPE] swipeRight called - actionLoading:', actionLoadingRef.current, 'currentIndex:', currentIndexRef.current);
-    if (actionLoadingRef.current || currentIndexRef.current >= suggestionsLengthRef.current) {
-      console.log('[SWIPE] swipeRight early return');
-      return;
-    }
-
-    const currentProfile = suggestions[currentIndexRef.current];
-    if (!currentProfile) {
-      console.log('[SWIPE] No current profile found');
-      return;
-    }
-
-    console.log('[SWIPE] Starting swipeRight animation for profile:', currentProfile.user.username);
-    actionLoadingRef.current = true;
-    setActionLoading(true);
-
-    // Start animation
-    Animated.timing(position, {
-      toValue: { x: SCREEN_WIDTH + 100, y: 0 },
-      duration: SWIPE_OUT_DURATION,
-      useNativeDriver: false,
-    }).start(() => {
-      console.log('[SWIPE] swipeRight animation completed');
-      goToNextCard();
-      actionLoadingRef.current = false;
-      setActionLoading(false);
-    });
-
-    // Call API in parallel
-    try {
-      const result = await likeProfile(currentProfile.user._id);
-      if (result?.match?.isMutual) {
-        setNewMatch(currentProfile);
-        setShowMatchModal(true);
-        setMutualMatches(prev => [{ ...currentProfile, _id: result.match._id }, ...prev]);
-      }
-    } catch (err) {
-      console.log('[MATCHING] Like error:', err.message);
-    }
-  }, [suggestions, position]);
-
-  // Update ref when function changes
-  useEffect(() => {
-    swipeRightRef.current = swipeRight;
-  }, [swipeRight]);
-
-  const swipeLeft = useCallback(async () => {
-    console.log('[SWIPE] swipeLeft called - actionLoading:', actionLoadingRef.current, 'currentIndex:', currentIndexRef.current);
-    if (actionLoadingRef.current || currentIndexRef.current >= suggestionsLengthRef.current) {
-      console.log('[SWIPE] swipeLeft early return');
-      return;
-    }
-
-    const currentProfile = suggestions[currentIndexRef.current];
-    if (!currentProfile) {
-      console.log('[SWIPE] No current profile found');
-      return;
-    }
-
-    console.log('[SWIPE] Starting swipeLeft animation for profile:', currentProfile.user.username);
-    actionLoadingRef.current = true;
-    setActionLoading(true);
-
-    // Start animation
-    Animated.timing(position, {
-      toValue: { x: -SCREEN_WIDTH - 100, y: 0 },
-      duration: SWIPE_OUT_DURATION,
-      useNativeDriver: false,
-    }).start(() => {
-      console.log('[SWIPE] swipeLeft animation completed');
-      goToNextCard();
-      actionLoadingRef.current = false;
-      setActionLoading(false);
-    });
-
-    // Call API in parallel
-    try {
-      await rejectProfile(currentProfile.user._id);
-    } catch (err) {
-      console.log('[MATCHING] Reject error:', err.message);
-    }
-  }, [suggestions, position]);
-
-  // Update ref when function changes
-  useEffect(() => {
-    swipeLeftRef.current = swipeLeft;
-  }, [swipeLeft]);
-
-  const goToNextCard = () => {
-    setCurrentIndex(prev => prev + 1);
-    position.setValue({ x: 0, y: 0 });
-    nextCardScale.setValue(0.92);
-    nextCardOpacity.setValue(0.7);
-  };
-
   const handleCardPress = (profile) => {
     setSelectedProfile(profile);
     setShowProfileModal(true);
   };
 
+  // Formatage de la date relative
+  const formatRelativeTime = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'À l\'instant';
+    if (diffMins < 60) return `${diffMins} min`;
+    if (diffHours < 24) return `${diffHours}h`;
+    if (diffDays < 7) return `${diffDays}j`;
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  };
+
+  // Render conversation item
+  const renderConversationItem = ({ item }) => {
+    const otherUser = item.otherUser;
+    const hasUnread = item.unreadCount > 0;
+
+    return (
+      <TouchableOpacity
+        style={[styles.conversationItem, isDark && styles.conversationItemDark]}
+        onPress={() => navigation.navigate('ChatDetail', {
+          conversationId: item._id,
+          matchId: item.matchId,
+          otherUser
+        })}
+        activeOpacity={0.7}
+      >
+        <View style={styles.conversationAvatar}>
+          {otherUser?.photo ? (
+            <Image source={{ uri: otherUser.photo }} style={styles.avatar} />
+          ) : (
+            <View style={[styles.avatar, styles.avatarPlaceholder]}>
+              <Ionicons name="person" size={24} color="#CCC" />
+            </View>
+          )}
+          {hasUnread && <View style={styles.unreadDot} />}
+        </View>
+
+        <View style={styles.conversationContent}>
+          <View style={styles.conversationHeader}>
+            <Text style={[styles.conversationName, isDark && styles.textDark, hasUnread && styles.textBold]}>
+              {otherUser?.username || 'Utilisateur'}
+            </Text>
+            <Text style={[styles.conversationTime, isDark && styles.textMutedDark]}>
+              {formatRelativeTime(item.lastMessage?.createdAt)}
+            </Text>
+          </View>
+          <Text
+            style={[
+              styles.conversationPreview,
+              isDark && styles.textMutedDark,
+              hasUnread && styles.textBold
+            ]}
+            numberOfLines={1}
+          >
+            {item.lastMessage?.content || 'Commencez la conversation !'}
+          </Text>
+        </View>
+
+        {hasUnread && (
+          <View style={styles.unreadBadge}>
+            <Text style={styles.unreadBadgeText}>{item.unreadCount}</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
+  // Render new matches (conversations non commencées)
+  const renderNewMatches = () => {
+    // Matches sans conversation
+    const matchesWithoutConvo = mutualMatches.filter(
+      match => !conversations.some(c => c.matchId === match._id)
+    );
+
+    if (matchesWithoutConvo.length === 0) return null;
+
+    return (
+      <View style={styles.newMatchesSection}>
+        <Text style={[styles.sectionTitle, isDark && styles.textDark]}>Nouveaux matchs</Text>
+        <FlatList
+          horizontal
+          data={matchesWithoutConvo}
+          keyExtractor={(item) => item._id}
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.newMatchItem}
+              onPress={() => navigation.navigate('ChatDetail', { matchId: item._id, otherUser: item.user })}
+            >
+              <View style={styles.newMatchAvatarContainer}>
+                {item.user?.photo ? (
+                  <Image source={{ uri: item.user.photo }} style={styles.newMatchAvatar} />
+                ) : (
+                  <View style={[styles.newMatchAvatar, styles.avatarPlaceholder]}>
+                    <Ionicons name="person" size={28} color="#CCC" />
+                  </View>
+                )}
+                <View style={styles.newMatchBadge}>
+                  <Text style={styles.newMatchBadgeText}>NEW</Text>
+                </View>
+              </View>
+              <Text style={[styles.newMatchName, isDark && styles.textDark]} numberOfLines={1}>
+                {item.user?.username}
+              </Text>
+            </TouchableOpacity>
+          )}
+        />
+      </View>
+    );
+  };
+
+  // Render empty messages state
+  const renderEmptyMessages = () => (
+    <View style={styles.emptyState}>
+      <View style={[styles.emptyIcon, isDark && styles.emptyIconDark]}>
+        <Ionicons name="chatbubbles-outline" size={64} color={theme.colors.primary} />
+      </View>
+      <Text style={[styles.emptyTitle, isDark && styles.textDark]}>Pas encore de messages</Text>
+      <Text style={[styles.emptyText, isDark && styles.textMutedDark]}>
+        Swipez sur des profils pour trouver des partenaires de sport et commencer à discuter !
+      </Text>
+      <TouchableOpacity
+        style={styles.ctaButton}
+        onPress={() => setActiveTab('discover')}
+      >
+        <Ionicons name="people" size={20} color="#FFF" />
+        <Text style={styles.ctaButtonText}>Découvrir des profils</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  // Render messages tab
+  const renderMessagesTab = () => (
+    <FlatList
+      data={conversations}
+      keyExtractor={(item) => item._id}
+      renderItem={renderConversationItem}
+      ListHeaderComponent={renderNewMatches}
+      ListEmptyComponent={!loading && renderEmptyMessages}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={theme.colors.primary}
+        />
+      }
+      contentContainerStyle={conversations.length === 0 && styles.emptyListContainer}
+      showsVerticalScrollIndicator={false}
+    />
+  );
+
+  // Card styles for discover
   const getCardStyle = () => {
     const rotate = position.x.interpolate({
       inputRange: [-SCREEN_WIDTH * 1.5, 0, SCREEN_WIDTH * 1.5],
@@ -332,6 +362,7 @@ export default function MatchingScreen() {
     });
   };
 
+  // Render single card
   const renderCard = (profile, index) => {
     if (index < currentIndex) return null;
 
@@ -355,7 +386,6 @@ export default function MatchingScreen() {
             activeOpacity={0.95}
             onPress={() => handleCardPress(profile)}
           >
-            {/* Photo */}
             <View style={styles.photoContainer}>
               {user.photo ? (
                 <Image source={{ uri: user.photo }} style={styles.photo} />
@@ -377,7 +407,7 @@ export default function MatchingScreen() {
                 <Text style={styles.nopeText}>NOPE</Text>
               </Animated.View>
 
-              {/* User info on photo */}
+              {/* User info */}
               <View style={styles.photoInfo}>
                 <View style={styles.nameRow}>
                   <Text style={styles.userName}>{user.username}</Text>
@@ -390,8 +420,7 @@ export default function MatchingScreen() {
                   <View style={styles.locationRow}>
                     <Ionicons name="location" size={14} color="#FFF" />
                     <Text style={styles.locationText}>
-                      {user.location.neighborhood ? `${user.location.neighborhood}, ` : ''}{user.location.city}
-                      {profile.distance > 0 && ` • ${profile.distance} km`}
+                      {user.location.city}{profile.distance > 0 && ` • ${profile.distance} km`}
                     </Text>
                   </View>
                 )}
@@ -400,7 +429,6 @@ export default function MatchingScreen() {
 
             {/* Info section */}
             <View style={styles.cardInfo}>
-              {/* Match score */}
               <View style={styles.matchScoreContainer}>
                 <View style={styles.matchScoreBadge}>
                   <Ionicons name="heart" size={16} color="#EF4444" />
@@ -411,14 +439,12 @@ export default function MatchingScreen() {
                 </View>
               </View>
 
-              {/* Bio */}
               {user.bio && (
                 <Text style={[styles.bio, isDark && styles.bioDark]} numberOfLines={2}>
                   {user.bio}
                 </Text>
               )}
 
-              {/* Workout types */}
               {user.workoutTypes?.length > 0 && (
                 <View style={styles.workoutTypes}>
                   {user.workoutTypes.slice(0, 4).map((type, i) => (
@@ -441,7 +467,7 @@ export default function MatchingScreen() {
       );
     }
 
-    // Next card (behind current)
+    // Next card
     return (
       <Animated.View
         key={profile.matchId || user._id}
@@ -469,10 +495,7 @@ export default function MatchingScreen() {
               style={styles.photoGradient}
             />
             <View style={styles.photoInfo}>
-              <View style={styles.nameRow}>
-                <Text style={styles.userName}>{user.username}</Text>
-                {user.age && <Text style={styles.userAge}>, {user.age}</Text>}
-              </View>
+              <Text style={styles.userName}>{user.username}</Text>
             </View>
           </View>
         </View>
@@ -480,12 +503,13 @@ export default function MatchingScreen() {
     );
   };
 
+  // Render action buttons
   const renderActionButtons = () => (
     <View style={styles.actionButtons}>
       <TouchableOpacity
         style={[styles.actionButton, styles.rejectButton]}
         onPress={swipeLeft}
-        disabled={actionLoading || currentIndex >= suggestions.length}
+        disabled={currentIndex >= suggestions.length}
       >
         <Ionicons name="close" size={32} color="#EF4444" />
       </TouchableOpacity>
@@ -493,82 +517,43 @@ export default function MatchingScreen() {
       <TouchableOpacity
         style={[styles.actionButton, styles.likeButton]}
         onPress={swipeRight}
-        disabled={actionLoading || currentIndex >= suggestions.length}
+        disabled={currentIndex >= suggestions.length}
       >
         <Ionicons name="heart" size={32} color="#FFF" />
       </TouchableOpacity>
     </View>
   );
 
-  const renderEmptyState = () => (
+  // Render empty discover state
+  const renderEmptyDiscover = () => (
     <View style={styles.emptyState}>
       <View style={[styles.emptyIcon, isDark && styles.emptyIconDark]}>
-        <Ionicons name="people" size={64} color={theme.colors.primary} />
+        <Ionicons name="people-outline" size={64} color={theme.colors.primary} />
       </View>
-      <Text style={[styles.emptyTitle, isDark && styles.textDark]}>
-        {suggestions.length === 0 && currentIndex === 0 ? 'Aucun profil disponible' : 'Plus de profils'}
-      </Text>
+      <Text style={[styles.emptyTitle, isDark && styles.textDark]}>Plus de profils</Text>
       <Text style={[styles.emptyText, isDark && styles.textMutedDark]}>
-        {suggestions.length === 0 && currentIndex === 0
-          ? 'Assure-toi que ton profil est completé avec ta localisation et que le matching est activé dans les paramètres.'
-          : 'Tu as vu tous les profils disponibles. Reviens plus tard pour en decouvrir de nouveaux !'}
+        Tu as vu tous les profils disponibles. Reviens plus tard !
       </Text>
-      <TouchableOpacity style={styles.refreshButton} onPress={onRefresh}>
+      <TouchableOpacity style={styles.ctaButton} onPress={onRefresh}>
         <Ionicons name="refresh" size={20} color="#FFF" />
-        <Text style={styles.refreshButtonText}>Actualiser</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.refreshButton, { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: theme.colors.primary, marginTop: 12 }]}
-        onPress={() => navigation.navigate('ProfileTab', { screen: 'EditProfile' })}
-      >
-        <Ionicons name="settings-outline" size={20} color={theme.colors.primary} />
-        <Text style={[styles.refreshButtonText, { color: theme.colors.primary }]}>Configurer mon profil</Text>
+        <Text style={styles.ctaButtonText}>Actualiser</Text>
       </TouchableOpacity>
     </View>
   );
 
-  const renderMutualMatchesList = () => {
-    if (mutualMatches.length === 0) return null;
-
-    return (
-      <View style={styles.matchesSection}>
-        <View style={styles.matchesHeader}>
-          <Text style={[styles.matchesSectionTitle, isDark && styles.textDark]}>
-            Mes matchs ({mutualMatches.length})
-          </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('MatchesList', { matches: mutualMatches })}>
-            <Text style={styles.seeAllText}>Voir tout</Text>
-          </TouchableOpacity>
-        </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.matchesScroll}>
-          {mutualMatches.slice(0, 10).map((match) => (
-            <TouchableOpacity
-              key={match._id}
-              style={styles.matchItem}
-              onPress={() => handleCardPress({
-                matchId: match._id,
-                user: match.user,
-                matchScore: match.matchScore,
-                distance: match.distance,
-                isMutualMatch: true
-              })}
-            >
-              {match.user?.photo ? (
-                <Image source={{ uri: match.user.photo }} style={styles.matchPhoto} />
-              ) : (
-                <View style={[styles.matchPhoto, styles.matchPhotoPlaceholder]}>
-                  <Ionicons name="person" size={24} color="#CCC" />
-                </View>
-              )}
-              <Text style={[styles.matchName, isDark && styles.textDark]} numberOfLines={1}>
-                {match.user?.username || 'Utilisateur'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+  // Render discover tab
+  const renderDiscoverTab = () => (
+    <View style={styles.discoverContainer}>
+      <View style={styles.cardsContainer}>
+        {currentIndex >= suggestions.length ? (
+          renderEmptyDiscover()
+        ) : (
+          suggestions.map((profile, index) => renderCard(profile, index)).reverse()
+        )}
       </View>
-    );
-  };
+      {currentIndex < suggestions.length && renderActionButtons()}
+    </View>
+  );
 
   // Match modal
   const renderMatchModal = () => (
@@ -587,26 +572,8 @@ export default function MatchingScreen() {
             C'est un match !
           </Text>
           <Text style={[styles.matchModalText, isDark && styles.textMutedDark]}>
-            Toi et {newMatch?.user?.username} vous etes mutuellement aimes
+            Toi et {newMatch?.user?.username} vous êtes mutuellement likés
           </Text>
-
-          <View style={styles.matchModalPhotos}>
-            <View style={styles.matchModalPhotoContainer}>
-              <View style={[styles.matchModalPhoto, styles.matchModalPhotoPlaceholder]}>
-                <Ionicons name="person" size={32} color="#CCC" />
-              </View>
-            </View>
-            <View style={styles.matchModalHeart}>
-              <Ionicons name="heart" size={24} color="#EF4444" />
-            </View>
-            {newMatch?.user?.photo ? (
-              <Image source={{ uri: newMatch.user.photo }} style={styles.matchModalPhoto} />
-            ) : (
-              <View style={[styles.matchModalPhoto, styles.matchModalPhotoPlaceholder]}>
-                <Ionicons name="person" size={32} color="#CCC" />
-              </View>
-            )}
-          </View>
 
           <View style={styles.matchModalButtons}>
             <TouchableOpacity
@@ -619,10 +586,7 @@ export default function MatchingScreen() {
               style={[styles.matchModalButton, styles.matchModalButtonPrimary]}
               onPress={() => {
                 setShowMatchModal(false);
-                navigation.navigate('Chat', {
-                  screen: 'ChatConversation',
-                  params: { matchId: newMatch?._id, user: newMatch?.user }
-                });
+                navigation.navigate('ChatDetail', { matchId: newMatch?._id });
               }}
             >
               <Ionicons name="chatbubble" size={18} color="#FFF" />
@@ -634,32 +598,11 @@ export default function MatchingScreen() {
     </Modal>
   );
 
-
-  // Loading state
   if (loading) {
     return (
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={[styles.loadingText, isDark && styles.textMutedDark]}>
-            Recherche de partenaires...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
-        <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle" size={64} color="#EF4444" />
-          <Text style={[styles.errorTitle, isDark && styles.textDark]}>Oups !</Text>
-          <Text style={[styles.errorText, isDark && styles.textMutedDark]}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={loadData}>
-            <Text style={styles.retryButtonText}>Reessayer</Text>
-          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -669,54 +612,57 @@ export default function MatchingScreen() {
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={[styles.title, isDark && styles.textDark]}>Matching</Text>
-          <Text style={[styles.subtitle, isDark && styles.textMutedDark]}>
-            Trouve ton partenaire sport
-          </Text>
-        </View>
-        <View style={styles.headerRight}>
+        <Text style={[styles.title, isDark && styles.textDark]}>Social</Text>
+        <TouchableOpacity
+          style={styles.settingsButton}
+          onPress={() => navigation.navigate('ProfileTab', { screen: 'EditProfile' })}
+        >
+          <Ionicons name="settings-outline" size={24} color={isDark ? '#FFF' : '#000'} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Tabs */}
+      <View style={styles.tabsContainer}>
+        {TABS.map((tab) => (
           <TouchableOpacity
-            style={styles.settingsButton}
-            onPress={() => navigation.navigate('ProfileTab', { screen: 'EditProfile' })}
+            key={tab.key}
+            style={[styles.tab, activeTab === tab.key && styles.tabActive]}
+            onPress={() => setActiveTab(tab.key)}
           >
-            <Ionicons name="settings-outline" size={24} color={isDark ? '#FFF' : '#000'} />
+            <View style={styles.tabContent}>
+              <Ionicons
+                name={tab.icon}
+                size={20}
+                color={activeTab === tab.key ? theme.colors.primary : (isDark ? '#888' : '#666')}
+              />
+              <Text
+                style={[
+                  styles.tabText,
+                  isDark && styles.textMutedDark,
+                  activeTab === tab.key && styles.tabTextActive,
+                ]}
+              >
+                {tab.label}
+              </Text>
+              {tab.key === 'messages' && unreadCount > 0 && (
+                <View style={styles.tabBadge}>
+                  <Text style={styles.tabBadgeText}>{unreadCount}</Text>
+                </View>
+              )}
+              {tab.key === 'discover' && pendingSuggestions > 0 && (
+                <View style={[styles.tabBadge, { backgroundColor: '#22C55E' }]}>
+                  <Text style={styles.tabBadgeText}>{pendingSuggestions}</Text>
+                </View>
+              )}
+            </View>
           </TouchableOpacity>
-          {mutualMatches.length > 0 && (
-            <TouchableOpacity
-              style={styles.matchesButton}
-              onPress={() => navigation.navigate('MatchesList', { matches: mutualMatches })}
-            >
-              <Ionicons name="heart" size={20} color="#FFF" />
-              <Text style={styles.matchesButtonText}>{mutualMatches.length}</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        ))}
       </View>
 
-      {/* Mutual matches horizontal list */}
-      {renderMutualMatchesList()}
-
-      {/* Cards container */}
-      <View style={styles.cardsContainer}>
-        {currentIndex >= suggestions.length ? (
-          renderEmptyState()
-        ) : (
-          <>
-            {suggestions.map((profile, index) => renderCard(profile, index)).reverse()}
-          </>
-        )}
+      {/* Content */}
+      <View style={styles.content}>
+        {activeTab === 'messages' ? renderMessagesTab() : renderDiscoverTab()}
       </View>
-
-      {/* Action buttons */}
-      {currentIndex < suggestions.length && renderActionButtons()}
-
-      {/* Loading overlay */}
-      {actionLoading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        </View>
-      )}
 
       {/* Modals */}
       {renderMatchModal()}
@@ -743,42 +689,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 16,
-  },
-  loadingText: {
-    fontSize: 16,
-    color: theme.colors.text.secondary,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    padding: theme.spacing.lg,
-    paddingBottom: theme.spacing.sm,
-  },
-  headerLeft: {
-    flex: 1,
-  },
-  headerRight: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
   },
   title: {
-    fontSize: theme.fontSize['2xl'],
-    fontWeight: theme.fontWeight.bold,
+    fontSize: 28,
+    fontWeight: '700',
     color: theme.colors.text.primary,
-  },
-  subtitle: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.secondary,
-    marginTop: 4,
-  },
-  textDark: {
-    color: '#FFFFFF',
-  },
-  textMutedDark: {
-    color: '#888',
   },
   settingsButton: {
     width: 40,
@@ -788,82 +710,254 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  matchesButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EF4444',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 6,
+  textDark: {
+    color: '#FFFFFF',
   },
-  matchesButtonText: {
-    color: '#FFF',
+  textMutedDark: {
+    color: '#888',
+  },
+  textBold: {
     fontWeight: '600',
-    fontSize: 14,
   },
 
-  // Matches section
-  matchesSection: {
-    paddingHorizontal: theme.spacing.lg,
-    marginBottom: theme.spacing.xl,
-    paddingBottom: theme.spacing.md,
-  },
-  matchesHeader: {
+  // Tabs
+  tabsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: theme.spacing.md,
     alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabActive: {
+    borderBottomColor: theme.colors.primary,
+  },
+  tabContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  tabText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#666',
+  },
+  tabTextActive: {
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  tabBadge: {
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+  },
+  tabBadgeText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+
+  content: {
+    flex: 1,
+  },
+
+  // New matches section
+  newMatchesSection: {
+    paddingVertical: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.text.secondary,
+    paddingHorizontal: theme.spacing.lg,
     marginBottom: 12,
   },
-  matchesSectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-  },
-  seeAllText: {
-    fontSize: 14,
-    color: theme.colors.primary,
-  },
-  matchesScroll: {
-    marginHorizontal: -theme.spacing.lg,
-    paddingHorizontal: theme.spacing.lg,
-  },
-  matchItem: {
+  newMatchItem: {
     alignItems: 'center',
-    marginRight: 16,
+    marginLeft: theme.spacing.lg,
     width: 70,
   },
-  matchPhoto: {
+  newMatchAvatarContainer: {
+    position: 'relative',
+  },
+  newMatchAvatar: {
     width: 60,
     height: 60,
     borderRadius: 30,
     borderWidth: 2,
     borderColor: theme.colors.primary,
   },
-  matchPhotoPlaceholder: {
-    backgroundColor: '#F0F0F0',
-    justifyContent: 'center',
-    alignItems: 'center',
+  newMatchBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: -4,
+    backgroundColor: '#22C55E',
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
   },
-  matchName: {
+  newMatchBadgeText: {
+    color: '#FFF',
+    fontSize: 8,
+    fontWeight: '700',
+  },
+  newMatchName: {
     fontSize: 12,
     marginTop: 6,
     textAlign: 'center',
     color: theme.colors.text.primary,
   },
 
-  // Cards
+  // Conversations
+  conversationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  conversationItemDark: {
+    borderBottomColor: '#333',
+  },
+  conversationAvatar: {
+    position: 'relative',
+    marginRight: theme.spacing.md,
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+  },
+  avatarPlaceholder: {
+    backgroundColor: '#F0F0F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  unreadDot: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#22C55E',
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  conversationContent: {
+    flex: 1,
+  },
+  conversationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  conversationName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: theme.colors.text.primary,
+  },
+  conversationTime: {
+    fontSize: 12,
+    color: theme.colors.text.secondary,
+  },
+  conversationPreview: {
+    fontSize: 14,
+    color: theme.colors.text.secondary,
+  },
+  unreadBadge: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    marginLeft: theme.spacing.sm,
+  },
+  unreadBadgeText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  // Empty state
+  emptyState: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyListContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  emptyIcon: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: `${theme.colors.primary}15`,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  emptyIconDark: {
+    backgroundColor: '#333',
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: theme.colors.text.primary,
+    marginBottom: 10,
+  },
+  emptyText: {
+    fontSize: 15,
+    color: theme.colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24,
+    paddingHorizontal: 20,
+  },
+  ctaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 24,
+    gap: 8,
+  },
+  ctaButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // Discover
+  discoverContainer: {
+    flex: 1,
+  },
   cardsContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
   },
   card: {
     position: 'absolute',
-    width: SCREEN_WIDTH - 40,
-    height: SCREEN_HEIGHT * 0.58,
+    width: SCREEN_WIDTH - 32,
+    height: SCREEN_HEIGHT * 0.55,
     backgroundColor: '#FFF',
     borderRadius: 20,
     shadowColor: '#000',
@@ -933,8 +1027,6 @@ const styles = StyleSheet.create({
     color: '#FFF',
     marginLeft: 4,
   },
-
-  // Like/Nope overlays
   likeOverlay: {
     position: 'absolute',
     top: 50,
@@ -965,11 +1057,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#EF4444',
   },
-
-  // Card info
   cardInfo: {
     padding: 16,
-    backgroundColor: 'transparent',
   },
   matchScoreContainer: {
     flexDirection: 'row',
@@ -1034,8 +1123,6 @@ const styles = StyleSheet.create({
   workoutChipTextDark: {
     color: '#DDD',
   },
-
-  // Action buttons
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -1064,84 +1151,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#22C55E',
   },
 
-  // Empty state
-  emptyState: {
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyIcon: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: `${theme.colors.primary}15`,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  emptyIconDark: {
-    backgroundColor: '#333',
-  },
-  emptyTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginBottom: 10,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: theme.colors.text.secondary,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 24,
-  },
-  refreshButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-    gap: 8,
-  },
-  refreshButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
-  // Error state
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  errorTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  errorText: {
-    fontSize: 15,
-    color: theme.colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  retryButton: {
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-  },
-  retryButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
-  // Match modal
+  // Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
@@ -1181,34 +1191,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
   },
-  matchModalPhotos: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 28,
-  },
-  matchModalPhotoContainer: {},
-  matchModalPhoto: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 3,
-    borderColor: '#FFF',
-  },
-  matchModalPhotoPlaceholder: {
-    backgroundColor: '#F0F0F0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  matchModalHeart: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FEE2E2',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: -10,
-    zIndex: 1,
-  },
   matchModalButtons: {
     width: '100%',
     gap: 12,
@@ -1237,18 +1219,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFF',
-  },
-
-  // Loading overlay
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
   },
 });

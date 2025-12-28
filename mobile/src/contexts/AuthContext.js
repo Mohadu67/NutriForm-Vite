@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { secureStorage, storage } from '../services/storageService';
 import authService from '../api/auth';
+import websocketService from '../services/websocket';
 
 /**
  * Contexte d'authentification
@@ -19,6 +20,7 @@ const AuthContext = createContext({
   register: async () => {},
   logout: async () => {},
   refreshUser: async () => {},
+  updateUser: async () => {},
   clearError: () => {},
 });
 
@@ -307,6 +309,9 @@ export function AuthProvider({ children }) {
       setIsLoading(true);
       setError(null);
 
+      // Déconnecter le WebSocket avant de nettoyer la session
+      websocketService.disconnect();
+
       // Appeler le backend pour invalider le token
       await authService.logout();
     } catch (error) {
@@ -325,6 +330,18 @@ export function AuthProvider({ children }) {
   const clearError = () => {
     setError(null);
   };
+
+  /**
+   * Mettre à jour les données utilisateur localement
+   * Utilisé pour les mises à jour partielles (ex: photo de profil)
+   */
+  const updateUser = useCallback(async (updates) => {
+    if (!user) return;
+
+    const updatedUser = { ...user, ...updates };
+    setUser(updatedUser);
+    await storeUserData(updatedUser);
+  }, [user]);
 
   /**
    * Initialisation au montage du composant
@@ -399,6 +416,7 @@ export function AuthProvider({ children }) {
     register,
     logout,
     refreshUser,
+    updateUser,
     clearError,
   };
 

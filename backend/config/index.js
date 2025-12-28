@@ -46,6 +46,13 @@ const allowedOrigins = (origin, callback) => {
     return callback(null, true);
   }
 
+  // Autoriser les IPs locales (réseau local pour dev mobile)
+  // Format: 192.168.x.x, 10.x.x.x, 172.16-31.x.x
+  const localNetworkRegex = /^https?:\/\/(192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(:\d+)?/;
+  if (localNetworkRegex.test(origin)) {
+    logger.info('[CORS] ✅ Origin autorisée (réseau local):', origin);
+    return callback(null, true);
+  }
 
   logger.info('[CORS] ❌ Origin REFUSÉE:', origin);
   callback(new Error('Non autorisé par CORS'));

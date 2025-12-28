@@ -178,6 +178,7 @@ exports.getTrendingRecipes = async (req, res) => {
 exports.getRecipeById = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id; // Peut être undefined si non authentifié
 
     // Essayer d'abord de chercher par slug, puis par ID
     let recipe;
@@ -190,7 +191,16 @@ exports.getRecipeById = async (req, res) => {
       recipe = await Recipe.findOne({ slug: id });
     }
 
-    if (!recipe || !recipe.isPublished) {
+    if (!recipe) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recette introuvable'
+      });
+    }
+
+    // Vérifier si la recette est publiée OU si l'utilisateur en est l'auteur
+    const isAuthor = userId && recipe.author && recipe.author.toString() === userId;
+    if (!recipe.isPublished && !isAuthor) {
       return res.status(404).json({
         success: false,
         message: 'Recette introuvable'
@@ -797,12 +807,12 @@ exports.updateUserRecipe = async (req, res) => {
       });
     }
 
-    // Si la recette est publique ou en attente, on ne peut plus la modifier
-    if (recipe.status !== 'private') {
-      return res.status(400).json({
-        success: false,
-        message: 'Vous ne pouvez modifier que les recettes privées'
-      });
+    // Si la recette est publique, la modification la repasse en pending pour validation
+    const wasPublic = recipe.status === 'public';
+    if (wasPublic) {
+      updateData.status = 'pending';
+      updateData.isPublished = false;
+      logger.info(`Recette ${id} publique modifiée - repasse en pending pour validation`);
     }
 
     // Régénérer le slug si le titre change
@@ -832,7 +842,10 @@ exports.updateUserRecipe = async (req, res) => {
 
     res.json({
       success: true,
-      recipe: updatedRecipe
+      recipe: updatedRecipe,
+      message: wasPublic
+        ? 'Recette modifiée avec succès. Elle sera de nouveau soumise à validation.'
+        : 'Recette modifiée avec succès'
     });
   } catch (error) {
     logger.error('Erreur updateUserRecipe:', error);

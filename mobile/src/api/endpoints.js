@@ -85,6 +85,7 @@ export const endpoints = {
     cancel: (id) => `/challenges/${id}/cancel`,
     congratulate: "/challenges/congratulate",
   },
+  chatUpload: "/chat-upload",
   xpRedemption: {
     eligibility: "/xp-redemption/eligibility",
     redeem: "/xp-redemption/redeem",
@@ -122,6 +123,46 @@ export const endpoints = {
     byCategory: (category) => `/exercises/category/${category}`,
     byMuscle: (muscle) => `/exercises/muscle/${muscle}`,
     byId: (idOrSlug) => `/exercises/${idOrSlug}`,
+  },
+  recipes: {
+    list: "/recipes",
+    featured: "/recipes/featured",
+    trending: "/recipes/trending",
+    suggestions: "/recipes/suggestions",
+    liked: "/recipes/liked",
+    saved: "/recipes/saved",
+    myRecipes: "/recipes/user/my-recipes",
+    create: "/recipes/user",
+    update: (id) => `/recipes/user/${id}`,
+    delete: (id) => `/recipes/user/${id}`,
+    like: (id) => `/recipes/${id}/like`,
+    save: (id) => `/recipes/${id}/save`,
+    propose: (id) => `/recipes/user/${id}/propose`,
+    unpublish: (id) => `/recipes/user/${id}/unpublish`,
+    byId: (id) => `/recipes/${id}`,
+  },
+  upload: {
+    profilePhoto: "/upload/profile-photo",
+  },
+  programs: {
+    // Public
+    public: "/programs/public",
+    byId: (id) => `/programs/${id}`,
+    // User (Premium required)
+    myPrograms: "/programs/user/my-programs",
+    favorites: "/programs/favorites",
+    history: "/programs/history/sessions",
+    // CRUD (Premium)
+    create: "/programs",
+    update: (id) => `/programs/${id}`,
+    delete: (id) => `/programs/${id}`,
+    // Actions (Premium)
+    start: (id) => `/programs/${id}/start`,
+    recordCompletion: (id) => `/programs/${id}/record-completion`,
+    rate: (id) => `/programs/${id}/rate`,
+    favorite: (id) => `/programs/${id}/favorite`,
+    propose: (id) => `/programs/${id}/propose`,
+    unpublish: (id) => `/programs/${id}/unpublish`,
   },
 };
 

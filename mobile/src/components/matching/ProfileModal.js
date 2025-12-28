@@ -190,9 +190,9 @@ export default function ProfileModal({
               style={styles.chatButton}
               onPress={() => {
                 onClose();
-                navigation.navigate('Chat', {
-                  screen: 'ChatConversation',
-                  params: { matchId: profile.matchId, user: profile.user }
+                navigation.navigate('ChatTab', {
+                  screen: 'ChatDetail',
+                  params: { matchId: profile.matchId }
                 });
               }}
             >

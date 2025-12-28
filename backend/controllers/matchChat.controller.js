@@ -79,7 +79,10 @@ async function getConversations(req, res) {
         _id: conv._id,
         matchId: conv.matchId,
         participants: conv.participants,
-        lastMessage: conv.lastMessage,
+        lastMessage: conv.lastMessage ? {
+          ...conv.lastMessage,
+          isOwn: iSentLastMessage // Indiquer si c'est moi qui ai envoyé le dernier message
+        } : null,
         isActive: conv.isActive,
         createdAt: conv.createdAt,
         updatedAt: conv.updatedAt,
@@ -248,9 +251,15 @@ async function sendMessage(req, res) {
     }
 
     // Validation 3: Type de message valide
-    const validTypes = ['text', 'location', 'session-invite', 'session-share'];
+    const validTypes = ['text', 'image', 'video', 'file', 'location', 'session-invite', 'session-share'];
     if (!validTypes.includes(type)) {
       return res.status(400).json({ error: 'Type de message invalide.' });
+    }
+
+    // Handle media messages
+    let mediaData = null;
+    if (['image', 'video', 'file'].includes(type) && req.body.media) {
+      mediaData = req.body.media;
     }
 
     // Sanitization: Nettoyer le contenu HTML/XSS
@@ -294,7 +303,8 @@ async function sendMessage(req, res) {
         iv: encryptedData.iv,
         authTag: encryptedData.authTag
       },
-      metadata
+      metadata,
+      media: mediaData
     });
 
     // Mettre à jour le lastMessage de la conversation
@@ -358,6 +368,17 @@ async function sendMessage(req, res) {
         },
         unreadIncrement: true
       });
+
+      // ✅ Émettre message_delivered si le destinataire VOIT le message dans sa liste
+      if (io.isUserInChatList && io.isUserInChatList(receiverId.toString())) {
+        logger.info(`📬 Destinataire ${receiverId} voit le message dans sa liste, émission de message_delivered`);
+        io.to(`user:${userId}`).emit('message_delivered', {
+          conversationId,
+          messageId: message._id.toString()
+        });
+      } else {
+        logger.info(`📭 Destinataire ${receiverId} ne voit pas encore le message`);
+      }
 
     }
 
@@ -433,8 +454,9 @@ async function getMessages(req, res) {
       deletedBy: { $ne: userId } // Ne pas afficher les messages supprimés par l'user
     };
 
+    // Pagination par ID de message (les ObjectId sont chronologiques)
     if (before) {
-      query.createdAt = { $lt: new Date(before) };
+      query._id = { $lt: before };
     }
 
     // Récupérer les messages

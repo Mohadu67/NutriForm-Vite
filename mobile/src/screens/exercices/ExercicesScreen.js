@@ -22,6 +22,8 @@ import { theme } from '../../theme';
 import { BodyPicker, ZONE_LABELS } from '../../components/BodyPicker';
 import { useWorkout } from '../../contexts/WorkoutContext';
 import { getExercises } from '../../api/exercises';
+import useExerciseFilters from '../../hooks/useExerciseFilters';
+import logger from '../../services/logger';
 
 // Cle storage pour favoris
 const FAVORITES_KEY = '@exercices_favorites';
@@ -176,6 +178,11 @@ const MUSCLE_TO_ZONE = {
   'quads': 'cuisses-externes',
   'quadriceps': 'cuisses-externes',
   'hamstrings': 'cuisses-internes',
+  // Adducteurs et Abducteurs
+  'adducteurs': 'cuisses-internes',
+  'adductor': 'cuisses-internes',
+  'abducteurs': 'cuisses-externes',
+  'abductor': 'cuisses-externes',
   'glutes': 'fessiers',
   'calves': 'mollets',
   'abs': 'abdos-centre',
@@ -235,17 +242,29 @@ export default function ExercicesScreen() {
   const { currentWorkout, isWorkoutActive, getCompletedSetsCount, getTotalSetsCount } = useWorkout();
 
   const [showBodyPicker, setShowBodyPicker] = useState(false);
-  const [selectedMuscles, setSelectedMuscles] = useState([]);
-  const [searchText, setSearchText] = useState('');
-  const [selectedEquipments, setSelectedEquipments] = useState([]);
-  const [selectedTypes, setSelectedTypes] = useState([]);
   const [favorites, setFavorites] = useState([]);
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   // API states
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Utiliser le hook de filtrage pour gérer tous les filtres
+  const {
+    searchText,
+    selectedMuscles,
+    selectedEquipments,
+    selectedTypes,
+    showFavoritesOnly,
+    setSearchText,
+    setSelectedMuscles,
+    setSelectedEquipments,
+    setSelectedTypes,
+    setShowFavoritesOnly,
+    filteredExercises,
+    activeFiltersCount,
+    clearFilters,
+  } = useExerciseFilters({ exercises, favorites });
 
   // Charger les exercices depuis l'API au demarrage
   useEffect(() => {
@@ -349,16 +368,16 @@ export default function ExercicesScreen() {
           };
         });
         setExercises(formattedExercises);
-        console.log('[EXERCISES] Loaded', formattedExercises.length, 'from API');
+        logger.exercises.info(`Loaded ${formattedExercises.length} exercises from API`);
 
         // Debug: afficher quelques muscles pour vérifier le mapping
         if (formattedExercises.length > 0) {
           const uniqueMuscles = [...new Set(formattedExercises.map(ex => ex.muscle))];
-          console.log('[EXERCISES] Unique muscles:', uniqueMuscles.slice(0, 10));
+          logger.exercises.debug('Unique muscles', uniqueMuscles.slice(0, 10));
 
           // Debug: afficher tous les équipements uniques
           const uniqueEquipments = [...new Set(formattedExercises.map(ex => ex.equipment))];
-          console.log('[EXERCISES] Unique equipments found:', uniqueEquipments);
+          logger.exercises.debug('Unique equipments found', uniqueEquipments);
 
           // Debug: afficher quelques exemples d'exercices avec leurs équipements
           const samples = formattedExercises.slice(0, 5).map(ex => ({
@@ -367,15 +386,15 @@ export default function ExercicesScreen() {
             type: ex.type,
             muscle: ex.muscle
           }));
-          console.log('[EXERCISES] Sample exercises:', samples);
+          logger.exercises.debug('Sample exercises', samples);
         }
       } else {
         // Fallback vers donnees locales
-        console.log('[EXERCISES] API failed, using local data');
+        logger.exercises.warn('API failed, using local data');
         setExercises(EXERCICES_DATA);
       }
     } catch (err) {
-      console.log('[EXERCISES] Error:', err.message);
+      logger.exercises.error('Error loading exercises', err);
       setError(err.message);
       setExercises(EXERCICES_DATA);
     } finally {
@@ -390,7 +409,7 @@ export default function ExercicesScreen() {
         setFavorites(JSON.parse(stored));
       }
     } catch (error) {
-      console.log('Erreur chargement favoris:', error);
+      logger.storage.error('Error loading favorites', error);
     }
   };
 
@@ -398,7 +417,7 @@ export default function ExercicesScreen() {
     try {
       await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(newFavorites));
     } catch (error) {
-      console.log('Erreur sauvegarde favoris:', error);
+      logger.storage.error('Error saving favorites', error);
     }
   };
 
@@ -430,103 +449,7 @@ export default function ExercicesScreen() {
     );
   }, []);
 
-  // Filtrer les exercices
-  const filteredExercices = useMemo(() => {
-    let results = [...exercises];
-    console.log('[FILTER] Starting with', results.length, 'exercises');
-
-    // Filtre favoris
-    if (showFavoritesOnly) {
-      results = results.filter(ex => favorites.includes(ex.id));
-      console.log('[FILTER] After favorites:', results.length);
-    }
-
-    // Filtre par types (multi-selection)
-    if (selectedTypes.length > 0) {
-      console.log('[FILTER] Selected types:', selectedTypes);
-      results = results.filter(ex => selectedTypes.includes(ex.type));
-      console.log('[FILTER] After type filter:', results.length);
-    }
-
-    // Filtre par recherche (amélioré avec labels)
-    if (searchText.trim()) {
-      const search = searchText.toLowerCase().trim();
-      results = results.filter(ex => {
-        // Recherche dans le nom de l'exercice
-        if (ex.name.toLowerCase().includes(search)) return true;
-
-        // Recherche dans le muscle brut
-        if (ex.muscle.toLowerCase().includes(search)) return true;
-
-        // Recherche dans le label du muscle
-        const muscleLabel = MUSCLE_LABELS[ex.muscle];
-        if (muscleLabel && muscleLabel.toLowerCase().includes(search)) return true;
-
-        // Recherche dans les muscles secondaires
-        if (ex.secondary?.some(m => {
-          const label = MUSCLE_LABELS[m];
-          return m.toLowerCase().includes(search) || (label && label.toLowerCase().includes(search));
-        })) return true;
-
-        // Recherche dans l'équipement
-        const equipLabel = EQUIPMENT_LABELS[ex.equipment];
-        if (equipLabel && equipLabel.toLowerCase().includes(search)) return true;
-
-        return false;
-      });
-    }
-
-    // Filtre par muscles selectionnes
-    if (selectedMuscles.length > 0) {
-      console.log('[FILTER] Selected muscles:', selectedMuscles);
-      const beforeMuscle = results.length;
-      results = results.filter(ex => {
-        // Vérifier le muscle principal
-        const exZone = MUSCLE_TO_ZONE[ex.muscle] || ex.muscle;
-        if (selectedMuscles.includes(exZone)) return true;
-
-        // Vérifier dans muscles[] si disponible (format API)
-        if (ex.muscles?.some(m => {
-          const zone = MUSCLE_TO_ZONE[m] || m;
-          return selectedMuscles.includes(zone);
-        })) return true;
-
-        // Vérifier les muscles secondaires
-        if (ex.secondary?.some(sec => {
-          const zone = MUSCLE_TO_ZONE[sec] || sec;
-          return selectedMuscles.includes(zone);
-        })) return true;
-
-        return false;
-      });
-      console.log('[FILTER] After muscle filter:', results.length, '(filtered out', beforeMuscle - results.length, ')');
-    }
-
-    // Filtre par equipements (multi-selection)
-    if (selectedEquipments.length > 0) {
-      console.log('[FILTER] Selected equipments:', selectedEquipments);
-      const beforeEquip = results.length;
-      results = results.filter(ex => {
-        const match = selectedEquipments.includes(ex.equipment);
-        if (!match) {
-          // Debug: afficher quelques exercices filtrés pour comprendre
-          if (beforeEquip - results.length < 5) {
-            console.log('[FILTER] Filtered out:', ex.name, '- equipment:', ex.equipment, '(expected:', selectedEquipments.join(','), ')');
-          }
-        }
-        return match;
-      });
-      console.log('[FILTER] After equipment filter:', results.length, '(filtered out', beforeEquip - results.length, ')');
-
-      // Debug: afficher quelques résultats pour vérification
-      if (results.length > 0 && results.length < 10) {
-        console.log('[FILTER] Remaining exercises:', results.map(ex => `${ex.name} (${ex.muscle}, ${ex.equipment})`).join(', '));
-      }
-    }
-
-    console.log('[FILTER] Final result:', results.length, 'exercises');
-    return results;
-  }, [exercises, searchText, selectedMuscles, selectedEquipments, selectedTypes, showFavoritesOnly, favorites]);
+  // Le filtrage est maintenant géré par le hook useExerciseFilters
 
   const handleExercicePress = useCallback((exercice) => {
     navigation.navigate('ExerciceDetail', { exercice, favorites, onToggleFavorite: toggleFavorite });
@@ -540,22 +463,7 @@ export default function ExercicesScreen() {
     setSelectedMuscles([]);
   }, []);
 
-  const handleClearAll = useCallback(() => {
-    setSelectedMuscles([]);
-    setSearchText('');
-    setSelectedEquipments([]);
-    setSelectedTypes([]);
-    setShowFavoritesOnly(false);
-  }, []);
-
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (selectedMuscles.length > 0) count++;
-    if (selectedEquipments.length > 0) count++;
-    if (selectedTypes.length > 0) count++;
-    if (showFavoritesOnly) count++;
-    return count;
-  }, [selectedMuscles, selectedEquipments, selectedTypes, showFavoritesOnly]);
+  // clearFilters est maintenant géré par clearFilters du hook
 
   // Render exercice item
   const renderExercice = useCallback(({ item }) => {
@@ -627,7 +535,7 @@ export default function ExercicesScreen() {
           <View>
             <Text style={[styles.title, isDark && styles.textDark]}>Exercices</Text>
             <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
-              {filteredExercices.length} exercice{filteredExercices.length !== 1 ? 's' : ''}
+              {filteredExercises.length} exercice{filteredExercises.length !== 1 ? 's' : ''}
             </Text>
           </View>
           {/* Favorites toggle */}
@@ -799,7 +707,7 @@ export default function ExercicesScreen() {
           <Text style={[styles.activeFiltersText, isDark && styles.activeFiltersTextDark]}>
             {activeFiltersCount} filtre{activeFiltersCount > 1 ? 's' : ''} actif{activeFiltersCount > 1 ? 's' : ''}
           </Text>
-          <TouchableOpacity onPress={handleClearAll}>
+          <TouchableOpacity onPress={clearFilters}>
             <Text style={styles.clearFiltersText}>Effacer tout</Text>
           </TouchableOpacity>
         </View>
@@ -810,7 +718,7 @@ export default function ExercicesScreen() {
         {showFavoritesOnly ? 'Mes favoris' : (activeFiltersCount > 0 || searchText ? 'Resultats' : 'Tous les exercices')}
       </Text>
     </>
-  ), [isDark, filteredExercices.length, showFavoritesOnly, favorites, searchText, selectedTypes, selectedEquipments, selectedMuscles, activeFiltersCount]);
+  ), [isDark, filteredExercises.length, showFavoritesOnly, favorites, searchText, selectedTypes, selectedEquipments, selectedMuscles, activeFiltersCount]);
 
   const EmptyState = () => (
     <View style={styles.emptyState}>
@@ -830,7 +738,7 @@ export default function ExercicesScreen() {
           : 'Essaie de modifier tes filtres ou ta recherche'}
       </Text>
       {(activeFiltersCount > 0 || searchText) && (
-        <TouchableOpacity style={styles.emptyButton} onPress={handleClearAll}>
+        <TouchableOpacity style={styles.emptyButton} onPress={clearFilters}>
           <Text style={styles.emptyButtonText}>Effacer les filtres</Text>
         </TouchableOpacity>
       )}
@@ -854,7 +762,7 @@ export default function ExercicesScreen() {
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
       <FlatList
-        data={filteredExercices}
+        data={filteredExercises}
         keyExtractor={(item) => item.id}
         renderItem={renderExercice}
         ListHeaderComponent={ListHeader}
@@ -918,7 +826,7 @@ export default function ExercicesScreen() {
             >
               <Text style={styles.applyButtonText}>
                 {selectedMuscles.length > 0
-                  ? `Voir ${filteredExercices.length} exercice${filteredExercices.length !== 1 ? 's' : ''}`
+                  ? `Voir ${filteredExercises.length} exercice${filteredExercises.length !== 1 ? 's' : ''}`
                   : 'Voir tous les exercices'}
               </Text>
             </TouchableOpacity>

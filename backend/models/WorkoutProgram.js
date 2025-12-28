@@ -15,6 +15,7 @@ const CycleSchema = new Schema({
   // Si type = "exercise"
   exerciseId: { type: String },
   exerciseName: { type: String },
+  exerciseImage: { type: String }, // URL de l'image de l'exercice
   exerciseType: {
     type: String,
     enum: ["cardio", "muscu", "hiit", "yoga", "natation", "etirement", "poids_du_corps"]

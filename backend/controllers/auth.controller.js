@@ -99,7 +99,8 @@ exports.login = async (req, res) => {
         pseudo: user.pseudo,
         email: user.email,
         role: user.role,
-        photo: photoUrl
+        photo: photoUrl,
+        subscription: user.subscription
       },
     });
   } catch (err) {

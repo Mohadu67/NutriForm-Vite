@@ -5,6 +5,19 @@ import HomeScreen from '../../screens/home/HomeScreen';
 import NotificationsScreen from '../../screens/notifications/NotificationsScreen';
 import HistoryScreen from '../../screens/history/HistoryScreen';
 import BadgesScreen from '../../screens/badges/BadgesScreen';
+import CalculatorsScreen from '../../screens/calculators/CalculatorsScreen';
+
+// Programmes (accessibles depuis le dashboard)
+import ProgramsScreen from '../../screens/programs/ProgramsScreen';
+import ProgramDetailScreen from '../../screens/programs/ProgramDetailScreen';
+import ProgramRunnerScreen from '../../screens/programs/ProgramRunnerScreen';
+import ProgramFormScreen from '../../screens/programs/ProgramFormScreen';
+import ProgramHistoryScreen from '../../screens/programs/ProgramHistoryScreen';
+
+// Recettes (accessibles depuis le dashboard)
+import RecipesScreen from '../../screens/recipes/RecipesScreen';
+import RecipeDetailScreen from '../../screens/recipes/RecipeDetailScreen';
+import RecipeFormScreen from '../../screens/recipes/RecipeFormScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -69,11 +82,45 @@ export default function HomeStack() {
       }}
     >
       <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="HomeNotifications" component={NotificationsScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="History" component={HistoryScreen} />
       <Stack.Screen name="Badges" component={BadgesScreen} />
       <Stack.Screen name="Leaderboard" component={PlaceholderScreen} />
-      <Stack.Screen name="Outils" component={PlaceholderScreen} />
+      <Stack.Screen name="Calculators" component={CalculatorsScreen} />
+
+      {/* Programmes - accessibles depuis le dashboard */}
+      <Stack.Screen name="Programs" component={ProgramsScreen} />
+      <Stack.Screen name="ProgramDetail" component={ProgramDetailScreen} />
+      <Stack.Screen
+        name="ProgramRunner"
+        component={ProgramRunnerScreen}
+        options={{
+          animation: 'slide_from_bottom',
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="ProgramForm"
+        component={ProgramFormScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+      <Stack.Screen name="ProgramHistory" component={ProgramHistoryScreen} />
+
+      {/* Recettes - accessibles depuis le dashboard */}
+      <Stack.Screen name="Recipes" component={RecipesScreen} />
+      <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} />
+      <Stack.Screen
+        name="RecipeForm"
+        component={RecipeFormScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
     </Stack.Navigator>
   );
 }

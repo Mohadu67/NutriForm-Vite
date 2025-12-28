@@ -1,4 +1,5 @@
 const webPush = require('web-push');
+const { Expo } = require('expo-server-sdk');
 const PushSubscription = require('../models/PushSubscription');
 const logger = require('../utils/logger.js');
 
@@ -10,11 +11,14 @@ if (process.env.NODE_ENV !== 'test' && process.env.VAPID_PUBLIC_KEY && process.e
     process.env.VAPID_PRIVATE_KEY
   );
 } else if (process.env.NODE_ENV !== 'test') {
-  logger.warn('⚠️  Clés VAPID manquantes - Notifications push désactivées');
+  logger.warn('⚠️  Clés VAPID manquantes - Notifications push web désactivées');
 }
 
+// Client Expo Push
+const expo = new Expo();
+
 /**
- * Envoyer une notification à un utilisateur
+ * Envoyer une notification à un utilisateur (web + mobile)
  */
 async function sendNotificationToUser(userId, payload) {
   try {
@@ -28,26 +32,39 @@ async function sendNotificationToUser(userId, payload) {
       return { success: false, message: 'No subscriptions' };
     }
 
-    const results = await Promise.allSettled(
-      subscriptions.map(sub =>
-        webPush.sendNotification(
-          {
-            endpoint: sub.endpoint,
-            keys: sub.keys
-          },
-          JSON.stringify(payload)
-        ).catch(err => {
-          // Si erreur 410 (Gone), désactiver la subscription
-          if (err.statusCode === 410) {
-            sub.active = false;
-            sub.save();
-          }
-          throw err;
-        })
-      )
-    );
+    // Séparer les subscriptions web et Expo
+    const webSubs = subscriptions.filter(sub => sub.type === 'web' && sub.endpoint);
+    const expoSubs = subscriptions.filter(sub => sub.type === 'expo' && sub.expoPushToken);
 
-    const successCount = results.filter(r => r.status === 'fulfilled').length;
+    let successCount = 0;
+
+    // Envoyer les notifications web (VAPID)
+    if (webSubs.length > 0) {
+      const webResults = await Promise.allSettled(
+        webSubs.map(sub =>
+          webPush.sendNotification(
+            {
+              endpoint: sub.endpoint,
+              keys: sub.keys
+            },
+            JSON.stringify(payload)
+          ).catch(err => {
+            if (err.statusCode === 410) {
+              sub.active = false;
+              sub.save();
+            }
+            throw err;
+          })
+        )
+      );
+      successCount += webResults.filter(r => r.status === 'fulfilled').length;
+    }
+
+    // Envoyer les notifications Expo (mobile)
+    if (expoSubs.length > 0) {
+      const expoResults = await sendExpoPushNotifications(expoSubs, payload);
+      successCount += expoResults.successCount;
+    }
 
     return {
       success: successCount > 0,
@@ -58,6 +75,67 @@ async function sendNotificationToUser(userId, payload) {
     logger.error('Erreur sendNotificationToUser:', error);
     throw error;
   }
+}
+
+/**
+ * Envoyer des notifications via Expo Push
+ */
+async function sendExpoPushNotifications(subscriptions, payload) {
+  const messages = [];
+
+  for (const sub of subscriptions) {
+    if (!Expo.isExpoPushToken(sub.expoPushToken)) {
+      logger.warn(`Token Expo invalide: ${sub.expoPushToken}`);
+      continue;
+    }
+
+    messages.push({
+      to: sub.expoPushToken,
+      sound: 'default',
+      title: payload.title,
+      body: payload.body,
+      data: payload.data || {},
+      badge: 1
+    });
+  }
+
+  if (messages.length === 0) {
+    return { successCount: 0, failCount: 0 };
+  }
+
+  // Envoyer par chunks
+  const chunks = expo.chunkPushNotifications(messages);
+  let successCount = 0;
+  let failCount = 0;
+
+  for (const chunk of chunks) {
+    try {
+      const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+
+      for (let i = 0; i < ticketChunk.length; i++) {
+        const ticket = ticketChunk[i];
+        if (ticket.status === 'ok') {
+          successCount++;
+        } else {
+          failCount++;
+          // Si le token est invalide, désactiver la subscription
+          if (ticket.details?.error === 'DeviceNotRegistered') {
+            const token = chunk[i].to;
+            await PushSubscription.updateOne(
+              { expoPushToken: token },
+              { active: false }
+            );
+            logger.info(`Token Expo désactivé (DeviceNotRegistered): ${token}`);
+          }
+        }
+      }
+    } catch (error) {
+      logger.error('Erreur envoi chunk Expo:', error);
+      failCount += chunk.length;
+    }
+  }
+
+  return { successCount, failCount };
 }
 
 /**

@@ -21,13 +21,27 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
-    ]
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#F7B186"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "0ba81f53-11f3-4012-bc49-1fd0834f7ade"
+      }
+    },
+    "owner": "mohadu67"
   }
 }

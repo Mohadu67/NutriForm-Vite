@@ -1,38 +1,51 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../theme';
 
 /**
- * QuickActions - Boutons d'actions rapides en row
+ * QuickActions - Boutons d'actions rapides
+ * Programmes et Recettes accessibles depuis le dashboard
  */
 export const QuickActions = ({ navigation, subscriptionTier = 'free' }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const isPremium = subscriptionTier === 'premium';
   const primaryColor = theme.colors.primary;
 
   return (
     <View style={styles.container}>
-      {/* Programmes */}
-      <TouchableOpacity
-        style={styles.primaryAction}
-        onPress={() => navigation?.navigate('Programmes')}
-        activeOpacity={0.8}
-      >
-        <Ionicons name="list" size={20} color="#FFFFFF" />
-        <Text style={styles.primaryActionText}>Programmes</Text>
-      </TouchableOpacity>
+      {/* Row 1: Programmes et Recettes */}
+      <View style={styles.row}>
+        {/* Programmes */}
+        <TouchableOpacity
+          style={styles.primaryAction}
+          onPress={() => navigation?.navigate('Programs')}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="fitness" size={20} color="#FFFFFF" />
+          <Text style={styles.primaryActionText}>Programmes</Text>
+        </TouchableOpacity>
 
-      {/* Calculs santé */}
+        {/* Recettes */}
+        <TouchableOpacity
+          style={[styles.primaryAction, { backgroundColor: '#22C55E' }]}
+          onPress={() => navigation?.navigate('Recipes')}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="restaurant" size={20} color="#FFFFFF" />
+          <Text style={styles.primaryActionText}>Recettes</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Row 2: Calculs */}
       <TouchableOpacity
         style={[styles.secondaryAction, isDark && styles.secondaryActionDark]}
-        onPress={() => navigation?.navigate('Outils')}
+        onPress={() => navigation?.navigate('Calculators')}
         activeOpacity={0.7}
       >
         <Ionicons name="calculator" size={18} color={primaryColor} />
         <Text style={[styles.secondaryActionText, { color: primaryColor }]}>
-          Calculs
+          Calculateurs IMC, Calories, 1RM...
         </Text>
       </TouchableOpacity>
     </View>
@@ -41,9 +54,12 @@ export const QuickActions = ({ navigation, subscriptionTier = 'free' }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
     gap: theme.spacing.sm,
     marginBottom: theme.spacing.lg,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
   },
   primaryAction: {
     flex: 1,
@@ -59,10 +75,9 @@ const styles = StyleSheet.create({
   primaryActionText: {
     color: '#FFFFFF',
     fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semibold,
+    fontWeight: theme.fontWeight.semiBold,
   },
   secondaryAction: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -70,7 +85,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: theme.borderRadius.lg,
     paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
     borderWidth: 1.5,
     borderColor: theme.colors.primary,
   },
