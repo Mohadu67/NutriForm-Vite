@@ -219,7 +219,7 @@ export default function MatchingScreen() {
         <View style={styles.conversationContent}>
           <View style={styles.conversationHeader}>
             <Text style={[styles.conversationName, isDark && styles.textDark, hasUnread && styles.textBold]}>
-              {otherUser?.username || 'Utilisateur'}
+              {otherUser?.pseudo || otherUser?.prenom || 'Utilisateur'}
             </Text>
             <Text style={[styles.conversationTime, isDark && styles.textMutedDark]}>
               {formatRelativeTime(item.lastMessage?.createdAt)}

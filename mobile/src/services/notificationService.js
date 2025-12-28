@@ -29,8 +29,12 @@ class NotificationService {
     let token = null;
 
     try {
+      console.log('[PUSH] Début enregistrement push notifications...');
+      console.log('[PUSH] Device.isDevice:', Device.isDevice);
+
       // Vérifier si c'est un appareil physique
       if (!Device.isDevice) {
+        console.log('[PUSH] Simulateur détecté, push désactivées');
         logger.notifications.info('Push notifications désactivées (simulateur)');
         return null;
       }
@@ -45,9 +49,11 @@ class NotificationService {
       }
 
       if (finalStatus !== 'granted') {
+        console.log('[PUSH] Permission refusée:', finalStatus);
         logger.notifications.warn('Permission de notification refusée');
         return null;
       }
+      console.log('[PUSH] Permission accordée:', finalStatus);
 
       // Configuration Android spécifique (doit être fait avant getExpoPushTokenAsync)
       if (Platform.OS === 'android') {
@@ -61,16 +67,19 @@ class NotificationService {
 
       // Récupérer le token Expo Push
       try {
+        console.log('[PUSH] Récupération du token Expo...');
         const tokenData = await Notifications.getExpoPushTokenAsync({
           projectId: '0ba81f53-11f3-4012-bc49-1fd0834f7ade'
         });
         token = tokenData.data;
         this.expoPushToken = token;
+        console.log('[PUSH] Token Expo obtenu:', token);
         logger.notifications.info('Expo Push Token obtenu', { token: token.substring(0, 20) + '...' });
 
         // Envoyer le token au backend
         await this.sendTokenToBackend(token);
       } catch (tokenError) {
+        console.log('[PUSH] Erreur récupération token:', tokenError.message);
         logger.notifications.warn('Impossible d\'obtenir le token push (projectId non configuré?)', tokenError.message);
         // Continuer sans push externe, les notifications locales fonctionneront
       }
@@ -87,9 +96,12 @@ class NotificationService {
    */
   async sendTokenToBackend(token) {
     try {
-      await client.post('/api/push/register', { pushToken: token });
+      console.log('[PUSH] Envoi du token au backend:', token);
+      const response = await client.post('/push/register', { pushToken: token });
+      console.log('[PUSH] Réponse backend:', response.data);
       logger.notifications.info('Push token envoyé au backend');
     } catch (error) {
+      console.log('[PUSH] Erreur envoi token:', error.response?.data || error.message);
       logger.notifications.error('Erreur lors de l\'envoi du token', error);
     }
   }

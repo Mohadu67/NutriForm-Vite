@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,28 +10,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  Animated,
-  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { theme } from '../../theme';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-// Magic gradient colors
-const MAGIC_GRADIENTS = {
-  aurora: ['#667eea', '#764ba2', '#f093fb', '#f5576c'],
-  sunset: ['#fa709a', '#fee140', '#fa709a'],
-  ocean: ['#667eea', '#764ba2'],
-  forest: ['#11998e', '#38ef7d'],
-  fire: ['#f12711', '#f5af19'],
-  purple: ['#8E2DE2', '#4A00E0'],
-  peach: ['#F7B186', '#F5576C', '#764ba2'],
-};
 
 // Constantes pour les calculateurs
 const TABS = [
@@ -129,90 +112,12 @@ const IMC_DESCRIPTIONS = {
   },
 };
 
-// Floating orb component for magical effect
-const FloatingOrb = ({ style, color, size, delay = 0 }) => {
-  const translateY = useRef(new Animated.Value(0)).current;
-  const opacity = useRef(new Animated.Value(0.3)).current;
-
-  useEffect(() => {
-    const animate = () => {
-      Animated.loop(
-        Animated.sequence([
-          Animated.parallel([
-            Animated.timing(translateY, {
-              toValue: -20,
-              duration: 3000,
-              useNativeDriver: true,
-            }),
-            Animated.timing(opacity, {
-              toValue: 0.6,
-              duration: 3000,
-              useNativeDriver: true,
-            }),
-          ]),
-          Animated.parallel([
-            Animated.timing(translateY, {
-              toValue: 0,
-              duration: 3000,
-              useNativeDriver: true,
-            }),
-            Animated.timing(opacity, {
-              toValue: 0.3,
-              duration: 3000,
-              useNativeDriver: true,
-            }),
-          ]),
-        ])
-      ).start();
-    };
-
-    const timeout = setTimeout(animate, delay);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  return (
-    <Animated.View
-      style={[
-        {
-          position: 'absolute',
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: color,
-          opacity,
-          transform: [{ translateY }],
-        },
-        style,
-      ]}
-    />
-  );
-};
-
 export default function CalculatorsScreen() {
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
   const [activeTab, setActiveTab] = useState('imc');
-
-  // Animation for tab change
-  const tabAnimation = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    Animated.sequence([
-      Animated.timing(fadeAnim, {
-        toValue: 0.7,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [activeTab]);
 
   // IMC State
   const [imcData, setImcData] = useState({ poids: '', taille: '' });
@@ -542,8 +447,8 @@ export default function CalculatorsScreen() {
   const renderIMC = () => (
     <View style={[styles.calculatorContent, isDark && styles.calculatorContentDark]}>
       <View style={styles.calcHeader}>
-        <View style={[styles.calcIconBg, { backgroundColor: '#3B82F620' }]}>
-          <Ionicons name="body" size={28} color="#3B82F6" />
+        <View style={[styles.calcIconBg, { backgroundColor: `${theme.colors.primary}20` }]}>
+          <Ionicons name="body" size={28} color={theme.colors.primary} />
         </View>
         <View style={styles.calcHeaderText}>
           <Text style={[styles.calcTitle, isDark && styles.textWhite]}>
@@ -641,8 +546,8 @@ export default function CalculatorsScreen() {
   const renderCalories = () => (
     <View style={[styles.calculatorContent, isDark && styles.calculatorContentDark]}>
       <View style={styles.calcHeader}>
-        <View style={[styles.calcIconBg, { backgroundColor: '#EF444420' }]}>
-          <Ionicons name="flame" size={28} color="#EF4444" />
+        <View style={[styles.calcIconBg, { backgroundColor: `${theme.colors.primary}20` }]}>
+          <Ionicons name="flame" size={28} color={theme.colors.primary} />
         </View>
         <View style={styles.calcHeaderText}>
           <Text style={[styles.calcTitle, isDark && styles.textWhite]}>
@@ -886,8 +791,8 @@ export default function CalculatorsScreen() {
   const renderRM = () => (
     <View style={[styles.calculatorContent, isDark && styles.calculatorContentDark]}>
       <View style={styles.calcHeader}>
-        <View style={[styles.calcIconBg, { backgroundColor: '#8B5CF620' }]}>
-          <Ionicons name="barbell" size={28} color="#8B5CF6" />
+        <View style={[styles.calcIconBg, { backgroundColor: `${theme.colors.primary}20` }]}>
+          <Ionicons name="barbell" size={28} color={theme.colors.primary} />
         </View>
         <View style={styles.calcHeaderText}>
           <Text style={[styles.calcTitle, isDark && styles.textWhite]}>
@@ -932,7 +837,7 @@ export default function CalculatorsScreen() {
       {rmResult && (
         <View style={[styles.resultCard, isDark && styles.cardDark]}>
           <View style={styles.rmResultHeader}>
-            <Text style={[styles.rmResultValue, { color: '#8B5CF6' }]}>
+            <Text style={[styles.rmResultValue, { color: theme.colors.primary }]}>
               {rmResult.rm} kg
             </Text>
             <Text style={[styles.rmResultLabel, isDark && styles.textMuted]}>
@@ -968,7 +873,7 @@ export default function CalculatorsScreen() {
           </View>
 
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: '#8B5CF6' }]}
+            style={styles.actionButton}
             onPress={navigateToExercises}
           >
             <Ionicons name="barbell" size={20} color="#FFF" />
@@ -984,8 +889,8 @@ export default function CalculatorsScreen() {
   const renderCardio = () => (
     <View style={[styles.calculatorContent, isDark && styles.calculatorContentDark]}>
       <View style={styles.calcHeader}>
-        <View style={[styles.calcIconBg, { backgroundColor: '#EF444420' }]}>
-          <Ionicons name="heart" size={28} color="#EF4444" />
+        <View style={[styles.calcIconBg, { backgroundColor: `${theme.colors.primary}20` }]}>
+          <Ionicons name="heart" size={28} color={theme.colors.primary} />
         </View>
         <View style={styles.calcHeaderText}>
           <Text style={[styles.calcTitle, isDark && styles.textWhite]}>
@@ -1059,7 +964,7 @@ export default function CalculatorsScreen() {
           </View>
 
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: '#EF4444' }]}
+            style={styles.actionButton}
             onPress={navigateToPrograms}
           >
             <Ionicons name="fitness" size={20} color="#FFF" />
@@ -1071,282 +976,129 @@ export default function CalculatorsScreen() {
     </View>
   );
 
-  // Get gradient colors based on active tab
-  const getTabGradient = () => {
-    switch (activeTab) {
-      case 'imc':
-        return ['#667eea', '#764ba2'];
-      case 'calories':
-        return ['#f5576c', '#f093fb'];
-      case 'rm':
-        return ['#8E2DE2', '#4A00E0'];
-      case 'cardio':
-        return ['#f5576c', '#fa709a'];
-      default:
-        return MAGIC_GRADIENTS.peach;
-    }
-  };
-
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
-      {/* Magical Background */}
-      <LinearGradient
-        colors={isDark ? ['#0a0a0a', '#1a1a2e', '#16213e'] : ['#f8f9ff', '#e8ecff', '#f0e6ff']}
-        style={StyleSheet.absoluteFill}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
+    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
+      >
+        {/* Header */}
+        <View style={[styles.header, isDark && styles.headerDark]}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={isDark ? '#FFF' : '#333'} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, isDark && styles.headerTitleDark]}>
+            Calculateurs
+          </Text>
+          <View style={{ width: 40 }} />
+        </View>
 
-      {/* Floating Orbs for magical effect */}
-      <View style={styles.orbsContainer} pointerEvents="none">
-        <FloatingOrb
-          color={isDark ? 'rgba(102, 126, 234, 0.15)' : 'rgba(102, 126, 234, 0.1)'}
-          size={200}
-          style={{ top: -50, left: -50 }}
-          delay={0}
-        />
-        <FloatingOrb
-          color={isDark ? 'rgba(240, 147, 251, 0.12)' : 'rgba(240, 147, 251, 0.08)'}
-          size={150}
-          style={{ top: 100, right: -30 }}
-          delay={500}
-        />
-        <FloatingOrb
-          color={isDark ? 'rgba(245, 87, 108, 0.1)' : 'rgba(245, 87, 108, 0.06)'}
-          size={180}
-          style={{ bottom: 100, left: -40 }}
-          delay={1000}
-        />
-        <FloatingOrb
-          color={isDark ? 'rgba(118, 75, 162, 0.12)' : 'rgba(118, 75, 162, 0.08)'}
-          size={120}
-          style={{ bottom: 200, right: -20 }}
-          delay={1500}
-        />
-      </View>
-
-      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={{ flex: 1 }}
-        >
-          {/* Header with glassmorphism */}
-          <BlurView intensity={isDark ? 40 : 60} tint={isDark ? 'dark' : 'light'} style={styles.headerBlur}>
-            <View style={styles.header}>
-              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                <LinearGradient
-                  colors={['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)']}
-                  style={styles.backButtonGradient}
-                >
-                  <Ionicons name="arrow-back" size={22} color={isDark ? '#FFF' : '#333'} />
-                </LinearGradient>
+        {/* Tabs */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsContainer}>
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <TouchableOpacity
+                key={tab.id}
+                style={[styles.tab, isActive && styles.tabActive]}
+                onPress={() => setActiveTab(tab.id)}
+              >
+                <Ionicons
+                  name={isActive ? tab.icon : `${tab.icon}-outline`}
+                  size={20}
+                  color={isActive ? '#FFF' : isDark ? '#888' : '#666'}
+                />
+                <Text style={[
+                  styles.tabText,
+                  isActive && styles.tabTextActive,
+                  isDark && !isActive && styles.tabTextDark,
+                ]}>
+                  {tab.label}
+                </Text>
               </TouchableOpacity>
-              <View style={styles.headerTitleContainer}>
-                <Text style={[styles.headerTitle, isDark && styles.headerTitleDark]}>
-                  Calculateurs
-                </Text>
-                <Text style={[styles.headerSubtitle, isDark && styles.headerSubtitleDark]}>
-                  Outils de fitness
-                </Text>
-              </View>
-              <View style={{ width: 44 }} />
-            </View>
-          </BlurView>
+            );
+          })}
+        </ScrollView>
 
-          {/* Magic Tabs */}
-          <View style={styles.tabsWrapper}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsContainer}>
-              {TABS.map((tab) => {
-                const isActive = activeTab === tab.id;
-                const tabColors = {
-                  imc: ['#667eea', '#764ba2'],
-                  calories: ['#f5576c', '#f093fb'],
-                  rm: ['#8E2DE2', '#4A00E0'],
-                  cardio: ['#f5576c', '#fa709a'],
-                };
-
-                return (
-                  <TouchableOpacity
-                    key={tab.id}
-                    style={[styles.tab, isActive && styles.tabActive]}
-                    onPress={() => setActiveTab(tab.id)}
-                    activeOpacity={0.7}
-                  >
-                    {isActive ? (
-                      <LinearGradient
-                        colors={tabColors[tab.id]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.tabGradient}
-                      >
-                        <View style={styles.tabIconGlow}>
-                          <Ionicons name={tab.icon} size={20} color="#FFF" />
-                        </View>
-                        <Text style={styles.tabTextActive}>{tab.label}</Text>
-                      </LinearGradient>
-                    ) : (
-                      <BlurView
-                        intensity={isDark ? 30 : 50}
-                        tint={isDark ? 'dark' : 'light'}
-                        style={styles.tabInactive}
-                      >
-                        <Ionicons
-                          name={`${tab.icon}-outline`}
-                          size={20}
-                          color={isDark ? '#888' : '#666'}
-                        />
-                        <Text style={[styles.tabText, isDark && styles.tabTextDark]}>
-                          {tab.label}
-                        </Text>
-                      </BlurView>
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
-
-          {/* Calculator Content with fade animation */}
-          <Animated.View style={[styles.contentAnimated, { opacity: fadeAnim }]}>
-            <ScrollView
-              style={styles.content}
-              contentContainerStyle={styles.contentContainer}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              {activeTab === 'imc' && renderIMC()}
-              {activeTab === 'calories' && renderCalories()}
-              {activeTab === 'rm' && renderRM()}
-              {activeTab === 'cardio' && renderCardio()}
-            </ScrollView>
-          </Animated.View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </View>
+        {/* Calculator Content */}
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {activeTab === 'imc' && renderIMC()}
+          {activeTab === 'calories' && renderCalories()}
+          {activeTab === 'rm' && renderRM()}
+          {activeTab === 'cardio' && renderCardio()}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: theme.colors.background.light,
   },
   containerDark: {
-    backgroundColor: '#0a0a0a',
-  },
-  orbsContainer: {
-    ...StyleSheet.absoluteFillObject,
-    overflow: 'hidden',
-  },
-  headerBlur: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-    overflow: 'hidden',
+    backgroundColor: '#1A1A1A',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  headerDark: {
+    borderBottomColor: '#333',
   },
   backButton: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 20,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backButtonGradient: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  headerTitleContainer: {
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontSize: theme.fontSize.xl,
+    fontWeight: '700',
     color: theme.colors.text.primary,
-    letterSpacing: -0.5,
   },
   headerTitleDark: {
     color: '#FFFFFF',
   },
-  headerSubtitle: {
-    fontSize: 12,
-    color: theme.colors.text.secondary,
-    marginTop: 2,
-    opacity: 0.7,
-  },
-  headerSubtitleDark: {
-    color: 'rgba(255, 255, 255, 0.5)',
-  },
-  tabsWrapper: {
-    paddingVertical: theme.spacing.md,
-  },
   tabsContainer: {
     paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
   },
   tab: {
-    marginRight: theme.spacing.sm,
-    borderRadius: 16,
-    overflow: 'hidden',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: '#E5E5E5',
+    marginRight: 8,
+    gap: 4,
+    minHeight: 32,
   },
   tabActive: {
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  tabGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 16,
-    gap: 8,
-  },
-  tabInactive: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 16,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    overflow: 'hidden',
-  },
-  tabIconGlow: {
-    shadowColor: '#FFF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
+    backgroundColor: theme.colors.primary,
   },
   tabText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     color: '#666',
   },
   tabTextActive: {
-    fontSize: 14,
-    fontWeight: '700',
     color: '#FFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
   tabTextDark: {
     color: '#888',
-  },
-  contentAnimated: {
-    flex: 1,
   },
   content: {
     flex: 1,
@@ -1356,90 +1108,71 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xl * 2,
   },
   calculatorContent: {
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderRadius: 24,
+    backgroundColor: '#FFF',
+    borderRadius: theme.borderRadius.xl,
     padding: theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   calculatorContentDark: {
-    backgroundColor: 'rgba(30, 30, 40, 0.85)',
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: '#2A2A2A',
   },
   calcHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.xl,
-    paddingBottom: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(102, 126, 234, 0.1)',
+    marginBottom: theme.spacing.lg,
   },
   calcIconBg: {
-    width: 60,
-    height: 60,
-    borderRadius: 18,
+    width: 56,
+    height: 56,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: theme.spacing.md,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
   },
   calcHeaderText: {
     flex: 1,
   },
   calcTitle: {
-    fontSize: 20,
-    fontWeight: '800',
+    fontSize: theme.fontSize.lg,
+    fontWeight: '700',
     color: theme.colors.text.primary,
     marginBottom: 4,
-    letterSpacing: -0.3,
   },
   calcSubtitle: {
-    fontSize: 13,
+    fontSize: theme.fontSize.sm,
     color: theme.colors.text.secondary,
-    opacity: 0.8,
   },
   textWhite: {
     color: '#FFF',
   },
   textMuted: {
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: '#888',
   },
   inputGroup: {
     marginBottom: theme.spacing.md,
   },
   inputLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.sm,
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-  },
-  inputLabelDark: {
-    color: 'rgba(255, 255, 255, 0.7)',
-  },
-  input: {
-    backgroundColor: 'rgba(102, 126, 234, 0.08)',
-    borderRadius: 14,
-    padding: 16,
-    fontSize: 17,
+    fontSize: theme.fontSize.sm,
     fontWeight: '600',
     color: theme.colors.text.primary,
-    borderWidth: 1,
-    borderColor: 'rgba(102, 126, 234, 0.15)',
+    marginBottom: theme.spacing.xs,
+  },
+  inputLabelDark: {
+    color: '#CCC',
+  },
+  input: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
   },
   inputDark: {
-    backgroundColor: 'rgba(102, 126, 234, 0.12)',
-    borderColor: 'rgba(102, 126, 234, 0.2)',
+    backgroundColor: '#1A1A1A',
     color: '#FFF',
   },
   inputRow: {
@@ -1448,7 +1181,7 @@ const styles = StyleSheet.create({
   sexeRow: {
     flexDirection: 'row',
     gap: theme.spacing.md,
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
   },
   sexeButton: {
     flex: 1,
@@ -1456,100 +1189,73 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing.sm,
-    paddingVertical: 16,
-    borderRadius: 14,
-    backgroundColor: 'rgba(102, 126, 234, 0.08)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(102, 126, 234, 0.15)',
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: '#F5F5F5',
   },
   sexeButtonDark: {
-    backgroundColor: 'rgba(102, 126, 234, 0.12)',
-    borderColor: 'rgba(102, 126, 234, 0.2)',
+    backgroundColor: '#1A1A1A',
   },
   sexeButtonActive: {
-    backgroundColor: '#667eea',
-    borderColor: '#667eea',
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: theme.colors.primary,
   },
   sexeButtonText: {
-    fontSize: 15,
+    fontSize: theme.fontSize.md,
     fontWeight: '600',
     color: '#666',
   },
   sexeButtonTextActive: {
     color: '#FFF',
-    fontWeight: '700',
   },
   activityScroll: {
-    marginTop: theme.spacing.sm,
+    marginTop: theme.spacing.xs,
   },
   activityChip: {
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    borderRadius: 14,
-    backgroundColor: 'rgba(102, 126, 234, 0.08)',
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    backgroundColor: '#F5F5F5',
     marginRight: theme.spacing.sm,
-    minWidth: 110,
-    borderWidth: 1.5,
-    borderColor: 'rgba(102, 126, 234, 0.15)',
+    minWidth: 100,
   },
   activityChipActive: {
-    backgroundColor: '#667eea',
-    borderColor: '#667eea',
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: theme.colors.primary,
   },
   activityChipDark: {
-    backgroundColor: 'rgba(102, 126, 234, 0.12)',
-    borderColor: 'rgba(102, 126, 234, 0.2)',
+    backgroundColor: '#1A1A1A',
   },
   activityChipText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#555',
-    marginBottom: 4,
+    fontSize: theme.fontSize.sm,
+    fontWeight: '600',
+    color: '#666',
+    marginBottom: 2,
   },
   activityChipTextActive: {
     color: '#FFF',
   },
   activityChipDesc: {
-    fontSize: 11,
-    color: '#888',
-    fontWeight: '500',
+    fontSize: 10,
+    color: '#999',
   },
   calcButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    borderRadius: 16,
-    padding: 18,
-    marginTop: theme.spacing.lg,
-    overflow: 'hidden',
-    backgroundColor: '#667eea',
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 8,
+    backgroundColor: theme.colors.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    marginTop: theme.spacing.md,
+    gap: 8,
   },
   calcButtonText: {
     color: '#FFF',
     fontSize: 16,
-    fontWeight: '800',
-    letterSpacing: 0.3,
+    fontWeight: '600',
+    marginRight: 8,
   },
   cardDark: {
-    backgroundColor: 'rgba(40, 40, 55, 0.9)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: '#2A2A2A',
   },
 
   // IMC Graph
@@ -1689,15 +1395,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing.sm,
     backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
+    borderRadius: 12,
+    height: 50,
   },
   actionButtonText: {
     color: '#FFF',
-    fontSize: theme.fontSize.md,
+    fontSize: 16,
     fontWeight: '600',
+    marginHorizontal: 8,
   },
 
   // TMB Card
@@ -1829,6 +1535,9 @@ const styles = StyleSheet.create({
   rmResultHeader: {
     alignItems: 'center',
     marginBottom: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
   },
   rmResultValue: {
     fontSize: 48,
@@ -1836,7 +1545,9 @@ const styles = StyleSheet.create({
   },
   rmResultLabel: {
     fontSize: theme.fontSize.sm,
+    fontWeight: '600',
     color: theme.colors.text.secondary,
+    marginTop: theme.spacing.xs,
   },
   rmTableTitle: {
     fontSize: theme.fontSize.md,
@@ -1846,12 +1557,15 @@ const styles = StyleSheet.create({
   },
   rmTable: {
     marginBottom: theme.spacing.lg,
+    backgroundColor: '#F0F0F0',
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
   },
   rmTableHeader: {
     flexDirection: 'row',
     paddingBottom: theme.spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    borderBottomColor: '#DDD',
     marginBottom: theme.spacing.sm,
   },
   rmTableHeaderText: {
@@ -1859,61 +1573,68 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     color: theme.colors.text.secondary,
+    textTransform: 'uppercase',
   },
   rmRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: theme.spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#E5E5E5',
   },
   rmPercent: {
     flex: 1,
-    fontSize: theme.fontSize.sm,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
     color: theme.colors.text.primary,
   },
   rmWeight: {
     flex: 1,
-    fontSize: theme.fontSize.sm,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '800',
   },
   rmReps: {
     flex: 1,
-    fontSize: theme.fontSize.sm,
+    fontSize: 13,
     color: theme.colors.text.secondary,
   },
   rmZoneBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
   },
   rmZoneText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
 
   // FC Max
   fcMaxResult: {
     alignItems: 'center',
     marginBottom: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
   },
   fcMaxPrimary: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    gap: theme.spacing.xs,
+    gap: theme.spacing.sm,
   },
   fcMaxValue: {
-    fontSize: 56,
+    fontSize: 48,
     fontWeight: '800',
-    color: '#EF4444',
+    color: theme.colors.primary,
   },
   fcMaxUnit: {
-    fontSize: theme.fontSize.lg,
+    fontSize: 18,
+    fontWeight: '600',
     color: theme.colors.text.secondary,
   },
   fcMaxFormula: {
-    fontSize: theme.fontSize.sm,
+    fontSize: 13,
+    fontWeight: '600',
     color: theme.colors.text.secondary,
     marginTop: theme.spacing.xs,
   },
