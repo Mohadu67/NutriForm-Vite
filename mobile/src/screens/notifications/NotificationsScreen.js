@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import * as Notifications from 'expo-notifications';
 
 import { theme } from '../../theme';
 import apiClient from '../../api/client';
@@ -44,8 +45,22 @@ export default function NotificationsScreen() {
     }
   }, []);
 
+  // Charger les notifications quand l'écran est focus
+  useFocusEffect(
+    useCallback(() => {
+      loadNotifications();
+    }, [loadNotifications])
+  );
+
+  // Écouter les nouvelles notifications push pour rafraîchir la liste
   useEffect(() => {
-    loadNotifications();
+    const subscription = Notifications.addNotificationReceivedListener((notification) => {
+      console.log('[NOTIFICATIONS] Push reçue, rafraîchissement...', notification);
+      // Rafraîchir la liste quand une notif push arrive
+      loadNotifications();
+    });
+
+    return () => subscription.remove();
   }, [loadNotifications]);
 
   const onRefresh = useCallback(async () => {
@@ -57,7 +72,7 @@ export default function NotificationsScreen() {
   // Marquer comme lu
   const markAsRead = useCallback(async (notificationId) => {
     try {
-      await apiClient.patch(endpoints.notifications.markAsRead(notificationId));
+      await apiClient.put(endpoints.notifications.markAsRead(notificationId));
       setNotifications((prev) =>
         prev.map((n) =>
           (n.id || n._id) === notificationId ? { ...n, read: true } : n
@@ -71,7 +86,7 @@ export default function NotificationsScreen() {
   // Marquer tout comme lu
   const markAllAsRead = useCallback(async () => {
     try {
-      await apiClient.patch(endpoints.notifications.markAllRead);
+      await apiClient.put(endpoints.notifications.markAllRead);
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
       console.error('[NOTIFICATIONS] Error marking all as read:', error);

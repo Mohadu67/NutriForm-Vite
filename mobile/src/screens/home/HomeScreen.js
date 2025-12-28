@@ -13,7 +13,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
@@ -52,6 +52,7 @@ export default function HomeScreen() {
   const [weeklyGoal, setWeeklyGoal] = useState(4);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [tempGoal, setTempGoal] = useState(4);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   // Optimisation: Lazy loading des sections lourdes
   const [showHeavySections, setShowHeavySections] = useState(false);
@@ -152,7 +153,7 @@ export default function HomeScreen() {
 
       // Appels API en parallèle
       // Optimisation: Limiter l'historique à 50 sessions au lieu de toutes
-      const [summaryResponse, historyResponse, programHistoryResponse, subscriptionResponse] = await Promise.all([
+      const [summaryResponse, historyResponse, programHistoryResponse, subscriptionResponse, notificationsResponse] = await Promise.all([
         apiClient.get(endpoints.history.summary).catch((e) => {
           logger.app.warn('Summary error', e);
           return { data: null };
@@ -160,7 +161,11 @@ export default function HomeScreen() {
         apiClient.get(`${endpoints.history.list}?limit=50`).catch(() => ({ data: [] })),
         apiClient.get(`${endpoints.programs.history}?limit=50`).catch(() => ({ data: { sessions: [] } })),
         apiClient.get(endpoints.subscription.status).catch(() => ({ data: { tier: 'free' } })),
+        apiClient.get(endpoints.notifications.list).catch(() => ({ data: { unreadCount: 0 } })),
       ]);
+
+      // Mettre à jour le compteur de notifications non lues
+      setUnreadNotifications(notificationsResponse.data?.unreadCount || 0);
 
       // Summary (stats précalculées) - compléter avec les séances locales et programmes
       const apiSummary = summaryResponse.data || {};
@@ -287,6 +292,21 @@ export default function HomeScreen() {
     loadData();
   }, [loadData]);
 
+  // Rafraîchir les notifications quand l'écran est focus
+  useFocusEffect(
+    useCallback(() => {
+      const refreshNotifications = async () => {
+        try {
+          const response = await apiClient.get(endpoints.notifications.list);
+          setUnreadNotifications(response.data?.unreadCount || 0);
+        } catch (error) {
+          // Silently fail
+        }
+      };
+      refreshNotifications();
+    }, [])
+  );
+
   // Optimisation: Activer les sections lourdes après le chargement initial
   // Cela permet d'afficher le contenu principal plus rapidement
   useEffect(() => {
@@ -399,6 +419,13 @@ export default function HomeScreen() {
               size={24}
               color={isDark ? '#FFFFFF' : theme.colors.text.primary}
             />
+            {unreadNotifications > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>
+                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -656,6 +683,24 @@ const styles = StyleSheet.create({
   },
   notificationButton: {
     padding: theme.spacing.sm,
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  notificationBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
   },
   upsellBanner: {
     flexDirection: 'row',

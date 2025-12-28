@@ -3,6 +3,7 @@ const Conversation = require('../models/Conversation');
 const MatchMessage = require('../models/MatchMessage');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
+const Notification = require('../models/Notification');
 const { notifyNewMessage } = require('../services/pushNotification.service');
 const logger = require('../utils/logger.js');
 const validator = require('validator');
@@ -397,8 +398,27 @@ async function sendMessage(req, res) {
     // Envoyer une notification UNIQUEMENT si le destinataire n'est pas dans la conversation
     if (!receiverInConversation && io && io.notifyUser && senderUser) {
       logger.info(`🔔 Envoi new_notification à user ${receiverId} (pas dans la conv)`);
+
+      // Sauvegarder la notification en base de données
+      const notificationData = {
+        userId: receiverId,
+        type: 'message',
+        title: 'Nouveau message',
+        message: `${senderUser.pseudo || 'Un utilisateur'}: ${sanitizedContent.substring(0, 50)}${sanitizedContent.length > 50 ? '...' : ''}`,
+        avatar: senderUser.photo,
+        link: `/matching?conversation=${conversationId}`,
+        metadata: {
+          conversationId: conversationId,
+          messageId: message._id.toString(),
+          senderId: userId.toString()
+        }
+      };
+
+      const savedNotification = await Notification.create(notificationData);
+      logger.info(`📝 Notification sauvegardée en BDD: ${savedNotification._id}`);
+
       io.notifyUser(receiverId.toString(), 'new_notification', {
-        id: `msg-${message._id}-${Date.now()}`,
+        id: savedNotification._id.toString(),
         type: 'message',
         title: 'Nouveau message',
         message: `${senderUser.pseudo || 'Un utilisateur'}: ${sanitizedContent.substring(0, 50)}${sanitizedContent.length > 50 ? '...' : ''}`,
