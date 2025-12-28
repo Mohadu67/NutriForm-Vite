@@ -76,6 +76,16 @@ export default function MatchesListScreen() {
     setShowProfileModal(true);
   };
 
+  const handleChatPress = (match, event) => {
+    // Empêcher la propagation pour ne pas ouvrir le modal
+    event?.stopPropagation();
+
+    navigation.navigate('ChatTab', {
+      screen: 'ChatDetail',
+      params: { matchId: match._id }
+    });
+  };
+
   const renderMatch = ({ item }) => {
     const user = item.user;
     const fitnessLevel = FITNESS_LEVELS[user?.fitnessLevel] || FITNESS_LEVELS.intermediate;
@@ -152,7 +162,7 @@ export default function MatchesListScreen() {
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.chatButton}
-            onPress={() => handleMatchPress(item)}
+            onPress={(e) => handleChatPress(item, e)}
           >
             <Ionicons name="chatbubble" size={20} color="#FFF" />
           </TouchableOpacity>

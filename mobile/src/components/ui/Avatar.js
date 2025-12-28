@@ -78,6 +78,10 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
   },
+  xl: {
+    width: 80,
+    height: 80,
+  },
 
   // Text sizes
   smText: {
@@ -88,6 +92,9 @@ const styles = StyleSheet.create({
   },
   lgText: {
     fontSize: theme.fontSize.lg,
+  },
+  xlText: {
+    fontSize: theme.fontSize.xl || 24,
   },
 });
 
