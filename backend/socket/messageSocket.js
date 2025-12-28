@@ -261,6 +261,13 @@ module.exports = (io) => {
   };
 
   /**
+   * Vérifier si un utilisateur est dans sa liste de conversations
+   */
+  io.isUserInChatList = (userId) => {
+    return usersInChatList.has(userId.toString());
+  };
+
+  /**
    * Obtenir tous les utilisateurs en ligne
    */
   io.getOnlineUsers = () => {

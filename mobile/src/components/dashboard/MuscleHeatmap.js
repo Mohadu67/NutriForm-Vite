@@ -9,17 +9,20 @@ import { ZONE_LABELS } from '../BodyPicker/muscleZones';
 // Mapping des noms de muscles vers les zones du SVG
 const MUSCLE_TO_ZONE = {
   pectoraux: 'pectoraux', chest: 'pectoraux', pecs: 'pectoraux',
-  epaules: 'epaules', shoulders: 'epaules', deltoides: 'epaules',
+  epaules: 'epaules', shoulders: 'epaules', deltoides: 'epaules', deltoïdes: 'epaules',
   biceps: 'biceps', triceps: 'triceps', 'avant-bras': 'avant-bras', forearms: 'avant-bras',
   abdos: 'abdos-centre', abs: 'abdos-centre', 'abdos-centre': 'abdos-centre',
   'abdos-lateraux': 'abdos-lateraux', obliques: 'abdos-lateraux', core: 'abdos-centre',
   dos: 'dos-inferieur', back: 'dos-inferieur', 'dos-superieur': 'dos-superieur',
-  'dos-inferieur': 'dos-inferieur', lats: 'dos-inferieur',
-  traps: 'dos-superieur', trapeze: 'dos-superieur',
+  'dos-inferieur': 'dos-inferieur', lats: 'dos-inferieur', 'dos-lats': 'dos-inferieur',
+  traps: 'dos-superieur', trapeze: 'dos-superieur', trapèzes: 'dos-superieur', rhomboides: 'dos-superieur',
   quadriceps: 'cuisses-externes', quads: 'cuisses-externes', cuisses: 'cuisses-externes',
   'cuisses-externes': 'cuisses-externes', 'cuisses-internes': 'cuisses-internes',
-  ischio: 'cuisses-internes', hamstrings: 'cuisses-internes',
-  fessiers: 'fessiers', glutes: 'fessiers',
+  ischio: 'cuisses-internes', ischios: 'cuisses-internes', hamstrings: 'cuisses-internes',
+  // Adducteurs et Abducteurs
+  adducteurs: 'cuisses-internes', adductor: 'cuisses-internes',
+  abducteurs: 'cuisses-externes', abductor: 'cuisses-externes',
+  fessiers: 'fessiers', glutes: 'fessiers', gluteus: 'fessiers',
   mollets: 'mollets', calves: 'mollets',
 };
 
@@ -115,6 +118,9 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
 
     filteredSessions.forEach((session) => {
       const entries = session?.entries || session?.items || session?.exercises || [];
+      if (entries.length > 0) {
+        console.log('[MuscleHeatmap] Session entries sample:', entries[0]);
+      }
       entries.forEach((entry) => {
         if (!entry) return;
 
@@ -151,8 +157,14 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
       if (zone) {
         zones[zone] = (zones[zone] || 0) + count;
         maxCount = Math.max(maxCount, zones[zone]);
+      } else {
+        console.log('[MuscleHeatmap] Muscle not mapped:', muscle);
       }
     });
+
+    if (Object.keys(zones).length > 0) {
+      console.log('[MuscleHeatmap] Zone intensities:', zones);
+    }
 
     const normalized = {};
     Object.entries(zones).forEach(([zone, count]) => {

@@ -7,20 +7,23 @@ import endpoints from './endpoints';
 
 /**
  * Get all conversations for the current user
- * @returns {Promise<Array>} List of conversations with last message and unread count
+ * @returns {Promise<object>} { success: boolean, conversations: Array }
  */
 export const getConversations = async () => {
   const response = await client.get(endpoints.matchChat.conversations);
-  return response.data;
+  // L'API retourne { conversations: [...] }
+  const conversations = response.data?.conversations || [];
+  return { success: true, conversations };
 };
 
 /**
  * Get only the total unread message count
- * @returns {Promise<{unreadCount: number}>} Unread count
+ * @returns {Promise<{success: boolean, count: number}>} Unread count
  */
 export const getUnreadCount = async () => {
   const response = await client.get(endpoints.matchChat.unreadCount);
-  return response.data;
+  // L'API retourne { unreadCount: number }
+  return { success: true, count: response.data?.unreadCount || 0 };
 };
 
 /**
@@ -30,7 +33,8 @@ export const getUnreadCount = async () => {
  */
 export const getOrCreateConversation = async (matchId) => {
   const response = await client.get(endpoints.matchChat.conversation(matchId));
-  return response.data;
+  // L'API retourne { conversation: {...} }, on extrait juste l'objet conversation
+  return response.data.conversation || response.data;
 };
 
 /**
@@ -41,7 +45,9 @@ export const getOrCreateConversation = async (matchId) => {
  */
 export const sendMessage = async (conversationId, messageData) => {
   const response = await client.post(endpoints.matchChat.messages(conversationId), messageData);
-  return response.data;
+  console.log('[API] sendMessage response:', response.data);
+  // L'API peut retourner { message: {...} } ou directement {...}
+  return response.data.message || response.data;
 };
 
 /**
@@ -52,7 +58,9 @@ export const sendMessage = async (conversationId, messageData) => {
  */
 export const getMessages = async (conversationId, params = {}) => {
   const response = await client.get(endpoints.matchChat.messages(conversationId), { params });
-  return response.data;
+  console.log('[API] getMessages response:', response.data);
+  // L'API peut retourner { messages: [...] } ou directement [...]
+  return Array.isArray(response.data) ? response.data : (response.data.messages || []);
 };
 
 /**
@@ -159,4 +167,18 @@ export const shareSession = async (conversationId, sessionData) => {
       imageData: sessionData.imageData,
     },
   });
+};
+
+/**
+ * Upload media for chat
+ * @param {FormData} formData - Form data with media file
+ * @param {Function} onProgress - Progress callback
+ * @returns {Promise<object>} Upload result with media data
+ */
+export const uploadMedia = async (formData, onProgress) => {
+  const response = await client.post(endpoints.chatUpload, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: onProgress,
+  });
+  return response.data;
 };

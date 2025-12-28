@@ -9,6 +9,18 @@ const logger = require('../utils/logger.js');
  */
 async function createCheckoutSession(req, res) {
   logger.info('🎯 createCheckoutSession appelé pour userId:', req.userId);
+
+  // Vérifier la configuration Stripe
+  if (!process.env.STRIPE_SECRET_KEY) {
+    logger.error('❌ STRIPE_SECRET_KEY manquant');
+    return res.status(500).json({ error: 'Configuration Stripe manquante (SECRET_KEY).' });
+  }
+
+  if (!process.env.STRIPE_PRICE_ID) {
+    logger.error('❌ STRIPE_PRICE_ID manquant');
+    return res.status(500).json({ error: 'Configuration Stripe manquante (PRICE_ID).' });
+  }
+
   logger.info('✅ Stripe configuré');
   logger.info('💰 Stripe Price ID:', process.env.STRIPE_PRICE_ID);
   try {
@@ -55,6 +67,15 @@ async function createCheckoutSession(req, res) {
       });
     }
 
+    // Vérifier FRONTEND_BASE_URL
+    const frontendUrl = process.env.FRONTEND_BASE_URL;
+    if (!frontendUrl) {
+      logger.error('❌ FRONTEND_BASE_URL manquant');
+      return res.status(500).json({ error: 'Configuration FRONTEND_BASE_URL manquante.' });
+    }
+
+    logger.info('🌐 Frontend URL:', frontendUrl);
+
     // Créer la session Checkout avec trial de 7 jours
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -72,19 +93,31 @@ async function createCheckoutSession(req, res) {
           userId: userId.toString()
         }
       },
-      success_url: `${process.env.FRONTEND_BASE_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}&success=true`,
-      cancel_url: `${process.env.FRONTEND_BASE_URL}/pricing?canceled=true`,
+      success_url: `${frontendUrl}/dashboard?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      cancel_url: `${frontendUrl}/pricing?canceled=true`,
       metadata: {
         userId: userId.toString()
       }
     });
+
+    logger.info('✅ Session Stripe créée:', session.id);
 
     res.status(200).json({
       sessionId: session.id,
       url: session.url
     });
   } catch (error) {
-    logger.error('Erreur createCheckoutSession:', error);
+    logger.error('❌ Erreur createCheckoutSession:', error.message);
+    logger.error('Stack:', error.stack);
+
+    // Erreurs Stripe spécifiques
+    if (error.type === 'StripeInvalidRequestError') {
+      return res.status(400).json({
+        error: 'Configuration Stripe invalide.',
+        details: error.message
+      });
+    }
+
     res.status(500).json({
       error: 'Erreur lors de la création de la session de paiement.',
       details: error.message
@@ -296,11 +329,18 @@ async function handlePaymentFailed(invoice) {
  * Créer ou mettre à jour une Subscription en DB
  */
 async function upsertSubscription(userId, stripeSubscription) {
+  // Vérifier que les données nécessaires existent
+  const priceId = stripeSubscription.items?.data?.[0]?.price?.id || process.env.STRIPE_PRICE_ID || null;
+
+  if (!priceId) {
+    logger.error('❌ Impossible de récupérer le priceId de la subscription');
+  }
+
   const subscriptionData = {
     userId,
     stripeCustomerId: stripeSubscription.customer,
     stripeSubscriptionId: stripeSubscription.id,
-    stripePriceId: stripeSubscription.items.data[0].price.id,
+    stripePriceId: priceId,
     status: stripeSubscription.status,
     currentPeriodStart: stripeSubscription.current_period_start
       ? new Date(stripeSubscription.current_period_start * 1000)
@@ -388,7 +428,7 @@ async function cancelSubscription(req, res) {
     }
 
     // Annuler sur Stripe (cancel_at_period_end = true)
-    const updated = await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
       cancel_at_period_end: true
     });
 

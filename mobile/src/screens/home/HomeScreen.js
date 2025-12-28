@@ -19,6 +19,7 @@ import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
+import logger from '../../services/logger';
 
 // Composants Dashboard
 import {
@@ -51,6 +52,9 @@ export default function HomeScreen() {
   const [weeklyGoal, setWeeklyGoal] = useState(4);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [tempGoal, setTempGoal] = useState(4);
+
+  // Optimisation: Lazy loading des sections lourdes
+  const [showHeavySections, setShowHeavySections] = useState(false);
 
   const GOAL_STORAGE_KEY = '@weekly_goal';
   const GOAL_OPTIONS = [1, 2, 3, 4, 5, 6, 7];
@@ -91,6 +95,18 @@ export default function HomeScreen() {
 
   const weeklyCalories = summary?.caloriesBurnedWeek || 0;
   const recentSessions = sessions.slice(0, 5);
+
+  // Optimisation: Limiter les sessions pour MuscleHeatmap (30 dernières au lieu de toutes)
+  const sessionsForHeatmap = useMemo(() => {
+    const limited = sessions.slice(0, 30);
+    logger.app.debug('MuscleHeatmap data', {
+      totalSessions: sessions.length,
+      limitedSessions: limited.length,
+      firstSession: limited[0]
+    });
+    return limited;
+  }, [sessions]);
+
   const sportStats = { run: 0, bike: 0, swim: 0, walk: 0, hasCardio: false };
 
   // Calcul du progrès hebdomadaire
@@ -120,6 +136,7 @@ export default function HomeScreen() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
+      setShowHeavySections(false); // Réinitialiser pour le lazy loading
 
       // Charger l'objectif local
       const storedGoal = await AsyncStorage.getItem(GOAL_STORAGE_KEY);
@@ -134,31 +151,40 @@ export default function HomeScreen() {
       const localSessions = localHistory ? JSON.parse(localHistory) : [];
 
       // Appels API en parallèle
-      const [summaryResponse, historyResponse, subscriptionResponse] = await Promise.all([
+      // Optimisation: Limiter l'historique à 50 sessions au lieu de toutes
+      const [summaryResponse, historyResponse, programHistoryResponse, subscriptionResponse] = await Promise.all([
         apiClient.get(endpoints.history.summary).catch((e) => {
-          console.log('[HOME] Summary error:', e.message);
+          logger.app.warn('Summary error', e);
           return { data: null };
         }),
-        apiClient.get(endpoints.history.list).catch(() => ({ data: [] })),
+        apiClient.get(`${endpoints.history.list}?limit=50`).catch(() => ({ data: [] })),
+        apiClient.get(`${endpoints.programs.history}?limit=50`).catch(() => ({ data: { sessions: [] } })),
         apiClient.get(endpoints.subscription.status).catch(() => ({ data: { tier: 'free' } })),
       ]);
 
-      // Summary (stats précalculées) - compléter avec les séances locales
+      // Summary (stats précalculées) - compléter avec les séances locales et programmes
       const apiSummary = summaryResponse.data || {};
       const localSessionsCount = localSessions.length;
+      // L'API retourne { sessions: [...] } ou directement un tableau
+      const programHistoryData = programHistoryResponse.data?.sessions || programHistoryResponse.data || [];
+      const programSessionsArray = Array.isArray(programHistoryData) ? programHistoryData : [];
+      const programSessionsCount = programSessionsArray.length;
 
-      // Calculer les séances des 7 derniers jours (locales)
+      // Calculer les séances des 7 derniers jours (locales + programmes)
       const now = new Date();
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const localLast7Days = localSessions.filter(s => new Date(s.startTime) >= sevenDaysAgo).length;
+      const programLast7Days = programSessionsArray.filter(s =>
+        new Date(s.completedAt || s.createdAt) >= sevenDaysAgo
+      ).length;
 
       setSummary({
         ...apiSummary,
-        totalSessions: (apiSummary.totalSessions || 0) + localSessionsCount,
-        workoutsCount7d: (apiSummary.workoutsCount7d || 0) + localLast7Days,
+        totalSessions: (apiSummary.totalSessions || 0) + localSessionsCount + programSessionsCount,
+        workoutsCount7d: (apiSummary.workoutsCount7d || 0) + localLast7Days + programLast7Days,
       });
 
-      // Sessions pour la liste récente - combiner API + local
+      // Sessions pour la liste récente - combiner API + local + programmes
       const historyData = historyResponse.data || [];
       const apiSessions = Array.isArray(historyData)
         ? historyData.filter(h =>
@@ -177,6 +203,27 @@ export default function HomeScreen() {
           }))
         : [];
 
+      // Sessions de programme (utiliser programSessionsArray déjà extrait)
+      const programSessions = programSessionsArray.map(s => ({
+        id: s._id,
+        name: s.programName || s.program?.name || 'Programme',
+        date: s.completedAt || s.createdAt,
+        endedAt: s.completedAt || s.createdAt,
+        durationMinutes: Math.round((s.durationSec || 0) / 60),
+        caloriesBurned: s.calories || 0,
+        cyclesCompleted: s.cyclesCompleted,
+        totalCycles: s.totalCycles,
+        entries: (s.entries || s.exercises || []).map(e => ({
+          name: e.exerciseName || e.name,
+          muscle: e.muscle,
+          primaryMuscle: e.primaryMuscle,
+          secondaryMuscles: e.secondaryMuscles,
+          muscles: e.muscles,
+        })),
+        source: 'program',
+        programId: s.programId || s.program?._id,
+      }));
+
       // Formater les séances locales
       const formattedLocalSessions = localSessions.map(s => ({
         id: s.id,
@@ -189,22 +236,32 @@ export default function HomeScreen() {
         caloriesBurned: 0,
         entries: s.exercises?.map(e => ({
           name: e.exercice?.name,
+          muscle: e.exercice?.muscle,
+          muscleGroup: e.exercice?.muscleGroup,
+          primaryMuscle: e.exercice?.primaryMuscle,
+          secondaryMuscles: e.exercice?.secondaryMuscles,
+          muscles: e.exercice?.muscles,
           sets: e.sets,
         })) || [],
         source: 'local',
       }));
 
-      // Combiner et trier par date
-      const allSessions = [...formattedLocalSessions, ...apiSessions]
+      // Combiner et trier par date (local + api + programmes)
+      const allSessions = [...formattedLocalSessions, ...apiSessions, ...programSessions]
         .sort((a, b) => new Date(b.date) - new Date(a.date));
 
       setSessions(allSessions);
 
-      // Statut abonnement
+      // Statut abonnement - verifier toutes les sources premium
       const subData = subscriptionResponse.data || {};
-      setSubscriptionTier(subData.tier || 'free');
+      const isPremiumUser = subData.tier === 'premium' ||
+                            subData.hasXpPremium ||
+                            user?.isPremium ||
+                            user?.subscriptionTier === 'premium' ||
+                            user?.role === 'admin';
+      setSubscriptionTier(isPremiumUser ? 'premium' : 'free');
 
-      console.log('[HOME] Loaded:', {
+      logger.app.debug('Loaded data', {
         summary: !!summaryResponse.data,
         totalSessions: (apiSummary.totalSessions || 0) + localSessionsCount,
         localSessions: localSessionsCount,
@@ -212,7 +269,7 @@ export default function HomeScreen() {
       });
 
     } catch (error) {
-      console.error('[HOME] Erreur chargement données:', error);
+      logger.app.error('Error loading data', error);
     } finally {
       setLoading(false);
     }
@@ -229,6 +286,21 @@ export default function HomeScreen() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Optimisation: Activer les sections lourdes après le chargement initial
+  // Cela permet d'afficher le contenu principal plus rapidement
+  useEffect(() => {
+    logger.app.debug('Heavy sections useEffect triggered', { loading, showHeavySections });
+    if (!loading && !showHeavySections) {
+      logger.app.info('Activating heavy sections in 300ms');
+      // Différer le rendu des sections lourdes de 300ms
+      const timer = setTimeout(() => {
+        logger.app.info('Heavy sections NOW ACTIVATED');
+        setShowHeavySections(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, showHeavySections]);
 
   // Callbacks pour les actions
   const handleDeleteSession = useCallback((sessionId) => {
@@ -254,7 +326,7 @@ export default function HomeScreen() {
       setWeeklyGoal(tempGoal);
       setShowGoalModal(false);
     } catch (error) {
-      console.error('[HOME] Error saving goal:', error);
+      logger.app.error('Error saving goal', error);
     }
   }, [tempGoal]);
 
@@ -319,7 +391,7 @@ export default function HomeScreen() {
             </Text>
           </View>
           <TouchableOpacity
-            onPress={() => navigation.navigate('Notifications')}
+            onPress={() => navigation.navigate('HomeNotifications')}
             style={styles.notificationButton}
           >
             <Ionicons
@@ -334,7 +406,7 @@ export default function HomeScreen() {
         {isFreeUser && (
           <TouchableOpacity
             style={[styles.upsellBanner, { backgroundColor: theme.colors.primary }]}
-            onPress={() => navigation.navigate('Subscription')}
+            onPress={() => navigation.navigate('ProfileTab', { screen: 'Subscription' })}
             activeOpacity={0.8}
           >
             <View style={styles.upsellContent}>
@@ -388,32 +460,45 @@ export default function HomeScreen() {
           navigation={navigation}
         />
 
-        {/* Cardio Stats */}
-        <CardioStats sportStats={sportStats} />
+        {/* Optimisation: Sections lourdes chargées après le contenu principal */}
+        {showHeavySections ? (
+          <>
+            {/* Cardio Stats */}
+            <CardioStats sportStats={sportStats} />
 
-        {/* Muscle Heatmap */}
-        {stats.totalSessions > 0 && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
-              Répartition musculaire
+            {/* Muscle Heatmap - Optimisé avec seulement 30 sessions */}
+            {stats.totalSessions > 0 && (
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
+                  Répartition musculaire
+                </Text>
+                <MuscleHeatmap sessions={sessionsForHeatmap} />
+              </View>
+            )}
+
+            {/* Body Metrics - IMC et calories */}
+            <BodyMetrics
+              weightData={weightData}
+              calorieTargets={calorieTargets}
+            />
+
+            {/* Weekly Summary - Résumé motivant */}
+            {stats.totalSessions > 0 && (
+              <WeeklySummary
+                weeklySessions={stats.last7Days}
+                weeklyCalories={weeklyCalories}
+                userName={displayName}
+              />
+            )}
+          </>
+        ) : (
+          // Placeholder pendant le chargement des sections lourdes
+          <View style={styles.loadingPlaceholder}>
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+            <Text style={[styles.loadingPlaceholderText, isDark && styles.loadingTextDark]}>
+              Chargement des statistiques...
             </Text>
-            <MuscleHeatmap sessions={sessions} />
           </View>
-        )}
-
-        {/* Body Metrics - IMC et calories */}
-        <BodyMetrics
-          weightData={weightData}
-          calorieTargets={calorieTargets}
-        />
-
-        {/* Weekly Summary - Résumé motivant */}
-        {stats.totalSessions > 0 && (
-          <WeeklySummary
-            weeklySessions={stats.last7Days}
-            weeklyCalories={weeklyCalories}
-            userName={displayName}
-          />
         )}
 
         {/* Empty State */}
@@ -533,6 +618,16 @@ const styles = StyleSheet.create({
   loadingTextDark: {
     color: '#888888',
   },
+  loadingPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing.xl,
+    gap: theme.spacing.sm,
+  },
+  loadingPlaceholderText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text.secondary,
+  },
   content: {
     padding: theme.spacing.lg,
     paddingBottom: theme.spacing.xl * 2,
@@ -599,7 +694,7 @@ const styles = StyleSheet.create({
   },
   upsellButtonText: {
     fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semibold,
+    fontWeight: theme.fontWeight.semiBold,
     color: theme.colors.primary,
   },
   section: {
@@ -607,7 +702,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
+    fontWeight: theme.fontWeight.semiBold,
     color: theme.colors.text.primary,
     marginBottom: theme.spacing.md,
   },
@@ -634,7 +729,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
+    fontWeight: theme.fontWeight.semiBold,
     color: theme.colors.text.primary,
   },
   emptyTitleDark: {
@@ -659,7 +754,7 @@ const styles = StyleSheet.create({
   emptyButtonText: {
     color: '#FFFFFF',
     fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semibold,
+    fontWeight: theme.fontWeight.semiBold,
   },
 
   // Modal styles
@@ -721,7 +816,7 @@ const styles = StyleSheet.create({
   },
   goalOptionText: {
     fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semibold,
+    fontWeight: theme.fontWeight.semiBold,
     color: theme.colors.text.primary,
   },
   goalOptionTextActive: {
