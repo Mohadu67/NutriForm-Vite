@@ -100,7 +100,7 @@ exports.login = async (req, res) => {
         email: user.email,
         role: user.role,
         photo: photoUrl,
-        subscription: user.subscription
+        subscriptionTier: user.subscriptionTier
       },
     });
   } catch (err) {
@@ -502,5 +502,97 @@ exports.updateNotificationPreferences = async (req, res) => {
   } catch (err) {
     logger.error('PUT /notification-preferences:', err);
     res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+/**
+ * Supprimer le compte utilisateur
+ * DELETE /api/auth/account
+ * Conforme aux exigences App Store et Google Play
+ */
+exports.deleteAccount = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    // Recuperer l'utilisateur
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable' });
+    }
+
+    logger.info(`[AUTH] Account deletion requested for user: ${user.email}`);
+
+    // 1. Annuler l'abonnement actif si existant
+    const subscription = await Subscription.findOne({ userId });
+    if (subscription && subscription.isActive()) {
+      subscription.status = 'canceled';
+      subscription.canceledAt = new Date();
+      await subscription.save();
+      logger.info(`[AUTH] Subscription cancelled for user: ${userId}`);
+    }
+
+    // 2. Supprimer les donnees associees
+    // Note: On peut soit supprimer immediatement, soit marquer pour suppression differee (30 jours)
+    // Pour la conformite, on fait une suppression effective
+
+    // Supprimer les conversations et messages
+    const Conversation = require('../models/Conversation');
+    const Message = require('../models/Message');
+    await Message.deleteMany({ sender: userId });
+    await Conversation.deleteMany({ participants: userId });
+
+    // Supprimer les matchs
+    const Match = require('../models/Match');
+    await Match.deleteMany({ $or: [{ user1: userId }, { user2: userId }] });
+
+    // Supprimer les workouts
+    const Workout = require('../models/Workout');
+    await Workout.deleteMany({ userId });
+
+    // Supprimer les recettes creees par l'utilisateur
+    const Recipe = require('../models/Recipe');
+    await Recipe.deleteMany({ createdBy: userId });
+
+    // Supprimer les programmes crees par l'utilisateur
+    const Program = require('../models/Program');
+    await Program.deleteMany({ createdBy: userId });
+
+    // Supprimer les challenges
+    const Challenge = require('../models/Challenge');
+    await Challenge.deleteMany({ $or: [{ challenger: userId }, { challenged: userId }] });
+
+    // Supprimer les favoris
+    const Favorite = require('../models/Favorite');
+    await Favorite.deleteMany({ userId });
+
+    // Supprimer l'abonnement
+    await Subscription.deleteMany({ userId });
+
+    // Supprimer les tokens de notification
+    const PushToken = require('../models/PushToken');
+    await PushToken.deleteMany({ userId });
+
+    // 3. Supprimer le compte utilisateur
+    await User.findByIdAndDelete(userId);
+
+    logger.info(`[AUTH] Account deleted successfully: ${user.email}`);
+
+    // 4. Supprimer le cookie de session
+    const isProduction = process.env.NODE_ENV === 'production';
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'lax' : 'strict',
+      domain: isProduction ? '.harmonith.fr' : undefined,
+      path: '/',
+    });
+
+    return res.json({
+      success: true,
+      message: 'Votre compte et toutes vos donnees ont ete supprimes avec succes.'
+    });
+  } catch (err) {
+    logger.error('DELETE /auth/account:', err);
+    return res.status(500).json({ message: 'Erreur lors de la suppression du compte' });
   }
 };
