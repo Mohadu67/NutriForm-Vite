@@ -12,6 +12,8 @@ export const endpoints = {
     forgot: "/forgot-password",
     reset: "/reset-password",
     resendVerification: "/resend-verification",
+    changePassword: "/change-password",
+    requestEmailChange: "/request-email-change",
   },
   contact: {
     create: "/contact",
@@ -143,6 +145,10 @@ export const endpoints = {
   },
   upload: {
     profilePhoto: "/upload/profile-photo",
+  },
+  leaderboard: {
+    status: "/leaderboard/status",
+    list: "/leaderboard",
   },
   programs: {
     // Public
