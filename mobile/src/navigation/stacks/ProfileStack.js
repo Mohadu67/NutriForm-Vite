@@ -2,6 +2,9 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import ProfileScreen from '../../screens/profile/ProfileScreen';
+import EditProfileScreen from '../../screens/profile/EditProfileScreen';
+import ChangePasswordScreen from '../../screens/profile/ChangePasswordScreen';
+import ChangeEmailScreen from '../../screens/profile/ChangeEmailScreen';
 import SettingsScreen from '../../screens/profile/SettingsScreen';
 import ProfileSetupScreen from '../../screens/profile/ProfileSetupScreen';
 import SubscriptionScreen from '../../screens/profile/SubscriptionScreen';
@@ -74,14 +77,14 @@ export default function ProfileStack() {
     >
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
-      <Stack.Screen name="EditProfile" component={ProfileSetupScreen} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
       <Stack.Screen name="Subscription" component={SubscriptionScreen} />
       <Stack.Screen name="Rewards" component={RewardsScreen} />
       <Stack.Screen name="Badges" component={BadgesScreen} />
       <Stack.Screen name="Support" component={SupportScreen} />
-      <Stack.Screen name="ChangePassword" component={PlaceholderScreen} />
-      <Stack.Screen name="ChangeEmail" component={PlaceholderScreen} />
+      <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+      <Stack.Screen name="ChangeEmail" component={ChangeEmailScreen} />
     </Stack.Navigator>
   );
 }

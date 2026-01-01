@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Subscription = require('../models/Subscription');
-const { sendVerifyEmail } = require('../services/mailer.service');
+const { sendVerifyEmail, sendChangeEmailConfirmation } = require('../services/mailer.service');
 const { validatePassword } = require('../utils/passwordValidator');
 const logger = require('../utils/logger.js');
 const config = require('../config');
@@ -594,5 +594,134 @@ exports.deleteAccount = async (req, res) => {
   } catch (err) {
     logger.error('DELETE /auth/account:', err);
     return res.status(500).json({ message: 'Erreur lors de la suppression du compte' });
+  }
+};
+
+/**
+ * Demander un changement d'email
+ * POST /api/request-email-change
+ */
+exports.requestEmailChange = async (req, res) => {
+  try {
+    const { newEmail, password } = req.body || {};
+
+    if (!newEmail || !password) {
+      return res.status(400).json({ message: 'Nouvel email et mot de passe requis.' });
+    }
+
+    const emailNorm = String(newEmail).toLowerCase().trim();
+
+    // Validation email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailNorm)) {
+      return res.status(400).json({ message: 'Email invalide.' });
+    }
+
+    // Recuperer l'utilisateur avec le mot de passe
+    const user = await User.findById(req.userId).select('+motdepasse');
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable.' });
+    }
+
+    // Verifier que le nouvel email est different
+    if (emailNorm === user.email) {
+      return res.status(400).json({ message: 'Le nouvel email doit etre different de l\'actuel.' });
+    }
+
+    // Verifier le mot de passe
+    const isValid = await bcrypt.compare(password, user.motdepasse);
+    if (!isValid) {
+      return res.status(401).json({ message: 'Mot de passe incorrect.' });
+    }
+
+    // Verifier que l'email n'est pas deja utilise
+    const emailExists = await User.findOne({ email: emailNorm, _id: { $ne: req.userId } }).lean();
+    if (emailExists) {
+      return res.status(409).json({ message: 'Cet email est deja utilise par un autre compte.' });
+    }
+
+    // Generer un token de confirmation
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 heures
+
+    // Sauvegarder le token et le nouvel email dans l'utilisateur
+    user.emailChangeToken = token;
+    user.emailChangeExpires = expiresAt;
+    user.pendingEmail = emailNorm;
+    await user.save();
+
+    // Envoyer l'email de confirmation au NOUVEL email
+    const confirmUrl = `${frontBase()}/confirm-email-change?token=${encodeURIComponent(token)}`;
+
+    logger.info('[AUTH] Email change requested:', { from: user.email, to: emailNorm });
+
+    try {
+      await sendChangeEmailConfirmation({
+        to: emailNorm,
+        toName: user.prenom || user.pseudo || user.email.split('@')[0],
+        newEmail: emailNorm,
+        confirmUrl
+      });
+
+      logger.info('[AUTH] Email change confirmation sent to:', emailNorm);
+
+      return res.json({
+        success: true,
+        message: 'Un email de confirmation a ete envoye a votre nouvelle adresse.'
+      });
+    } catch (mailErr) {
+      logger.error('[AUTH] Failed to send email change confirmation:', mailErr.message);
+      return res.status(502).json({ message: 'Impossible d\'envoyer l\'email. Reessayez plus tard.' });
+    }
+  } catch (err) {
+    logger.error('POST /request-email-change:', err);
+    return res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
+
+/**
+ * Confirmer le changement d'email
+ * GET /api/confirm-email-change?token=xxx
+ */
+exports.confirmEmailChange = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ message: 'Token manquant.' });
+    }
+
+    // Trouver l'utilisateur avec ce token
+    const user = await User.findOne({
+      emailChangeToken: token,
+      emailChangeExpires: { $gt: new Date() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Lien invalide ou expire.' });
+    }
+
+    if (!user.pendingEmail) {
+      return res.status(400).json({ message: 'Aucun changement d\'email en attente.' });
+    }
+
+    const oldEmail = user.email;
+    const newEmail = user.pendingEmail;
+
+    // Mettre a jour l'email
+    user.email = newEmail;
+    user.emailChangeToken = undefined;
+    user.emailChangeExpires = undefined;
+    user.pendingEmail = undefined;
+    await user.save();
+
+    logger.info('[AUTH] Email changed successfully:', { from: oldEmail, to: newEmail });
+
+    // Rediriger vers le frontend avec un message de succes
+    const successUrl = `${frontBase()}/email-changed?success=true`;
+    return res.redirect(successUrl);
+  } catch (err) {
+    logger.error('GET /confirm-email-change:', err);
+    return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
