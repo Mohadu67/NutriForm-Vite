@@ -4,7 +4,7 @@ const rateLimit = require('express-rate-limit');
 
 const auth = require('../middlewares/auth.middleware');
 const verifyCaptcha = require('../middlewares/recaptcha.middleware');
-const { login, register, me, updateProfile, changePassword, logout, resendVerificationEmail, getWsToken, getNotificationPreferences, updateNotificationPreferences, deleteAccount } = require('../controllers/auth.controller.js');
+const { login, register, me, updateProfile, changePassword, logout, resendVerificationEmail, getWsToken, getNotificationPreferences, updateNotificationPreferences, deleteAccount, requestEmailChange, confirmEmailChange } = require('../controllers/auth.controller.js');
 
 // Rate limiting spécifique pour l'authentification
 const authLimiter = rateLimit({
@@ -43,6 +43,10 @@ router.get('/me', auth, me);
 router.get('/ws-token', auth, getWsToken); // Token pour WebSocket
 router.put('/update-profile', auth, updateProfile);
 router.put('/change-password', auth, changePassword);
+
+// Changement d'email avec confirmation
+router.post('/request-email-change', auth, requestEmailChange);
+router.get('/confirm-email-change', confirmEmailChange);
 
 // Preferences de notifications
 router.get('/notification-preferences', auth, getNotificationPreferences);

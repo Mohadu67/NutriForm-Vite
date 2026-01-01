@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 const makeVerifyEmail = require('../templates/verifyEmail');
 const makeResetPassword = require('../templates/resetPassword');
+const makeChangeEmail = require('../templates/changeEmail');
 const logger = require('../utils/logger.js');
 
 const FROM_NAME = process.env.FROM_NAME || 'Harmonith';
@@ -75,4 +76,10 @@ async function sendResetEmail({ to, toName, resetUrl, replyTo }) {
   return sendMail({ to, subject, text, html, replyTo });
 }
 
-module.exports = { sendMail, sendVerifyEmail, sendResetEmail };
+async function sendChangeEmailConfirmation({ to, toName, newEmail, confirmUrl, replyTo }) {
+  logger.info('[MAILER] Sending change email confirmation to:', to);
+  const { subject, text, html } = makeChangeEmail({ toName, newEmail, confirmUrl });
+  return sendMail({ to, subject, text, html, replyTo });
+}
+
+module.exports = { sendMail, sendVerifyEmail, sendResetEmail, sendChangeEmailConfirmation };
