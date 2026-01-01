@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Harmonith",
+    "slug": "harmonith",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash.png",
@@ -14,7 +14,15 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.mobile"
+      "bundleIdentifier": "com.harmonith.app",
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "Harmonith utilise vos données de santé pour personnaliser vos programmes fitness et suivre vos progrès.",
+        "NSHealthUpdateUsageDescription": "Harmonith enregistre vos séances d'entraînement dans l'app Santé."
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.background-delivery": true
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +30,17 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "package": "com.harmonith.app",
+      "permissions": [
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_WEIGHT",
+        "android.permission.health.READ_HEIGHT",
+        "android.permission.health.READ_HEART_RATE",
+        "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
+        "android.permission.health.WRITE_STEPS",
+        "android.permission.health.WRITE_ACTIVE_CALORIES_BURNED"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -34,6 +52,12 @@
         {
           "icon": "./assets/notification-icon.png",
           "color": "#F7B186"
+        }
+      ],
+      [
+        "react-native-health-connect",
+        {
+          "requestPermissionsOnFirstLaunch": false
         }
       ]
     ],

@@ -994,31 +994,37 @@ export default function CalculatorsScreen() {
         </View>
 
         {/* Tabs */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsContainer}>
-          {TABS.map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <TouchableOpacity
-                key={tab.id}
-                style={[styles.tab, isActive && styles.tabActive]}
-                onPress={() => setActiveTab(tab.id)}
-              >
-                <Ionicons
-                  name={isActive ? tab.icon : `${tab.icon}-outline`}
-                  size={20}
-                  color={isActive ? '#FFF' : isDark ? '#888' : '#666'}
-                />
-                <Text style={[
-                  styles.tabText,
-                  isActive && styles.tabTextActive,
-                  isDark && !isActive && styles.tabTextDark,
-                ]}>
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+        <View style={styles.tabsWrapper}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tabsContent}
+          >
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <TouchableOpacity
+                  key={tab.id}
+                  style={[styles.tab, isActive && styles.tabActive]}
+                  onPress={() => setActiveTab(tab.id)}
+                >
+                  <Ionicons
+                    name={isActive ? tab.icon : `${tab.icon}-outline`}
+                    size={18}
+                    color={isActive ? '#FFF' : isDark ? '#888' : '#666'}
+                  />
+                  <Text style={[
+                    styles.tabText,
+                    isActive && styles.tabTextActive,
+                    isDark && !isActive && styles.tabTextDark,
+                  ]}>
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
 
         {/* Calculator Content */}
         <ScrollView
@@ -1071,20 +1077,22 @@ const styles = StyleSheet.create({
   headerTitleDark: {
     color: '#FFFFFF',
   },
-  tabsContainer: {
+  tabsWrapper: {
+    paddingVertical: 8,
+  },
+  tabsContent: {
     paddingHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
+    alignItems: 'center',
   },
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 10,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 20,
     backgroundColor: '#E5E5E5',
     marginRight: 8,
-    gap: 4,
-    minHeight: 32,
+    gap: 5,
   },
   tabActive: {
     backgroundColor: theme.colors.primary,

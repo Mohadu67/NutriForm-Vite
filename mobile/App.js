@@ -11,6 +11,7 @@ import { ProgramProvider } from './src/contexts/ProgramContext';
 import Navigation from './src/navigation';
 import notificationService from './src/services/notificationService';
 import Toast from './src/components/ui/Toast';
+import HealthDisclaimerModal from './src/components/HealthDisclaimerModal';
 import { logger } from './src/services/logger';
 
 export default function App() {
@@ -80,6 +81,9 @@ export default function App() {
                     }}
                     onDismiss={() => setToastVisible(false)}
                   />
+
+                  {/* Disclaimer santé au premier lancement */}
+                  <HealthDisclaimerModal />
                 </ProgramProvider>
               </RecipeProvider>
             </ChatProvider>
