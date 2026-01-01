@@ -68,12 +68,20 @@ export default function CGV() {
         <section className={styles.section}>
           <h2 className={styles.h2}>4. Prix et paiement</h2>
           <p className={styles.p}>
-            Les prix sont indiques en euros TTC. Le paiement s'effectue par carte bancaire via la plateforme
-            securisee Stripe. L'utilisateur garantit qu'il dispose des autorisations necessaires pour utiliser
-            le moyen de paiement choisi.
+            Les prix sont indiques en euros TTC. Le paiement s'effectue selon la plateforme :
+          </p>
+          <ul className={styles.list}>
+            <li><strong>Site web :</strong> carte bancaire via Stripe</li>
+            <li><strong>Application iOS :</strong> achat in-app via l'App Store (Apple)</li>
+            <li><strong>Application Android :</strong> achat in-app via Google Play</li>
+          </ul>
+          <p className={styles.p}>
+            L'utilisateur garantit qu'il dispose des autorisations necessaires pour utiliser
+            le moyen de paiement choisi. En cas d'echec du paiement, l'acces Premium sera suspendu jusqu'a regularisation.
           </p>
           <p className={styles.p}>
-            En cas d'echec du paiement, l'acces Premium sera suspendu jusqu'a regularisation.
+            <strong>Abonnements via App Store/Google Play :</strong> le renouvellement automatique peut etre desactive
+            dans les parametres de votre compte Apple/Google au moins 24 heures avant la fin de la periode en cours.
           </p>
         </section>
 

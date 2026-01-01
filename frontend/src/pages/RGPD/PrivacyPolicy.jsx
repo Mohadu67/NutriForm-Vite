@@ -54,10 +54,32 @@ export default function PrivacyPolicy() {
         <section className={styles.section}>
           <h2 className={styles.h2}>4. Paiements et donnees financieres</h2>
           <p className={styles.p}>
-            Les paiements sont traites de maniere securisee par <strong>Stripe</strong>, certifie PCI-DSS niveau 1. Harmonith n'a jamais acces a vos informations de carte bancaire completes.
+            Les paiements sont traites de maniere securisee selon la plateforme utilisee :
+          </p>
+          <ul className={styles.list}>
+            <li><strong>Site web :</strong> Stripe, certifie PCI-DSS niveau 1</li>
+            <li><strong>Application iOS :</strong> Apple App Store (In-App Purchase)</li>
+            <li><strong>Application Android :</strong> Google Play Billing</li>
+          </ul>
+          <p className={styles.p}>
+            Harmonith n'a jamais acces a vos informations de carte bancaire completes. Nous conservons uniquement les identifiants de transaction pour la gestion de votre abonnement.
+          </p>
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.h2}>4bis. Donnees de sante (Application mobile)</h2>
+          <p className={styles.p}>
+            L'application mobile Harmonith peut acceder, avec votre consentement, aux donnees de sante de votre appareil :
+          </p>
+          <ul className={styles.list}>
+            <li><strong>iOS (HealthKit) :</strong> nombre de pas, poids, taille, frequence cardiaque, calories brulees, distance parcourue</li>
+            <li><strong>Android (Health Connect) :</strong> memes donnees que HealthKit</li>
+          </ul>
+          <p className={styles.p}>
+            Ces donnees sont utilisees uniquement pour personnaliser vos objectifs fitness et suivre vos progres. Elles ne sont jamais partagees avec des tiers et restent stockees localement sur votre appareil ou dans votre compte Harmonith.
           </p>
           <p className={styles.p}>
-            Nous conservons uniquement l'identifiant client Stripe et l'historique des transactions pour la gestion de votre abonnement.
+            Vous pouvez revoquer l'acces aux donnees de sante a tout moment dans les parametres de l'application ou de votre appareil.
           </p>
         </section>
 

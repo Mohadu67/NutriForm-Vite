@@ -28,7 +28,7 @@ export default function SettingsScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   // Settings states
   const [pushNotifications, setPushNotifications] = useState(true);
@@ -119,21 +119,52 @@ export default function SettingsScreen() {
 
   const handleDeleteAccount = useCallback(() => {
     Alert.alert(
-      'Supprimer le compte',
-      'Cette action est irreversible. Toutes vos donnees seront supprimees.',
+      'Supprimer mon compte',
+      'ATTENTION : Cette action est irreversible.\n\nLa suppression de votre compte entraine :\n\n• La suppression definitive de toutes vos donnees personnelles\n• L\'annulation de votre abonnement Premium actif\n• La perte de vos XP, badges et historique\n\nVos donnees seront supprimees sous 30 jours.',
       [
         { text: 'Annuler', style: 'cancel' },
         {
-          text: 'Supprimer',
+          text: 'Supprimer definitivement',
           style: 'destructive',
           onPress: () => {
-            // TODO: Appeler API de suppression
-            console.log('Delete account');
+            // Confirmation supplementaire
+            Alert.alert(
+              'Confirmation finale',
+              'Etes-vous vraiment sur de vouloir supprimer votre compte ? Cette action ne peut pas etre annulee.',
+              [
+                { text: 'Non, annuler', style: 'cancel' },
+                {
+                  text: 'Oui, supprimer',
+                  style: 'destructive',
+                  onPress: async () => {
+                    try {
+                      await apiClient.delete('/auth/account');
+                      Alert.alert(
+                        'Compte supprime',
+                        'Votre compte a ete supprime avec succes. Vous allez etre deconnecte.',
+                        [
+                          {
+                            text: 'OK',
+                            onPress: () => logout(),
+                          },
+                        ]
+                      );
+                    } catch (error) {
+                      console.error('[SETTINGS] Error deleting account:', error);
+                      Alert.alert(
+                        'Erreur',
+                        'Une erreur est survenue lors de la suppression du compte. Veuillez reessayer ou contacter le support a support@harmonith.fr'
+                      );
+                    }
+                  },
+                },
+              ]
+            );
           },
         },
       ]
     );
-  }, []);
+  }, [logout]);
 
   const handleClearCache = useCallback(() => {
     Alert.alert(
@@ -153,11 +184,15 @@ export default function SettingsScreen() {
   }, []);
 
   const openPrivacyPolicy = () => {
-    Linking.openURL('https://harmonith.fr/privacy');
+    Linking.openURL('https://harmonith.fr/privacy-policy');
   };
 
   const openTermsOfService = () => {
-    Linking.openURL('https://harmonith.fr/terms');
+    Linking.openURL('https://harmonith.fr/cgv');
+  };
+
+  const openMentionsLegales = () => {
+    Linking.openURL('https://harmonith.fr/mentions-legales');
   };
 
   const settingsSections = [
@@ -246,9 +281,15 @@ export default function SettingsScreen() {
         },
         {
           icon: 'document',
-          label: 'Conditions d\'utilisation',
+          label: 'Conditions Generales de Vente',
           type: 'link',
           onPress: openTermsOfService,
+        },
+        {
+          icon: 'information-circle',
+          label: 'Mentions legales',
+          type: 'link',
+          onPress: openMentionsLegales,
         },
       ],
     },

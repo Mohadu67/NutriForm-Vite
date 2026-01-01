@@ -160,7 +160,7 @@ export default function SupportScreen() {
 
           <TouchableOpacity
             style={[styles.linkItem, isDark && styles.linkItemDark]}
-            onPress={() => Linking.openURL('https://nutriform.app/privacy')}
+            onPress={() => Linking.openURL('https://harmonith.fr/privacy-policy')}
             activeOpacity={0.7}
           >
             <View style={[styles.linkIcon, { backgroundColor: '#8B5CF620' }]}>
@@ -176,7 +176,7 @@ export default function SupportScreen() {
 
           <TouchableOpacity
             style={[styles.linkItem, isDark && styles.linkItemDark]}
-            onPress={() => Linking.openURL('https://nutriform.app/terms')}
+            onPress={() => Linking.openURL('https://harmonith.fr/cgv')}
             activeOpacity={0.7}
           >
             <View style={[styles.linkIcon, { backgroundColor: '#F59E0B20' }]}>
@@ -184,7 +184,23 @@ export default function SupportScreen() {
             </View>
             <View style={styles.linkContent}>
               <Text style={[styles.linkLabel, isDark && styles.textDark]}>
-                Conditions d'utilisation
+                Conditions Generales de Vente
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={isDark ? '#555' : '#CCC'} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.linkItem, isDark && styles.linkItemDark]}
+            onPress={() => Linking.openURL('https://harmonith.fr/mentions-legales')}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.linkIcon, { backgroundColor: '#10B98120' }]}>
+              <Ionicons name="information-circle-outline" size={22} color="#10B981" />
+            </View>
+            <View style={styles.linkContent}>
+              <Text style={[styles.linkLabel, isDark && styles.textDark]}>
+                Mentions legales
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={isDark ? '#555' : '#CCC'} />
