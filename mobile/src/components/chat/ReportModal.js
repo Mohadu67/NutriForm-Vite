@@ -19,6 +19,8 @@ export default function ReportModal({ visible, onClose, onSubmit, userName }) {
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const containerBg = isDark ? 'rgba(28, 28, 30, 0.98)' : 'rgba(255, 255, 255, 0.98)';
+
   const handleSubmit = async () => {
     if (!selectedReason) {
       Alert.alert('Erreur', 'Veuillez sélectionner une raison');
@@ -83,7 +85,7 @@ export default function ReportModal({ visible, onClose, onSubmit, userName }) {
         <BlurView
           intensity={blurIntensity.strong}
           tint={isDark ? 'dark' : 'light'}
-          style={styles.container}
+          style={[styles.container, { backgroundColor: containerBg }]}
         >
           <View style={styles.header}>
             <Text style={[styles.title, { color: theme.colors.text.primary }]}>

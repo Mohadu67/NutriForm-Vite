@@ -1,8 +1,10 @@
-import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
+import { createContext, useState, useEffect, useContext, useCallback, useRef } from 'react';
 import * as matchChatApi from '../api/matchChat';
 import { logger } from '../services/logger';
 import websocketService from '../services/websocket';
 import { useAuth } from './AuthContext';
+import { useToast } from './ToastContext';
+import { navigate } from '../navigation';
 
 /**
  * Contexte de chat P2P entre matchs mutuels
@@ -36,7 +38,15 @@ const ChatContext = createContext({
  * Provider du contexte de chat
  */
 export function ChatProvider({ children }) {
-  const { user } = useAuth(); // Récupérer l'utilisateur connecté
+  const { user } = useAuth(); // Recuperer l'utilisateur connecte
+  const { showMessageNotification } = useToast();
+  const showNotificationRef = useRef(showMessageNotification);
+
+  // Mettre a jour la ref quand showMessageNotification change
+  useEffect(() => {
+    showNotificationRef.current = showMessageNotification;
+  }, [showMessageNotification]);
+
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -529,12 +539,38 @@ export function ChatProvider({ children }) {
       // - La conversation n'est pas active (sinon les messages sont marqués comme lus immédiatement)
       const shouldIncrementUnread = !isOwn && conversationId !== activeConversation?._id;
 
-      // Mettre à jour le compteur global de non-lus
+      // Mettre a jour le compteur global de non-lus
       if (shouldIncrementUnread) {
         setUnreadCount(prev => prev + 1);
+
+        // Afficher une notification toast pour le nouveau message
+        // Recuperer les infos de l'expediteur depuis les conversations
+        setConversations(prevConvs => {
+          const conv = prevConvs.find(c => c._id === conversationId);
+          if (conv && showNotificationRef.current) {
+            const sender = conv.otherUser || message.senderId;
+            const senderName = sender?.pseudo || sender?.username || sender?.prenom || 'Nouveau message';
+            const senderAvatar = sender?.photo || sender?.profile?.profilePicture;
+
+            showNotificationRef.current({
+              senderName,
+              senderAvatar,
+              messagePreview: message.content?.substring(0, 100) || 'Nouveau message',
+              isOnline: true,
+              onPress: () => {
+                // Naviguer vers la conversation quand on clique sur le toast
+                navigate('ChatDetail', {
+                  conversationId,
+                  otherUser: sender,
+                });
+              },
+            });
+          }
+          return prevConvs; // Ne pas modifier les conversations ici
+        });
       }
 
-      // Mettre à jour la conversation dans la liste
+      // Mettre a jour la conversation dans la liste
       setConversations(prev =>
         prev.map(conv => {
           if (conv._id === conversationId) {
