@@ -19,12 +19,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { theme } from '../../theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { theme, colors } from '../../theme';
 import { getConversations, getUnreadCount } from '../../api/matchChat';
 import { getMutualMatches, getMatchSuggestions, likeProfile, rejectProfile } from '../../api/matching';
 import ProfileModal from '../../components/matching/ProfileModal';
 import useSwipeGesture from '../../hooks/useSwipeGesture';
 import logger from '../../services/logger';
+import websocketService from '../../services/websocket';
+
+const DEFAULT_BOT_NAME = 'Assistant Harmonith';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
@@ -35,10 +40,11 @@ const TABS = [
   { key: 'discover', label: 'Découvrir', icon: 'people' },
 ];
 
+// Fitness levels with theme-consistent colors
 const FITNESS_LEVELS = {
-  beginner: { label: 'Débutant', color: '#22C55E', gradient: ['#22C55E', '#16A34A'] },
-  intermediate: { label: 'Intermédiaire', color: '#F59E0B', gradient: ['#F59E0B', '#D97706'] },
-  advanced: { label: 'Avancé', color: '#EF4444', gradient: ['#EF4444', '#DC2626'] },
+  beginner: { label: 'Débutant', color: colors.success, gradient: [colors.success, '#3D9140'] },
+  intermediate: { label: 'Intermédiaire', color: colors.warning, gradient: [colors.warning, '#E0A800'] },
+  advanced: { label: 'Avancé', color: colors.accent, gradient: [colors.accent, '#E55A5A'] },
 };
 
 const WORKOUT_TYPE_ICONS = {
@@ -53,6 +59,126 @@ const WORKOUT_TYPE_ICONS = {
   'boxing': 'hand-left',
   'dance': 'musical-notes',
 };
+
+// Theme colors helper
+const THEME_COLORS = {
+  primaryGradient: [colors.primary, colors.primaryDark],
+  secondaryGradient: [colors.secondary, colors.secondaryDark],
+  accentGradient: [colors.accent, '#E55A5A'],
+  warmGradient: colors.gradients.warm,
+};
+
+// Separate component for conversation item to use hooks properly
+const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRelativeTime, onlineUsers, onAvatarPress }) => {
+  const otherUser = item.otherUser;
+  const hasUnread = item.unreadCount > 0;
+  const itemAnim = useRef(new Animated.Value(0)).current;
+
+  // Vérifier si l'utilisateur est en ligne (API ou WebSocket temps réel)
+  const otherUserId = otherUser?._id?.toString();
+  const isOnline = item.otherUserOnline || onlineUsers?.has(otherUserId);
+
+  useEffect(() => {
+    Animated.timing(itemAnim, {
+      toValue: 1,
+      duration: 400,
+      delay: index * 80,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={{
+        opacity: itemAnim,
+        transform: [{
+          translateX: itemAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [-30, 0],
+          }),
+        }],
+      }}
+    >
+      <TouchableOpacity
+        style={[styles.conversationItem, isDark && styles.conversationItemDark]}
+        onPress={() => navigation.navigate('ChatDetail', {
+          conversationId: item._id,
+          matchId: item.matchId,
+          otherUser
+        })}
+        activeOpacity={0.7}
+      >
+        <TouchableOpacity
+          style={styles.conversationAvatarWrapper}
+          onPress={() => onAvatarPress?.(otherUser)}
+          activeOpacity={0.7}
+        >
+          <LinearGradient
+            colors={hasUnread ? THEME_COLORS.primaryGradient : (isDark ? [colors.dark.border, colors.dark.borderDark] : [colors.light.border, colors.light.borderDark])}
+            style={styles.avatarGradientRing}
+          >
+            {otherUser?.photo ? (
+              <Image source={{ uri: otherUser.photo }} style={styles.conversationAvatar} />
+            ) : (
+              <View style={[styles.conversationAvatar, styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
+                <Ionicons name="person" size={24} color={isDark ? colors.dark.textTertiary : colors.light.textTertiary} />
+              </View>
+            )}
+          </LinearGradient>
+          {/* Indicateur en ligne (vert) */}
+          {isOnline && (
+            <View style={[styles.onlineIndicator, isDark && styles.onlineIndicatorDark]}>
+              <View style={styles.onlineDot} />
+            </View>
+          )}
+          {/* Indicateur hors ligne (gris) - optionnel */}
+          {!isOnline && (
+            <View style={[styles.onlineIndicator, isDark && styles.onlineIndicatorDark]}>
+              <View style={[styles.onlineDot, styles.offlineDot]} />
+            </View>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.conversationContent}>
+          <View style={styles.conversationHeader}>
+            <Text style={[styles.conversationName, isDark && styles.textLight, hasUnread && styles.textBold]}>
+              {otherUser?.pseudo || otherUser?.prenom || 'Utilisateur'}
+            </Text>
+            <Text style={[styles.conversationTime, isDark && styles.textMuted]}>
+              {formatRelativeTime(item.lastMessage?.createdAt)}
+            </Text>
+          </View>
+          <Text
+            style={[
+              styles.conversationPreview,
+              isDark && styles.textMuted,
+              hasUnread && styles.conversationPreviewUnread
+            ]}
+            numberOfLines={1}
+          >
+            {item.lastMessage?.content || 'Commencez la conversation !'}
+          </Text>
+        </View>
+
+        {hasUnread && (
+          <LinearGradient
+            colors={THEME_COLORS.primaryGradient}
+            style={styles.unreadBadge}
+          >
+            <Text style={styles.unreadBadgeText}>{item.unreadCount}</Text>
+          </LinearGradient>
+        )}
+
+        <Ionicons
+          name="chevron-forward"
+          size={18}
+          color={isDark ? colors.dark.textTertiary : colors.light.textTertiary}
+          style={styles.chevron}
+        />
+      </TouchableOpacity>
+    </Animated.View>
+  );
+});
 
 export default function MatchingScreen() {
   const colorScheme = useColorScheme();
@@ -75,10 +201,16 @@ export default function MatchingScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [pendingSuggestions, setPendingSuggestions] = useState(0);
+  const [onlineUsers, setOnlineUsers] = useState(new Set());
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [newMatch, setNewMatch] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [isRefreshAnimating, setIsRefreshAnimating] = useState(false);
+  const [botName, setBotName] = useState(DEFAULT_BOT_NAME);
+
+  // Card refresh animation
+  const cardRefreshAnim = useRef(new Animated.Value(1)).current;
 
   // Initial animations
   useEffect(() => {
@@ -175,7 +307,7 @@ export default function MatchingScreen() {
   });
 
   // Charger les données
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -212,15 +344,42 @@ export default function MatchingScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
   }, []);
 
+  // S'abonner aux changements de statut en ligne
+  useEffect(() => {
+    const unsubscribe = websocketService.onOnlineStatusChange((userId, isOnline) => {
+      setOnlineUsers(prev => {
+        const newSet = new Set(prev);
+        if (isOnline) {
+          newSet.add(userId);
+        } else {
+          newSet.delete(userId);
+        }
+        return newSet;
+      });
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       loadData();
+      // Charger le nom du bot
+      const loadBotName = async () => {
+        try {
+          const savedName = await AsyncStorage.getItem('@ai_chat_bot_name');
+          if (savedName) setBotName(savedName);
+        } catch (error) {
+          console.error('Failed to load bot name:', error);
+        }
+      };
+      loadBotName();
     }, [])
   );
 
@@ -230,9 +389,44 @@ export default function MatchingScreen() {
     loadData();
   }, []);
 
+  // Animated refresh for discover tab
+  const handleDiscoverRefresh = useCallback(() => {
+    setIsRefreshAnimating(true);
+
+    // Animate cards out
+    Animated.sequence([
+      Animated.timing(cardRefreshAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      // Reset index and reload
+      setCurrentIndex(0);
+      setRefreshing(true);
+      loadData().finally(() => {
+        // Animate cards back in
+        Animated.spring(cardRefreshAnim, {
+          toValue: 1,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }).start(() => {
+          setIsRefreshAnimating(false);
+        });
+      });
+    });
+  }, [cardRefreshAnim]);
+
   const handleCardPress = (profile) => {
     setSelectedProfile(profile);
     setShowProfileModal(true);
+  };
+
+  const handleAvatarPress = (user) => {
+    if (user) {
+      navigation.navigate('UserProfile', { user });
+    }
   };
 
   const formatRelativeTime = (dateString) => {
@@ -251,102 +445,18 @@ export default function MatchingScreen() {
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   };
 
-  // Render conversation item with glassmorphism
-  const renderConversationItem = ({ item, index }) => {
-    const otherUser = item.otherUser;
-    const hasUnread = item.unreadCount > 0;
-    const itemAnim = useRef(new Animated.Value(0)).current;
-
-    useEffect(() => {
-      Animated.timing(itemAnim, {
-        toValue: 1,
-        duration: 400,
-        delay: index * 80,
-        useNativeDriver: true,
-      }).start();
-    }, []);
-
-    return (
-      <Animated.View
-        style={{
-          opacity: itemAnim,
-          transform: [{
-            translateX: itemAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [-30, 0],
-            }),
-          }],
-        }}
-      >
-        <TouchableOpacity
-          style={[styles.conversationItem, isDark && styles.conversationItemDark]}
-          onPress={() => navigation.navigate('ChatDetail', {
-            conversationId: item._id,
-            matchId: item.matchId,
-            otherUser
-          })}
-          activeOpacity={0.7}
-        >
-          <View style={styles.conversationAvatarWrapper}>
-            <LinearGradient
-              colors={hasUnread ? ['#22C55E', '#16A34A'] : ['#E5E7EB', '#D1D5DB']}
-              style={styles.avatarGradientRing}
-            >
-              {otherUser?.photo ? (
-                <Image source={{ uri: otherUser.photo }} style={styles.conversationAvatar} />
-              ) : (
-                <View style={[styles.conversationAvatar, styles.avatarPlaceholder]}>
-                  <Ionicons name="person" size={24} color="#CCC" />
-                </View>
-              )}
-            </LinearGradient>
-            {hasUnread && (
-              <View style={styles.onlineIndicator}>
-                <View style={styles.onlineDot} />
-              </View>
-            )}
-          </View>
-
-          <View style={styles.conversationContent}>
-            <View style={styles.conversationHeader}>
-              <Text style={[styles.conversationName, isDark && styles.textLight, hasUnread && styles.textBold]}>
-                {otherUser?.pseudo || otherUser?.prenom || 'Utilisateur'}
-              </Text>
-              <Text style={[styles.conversationTime, isDark && styles.textMuted]}>
-                {formatRelativeTime(item.lastMessage?.createdAt)}
-              </Text>
-            </View>
-            <Text
-              style={[
-                styles.conversationPreview,
-                isDark && styles.textMuted,
-                hasUnread && styles.conversationPreviewUnread
-              ]}
-              numberOfLines={1}
-            >
-              {item.lastMessage?.content || 'Commencez la conversation !'}
-            </Text>
-          </View>
-
-          {hasUnread && (
-            <LinearGradient
-              colors={[theme.colors.primary, '#16A34A']}
-              style={styles.unreadBadge}
-            >
-              <Text style={styles.unreadBadgeText}>{item.unreadCount}</Text>
-            </LinearGradient>
-          )}
-
-          <Ionicons
-            name="chevron-forward"
-            size={18}
-            color={isDark ? '#555' : '#CCC'}
-            style={styles.chevron}
-          />
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  };
+  // Render conversation item wrapper
+  const renderConversationItem = useCallback(({ item, index }) => (
+    <ConversationItem
+      item={item}
+      index={index}
+      isDark={isDark}
+      navigation={navigation}
+      formatRelativeTime={formatRelativeTime}
+      onlineUsers={onlineUsers}
+      onAvatarPress={handleAvatarPress}
+    />
+  ), [isDark, navigation, onlineUsers]);
 
   // Render new matches (conversations non commencées)
   const renderNewMatches = () => {
@@ -357,18 +467,18 @@ export default function MatchingScreen() {
     if (matchesWithoutConvo.length === 0) return null;
 
     return (
-      <View style={styles.newMatchesSection}>
+      <View style={[styles.newMatchesSection, isDark && styles.newMatchesSectionDark]}>
         <View style={styles.sectionHeader}>
           <View style={styles.sectionTitleWrapper}>
             <LinearGradient
-              colors={['#EC4899', '#F43F5E']}
+              colors={THEME_COLORS.warmGradient}
               style={styles.sectionIcon}
             >
               <Ionicons name="sparkles" size={12} color="#FFF" />
             </LinearGradient>
             <Text style={[styles.sectionTitle, isDark && styles.textLight]}>Nouveaux matchs</Text>
           </View>
-          <View style={styles.sectionBadge}>
+          <View style={[styles.sectionBadge, { backgroundColor: colors.accent }]}>
             <Text style={styles.sectionBadgeText}>{matchesWithoutConvo.length}</Text>
           </View>
         </View>
@@ -381,17 +491,17 @@ export default function MatchingScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.newMatchItem}
-              onPress={() => navigation.navigate('ChatDetail', { matchId: item._id, otherUser: item.user })}
+              onPress={() => handleAvatarPress(item.user)}
             >
               <LinearGradient
-                colors={['#EC4899', '#F43F5E']}
+                colors={THEME_COLORS.warmGradient}
                 style={styles.newMatchGradientRing}
               >
                 {item.user?.photo ? (
                   <Image source={{ uri: item.user.photo }} style={styles.newMatchAvatar} />
                 ) : (
-                  <View style={[styles.newMatchAvatar, styles.avatarPlaceholder]}>
-                    <Ionicons name="person" size={28} color="#CCC" />
+                  <View style={[styles.newMatchAvatar, styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
+                    <Ionicons name="person" size={28} color={isDark ? colors.dark.textTertiary : colors.light.textTertiary} />
                   </View>
                 )}
               </LinearGradient>
@@ -408,15 +518,54 @@ export default function MatchingScreen() {
     );
   };
 
+  // Render AI Chat Card
+  const renderAIChatCard = () => (
+    <TouchableOpacity
+      style={[styles.aiChatCard, isDark && styles.aiChatCardDark]}
+      onPress={() => navigation.navigate('AIChat')}
+      activeOpacity={0.8}
+    >
+      <View style={styles.aiChatContent}>
+        <LinearGradient
+          colors={THEME_COLORS.primaryGradient}
+          style={styles.aiAvatar}
+        >
+          <Ionicons name="sparkles" size={24} color="#FFF" />
+        </LinearGradient>
+        <View style={styles.aiChatInfo}>
+          <View style={styles.aiChatHeader}>
+            <Text style={[styles.aiChatName, isDark && styles.textLight]}>{botName}</Text>
+            <View style={styles.aiOnlineBadge}>
+              <View style={styles.aiOnlineDot} />
+              <Text style={styles.aiOnlineText}>En ligne</Text>
+            </View>
+          </View>
+          <Text style={[styles.aiChatDescription, isDark && styles.textMuted]} numberOfLines={1}>
+            Pose tes questions sur l'entrainement, nutrition...
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={colors.primary} />
+      </View>
+    </TouchableOpacity>
+  );
+
+  // Render messages header (AI card + new matches)
+  const renderMessagesHeader = () => (
+    <View>
+      {renderAIChatCard()}
+      {renderNewMatches()}
+    </View>
+  );
+
   // Render empty messages state
   const renderEmptyMessages = () => (
     <View style={styles.emptyState}>
       <LinearGradient
-        colors={isDark ? ['#1E293B', '#334155'] : ['#F8FAFC', '#E2E8F0']}
+        colors={isDark ? [colors.dark.backgroundSecondary, colors.dark.backgroundTertiary] : [colors.light.backgroundSecondary, colors.light.backgroundTertiary]}
         style={styles.emptyIconContainer}
       >
         <LinearGradient
-          colors={[theme.colors.primary, '#16A34A']}
+          colors={THEME_COLORS.primaryGradient}
           style={styles.emptyIconInner}
         >
           <Ionicons name="chatbubbles" size={40} color="#FFF" />
@@ -432,7 +581,7 @@ export default function MatchingScreen() {
         activeOpacity={0.8}
       >
         <LinearGradient
-          colors={[theme.colors.primary, '#16A34A']}
+          colors={THEME_COLORS.primaryGradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.ctaButton}
@@ -450,13 +599,13 @@ export default function MatchingScreen() {
       data={conversations}
       keyExtractor={(item) => item._id}
       renderItem={renderConversationItem}
-      ListHeaderComponent={renderNewMatches}
+      ListHeaderComponent={renderMessagesHeader}
       ListEmptyComponent={!loading && renderEmptyMessages}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={theme.colors.primary}
+          tintColor={colors.primary}
         />
       }
       contentContainerStyle={[
@@ -528,7 +677,7 @@ export default function MatchingScreen() {
                 <Image source={{ uri: user.photo }} style={styles.photo} />
               ) : (
                 <View style={[styles.photo, styles.photoPlaceholder]}>
-                  <Ionicons name="person" size={80} color="#CCC" />
+                  <Ionicons name="person" size={80} color={colors.light.textTertiary} />
                 </View>
               )}
               <LinearGradient
@@ -539,7 +688,7 @@ export default function MatchingScreen() {
               {/* Like overlay */}
               <Animated.View style={[styles.likeOverlay, { opacity: getLikeOpacity() }]}>
                 <LinearGradient
-                  colors={['#22C55E', '#16A34A']}
+                  colors={[colors.success, '#3D9140']}
                   style={styles.swipeLabel}
                 >
                   <Ionicons name="heart" size={24} color="#FFF" />
@@ -550,7 +699,7 @@ export default function MatchingScreen() {
               {/* Nope overlay */}
               <Animated.View style={[styles.nopeOverlay, { opacity: getNopeOpacity() }]}>
                 <LinearGradient
-                  colors={['#EF4444', '#DC2626']}
+                  colors={[colors.error, '#D32F2F']}
                   style={styles.swipeLabel}
                 >
                   <Ionicons name="close" size={24} color="#FFF" />
@@ -561,7 +710,7 @@ export default function MatchingScreen() {
               {/* Match score badge */}
               <View style={styles.matchScoreBadgeOverlay}>
                 <LinearGradient
-                  colors={['#EC4899', '#F43F5E']}
+                  colors={THEME_COLORS.warmGradient}
                   style={styles.matchScoreBadge}
                 >
                   <Ionicons name="heart" size={12} color="#FFF" />
@@ -576,7 +725,7 @@ export default function MatchingScreen() {
                   {user.age && <Text style={styles.userAge}>, {user.age}</Text>}
                   {user.isVerified && (
                     <View style={styles.verifiedBadge}>
-                      <Ionicons name="checkmark-circle" size={20} color="#3B82F6" />
+                      <Ionicons name="checkmark-circle" size={20} color={colors.info} />
                     </View>
                   )}
                 </View>
@@ -616,7 +765,7 @@ export default function MatchingScreen() {
                       <Ionicons
                         name={WORKOUT_TYPE_ICONS[type] || 'fitness'}
                         size={12}
-                        color={theme.colors.primary}
+                        color={colors.primary}
                       />
                       <Text style={[styles.workoutChipText, isDark && styles.workoutChipTextDark]}>
                         {type}
@@ -651,7 +800,7 @@ export default function MatchingScreen() {
               <Image source={{ uri: user.photo }} style={styles.photo} />
             ) : (
               <View style={[styles.photo, styles.photoPlaceholder]}>
-                <Ionicons name="person" size={80} color="#CCC" />
+                <Ionicons name="person" size={80} color={colors.light.textTertiary} />
               </View>
             )}
             <LinearGradient
@@ -676,8 +825,8 @@ export default function MatchingScreen() {
         disabled={currentIndex >= suggestions.length}
         activeOpacity={0.8}
       >
-        <View style={[styles.actionButton, styles.rejectButton]}>
-          <Ionicons name="close" size={32} color="#EF4444" />
+        <View style={[styles.actionButton, styles.rejectButton, isDark && styles.rejectButtonDark]}>
+          <Ionicons name="close" size={32} color={colors.error} />
         </View>
         <Text style={[styles.actionButtonLabel, isDark && styles.textMuted]}>Passer</Text>
       </TouchableOpacity>
@@ -689,7 +838,7 @@ export default function MatchingScreen() {
         activeOpacity={0.8}
       >
         <LinearGradient
-          colors={['#22C55E', '#16A34A']}
+          colors={THEME_COLORS.primaryGradient}
           style={[styles.actionButton, styles.likeButton]}
         >
           <Ionicons name="heart" size={32} color="#FFF" />
@@ -701,13 +850,26 @@ export default function MatchingScreen() {
 
   // Render empty discover state
   const renderEmptyDiscover = () => (
-    <View style={styles.emptyState}>
+    <Animated.View
+      style={[
+        styles.emptyState,
+        {
+          opacity: cardRefreshAnim,
+          transform: [{
+            scale: cardRefreshAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0.9, 1],
+            }),
+          }],
+        },
+      ]}
+    >
       <LinearGradient
-        colors={isDark ? ['#1E293B', '#334155'] : ['#F8FAFC', '#E2E8F0']}
+        colors={isDark ? [colors.dark.backgroundSecondary, colors.dark.backgroundTertiary] : [colors.light.backgroundSecondary, colors.light.backgroundTertiary]}
         style={styles.emptyIconContainer}
       >
         <LinearGradient
-          colors={['#8B5CF6', '#7C3AED']}
+          colors={THEME_COLORS.secondaryGradient}
           style={styles.emptyIconInner}
         >
           <Ionicons name="people" size={40} color="#FFF" />
@@ -719,32 +881,52 @@ export default function MatchingScreen() {
       </Text>
       <TouchableOpacity
         style={styles.ctaButtonWrapper}
-        onPress={onRefresh}
+        onPress={handleDiscoverRefresh}
+        disabled={isRefreshAnimating}
         activeOpacity={0.8}
       >
         <LinearGradient
-          colors={['#8B5CF6', '#7C3AED']}
+          colors={THEME_COLORS.secondaryGradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={styles.ctaButton}
+          style={[styles.ctaButton, isRefreshAnimating && styles.ctaButtonDisabled]}
         >
-          <Ionicons name="refresh" size={20} color="#FFF" />
-          <Text style={styles.ctaButtonText}>Actualiser</Text>
+          {isRefreshAnimating ? (
+            <ActivityIndicator size="small" color="#FFF" />
+          ) : (
+            <>
+              <Ionicons name="refresh" size={20} color="#FFF" />
+              <Text style={styles.ctaButtonText}>Actualiser</Text>
+            </>
+          )}
         </LinearGradient>
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   );
 
   // Render discover tab
   const renderDiscoverTab = () => (
     <View style={styles.discoverContainer}>
-      <View style={styles.cardsContainer}>
+      <Animated.View
+        style={[
+          styles.cardsContainer,
+          {
+            opacity: cardRefreshAnim,
+            transform: [{
+              scale: cardRefreshAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.95, 1],
+              }),
+            }],
+          },
+        ]}
+      >
         {currentIndex >= suggestions.length ? (
           renderEmptyDiscover()
         ) : (
           suggestions.map((profile, index) => renderCard(profile, index)).reverse()
         )}
-      </View>
+      </Animated.View>
       {currentIndex < suggestions.length && renderActionButtons()}
     </View>
   );
@@ -782,7 +964,7 @@ export default function MatchingScreen() {
                     styles.confetti,
                     {
                       left: `${(i * 8) + 4}%`,
-                      backgroundColor: ['#EC4899', '#F43F5E', '#22C55E', '#3B82F6'][i % 4],
+                      backgroundColor: [colors.primary, colors.accent, colors.secondary, colors.warning][i % 4],
                       transform: [{ rotate: `${i * 30}deg` }],
                     },
                   ]}
@@ -803,7 +985,7 @@ export default function MatchingScreen() {
               ]}
             >
               <LinearGradient
-                colors={['#EC4899', '#F43F5E']}
+                colors={THEME_COLORS.warmGradient}
                 style={styles.matchModalIcon}
               >
                 <Ionicons name="heart" size={48} color="#FFF" />
@@ -821,27 +1003,27 @@ export default function MatchingScreen() {
             <View style={styles.matchAvatars}>
               <View style={styles.matchAvatarWrapper}>
                 <LinearGradient
-                  colors={[theme.colors.primary, '#16A34A']}
+                  colors={THEME_COLORS.primaryGradient}
                   style={styles.matchAvatarGradient}
                 >
                   <View style={[styles.matchAvatarPlaceholder, isDark && styles.matchAvatarPlaceholderDark]}>
-                    <Ionicons name="person" size={24} color={isDark ? '#666' : '#CCC'} />
+                    <Ionicons name="person" size={24} color={isDark ? colors.dark.textTertiary : colors.light.textTertiary} />
                   </View>
                 </LinearGradient>
               </View>
-              <View style={styles.matchHeartIcon}>
-                <Ionicons name="heart" size={20} color="#EC4899" />
+              <View style={[styles.matchHeartIcon, isDark && styles.matchHeartIconDark]}>
+                <Ionicons name="heart" size={20} color={colors.accent} />
               </View>
               <View style={styles.matchAvatarWrapper}>
                 <LinearGradient
-                  colors={['#EC4899', '#F43F5E']}
+                  colors={THEME_COLORS.warmGradient}
                   style={styles.matchAvatarGradient}
                 >
                   {newMatch?.user?.photo ? (
                     <Image source={{ uri: newMatch.user.photo }} style={styles.matchAvatar} />
                   ) : (
                     <View style={[styles.matchAvatarPlaceholder, isDark && styles.matchAvatarPlaceholderDark]}>
-                      <Ionicons name="person" size={24} color={isDark ? '#666' : '#CCC'} />
+                      <Ionicons name="person" size={24} color={isDark ? colors.dark.textTertiary : colors.light.textTertiary} />
                     </View>
                   )}
                 </LinearGradient>
@@ -865,7 +1047,7 @@ export default function MatchingScreen() {
                 activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={[theme.colors.primary, '#16A34A']}
+                  colors={THEME_COLORS.primaryGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.matchModalButtonGradient}
@@ -886,7 +1068,7 @@ export default function MatchingScreen() {
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <ActivityIndicator size="large" color={colors.primary} />
           <Text style={[styles.loadingText, isDark && styles.textMuted]}>Chargement...</Text>
         </View>
       </SafeAreaView>
@@ -913,13 +1095,13 @@ export default function MatchingScreen() {
         ]}
       >
         <LinearGradient
-          colors={isDark ? ['#1A1D24', '#12151A'] : ['#FFFFFF', '#F8FAFC']}
+          colors={isDark ? [colors.dark.backgroundSecondary, colors.dark.background] : [colors.light.background, colors.light.backgroundSecondary]}
           style={styles.headerGradient}
         >
           <View style={styles.headerContent}>
             <View style={styles.headerLeft}>
               <LinearGradient
-                colors={[theme.colors.primary, '#16A34A']}
+                colors={THEME_COLORS.primaryGradient}
                 style={styles.headerIconBg}
               >
                 <Ionicons name="people" size={20} color="#FFF" />
@@ -931,7 +1113,7 @@ export default function MatchingScreen() {
               onPress={() => navigation.navigate('ProfileTab', { screen: 'ProfileSetup' })}
               activeOpacity={0.7}
             >
-              <Ionicons name="options-outline" size={22} color={isDark ? '#FFF' : '#374151'} />
+              <Ionicons name="options-outline" size={22} color={isDark ? colors.dark.text : colors.light.text} />
             </TouchableOpacity>
           </View>
         </LinearGradient>
@@ -939,7 +1121,7 @@ export default function MatchingScreen() {
 
       {/* Modern Tabs */}
       <View style={[styles.tabsContainer, isDark && styles.tabsContainerDark]}>
-        <View style={styles.tabsWrapper}>
+        <View style={[styles.tabsWrapper, isDark && styles.tabsWrapperDark]}>
           <Animated.View
             style={[
               styles.tabIndicator,
@@ -954,7 +1136,7 @@ export default function MatchingScreen() {
             ]}
           >
             <LinearGradient
-              colors={[theme.colors.primary, '#16A34A']}
+              colors={THEME_COLORS.primaryGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.tabIndicatorGradient}
@@ -972,7 +1154,7 @@ export default function MatchingScreen() {
                 <Ionicons
                   name={tab.icon}
                   size={18}
-                  color={activeTab === tab.key ? (isDark ? '#FFF' : '#1F2937') : (isDark ? '#6B7280' : '#9CA3AF')}
+                  color={activeTab === tab.key ? (isDark ? colors.dark.text : colors.light.text) : (isDark ? colors.dark.textTertiary : colors.light.textTertiary)}
                 />
                 <Text
                   style={[
@@ -986,7 +1168,7 @@ export default function MatchingScreen() {
                 </Text>
                 {tab.key === 'messages' && unreadCount > 0 && (
                   <LinearGradient
-                    colors={['#EF4444', '#DC2626']}
+                    colors={[colors.accent, '#E55A5A']}
                     style={styles.tabBadge}
                   >
                     <Text style={styles.tabBadgeText}>{unreadCount}</Text>
@@ -994,7 +1176,7 @@ export default function MatchingScreen() {
                 )}
                 {tab.key === 'discover' && pendingSuggestions > 0 && (
                   <LinearGradient
-                    colors={['#22C55E', '#16A34A']}
+                    colors={THEME_COLORS.primaryGradient}
                     style={styles.tabBadge}
                   >
                     <Text style={styles.tabBadgeText}>{pendingSuggestions}</Text>
@@ -1027,10 +1209,10 @@ export default function MatchingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.light.background,
   },
   containerDark: {
-    backgroundColor: '#12151A',
+    backgroundColor: colors.dark.background,
   },
   loadingContainer: {
     flex: 1,
@@ -1040,7 +1222,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: '#6B7280',
+    color: colors.light.textSecondary,
   },
 
   // Header
@@ -1072,25 +1254,25 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#1F2937',
+    color: colors.light.text,
     letterSpacing: -0.5,
   },
   settingsButton: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: colors.light.backgroundTertiary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   settingsButtonDark: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: colors.dark.backgroundTertiary,
   },
   textLight: {
-    color: '#FFFFFF',
+    color: colors.dark.text,
   },
   textMuted: {
-    color: '#6B7280',
+    color: colors.dark.textTertiary,
   },
   textBold: {
     fontWeight: '600',
@@ -1101,17 +1283,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.light.border,
   },
   tabsContainerDark: {
-    borderBottomColor: '#1F2937',
+    borderBottomColor: colors.dark.border,
   },
   tabsWrapper: {
     flexDirection: 'row',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: colors.light.backgroundTertiary,
     borderRadius: 12,
     padding: 4,
     position: 'relative',
+  },
+  tabsWrapperDark: {
+    backgroundColor: colors.dark.backgroundTertiary,
   },
   tabIndicator: {
     position: 'absolute',
@@ -1139,17 +1324,17 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#9CA3AF',
+    color: colors.light.textTertiary,
   },
   tabTextDark: {
-    color: '#6B7280',
+    color: colors.dark.textTertiary,
   },
   tabTextActive: {
-    color: '#1F2937',
+    color: colors.light.text,
     fontWeight: '600',
   },
   tabTextActiveDark: {
-    color: '#FFF',
+    color: colors.dark.text,
   },
   tabBadge: {
     borderRadius: 10,
@@ -1173,12 +1358,82 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
 
+  // AI Chat Card
+  aiChatCard: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 16,
+    backgroundColor: `${colors.primary}10`,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: `${colors.primary}30`,
+  },
+  aiChatCardDark: {
+    backgroundColor: `${colors.primary}15`,
+    borderColor: `${colors.primary}40`,
+  },
+  aiChatContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+  },
+  aiAvatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  aiChatInfo: {
+    flex: 1,
+    marginLeft: 14,
+    marginRight: 8,
+  },
+  aiChatHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  aiChatName: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: colors.light.text,
+  },
+  aiOnlineBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(76, 175, 80, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    gap: 4,
+  },
+  aiOnlineDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#4CAF50',
+  },
+  aiOnlineText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#4CAF50',
+  },
+  aiChatDescription: {
+    fontSize: 14,
+    marginTop: 4,
+    color: colors.light.textSecondary,
+  },
+
   // New matches section
   newMatchesSection: {
     paddingTop: 16,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.light.border,
+  },
+  newMatchesSectionDark: {
+    borderBottomColor: colors.dark.border,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -1202,10 +1457,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1F2937',
+    color: colors.light.text,
   },
   sectionBadge: {
-    backgroundColor: '#EC4899',
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -1235,18 +1489,18 @@ const styles = StyleSheet.create({
     width: 62,
     height: 62,
     borderRadius: 31,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.light.background,
   },
   newMatchBadge: {
     position: 'absolute',
     top: 0,
     right: 0,
-    backgroundColor: '#22C55E',
+    backgroundColor: colors.success,
     borderRadius: 8,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderWidth: 2,
-    borderColor: '#FFF',
+    borderColor: colors.light.background,
   },
   newMatchBadgeText: {
     color: '#FFF',
@@ -1257,7 +1511,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 8,
     textAlign: 'center',
-    color: '#374151',
+    color: colors.light.text,
     fontWeight: '500',
   },
 
@@ -1269,7 +1523,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginHorizontal: 16,
     marginVertical: 4,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.light.surface,
     borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -1278,7 +1532,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   conversationItemDark: {
-    backgroundColor: '#1A1D24',
+    backgroundColor: colors.dark.surface,
     shadowOpacity: 0,
   },
   conversationAvatarWrapper: {
@@ -1297,12 +1551,15 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.light.background,
   },
   avatarPlaceholder: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.light.backgroundTertiary,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  avatarPlaceholderDark: {
+    backgroundColor: colors.dark.backgroundTertiary,
   },
   onlineIndicator: {
     position: 'absolute',
@@ -1311,15 +1568,21 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.light.background,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  onlineIndicatorDark: {
+    backgroundColor: colors.dark.background,
   },
   onlineDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#22C55E',
+    backgroundColor: colors.success, // Vert pour en ligne
+  },
+  offlineDot: {
+    backgroundColor: colors.light.textTertiary, // Gris pour hors ligne
   },
   conversationContent: {
     flex: 1,
@@ -1333,18 +1596,18 @@ const styles = StyleSheet.create({
   conversationName: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#1F2937',
+    color: colors.light.text,
   },
   conversationTime: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: colors.light.textTertiary,
   },
   conversationPreview: {
     fontSize: 14,
-    color: '#6B7280',
+    color: colors.light.textSecondary,
   },
   conversationPreviewUnread: {
-    color: '#374151',
+    color: colors.light.text,
     fontWeight: '500',
   },
   unreadBadge: {
@@ -1392,12 +1655,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#1F2937',
+    color: colors.light.text,
     marginBottom: 12,
   },
   emptyText: {
     fontSize: 15,
-    color: '#6B7280',
+    color: colors.light.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 28,
@@ -1419,6 +1682,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  ctaButtonDisabled: {
+    opacity: 0.7,
+  },
 
   // Discover
   discoverContainer: {
@@ -1434,7 +1700,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: SCREEN_WIDTH - 32,
     height: SCREEN_HEIGHT * 0.58,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.light.surface,
     borderRadius: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
@@ -1444,7 +1710,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   cardDark: {
-    backgroundColor: '#1A1D24',
+    backgroundColor: colors.dark.surface,
   },
   cardBehind: {
     top: 8,
@@ -1461,7 +1727,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   photoPlaceholder: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: colors.light.backgroundTertiary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1554,10 +1820,10 @@ const styles = StyleSheet.create({
   },
   cardInfo: {
     padding: 16,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.light.surface,
   },
   cardInfoDark: {
-    backgroundColor: '#1A1D24',
+    backgroundColor: colors.dark.surface,
   },
   cardInfoHeader: {
     flexDirection: 'row',
@@ -1579,12 +1845,12 @@ const styles = StyleSheet.create({
   },
   bio: {
     fontSize: 14,
-    color: '#6B7280',
+    color: colors.light.textSecondary,
     lineHeight: 20,
     marginBottom: 12,
   },
   bioDark: {
-    color: '#9CA3AF',
+    color: colors.dark.textSecondary,
   },
   workoutTypes: {
     flexDirection: 'row',
@@ -1594,23 +1860,23 @@ const styles = StyleSheet.create({
   workoutChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: `${theme.colors.primary}15`,
+    backgroundColor: `${colors.primary}20`,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     gap: 6,
   },
   workoutChipDark: {
-    backgroundColor: 'rgba(34,197,94,0.15)',
+    backgroundColor: `${colors.primary}30`,
   },
   workoutChipText: {
     fontSize: 12,
-    color: '#374151',
+    color: colors.light.text,
     textTransform: 'capitalize',
     fontWeight: '500',
   },
   workoutChipTextDark: {
-    color: '#D1D5DB',
+    color: colors.dark.text,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -1636,16 +1902,19 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   rejectButton: {
-    backgroundColor: '#FFF',
+    backgroundColor: colors.light.surface,
     borderWidth: 2,
-    borderColor: '#EF4444',
+    borderColor: colors.error,
+  },
+  rejectButtonDark: {
+    backgroundColor: colors.dark.surface,
   },
   likeButton: {
     // gradient applied via LinearGradient
   },
   actionButtonLabel: {
     fontSize: 12,
-    color: '#6B7280',
+    color: colors.light.textSecondary,
     fontWeight: '500',
   },
 
@@ -1658,7 +1927,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   matchModalContent: {
-    backgroundColor: '#FFF',
+    backgroundColor: colors.light.surface,
     borderRadius: 28,
     padding: 32,
     alignItems: 'center',
@@ -1667,7 +1936,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   modalContentDark: {
-    backgroundColor: '#1A1D24',
+    backgroundColor: colors.dark.surface,
   },
   confettiContainer: {
     position: 'absolute',
@@ -1699,12 +1968,12 @@ const styles = StyleSheet.create({
   matchModalTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1F2937',
+    color: colors.light.text,
     marginBottom: 8,
   },
   matchModalText: {
     fontSize: 15,
-    color: '#6B7280',
+    color: colors.light.textSecondary,
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -1733,27 +2002,30 @@ const styles = StyleSheet.create({
     width: 58,
     height: 58,
     borderRadius: 29,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.light.background,
   },
   matchAvatarPlaceholder: {
     width: 58,
     height: 58,
     borderRadius: 29,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.light.backgroundTertiary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   matchAvatarPlaceholderDark: {
-    backgroundColor: '#2A2E36',
+    backgroundColor: colors.dark.backgroundTertiary,
   },
   matchHeartIcon: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#FEE2E2',
+    backgroundColor: `${colors.accent}20`,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 4,
+  },
+  matchHeartIconDark: {
+    backgroundColor: `${colors.accent}30`,
   },
   matchModalButtons: {
     width: '100%',
@@ -1769,15 +2041,15 @@ const styles = StyleSheet.create({
   },
   matchModalButtonOutline: {
     borderWidth: 1.5,
-    borderColor: '#E5E7EB',
+    borderColor: colors.light.border,
   },
   matchModalButtonOutlineDark: {
-    borderColor: '#374151',
+    borderColor: colors.dark.border,
   },
   matchModalButtonOutlineText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.light.text,
   },
   matchModalButtonGradientWrapper: {
     borderRadius: 14,

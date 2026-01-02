@@ -9,6 +9,7 @@ import {
   Text,
   TouchableOpacity,
   Animated,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,6 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../theme';
 import { useChat } from '../../contexts/ChatContext';
 import { MessageBubble, MessageInput, MediaPicker, MediaPreview, UserSettingsModal, ReportModal } from '../../components/chat';
+import { deleteConversation, blockConversation } from '../../api/matchChat';
 import { logger } from '../../services/logger';
 import useThemedStyles from '../../hooks/useThemedStyles';
 import { useAuth } from '../../contexts/AuthContext';
@@ -30,6 +32,7 @@ export default function ChatDetailScreen({ route, navigation }) {
   const { user } = useAuth();
   const {
     messages,
+    conversations,
     activeConversation,
     loadConversation,
     loadMessages,
@@ -47,6 +50,7 @@ export default function ChatDetailScreen({ route, navigation }) {
   const [previewMedia, setPreviewMedia] = useState(null);
   const [showUserSettings, setShowUserSettings] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [isOtherUserOnline, setIsOtherUserOnline] = useState(false);
 
   const flatListRef = useRef(null);
   const scrolledToBottomRef = useRef(false);
@@ -78,7 +82,7 @@ export default function ChatDetailScreen({ route, navigation }) {
   useEffect(() => {
     const load = async () => {
       try {
-        logger.chat.debug('Loading conversation with params', { conversationId, matchId });
+        logger.chat.debug('Loading conversation with params', { conversationId, matchId, otherUserId: otherUserParam?._id });
         setHasMoreMessages(true);
         scrolledToBottomRef.current = false;
         previousMessagesLengthRef.current = 0;
@@ -95,13 +99,39 @@ export default function ChatDetailScreen({ route, navigation }) {
           if (conversation?._id) {
             await loadMessages(conversation._id);
           }
+        } else if (otherUserParam?._id) {
+          // Si on a seulement otherUser, chercher une conversation existante
+          logger.chat.debug('Loading conversation by otherUser', { otherUserId: otherUserParam._id });
+
+          // D'abord, essayer de trouver la conversation dans la liste des conversations
+          const existingConv = conversations?.find(c =>
+            c.otherUser?._id === otherUserParam._id ||
+            c.otherUser?._id?.toString() === otherUserParam._id?.toString() ||
+            c.participants?.some(p =>
+              p._id === otherUserParam._id ||
+              p._id?.toString() === otherUserParam._id?.toString()
+            )
+          );
+
+          if (existingConv) {
+            logger.chat.debug('Found existing conversation', { convId: existingConv._id });
+            setActiveConversation(existingConv);
+            await loadMessages(existingConv._id);
+          } else {
+            // Pas de conversation existante - on attend que l'utilisateur envoie un message
+            logger.chat.debug('No existing conversation found, waiting for first message');
+            setActiveConversation({
+              otherUser: otherUserParam,
+              participants: [otherUserParam]
+            });
+          }
         }
       } catch (error) {
         logger.chat.error('Failed to load conversation', error);
       }
     };
     load();
-  }, [conversationId, matchId]);
+  }, [conversationId, matchId, otherUserParam?._id, conversations]);
 
   // Marquer comme lu
   useEffect(() => {
@@ -119,6 +149,27 @@ export default function ChatDetailScreen({ route, navigation }) {
       };
     }
   }, [activeConversation?._id]);
+
+  // Suivi du statut en ligne de l'autre utilisateur
+  useEffect(() => {
+    const otherUserId = otherUserParam?._id?.toString() ||
+      activeConversation?.otherUser?._id?.toString() ||
+      activeConversation?.participants?.find((p) => p._id !== user?._id)?._id?.toString();
+
+    if (!otherUserId) return;
+
+    // Vérifier le statut initial
+    setIsOtherUserOnline(websocketService.isUserOnline(otherUserId));
+
+    // S'abonner aux changements de statut
+    const unsubscribe = websocketService.onOnlineStatusChange((userId, isOnline) => {
+      if (userId === otherUserId) {
+        setIsOtherUserOnline(isOnline);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [otherUserParam, activeConversation, user]);
 
   // Scroll vers le bas - CORRECTION DU BUG
   // On utilise inverted list pour un scroll plus naturel
@@ -199,37 +250,66 @@ export default function ChatDetailScreen({ route, navigation }) {
 
   // Actions utilisateur
   const handleUserAction = async (action) => {
+    logger.chat.debug('User action triggered', { action, conversationId: activeConversation?._id });
+
     switch (action) {
       case 'viewProfile':
-        if (otherUser?._id) {
-          navigation.navigate('ProfileTab', {
-            screen: 'UserProfile',
-            params: { userId: otherUser._id },
-          });
+        if (otherUser) {
+          navigation.navigate('UserProfile', { user: otherUser, userId: otherUser._id });
         }
         break;
       case 'mute':
-        // TODO: API call
+        // TODO: API call pour mute
+        Alert.alert('Info', 'Cette fonctionnalite arrive bientot !');
         break;
       case 'report':
         setShowReportModal(true);
         break;
       case 'block':
-        // TODO: API call
-        navigation.goBack();
+        try {
+          if (activeConversation?._id) {
+            await blockConversation(activeConversation._id);
+            logger.chat.info('Conversation blocked');
+            Alert.alert('Utilisateur bloque', 'Vous ne recevrez plus de messages de cette personne.');
+          } else {
+            logger.chat.warn('No conversation ID for block action');
+          }
+          navigation.goBack();
+        } catch (error) {
+          logger.chat.error('Failed to block conversation', error);
+          Alert.alert('Erreur', 'Impossible de bloquer cet utilisateur.');
+        }
         break;
       case 'delete':
-        // TODO: API call
-        navigation.goBack();
+        try {
+          if (activeConversation?._id) {
+            await deleteConversation(activeConversation._id);
+            logger.chat.info('Conversation deleted');
+          } else {
+            logger.chat.warn('No conversation ID for delete action');
+          }
+          navigation.goBack();
+        } catch (error) {
+          logger.chat.error('Failed to delete conversation', error);
+          Alert.alert('Erreur', 'Impossible de supprimer cette conversation.');
+        }
         break;
     }
   };
 
   const handleReportSubmit = async (reportData) => {
     try {
-      // TODO: API call
+      // Log le signalement pour le moment (l'API report sera implementee plus tard)
+      logger.chat.info('Report submitted', {
+        userId: otherUser?._id,
+        reason: reportData.reason,
+        description: reportData.description,
+        conversationId: activeConversation?._id,
+      });
       setShowReportModal(false);
+      // Le modal affiche deja un message de succes
     } catch (error) {
+      logger.chat.error('Failed to submit report', error);
       throw error;
     }
   };
@@ -309,23 +389,26 @@ export default function ChatDetailScreen({ route, navigation }) {
                   </View>
                 </TouchableOpacity>
 
-                {/* Info utilisateur - cliquable */}
+                {/* Info utilisateur - cliquable pour voir le profil */}
                 <TouchableOpacity
                   style={styles.userInfo}
-                  onPress={() => setShowUserSettings(true)}
+                  onPress={() => navigation.navigate('UserProfile', { user: otherUser })}
                   activeOpacity={0.7}
                 >
                   <View style={styles.avatarWrapper}>
                     <Avatar source={avatarUrl} size="md" fallback={initials} />
-                    <View style={styles.onlineIndicator} />
+                    <View style={[
+                      styles.onlineIndicator,
+                      !isOtherUserOnline && styles.offlineIndicator
+                    ]} />
                   </View>
 
                   <View style={styles.userTextContainer}>
                     <Text style={[styles.userName, { color: themedStyles.textPrimary }]} numberOfLines={1}>
                       {displayName}
                     </Text>
-                    <Text style={[styles.userStatus, { color: themedStyles.textSecondary }]}>
-                      En ligne
+                    <Text style={[styles.userStatus, { color: isOtherUserOnline ? '#4CAF50' : themedStyles.textSecondary }]}>
+                      {isOtherUserOnline ? 'En ligne' : 'Hors ligne'}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -486,6 +569,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CAF50',
     borderWidth: 2,
     borderColor: '#FFFFFF',
+  },
+  offlineIndicator: {
+    backgroundColor: '#9E9E9E',
   },
   userTextContainer: {
     flex: 1,
