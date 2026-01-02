@@ -468,6 +468,10 @@ export default function ChatDetailScreen({ route, navigation }) {
                   minIndexForVisible: 0,
                   autoscrollToTopThreshold: 100,
                 }}
+                maxToRenderPerBatch={15}
+                removeClippedSubviews={Platform.OS === 'android'}
+                initialNumToRender={20}
+                windowSize={10}
               />
             )}
 
