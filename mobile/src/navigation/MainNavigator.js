@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme, Platform } from 'react-native';
+import { useColorScheme, Platform, View, StyleSheet } from 'react-native';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
 import HomeStack from './stacks/HomeStack';
@@ -11,6 +11,7 @@ import ProfileStack from './stacks/ProfileStack';
 
 import { theme } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
+import { useChat } from '../contexts/ChatContext';
 
 const Tab = createBottomTabNavigator();
 
@@ -65,6 +66,7 @@ export default function MainNavigator() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const { user } = useAuth();
+  const { unreadCount } = useChat();
 
   // Vérifier si l'utilisateur est premium
   // Le backend retourne isPremium directement, ou subscriptionTier === 'premium'
@@ -112,11 +114,17 @@ export default function MainNavigator() {
           options={({ route }) => ({
             tabBarLabel: tab.label,
             tabBarIcon: ({ focused, color }) => (
-              <Ionicons
-                name={focused ? tab.icon : `${tab.icon}-outline`}
-                size={24}
-                color={color}
-              />
+              <View>
+                <Ionicons
+                  name={focused ? tab.icon : `${tab.icon}-outline`}
+                  size={24}
+                  color={color}
+                />
+                {/* Point rouge pour les messages non lus sur Matching */}
+                {tab.name === 'MatchingTab' && unreadCount > 0 && (
+                  <View style={styles.unreadBadge} />
+                )}
+              </View>
             ),
             // Cacher la tab bar sur certains écrans (Matching pour chat/programmes)
             tabBarStyle: tab.name === 'MatchingTab'
@@ -128,3 +136,17 @@ export default function MainNavigator() {
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  unreadBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FF3B30',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+});

@@ -168,10 +168,12 @@ const globalLimiter = rateLimit({
     res.status(429).sendFile(path.join(__dirname, 'public', 'rate-limit.html'));
   },
   skip: (req) => {
-    // Whitelist pour les tests de charge (ajouter ton IP ici)
-    const whitelistedIPs = process.env.RATE_LIMIT_WHITELIST?.split(',') || [];
+    // Whitelist pour les tests de charge (comparaison stricte d'IP)
+    const whitelistedIPs = process.env.RATE_LIMIT_WHITELIST?.split(',').map(ip => ip.trim()) || [];
     const clientIP = req.ip || req.connection.remoteAddress;
-    if (whitelistedIPs.some(ip => clientIP.includes(ip))) {
+    // Normaliser l'IP (enlever le préfixe ::ffff: pour IPv4 mappées en IPv6)
+    const normalizedIP = clientIP?.replace(/^::ffff:/, '');
+    if (normalizedIP && whitelistedIPs.includes(normalizedIP)) {
       return true;
     }
 

@@ -33,6 +33,7 @@ const DEFAULT_BOT_NAME = 'Assistant Harmonith';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
+const CONVERSATION_ITEM_HEIGHT = 92; // 56 avatar + 28 padding + 8 margin
 
 // Onglets
 const TABS = [
@@ -557,6 +558,13 @@ export default function MatchingScreen() {
     </View>
   );
 
+  // Optimisation FlatList - getItemLayout pour scroll plus fluide
+  const getConversationItemLayout = useCallback((data, index) => ({
+    length: CONVERSATION_ITEM_HEIGHT,
+    offset: CONVERSATION_ITEM_HEIGHT * index,
+    index,
+  }), []);
+
   // Render empty messages state
   const renderEmptyMessages = () => (
     <View style={styles.emptyState}>
@@ -599,6 +607,7 @@ export default function MatchingScreen() {
       data={conversations}
       keyExtractor={(item) => item._id}
       renderItem={renderConversationItem}
+      getItemLayout={getConversationItemLayout}
       ListHeaderComponent={renderMessagesHeader}
       ListEmptyComponent={!loading && renderEmptyMessages}
       refreshControl={
@@ -613,6 +622,10 @@ export default function MatchingScreen() {
         conversations.length === 0 && styles.emptyListContainer
       ]}
       showsVerticalScrollIndicator={false}
+      maxToRenderPerBatch={10}
+      removeClippedSubviews={true}
+      initialNumToRender={10}
+      windowSize={5}
     />
   );
 

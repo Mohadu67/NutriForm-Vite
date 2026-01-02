@@ -18,7 +18,7 @@ const API_URL = __DEV__
   ? getDevApiUrl()
   : 'https://api.harmonith.com/api';
 
-console.log('[API] Base URL:', API_URL);
+if (__DEV__) console.log('[API] Base URL:', API_URL);
 
 // Instance axios avec configuration React Native
 const client = axios.create({
@@ -35,10 +35,10 @@ export const tokenStorage = secureStorage;
 // Request interceptor - Add authorization header with token
 client.interceptors.request.use(
   async (config) => {
-    // Log request details in dev
+    // Log request details in dev (sans données sensibles)
     if (__DEV__) {
       console.log('[API] Request:', config.method?.toUpperCase(), config.url);
-      console.log('[API] Request body:', JSON.stringify(config.data));
+      // Ne pas logger les données pour éviter d'exposer passwords/tokens
     }
 
     const token = await secureStorage.getToken();
@@ -68,7 +68,7 @@ client.interceptors.response.use(
 
     if (__DEV__) {
       console.log('[API] Response ERROR:', url, status);
-      console.log('[API] Error data:', JSON.stringify(error?.response?.data));
+      console.log('[API] Error message:', error?.response?.data?.message || error?.message);
     }
 
     // Ne pas essayer de refresh sur les routes d'auth
