@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,10 +11,14 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { theme } from '../../theme';
+
+// Clé de stockage pour les données des calculateurs
+const CALCULATOR_STORAGE_KEY = '@calculator_data';
 
 // Constantes pour les calculateurs
 const TABS = [
@@ -136,12 +140,109 @@ export default function CalculatorsScreen() {
   const [selectedCalorieType, setSelectedCalorieType] = useState(null);
 
   // 1RM State
-  const [rmData, setRmData] = useState({ poids: '', reps: '' });
+  const [rmData, setRmData] = useState({ poids: '', reps: '', exercice: '' });
   const [rmResult, setRmResult] = useState(null);
 
   // FC Max State
   const [cardioData, setCardioData] = useState({ age: '' });
   const [cardioResult, setCardioResult] = useState(null);
+
+  // Sauvegarder les données d'un calculateur (avec historique)
+  const saveCalculatorData = useCallback(async (type, data) => {
+    try {
+      const existingData = await AsyncStorage.getItem(CALCULATOR_STORAGE_KEY);
+      const allData = existingData ? JSON.parse(existingData) : {};
+
+      // Créer l'entrée avec date
+      const newEntry = {
+        ...data,
+        id: Date.now().toString(),
+        savedAt: new Date().toISOString(),
+      };
+
+      // Initialiser l'historique si nécessaire
+      if (!allData[type]) {
+        allData[type] = { history: [] };
+      } else if (!allData[type].history) {
+        // Migration: convertir ancien format vers nouveau
+        allData[type] = { history: [{ ...allData[type], id: Date.now().toString() }] };
+      }
+
+      // Ajouter au début de l'historique (plus récent en premier)
+      allData[type].history.unshift(newEntry);
+
+      // Limiter à 20 entrées max par type
+      if (allData[type].history.length > 20) {
+        allData[type].history = allData[type].history.slice(0, 20);
+      }
+
+      await AsyncStorage.setItem(CALCULATOR_STORAGE_KEY, JSON.stringify(allData));
+      Alert.alert('Enregistré !', 'Vos données ont été sauvegardées et seront visibles sur le dashboard.');
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de sauvegarder les données');
+    }
+  }, []);
+
+  // Sauvegarder IMC
+  const saveIMCData = useCallback(() => {
+    if (!imcResult) return;
+    saveCalculatorData('imc', {
+      imc: imcResult.imc,
+      categorie: imcResult.categorie,
+      poids: parseFloat(imcData.poids),
+      taille: parseFloat(imcData.taille),
+      poidsIdealMin: imcResult.poidsIdealMin,
+      poidsIdealMax: imcResult.poidsIdealMax,
+    });
+  }, [imcResult, imcData, saveCalculatorData]);
+
+  // Sauvegarder Calories
+  const saveCaloriesData = useCallback(() => {
+    if (!caloriesResult || !selectedCalorieType) {
+      Alert.alert('Info', 'Veuillez d\'abord sélectionner un objectif');
+      return;
+    }
+    const selectedData = caloriesResult[selectedCalorieType];
+    saveCalculatorData('calories', {
+      tmb: caloriesResult.tmb,
+      maintenance: caloriesResult.maintenance,
+      objectif: selectedCalorieType,
+      calories: selectedData.calories,
+      macros: selectedData.macros,
+      sexe: caloriesData.sexe,
+      age: parseInt(caloriesData.age, 10),
+      poids: parseFloat(caloriesData.poids),
+      taille: parseFloat(caloriesData.taille),
+      activite: caloriesData.activite,
+    });
+  }, [caloriesResult, selectedCalorieType, caloriesData, saveCalculatorData]);
+
+  // Sauvegarder 1RM
+  const saveRMData = useCallback(() => {
+    if (!rmResult) return;
+    if (!rmData.exercice.trim()) {
+      Alert.alert('Info', 'Veuillez entrer le nom de l\'exercice');
+      return;
+    }
+    saveCalculatorData('rm', {
+      rm: rmResult.rm,
+      exercice: rmData.exercice.trim(),
+      poidsSouleve: parseFloat(rmData.poids),
+      reps: parseInt(rmData.reps, 10),
+      percentages: rmResult.percentages,
+    });
+  }, [rmResult, rmData, saveCalculatorData]);
+
+  // Sauvegarder FC Max
+  const saveCardioData = useCallback(() => {
+    if (!cardioResult) return;
+    saveCalculatorData('cardio', {
+      fcMax: cardioResult.fcMax,
+      fcMaxTanaka: cardioResult.fcMaxTanaka,
+      age: parseInt(cardioData.age, 10),
+      zones: cardioResult.zones,
+    });
+  }, [cardioResult, cardioData, saveCalculatorData]);
 
   // Calcul IMC
   const calculateIMC = useCallback(() => {
@@ -523,19 +624,28 @@ export default function CalculatorsScreen() {
               ))}
             </View>
 
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => {
-                if (imcResult.categorie === 'Surpoids') {
-                  setActiveTab('calories');
-                } else {
-                  navigateToRecipes();
-                }
-              }}
-            >
-              <Text style={styles.actionButtonText}>{imcResult.details.action}</Text>
-              <Ionicons name="arrow-forward" size={18} color="#FFF" />
-            </TouchableOpacity>
+            <View style={styles.actionButtonsRow}>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.saveButton]}
+                onPress={saveIMCData}
+              >
+                <Ionicons name="save" size={18} color="#FFF" />
+                <Text style={styles.actionButtonText}>Enregistrer</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => {
+                  if (imcResult.categorie === 'Surpoids') {
+                    setActiveTab('calories');
+                  } else {
+                    navigateToRecipes();
+                  }
+                }}
+              >
+                <Text style={styles.actionButtonText}>{imcResult.details.action}</Text>
+                <Ionicons name="arrow-forward" size={18} color="#FFF" />
+              </TouchableOpacity>
+            </View>
           </View>
         </>
       )}
@@ -775,6 +885,15 @@ export default function CalculatorsScreen() {
             );
           })}
 
+          {/* Bouton Enregistrer */}
+          <TouchableOpacity
+            style={[styles.actionButton, styles.saveButton, { marginTop: theme.spacing.md }]}
+            onPress={saveCaloriesData}
+          >
+            <Ionicons name="save" size={18} color="#FFF" />
+            <Text style={styles.actionButtonText}>Enregistrer mon objectif</Text>
+          </TouchableOpacity>
+
           {/* Note info */}
           <View style={[styles.infoNote, isDark && styles.cardDark]}>
             <Ionicons name="information-circle" size={20} color="#6B7280" />
@@ -802,6 +921,17 @@ export default function CalculatorsScreen() {
             Estimez votre charge maximale avec la formule d'Epley
           </Text>
         </View>
+      </View>
+
+      <View style={styles.inputGroup}>
+        <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Nom de l'exercice</Text>
+        <TextInput
+          style={[styles.input, isDark && styles.inputDark]}
+          placeholder="Ex: Développé couché, Squat..."
+          placeholderTextColor={isDark ? '#666' : '#999'}
+          value={rmData.exercice}
+          onChangeText={(text) => setRmData(prev => ({ ...prev, exercice: text }))}
+        />
       </View>
 
       <View style={styles.inputRow}>
@@ -872,14 +1002,23 @@ export default function CalculatorsScreen() {
             ))}
           </View>
 
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={navigateToExercises}
-          >
-            <Ionicons name="barbell" size={20} color="#FFF" />
-            <Text style={styles.actionButtonText}>Voir les exercices</Text>
-            <Ionicons name="arrow-forward" size={18} color="#FFF" />
-          </TouchableOpacity>
+          <View style={styles.actionButtonsRow}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.saveButton]}
+              onPress={saveRMData}
+            >
+              <Ionicons name="save" size={18} color="#FFF" />
+              <Text style={styles.actionButtonText}>Enregistrer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={navigateToExercises}
+            >
+              <Ionicons name="barbell" size={20} color="#FFF" />
+              <Text style={styles.actionButtonText}>Exercices</Text>
+              <Ionicons name="arrow-forward" size={18} color="#FFF" />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
     </View>
@@ -963,14 +1102,23 @@ export default function CalculatorsScreen() {
             ))}
           </View>
 
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={navigateToPrograms}
-          >
-            <Ionicons name="fitness" size={20} color="#FFF" />
-            <Text style={styles.actionButtonText}>Voir les programmes cardio</Text>
-            <Ionicons name="arrow-forward" size={18} color="#FFF" />
-          </TouchableOpacity>
+          <View style={styles.actionButtonsRow}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.saveButton]}
+              onPress={saveCardioData}
+            >
+              <Ionicons name="save" size={18} color="#FFF" />
+              <Text style={styles.actionButtonText}>Enregistrer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={navigateToPrograms}
+            >
+              <Ionicons name="fitness" size={20} color="#FFF" />
+              <Text style={styles.actionButtonText}>Programmes</Text>
+              <Ionicons name="arrow-forward" size={18} color="#FFF" />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
     </View>
@@ -1400,6 +1548,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   actionButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1409,9 +1558,16 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     color: '#FFF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    marginHorizontal: 8,
+    marginHorizontal: 4,
+  },
+  actionButtonsRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+  },
+  saveButton: {
+    backgroundColor: '#22C55E',
   },
 
   // TMB Card

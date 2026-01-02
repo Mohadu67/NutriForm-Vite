@@ -28,6 +28,7 @@ const HEALTHKIT_PERMISSIONS = {
       AppleHealthKit?.Constants?.Permissions?.ActiveEnergyBurned,
       AppleHealthKit?.Constants?.Permissions?.DistanceWalkingRunning,
       AppleHealthKit?.Constants?.Permissions?.Workout,
+      AppleHealthKit?.Constants?.Permissions?.MenstrualFlow,
     ].filter(Boolean),
     write: [
       AppleHealthKit?.Constants?.Permissions?.StepCount,
@@ -47,6 +48,8 @@ const HEALTH_CONNECT_PERMISSIONS = [
   { accessType: 'read', recordType: 'TotalCaloriesBurned' },
   { accessType: 'read', recordType: 'Distance' },
   { accessType: 'read', recordType: 'ExerciseSession' },
+  { accessType: 'read', recordType: 'MenstruationFlow' },
+  { accessType: 'read', recordType: 'MenstruationPeriod' },
   { accessType: 'write', recordType: 'Steps' },
   { accessType: 'write', recordType: 'ActiveCaloriesBurned' },
   { accessType: 'write', recordType: 'ExerciseSession' },
@@ -417,6 +420,159 @@ class HealthService {
       console.error('[HEALTH] Get distance error:', error);
       return { meters: 0, kilometers: '0.00' };
     }
+  }
+
+  /**
+   * Recupere les donnees menstruelles
+   */
+  async getMenstrualData(startDate, endDate) {
+    try {
+      if (Platform.OS === 'android' && HealthConnect && this.isAvailable) {
+        // Recuperer les periodes menstruelles
+        const periods = await HealthConnect.readRecords('MenstruationPeriod', {
+          timeRangeFilter: {
+            operator: 'between',
+            startTime: startDate.toISOString(),
+            endTime: endDate.toISOString(),
+          },
+        });
+
+        // Recuperer le flux menstruel
+        const flows = await HealthConnect.readRecords('MenstruationFlow', {
+          timeRangeFilter: {
+            operator: 'between',
+            startTime: startDate.toISOString(),
+            endTime: endDate.toISOString(),
+          },
+        });
+
+        return {
+          periods: periods.map(p => ({
+            startDate: p.startTime,
+            endDate: p.endTime,
+          })),
+          flows: flows.map(f => ({
+            date: f.time,
+            flow: f.flow, // LIGHT, MEDIUM, HEAVY
+          })),
+        };
+      } else if (Platform.OS === 'ios' && AppleHealthKit) {
+        return new Promise((resolve) => {
+          const options = {
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            ascending: false,
+          };
+
+          AppleHealthKit.getMenstrualFlowSamples(options, (err, results) => {
+            if (err || !results) {
+              console.log('[HEALTH] iOS getMenstrualFlow error:', err);
+              resolve({ periods: [], flows: [] });
+              return;
+            }
+
+            // Transformer les donnees HealthKit
+            const flows = results.map(r => ({
+              date: r.startDate,
+              flow: r.value, // unspecified, light, medium, heavy, none
+              isStartOfCycle: r.metadata?.HKMenstrualCycleStart === true,
+            }));
+
+            // Detecter les periodes (grouper les jours consecutifs)
+            const periods = [];
+            let currentPeriod = null;
+
+            const sortedFlows = [...flows].sort((a, b) =>
+              new Date(a.date) - new Date(b.date)
+            );
+
+            sortedFlows.forEach((flow, index) => {
+              if (flow.flow !== 'none' && flow.flow !== 'unspecified') {
+                if (!currentPeriod) {
+                  currentPeriod = { startDate: flow.date, endDate: flow.date };
+                } else {
+                  // Verifier si c'est le meme cycle (moins de 2 jours d'ecart)
+                  const lastDate = new Date(currentPeriod.endDate);
+                  const currentDate = new Date(flow.date);
+                  const diffDays = (currentDate - lastDate) / (1000 * 60 * 60 * 24);
+
+                  if (diffDays <= 2) {
+                    currentPeriod.endDate = flow.date;
+                  } else {
+                    periods.push(currentPeriod);
+                    currentPeriod = { startDate: flow.date, endDate: flow.date };
+                  }
+                }
+              }
+            });
+
+            if (currentPeriod) {
+              periods.push(currentPeriod);
+            }
+
+            resolve({ periods, flows });
+          });
+        });
+      }
+      return { periods: [], flows: [] };
+    } catch (error) {
+      console.error('[HEALTH] Get menstrual data error:', error);
+      return { periods: [], flows: [] };
+    }
+  }
+
+  /**
+   * Recupere le dernier cycle menstruel
+   */
+  async getLastMenstrualCycle() {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 3); // 3 derniers mois
+
+    const data = await this.getMenstrualData(startDate, endDate);
+
+    if (data.periods.length === 0) {
+      return null;
+    }
+
+    // Trier par date de debut (plus recent en premier)
+    const sortedPeriods = data.periods.sort((a, b) =>
+      new Date(b.startDate) - new Date(a.startDate)
+    );
+
+    const lastPeriod = sortedPeriods[0];
+    const previousPeriod = sortedPeriods[1];
+
+    // Calculer la duree du cycle
+    let cycleLength = null;
+    if (previousPeriod) {
+      const lastStart = new Date(lastPeriod.startDate);
+      const prevStart = new Date(previousPeriod.startDate);
+      cycleLength = Math.round((lastStart - prevStart) / (1000 * 60 * 60 * 24));
+    }
+
+    // Calculer la duree des regles
+    const periodLength = Math.round(
+      (new Date(lastPeriod.endDate) - new Date(lastPeriod.startDate)) / (1000 * 60 * 60 * 24)
+    ) + 1;
+
+    // Predire la prochaine date
+    let nextPeriodDate = null;
+    if (cycleLength) {
+      const lastStart = new Date(lastPeriod.startDate);
+      nextPeriodDate = new Date(lastStart.getTime() + cycleLength * 24 * 60 * 60 * 1000);
+    }
+
+    return {
+      lastPeriod: {
+        startDate: lastPeriod.startDate,
+        endDate: lastPeriod.endDate,
+        length: periodLength,
+      },
+      cycleLength,
+      nextPeriodDate: nextPeriodDate?.toISOString(),
+      totalPeriods: sortedPeriods.length,
+    };
   }
 
   /**

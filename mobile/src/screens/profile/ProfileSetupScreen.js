@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as Location from 'expo-location';
 
-import { theme } from '../../theme';
+import { theme, colors } from '../../theme';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
 
@@ -362,7 +362,7 @@ export default function ProfileSetupScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* SECTION 1: PROFIL DE BASE */}
-        <View style={styles.sectionCard}>
+        <View style={[styles.sectionCard, isDark && styles.sectionCardDark]}>
           <View style={styles.sectionHeaderRow}>
             <Ionicons name="person-outline" size={20} color={theme.colors.primary} />
             <Text style={[styles.sectionHeader, isDark && styles.textDark]}>
@@ -491,7 +491,7 @@ export default function ProfileSetupScreen() {
         </View>
 
         {/* SECTION 2: LOCALISATION */}
-        <View style={styles.sectionCard}>
+        <View style={[styles.sectionCard, isDark && styles.sectionCardDark]}>
           <View style={styles.sectionHeaderRow}>
             <Ionicons name="location-outline" size={20} color={theme.colors.primary} />
             <Text style={[styles.sectionHeader, isDark && styles.textDark]}>
@@ -563,7 +563,7 @@ export default function ProfileSetupScreen() {
         </View>
 
         {/* SECTION 3: DISPONIBILITÉS */}
-        <View style={styles.sectionCard}>
+        <View style={[styles.sectionCard, isDark && styles.sectionCardDark]}>
           <View style={styles.sectionHeaderRow}>
             <Ionicons name="calendar-outline" size={20} color={theme.colors.primary} />
             <Text style={[styles.sectionHeader, isDark && styles.textDark]}>
@@ -615,7 +615,7 @@ export default function ProfileSetupScreen() {
         </View>
 
         {/* SECTION 4: PRÉFÉRENCES DE MATCHING */}
-        <View style={styles.sectionCard}>
+        <View style={[styles.sectionCard, isDark && styles.sectionCardDark]}>
           <View style={styles.sectionHeaderRow}>
             <Ionicons name="heart-outline" size={20} color={theme.colors.primary} />
             <Text style={[styles.sectionHeader, isDark && styles.textDark]}>
@@ -761,10 +761,10 @@ export default function ProfileSetupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.light.background,
   },
   containerDark: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: colors.dark.background,
   },
   loadingContainer: {
     flex: 1,
@@ -777,12 +777,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    backgroundColor: '#FFF',
+    borderBottomColor: colors.light.border,
+    backgroundColor: colors.light.surface,
   },
   headerDark: {
-    borderBottomColor: '#333',
-    backgroundColor: '#1A1A1A',
+    borderBottomColor: colors.dark.border,
+    backgroundColor: colors.dark.surface,
   },
   backButton: {
     padding: 4,
@@ -790,7 +790,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#000',
+    color: colors.light.text,
     flex: 1,
     textAlign: 'center',
   },
@@ -801,7 +801,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: theme.colors.primary,
+    color: colors.primary,
   },
   scrollView: {
     flex: 1,
@@ -811,7 +811,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   sectionCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: colors.light.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -820,6 +820,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
+  },
+  sectionCardDark: {
+    backgroundColor: colors.dark.surface,
+    shadowOpacity: 0,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
@@ -830,7 +834,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#000',
+    color: colors.light.text,
   },
   field: {
     marginBottom: 16,
@@ -838,39 +842,42 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#000',
+    color: colors.light.text,
     marginBottom: 8,
   },
   hint: {
     fontSize: 13,
-    color: '#666',
+    color: colors.light.textSecondary,
     marginTop: 4,
   },
   textDark: {
-    color: '#FFF',
+    color: colors.dark.text,
   },
   textMutedDark: {
-    color: '#888',
+    color: colors.dark.textTertiary,
   },
   input: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.light.backgroundTertiary,
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
+    color: colors.light.text,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: colors.light.border,
   },
   inputDark: {
-    backgroundColor: '#2A2A2A',
-    borderColor: '#333',
+    backgroundColor: colors.dark.backgroundTertiary,
+    borderColor: colors.dark.border,
+    color: colors.dark.text,
   },
   textArea: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.light.backgroundTertiary,
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
+    color: colors.light.text,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: colors.light.border,
     minHeight: 100,
     textAlignVertical: 'top',
   },
@@ -880,25 +887,25 @@ const styles = StyleSheet.create({
   },
   optionButton: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.light.backgroundTertiary,
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#E0E0E0',
+    borderColor: colors.light.border,
   },
   optionButtonDark: {
-    backgroundColor: '#2A2A2A',
-    borderColor: '#333',
+    backgroundColor: colors.dark.backgroundTertiary,
+    borderColor: colors.dark.border,
   },
   optionButtonActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   optionButtonText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#666',
+    color: colors.light.textSecondary,
   },
   optionButtonTextActive: {
     color: '#FFF',
@@ -911,26 +918,26 @@ const styles = StyleSheet.create({
   workoutChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.light.backgroundTertiary,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
     gap: 6,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: colors.light.border,
   },
   workoutChipDark: {
-    backgroundColor: '#2A2A2A',
-    borderColor: '#333',
+    backgroundColor: colors.dark.backgroundTertiary,
+    borderColor: colors.dark.border,
   },
   workoutChipActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   workoutChipText: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#666',
+    color: colors.light.textSecondary,
   },
   workoutChipTextActive: {
     color: '#FFF',
@@ -946,7 +953,7 @@ const styles = StyleSheet.create({
   dayLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#000',
+    color: colors.light.text,
     marginBottom: 8,
   },
   slotsRow: {
@@ -958,26 +965,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.light.backgroundTertiary,
     paddingVertical: 8,
     paddingHorizontal: 8,
     borderRadius: 10,
     gap: 4,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: colors.light.border,
   },
   slotChipDark: {
-    backgroundColor: '#2A2A2A',
-    borderColor: '#333',
+    backgroundColor: colors.dark.backgroundTertiary,
+    borderColor: colors.dark.border,
   },
   slotChipActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   slotChipText: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#666',
+    color: colors.light.textSecondary,
   },
   slotChipTextActive: {
     color: '#FFF',
@@ -990,23 +997,23 @@ const styles = StyleSheet.create({
   ageRangeSeparator: {
     fontSize: 20,
     fontWeight: '300',
-    color: '#000',
+    color: colors.light.text,
     marginBottom: 14,
   },
   locationButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.light.backgroundTertiary,
     padding: 14,
     borderRadius: 12,
     gap: 8,
     marginBottom: 12,
     borderWidth: 2,
-    borderColor: theme.colors.primary,
+    borderColor: colors.primary,
   },
   locationButtonDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: colors.dark.backgroundTertiary,
   },
   locationButtonText: {
     fontSize: 15,
@@ -1015,18 +1022,18 @@ const styles = StyleSheet.create({
   locationInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0FDF4',
+    backgroundColor: colors.light.statusSuccess,
     padding: 12,
     borderRadius: 10,
     gap: 8,
     marginBottom: 16,
   },
   locationInfoDark: {
-    backgroundColor: '#1A3A2A',
+    backgroundColor: colors.dark.statusSuccess,
   },
   locationInfoText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#22C55E',
+    color: colors.success,
   },
 });

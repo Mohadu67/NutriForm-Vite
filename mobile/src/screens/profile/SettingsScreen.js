@@ -9,6 +9,7 @@ import {
   useColorScheme,
   Alert,
   Linking,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +20,7 @@ import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import notificationService from '../../services/notificationService';
 import apiClient from '../../api/client';
+import useHealthData from '../../hooks/useHealthData';
 
 /**
  * SettingsScreen - Ecran parametres
@@ -30,12 +32,22 @@ export default function SettingsScreen() {
   const navigation = useNavigation();
   const { user, logout } = useAuth();
 
+  // Health data hook
+  const {
+    isAvailable: healthAvailable,
+    hasPermission: healthPermission,
+    requestPermission: requestHealthPermission,
+    isLoading: healthLoading,
+  } = useHealthData();
+
   // Settings states
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [weeklyReport, setWeeklyReport] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
+  const [healthSyncEnabled, setHealthSyncEnabled] = useState(false);
+  const [menstrualTrackingEnabled, setMenstrualTrackingEnabled] = useState(false);
 
   // Charger les parametres sauvegardes
   useEffect(() => {
@@ -49,6 +61,8 @@ export default function SettingsScreen() {
           setWeeklyReport(parsed.weeklyReport ?? true);
           setSoundEnabled(parsed.soundEnabled ?? true);
           setVibrationEnabled(parsed.vibrationEnabled ?? true);
+          setHealthSyncEnabled(parsed.healthSyncEnabled ?? false);
+          setMenstrualTrackingEnabled(parsed.menstrualTrackingEnabled ?? false);
         }
       } catch (error) {
         console.error('[SETTINGS] Error loading:', error);
@@ -116,6 +130,53 @@ export default function SettingsScreen() {
     setVibrationEnabled(value);
     saveSetting('vibrationEnabled', value);
   }, [saveSetting]);
+
+  // Gerer la synchronisation des donnees de sante
+  const handleHealthSyncToggle = useCallback(async (value) => {
+    if (value && !healthPermission) {
+      // Demander les permissions
+      const granted = await requestHealthPermission();
+      if (!granted) {
+        Alert.alert(
+          'Permissions requises',
+          `Pour synchroniser vos donnees de sante, veuillez autoriser l'acces dans ${Platform.OS === 'ios' ? 'Sante' : 'Health Connect'}.`,
+          [
+            { text: 'Annuler', style: 'cancel' },
+            {
+              text: 'Ouvrir les parametres',
+              onPress: () => Linking.openSettings(),
+            },
+          ]
+        );
+        return;
+      }
+    }
+    setHealthSyncEnabled(value);
+    saveSetting('healthSyncEnabled', value);
+  }, [saveSetting, healthPermission, requestHealthPermission]);
+
+  // Gerer le suivi menstruel
+  const handleMenstrualTrackingToggle = useCallback(async (value) => {
+    if (value && !healthSyncEnabled) {
+      Alert.alert(
+        'Synchronisation requise',
+        'Veuillez d\'abord activer la synchronisation des donnees de sante.'
+      );
+      return;
+    }
+    setMenstrualTrackingEnabled(value);
+    saveSetting('menstrualTrackingEnabled', value);
+  }, [saveSetting, healthSyncEnabled]);
+
+  // Ouvrir les parametres de sante du telephone
+  const openHealthSettings = useCallback(() => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('x-apple-health://');
+    } else {
+      // Health Connect settings
+      Linking.openSettings();
+    }
+  }, []);
 
   const handleDeleteAccount = useCallback(() => {
     Alert.alert(
@@ -242,6 +303,38 @@ export default function SettingsScreen() {
       ],
     },
     {
+      title: 'Donnees de sante',
+      items: [
+        {
+          icon: 'fitness',
+          label: 'Synchroniser avec ' + (Platform.OS === 'ios' ? 'Sante' : 'Health Connect'),
+          subtitle: healthAvailable
+            ? (healthPermission ? 'Connecte' : 'Non connecte')
+            : 'Non disponible',
+          type: 'switch',
+          value: healthSyncEnabled,
+          onValueChange: handleHealthSyncToggle,
+          disabled: !healthAvailable,
+        },
+        {
+          icon: 'calendar',
+          label: 'Suivi menstruel',
+          subtitle: 'Synchroniser les donnees de cycle',
+          type: 'switch',
+          value: menstrualTrackingEnabled,
+          onValueChange: handleMenstrualTrackingToggle,
+          disabled: !healthSyncEnabled,
+        },
+        {
+          icon: 'settings',
+          label: 'Gerer les permissions',
+          subtitle: Platform.OS === 'ios' ? 'Ouvrir l\'app Sante' : 'Ouvrir Health Connect',
+          type: 'link',
+          onPress: openHealthSettings,
+        },
+      ],
+    },
+    {
       title: 'Compte',
       items: [
         {
@@ -352,6 +445,7 @@ export default function SettingsScreen() {
             trackColor={{ false: '#E5E7EB', true: `${theme.colors.primary}60` }}
             thumbColor={item.value ? theme.colors.primary : '#F4F4F5'}
             ios_backgroundColor="#E5E7EB"
+            disabled={item.disabled}
           />
         )}
         {(item.type === 'link' || item.type === 'button') && (

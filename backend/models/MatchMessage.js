@@ -38,10 +38,11 @@ const matchMessageSchema = new mongoose.Schema(
       default: 'text'
     },
 
-    // Contenu du message (chiffré)
+    // Contenu du message (chiffré) - optionnel pour les messages média
     content: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
       maxlength: 10000 // Plus long car chiffré
     },
 
