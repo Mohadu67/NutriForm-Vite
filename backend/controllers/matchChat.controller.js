@@ -241,17 +241,7 @@ async function sendMessage(req, res) {
     const { content, type = 'text', metadata = {} } = req.body;
     const userId = req.userId;
 
-    // Validation 1: Message non vide
-    if (!content || content.trim().length === 0) {
-      return res.status(400).json({ error: 'Le message ne peut pas être vide.' });
-    }
-
-    // Validation 2: Longueur maximale (5000 caractères)
-    if (content.length > 5000) {
-      return res.status(400).json({ error: 'Le message est trop long (maximum 5000 caractères).' });
-    }
-
-    // Validation 3: Type de message valide
+    // Validation 1: Type de message valide
     const validTypes = ['text', 'image', 'video', 'file', 'location', 'session-invite', 'session-share'];
     if (!validTypes.includes(type)) {
       return res.status(400).json({ error: 'Type de message invalide.' });
@@ -259,16 +249,29 @@ async function sendMessage(req, res) {
 
     // Handle media messages
     let mediaData = null;
-    if (['image', 'video', 'file'].includes(type) && req.body.media) {
+    const isMediaMessage = ['image', 'video', 'file'].includes(type);
+    if (isMediaMessage && req.body.media) {
       mediaData = req.body.media;
     }
 
-    // Sanitization: Nettoyer le contenu HTML/XSS
-    const sanitizedContent = xss(content.trim(), {
+    // Validation 2: Message non vide (sauf pour les messages média avec media attaché)
+    const hasContent = content && content.trim().length > 0;
+    const hasMedia = isMediaMessage && mediaData;
+    if (!hasContent && !hasMedia) {
+      return res.status(400).json({ error: 'Le message ne peut pas être vide.' });
+    }
+
+    // Validation 3: Longueur maximale (5000 caractères) - seulement si content existe
+    if (content && content.length > 5000) {
+      return res.status(400).json({ error: 'Le message est trop long (maximum 5000 caractères).' });
+    }
+
+    // Sanitization: Nettoyer le contenu HTML/XSS (seulement si content existe)
+    const sanitizedContent = content ? xss(content.trim(), {
       whiteList: {}, // Aucun tag HTML autorisé
       stripIgnoreTag: true,
       stripIgnoreTagBody: ['script', 'style']
-    });
+    }) : '';
 
     // Récupérer la conversation
     const conversation = await Conversation.findById(conversationId);
@@ -289,8 +292,19 @@ async function sendMessage(req, res) {
     // Identifier le destinataire
     const receiverId = conversation.getOtherParticipant(userId);
 
-    // Chiffrer le contenu du message
-    const encryptedData = encrypt(sanitizedContent);
+    // Chiffrer le contenu du message (seulement si contenu non vide)
+    let encryptedData = null;
+    let messageContent = '';
+    let encryptionInfo = null;
+
+    if (sanitizedContent && sanitizedContent.length > 0) {
+      encryptedData = encrypt(sanitizedContent);
+      messageContent = encryptedData.encrypted;
+      encryptionInfo = {
+        iv: encryptedData.iv,
+        authTag: encryptedData.authTag
+      };
+    }
 
     // Créer le message
     const message = await MatchMessage.create({
@@ -299,20 +313,24 @@ async function sendMessage(req, res) {
       senderId: userId,
       receiverId,
       type,
-      content: encryptedData.encrypted,
-      encryption: {
-        iv: encryptedData.iv,
-        authTag: encryptedData.authTag
-      },
+      content: messageContent,
+      encryption: encryptionInfo,
       metadata,
       media: mediaData
     });
 
     // Mettre à jour le lastMessage de la conversation
+    // Pour les messages média, afficher un placeholder
+    let lastMessageContent = sanitizedContent;
+    if (!lastMessageContent && type === 'image') lastMessageContent = '📷 Photo';
+    else if (!lastMessageContent && type === 'video') lastMessageContent = '📹 Video';
+    else if (!lastMessageContent && type === 'file') lastMessageContent = '📎 Fichier';
+
     conversation.lastMessage = {
-      content: sanitizedContent,
+      content: lastMessageContent,
       senderId: userId,
-      timestamp: message.createdAt
+      timestamp: message.createdAt,
+      type: type
     };
 
     // Gérer le unhide pour les deux participants si nécessaire
@@ -399,12 +417,28 @@ async function sendMessage(req, res) {
     if (!receiverInConversation && io && io.notifyUser && senderUser) {
       logger.info(`🔔 Envoi new_notification à user ${receiverId} (pas dans la conv)`);
 
+      // Générer le message de notification selon le type
+      let notificationMessage;
+      if (sanitizedContent) {
+        notificationMessage = sanitizedContent.substring(0, 50) + (sanitizedContent.length > 50 ? '...' : '');
+      } else if (type === 'image') {
+        notificationMessage = '📷 Photo';
+      } else if (type === 'video') {
+        notificationMessage = '📹 Vidéo';
+      } else if (type === 'file') {
+        notificationMessage = '📎 Fichier';
+      } else {
+        notificationMessage = 'Nouveau message';
+      }
+
+      const fullNotificationMessage = `${senderUser.pseudo || 'Un utilisateur'}: ${notificationMessage}`;
+
       // Sauvegarder la notification en base de données
       const notificationData = {
         userId: receiverId,
         type: 'message',
         title: 'Nouveau message',
-        message: `${senderUser.pseudo || 'Un utilisateur'}: ${sanitizedContent.substring(0, 50)}${sanitizedContent.length > 50 ? '...' : ''}`,
+        message: fullNotificationMessage,
         avatar: senderUser.photo,
         link: `/matching?conversation=${conversationId}`,
         metadata: {
@@ -421,7 +455,7 @@ async function sendMessage(req, res) {
         id: savedNotification._id.toString(),
         type: 'message',
         title: 'Nouveau message',
-        message: `${senderUser.pseudo || 'Un utilisateur'}: ${sanitizedContent.substring(0, 50)}${sanitizedContent.length > 50 ? '...' : ''}`,
+        message: fullNotificationMessage,
         avatar: senderUser.photo,
         timestamp: new Date().toISOString(),
         read: false,
@@ -432,7 +466,8 @@ async function sendMessage(req, res) {
       notifyNewMessage(receiverId, {
         senderName: senderUser.pseudo || 'Un utilisateur',
         senderPhoto: senderUser.photo,
-        message: sanitizedContent.substring(0, 100),
+        senderId: senderId,
+        message: notificationMessage,
         conversationId: conversationId
       }).catch(err => logger.error('Erreur notification message:', err));
     } else if (receiverInConversation) {

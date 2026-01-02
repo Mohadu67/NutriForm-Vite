@@ -168,8 +168,16 @@ async function notifyNewMessage(userId, messageData) {
     icon: messageData.senderPhoto || '/assets/icons/notif-message.svg',
     badge: '/assets/icons/badge-72x72.png',
     data: {
+      type: 'message',
       url: '/chat',
-      conversationId: messageData.conversationId
+      conversationId: messageData.conversationId,
+      senderName: messageData.senderName,
+      senderAvatar: messageData.senderPhoto,
+      otherUser: messageData.otherUser || {
+        _id: messageData.senderId,
+        pseudo: messageData.senderName,
+        photo: messageData.senderPhoto
+      }
     }
   };
 
