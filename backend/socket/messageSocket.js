@@ -84,6 +84,10 @@ module.exports = (io) => {
     // Informer l'utilisateur qu'il est connecté
     socket.emit('connected', { userId, socketId: socket.id });
 
+    // Envoyer la liste des utilisateurs déjà en ligne à ce nouvel utilisateur
+    const onlineUsersList = Array.from(connectedUsers.keys()).filter(id => id !== userId.toString());
+    socket.emit('online_users_list', { users: onlineUsersList });
+
     // Notifier tous les utilisateurs que cet utilisateur est en ligne
     socket.broadcast.emit('user_online', { userId: userId.toString() });
 

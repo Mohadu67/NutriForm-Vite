@@ -14,6 +14,7 @@ export default function useHealthData() {
   const [todayData, setTodayData] = useState(null);
   const [weeklyData, setWeeklyData] = useState(null);
   const [bodyMetrics, setBodyMetrics] = useState(null);
+  const [menstrualData, setMenstrualData] = useState(null);
   const [error, setError] = useState(null);
 
   // Initialisation
@@ -142,6 +143,26 @@ export default function useHealthData() {
   }, [hasPermission]);
 
   /**
+   * Rafraichit les donnees menstruelles
+   */
+  const refreshMenstrualData = useCallback(async () => {
+    if (!hasPermission) return null;
+
+    try {
+      setIsLoading(true);
+      const data = await healthService.getLastMenstrualCycle();
+      setMenstrualData(data);
+      return data;
+    } catch (err) {
+      console.error('[useHealthData] Refresh menstrual data error:', err);
+      setError(err.message);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [hasPermission]);
+
+  /**
    * Rafraichit toutes les donnees
    */
   const refreshAll = useCallback(async () => {
@@ -151,8 +172,9 @@ export default function useHealthData() {
       refreshTodayData(),
       refreshWeeklyData(),
       refreshBodyMetrics(),
+      refreshMenstrualData(),
     ]);
-  }, [hasPermission, refreshTodayData, refreshWeeklyData, refreshBodyMetrics]);
+  }, [hasPermission, refreshTodayData, refreshWeeklyData, refreshBodyMetrics, refreshMenstrualData]);
 
   /**
    * Recupere les pas pour une periode personnalisee
@@ -178,6 +200,14 @@ export default function useHealthData() {
     return healthService.getHeartRate(startDate, endDate);
   }, [hasPermission]);
 
+  /**
+   * Recupere les donnees menstruelles pour une periode personnalisee
+   */
+  const getMenstrualData = useCallback(async (startDate, endDate) => {
+    if (!hasPermission) return null;
+    return healthService.getMenstrualData(startDate, endDate);
+  }, [hasPermission]);
+
   return {
     // Etat
     isAvailable,
@@ -189,17 +219,20 @@ export default function useHealthData() {
     todayData,
     weeklyData,
     bodyMetrics,
+    menstrualData,
 
     // Actions
     requestPermission,
     refreshTodayData,
     refreshWeeklyData,
     refreshBodyMetrics,
+    refreshMenstrualData,
     refreshAll,
 
     // Methodes personnalisees
     getSteps,
     getCalories,
     getHeartRate,
+    getMenstrualData,
   };
 }

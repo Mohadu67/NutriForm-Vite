@@ -17,7 +17,8 @@
       "bundleIdentifier": "com.harmonith.app",
       "infoPlist": {
         "NSHealthShareUsageDescription": "Harmonith utilise vos données de santé pour personnaliser vos programmes fitness et suivre vos progrès.",
-        "NSHealthUpdateUsageDescription": "Harmonith enregistre vos séances d'entraînement dans l'app Santé."
+        "NSHealthUpdateUsageDescription": "Harmonith enregistre vos séances d'entraînement dans l'app Santé.",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "entitlements": {
         "com.apple.developer.healthkit": true,
@@ -38,8 +39,12 @@
         "android.permission.health.READ_HEIGHT",
         "android.permission.health.READ_HEART_RATE",
         "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
+        "android.permission.health.READ_DISTANCE",
+        "android.permission.health.READ_EXERCISE",
+        "android.permission.health.READ_MENSTRUATION",
         "android.permission.health.WRITE_STEPS",
-        "android.permission.health.WRITE_ACTIVE_CALORIES_BURNED"
+        "android.permission.health.WRITE_ACTIVE_CALORIES_BURNED",
+        "android.permission.health.WRITE_EXERCISE"
       ]
     },
     "web": {
@@ -61,11 +66,11 @@
         }
       ]
     ],
+    "owner": "mohadu67",
     "extra": {
       "eas": {
-        "projectId": "0ba81f53-11f3-4012-bc49-1fd0834f7ade"
+        "projectId": "aca61473-e5d7-4e41-a412-97e99452057a"
       }
-    },
-    "owner": "mohadu67"
+    }
   }
 }

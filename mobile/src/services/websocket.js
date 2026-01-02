@@ -27,6 +27,8 @@ class WebSocketService {
     this.socket = null;
     this.isConnected = false;
     this.listeners = new Map();
+    this.onlineUsers = new Set(); // Track des utilisateurs en ligne
+    this.onlineStatusCallbacks = []; // Callbacks pour les changements de statut
   }
 
   /**
@@ -102,6 +104,69 @@ class WebSocketService {
     this.socket.on('reconnect_failed', () => {
       logger.websocket.error('Failed to reconnect after all attempts');
     });
+
+    // Écouter les changements de statut en ligne des utilisateurs
+    this.socket.on('user_online', ({ userId }) => {
+      logger.websocket.debug('User came online', { userId });
+      this.onlineUsers.add(userId);
+      this.notifyOnlineStatusChange(userId, true);
+    });
+
+    this.socket.on('user_offline', ({ userId }) => {
+      logger.websocket.debug('User went offline', { userId });
+      this.onlineUsers.delete(userId);
+      this.notifyOnlineStatusChange(userId, false);
+    });
+
+    // Recevoir la liste initiale des utilisateurs en ligne
+    this.socket.on('online_users_list', ({ users }) => {
+      logger.websocket.debug('Received online users list', { count: users?.length });
+      this.onlineUsers = new Set(users || []);
+      // Notifier pour chaque utilisateur en ligne
+      users?.forEach(userId => {
+        this.notifyOnlineStatusChange(userId, true);
+      });
+    });
+  }
+
+  /**
+   * Notifier les callbacks des changements de statut en ligne
+   */
+  notifyOnlineStatusChange(userId, isOnline) {
+    this.onlineStatusCallbacks.forEach(callback => {
+      try {
+        callback(userId, isOnline);
+      } catch (error) {
+        logger.websocket.error('Error in online status callback', error);
+      }
+    });
+  }
+
+  /**
+   * S'abonner aux changements de statut en ligne
+   */
+  onOnlineStatusChange(callback) {
+    this.onlineStatusCallbacks.push(callback);
+    return () => {
+      const index = this.onlineStatusCallbacks.indexOf(callback);
+      if (index > -1) {
+        this.onlineStatusCallbacks.splice(index, 1);
+      }
+    };
+  }
+
+  /**
+   * Vérifier si un utilisateur est en ligne
+   */
+  isUserOnline(userId) {
+    return this.onlineUsers.has(userId?.toString());
+  }
+
+  /**
+   * Obtenir tous les utilisateurs en ligne
+   */
+  getOnlineUsers() {
+    return Array.from(this.onlineUsers);
   }
 
   /**

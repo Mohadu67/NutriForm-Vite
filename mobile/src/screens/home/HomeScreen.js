@@ -58,7 +58,11 @@ export default function HomeScreen() {
   const [showHeavySections, setShowHeavySections] = useState(false);
 
   const GOAL_STORAGE_KEY = '@weekly_goal';
+  const CALCULATOR_STORAGE_KEY = '@calculator_data';
   const GOAL_OPTIONS = [1, 2, 3, 4, 5, 6, 7];
+
+  // State pour les données des calculateurs
+  const [calculatorData, setCalculatorData] = useState(null);
 
   // Stats dérivées du summary API
   const stats = useMemo(() => ({
@@ -70,7 +74,29 @@ export default function HomeScreen() {
     sessionsTrend: 'same',
   }), [summary]);
 
+  // Helper pour extraire l'historique du nouveau format
+  const getHistory = useCallback((type) => {
+    if (!calculatorData?.[type]) return [];
+    // Nouveau format avec history
+    if (calculatorData[type].history) {
+      return calculatorData[type].history;
+    }
+    // Ancien format (migration)
+    return [calculatorData[type]];
+  }, [calculatorData]);
+
   const weightData = useMemo(() => {
+    const history = getHistory('imc');
+    if (history.length > 0) {
+      const latest = history[0];
+      return {
+        bmi: latest.imc?.toFixed(1) || latest.imc,
+        interpretation: latest.categorie,
+        weight: latest.poids,
+        history: history,
+      };
+    }
+    // Sinon utiliser les données API
     if (!summary?.imc) return null;
     let interpretation = null;
     const imc = summary.imc;
@@ -82,17 +108,53 @@ export default function HomeScreen() {
       bmi: imc.toFixed(1),
       interpretation,
       weight: summary.latestWeight || summary.lastWeight,
+      history: [],
     };
-  }, [summary]);
+  }, [summary, getHistory]);
 
   const calorieTargets = useMemo(() => {
+    const history = getHistory('calories');
+    if (history.length > 0) {
+      const data = history[0];
+      const maintenance = data.maintenance;
+      const objectifLabels = {
+        perte: 'Perte de poids',
+        stabiliser: 'Maintien',
+        prise: 'Prise de masse',
+      };
+      return {
+        maintenance: maintenance,
+        deficit: Math.max(maintenance - 500, 1200),
+        surplus: maintenance + 500,
+        objectif: objectifLabels[data.objectif] || 'Maintien',
+        objectifCalories: data.calories,
+        macros: data.macros,
+        fromCalculator: true,
+        history: history,
+      };
+    }
+    // Sinon utiliser les données API
     if (!summary?.calories) return null;
     return {
       maintenance: Math.round(summary.calories),
       deficit: Math.max(Math.round(summary.calories) - 500, 0),
       surplus: Math.round(summary.calories) + 500,
+      history: [],
     };
-  }, [summary]);
+  }, [summary, getHistory]);
+
+  // Données 1RM et Cardio avec historique
+  const rmDataHistory = useMemo(() => {
+    const history = getHistory('rm');
+    if (history.length === 0) return null;
+    return { ...history[0], history };
+  }, [getHistory]);
+
+  const cardioDataHistory = useMemo(() => {
+    const history = getHistory('cardio');
+    if (history.length === 0) return null;
+    return { ...history[0], history };
+  }, [getHistory]);
 
   const weeklyCalories = summary?.caloriesBurnedWeek || 0;
   const recentSessions = sessions.slice(0, 5);
@@ -145,6 +207,12 @@ export default function HomeScreen() {
         const goalValue = parseInt(storedGoal, 10);
         setWeeklyGoal(goalValue);
         setTempGoal(goalValue);
+      }
+
+      // Charger les données des calculateurs
+      const storedCalculatorData = await AsyncStorage.getItem(CALCULATOR_STORAGE_KEY);
+      if (storedCalculatorData) {
+        setCalculatorData(JSON.parse(storedCalculatorData));
       }
 
       // Charger les séances locales
@@ -292,18 +360,25 @@ export default function HomeScreen() {
     loadData();
   }, [loadData]);
 
-  // Rafraîchir les notifications quand l'écran est focus
+  // Rafraîchir les données quand l'écran est focus
   useFocusEffect(
     useCallback(() => {
-      const refreshNotifications = async () => {
+      const refreshOnFocus = async () => {
         try {
+          // Rafraîchir les notifications
           const response = await apiClient.get(endpoints.notifications.list);
           setUnreadNotifications(response.data?.unreadCount || 0);
+
+          // Rafraîchir les données des calculateurs (peut avoir été mis à jour)
+          const storedCalculatorData = await AsyncStorage.getItem(CALCULATOR_STORAGE_KEY);
+          if (storedCalculatorData) {
+            setCalculatorData(JSON.parse(storedCalculatorData));
+          }
         } catch (error) {
           // Silently fail
         }
       };
-      refreshNotifications();
+      refreshOnFocus();
     }, [])
   );
 
@@ -503,10 +578,12 @@ export default function HomeScreen() {
               </View>
             )}
 
-            {/* Body Metrics - IMC et calories */}
+            {/* Body Metrics - IMC, calories, 1RM, FC Max */}
             <BodyMetrics
               weightData={weightData}
               calorieTargets={calorieTargets}
+              rmData={rmDataHistory}
+              cardioData={cardioDataHistory}
             />
 
             {/* Weekly Summary - Résumé motivant */}

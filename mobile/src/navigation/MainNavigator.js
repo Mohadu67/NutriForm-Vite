@@ -51,8 +51,8 @@ const BASE_TAB_CONFIG = [
 const getTabBarVisibility = (route) => {
   const routeName = getFocusedRouteNameFromRoute(route);
 
-  // Liste des écrans où la tab bar doit être cachée
-  const hideOnScreens = ['ChatDetail', 'AIChat', 'ProgramRunner'];
+  // ChatDetail et AIChat sont maintenant au niveau racine, pas besoin de les cacher ici
+  const hideOnScreens = ['ProgramRunner'];
 
   if (hideOnScreens.includes(routeName)) {
     return { display: 'none' };
