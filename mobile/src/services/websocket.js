@@ -74,6 +74,17 @@ class WebSocketService {
   setupEventListeners() {
     if (!this.socket) return;
 
+    // Nettoyer les anciens listeners avant d'en ajouter de nouveaux (évite les memory leaks)
+    this.socket.off('connect');
+    this.socket.off('disconnect');
+    this.socket.off('connect_error');
+    this.socket.off('reconnect');
+    this.socket.off('reconnect_error');
+    this.socket.off('reconnect_failed');
+    this.socket.off('user_online');
+    this.socket.off('user_offline');
+    this.socket.off('online_users_list');
+
     this.socket.on('connect', () => {
       this.isConnected = true;
       logger.websocket.info('✅ Connected to WebSocket', { socketId: this.socket.id });

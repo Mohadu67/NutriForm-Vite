@@ -404,7 +404,7 @@ async function sendMessage(req, res) {
     // Récupérer les infos de l'expéditeur pour les notifications
     const senderUser = await User.findById(userId).select('pseudo photo');
 
-    // Vérifier si le destinataire est dans la conversation (pas besoin de notif)
+    // Vérifier si le destinataire est dans la conversation (pas besoin de notif in-app)
     let receiverInConversation = false;
     if (io) {
       const roomName = `conversation:${conversationId}`;
@@ -413,25 +413,26 @@ async function sendMessage(req, res) {
       logger.info(`🔍 Receiver ${receiverId} dans la conv: ${receiverInConversation}`);
     }
 
-    // Envoyer une notification UNIQUEMENT si le destinataire n'est pas dans la conversation
-    if (!receiverInConversation && io && io.notifyUser && senderUser) {
+    // Générer le message de notification selon le type
+    let notificationMessage;
+    if (sanitizedContent) {
+      notificationMessage = sanitizedContent.substring(0, 50) + (sanitizedContent.length > 50 ? '...' : '');
+    } else if (type === 'image') {
+      notificationMessage = '📷 Photo';
+    } else if (type === 'video') {
+      notificationMessage = '📹 Vidéo';
+    } else if (type === 'file') {
+      notificationMessage = '📎 Fichier';
+    } else {
+      notificationMessage = 'Nouveau message';
+    }
+
+    const senderName = senderUser?.pseudo || 'Un utilisateur';
+    const fullNotificationMessage = `${senderName}: ${notificationMessage}`;
+
+    // Envoyer notification in-app (WebSocket + BDD) si destinataire pas dans la conversation
+    if (!receiverInConversation && senderUser) {
       logger.info(`🔔 Envoi new_notification à user ${receiverId} (pas dans la conv)`);
-
-      // Générer le message de notification selon le type
-      let notificationMessage;
-      if (sanitizedContent) {
-        notificationMessage = sanitizedContent.substring(0, 50) + (sanitizedContent.length > 50 ? '...' : '');
-      } else if (type === 'image') {
-        notificationMessage = '📷 Photo';
-      } else if (type === 'video') {
-        notificationMessage = '📹 Vidéo';
-      } else if (type === 'file') {
-        notificationMessage = '📎 Fichier';
-      } else {
-        notificationMessage = 'Nouveau message';
-      }
-
-      const fullNotificationMessage = `${senderUser.pseudo || 'Un utilisateur'}: ${notificationMessage}`;
 
       // Sauvegarder la notification en base de données
       const notificationData = {
@@ -451,27 +452,38 @@ async function sendMessage(req, res) {
       const savedNotification = await Notification.create(notificationData);
       logger.info(`📝 Notification sauvegardée en BDD: ${savedNotification._id}`);
 
-      io.notifyUser(receiverId.toString(), 'new_notification', {
-        id: savedNotification._id.toString(),
-        type: 'message',
-        title: 'Nouveau message',
-        message: fullNotificationMessage,
-        avatar: senderUser.photo,
-        timestamp: new Date().toISOString(),
-        read: false,
-        link: `/matching?conversation=${conversationId}`
-      });
+      // Notification WebSocket temps réel (si disponible)
+      if (io && io.notifyUser) {
+        io.notifyUser(receiverId.toString(), 'new_notification', {
+          id: savedNotification._id.toString(),
+          type: 'message',
+          title: 'Nouveau message',
+          message: fullNotificationMessage,
+          avatar: senderUser.photo,
+          timestamp: new Date().toISOString(),
+          read: false,
+          link: `/matching?conversation=${conversationId}`
+        });
+      }
+    } else if (receiverInConversation) {
+      logger.info(`🔕 Pas de notification in-app pour ${receiverId} (déjà dans la conv)`);
+    }
 
-      // Envoyer une notification push au destinataire (seulement si pas dans la conv)
+    // TOUJOURS envoyer une notification PUSH si le destinataire n'est pas dans la conversation
+    // (séparé de la notification WebSocket pour garantir l'envoi)
+    if (!receiverInConversation) {
+      logger.info(`📱 Envoi notification PUSH à user ${receiverId}`);
       notifyNewMessage(receiverId, {
-        senderName: senderUser.pseudo || 'Un utilisateur',
-        senderPhoto: senderUser.photo,
-        senderId: senderId,
+        senderName: senderName,
+        senderPhoto: senderUser?.photo,
+        senderId: userId,
         message: notificationMessage,
         conversationId: conversationId
-      }).catch(err => logger.error('Erreur notification message:', err));
-    } else if (receiverInConversation) {
-      logger.info(`🔕 Pas de notification pour ${receiverId} (déjà dans la conv)`);
+      }).then(result => {
+        logger.info(`📱 Résultat notification PUSH: ${JSON.stringify(result)}`);
+      }).catch(err => {
+        logger.error('❌ Erreur notification PUSH message:', err);
+      });
     }
 
     res.status(201).json({ message: messageObj });

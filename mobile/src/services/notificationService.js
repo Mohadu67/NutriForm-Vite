@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { logger } from './logger';
 import client from '../api/client';
@@ -68,13 +69,15 @@ class NotificationService {
       // Récupérer le token Expo Push
       try {
         console.log('[PUSH] Récupération du token Expo...');
+        // Utiliser le projectId de la config Expo si disponible
+        const projectId = Constants.expoConfig?.extra?.eas?.projectId || '0ba81f53-11f3-4012-bc49-1fd0834f7ade';
         const tokenData = await Notifications.getExpoPushTokenAsync({
-          projectId: '0ba81f53-11f3-4012-bc49-1fd0834f7ade'
+          projectId
         });
         token = tokenData.data;
         this.expoPushToken = token;
-        console.log('[PUSH] Token Expo obtenu:', token);
-        logger.notifications.info('Expo Push Token obtenu', { token: token.substring(0, 20) + '...' });
+        if (__DEV__) console.log('[PUSH] Token Expo obtenu');
+        logger.notifications.info('Expo Push Token obtenu');
 
         // Envoyer le token au backend
         await this.sendTokenToBackend(token);
@@ -96,12 +99,12 @@ class NotificationService {
    */
   async sendTokenToBackend(token) {
     try {
-      console.log('[PUSH] Envoi du token au backend:', token);
-      const response = await client.post('/push/register', { pushToken: token });
-      console.log('[PUSH] Réponse backend:', response.data);
+      if (__DEV__) console.log('[PUSH] Envoi du token au backend...');
+      await client.post('/push/register', { pushToken: token });
+      if (__DEV__) console.log('[PUSH] Token enregistré avec succès');
       logger.notifications.info('Push token envoyé au backend');
     } catch (error) {
-      console.log('[PUSH] Erreur envoi token:', error.response?.data || error.message);
+      if (__DEV__) console.log('[PUSH] Erreur envoi token:', error.response?.data?.message || error.message);
       logger.notifications.error('Erreur lors de l\'envoi du token', error);
     }
   }

@@ -116,21 +116,21 @@ export function AuthProvider({ children }) {
       setIsLoading(true);
       setError(null);
 
-      console.log('[AUTH] Login attempt:', email);
+      if (__DEV__) console.log('[AUTH] Login attempt:', email);
       const response = await authService.login(email, password);
-      console.log('[AUTH] Login response:', JSON.stringify(response, null, 2));
+      if (__DEV__) console.log('[AUTH] Login response received');
 
       if (!response.token) {
         throw new Error('Token non reçu du serveur');
       }
 
       // Stocker les tokens
-      console.log('[AUTH] Storing token...');
+      if (__DEV__) console.log('[AUTH] Storing token...');
       await storeTokens(response.token, response.refreshToken);
 
       // Récupérer les infos utilisateur
       const userData = response.user || (await authService.getCurrentUser());
-      console.log('[AUTH] User data:', JSON.stringify(userData, null, 2));
+      if (__DEV__) console.log('[AUTH] User data loaded for:', userData?.pseudo);
 
       setUser(userData);
       await storeUserData(userData);
