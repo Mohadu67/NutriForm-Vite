@@ -32,10 +32,11 @@ async function authMiddleware(req, res, next) {
 
   try {
     const secret = process.env.JWT_SECRET;
-    if (!secret && process.env.NODE_ENV === 'production') {
-      return res.status(500).json({ message: 'Configuration serveur invalide: JWT_SECRET manquant.' });
+    if (!secret) {
+      logger.error('JWT_SECRET manquant dans les variables d\'environnement');
+      return res.status(500).json({ message: 'Configuration serveur invalide.' });
     }
-    const decoded = jwt.verify(token, secret || 'secret');
+    const decoded = jwt.verify(token, secret);
     const userId = decoded.id || decoded._id || decoded.sub;
 
     if (!userId) {
@@ -78,7 +79,10 @@ async function optionalAuthMiddleware(req, res, next) {
 
   try {
     const secret = process.env.JWT_SECRET;
-    const decoded = jwt.verify(token, secret || 'secret');
+    if (!secret) {
+      return next(); // Pas de JWT_SECRET, continuer sans auth
+    }
+    const decoded = jwt.verify(token, secret);
     const userId = decoded.id || decoded._id || decoded.sub;
 
     if (userId) {

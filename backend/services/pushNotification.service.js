@@ -22,13 +22,17 @@ const expo = new Expo();
  */
 async function sendNotificationToUser(userId, payload) {
   try {
+    logger.info(`📱 sendNotificationToUser: userId=${userId}, payload.title=${payload.title}`);
+
     const subscriptions = await PushSubscription.find({
       userId,
       active: true
     });
 
+    logger.info(`📱 Subscriptions trouvées: ${subscriptions.length} (web: ${subscriptions.filter(s => s.type === 'web').length}, expo: ${subscriptions.filter(s => s.type === 'expo').length})`);
+
     if (subscriptions.length === 0) {
-      logger.info(`Aucune subscription pour userId: ${userId}`);
+      logger.warn(`⚠️ Aucune subscription active pour userId: ${userId}`);
       return { success: false, message: 'No subscriptions' };
     }
 
@@ -81,11 +85,12 @@ async function sendNotificationToUser(userId, payload) {
  * Envoyer des notifications via Expo Push
  */
 async function sendExpoPushNotifications(subscriptions, payload) {
+  logger.info(`📤 sendExpoPushNotifications: ${subscriptions.length} subscriptions, title="${payload.title}"`);
   const messages = [];
 
   for (const sub of subscriptions) {
     if (!Expo.isExpoPushToken(sub.expoPushToken)) {
-      logger.warn(`Token Expo invalide: ${sub.expoPushToken}`);
+      logger.warn(`❌ Token Expo invalide: ${sub.expoPushToken}`);
       continue;
     }
 
@@ -99,7 +104,10 @@ async function sendExpoPushNotifications(subscriptions, payload) {
     });
   }
 
+  logger.info(`📤 ${messages.length} messages Expo à envoyer`);
+
   if (messages.length === 0) {
+    logger.warn('📤 Aucun message Expo à envoyer (tokens invalides?)');
     return { successCount: 0, failCount: 0 };
   }
 
@@ -110,14 +118,18 @@ async function sendExpoPushNotifications(subscriptions, payload) {
 
   for (const chunk of chunks) {
     try {
+      logger.info(`📤 Envoi chunk de ${chunk.length} notifications Expo...`);
       const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+      logger.info(`📤 Tickets reçus: ${JSON.stringify(ticketChunk)}`);
 
       for (let i = 0; i < ticketChunk.length; i++) {
         const ticket = ticketChunk[i];
         if (ticket.status === 'ok') {
           successCount++;
+          logger.info(`✅ Notification Expo envoyée, ticket: ${ticket.id}`);
         } else {
           failCount++;
+          logger.error(`❌ Échec notification Expo: ${JSON.stringify(ticket)}`);
           // Si le token est invalide, désactiver la subscription
           if (ticket.details?.error === 'DeviceNotRegistered') {
             const token = chunk[i].to;
@@ -130,7 +142,7 @@ async function sendExpoPushNotifications(subscriptions, payload) {
         }
       }
     } catch (error) {
-      logger.error('Erreur envoi chunk Expo:', error);
+      logger.error('❌ Erreur envoi chunk Expo:', error.message);
       failCount += chunk.length;
     }
   }
