@@ -78,3 +78,13 @@ export async function relikeProfile(targetUserId) {
   const response = await client.post(endpoints.matching.relike, { targetUserId });
   return response.data;
 }
+
+/**
+ * Get user profile by ID
+ * @param {string} userId - ID of the user
+ * @returns {Promise<object>} User profile
+ */
+export async function getUserProfile(userId) {
+  const response = await client.get(endpoints.profile.byId(userId));
+  return response.data;
+}
