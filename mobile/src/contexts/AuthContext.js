@@ -219,10 +219,15 @@ export function AuthProvider({ children }) {
 
       // Import dynamique de Google Sign-In
       const { GoogleSignin } = require('@react-native-google-signin/google-signin');
+      const Constants = require('expo-constants').default;
 
-      // Configurer Google Sign-In (à adapter selon votre config)
+      // Configurer Google Sign-In avec la config Expo
+      const webClientId = Constants.expoConfig?.extra?.googleWebClientId;
+      if (!webClientId) {
+        throw new Error('Google Web Client ID non configuré. Ajoutez-le dans app.config.js extra.googleWebClientId');
+      }
       await GoogleSignin.configure({
-        webClientId: 'YOUR_WEB_CLIENT_ID', // À remplacer par votre Web Client ID
+        webClientId,
         offlineAccess: true,
       });
 

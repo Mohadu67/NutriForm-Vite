@@ -49,11 +49,12 @@ exports.getRecipes = async (req, res) => {
     if (maxCalories) filter['nutrition.calories'] = { $lte: parseInt(maxCalories) };
     if (minProtein) filter['nutrition.proteins'] = { $gte: parseInt(minProtein) };
 
-    // Recherche textuelle
+    // Recherche textuelle (échapper les caractères spéciaux regex pour éviter injection NoSQL)
     if (search) {
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
+        { title: { $regex: escapedSearch, $options: 'i' } },
+        { description: { $regex: escapedSearch, $options: 'i' } }
       ];
     }
 
