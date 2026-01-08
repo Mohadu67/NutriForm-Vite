@@ -28,7 +28,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#F7B186"
       },
       "googleServicesFile": "./google-services.json",
       "package": "com.harmonith.app",
