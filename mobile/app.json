@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -30,7 +30,6 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
       "googleServicesFile": "./google-services.json",
       "package": "com.harmonith.app",
       "permissions": [
@@ -64,7 +63,8 @@
         {
           "requestPermissionsOnFirstLaunch": false
         }
-      ]
+      ],
+      "expo-font"
     ],
     "owner": "mohadu67",
     "extra": {

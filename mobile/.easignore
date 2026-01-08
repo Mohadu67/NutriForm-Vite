@@ -1,0 +1,28 @@
+# Parent directories (not needed for mobile build)
+../frontend/
+../backend/
+
+# Build outputs
+.expo/
+dist/
+build/
+*.jks
+*.keystore
+
+# Development files
+.git/
+.vscode/
+*.log
+
+# Tests
+__tests__/
+*.test.js
+*.spec.js
+
+# Documentation
+*.md
+LICENSE
+
+# Other
+.DS_Store
+Thumbs.db
