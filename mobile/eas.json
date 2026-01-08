@@ -12,10 +12,11 @@
       }
     },
     "development-simulator": {
-      "developmentClient": true,
+      "developmentClient": false,
       "distribution": "internal",
       "ios": {
-        "simulator": true
+        "simulator": true,
+        "image": "latest"
       }
     },
     "preview": {
