@@ -16,7 +16,7 @@ const getDevApiUrl = () => {
 // Configuration de l'API
 const API_URL = __DEV__
   ? getDevApiUrl()
-  : 'https://api.harmonith.com/api';
+  : 'https://api.harmonith.fr/api';
 
 if (__DEV__) console.log('[API] Base URL:', API_URL);
 
