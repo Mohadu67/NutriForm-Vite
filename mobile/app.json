@@ -32,6 +32,7 @@
       },
       "googleServicesFile": "./google-services.json",
       "package": "com.harmonith.app",
+      "minSdkVersion": 26,
       "permissions": [
         "android.permission.health.READ_STEPS",
         "android.permission.health.READ_WEIGHT",
