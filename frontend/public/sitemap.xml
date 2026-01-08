@@ -3,7 +3,7 @@
   <!-- Page d'accueil -->
   <url>
     <loc>https://harmonith.fr/</loc>
-    <lastmod>2025-12-20</lastmod>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -11,7 +11,7 @@
   <!-- Outils de calcul fitness -->
   <url>
     <loc>https://harmonith.fr/outils</loc>
-    <lastmod>2025-12-11</lastmod>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -20,14 +20,14 @@
   <!-- Programmes d'entraînement -->
   <url>
     <loc>https://harmonith.fr/programs</loc>
-    <lastmod>2025-12-11</lastmod>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://harmonith.fr/exo</loc>
-    <lastmod>2025-12-11</lastmod>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -35,7 +35,7 @@
   <!-- Recettes -->
   <url>
     <loc>https://harmonith.fr/recettes</loc>
-    <lastmod>2025-12-20</lastmod>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -43,21 +43,21 @@
   <!-- Pages informatives -->
   <url>
     <loc>https://harmonith.fr/about</loc>
-    <lastmod>2025-12-11</lastmod>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://harmonith.fr/contact</loc>
-    <lastmod>2025-12-11</lastmod>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://harmonith.fr/pricing</loc>
-    <lastmod>2025-12-11</lastmod>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -65,7 +65,7 @@
   <!-- Classement communautaire -->
   <url>
     <loc>https://harmonith.fr/leaderboard</loc>
-    <lastmod>2025-12-20</lastmod>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
