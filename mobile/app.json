@@ -32,7 +32,6 @@
       },
       "googleServicesFile": "./google-services.json",
       "package": "com.harmonith.app",
-      "minSdkVersion": 26,
       "permissions": [
         "android.permission.health.READ_STEPS",
         "android.permission.health.READ_WEIGHT",
@@ -65,7 +64,16 @@
           "requestPermissionsOnFirstLaunch": false
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          }
+        }
+      ],
+      "./app.plugin.js"
     ],
     "owner": "mohadu67",
     "extra": {
