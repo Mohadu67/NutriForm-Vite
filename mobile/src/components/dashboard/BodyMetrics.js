@@ -168,7 +168,7 @@ const DetailModal = ({ visible, onClose, data, type, isDark }) => {
               </Text>
               <Text style={[styles.modalLabel, isDark && styles.modalLabelDark]}>IMC</Text>
             </View>
-            <View style={styles.modalDetails}>
+            <View style={[styles.modalDetails, isDark && styles.modalDetailsDark]}>
               <DetailRow label="Catégorie" value={data.categorie} isDark={isDark} />
               <DetailRow label="Poids" value={`${data.poids} kg`} isDark={isDark} />
               <DetailRow label="Taille" value={`${data.taille} cm`} isDark={isDark} />
@@ -197,7 +197,7 @@ const DetailModal = ({ visible, onClose, data, type, isDark }) => {
               </Text>
               <Text style={[styles.modalLabel, isDark && styles.modalLabelDark]}>kcal/jour</Text>
             </View>
-            <View style={styles.modalDetails}>
+            <View style={[styles.modalDetails, isDark && styles.modalDetailsDark]}>
               <DetailRow
                 label="Objectif"
                 value={objectifLabels[data.objectif] || data.objectif}
@@ -234,7 +234,7 @@ const DetailModal = ({ visible, onClose, data, type, isDark }) => {
                 </Text>
               )}
             </View>
-            <View style={styles.modalDetails}>
+            <View style={[styles.modalDetails, isDark && styles.modalDetailsDark]}>
               <DetailRow label="Poids soulevé" value={`${data.poidsSouleve} kg`} isDark={isDark} />
               <DetailRow label="Répétitions" value={`${data.reps} reps`} isDark={isDark} />
               {data.percentages && Array.isArray(data.percentages) && data.percentages.length > 0 && (
@@ -266,7 +266,7 @@ const DetailModal = ({ visible, onClose, data, type, isDark }) => {
               </Text>
               <Text style={[styles.modalLabel, isDark && styles.modalLabelDark]}>bpm (FC Max)</Text>
             </View>
-            <View style={styles.modalDetails}>
+            <View style={[styles.modalDetails, isDark && styles.modalDetailsDark]}>
               <DetailRow label="Âge" value={`${data.age} ans`} isDark={isDark} />
               {data.fcMaxTanaka && (
                 <DetailRow label="FC Max (Tanaka)" value={`${data.fcMaxTanaka} bpm`} isDark={isDark} />
@@ -345,8 +345,13 @@ const DetailModal = ({ visible, onClose, data, type, isDark }) => {
                 {formatDate(data.savedAt)}
               </Text>
 
-              {/* Content */}
-              {renderContent()}
+              {/* Scrollable Content */}
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                bounces={false}
+              >
+                {renderContent()}
+              </ScrollView>
             </View>
           </TouchableOpacity>
         </BlurView>
@@ -512,9 +517,11 @@ const styles = StyleSheet.create({
   historyCard: {
     backgroundColor: '#F3F4F6',
     borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
+    padding: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
     marginRight: theme.spacing.sm,
-    minWidth: 90,
+    minWidth: 85,
+    maxWidth: 120,
     alignItems: 'center',
   },
   historyCardDark: {
@@ -576,10 +583,11 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: '#FFFFFF',
     borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.xl,
+    padding: theme.spacing.lg,
+    paddingTop: theme.spacing.md,
     width: '100%',
-    maxWidth: 340,
-    maxHeight: '80%',
+    maxWidth: 360,
+    maxHeight: '85%',
   },
   modalContentDark: {
     backgroundColor: '#2A2A2A',
@@ -640,6 +648,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+  },
+  modalDetailsDark: {
+    backgroundColor: '#1A1A1A',
   },
   modalDivider: {
     height: 1,
