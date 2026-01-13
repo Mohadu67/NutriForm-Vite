@@ -12,6 +12,7 @@ import { ToastProvider } from './src/contexts/ToastContext';
 import Navigation from './src/navigation';
 import notificationService from './src/services/notificationService';
 import HealthDisclaimerModal from './src/components/HealthDisclaimerModal';
+import HealthConnectOnboarding from './src/components/HealthConnectOnboarding';
 
 export default function App() {
   useEffect(() => {
@@ -35,6 +36,7 @@ export default function App() {
                     <StatusBar style="dark" />
                     <Navigation />
                     <HealthDisclaimerModal />
+                    <HealthConnectOnboarding />
                   </ProgramProvider>
                 </RecipeProvider>
               </ChatProvider>

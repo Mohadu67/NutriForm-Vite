@@ -1,6 +1,7 @@
 import axios from 'axios';
 import Constants from 'expo-constants';
 import { secureStorage } from '../services/storageService';
+import { API_URL as ENV_API_URL } from '@env';
 
 // En dev, utiliser l'IP de la machine pour les appareils physiques
 const getDevApiUrl = () => {
@@ -14,9 +15,10 @@ const getDevApiUrl = () => {
 };
 
 // Configuration de l'API
+// En dev: auto-détection de l'IP, en prod: utilise .env (fallback vers harmonith.fr)
 const API_URL = __DEV__
   ? getDevApiUrl()
-  : 'https://api.harmonith.fr/api';
+  : (ENV_API_URL || 'https://api.harmonith.fr/api');
 
 if (__DEV__) console.log('[API] Base URL:', API_URL);
 

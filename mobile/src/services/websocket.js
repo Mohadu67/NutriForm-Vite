@@ -2,6 +2,7 @@ import { io } from 'socket.io-client';
 import Constants from 'expo-constants';
 import { secureStorage } from './storageService';
 import { logger } from './logger';
+import { WEBSOCKET_URL as ENV_WEBSOCKET_URL } from '@env';
 
 /**
  * Obtenir l'URL du serveur WebSocket (même logique que l'API)
@@ -15,8 +16,8 @@ const getWebSocketUrl = () => {
     }
     return 'http://localhost:3000';
   }
-  // Production
-  return 'https://api.harmonith.fr';
+  // Production: utilise .env (fallback vers harmonith.fr)
+  return ENV_WEBSOCKET_URL || 'https://api.harmonith.fr';
 };
 
 /**
