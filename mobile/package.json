@@ -63,6 +63,7 @@
   },
   "private": true,
   "devDependencies": {
+    "react-native-dotenv": "^3.4.11",
     "react-native-svg-transformer": "^1.5.2"
   },
   "overrides": {

@@ -12,7 +12,12 @@
           "package_name": "com.harmonith.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "45341856086-ja08fhmgetpb58riv647lfsdvgsuelvc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyASwUGMAHM4iyv0J6ZchXe-TmpXlJYfqeg"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "45341856086-ja08fhmgetpb58riv647lfsdvgsuelvc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
