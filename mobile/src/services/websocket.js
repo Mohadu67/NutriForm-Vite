@@ -16,7 +16,7 @@ const getWebSocketUrl = () => {
     return 'http://localhost:3000';
   }
   // Production
-  return 'https://api.harmonith.com';
+  return 'https://api.harmonith.fr';
 };
 
 /**

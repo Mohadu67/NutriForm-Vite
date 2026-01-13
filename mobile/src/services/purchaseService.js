@@ -5,10 +5,12 @@
 
 import { Platform } from 'react-native';
 import Purchases from 'react-native-purchases';
+import { REVENUECAT_API_KEY_IOS, REVENUECAT_API_KEY_ANDROID } from '@env';
 
-// Cles API RevenueCat
-const REVENUECAT_API_KEY_IOS = 'test_eDmFKRutoQgMCEsFgvBPJcyPqKr';
-const REVENUECAT_API_KEY_ANDROID = 'test_eDmFKRutoQgMCEsFgvBPJcyPqKr';
+// Cles API RevenueCat (chargees depuis .env)
+// Fallback vers les cles de test si non definies
+const IOS_KEY = REVENUECAT_API_KEY_IOS || 'test_eDmFKRutoQgMCEsFgvBPJcyPqKr';
+const ANDROID_KEY = REVENUECAT_API_KEY_ANDROID || 'test_eDmFKRutoQgMCEsFgvBPJcyPqKr';
 
 // Identifiants des produits
 export const PRODUCT_IDS = {
@@ -34,8 +36,8 @@ class PurchaseService {
   async configure(userId = null) {
     try {
       const apiKey = Platform.select({
-        ios: REVENUECAT_API_KEY_IOS,
-        android: REVENUECAT_API_KEY_ANDROID,
+        ios: IOS_KEY,
+        android: ANDROID_KEY,
       });
 
       await Purchases.configure({
