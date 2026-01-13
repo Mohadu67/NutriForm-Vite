@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme, Platform, View, StyleSheet } from 'react-native';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeStack from './stacks/HomeStack';
 import ExercicesStack from './stacks/ExercicesStack';
@@ -67,6 +68,7 @@ export default function MainNavigator() {
   const isDark = colorScheme === 'dark';
   const { user } = useAuth();
   const { unreadCount } = useChat();
+  const insets = useSafeAreaInsets();
 
   // Vérifier si l'utilisateur est premium
   // Le backend retourne isPremium directement, ou subscriptionTier === 'premium'
@@ -88,8 +90,8 @@ export default function MainNavigator() {
     borderTopColor: isDark ? '#333333' : theme.colors.border.light,
     borderTopWidth: 1,
     paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 8,
-    height: Platform.OS === 'ios' ? 88 : 64,
+    paddingBottom: Math.max(insets.bottom, 8),
+    height: Platform.OS === 'ios' ? 88 : 64 + insets.bottom,
   };
 
   return (

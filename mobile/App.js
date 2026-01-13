@@ -1,6 +1,8 @@
 import 'react-native-gesture-handler';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import * as SystemUI from 'expo-system-ui';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from './src/contexts/AuthContext';
@@ -18,6 +20,11 @@ export default function App() {
   useEffect(() => {
     // Enregistrer pour les notifications push
     notificationService.registerForPushNotifications();
+
+    // Configurer la couleur de la barre système Android (transparente)
+    if (Platform.OS === 'android') {
+      SystemUI.setBackgroundColorAsync('transparent');
+    }
 
     return () => {
       notificationService.cleanup();
