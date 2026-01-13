@@ -35,7 +35,7 @@ yarn-error.*
 .env*.local
 
 # Firebase & Google Services
-google-services.json
+# google-services.json (temporairement désactivé pour EAS Build)
 GoogleService-Info.plist
 
 # typescript
