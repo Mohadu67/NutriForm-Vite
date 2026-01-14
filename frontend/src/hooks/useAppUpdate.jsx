@@ -69,9 +69,36 @@ export function useAppUpdate() {
       });
     }, 5 * 60 * 1000);
 
+    // Vérifier les mises à jour quand l'utilisateur revient sur la page
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        logger.info('Page redevenue visible, vérification des mises à jour...');
+        navigator.serviceWorker.getRegistration().then((registration) => {
+          if (registration) {
+            registration.update();
+          }
+        });
+      }
+    };
+
+    // Vérifier les mises à jour lors du focus de la fenêtre
+    const handleFocus = () => {
+      logger.info('Fenêtre focus, vérification des mises à jour...');
+      navigator.serviceWorker.getRegistration().then((registration) => {
+        if (registration) {
+          registration.update();
+        }
+      });
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
     return () => {
       navigator.serviceWorker.removeEventListener('message', handleMessage);
       clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
     };
   }, []);
 
