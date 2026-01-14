@@ -143,8 +143,19 @@ export function AuthProvider({ children }) {
       return userData;
     } catch (error) {
       console.error('[AUTH] Login error:', error);
-      console.error('[AUTH] Error response:', error.response?.data);
-      const errorMessage = error.response?.data?.message || error.message || 'Identifiants incorrects';
+      console.error('[AUTH] Login error response:', error.response?.data);
+      console.error('[AUTH] Login error status:', error.response?.status);
+
+      let errorMessage = 'Identifiants incorrects';
+
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -239,7 +250,7 @@ export function AuthProvider({ children }) {
 
       // Demander la connexion
       await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
+      await GoogleSignin.signIn();
 
       // Récupérer l'ID token
       const tokens = await GoogleSignin.getTokens();
@@ -292,18 +303,32 @@ export function AuthProvider({ children }) {
         prenom: userData.prenom,
       };
 
+      console.log('[AUTH] Register: sending registration request for', userData.email);
       const response = await authService.register(payload);
+      console.log('[AUTH] Register: backend response:', JSON.stringify(response, null, 2));
 
       // Le backend renvoie juste un message, pas de token
       // L'utilisateur doit vérifier son email avant de se connecter
       return {
         success: true,
-        message: response.message || 'Compte créé. Vérifie ta boîte mail.',
+        message: response.message || 'Compte créé avec succès ! Un email de vérification a été envoyé à ' + userData.email + '. Vérifie ta boîte mail (et tes spams) pour activer ton compte.',
         requiresVerification: true
       };
     } catch (error) {
-      console.error('Erreur d\'inscription:', error);
-      const errorMessage = error.response?.data?.message || 'Erreur lors de l\'inscription';
+      console.error('[AUTH] Register error:', error);
+      console.error('[AUTH] Register error response:', error.response?.data);
+      console.error('[AUTH] Register error status:', error.response?.status);
+
+      let errorMessage = 'Erreur lors de l\'inscription';
+
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {

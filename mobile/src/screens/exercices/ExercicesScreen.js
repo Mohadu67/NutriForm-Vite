@@ -917,12 +917,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 20,
     gap: 6,
+    minHeight: 36,
   },
   favoritesToggleActive: {
     backgroundColor: '#EF4444',
   },
   favoritesToggleDark: {
     backgroundColor: '#2A2A2A',
+    borderWidth: 1,
+    borderColor: '#3A3A3A',
   },
   favoritesCount: {
     fontSize: 14,
@@ -933,7 +936,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   favoritesCountDark: {
-    color: '#888',
+    color: '#CCC',
   },
   searchBar: {
     flexDirection: 'row',
@@ -969,14 +972,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: '#666',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   clearSectionText: {
-    fontSize: 12,
+    fontSize: 13,
     color: theme.colors.primary,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   textMutedDark: {
-    color: '#888',
+    color: '#AAA',
   },
   typeScroll: {
     marginBottom: theme.spacing.md,
@@ -988,24 +993,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F0F0F0',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 20,
     gap: 6,
+    minHeight: 38,
   },
   typeTabDark: {
     backgroundColor: '#2A2A2A',
+    borderWidth: 1,
+    borderColor: '#3A3A3A',
   },
   typeTabText: {
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
     color: '#666',
   },
   typeTabTextActive: {
     color: '#FFF',
+    fontWeight: '600',
   },
   typeTabTextDark: {
-    color: '#888',
+    color: '#CCC',
   },
   equipmentScroll: {
     marginBottom: theme.spacing.md,
@@ -1016,12 +1025,13 @@ const styles = StyleSheet.create({
   equipmentChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: '#E0E0E0',
     backgroundColor: '#FFF',
+    minHeight: 36,
   },
   equipmentChipActive: {
     backgroundColor: theme.colors.primary,
@@ -1029,18 +1039,19 @@ const styles = StyleSheet.create({
   },
   equipmentChipDark: {
     backgroundColor: '#2A2A2A',
-    borderColor: '#444',
+    borderColor: '#3A3A3A',
   },
   equipmentChipText: {
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: '500',
     color: '#666',
   },
   equipmentChipTextActive: {
     color: '#FFF',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   equipmentChipTextDark: {
-    color: '#888',
+    color: '#CCC',
   },
   filterButton: {
     flexDirection: 'row',
