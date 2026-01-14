@@ -27,6 +27,7 @@ const LoginScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showResendEmail, setShowResendEmail] = useState(false);
 
   useEffect(() => {
     clearError();
@@ -51,10 +52,45 @@ const LoginScreen = ({ navigation }) => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    setShowResendEmail(false);
     try {
       await login(email.trim().toLowerCase(), password);
     } catch (err) {
-      // Error handled by context
+      console.error('[LoginScreen] Login failed:', err);
+      // Vérifier si l'erreur est liée à un email non vérifié
+      const errorMessage = err?.message?.toLowerCase() || '';
+      if (
+        errorMessage.includes('email non vérifié') ||
+        errorMessage.includes('email not verified') ||
+        errorMessage.includes('compte non vérifié') ||
+        errorMessage.includes('vérifier votre email') ||
+        errorMessage.includes('verify your email')
+      ) {
+        setShowResendEmail(true);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    try {
+      setIsSubmitting(true);
+      const authService = require('../../api/auth').default;
+      await authService.resendVerificationEmail();
+      Alert.alert(
+        'Email envoyé',
+        'Un nouvel email de vérification a été envoyé. Vérifie ta boîte mail et tes spams.',
+        [{ text: 'OK' }]
+      );
+      setShowResendEmail(false);
+    } catch (error) {
+      console.error('[LoginScreen] Resend email failed:', error);
+      Alert.alert(
+        'Erreur',
+        'Impossible d\'envoyer l\'email. Contacte le support si le problème persiste.',
+        [{ text: 'OK' }]
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -101,6 +137,17 @@ const LoginScreen = ({ navigation }) => {
             {error && (
               <View style={styles.errorBanner}>
                 <Text style={styles.errorBannerText}>{error}</Text>
+                {showResendEmail && (
+                  <TouchableOpacity
+                    onPress={handleResendEmail}
+                    disabled={isSubmitting}
+                    style={styles.resendButton}
+                  >
+                    <Text style={styles.resendButtonText}>
+                      {isSubmitting ? 'Envoi en cours...' : '📧 Renvoyer l\'email de vérification'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
             )}
 
@@ -228,6 +275,19 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.primary,
     fontWeight: theme.fontWeight.semibold,
+  },
+  resendButton: {
+    marginTop: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    alignItems: 'center',
+  },
+  resendButtonText: {
+    fontSize: theme.fontSize.sm,
+    color: '#FFFFFF',
+    fontWeight: theme.fontWeight.medium,
   },
 });
 

@@ -32,6 +32,7 @@ const RegisterScreen = ({ navigation }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   useEffect(() => {
     clearError();
@@ -79,18 +80,36 @@ const RegisterScreen = ({ navigation }) => {
 
     setIsSubmitting(true);
     try {
+      const userEmail = email.trim().toLowerCase();
       const result = await register({
         pseudo: pseudo.trim(),
-        email: email.trim().toLowerCase(),
+        email: userEmail,
         password,
       });
 
       if (result?.requiresVerification) {
         setSuccessMessage(result.message);
+        setRegisteredEmail(userEmail);
         setIsSuccess(true);
       }
     } catch (err) {
+      console.error('[RegisterScreen] Registration failed:', err);
       // Error handled by context
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    try {
+      setIsSubmitting(true);
+      // Appeler l'API pour renvoyer l'email
+      const authService = require('../../api/auth').default;
+      await authService.resendVerificationEmail();
+      alert('Email renvoyé ! Vérifie ta boîte mail.');
+    } catch (error) {
+      console.error('[RegisterScreen] Resend email failed:', error);
+      alert('Erreur lors de l\'envoi de l\'email. Contacte le support si le problème persiste.');
     } finally {
       setIsSubmitting(false);
     }
@@ -114,6 +133,15 @@ const RegisterScreen = ({ navigation }) => {
             onPress={() => navigation.navigate('Login')}
             style={styles.successButton}
           />
+          <TouchableOpacity
+            onPress={handleResendEmail}
+            disabled={isSubmitting}
+            style={styles.resendButton}
+          >
+            <Text style={styles.resendButtonText}>
+              {isSubmitting ? 'Envoi en cours...' : 'Je n\'ai pas reçu l\'email'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -380,6 +408,15 @@ const styles = StyleSheet.create({
   },
   successButton: {
     width: '100%',
+  },
+  resendButton: {
+    marginTop: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+  },
+  resendButtonText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primary,
+    textDecorationLine: 'underline',
   },
 });
 

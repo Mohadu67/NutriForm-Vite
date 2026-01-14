@@ -26,7 +26,7 @@
       }
     },
     "android": {
-      "versionCode": 2,
+      "versionCode": 4,
       "icon": "./assets/icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -92,7 +92,8 @@
     "extra": {
       "eas": {
         "projectId": "aca61473-e5d7-4e41-a412-97e99452057a"
-      }
+      },
+      "googleWebClientId": "45341856086-ja08fhmgetpb58riv647lfsdvgsuelvc.apps.googleusercontent.com"
     }
   }
 }
