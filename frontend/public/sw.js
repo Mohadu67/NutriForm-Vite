@@ -1,10 +1,10 @@
 // Service Worker pour NutriForm
 // Gère le cache et les notifications push
 
-const CACHE_NAME = 'nutriform-v3';
-const API_CACHE = 'nutriform-api-v3';
+const CACHE_NAME = 'nutriform-v4';
+const API_CACHE = 'nutriform-api-v4';
 // Version basée sur timestamp pour forcer la détection de mise à jour
-const APP_VERSION = '3.0.0-22251220';
+const APP_VERSION = '3.1.0-26011401';
 
 // Événement d'installation
 self.addEventListener('install', (event) => {
