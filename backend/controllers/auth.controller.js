@@ -1,12 +1,16 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const Subscription = require('../models/Subscription');
 const { sendVerifyEmail } = require('../services/mailer.service');
 const { validatePassword } = require('../utils/passwordValidator');
 const logger = require('../utils/logger.js');
 const config = require('../config');
+
+// Google OAuth client
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 function frontBase() {
   const base = process.env.FRONTEND_BASE_URL || 'http://localhost:5173';
@@ -505,8 +509,130 @@ exports.updateNotificationPreferences = async (req, res) => {
 };
 
 /**
+ * Connexion avec Google OAuth
+ * POST /api/auth/google
+ */
+exports.googleAuth = async (req, res) => {
+  try {
+    const { idToken } = req.body || {};
+
+    if (!idToken) {
+      return res.status(400).json({ message: 'Token Google requis.' });
+    }
+
+    // Vérifier le token avec Google
+    let ticket;
+    try {
+      ticket = await googleClient.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+    } catch (verifyError) {
+      logger.error('[GOOGLE_AUTH] Token verification failed:', verifyError.message);
+      return res.status(401).json({ message: 'Token Google invalide.' });
+    }
+
+    const payload = ticket.getPayload();
+    const { email, name, picture, sub: googleId } = payload;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email non fourni par Google.' });
+    }
+
+    // Chercher un utilisateur existant par email ou googleId
+    let user = await User.findOne({
+      $or: [{ email: email.toLowerCase() }, { googleId }]
+    });
+
+    if (user) {
+      // Utilisateur existant - mettre à jour googleId si nécessaire
+      if (!user.googleId) {
+        user.googleId = googleId;
+        await user.save();
+      }
+    } else {
+      // Nouvel utilisateur - créer le compte
+      const pseudo = email.split('@')[0].slice(0, 20).toLowerCase().replace(/[^a-z0-9]/g, '');
+
+      // Vérifier que le pseudo est unique
+      let uniquePseudo = pseudo;
+      let counter = 1;
+      while (await User.findOne({ pseudo: uniquePseudo })) {
+        uniquePseudo = `${pseudo}${counter}`;
+        counter++;
+      }
+
+      user = new User({
+        email: email.toLowerCase(),
+        pseudo: uniquePseudo,
+        prenom: name?.split(' ')[0] || '',
+        googleId,
+        photo: picture || null,
+        emailVerifie: true, // Email vérifié par Google
+        motdepasse: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10), // Mot de passe aléatoire
+      });
+      await user.save();
+      logger.info(`[GOOGLE_AUTH] New user created: ${user.email}`);
+    }
+
+    // Générer le token JWT
+    const token = jwt.sign(
+      { id: user._id, email: user.email, role: user.role },
+      config.jwtSecret,
+      { expiresIn: '7d' }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: user._id },
+      config.jwtSecret,
+      { expiresIn: '30d' }
+    );
+
+    const displayName = user.pseudo || user.prenom || user.email.split('@')[0];
+
+    // Convertir l'URL de la photo en URL complète si elle existe
+    let photoUrl = user.photo || null;
+    if (photoUrl && !photoUrl.startsWith('http')) {
+      const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+      photoUrl = `${backendBase}${photoUrl}`;
+    }
+
+    // Cookie pour le web
+    const isProduction = process.env.NODE_ENV === 'production';
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'lax' : 'strict',
+      domain: isProduction ? '.harmonith.fr' : undefined,
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
+
+    logger.info(`[GOOGLE_AUTH] User logged in: ${user.email}`);
+
+    return res.json({
+      message: 'Connexion Google réussie.',
+      displayName,
+      token,
+      refreshToken,
+      user: {
+        id: user._id,
+        prenom: user.prenom,
+        pseudo: user.pseudo,
+        email: user.email,
+        role: user.role,
+        photo: photoUrl,
+      },
+    });
+  } catch (err) {
+    logger.error('[GOOGLE_AUTH] Error:', err);
+    return res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
+
+/**
  * Supprimer le compte utilisateur
- * DELETE /api/delete-account
+ * DELETE /api/auth/account
  */
 exports.deleteAccount = async (req, res) => {
   try {

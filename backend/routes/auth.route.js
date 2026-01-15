@@ -4,7 +4,7 @@ const rateLimit = require('express-rate-limit');
 
 const auth = require('../middlewares/auth.middleware');
 const verifyCaptcha = require('../middlewares/recaptcha.middleware');
-const { login, register, me, updateProfile, changePassword, logout, resendVerificationEmail, getWsToken, getNotificationPreferences, updateNotificationPreferences, deleteAccount } = require('../controllers/auth.controller.js');
+const { login, register, me, updateProfile, changePassword, logout, resendVerificationEmail, getWsToken, getNotificationPreferences, updateNotificationPreferences, deleteAccount, googleAuth } = require('../controllers/auth.controller.js');
 
 // Rate limiting spécifique pour l'authentification
 const authLimiter = rateLimit({
@@ -37,6 +37,7 @@ const resendLimiter = rateLimit({
 
 router.post('/login', authLimiter, login);
 router.post('/register', authLimiter, verifyCaptcha, register);
+router.post('/auth/google', authLimiter, googleAuth);
 router.post('/resend-verification', resendLimiter, resendVerificationEmail);
 router.post('/logout', logout);
 router.get('/me', auth, me);
