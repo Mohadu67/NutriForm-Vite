@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./Main.module.css";
-import storage from "../../../utils/storage";
+import { storage } from "../../../shared/utils/storage";
 
 // Icons pour les features
 const DumbbellIcon = () => (
