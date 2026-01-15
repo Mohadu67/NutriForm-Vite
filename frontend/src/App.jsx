@@ -37,6 +37,7 @@ const CGV = lazy(() => import("./pages/RGPD/CGV.jsx"));
 // Auth - lazy loaded
 const VerifyEmail = lazy(() => import("./components/Auth/VerifyEmail/VerifyEmail.jsx"));
 const ResetPassword = lazy(() => import("./components/Auth/ResetPassword/ResetPassword.jsx"));
+const EmailVerified = lazy(() => import("./pages/EmailVerified/EmailVerified.jsx"));
 
 // Newsletter - lazy loaded
 const NewsletterUnsubscribe = lazy(() => import("./pages/Newsletter/NewsletterUnsubscribe.jsx"));
@@ -109,6 +110,7 @@ export default function App() {
 
             {/* Auth - lazy loaded */}
             <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/email-verified" element={<EmailVerified />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Newsletter */}
