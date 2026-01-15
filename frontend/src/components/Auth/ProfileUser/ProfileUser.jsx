@@ -371,6 +371,7 @@ export default function ProfileUser({ onLogout }) {
       }
 
       // Compte supprimé avec succès
+      alert('Votre compte a été supprimé avec succès.');
       window.dispatchEvent(new Event("storage"));
       window.dispatchEvent(new Event("userLogout"));
       onLogout?.();
