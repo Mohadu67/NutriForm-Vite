@@ -60,7 +60,7 @@ export default function ProgramDetailScreen() {
 
   const [program, setProgram] = useState(initialProgram);
   const [loading, setLoading] = useState(!initialProgram);
-  const [userRating, setUserRating] = useState(0);
+  const [userRating, setUserRating] = useState(initialProgram?.userRating || 0);
   const [enrichedCycles, setEnrichedCycles] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [exerciseModalVisible, setExerciseModalVisible] = useState(false);
@@ -169,6 +169,10 @@ export default function ProgramDetailScreen() {
     const data = await fetchProgramById(programId);
     if (data) {
       setProgram(data);
+      // Mettre à jour la note de l'utilisateur si elle existe
+      if (data.userRating !== undefined) {
+        setUserRating(data.userRating || 0);
+      }
       // Enrichir les cycles avec les images
       const enriched = await enrichCyclesWithImages(data.cycles);
       setEnrichedCycles(enriched);
