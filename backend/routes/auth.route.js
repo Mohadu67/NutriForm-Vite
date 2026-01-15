@@ -4,7 +4,7 @@ const rateLimit = require('express-rate-limit');
 
 const auth = require('../middlewares/auth.middleware');
 const verifyCaptcha = require('../middlewares/recaptcha.middleware');
-const { login, register, me, updateProfile, changePassword, logout, resendVerificationEmail, getWsToken, getNotificationPreferences, updateNotificationPreferences } = require('../controllers/auth.controller.js');
+const { login, register, me, updateProfile, changePassword, logout, resendVerificationEmail, getWsToken, getNotificationPreferences, updateNotificationPreferences, deleteAccount } = require('../controllers/auth.controller.js');
 
 // Rate limiting spécifique pour l'authentification
 const authLimiter = rateLimit({
@@ -47,5 +47,8 @@ router.put('/change-password', auth, changePassword);
 // Preferences de notifications
 router.get('/notification-preferences', auth, getNotificationPreferences);
 router.put('/notification-preferences', auth, updateNotificationPreferences);
+
+// Suppression de compte
+router.delete('/delete-account', auth, deleteAccount);
 
 module.exports = router;

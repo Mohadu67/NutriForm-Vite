@@ -503,3 +503,49 @@ exports.updateNotificationPreferences = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur' });
   }
 };
+
+/**
+ * Supprimer le compte utilisateur
+ * DELETE /api/delete-account
+ */
+exports.deleteAccount = async (req, res) => {
+  try {
+    const { password } = req.body || {};
+
+    if (!password) {
+      return res.status(400).json({ message: 'Mot de passe requis pour confirmer la suppression.' });
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable.' });
+    }
+
+    // Vérifier le mot de passe
+    const isMatch = await bcrypt.compare(password, user.motdepasse);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Mot de passe incorrect.' });
+    }
+
+    // Supprimer les données associées
+    await Subscription.deleteMany({ userId: req.userId });
+
+    // Supprimer l'utilisateur
+    await User.deleteOne({ _id: req.userId });
+
+    // Supprimer le cookie httpOnly
+    res.clearCookie('authToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+    });
+
+    logger.info(`[AUTH] Account deleted: ${user.email}`);
+
+    return res.json({ success: true, message: 'Compte supprimé avec succès.' });
+  } catch (err) {
+    logger.error('DELETE /delete-account:', err);
+    return res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
