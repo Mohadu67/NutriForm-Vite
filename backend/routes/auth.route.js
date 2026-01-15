@@ -49,6 +49,6 @@ router.get('/notification-preferences', auth, getNotificationPreferences);
 router.put('/notification-preferences', auth, updateNotificationPreferences);
 
 // Suppression de compte
-router.delete('/delete-account', auth, deleteAccount);
+router.delete('/auth/account', auth, deleteAccount);
 
 module.exports = router;
