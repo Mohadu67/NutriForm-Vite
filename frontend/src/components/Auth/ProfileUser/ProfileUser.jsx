@@ -360,7 +360,7 @@ export default function ProfileUser({ onLogout }) {
 
     setDeletingAccount(true);
     try {
-      const res = await secureApiCall('/delete-account', {
+      const res = await secureApiCall('/auth/account', {
         method: 'DELETE',
         body: JSON.stringify({ password: deletePassword })
       });
