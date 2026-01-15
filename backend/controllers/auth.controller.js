@@ -516,7 +516,7 @@ exports.deleteAccount = async (req, res) => {
       return res.status(400).json({ message: 'Mot de passe requis pour confirmer la suppression.' });
     }
 
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId).select('+motdepasse');
     if (!user) {
       return res.status(404).json({ message: 'Utilisateur introuvable.' });
     }
