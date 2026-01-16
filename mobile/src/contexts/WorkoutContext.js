@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveSession as saveSessionToBackend, getSessions as getSessionsFromBackend } from '../api/workouts';
 
 const WorkoutContext = createContext();
 
@@ -245,7 +246,24 @@ export function WorkoutProvider({ children }) {
       duration: Math.round((new Date() - new Date(currentWorkout.startTime)) / 1000 / 60), // en minutes
     };
 
-    // Sauvegarder dans l'historique
+    // 1. Sauvegarder sur le backend (synchronisation)
+    try {
+      const result = await saveSessionToBackend(finishedWorkout);
+      if (result.success) {
+        console.log('[WORKOUT] Seance synchronisee avec le backend');
+        // Stocker l'ID backend pour reference
+        finishedWorkout.backendId = result.data?._id;
+      } else {
+        console.log('[WORKOUT] Echec sync backend:', result.error);
+        // Marquer comme non synchronise pour retry plus tard
+        finishedWorkout.synced = false;
+      }
+    } catch (error) {
+      console.log('[WORKOUT] Erreur sync backend:', error);
+      finishedWorkout.synced = false;
+    }
+
+    // 2. Sauvegarder dans l'historique local (backup)
     try {
       const historyKey = '@workout_history';
       const existingHistory = await AsyncStorage.getItem(historyKey);
@@ -253,7 +271,7 @@ export function WorkoutProvider({ children }) {
       history.unshift(finishedWorkout);
       await AsyncStorage.setItem(historyKey, JSON.stringify(history.slice(0, 100))); // Garder les 100 derniers
     } catch (error) {
-      console.log('Erreur sauvegarde historique:', error);
+      console.log('Erreur sauvegarde historique local:', error);
     }
 
     // Reset la seance courante
@@ -318,6 +336,51 @@ export function WorkoutProvider({ children }) {
     }, 0);
   }, [currentWorkout]);
 
+  // Recuperer l'historique des seances depuis le backend
+  const getWorkoutHistory = useCallback(async (params = {}) => {
+    try {
+      // 1. Essayer de recuperer depuis le backend
+      const result = await getSessionsFromBackend(params);
+      if (result.success && result.data.length > 0) {
+        return {
+          success: true,
+          data: result.data,
+          nextCursor: result.nextCursor,
+          source: 'backend',
+        };
+      }
+
+      // 2. Fallback sur le stockage local
+      const historyKey = '@workout_history';
+      const existingHistory = await AsyncStorage.getItem(historyKey);
+      const localHistory = existingHistory ? JSON.parse(existingHistory) : [];
+
+      return {
+        success: true,
+        data: localHistory,
+        nextCursor: null,
+        source: 'local',
+      };
+    } catch (error) {
+      console.log('[WORKOUT] Erreur chargement historique:', error);
+
+      // En cas d'erreur, essayer le local
+      try {
+        const historyKey = '@workout_history';
+        const existingHistory = await AsyncStorage.getItem(historyKey);
+        const localHistory = existingHistory ? JSON.parse(existingHistory) : [];
+        return {
+          success: true,
+          data: localHistory,
+          nextCursor: null,
+          source: 'local',
+        };
+      } catch (localError) {
+        return { success: false, data: [], error: localError.message };
+      }
+    }
+  }, []);
+
   const value = {
     currentWorkout,
     isWorkoutActive,
@@ -336,6 +399,7 @@ export function WorkoutProvider({ children }) {
     isExerciseInWorkout,
     getCompletedSetsCount,
     getTotalSetsCount,
+    getWorkoutHistory,
   };
 
   return (
