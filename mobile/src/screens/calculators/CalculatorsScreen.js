@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,12 +10,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Keyboard,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { theme } from '../../theme';
+import { saveIMCCalc, saveCalorieCalc, saveRMCalc, saveFCMaxCalc } from '../../api/history';
 
 // Clé de stockage pour les données des calculateurs
 const CALCULATOR_STORAGE_KEY = '@calculator_data';
@@ -120,6 +122,7 @@ export default function CalculatorsScreen() {
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const scrollViewRef = useRef(null);
 
   const [activeTab, setActiveTab] = useState('imc');
 
@@ -147,9 +150,31 @@ export default function CalculatorsScreen() {
   const [cardioData, setCardioData] = useState({ age: '' });
   const [cardioResult, setCardioResult] = useState(null);
 
-  // Sauvegarder les données d'un calculateur (avec historique)
+  // Sauvegarder les données d'un calculateur (avec historique local + backend)
   const saveCalculatorData = useCallback(async (type, data) => {
     try {
+      // 1. Sauvegarder sur le backend
+      let backendSuccess = false;
+      try {
+        let result;
+        if (type === 'imc') {
+          result = await saveIMCCalc(data);
+        } else if (type === 'calories') {
+          result = await saveCalorieCalc(data);
+        } else if (type === 'rm') {
+          result = await saveRMCalc(data);
+        } else if (type === 'cardio') {
+          result = await saveFCMaxCalc(data);
+        }
+        backendSuccess = result?.success;
+        if (backendSuccess) {
+          console.log(`[CALCULATOR] ${type} synchronise avec le backend`);
+        }
+      } catch (backendError) {
+        console.log('[CALCULATOR] Erreur sync backend:', backendError.message);
+      }
+
+      // 2. Sauvegarder en local (backup)
       const existingData = await AsyncStorage.getItem(CALCULATOR_STORAGE_KEY);
       const allData = existingData ? JSON.parse(existingData) : {};
 
@@ -158,6 +183,7 @@ export default function CalculatorsScreen() {
         ...data,
         id: Date.now().toString(),
         savedAt: new Date().toISOString(),
+        synced: backendSuccess,
       };
 
       // Initialiser l'historique si nécessaire
@@ -244,6 +270,14 @@ export default function CalculatorsScreen() {
     });
   }, [cardioResult, cardioData, saveCalculatorData]);
 
+  // Helper pour fermer le clavier et scroller vers le résultat
+  const dismissKeyboardAndScroll = useCallback(() => {
+    Keyboard.dismiss();
+    setTimeout(() => {
+      scrollViewRef.current?.scrollTo({ y: 400, animated: true });
+    }, 100);
+  }, []);
+
   // Calcul IMC
   const calculateIMC = useCallback(() => {
     const poids = parseFloat(imcData.poids);
@@ -253,6 +287,8 @@ export default function CalculatorsScreen() {
       Alert.alert('Erreur', 'Veuillez entrer des valeurs valides');
       return;
     }
+
+    Keyboard.dismiss();
 
     const tailleM = taille / 100;
     const imc = poids / (tailleM * tailleM);
@@ -292,6 +328,11 @@ export default function CalculatorsScreen() {
       details: IMC_DESCRIPTIONS[categorie],
     });
     setShowImcDetails(true);
+
+    // Scroll vers le résultat
+    setTimeout(() => {
+      scrollViewRef.current?.scrollTo({ y: 350, animated: true });
+    }, 100);
   }, [imcData]);
 
   // Calcul Calories (Mifflin-St Jeor)
@@ -304,6 +345,8 @@ export default function CalculatorsScreen() {
       Alert.alert('Erreur', 'Veuillez entrer des valeurs valides');
       return;
     }
+
+    Keyboard.dismiss();
 
     // Formule Mifflin-St Jeor
     let tmb;
@@ -361,6 +404,11 @@ export default function CalculatorsScreen() {
         description: 'Ce surplus te permettra de prendre 0.5 a 1 kg par semaine.',
       },
     });
+
+    // Scroll vers le résultat
+    setTimeout(() => {
+      scrollViewRef.current?.scrollTo({ y: 500, animated: true });
+    }, 100);
   }, [caloriesData]);
 
   // Calcul 1RM (Formule d'Epley)
@@ -372,6 +420,8 @@ export default function CalculatorsScreen() {
       Alert.alert('Erreur', 'Veuillez entrer des valeurs valides');
       return;
     }
+
+    Keyboard.dismiss();
 
     if (reps > 12) {
       Alert.alert('Info', 'Pour plus de precision, utilisez 12 reps maximum');
@@ -397,6 +447,11 @@ export default function CalculatorsScreen() {
     }));
 
     setRmResult({ rm: rmRounded, percentages });
+
+    // Scroll vers le résultat
+    setTimeout(() => {
+      scrollViewRef.current?.scrollTo({ y: 400, animated: true });
+    }, 100);
   }, [rmData]);
 
   // Calcul FC Max
@@ -407,6 +462,8 @@ export default function CalculatorsScreen() {
       Alert.alert('Erreur', 'Veuillez entrer un age valide');
       return;
     }
+
+    Keyboard.dismiss();
 
     const fcMaxClassique = 220 - age;
     const fcMaxTanaka = Math.round(208 - 0.7 * age);
@@ -455,6 +512,11 @@ export default function CalculatorsScreen() {
     ];
 
     setCardioResult({ fcMax: fcMaxClassique, fcMaxTanaka, zones });
+
+    // Scroll vers le résultat
+    setTimeout(() => {
+      scrollViewRef.current?.scrollTo({ y: 300, animated: true });
+    }, 100);
   }, [cardioData]);
 
   // Navigation vers recettes (accessible depuis HomeStack)
@@ -1153,18 +1215,24 @@ export default function CalculatorsScreen() {
               return (
                 <TouchableOpacity
                   key={tab.id}
-                  style={[styles.tab, isActive && styles.tabActive]}
+                  style={[
+                    styles.tab,
+                    isDark && styles.tabDark,
+                    isActive && styles.tabActive,
+                    isActive && isDark && styles.tabActiveDark,
+                  ]}
                   onPress={() => setActiveTab(tab.id)}
                 >
                   <Ionicons
                     name={isActive ? tab.icon : `${tab.icon}-outline`}
-                    size={18}
-                    color={isActive ? '#FFF' : isDark ? '#888' : '#666'}
+                    size={16}
+                    color={isActive ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#9CA3AF' : '#6B7280')}
                   />
                   <Text style={[
                     styles.tabText,
+                    isDark && styles.tabTextDark,
                     isActive && styles.tabTextActive,
-                    isDark && !isActive && styles.tabTextDark,
+                    isActive && isDark && styles.tabTextActiveDark,
                   ]}>
                     {tab.label}
                   </Text>
@@ -1176,6 +1244,7 @@ export default function CalculatorsScreen() {
 
         {/* Calculator Content */}
         <ScrollView
+          ref={scrollViewRef}
           style={styles.content}
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
@@ -1235,26 +1304,41 @@ const styles = StyleSheet.create({
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    backgroundColor: '#E5E5E5',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
     marginRight: 8,
-    gap: 5,
+    gap: 6,
+  },
+  tabDark: {
+    backgroundColor: '#1F1F1F',
+    borderColor: '#333',
   },
   tabActive: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: `${theme.colors.primary}15`,
+    borderColor: theme.colors.primary,
+  },
+  tabActiveDark: {
+    backgroundColor: 'rgba(247, 177, 134, 0.15)',
+    borderColor: '#F7B186',
   },
   tabText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#6B7280',
   },
   tabTextActive: {
-    color: '#FFF',
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  tabTextActiveDark: {
+    color: '#F7B186',
   },
   tabTextDark: {
-    color: '#888',
+    color: '#9CA3AF',
   },
   content: {
     flex: 1,
@@ -1554,13 +1638,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: theme.colors.primary,
     borderRadius: 12,
-    height: 50,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    minHeight: 50,
+    gap: 6,
   },
   actionButtonText: {
     color: '#FFF',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    marginHorizontal: 4,
+    flexShrink: 1,
+    textAlign: 'center',
   },
   actionButtonsRow: {
     flexDirection: 'row',
