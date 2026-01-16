@@ -127,12 +127,22 @@ export default function ProgramCard({
 
       {/* Infos */}
       <View style={styles.infoContainer}>
-        <Text
-          style={[styles.name, isDark && styles.nameDark]}
-          numberOfLines={2}
-        >
-          {program.name}
-        </Text>
+        <View style={styles.titleRow}>
+          <Text
+            style={[styles.name, isDark && styles.nameDark]}
+            numberOfLines={2}
+          >
+            {program.name}
+          </Text>
+          {program.avgRating > 0 && (
+            <View style={styles.ratingBadge}>
+              <Ionicons name="star" size={12} color="#F59E0B" />
+              <Text style={styles.ratingText}>
+                {program.avgRating.toFixed(1)}
+              </Text>
+            </View>
+          )}
+        </View>
 
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
@@ -156,15 +166,6 @@ export default function ProgramCard({
               {cyclesCount} cycles
             </Text>
           </View>
-
-          {program.avgRating > 0 && (
-            <View style={styles.metaItem}>
-              <Ionicons name="star" size={14} color="#F59E0B" />
-              <Text style={[styles.metaText, isDark && styles.metaTextDark]}>
-                {program.avgRating.toFixed(1)}
-              </Text>
-            </View>
-          )}
         </View>
 
         {/* Status badge for owner programs */}
@@ -297,14 +298,35 @@ const styles = StyleSheet.create({
   infoContainer: {
     padding: theme.spacing.sm,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: theme.spacing.xs,
+  },
   name: {
+    flex: 1,
     fontSize: theme.fontSize.md,
     fontWeight: '600',
     color: theme.colors.text.primary,
-    marginBottom: theme.spacing.xs,
   },
   nameDark: {
     color: '#FFFFFF',
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 6,
+    gap: 3,
+  },
+  ratingText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#D97706',
   },
   metaRow: {
     flexDirection: 'row',

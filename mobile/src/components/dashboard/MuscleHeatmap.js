@@ -26,13 +26,13 @@ const MUSCLE_TO_ZONE = {
   mollets: 'mollets', calves: 'mollets',
 };
 
-// Couleurs d'intensité (du vert clair au rouge)
+// Couleurs d'intensité avec gradient moderne (du cyan au orange/rouge)
 const INTENSITY_COLORS = [
-  { fill: '#b8e6cf', stroke: '#7bc9a3' }, // Faible
-  { fill: '#8fd9b6', stroke: '#5cb88a' },
-  { fill: '#f7d794', stroke: '#f5b041' }, // Moyen
-  { fill: '#f5a962', stroke: '#e67e22' },
-  { fill: '#e74c3c', stroke: '#c0392b' }, // Intense
+  { fill: '#94E8B4', stroke: '#5ED389', gradient: ['#94E8B4', '#5ED389'] }, // Léger
+  { fill: '#7DD3A8', stroke: '#4AC17A', gradient: ['#7DD3A8', '#4AC17A'] },
+  { fill: '#F7B186', stroke: '#F59E0B', gradient: ['#F7B186', '#F59E0B'] }, // Moyen
+  { fill: '#FB923C', stroke: '#EA580C', gradient: ['#FB923C', '#EA580C'] },
+  { fill: '#F87171', stroke: '#DC2626', gradient: ['#F87171', '#DC2626'] }, // Intense
 ];
 
 // Mapping elem SVG vers zone
@@ -225,128 +225,182 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
     { value: 'all', label: 'Tout', icon: 'stats-chart' },
   ];
 
+  // Calculer le pourcentage max pour les barres de progression
+  const maxMuscleCount = topMuscles.length > 0 ? topMuscles[0].count : 1;
+
   return (
     <View style={[styles.container, isDark && styles.containerDark]}>
-      {/* Filtres période */}
-      <View style={styles.filters}>
-        {periodOptions.map((option) => (
+      {/* Header avec filtres */}
+      <View style={styles.headerRow}>
+        <View style={styles.filters}>
+          {periodOptions.map((option) => {
+            const isActive = filter === option.value;
+            return (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.filterPill,
+                  isDark && styles.filterPillDark,
+                  isActive && styles.filterPillActive,
+                  isActive && isDark && styles.filterPillActiveDark,
+                ]}
+                onPress={() => setFilter(option.value)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={option.icon}
+                  size={14}
+                  color={isActive ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#9CA3AF' : '#6B7280')}
+                />
+                <Text
+                  style={[
+                    styles.filterPillText,
+                    isDark && styles.filterPillTextDark,
+                    isActive && styles.filterPillTextActive,
+                    isActive && isDark && styles.filterPillTextActiveDark,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* Corps principal avec toggle intégré */}
+      <View style={styles.bodySection}>
+        {/* Toggle Face/Dos - Design moderne */}
+        <View style={[styles.toggleContainer, isDark && styles.toggleContainerDark]}>
           <TouchableOpacity
-            key={option.value}
             style={[
-              styles.filterPill,
-              filter === option.value && styles.filterPillActive,
-              isDark && styles.filterPillDark,
-              filter === option.value && isDark && styles.filterPillActiveDark,
+              styles.toggleButton,
+              view === 'front' && styles.toggleButtonActive,
+              view === 'front' && isDark && styles.toggleButtonActiveDark,
             ]}
-            onPress={() => setFilter(option.value)}
+            onPress={() => setView('front')}
             activeOpacity={0.7}
           >
             <Ionicons
-              name={option.icon}
+              name="person"
               size={14}
-              color={filter === option.value ? '#FFFFFF' : (isDark ? '#888' : '#666')}
+              color={view === 'front' ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#666' : '#999')}
             />
-            <Text
-              style={[
-                styles.filterPillText,
-                filter === option.value && styles.filterPillTextActive,
-                isDark && styles.filterPillTextDark,
-              ]}
-            >
-              {option.label}
+            <Text style={[
+              styles.toggleText,
+              view === 'front' && styles.toggleTextActive,
+              view === 'front' && isDark && styles.toggleTextActiveDark,
+              isDark && view !== 'front' && styles.toggleTextDark,
+            ]}>
+              Face
             </Text>
           </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Toggle Face/Dos */}
-      <View style={[styles.toggleContainer, isDark && styles.toggleContainerDark]}>
-        <TouchableOpacity
-          style={[
-            styles.toggleButton,
-            view === 'front' && styles.toggleButtonActive,
-          ]}
-          onPress={() => setView('front')}
-          activeOpacity={0.7}
-        >
-          <Text style={[
-            styles.toggleText,
-            view === 'front' && styles.toggleTextActive,
-            isDark && view !== 'front' && styles.toggleTextDark,
-          ]}>
-            Face
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.toggleButton,
-            view === 'back' && styles.toggleButtonActive,
-          ]}
-          onPress={() => setView('back')}
-          activeOpacity={0.7}
-        >
-          <Text style={[
-            styles.toggleText,
-            view === 'back' && styles.toggleTextActive,
-            isDark && view !== 'back' && styles.toggleTextDark,
-          ]}>
-            Dos
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Corps SVG */}
-      <View style={styles.bodyWrapper}>
-        <Svg
-          width="100%"
-          height={280}
-          viewBox={currentViewBox}
-          preserveAspectRatio="xMidYMid meet"
-        >
-          {/* Éléments décoratifs */}
-          {currentPaths.DECORATIVE && currentPaths.DECORATIVE.map((pathData, index) => (
-            <Path
-              key={`deco-${index}`}
-              d={pathData.d}
-              fill={isDark ? '#4A4A4A' : '#B8B8B8'}
-              stroke={isDark ? '#5A5A5A' : '#999999'}
-              strokeWidth={0.8}
-              strokeLinejoin="round"
+          <TouchableOpacity
+            style={[
+              styles.toggleButton,
+              view === 'back' && styles.toggleButtonActive,
+              view === 'back' && isDark && styles.toggleButtonActiveDark,
+            ]}
+            onPress={() => setView('back')}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="person"
+              size={14}
+              color={view === 'back' ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#666' : '#999')}
+              style={{ transform: [{ scaleX: -1 }] }}
             />
-          ))}
+            <Text style={[
+              styles.toggleText,
+              view === 'back' && styles.toggleTextActive,
+              view === 'back' && isDark && styles.toggleTextActiveDark,
+              isDark && view !== 'back' && styles.toggleTextDark,
+            ]}>
+              Dos
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-          {/* Zones musculaires */}
-          {Object.entries(currentPaths).map(([elemName, paths]) =>
-            renderMuscleGroup(elemName, paths)
-          )}
-        </Svg>
+        {/* Corps SVG avec effet glow */}
+        <View style={styles.bodyWrapper}>
+          <View style={[styles.bodyGlow, hasData && styles.bodyGlowActive]} />
+          <Svg
+            width="100%"
+            height={260}
+            viewBox={currentViewBox}
+            preserveAspectRatio="xMidYMid meet"
+          >
+            {/* Éléments décoratifs */}
+            {currentPaths.DECORATIVE && currentPaths.DECORATIVE.map((pathData, index) => (
+              <Path
+                key={`deco-${index}`}
+                d={pathData.d}
+                fill={isDark ? '#3A3A3A' : '#D1D5DB'}
+                stroke={isDark ? '#4A4A4A' : '#9CA3AF'}
+                strokeWidth={0.8}
+                strokeLinejoin="round"
+              />
+            ))}
+
+            {/* Zones musculaires */}
+            {Object.entries(currentPaths).map(([elemName, paths]) =>
+              renderMuscleGroup(elemName, paths)
+            )}
+          </Svg>
+        </View>
       </View>
 
-      {/* Légende */}
+      {/* Légende redessinée */}
       {hasData ? (
         <View style={styles.legend}>
-          <Text style={[styles.legendTitle, isDark && styles.legendTitleDark]}>
-            Muscles les plus travaillés
-          </Text>
-          <View style={styles.topMuscles}>
-            {topMuscles.map((muscle, index) => (
-              <View key={muscle.zone} style={styles.muscleItem}>
-                <View style={[styles.muscleRank, { backgroundColor: muscle.color.fill }]}>
-                  <Text style={styles.muscleRankText}>{index + 1}</Text>
-                </View>
-                <Text style={[styles.muscleName, isDark && styles.muscleNameDark]}>
-                  {ZONE_LABELS[muscle.zone] || muscle.zone}
-                </Text>
-                <Text style={[styles.muscleCount, isDark && styles.muscleCountDark]}>
-                  {muscle.count % 1 === 0 ? muscle.count : muscle.count.toFixed(1)} pts
-                </Text>
-              </View>
-            ))}
+          <View style={styles.legendHeader}>
+            <Text style={[styles.legendTitle, isDark && styles.legendTitleDark]}>
+              🔥 Top muscles travaillés
+            </Text>
+            <View style={[styles.sessionsBadge, isDark && styles.sessionsBadgeDark]}>
+              <Text style={[styles.sessionsBadgeText, isDark && styles.sessionsBadgeTextDark]}>
+                {filteredSessions.length} séance{filteredSessions.length > 1 ? 's' : ''}
+              </Text>
+            </View>
           </View>
 
-          {/* Échelle d'intensité */}
-          <View style={styles.intensityScale}>
-            <Text style={[styles.scaleLabel, isDark && styles.scaleLabelDark]}>Intensité</Text>
+          <View style={styles.topMuscles}>
+            {topMuscles.map((muscle, index) => {
+              const percentage = (muscle.count / maxMuscleCount) * 100;
+              const medals = ['🥇', '🥈', '🥉'];
+              return (
+                <View key={muscle.zone} style={styles.muscleItem}>
+                  <View style={styles.muscleItemHeader}>
+                    <Text style={styles.muscleMedal}>{medals[index]}</Text>
+                    <Text style={[styles.muscleName, isDark && styles.muscleNameDark]}>
+                      {ZONE_LABELS[muscle.zone] || muscle.zone}
+                    </Text>
+                    <Text style={[styles.muscleCount, isDark && styles.muscleCountDark]}>
+                      {muscle.count % 1 === 0 ? muscle.count : muscle.count.toFixed(1)}
+                    </Text>
+                  </View>
+                  <View style={[styles.progressBarBg, isDark && styles.progressBarBgDark]}>
+                    <View
+                      style={[
+                        styles.progressBarFill,
+                        {
+                          width: `${percentage}%`,
+                          backgroundColor: muscle.color.fill,
+                        }
+                      ]}
+                    />
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+
+          {/* Échelle d'intensité redessinée */}
+          <View style={[styles.intensityScale, isDark && styles.intensityScaleDark]}>
+            <View style={styles.scaleLabels}>
+              <Text style={[styles.scaleLabel, isDark && styles.scaleLabelDark]}>Léger</Text>
+              <Text style={[styles.scaleLabel, isDark && styles.scaleLabelDark]}>Intense</Text>
+            </View>
             <View style={styles.scaleBar}>
               {INTENSITY_COLORS.map((color, i) => (
                 <View key={i} style={[styles.scaleStep, { backgroundColor: color.fill }]} />
@@ -355,10 +409,11 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
           </View>
         </View>
       ) : (
-        <View style={styles.emptyState}>
+        <View style={[styles.emptyState, isDark && styles.emptyStateDark]}>
+          <Ionicons name="body-outline" size={40} color={isDark ? '#4A4A4A' : '#D1D5DB'} />
           <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>
             {filter === 'all'
-              ? 'Complète des séances pour voir ta répartition musculaire'
+              ? 'Complète des séances pour voir ta répartition'
               : 'Aucune séance sur cette période'}
           </Text>
         </View>
@@ -370,155 +425,238 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
+    borderRadius: 20,
     padding: theme.spacing.lg,
     marginBottom: theme.spacing.lg,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   containerDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#1F1F1F',
+  },
+  headerRow: {
+    marginBottom: theme.spacing.md,
   },
   filters: {
     flexDirection: 'row',
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.md,
+    gap: 8,
   },
   filterPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.sm,
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     backgroundColor: '#F3F4F6',
-    borderRadius: theme.borderRadius.full,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
   },
   filterPillDark: {
-    backgroundColor: '#333333',
+    backgroundColor: '#1F1F1F',
+    borderColor: '#333',
   },
   filterPillActive: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: `${theme.colors.primary}15`,
+    borderColor: theme.colors.primary,
   },
   filterPillActiveDark: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: 'rgba(247, 177, 134, 0.15)',
+    borderColor: '#F7B186',
   },
   filterPillText: {
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.medium,
-    color: '#666666',
-  },
-  filterPillTextActive: {
-    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#6B7280',
   },
   filterPillTextDark: {
-    color: '#888888',
+    color: '#9CA3AF',
+  },
+  filterPillTextActive: {
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  filterPillTextActiveDark: {
+    color: '#F7B186',
+  },
+  bodySection: {
+    alignItems: 'center',
   },
   toggleContainer: {
     flexDirection: 'row',
-    backgroundColor: '#F0F0F0',
-    borderRadius: theme.borderRadius.md,
-    padding: 3,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    padding: 4,
     marginBottom: theme.spacing.md,
-    alignSelf: 'center',
+    gap: 4,
   },
   toggleContainerDark: {
-    backgroundColor: '#333333',
+    backgroundColor: '#2A2A2A',
   },
   toggleButton: {
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 10,
   },
   toggleButtonActive: {
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
     elevation: 2,
   },
+  toggleButtonActiveDark: {
+    backgroundColor: '#333',
+  },
   toggleText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#9CA3AF',
   },
   toggleTextActive: {
     color: theme.colors.primary,
-    fontWeight: theme.fontWeight.bold,
+    fontWeight: '600',
+  },
+  toggleTextActiveDark: {
+    color: '#F7B186',
   },
   toggleTextDark: {
-    color: '#777777',
+    color: '#666',
   },
   bodyWrapper: {
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    justifyContent: 'center',
+    position: 'relative',
+    width: '100%',
+  },
+  bodyGlow: {
+    position: 'absolute',
+    top: '10%',
+    left: '20%',
+    right: '20%',
+    bottom: '10%',
+    borderRadius: 100,
+    opacity: 0,
+  },
+  bodyGlowActive: {
+    opacity: 0.3,
+    backgroundColor: theme.colors.primary,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 40,
   },
   legend: {
     gap: theme.spacing.md,
+    marginTop: theme.spacing.sm,
+  },
+  legendHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   legendTitle: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semibold,
+    fontSize: 15,
+    fontWeight: '700',
     color: theme.colors.text.primary,
   },
   legendTitleDark: {
     color: '#FFFFFF',
   },
+  sessionsBadge: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  sessionsBadgeDark: {
+    backgroundColor: '#333',
+  },
+  sessionsBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  sessionsBadgeTextDark: {
+    color: '#9CA3AF',
+  },
   topMuscles: {
-    gap: theme.spacing.sm,
+    gap: 12,
   },
   muscleItem: {
+    gap: 6,
+  },
+  muscleItemHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
+    gap: 8,
   },
-  muscleRank: {
-    width: 24,
-    height: 24,
-    borderRadius: theme.borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  muscleRankText: {
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.bold,
-    color: '#FFFFFF',
+  muscleMedal: {
+    fontSize: 16,
   },
   muscleName: {
     flex: 1,
-    fontSize: theme.fontSize.sm,
+    fontSize: 14,
+    fontWeight: '500',
     color: theme.colors.text.primary,
   },
   muscleNameDark: {
     color: '#FFFFFF',
   },
   muscleCount: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.text.tertiary,
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.text.secondary,
   },
   muscleCountDark: {
-    color: '#777777',
+    color: '#9CA3AF',
+  },
+  progressBarBg: {
+    height: 8,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressBarBgDark: {
+    backgroundColor: '#333',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 4,
   },
   intensityScale: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 4,
+  },
+  intensityScaleDark: {
+    backgroundColor: '#2A2A2A',
+  },
+  scaleLabels: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
+    justifyContent: 'space-between',
+    marginBottom: 6,
   },
   scaleLabel: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.text.tertiary,
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#9CA3AF',
   },
   scaleLabelDark: {
-    color: '#777777',
+    color: '#6B7280',
   },
   scaleBar: {
     flexDirection: 'row',
-    flex: 1,
-    height: 8,
-    borderRadius: 4,
+    height: 10,
+    borderRadius: 5,
     overflow: 'hidden',
   },
   scaleStep: {
@@ -526,14 +664,16 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: theme.spacing.lg,
+    paddingVertical: theme.spacing.xl,
+    gap: 12,
   },
+  emptyStateDark: {},
   emptyText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.tertiary,
+    fontSize: 14,
+    color: '#9CA3AF',
     textAlign: 'center',
   },
   emptyTextDark: {
-    color: '#777777',
+    color: '#6B7280',
   },
 });
