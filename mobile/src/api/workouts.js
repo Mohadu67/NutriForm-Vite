@@ -224,6 +224,113 @@ export async function getLastWeekSession() {
   }
 }
 
+// Cache pour les donnees d'exercices (5 minutes)
+const exerciseDataCache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000;
+
+/**
+ * Calculer la similarite entre deux chaines (pour fuzzy matching)
+ */
+function calculateSimilarity(str1, str2) {
+  if (!str1 || !str2) return 0;
+  const s1 = str1.toLowerCase().trim();
+  const s2 = str2.toLowerCase().trim();
+  if (s1 === s2) return 1;
+  if (s1.includes(s2) || s2.includes(s1)) return 0.9;
+
+  // Levenshtein distance simplifie
+  const longer = s1.length > s2.length ? s1 : s2;
+  const shorter = s1.length > s2.length ? s2 : s1;
+  if (longer.length === 0) return 1;
+
+  let matches = 0;
+  for (let i = 0; i < shorter.length; i++) {
+    if (longer.includes(shorter[i])) matches++;
+  }
+  return matches / longer.length;
+}
+
+/**
+ * Recuperer les 2 dernieres seances pour un exercice specifique
+ * @param {string} exerciseIdOrName - ID ou nom de l'exercice
+ */
+export async function getLastExerciseData(exerciseIdOrName) {
+  if (!exerciseIdOrName) {
+    return { success: false, data: null, error: 'No exercise identifier' };
+  }
+
+  const searchKey = exerciseIdOrName.toLowerCase().trim();
+
+  // Verifier le cache
+  const cached = exerciseDataCache.get(searchKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return { success: true, data: cached.data, source: 'cache' };
+  }
+
+  try {
+    // Recuperer les 30 dernieres seances
+    const result = await getSessions({ limit: 30 });
+    if (!result.success || !result.data?.length) {
+      return { success: true, data: null };
+    }
+
+    const sessions = result.data;
+    const foundSessions = [];
+
+    // Chercher l'exercice dans les seances
+    for (const session of sessions) {
+      if (!session.exercises?.length) continue;
+
+      const matchingExercise = session.exercises.find(ex => {
+        const exo = ex.exercice || {};
+        const idMatch = calculateSimilarity(searchKey, exo.id || '') >= 0.85;
+        const nameMatch = calculateSimilarity(searchKey, exo.name || '') >= 0.85;
+        return idMatch || nameMatch;
+      });
+
+      if (matchingExercise && matchingExercise.sets?.length > 0) {
+        const sets = matchingExercise.sets;
+        foundSessions.push({
+          lastSet: sets[sets.length - 1],
+          allSets: sets.map(s => ({
+            reps: s.reps || 0,
+            weightKg: s.weight || 0,
+            completed: s.completed || false,
+          })),
+          type: matchingExercise.exercice?.type || 'muscu',
+          sessionDate: session.startTime,
+          exerciseName: matchingExercise.exercice?.name,
+        });
+
+        // On a besoin des 2 dernieres seances max
+        if (foundSessions.length >= 2) break;
+      }
+    }
+
+    const data = foundSessions.length > 0
+      ? {
+          last: foundSessions[0] || null,
+          previous: foundSessions[1] || null,
+        }
+      : null;
+
+    // Mettre en cache
+    exerciseDataCache.set(searchKey, { data, timestamp: Date.now() });
+
+    return { success: true, data };
+  } catch (error) {
+    console.log('[WORKOUTS API] Get last exercise data error:', error.message);
+    return { success: false, data: null, error: error.message };
+  }
+}
+
+/**
+ * Vider le cache des donnees d'exercices
+ */
+export function clearExerciseDataCache() {
+  exerciseDataCache.clear();
+}
+
 export default {
   saveSession,
   getSessions,
@@ -232,4 +339,6 @@ export default {
   deleteSession,
   getDailySummary,
   getLastWeekSession,
+  getLastExerciseData,
+  clearExerciseDataCache,
 };
