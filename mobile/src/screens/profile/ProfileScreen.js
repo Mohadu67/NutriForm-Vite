@@ -287,7 +287,7 @@ export default function ProfileScreen() {
   // Header animation
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 150],
-    outputRange: [280, 180],
+    outputRange: [345, 100],
     extrapolate: 'clamp',
   });
 
@@ -315,18 +315,20 @@ export default function ProfileScreen() {
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFill}
         />
-
-        {/* Settings button */}
-        <SafeAreaView edges={['top']} style={styles.headerActions}>
-          <View style={styles.headerSpacer} />
-          <TouchableOpacity
-            style={styles.headerBtn}
-            onPress={() => navigation.navigate('Settings')}
-          >
-            <Ionicons name="settings-outline" size={24} color="#FFF" />
-          </TouchableOpacity>
-        </SafeAreaView>
       </Animated.View>
+
+      {/* Settings button */}
+      <SafeAreaView edges={['top']} style={styles.headerActions} pointerEvents="box-none">
+        <View style={styles.headerSpacer} />
+        <TouchableOpacity
+          style={[styles.headerBtn, isDark && styles.headerBtnDark]}
+          onPress={() => navigation.navigate('Settings')}
+          activeOpacity={0.7}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="settings-outline" size={24} color={isDark ? '#FFF' : theme.colors.primary} />
+        </TouchableOpacity>
+      </SafeAreaView>
 
       <Animated.ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -589,14 +591,22 @@ export default function ProfileScreen() {
           <Text style={styles.logoutText}>Se deconnecter</Text>
         </TouchableOpacity>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={[styles.footerText, isDark && styles.textMuted]}>
-            Harmonith v1.0.0
-          </Text>
-          <Text style={[styles.footerSubtext, isDark && styles.textMuted]}>
-            Fait avec passion
-          </Text>
+        {/* Footer Gradient Card */}
+        <View style={styles.footerGradient}>
+          <LinearGradient
+            colors={isDark ? ['#2A1810', '#1A1A1A'] : ['#E89A6F', '#F7B186', '#F9C4A3']}
+            start={{ x: 0, y: 1 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={styles.footerContent}>
+            <Text style={styles.footerText}>
+              Harmonith v1.0.0
+            </Text>
+            <Text style={styles.footerSubtext}>
+              Fait avec passion
+            </Text>
+          </View>
         </View>
       </Animated.ScrollView>
     </View>
@@ -630,11 +640,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   headerActions: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 8,
+    zIndex: 10,
   },
   headerSpacer: {
     width: 40,
@@ -642,10 +657,18 @@ const styles = StyleSheet.create({
   headerBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  headerBtnDark: {
+    backgroundColor: '#2A2A2A',
   },
 
   // Scroll Content
@@ -1034,14 +1057,23 @@ const styles = StyleSheet.create({
   },
 
   // Footer
-  footer: {
+  footerGradient: {
+    height: 120,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    overflow: 'hidden',
+    marginTop: 20,
+    marginHorizontal: -20,
+  },
+  footerContent: {
+    flex: 1,
     alignItems: 'center',
-    paddingVertical: 20,
+    justifyContent: 'center',
   },
   footerText: {
-    fontSize: 13,
-    color: '#999',
-    fontWeight: '500',
+    fontSize: 14,
+    color: '#FFF',
+    fontWeight: '600',
   },
   footerSubtext: {
     fontSize: 11,

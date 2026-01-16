@@ -17,27 +17,27 @@ import { theme } from '../../theme';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
 
-// Definition des badges disponibles
+// Definition des badges disponibles avec icones Ionicons
 const ALL_BADGES = [
   // Seances
-  { id: 'first_session', emoji: '🎯', name: 'Premiere seance', description: 'Complete ta premiere seance', category: 'seances', requirement: 1 },
-  { id: 'sessions_5', emoji: '💪', name: '5 seances', description: 'Complete 5 seances', category: 'seances', requirement: 5 },
-  { id: 'sessions_10', emoji: '🔥', name: '10 seances', description: 'Complete 10 seances', category: 'seances', requirement: 10 },
-  { id: 'sessions_25', emoji: '⚡', name: '25 seances', description: 'Complete 25 seances', category: 'seances', requirement: 25 },
-  { id: 'sessions_50', emoji: '🏆', name: '50 seances', description: 'Complete 50 seances', category: 'seances', requirement: 50 },
-  { id: 'sessions_100', emoji: '👑', name: 'Centurion', description: 'Complete 100 seances', category: 'seances', requirement: 100 },
+  { id: 'first_session', icon: 'flag', color: '#22C55E', name: 'Premiere seance', description: 'Complete ta premiere seance', category: 'seances', requirement: 1 },
+  { id: 'sessions_5', icon: 'fitness', color: '#3B82F6', name: '5 seances', description: 'Complete 5 seances', category: 'seances', requirement: 5 },
+  { id: 'sessions_10', icon: 'flame', color: '#F97316', name: '10 seances', description: 'Complete 10 seances', category: 'seances', requirement: 10 },
+  { id: 'sessions_25', icon: 'flash', color: '#EAB308', name: '25 seances', description: 'Complete 25 seances', category: 'seances', requirement: 25 },
+  { id: 'sessions_50', icon: 'trophy', color: '#8B5CF6', name: '50 seances', description: 'Complete 50 seances', category: 'seances', requirement: 50 },
+  { id: 'sessions_100', icon: 'ribbon', color: '#EC4899', name: 'Centurion', description: 'Complete 100 seances', category: 'seances', requirement: 100 },
 
   // Streak
-  { id: 'streak_3', emoji: '🔥', name: 'Serie de 3', description: '3 jours consecutifs', category: 'streak', requirement: 3 },
-  { id: 'streak_7', emoji: '🌟', name: 'Semaine parfaite', description: '7 jours consecutifs', category: 'streak', requirement: 7 },
-  { id: 'streak_14', emoji: '💎', name: '2 semaines', description: '14 jours consecutifs', category: 'streak', requirement: 14 },
-  { id: 'streak_30', emoji: '🏅', name: 'Mois parfait', description: '30 jours consecutifs', category: 'streak', requirement: 30 },
+  { id: 'streak_3', icon: 'flame', color: '#F97316', name: 'Serie de 3', description: '3 jours consecutifs', category: 'streak', requirement: 3 },
+  { id: 'streak_7', icon: 'star', color: '#EAB308', name: 'Semaine parfaite', description: '7 jours consecutifs', category: 'streak', requirement: 7 },
+  { id: 'streak_14', icon: 'diamond', color: '#06B6D4', name: '2 semaines', description: '14 jours consecutifs', category: 'streak', requirement: 14 },
+  { id: 'streak_30', icon: 'medal', color: '#F59E0B', name: 'Mois parfait', description: '30 jours consecutifs', category: 'streak', requirement: 30 },
 
   // Special
-  { id: 'early_bird', emoji: '🌅', name: 'Leve-tot', description: 'Seance avant 7h', category: 'special' },
-  { id: 'night_owl', emoji: '🦉', name: 'Oiseau de nuit', description: 'Seance apres 22h', category: 'special' },
-  { id: 'weekend_warrior', emoji: '⚔️', name: 'Guerrier du weekend', description: 'Seance samedi et dimanche', category: 'special' },
-  { id: 'variety', emoji: '🎨', name: 'Variete', description: 'Travaille 6 groupes musculaires differents', category: 'special' },
+  { id: 'early_bird', icon: 'sunny', color: '#FBBF24', name: 'Leve-tot', description: 'Seance avant 7h', category: 'special' },
+  { id: 'night_owl', icon: 'moon', color: '#6366F1', name: 'Oiseau de nuit', description: 'Seance apres 22h', category: 'special' },
+  { id: 'weekend_warrior', icon: 'shield', color: '#EF4444', name: 'Guerrier du weekend', description: 'Seance samedi et dimanche', category: 'special' },
+  { id: 'variety', icon: 'color-palette', color: '#14B8A6', name: 'Variete', description: 'Travaille 6 groupes musculaires differents', category: 'special' },
 ];
 
 const CATEGORIES = [
@@ -186,26 +186,31 @@ export default function BadgesScreen() {
           style={styles.categoriesScroll}
           contentContainerStyle={styles.categoriesContainer}
         >
-          {CATEGORIES.map((cat) => (
-            <TouchableOpacity
-              key={cat.id}
-              style={[
-                styles.categoryPill,
-                isDark && styles.categoryPillDark,
-                selectedCategory === cat.id && styles.categoryPillActive,
-              ]}
-              onPress={() => setSelectedCategory(cat.id)}
-              activeOpacity={0.7}
-            >
-              <Text style={[
-                styles.categoryText,
-                isDark && styles.categoryTextDark,
-                selectedCategory === cat.id && styles.categoryTextActive,
-              ]}>
-                {cat.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {CATEGORIES.map((cat) => {
+            const isActive = selectedCategory === cat.id;
+            return (
+              <TouchableOpacity
+                key={cat.id}
+                style={[
+                  styles.categoryPill,
+                  isDark && styles.categoryPillDark,
+                  isActive && styles.categoryPillActive,
+                  isActive && isDark && styles.categoryPillActiveDark,
+                ]}
+                onPress={() => setSelectedCategory(cat.id)}
+                activeOpacity={0.7}
+              >
+                <Text style={[
+                  styles.categoryText,
+                  isDark && styles.categoryTextDark,
+                  isActive && styles.categoryTextActive,
+                  isActive && isDark && styles.categoryTextActiveDark,
+                ]}>
+                  {cat.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
 
         {/* Badges Grid */}
@@ -223,12 +228,16 @@ export default function BadgesScreen() {
                 ]}
               >
                 <View style={[
-                  styles.badgeEmoji,
-                  !isUnlocked && styles.badgeEmojiLocked,
+                  styles.badgeIconContainer,
+                  isUnlocked && { backgroundColor: `${badge.color}20` },
+                  !isUnlocked && styles.badgeIconLocked,
+                  !isUnlocked && isDark && styles.badgeIconLockedDark,
                 ]}>
-                  <Text style={styles.badgeEmojiText}>
-                    {isUnlocked ? badge.emoji : '🔒'}
-                  </Text>
+                  <Ionicons
+                    name={isUnlocked ? badge.icon : 'lock-closed'}
+                    size={28}
+                    color={isUnlocked ? badge.color : (isDark ? '#555' : '#9CA3AF')}
+                  />
                 </View>
                 <Text style={[
                   styles.badgeName,
@@ -246,7 +255,7 @@ export default function BadgesScreen() {
                 </Text>
                 {isUnlocked && (
                   <View style={styles.unlockedBadge}>
-                    <Ionicons name="checkmark-circle" size={16} color="#22C55E" />
+                    <Ionicons name="checkmark-circle" size={18} color="#22C55E" />
                   </View>
                 )}
               </View>
@@ -382,27 +391,39 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.xs,
   },
   categoryPill: {
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     backgroundColor: '#F3F4F6',
-    borderRadius: theme.borderRadius.full,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
   },
   categoryPillDark: {
-    backgroundColor: '#333',
+    backgroundColor: '#1F1F1F',
+    borderColor: '#333',
   },
   categoryPillActive: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: `${theme.colors.primary}15`,
+    borderColor: theme.colors.primary,
+  },
+  categoryPillActiveDark: {
+    backgroundColor: 'rgba(247, 177, 134, 0.15)',
+    borderColor: '#F7B186',
   },
   categoryText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#6B7280',
   },
   categoryTextDark: {
-    color: '#888',
+    color: '#9CA3AF',
   },
   categoryTextActive: {
-    color: '#FFFFFF',
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  categoryTextActiveDark: {
+    color: '#F7B186',
   },
   badgesGrid: {
     flexDirection: 'row',
@@ -426,22 +447,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#2A2A2A',
   },
   badgeCardLocked: {
-    opacity: 0.6,
+    opacity: 0.7,
   },
-  badgeEmoji: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  badgeIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
     backgroundColor: `${theme.colors.primary}15`,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: theme.spacing.sm,
   },
-  badgeEmojiLocked: {
+  badgeIconLocked: {
     backgroundColor: '#F3F4F6',
   },
-  badgeEmojiText: {
-    fontSize: 28,
+  badgeIconLockedDark: {
+    backgroundColor: '#333',
   },
   badgeName: {
     fontSize: theme.fontSize.sm,

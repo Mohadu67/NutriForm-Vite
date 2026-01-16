@@ -257,12 +257,14 @@ export default function ProgramsScreen() {
         <View style={styles.tabsContainer}>
           {TABS.map((tab) => {
             const isDisabled = (tab.key === 'my' || tab.key === 'favorites') && !isPremium;
+            const isActive = activeTab === tab.key;
             return (
               <TouchableOpacity
                 key={tab.key}
                 style={[
                   styles.tab,
-                  activeTab === tab.key && styles.tabActive,
+                  isDark && styles.tabDark,
+                  isActive && styles.tabActive,
                   isDisabled && styles.tabDisabled,
                 ]}
                 onPress={() => !isDisabled && setActiveTab(tab.key)}
@@ -271,7 +273,8 @@ export default function ProgramsScreen() {
                 <Text
                   style={[
                     styles.tabText,
-                    activeTab === tab.key && styles.tabTextActive,
+                    isDark && styles.tabTextDark,
+                    isActive && styles.tabTextActive,
                     isDisabled && styles.tabTextDisabled,
                   ]}
                 >
@@ -293,32 +296,37 @@ export default function ProgramsScreen() {
         style={styles.filtersContainer}
         contentContainerStyle={styles.filtersContent}
       >
-        {PROGRAM_TYPES.map((type) => (
-          <TouchableOpacity
-            key={type.value}
-            style={[
-              styles.filterChip,
-              isDark && styles.filterChipDark,
-              selectedType === type.value && styles.filterChipActive,
-            ]}
-            onPress={() => setSelectedType(type.value)}
-          >
-            <Ionicons
-              name={type.icon}
-              size={14}
-              color={selectedType === type.value ? '#FFF' : (isDark ? '#888' : theme.colors.text.secondary)}
-            />
-            <Text
+        {PROGRAM_TYPES.map((type) => {
+          const isSelected = selectedType === type.value;
+          return (
+            <TouchableOpacity
+              key={type.value}
               style={[
-                styles.filterChipText,
-                isDark && styles.filterChipTextDark,
-                selectedType === type.value && styles.filterChipTextActive,
+                styles.filterChip,
+                isDark && styles.filterChipDark,
+                isSelected && styles.filterChipActive,
+                isSelected && isDark && styles.filterChipActiveDark,
               ]}
+              onPress={() => setSelectedType(type.value)}
             >
-              {type.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Ionicons
+                name={type.icon}
+                size={14}
+                color={isSelected ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#9CA3AF' : '#6B7280')}
+              />
+              <Text
+                style={[
+                  styles.filterChipText,
+                  isDark && styles.filterChipTextDark,
+                  isSelected && styles.filterChipTextActive,
+                  isSelected && isDark && styles.filterChipTextActiveDark,
+                ]}
+              >
+                {type.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
 
       {/* Difficulty filters */}
@@ -328,27 +336,32 @@ export default function ProgramsScreen() {
         style={styles.difficultyContainer}
         contentContainerStyle={styles.filtersContent}
       >
-        {DIFFICULTIES.map((diff) => (
-          <TouchableOpacity
-            key={diff.value}
-            style={[
-              styles.difficultyChip,
-              isDark && styles.difficultyChipDark,
-              selectedDifficulty === diff.value && styles.difficultyChipActive,
-            ]}
-            onPress={() => setSelectedDifficulty(diff.value)}
-          >
-            <Text
+        {DIFFICULTIES.map((diff) => {
+          const isSelected = selectedDifficulty === diff.value;
+          return (
+            <TouchableOpacity
+              key={diff.value}
               style={[
-                styles.difficultyChipText,
-                isDark && styles.difficultyChipTextDark,
-                selectedDifficulty === diff.value && styles.difficultyChipTextActive,
+                styles.difficultyChip,
+                isDark && styles.difficultyChipDark,
+                isSelected && styles.difficultyChipActive,
+                isSelected && isDark && styles.difficultyChipActiveDark,
               ]}
+              onPress={() => setSelectedDifficulty(diff.value)}
             >
-              {diff.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.difficultyChipText,
+                  isDark && styles.difficultyChipTextDark,
+                  isSelected && styles.difficultyChipTextActive,
+                  isSelected && isDark && styles.difficultyChipTextActiveDark,
+                ]}
+              >
+                {diff.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
 
       {/* Results count */}
@@ -458,29 +471,40 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flexDirection: 'row',
-    gap: theme.spacing.sm,
+    gap: 8,
   },
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
-    backgroundColor: '#E0E0E0',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+  },
+  tabDark: {
+    backgroundColor: '#1F1F1F',
+    borderColor: '#333',
   },
   tabActive: {
     backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
   },
   tabDisabled: {
     opacity: 0.5,
   },
   tabText: {
-    fontSize: theme.fontSize.sm,
+    fontSize: 13,
     fontWeight: '500',
-    color: theme.colors.text.secondary,
+    color: '#6B7280',
+  },
+  tabTextDark: {
+    color: '#9CA3AF',
   },
   tabTextActive: {
     color: '#FFFFFF',
+    fontWeight: '600',
   },
   tabTextDisabled: {
     color: '#999',
@@ -500,59 +524,79 @@ const styles = StyleSheet.create({
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    marginRight: theme.spacing.sm,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    marginRight: 8,
     gap: 6,
   },
   filterChipDark: {
-    backgroundColor: '#2A2A2A',
-    borderColor: '#404040',
+    backgroundColor: '#1F1F1F',
+    borderColor: '#333',
   },
   filterChipActive: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: `${theme.colors.primary}15`,
     borderColor: theme.colors.primary,
+  },
+  filterChipActiveDark: {
+    backgroundColor: 'rgba(247, 177, 134, 0.15)',
+    borderColor: '#F7B186',
   },
   filterChipText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#6B7280',
   },
   filterChipTextDark: {
-    color: '#888',
+    color: '#9CA3AF',
   },
   filterChipTextActive: {
-    color: '#FFFFFF',
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  filterChipTextActiveDark: {
+    color: '#F7B186',
   },
   difficultyChip: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: 6,
-    borderRadius: theme.borderRadius.full,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    marginRight: theme.spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    marginRight: 8,
   },
   difficultyChipDark: {
-    backgroundColor: '#2A2A2A',
-    borderColor: '#404040',
+    backgroundColor: '#1F1F1F',
+    borderColor: '#333',
   },
   difficultyChipActive: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: `${theme.colors.primary}15`,
     borderColor: theme.colors.primary,
   },
+  difficultyChipActiveDark: {
+    backgroundColor: 'rgba(247, 177, 134, 0.15)',
+    borderColor: '#F7B186',
+  },
   difficultyChipText: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#6B7280',
   },
   difficultyChipTextDark: {
-    color: '#888',
+    color: '#9CA3AF',
   },
   difficultyChipTextActive: {
-    color: '#FFFFFF',
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  difficultyChipTextActiveDark: {
+    color: '#F7B186',
   },
   resultsHeader: {
     paddingHorizontal: theme.spacing.md,
