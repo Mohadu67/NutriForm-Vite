@@ -16,8 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { theme } from '../../theme';
-import apiClient from '../../api/client';
-import { endpoints } from '../../api/endpoints';
+import { getSessions as getWorkoutSessions, deleteSession as deleteWorkoutSession } from '../../api/workouts';
 
 /**
  * HistoryScreen - Historique complet des seances
@@ -35,56 +34,68 @@ export default function HistoryScreen() {
   // Charger l'historique
   const loadHistory = useCallback(async () => {
     try {
-      // Charger les séances locales (AsyncStorage)
-      const localHistory = await AsyncStorage.getItem('@workout_history');
-      const localSessions = localHistory ? JSON.parse(localHistory) : [];
-
-      // Formater les séances locales
-      const formattedLocalSessions = localSessions.map(s => ({
-        id: s.id,
-        name: s.exercises?.length > 0
-          ? s.exercises.map(e => e.exercice?.name).filter(Boolean).slice(0, 2).join(', ') || 'Seance'
-          : 'Seance',
-        date: s.startTime,
-        endedAt: s.endTime,
-        durationMinutes: s.duration || 0,
-        caloriesBurned: 0,
-        entries: s.exercises?.map(e => ({
-          name: e.exercice?.name,
-          type: e.exercice?.type || 'muscu',
-          sets: e.sets || [],
-        })) || [],
-        source: 'local',
-      }));
-
-      // Charger aussi depuis l'API
-      let apiSessions = [];
+      // 1. Essayer de charger depuis le backend (source prioritaire)
+      let backendSessions = [];
       try {
-        const response = await apiClient.get(endpoints.history.list);
-        const historyData = response.data || [];
-
-        apiSessions = Array.isArray(historyData)
-          ? historyData.filter(h =>
-              h.action?.toLowerCase().includes('workout') ||
-              h.action?.toLowerCase().includes('session') ||
-              h.meta?.entries?.length > 0
-            ).map(h => ({
-              id: h._id,
-              name: h.meta?.sessionName || h.meta?.label || h.action || 'Seance',
-              date: h.createdAt,
-              endedAt: h.createdAt,
-              durationMinutes: h.meta?.duration || h.meta?.durationMinutes,
-              caloriesBurned: h.meta?.caloriesBurned || h.meta?.kcal || 0,
-              entries: h.meta?.entries || h.meta?.exercises || [],
-              source: 'api',
-            }))
-          : [];
+        const result = await getWorkoutSessions({ limit: 50 });
+        if (result.success && result.data.length > 0) {
+          backendSessions = result.data.map(s => ({
+            id: s.id,
+            name: s.name || (s.exercises?.length > 0
+              ? s.exercises.map(e => e.exercice?.name).filter(Boolean).slice(0, 2).join(', ')
+              : 'Seance'),
+            date: s.startTime,
+            endedAt: s.endTime,
+            durationMinutes: s.duration || 0,
+            caloriesBurned: s.calories || 0,
+            entries: s.exercises?.map(e => ({
+              name: e.exercice?.name,
+              type: e.exercice?.type || 'muscu',
+              sets: e.sets || [],
+            })) || [],
+            source: 'backend',
+          }));
+        }
       } catch (apiError) {
-        console.log('[HISTORY] API error (using local only):', apiError.message);
+        console.log('[HISTORY] Backend API error:', apiError.message);
       }
 
-      // Combiner et trier par date (plus récent en premier)
-      const allSessions = [...formattedLocalSessions, ...apiSessions]
+      // 2. Charger les séances locales (backup/non-sync)
+      let localSessions = [];
+      try {
+        const localHistory = await AsyncStorage.getItem('@workout_history');
+        const localData = localHistory ? JSON.parse(localHistory) : [];
+
+        // Ne garder que les séances non synchronisées
+        localSessions = localData
+          .filter(s => !s.backendId && s.synced !== true)
+          .map(s => ({
+            id: s.id,
+            name: s.exercises?.length > 0
+              ? s.exercises.map(e => e.exercice?.name).filter(Boolean).slice(0, 2).join(', ') || 'Seance'
+              : 'Seance',
+            date: s.startTime,
+            endedAt: s.endTime,
+            durationMinutes: s.duration || 0,
+            caloriesBurned: 0,
+            entries: s.exercises?.map(e => ({
+              name: e.exercice?.name,
+              type: e.exercice?.type || 'muscu',
+              sets: e.sets || [],
+            })) || [],
+            source: 'local',
+            synced: false,
+          }));
+      } catch (localError) {
+        console.log('[HISTORY] Local storage error:', localError.message);
+      }
+
+      // 3. Combiner: backend d'abord, puis local non-sync
+      // Deduplication par ID
+      const seenIds = new Set(backendSessions.map(s => s.id));
+      const uniqueLocalSessions = localSessions.filter(s => !seenIds.has(s.id));
+
+      const allSessions = [...backendSessions, ...uniqueLocalSessions]
         .sort((a, b) => new Date(b.date) - new Date(a.date));
 
       setSessions(allSessions);
@@ -125,8 +136,13 @@ export default function HistoryScreen() {
                   const updated = sessions.filter(s => s.id !== sessionId);
                   await AsyncStorage.setItem('@workout_history', JSON.stringify(updated));
                 }
-              } else {
-                // TODO: Appeler API delete pour les sessions API
+              } else if (source === 'backend') {
+                // Supprimer via API backend
+                const result = await deleteWorkoutSession(sessionId);
+                if (!result.success) {
+                  console.log('[HISTORY] Delete backend error:', result.error);
+                  // Continuer quand meme pour retirer de l'UI
+                }
               }
               setSessions(prev => prev.filter(s => s.id !== sessionId));
             } catch (error) {
