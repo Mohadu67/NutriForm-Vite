@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,10 +12,19 @@ import {
   Vibration,
   Image,
   Modal,
+  Switch,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useWorkout } from '../../contexts/WorkoutContext';
+import {
+  useSmartTracking,
+  useExerciseData,
+  useProgressionSuggestion,
+  getSmartSuggestedValues,
+} from '../../hooks/useSmartTracking';
+import { detectRecord, calculateDifference } from '../../utils/progressionHelper';
 import theme from '../../theme';
 
 const TYPE_CONFIG = {
@@ -55,9 +64,20 @@ const WorkoutTimer = ({ startTime, isDark }) => {
   );
 };
 
-// Set Row Component
-const SetRow = ({ set, index, exerciceId, onUpdate, onToggle, onRemove, canRemove, isDark }) => {
+// Set Row Component avec suivi intelligent
+const SetRow = ({ set, index, exerciceId, onUpdate, onToggle, onRemove, canRemove, isDark, exerciseData, smartEnabled, isSuggested }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  // Analyse de la serie (record, difference)
+  const record = useMemo(() => {
+    if (!smartEnabled || !exerciseData || set.weight === 0 || set.reps === 0) return null;
+    return detectRecord(set, exerciseData);
+  }, [smartEnabled, exerciseData, set.weight, set.reps, set]);
+
+  const difference = useMemo(() => {
+    if (!smartEnabled || !exerciseData || set.weight === 0 || set.reps === 0) return null;
+    return calculateDifference(set, exerciseData, index);
+  }, [smartEnabled, exerciseData, set.weight, set.reps, index, set]);
 
   const handleToggle = () => {
     Animated.sequence([
@@ -82,9 +102,13 @@ const SetRow = ({ set, index, exerciceId, onUpdate, onToggle, onRemove, canRemov
 
       <View style={styles.setInputGroup}>
         <TextInput
-          style={[styles.setInput, isDark && styles.setInputDark]}
+          style={[
+            styles.setInput,
+            isDark && styles.setInputDark,
+            isSuggested && styles.setInputSuggested,
+          ]}
           value={set.weight > 0 ? set.weight.toString() : ''}
-          onChangeText={(val) => onUpdate(exerciceId, index, { weight: parseFloat(val) || 0 })}
+          onChangeText={(val) => onUpdate(exerciceId, index, { weight: parseFloat(val) || 0, isSuggested: false })}
           keyboardType="numeric"
           placeholder="0"
           placeholderTextColor={isDark ? '#555' : '#CCC'}
@@ -94,14 +118,42 @@ const SetRow = ({ set, index, exerciceId, onUpdate, onToggle, onRemove, canRemov
 
       <View style={styles.setInputGroup}>
         <TextInput
-          style={[styles.setInput, isDark && styles.setInputDark]}
+          style={[
+            styles.setInput,
+            isDark && styles.setInputDark,
+            isSuggested && styles.setInputSuggested,
+          ]}
           value={set.reps > 0 ? set.reps.toString() : ''}
-          onChangeText={(val) => onUpdate(exerciceId, index, { reps: parseInt(val) || 0 })}
+          onChangeText={(val) => onUpdate(exerciceId, index, { reps: parseInt(val) || 0, isSuggested: false })}
           keyboardType="numeric"
           placeholder="0"
           placeholderTextColor={isDark ? '#555' : '#CCC'}
         />
         <Text style={[styles.setInputLabel, isDark && styles.textMuted]}>reps</Text>
+      </View>
+
+      {/* Badges intelligents */}
+      <View style={styles.setBadges}>
+        {isSuggested && (
+          <View style={styles.suggestedBadge}>
+            <Ionicons name="bulb" size={12} color="#F59E0B" />
+          </View>
+        )}
+        {record && (
+          <View style={styles.recordBadge}>
+            <Ionicons name={record.icon || 'trophy'} size={12} color="#EF4444" />
+          </View>
+        )}
+        {difference?.hasChange && !record && (
+          <Text style={[
+            styles.diffText,
+            difference.isPositive ? styles.diffPositive : styles.diffNegative,
+          ]}>
+            {difference.weightDiff !== 0 && `${difference.weightDiff > 0 ? '+' : ''}${difference.weightDiff}kg`}
+            {difference.weightDiff !== 0 && difference.repsDiff !== 0 && ' '}
+            {difference.repsDiff !== 0 && `${difference.repsDiff > 0 ? '+' : ''}${difference.repsDiff}r`}
+          </Text>
+        )}
       </View>
 
       <TouchableOpacity
@@ -127,12 +179,33 @@ const SetRow = ({ set, index, exerciceId, onUpdate, onToggle, onRemove, canRemov
   );
 };
 
-// Exercise Card Component
-const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onToggleSet, onRemoveExercise, onMoveUp, onMoveDown, isFirst, isLast, isDark }) => {
+// Exercise Card Component avec suivi intelligent
+const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onToggleSet, onRemoveExercise, onMoveUp, onMoveDown, isFirst, isLast, isDark, smartEnabled, onAddSmartSet }) => {
   const { exercice, sets } = exerciseData;
   const typeConfig = TYPE_CONFIG[exercice.type] || TYPE_CONFIG.muscu;
   const completedSets = sets.filter(s => s.completed).length;
   const [showInstructions, setShowInstructions] = useState(false);
+  const isPdc = exercice.type === 'poids_du_corps';
+
+  // Donnees historiques pour cet exercice
+  const { data: historyData, isLoading: historyLoading } = useExerciseData(
+    exercice.id,
+    exercice.name,
+    smartEnabled
+  );
+
+  // Suggestion de progression
+  const suggestion = useProgressionSuggestion(historyData, isPdc, exercice.name, smartEnabled);
+
+  // Handler pour ajouter une serie intelligente
+  const handleAddSet = useCallback(() => {
+    if (smartEnabled && (historyData || sets.length > 0)) {
+      const suggested = getSmartSuggestedValues(sets, historyData, isPdc, smartEnabled);
+      onAddSmartSet(exercice.id, suggested);
+    } else {
+      onAddSet(exercice.id);
+    }
+  }, [smartEnabled, historyData, sets, isPdc, exercice.id, onAddSet, onAddSmartSet]);
 
   // Instructions par défaut (simplified version)
   const getInstructions = () => {
@@ -244,12 +317,39 @@ const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onTogg
         </TouchableOpacity>
       </Modal>
 
+      {/* Banniere de suggestion intelligente */}
+      {smartEnabled && suggestion?.message && (
+        <View style={[styles.suggestionBanner, isDark && styles.suggestionBannerDark]}>
+          <View style={styles.suggestionContent}>
+            <Ionicons name="bulb" size={16} color="#F59E0B" />
+            <Text style={[styles.suggestionText, isDark && styles.suggestionTextDark]}>
+              {suggestion.message}
+            </Text>
+          </View>
+          {suggestion.isProgression && (
+            <View style={styles.suggestionBadge}>
+              <Ionicons name="trending-up" size={12} color="#22C55E" />
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Loading historique */}
+      {smartEnabled && historyLoading && (
+        <View style={styles.historyLoading}>
+          <ActivityIndicator size="small" color={theme.colors.primary} />
+          <Text style={[styles.historyLoadingText, isDark && styles.textMuted]}>
+            Chargement historique...
+          </Text>
+        </View>
+      )}
+
       {/* Sets Header */}
       <View style={styles.setsHeader}>
         <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { flex: 0.5 }]}>Serie</Text>
         <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { flex: 1 }]}>Poids</Text>
         <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { flex: 1 }]}>Reps</Text>
-        <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { width: 60 }]}></Text>
+        <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { width: 80 }]}></Text>
       </View>
 
       {/* Sets */}
@@ -264,16 +364,24 @@ const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onTogg
           onRemove={onRemoveSet}
           canRemove={sets.length > 1}
           isDark={isDark}
+          exerciseData={historyData}
+          smartEnabled={smartEnabled}
+          isSuggested={set.isSuggested}
         />
       ))}
 
       {/* Add Set Button */}
       <TouchableOpacity
         style={[styles.addSetButton, isDark && styles.addSetButtonDark]}
-        onPress={() => onAddSet(exercice.id)}
+        onPress={handleAddSet}
       >
         <Ionicons name="add" size={20} color={theme.colors.primary} />
         <Text style={styles.addSetText}>Ajouter une serie</Text>
+        {smartEnabled && historyData && (
+          <View style={styles.smartBadge}>
+            <Ionicons name="sparkles" size={12} color="#F59E0B" />
+          </View>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -282,6 +390,9 @@ const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onTogg
 export default function WorkoutSessionScreen({ navigation }) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+
+  // Suivi intelligent
+  const { isEnabled: smartEnabled, toggleSmartTracking, isLoading: smartLoading } = useSmartTracking();
 
   const {
     currentWorkout,
@@ -299,6 +410,30 @@ export default function WorkoutSessionScreen({ navigation }) {
     getCompletedSetsCount,
     getTotalSetsCount,
   } = useWorkout();
+
+  // Ajouter une serie avec valeurs suggerees
+  const handleAddSmartSet = useCallback((exerciceId, suggestedValues) => {
+    // Ajouter une serie normale d'abord
+    addSet(exerciceId);
+
+    // Puis mettre a jour avec les valeurs suggerees
+    // On doit attendre que la serie soit ajoutee
+    setTimeout(() => {
+      if (currentWorkout) {
+        const exerciseData = currentWorkout.exercises.find(e => e.exercice.id === exerciceId);
+        if (exerciseData) {
+          const newSetIndex = exerciseData.sets.length - 1;
+          if (newSetIndex >= 0) {
+            updateSet(exerciceId, newSetIndex, {
+              weight: suggestedValues.weight || 0,
+              reps: suggestedValues.reps || 0,
+              isSuggested: true,
+            });
+          }
+        }
+      }
+    }, 50);
+  }, [addSet, updateSet, currentWorkout]);
 
   const handleFinishWorkout = useCallback(() => {
     const completedSets = getCompletedSetsCount();
@@ -412,13 +547,39 @@ export default function WorkoutSessionScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Progress Bar */}
+      {/* Progress Bar + Smart Toggle */}
       <View style={[styles.progressContainer, isDark && styles.progressContainerDark]}>
-        <View style={styles.progressInfo}>
-          <Text style={[styles.progressLabel, isDark && styles.textMuted]}>Progression</Text>
-          <Text style={[styles.progressValue, isDark && styles.textDark]}>
-            {completedSets}/{totalSets} series
-          </Text>
+        <View style={styles.progressRow}>
+          <View style={styles.progressInfo}>
+            <Text style={[styles.progressLabel, isDark && styles.textMuted]}>Progression</Text>
+            <Text style={[styles.progressValue, isDark && styles.textDark]}>
+              {completedSets}/{totalSets} series
+            </Text>
+          </View>
+
+          {/* Toggle Suivi Intelligent */}
+          <TouchableOpacity
+            style={[
+              styles.smartToggle,
+              smartEnabled && styles.smartToggleActive,
+              isDark && styles.smartToggleDark,
+            ]}
+            onPress={toggleSmartTracking}
+            disabled={smartLoading}
+          >
+            <Ionicons
+              name={smartEnabled ? 'sparkles' : 'sparkles-outline'}
+              size={16}
+              color={smartEnabled ? '#F59E0B' : (isDark ? '#666' : '#999')}
+            />
+            <Text style={[
+              styles.smartToggleText,
+              smartEnabled && styles.smartToggleTextActive,
+              isDark && styles.smartToggleTextDark,
+            ]}>
+              {smartEnabled ? 'Smart ON' : 'Smart'}
+            </Text>
+          </TouchableOpacity>
         </View>
         <View style={[styles.progressBar, isDark && styles.progressBarDark]}>
           <View style={[styles.progressFill, { width: `${progress}%` }]} />
@@ -445,6 +606,8 @@ export default function WorkoutSessionScreen({ navigation }) {
             isFirst={index === 0}
             isLast={index === currentWorkout.exercises.length - 1}
             isDark={isDark}
+            smartEnabled={smartEnabled}
+            onAddSmartSet={handleAddSmartSet}
           />
         ))}
 
@@ -555,10 +718,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E1E1E',
     borderBottomColor: '#333',
   },
-  progressInfo: {
+  progressRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
+  },
+  progressInfo: {
+    flex: 1,
   },
   progressLabel: {
     fontSize: 14,
@@ -920,5 +1087,136 @@ const styles = StyleSheet.create({
   },
   textMuted: {
     color: '#888',
+  },
+
+  // Smart Toggle
+  smartToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: '#F5F5F5',
+  },
+  smartToggleActive: {
+    backgroundColor: '#FEF3C7',
+  },
+  smartToggleDark: {
+    backgroundColor: '#2A2A2A',
+  },
+  smartToggleText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#999',
+  },
+  smartToggleTextActive: {
+    color: '#F59E0B',
+  },
+  smartToggleTextDark: {
+    color: '#666',
+  },
+
+  // Suggestion Banner
+  suggestionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  suggestionBannerDark: {
+    backgroundColor: '#422006',
+  },
+  suggestionContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  suggestionText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#92400E',
+    fontWeight: '500',
+  },
+  suggestionTextDark: {
+    color: '#FCD34D',
+  },
+  suggestionBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#D1FAE5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // History Loading
+  historyLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 8,
+  },
+  historyLoadingText: {
+    fontSize: 12,
+    color: '#666',
+  },
+
+  // Set Badges
+  setBadges: {
+    width: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 4,
+  },
+  suggestedBadge: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#FEF3C7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recordBadge: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#FEE2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  diffText: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  diffPositive: {
+    color: '#22C55E',
+  },
+  diffNegative: {
+    color: '#EF4444',
+  },
+
+  // Set Input Suggested
+  setInputSuggested: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#F59E0B',
+  },
+
+  // Smart Badge on Add Set Button
+  smartBadge: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#FEF3C7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 4,
   },
 });
