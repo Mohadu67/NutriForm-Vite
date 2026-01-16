@@ -239,7 +239,7 @@ export default function ExercicesScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation();
-  const { currentWorkout, isWorkoutActive, getCompletedSetsCount, getTotalSetsCount } = useWorkout();
+  const { currentWorkout, isWorkoutActive, getCompletedSetsCount, getTotalSetsCount, addExercise, isExerciseInWorkout, startWorkout } = useWorkout();
 
   const [showBodyPicker, setShowBodyPicker] = useState(false);
   const [favorites, setFavorites] = useState([]);
@@ -455,6 +455,13 @@ export default function ExercicesScreen() {
     navigation.navigate('ExerciceDetail', { exercice, favorites, onToggleFavorite: toggleFavorite });
   }, [navigation, favorites, toggleFavorite]);
 
+  // Ajout rapide d'un exercice a la seance (sans demarrer le chrono)
+  const handleQuickAddExercise = useCallback((exercice) => {
+    // Ajouter l'exercice (cree une preparation si aucune seance en cours)
+    // Le chrono ne demarre que quand l'utilisateur le decide
+    addExercise(exercice);
+  }, [addExercise]);
+
   const handleApplyFilter = useCallback(() => {
     setShowBodyPicker(false);
   }, []);
@@ -471,6 +478,7 @@ export default function ExercicesScreen() {
     const muscleLabel = ZONE_LABELS[MUSCLE_TO_ZONE[item.muscle]] || item.muscle;
     const isFavorite = favorites.includes(item.id);
     const typeConfig = TYPE_CONFIG[item.type] || TYPE_CONFIG.muscu;
+    const isInWorkout = isExerciseInWorkout(item.id);
 
     return (
       <TouchableOpacity
@@ -511,21 +519,41 @@ export default function ExercicesScreen() {
           </View>
         </View>
 
-        {/* Favorite button */}
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={() => toggleFavorite(item.id)}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons
-            name={isFavorite ? 'heart' : 'heart-outline'}
-            size={22}
-            color={isFavorite ? '#EF4444' : (isDark ? '#555' : '#CCC')}
-          />
-        </TouchableOpacity>
+        {/* Action buttons */}
+        <View style={styles.exerciceActions}>
+          {/* Quick add button */}
+          <TouchableOpacity
+            style={[
+              styles.quickAddButton,
+              isInWorkout && styles.quickAddButtonActive,
+            ]}
+            onPress={() => !isInWorkout && handleQuickAddExercise(item)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            disabled={isInWorkout}
+          >
+            <Ionicons
+              name={isInWorkout ? 'checkmark' : 'add'}
+              size={18}
+              color="#FFF"
+            />
+          </TouchableOpacity>
+
+          {/* Favorite button */}
+          <TouchableOpacity
+            style={styles.favoriteButton}
+            onPress={() => toggleFavorite(item.id)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons
+              name={isFavorite ? 'heart' : 'heart-outline'}
+              size={22}
+              color={isFavorite ? '#EF4444' : (isDark ? '#555' : '#CCC')}
+            />
+          </TouchableOpacity>
+        </View>
       </TouchableOpacity>
     );
-  }, [isDark, favorites, handleExercicePress, toggleFavorite]);
+  }, [isDark, favorites, handleExercicePress, toggleFavorite, isExerciseInWorkout, handleQuickAddExercise]);
 
   const ListHeader = useMemo(() => (
     <>
@@ -587,7 +615,7 @@ export default function ExercicesScreen() {
         <Text style={[styles.filterSectionTitle, isDark && styles.textMutedDark]}>Type d'exercice</Text>
         {selectedTypes.length > 0 && (
           <TouchableOpacity onPress={() => setSelectedTypes([])}>
-            <Text style={styles.clearSectionText}>Effacer</Text>
+            <Text style={[styles.clearSectionText, isDark && styles.clearSectionTextDark]}>Effacer</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -604,23 +632,25 @@ export default function ExercicesScreen() {
               key={key}
               style={[
                 styles.typeTab,
-                isSelected && { backgroundColor: config.color },
-                isDark && !isSelected && styles.typeTabDark,
+                isDark && styles.typeTabDark,
+                isSelected && styles.typeTabActive,
+                isSelected && isDark && styles.typeTabActiveDark,
               ]}
               onPress={() => toggleType(key)}
             >
               {isSelected && (
-                <Ionicons name="checkmark-circle" size={16} color="#FFF" />
+                <Ionicons name="checkmark-circle" size={16} color={isDark ? '#F7B186' : theme.colors.primary} />
               )}
               <Ionicons
                 name={config.icon}
                 size={18}
-                color={isSelected ? '#FFF' : (isDark ? '#888' : '#666')}
+                color={isSelected ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#9CA3AF' : '#6B7280')}
               />
               <Text style={[
                 styles.typeTabText,
+                isDark && styles.typeTabTextDark,
                 isSelected && styles.typeTabTextActive,
-                isDark && !isSelected && styles.typeTabTextDark,
+                isSelected && isDark && styles.typeTabTextActiveDark,
               ]}>
                 {config.label}
               </Text>
@@ -631,10 +661,10 @@ export default function ExercicesScreen() {
 
       {/* Equipment filter - Multi-selection */}
       <View style={styles.filterSectionHeader}>
-        <Text style={[styles.filterSectionTitle, isDark && styles.textMutedDark]}>Equipement</Text>
+        <Text style={[styles.filterSectionTitle, isDark && styles.textMutedDark]}>Équipement</Text>
         {selectedEquipments.length > 0 && (
           <TouchableOpacity onPress={() => setSelectedEquipments([])}>
-            <Text style={styles.clearSectionText}>Effacer</Text>
+            <Text style={[styles.clearSectionText, isDark && styles.clearSectionTextDark]}>Effacer</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -651,18 +681,20 @@ export default function ExercicesScreen() {
               key={equip}
               style={[
                 styles.equipmentChip,
+                isDark && styles.equipmentChipDark,
                 isSelected && styles.equipmentChipActive,
-                isDark && !isSelected && styles.equipmentChipDark,
+                isSelected && isDark && styles.equipmentChipActiveDark,
               ]}
               onPress={() => toggleEquipment(equip)}
             >
               {isSelected && (
-                <Ionicons name="checkmark" size={14} color="#FFF" style={{ marginRight: 4 }} />
+                <Ionicons name="checkmark" size={14} color={isDark ? '#F7B186' : theme.colors.primary} style={{ marginRight: 4 }} />
               )}
               <Text style={[
                 styles.equipmentChipText,
+                isDark && styles.equipmentChipTextDark,
                 isSelected && styles.equipmentChipTextActive,
-                isDark && !isSelected && styles.equipmentChipTextDark,
+                isSelected && isDark && styles.equipmentChipTextActiveDark,
               ]}>
                 {EQUIPMENT_LABELS[equip]}
               </Text>
@@ -834,21 +866,30 @@ export default function ExercicesScreen() {
         </SafeAreaView>
       </Modal>
 
-      {/* Floating Workout Button */}
-      {isWorkoutActive && currentWorkout && (
+      {/* Floating Workout Button - affiche si seance active OU en preparation */}
+      {currentWorkout && currentWorkout.exercises?.length > 0 && (
         <TouchableOpacity
-          style={styles.floatingWorkoutButton}
+          style={[
+            styles.floatingWorkoutButton,
+            !isWorkoutActive && styles.floatingWorkoutButtonPrep,
+          ]}
           onPress={() => navigation.navigate('WorkoutSession')}
           activeOpacity={0.9}
         >
           <View style={styles.floatingWorkoutContent}>
-            <View style={styles.floatingWorkoutIcon}>
-              <Ionicons name="fitness" size={22} color="#FFF" />
+            <View style={[
+              styles.floatingWorkoutIcon,
+              !isWorkoutActive && styles.floatingWorkoutIconPrep,
+            ]}>
+              <Ionicons name={isWorkoutActive ? 'fitness' : 'list'} size={22} color="#FFF" />
             </View>
             <View style={styles.floatingWorkoutInfo}>
-              <Text style={styles.floatingWorkoutTitle}>Seance en cours</Text>
+              <Text style={styles.floatingWorkoutTitle}>
+                {isWorkoutActive ? 'Seance en cours' : 'Preparation'}
+              </Text>
               <Text style={styles.floatingWorkoutSubtitle}>
-                {currentWorkout.exercises.length} exercice{currentWorkout.exercises.length > 1 ? 's' : ''} • {getCompletedSetsCount()}/{getTotalSetsCount()} series
+                {currentWorkout.exercises.length} exercice{currentWorkout.exercises.length > 1 ? 's' : ''}
+                {isWorkoutActive && ` • ${getCompletedSetsCount()}/${getTotalSetsCount()} series`}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#FFF" />
@@ -965,13 +1006,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+    marginTop: 4,
     paddingHorizontal: 2,
   },
   filterSectionTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#666',
+    color: '#6B7280',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -980,78 +1022,102 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     fontWeight: '600',
   },
+  clearSectionTextDark: {
+    color: '#F7B186',
+  },
   textMutedDark: {
-    color: '#AAA',
+    color: '#9CA3AF',
   },
   typeScroll: {
     marginBottom: theme.spacing.md,
   },
   typeScrollContent: {
     gap: 8,
+    paddingHorizontal: 2,
+    paddingBottom: 4,
   },
   typeTab: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#F3F4F6',
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 20,
+    borderRadius: 12,
     gap: 6,
-    minHeight: 38,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
   },
   typeTabDark: {
-    backgroundColor: '#2A2A2A',
-    borderWidth: 1,
-    borderColor: '#3A3A3A',
+    backgroundColor: '#1F1F1F',
+    borderColor: '#333',
+  },
+  typeTabActive: {
+    backgroundColor: `${theme.colors.primary}15`,
+    borderColor: theme.colors.primary,
+  },
+  typeTabActiveDark: {
+    backgroundColor: 'rgba(247, 177, 134, 0.15)',
+    borderColor: '#F7B186',
   },
   typeTabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#6B7280',
   },
   typeTabTextActive: {
-    color: '#FFF',
+    color: theme.colors.primary,
     fontWeight: '600',
   },
   typeTabTextDark: {
-    color: '#CCC',
+    color: '#9CA3AF',
+  },
+  typeTabTextActiveDark: {
+    color: '#F7B186',
   },
   equipmentScroll: {
     marginBottom: theme.spacing.md,
   },
   equipmentScrollContent: {
     gap: 8,
+    paddingHorizontal: 2,
+    paddingBottom: 4,
   },
   equipmentChip: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    backgroundColor: '#FFF',
-    minHeight: 36,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
   },
   equipmentChipActive: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: `${theme.colors.primary}15`,
     borderColor: theme.colors.primary,
   },
   equipmentChipDark: {
-    backgroundColor: '#2A2A2A',
-    borderColor: '#3A3A3A',
+    backgroundColor: '#1F1F1F',
+    borderColor: '#333',
+  },
+  equipmentChipActiveDark: {
+    backgroundColor: 'rgba(247, 177, 134, 0.15)',
+    borderColor: '#F7B186',
   },
   equipmentChipText: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#666',
+    color: '#6B7280',
   },
   equipmentChipTextActive: {
-    color: '#FFF',
+    color: theme.colors.primary,
     fontWeight: '600',
   },
   equipmentChipTextDark: {
-    color: '#CCC',
+    color: '#9CA3AF',
+  },
+  equipmentChipTextActiveDark: {
+    color: '#F7B186',
   },
   filterButton: {
     flexDirection: 'row',
@@ -1203,6 +1269,27 @@ const styles = StyleSheet.create({
   equipmentTextDark: {
     color: '#666',
   },
+  exerciceActions: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 8,
+  },
+  quickAddButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#22C55E',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#22C55E',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  quickAddButtonActive: {
+    backgroundColor: '#16A34A',
+  },
   favoriteButton: {
     padding: 8,
   },
@@ -1322,6 +1409,10 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
+  floatingWorkoutButtonPrep: {
+    backgroundColor: '#3B82F6',
+    shadowColor: '#3B82F6',
+  },
   floatingWorkoutContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1335,6 +1426,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+  },
+  floatingWorkoutIconPrep: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
   },
   floatingWorkoutInfo: {
     flex: 1,
