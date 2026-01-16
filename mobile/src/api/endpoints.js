@@ -126,6 +126,12 @@ export const endpoints = {
     byMuscle: (muscle) => `/exercises/muscle/${muscle}`,
     byId: (idOrSlug) => `/exercises/${idOrSlug}`,
   },
+  workouts: {
+    sessions: "/workouts/sessions",
+    sessionById: (id) => `/workouts/sessions/${id}`,
+    dailySummary: "/workouts/summary/daily",
+    lastWeekSession: "/workouts/last-week-session",
+  },
   recipes: {
     list: "/recipes",
     featured: "/recipes/featured",
