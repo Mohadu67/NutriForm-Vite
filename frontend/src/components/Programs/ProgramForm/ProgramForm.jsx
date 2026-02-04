@@ -26,14 +26,47 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
     exerciseName: '',
     exerciseImage: '',
     exerciseType: '',
+    // Cardio fields
     durationSec: '',
     intensity: 5,
+    // Muscu fields
+    weight: '',
+    repetitions: '',
+    // Yoga fields
+    yogaStyle: '',
+    yogaFocus: '',
+    // Rest/Transition
     restSec: '',
     notes: ''
   });
 
   const [tagInput, setTagInput] = useState('');
   const [errors, setErrors] = useState({});
+
+  // ✅ FIX: Helper function to detect exercise type and return required fields
+  const getExerciseFields = (exerciseType) => {
+    if (!exerciseType) return 'cardio'; // default
+
+    const type = exerciseType.toLowerCase();
+
+    if (type.includes('cardio') || type.includes('course') || type.includes('vélo') || type.includes('elliptique') || type.includes('rameur')) {
+      return 'cardio';
+    }
+    if (type.includes('muscu') || type.includes('strength') || type.includes('poids') || type.includes('haltères')) {
+      return 'muscu';
+    }
+    if (type.includes('yoga')) {
+      return 'yoga';
+    }
+    if (type.includes('étirement') || type.includes('stretch') || type.includes('flexibility')) {
+      return 'stretch';
+    }
+    if (type.includes('natation') || type.includes('swim')) {
+      return 'swim';
+    }
+
+    return 'cardio'; // default
+  };
 
   const programTypes = [
     { value: 'hiit', label: 'HIIT' },
@@ -102,16 +135,34 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
 
   const handleAddCycle = () => {
     const cycleErrors = {};
+    const exerciseFieldType = getExerciseFields(currentCycle.exerciseType);
 
     if (currentCycle.type === 'exercise') {
       if (!currentCycle.exerciseName) {
         cycleErrors.exerciseName = 'Sélectionne un exercice';
       }
-      if (!currentCycle.durationSec || parseInt(currentCycle.durationSec) < 5) {
-        cycleErrors.durationSec = 'Durée min. 5 secondes';
-      }
-      if (!currentCycle.intensity || parseInt(currentCycle.intensity) < 1 || parseInt(currentCycle.intensity) > 10) {
-        cycleErrors.intensity = 'Intensité entre 1 et 10';
+
+      // ✅ FIX: Validate based on exercise type
+      if (exerciseFieldType === 'cardio') {
+        if (!currentCycle.durationSec || parseInt(currentCycle.durationSec) < 5) {
+          cycleErrors.durationSec = 'Durée min. 5 secondes';
+        }
+        if (!currentCycle.intensity || parseInt(currentCycle.intensity) < 1 || parseInt(currentCycle.intensity) > 10) {
+          cycleErrors.intensity = 'Intensité entre 1 et 10';
+        }
+      } else if (exerciseFieldType === 'muscu') {
+        if (!currentCycle.repetitions || parseInt(currentCycle.repetitions) < 1) {
+          cycleErrors.repetitions = 'Reps min. 1';
+        }
+        // Weight is optional for bodyweight exercises
+      } else if (exerciseFieldType === 'yoga') {
+        if (!currentCycle.durationSec || parseInt(currentCycle.durationSec) < 1) {
+          cycleErrors.durationSec = 'Durée min. 1 minute';
+        }
+      } else if (exerciseFieldType === 'stretch') {
+        if (!currentCycle.durationSec || parseInt(currentCycle.durationSec) < 10) {
+          cycleErrors.durationSec = 'Durée min. 10 secondes';
+        }
       }
     } else {
       // rest ou transition
@@ -125,6 +176,9 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
       return;
     }
 
+    // ✅ FIX: Store cycle with all relevant fields based on exercise type
+    // (exerciseFieldType is already declared above in the validation section)
+
     const newCycle = {
       order: formData.cycles.length + 1,
       type: currentCycle.type,
@@ -133,8 +187,27 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
         exerciseName: currentCycle.exerciseName,
         exerciseImage: currentCycle.exerciseImage,
         exerciseType: currentCycle.exerciseType,
-        durationSec: parseInt(currentCycle.durationSec),
-        intensity: parseInt(currentCycle.intensity)
+        exerciseFieldType, // Store the field type for display
+        // Cardio fields
+        ...(exerciseFieldType === 'cardio' && {
+          durationSec: parseInt(currentCycle.durationSec),
+          intensity: parseInt(currentCycle.intensity)
+        }),
+        // Muscu fields
+        ...(exerciseFieldType === 'muscu' && {
+          weight: currentCycle.weight ? parseInt(currentCycle.weight) : null,
+          repetitions: parseInt(currentCycle.repetitions)
+        }),
+        // Yoga fields
+        ...(exerciseFieldType === 'yoga' && {
+          durationSec: parseInt(currentCycle.durationSec),
+          yogaStyle: currentCycle.yogaStyle,
+          yogaFocus: currentCycle.yogaFocus
+        }),
+        // Stretch fields
+        ...(exerciseFieldType === 'stretch' && {
+          durationSec: parseInt(currentCycle.durationSec)
+        })
       }),
       ...((currentCycle.type === 'rest' || currentCycle.type === 'transition') && {
         restSec: parseInt(currentCycle.restSec),
@@ -156,6 +229,10 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
       exerciseType: '',
       durationSec: '',
       intensity: 5,
+      weight: '',
+      repetitions: '',
+      yogaStyle: '',
+      yogaFocus: '',
       restSec: '',
       notes: ''
     });
@@ -469,39 +546,145 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
                   {errors.exerciseName && <span className={styles.errorMsg}>{errors.exerciseName}</span>}
                 </div>
 
-                <div className={styles.formRow}>
-                  <div className={`${styles.formGroup} ${errors.durationSec ? styles.hasError : ''}`}>
-                    <label>Durée (secondes) *</label>
-                    <input
-                      type="number"
-                      value={currentCycle.durationSec}
-                      onChange={(e) => {
-                        setCurrentCycle(prev => ({ ...prev, durationSec: e.target.value }));
-                        setErrors(prev => ({ ...prev, durationSec: null }));
-                      }}
-                      min="5"
-                      placeholder="Ex: 30"
-                      className={errors.durationSec ? styles.inputError : ''}
-                    />
-                    {errors.durationSec && <span className={styles.errorMsg}>{errors.durationSec}</span>}
-                  </div>
+                {/* ✅ FIX: Dynamic exercise fields based on exercise type */}
+                {(() => {
+                  const fieldType = getExerciseFields(currentCycle.exerciseType);
 
-                  <div className={`${styles.formGroup} ${errors.intensity ? styles.hasError : ''}`}>
-                    <label>Intensité (1-10) *</label>
-                    <input
-                      type="number"
-                      value={currentCycle.intensity}
-                      onChange={(e) => {
-                        setCurrentCycle(prev => ({ ...prev, intensity: e.target.value }));
-                        setErrors(prev => ({ ...prev, intensity: null }));
-                      }}
-                      min="1"
-                      max="10"
-                      className={errors.intensity ? styles.inputError : ''}
-                    />
-                    {errors.intensity && <span className={styles.errorMsg}>{errors.intensity}</span>}
-                  </div>
-                </div>
+                  if (fieldType === 'muscu') {
+                    return (
+                      <div className={styles.formRow}>
+                        <div className={`${styles.formGroup} ${errors.weight ? styles.hasError : ''}`}>
+                          <label>Poids (kg) <span style={{fontSize: '0.8em', color: '#999'}}>(optionnel)</span></label>
+                          <input
+                            type="number"
+                            value={currentCycle.weight}
+                            onChange={(e) => {
+                              setCurrentCycle(prev => ({ ...prev, weight: e.target.value }));
+                              setErrors(prev => ({ ...prev, weight: null }));
+                            }}
+                            min="0"
+                            placeholder="Ex: 20"
+                            className={errors.weight ? styles.inputError : ''}
+                          />
+                          {errors.weight && <span className={styles.errorMsg}>{errors.weight}</span>}
+                        </div>
+
+                        <div className={`${styles.formGroup} ${errors.repetitions ? styles.hasError : ''}`}>
+                          <label>Répétitions *</label>
+                          <input
+                            type="number"
+                            value={currentCycle.repetitions}
+                            onChange={(e) => {
+                              setCurrentCycle(prev => ({ ...prev, repetitions: e.target.value }));
+                              setErrors(prev => ({ ...prev, repetitions: null }));
+                            }}
+                            min="1"
+                            placeholder="Ex: 10"
+                            className={errors.repetitions ? styles.inputError : ''}
+                          />
+                          {errors.repetitions && <span className={styles.errorMsg}>{errors.repetitions}</span>}
+                        </div>
+                      </div>
+                    );
+                  } else if (fieldType === 'yoga') {
+                    return (
+                      <>
+                        <div className={`${styles.formGroup} ${errors.durationSec ? styles.hasError : ''}`}>
+                          <label>Durée (minutes) *</label>
+                          <input
+                            type="number"
+                            value={currentCycle.durationSec}
+                            onChange={(e) => {
+                              setCurrentCycle(prev => ({ ...prev, durationSec: e.target.value }));
+                              setErrors(prev => ({ ...prev, durationSec: null }));
+                            }}
+                            min="1"
+                            placeholder="Ex: 30"
+                            className={errors.durationSec ? styles.inputError : ''}
+                          />
+                          {errors.durationSec && <span className={styles.errorMsg}>{errors.durationSec}</span>}
+                        </div>
+
+                        <div className={styles.formRow}>
+                          <div className={styles.formGroup}>
+                            <label>Style (optionnel)</label>
+                            <input
+                              type="text"
+                              value={currentCycle.yogaStyle}
+                              onChange={(e) => setCurrentCycle(prev => ({ ...prev, yogaStyle: e.target.value }))}
+                              placeholder="Ex: Vinyasa, Hatha"
+                            />
+                          </div>
+
+                          <div className={styles.formGroup}>
+                            <label>Focus (optionnel)</label>
+                            <input
+                              type="text"
+                              value={currentCycle.yogaFocus}
+                              onChange={(e) => setCurrentCycle(prev => ({ ...prev, yogaFocus: e.target.value }))}
+                              placeholder="Ex: Flexibilité"
+                            />
+                          </div>
+                        </div>
+                      </>
+                    );
+                  } else if (fieldType === 'stretch') {
+                    return (
+                      <div className={`${styles.formGroup} ${errors.durationSec ? styles.hasError : ''}`}>
+                        <label>Durée (secondes) *</label>
+                        <input
+                          type="number"
+                          value={currentCycle.durationSec}
+                          onChange={(e) => {
+                            setCurrentCycle(prev => ({ ...prev, durationSec: e.target.value }));
+                            setErrors(prev => ({ ...prev, durationSec: null }));
+                          }}
+                          min="10"
+                          placeholder="Ex: 60"
+                          className={errors.durationSec ? styles.inputError : ''}
+                        />
+                        {errors.durationSec && <span className={styles.errorMsg}>{errors.durationSec}</span>}
+                      </div>
+                    );
+                  } else {
+                    // Default cardio
+                    return (
+                      <div className={styles.formRow}>
+                        <div className={`${styles.formGroup} ${errors.durationSec ? styles.hasError : ''}`}>
+                          <label>Durée (secondes) *</label>
+                          <input
+                            type="number"
+                            value={currentCycle.durationSec}
+                            onChange={(e) => {
+                              setCurrentCycle(prev => ({ ...prev, durationSec: e.target.value }));
+                              setErrors(prev => ({ ...prev, durationSec: null }));
+                            }}
+                            min="5"
+                            placeholder="Ex: 30"
+                            className={errors.durationSec ? styles.inputError : ''}
+                          />
+                          {errors.durationSec && <span className={styles.errorMsg}>{errors.durationSec}</span>}
+                        </div>
+
+                        <div className={`${styles.formGroup} ${errors.intensity ? styles.hasError : ''}`}>
+                          <label>Intensité (1-10) *</label>
+                          <input
+                            type="number"
+                            value={currentCycle.intensity}
+                            onChange={(e) => {
+                              setCurrentCycle(prev => ({ ...prev, intensity: e.target.value }));
+                              setErrors(prev => ({ ...prev, intensity: null }));
+                            }}
+                            min="1"
+                            max="10"
+                            className={errors.intensity ? styles.inputError : ''}
+                          />
+                          {errors.intensity && <span className={styles.errorMsg}>{errors.intensity}</span>}
+                        </div>
+                      </div>
+                    );
+                  }
+                })()}
               </>
             ) : (
               <>
@@ -560,9 +743,22 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
                           : cycle.type === 'rest' ? 'Repos' : 'Transition'}
                       </strong>
                       <span>
-                        {cycle.type === 'exercise'
-                          ? `${cycle.durationSec}s - Intensité ${cycle.intensity}/10`
-                          : `${cycle.restSec}s ${cycle.notes ? `- ${cycle.notes}` : ''}`}
+                        {cycle.type === 'exercise' ? (
+                          (() => {
+                            const fieldType = cycle.exerciseFieldType || getExerciseFields(cycle.exerciseType);
+                            if (fieldType === 'muscu') {
+                              return `${cycle.repetitions} reps${cycle.weight ? ` - ${cycle.weight}kg` : ''}`;
+                            } else if (fieldType === 'yoga') {
+                              return `${cycle.durationSec}min${cycle.yogaStyle ? ` - ${cycle.yogaStyle}` : ''}`;
+                            } else if (fieldType === 'stretch') {
+                              return `${cycle.durationSec}s`;
+                            } else {
+                              return `${cycle.durationSec}s - Intensité ${cycle.intensity}/10`;
+                            }
+                          })()
+                        ) : (
+                          `${cycle.restSec}s ${cycle.notes ? `- ${cycle.notes}` : ''}`
+                        )}
                       </span>
                     </div>
                   </div>
