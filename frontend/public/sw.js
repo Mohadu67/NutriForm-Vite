@@ -161,7 +161,8 @@ self.addEventListener('push', (event) => {
     },
     actions: [],
     tag: type,
-    requireInteraction: type === 'new_match' // Match reste visible jusqu'à interaction
+    // Notifications qui restent visibles jusqu'à interaction
+    requireInteraction: type === 'new_match' || type === 'new_message'
   };
 
   // Ajouter des actions selon le type
