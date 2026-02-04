@@ -727,54 +727,37 @@ async function getLastWeekSession(req, res) {
       return res.status(400).json({ error: "userId manquant" });
     }
 
-    // Obtenir la date d'aujourd'hui
-    const now = new Date();
-
-    // Calculer la date du même jour la semaine dernière
-    const lastWeekDate = new Date(now);
-    lastWeekDate.setDate(lastWeekDate.getDate() - 7);
-
-    // Début et fin de la journée de la semaine dernière
-    const startOfDay = new Date(lastWeekDate);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(lastWeekDate);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    // Chercher une séance de ce jour-là
-    const session = await WorkoutSession.findOne({
+    // Récupérer les 5 dernières séances terminées
+    const sessions = await WorkoutSession.find({
       userId: new mongoose.Types.ObjectId(userId),
-      startedAt: {
-        $gte: startOfDay,
-        $lte: endOfDay
-      },
       status: "finished"
     })
-    .sort({ startedAt: -1 }) // La plus récente si plusieurs
+    .sort({ startedAt: -1 })
+    .limit(5)
     .lean();
 
-    if (!session) {
-      return res.json({ session: null });
+    if (!sessions || sessions.length === 0) {
+      return res.json({ sessions: [] });
     }
 
-    // Retourner la séance avec les exercices (y compris exerciseId si disponible)
-    return res.json({
-      session: {
-        _id: session._id,
-        name: session.name,
-        entries: (session.entries || []).map(entry => ({
-          exerciseId: entry.exerciseId || null,
-          exerciseName: entry.exerciseName,
-          type: entry.type,
-          muscleGroup: entry.muscleGroup,
-          muscles: entry.muscles,
-          order: entry.order
-        })),
-        startedAt: session.startedAt,
-        durationSec: session.durationSec,
-        calories: session.calories
-      }
-    });
+    // Formatter les séances
+    const formattedSessions = sessions.map(session => ({
+      _id: session._id,
+      name: session.name,
+      entries: (session.entries || []).map(entry => ({
+        exerciseId: entry.exerciseId || null,
+        exerciseName: entry.exerciseName,
+        type: entry.type,
+        muscleGroup: entry.muscleGroup,
+        muscles: entry.muscles,
+        order: entry.order
+      })),
+      startedAt: session.startedAt,
+      durationSec: session.durationSec,
+      calories: session.calories
+    }));
+
+    return res.json({ sessions: formattedSessions });
   } catch (err) {
     logger.error("getLastWeekSession error:", err);
     return res.status(500).json({ error: "server_error" });
