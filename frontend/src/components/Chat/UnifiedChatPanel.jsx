@@ -78,6 +78,23 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       setHasMore(moreAvailable);
       hasLoadedInitialMessages.current = true;
 
+      // Re-charger les messages après un court délai pour capter les messages arrivés pendant le chargement
+      // Cela résout les race conditions avec les WebSocket listeners
+      setTimeout(async () => {
+        if (isMatchChat && conversationIdToUse) {
+          try {
+            const { messages: freshMsgs } = await getMessages(conversationIdToUse, { limit: INITIAL_LIMIT });
+            if (freshMsgs && freshMsgs.length > msgs.length) {
+              // Il y a des messages nouveaux - mettre à jour
+              setMessages(freshMsgs);
+              setHasMore(freshMsgs.length === INITIAL_LIMIT);
+            }
+          } catch (err) {
+            // Ignorer silencieusement - ce n'est qu'une tentative de rafraîchir
+          }
+        }
+      }, 300);
+
       // Marquer comme lus si match chat
       if (isMatchChat && conversationIdToUse) {
         // Notifier via WebSocket pour mise à jour instantanée chez l'autre utilisateur
@@ -324,7 +341,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       cleanupPresence?.();
       cleanupChatList?.();
     };
-  }, [isConnected, conversationIdToUse, on, currentUserId, matchConversation]);
+  }, [isConnected, conversationIdToUse, currentUserId]);
 
   // Note: Auto-scroll supprimé ici - géré dans loadInitialMessages, handleNewMessage et handleSendMessage
   // Cela évite de scroller vers le bas quand on charge l'historique (scroll vers le haut)
