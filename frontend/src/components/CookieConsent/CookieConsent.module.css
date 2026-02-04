@@ -442,7 +442,6 @@
 
 @media (min-width: 640px) {
   .banner {
-    flex-direction: row;
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1.5rem;
