@@ -44,6 +44,7 @@ const newsletterRoutes = require('./routes/newsletter.route.js');
 const newsletterAdminRoutes = require('./routes/newsletter-admin.route.js');
 const reviewsRoutes = require('./routes/reviews.js');
 const uploadRoutes = require('./routes/upload.js');
+const uploadFromUrlRoutes = require('./routes/uploadFromUrl.route.js');
 const leaderboardRoutes = require('./routes/leaderboard.route.js');
 const subscriptionRoutes = require('./routes/subscription.route.js');
 const xpRedemptionRoutes = require('./routes/xpRedemption.route.js');
@@ -61,6 +62,7 @@ const linkPreviewRoutes = require('./routes/linkPreview.route.js');
 const rateLimitRoutes = require('./routes/rateLimit.route.js');
 const partnerRoutes = require('./routes/partner.route.js');
 const analyticsRoutes = require('./routes/analytics.route.js');
+const imageProxyRoutes = require('./routes/imageProxy.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 const { startChallengeCron } = require('./cron/challengeCron');
@@ -225,6 +227,7 @@ app.use('/api/programs', programRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/newsletter-admin', newsletterAdminRoutes);
 app.use('/api/reviews', reviewsRoutes);
+app.use('/api/upload/from-url', uploadFromUrlRoutes); // AVANT /api/upload
 app.use('/api/upload', uploadRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
@@ -243,6 +246,7 @@ app.use('/api/link-preview', linkPreviewRoutes);
 app.use('/api/rate-limit', rateLimitRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/image-proxy', imageProxyRoutes);
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
