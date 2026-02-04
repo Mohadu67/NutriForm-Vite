@@ -4,6 +4,8 @@ import { secureApiCall } from '../../utils/authService';
 import styles from './RecipeForm.module.css';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
+import { useRecipeForm } from '../../hooks/admin/useRecipeForm';
+import { useAdminNotification } from '../../hooks/admin/useAdminNotification';
 
 const GOALS = [
   { value: 'weight_loss', label: 'Perte de poids' },
@@ -46,38 +48,25 @@ export default function RecipeForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
+  const notify = useAdminNotification();
+
+  const {
+    formData,
+    setField,
+    setNutrition,
+    toggleArray,
+    setIngredient,
+    addIngredient: addIngredientHook,
+    removeIngredient: removeIngredientHook,
+    setInstruction,
+    addInstruction: addInstructionHook,
+    removeInstruction: removeInstructionHook,
+    loadRecipe
+  } = useRecipeForm();
 
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    image: '',
-    category: 'salty',
-    difficulty: 'medium',
-    prepTime: 10,
-    cookTime: 20,
-    servings: 2,
-    isPremium: false,
-    isPublished: true,
-    isOfficial: true,
-    nutrition: {
-      calories: 0,
-      proteins: 0,
-      carbs: 0,
-      fats: 0,
-      fiber: 0
-    },
-    goal: [],
-    mealType: [],
-    tags: [],
-    dietType: ['none'],
-    ingredients: [{ name: '', quantity: '', unit: '', optional: false }],
-    instructions: ['']
-  });
 
   useEffect(() => {
     if (isEdit) {
@@ -90,7 +79,7 @@ export default function RecipeForm() {
       const response = await secureApiCall(`/recipes/${id}`);
       const data = await response.json();
       if (data.success) {
-        setFormData({
+        loadRecipe({
           ...data.recipe,
           ingredients: data.recipe.ingredients.length > 0 ? data.recipe.ingredients : [{ name: '', quantity: '', unit: '', optional: false }],
           instructions: data.recipe.instructions.length > 0 ? data.recipe.instructions : ['']
@@ -107,94 +96,53 @@ export default function RecipeForm() {
     const { name, value, type, checked } = e.target;
     let finalValue = value;
 
-    // Convertir les champs numériques
     if (type === 'number') {
       finalValue = value === '' ? 0 : parseInt(value);
     }
 
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : finalValue
-    }));
+    setField(name, type === 'checkbox' ? checked : finalValue);
   };
 
   const handleNutritionChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      nutrition: {
-        ...prev.nutrition,
-        [name]: value === '' ? '' : parseFloat(value)
-      }
-    }));
+    setNutrition(name, value === '' ? '' : parseFloat(value));
   };
 
   const handleArrayToggle = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: prev[field].includes(value)
-        ? prev[field].filter(v => v !== value)
-        : [...prev[field], value]
-    }));
+    toggleArray(field, value);
   };
 
   const handleIngredientChange = (index, field, value) => {
-    const newIngredients = [...formData.ingredients];
     let finalValue = value;
-
     if (field === 'quantity') {
       finalValue = value === '' ? '' : parseFloat(value) || 0;
     }
-
-    newIngredients[index] = {
-      ...newIngredients[index],
-      [field]: finalValue
-    };
-    setFormData(prev => ({ ...prev, ingredients: newIngredients }));
+    setIngredient(index, field, finalValue);
   };
 
-  const addIngredient = () => {
-    setFormData(prev => ({
-      ...prev,
-      ingredients: [...prev.ingredients, { name: '', quantity: '', unit: '', optional: false }]
-    }));
-  };
+  const addIngredient = addIngredientHook;
 
   const removeIngredient = (index) => {
     if (formData.ingredients.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        ingredients: prev.ingredients.filter((_, i) => i !== index)
-      }));
+      removeIngredientHook(index);
     }
   };
 
   const handleInstructionChange = (index, value) => {
-    const newInstructions = [...formData.instructions];
-    newInstructions[index] = value;
-    setFormData(prev => ({ ...prev, instructions: newInstructions }));
+    setInstruction(index, value);
   };
 
-  const addInstruction = () => {
-    setFormData(prev => ({
-      ...prev,
-      instructions: [...prev.instructions, '']
-    }));
-  };
+  const addInstruction = addInstructionHook;
 
   const removeInstruction = (index) => {
     if (formData.instructions.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        instructions: prev.instructions.filter((_, i) => i !== index)
-      }));
+      removeInstructionHook(index);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setMessage('');
     setSaving(true);
 
     // Validation
@@ -228,7 +176,7 @@ export default function RecipeForm() {
       const data = await response.json();
 
       if (data.success) {
-        setMessage(isEdit ? 'Recette modifiée avec succès !' : 'Recette créée avec succès !');
+        notify.success(isEdit ? 'Recette modifiée avec succès !' : 'Recette créée avec succès !');
         setTimeout(() => navigate('/admin'), 1500);
       } else {
         setError(data.message || 'Erreur lors de l\'enregistrement');
@@ -264,7 +212,6 @@ export default function RecipeForm() {
         </div>
 
         {error && <div className={styles.error}>{error}</div>}
-        {message && <div className={styles.success}>{message}</div>}
 
         <form onSubmit={handleSubmit} className={styles.form}>
           {/* Informations de base */}
