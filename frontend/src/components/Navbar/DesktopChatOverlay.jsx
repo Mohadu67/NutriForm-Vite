@@ -20,9 +20,18 @@ export default function DesktopChatOverlay({
 }) {
   const { chatView, activeConversation, backToHistory } = useChat() || {};
 
+  const handleOverlayClick = () => {
+    // If a conversation is open, go back to history instead of closing completely
+    if (chatView === 'conversation' && backToHistory) {
+      backToHistory();
+    } else {
+      closeChat();
+    }
+  };
+
   return (
     <>
-      <div className={styles.chatOverlay} onClick={closeChat}>
+      <div className={styles.chatOverlay} onClick={handleOverlayClick}>
         <div className={styles.chatPanelContainer} onClick={(e) => e.stopPropagation()}>
           {chatView === 'history' ? (
             <>

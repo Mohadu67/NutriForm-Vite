@@ -22,7 +22,7 @@ import {
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const { isChatOpen, chatView, activeConversation, openChat, closeChat } = useChat() || {};
+  const { isChatOpen, chatView, activeConversation, openChat, closeChat, backToHistory } = useChat() || {};
   const { on, isConnected } = useWebSocket() || {};
   const { isPremium } = usePremiumStatus();
   const { unreadCount: notificationUnreadCount } = useNotificationCount();
@@ -251,8 +251,15 @@ export default function Navbar() {
   const closeMenu = useCallback(() => {
     setOpen(false);
     setCurrentView('navigation');
-    if (!isDesktop && isChatOpen) closeChat();
-  }, [isDesktop, isChatOpen, closeChat]);
+    if (!isDesktop && isChatOpen) {
+      // If a conversation is open, go back to history instead of closing completely
+      if (chatView === 'conversation' && backToHistory) {
+        backToHistory();
+      } else {
+        closeChat();
+      }
+    }
+  }, [isDesktop, isChatOpen, chatView, backToHistory, closeChat]);
 
   const navigateAndClose = useCallback((targetPath) => {
     navigate(targetPath);
