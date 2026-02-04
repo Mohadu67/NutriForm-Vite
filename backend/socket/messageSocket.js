@@ -47,14 +47,16 @@ const authenticateSocket = async (socket, next) => {
 
     const decoded = jwt.verify(token, config.jwtSecret);
 
-    // SECURITY: Utiliser strictement 'userId' du token, pas un fallback incohérent
-    if (!decoded.userId) {
-      logger.error(`🔌 WebSocket: Token invalide - userId manquant (origin: ${origin})`);
+    // Accepter soit 'userId' soit 'id' du token (pour compatibilité)
+    const userId = decoded.userId || decoded.id;
+
+    if (!userId) {
+      logger.error(`🔌 WebSocket: Token invalide - userId/id manquant (origin: ${origin})`);
       return next(new Error('Authentication error: Invalid token structure'));
     }
 
-    logger.info(`🔌 WebSocket Auth SUCCESS: userId=${decoded.userId}`);
-    socket.userId = decoded.userId;
+    logger.info(`🔌 WebSocket Auth SUCCESS: userId=${userId}`);
+    socket.userId = userId;
     next();
   } catch (error) {
     logger.error('Socket authentication error:', error.message);
