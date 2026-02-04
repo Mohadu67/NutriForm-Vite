@@ -215,11 +215,15 @@ export const getInternationalTransferProcessors = () => {
  * Get all processors with health data (Article 9)
  */
 export const getHealthDataProcessors = () => {
-  return dataProcessors.filter(
-    (p) =>
+  return dataProcessors.filter((p) => {
+    if (!Array.isArray(p.dataProcessed)) {
+      return false;
+    }
+    return (
       p.dataProcessed.some((d) => d.toLowerCase().includes("health")) ||
       p.dataProcessed.some((d) => d.toLowerCase().includes("activity"))
-  );
+    );
+  });
 };
 
 export default dataProcessors;
