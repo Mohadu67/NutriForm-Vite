@@ -100,9 +100,10 @@ async function sendMessage(req, res) {
     let shouldEscalate = false;
     let confidence = 0;
 
-    // Compter les messages de cette conversation pour déterminer si on affiche le bouton escalade
-    const messageCount = await ChatMessage.countDocuments({ conversationId: convId });
-    const showEscalateButton = messageCount >= 3; // Afficher après 3 messages (inclut celui qu'on vient d'ajouter)
+    // SECURITY: Compter les messages AVANT de créer la réponse bot pour éviter les race conditions
+    // Le +1 compte le message utilisateur qu'on vient d'ajouter
+    const messageCountBeforeBot = await ChatMessage.countDocuments({ conversationId: convId });
+    const showEscalateButton = messageCountBeforeBot >= 3; // Afficher après 3 messages
 
     // Detecter demande explicite de parler a un agent AVANT de generer une reponse
     const explicitEscalateRequest = containsAny(message, ESCALATE_KEYWORDS);
@@ -207,7 +208,7 @@ async function sendMessage(req, res) {
       botResponse,
       escalated: shouldEscalate,
       showEscalateButton,
-      messageCount
+      messageCount: messageCountBeforeBot + 1 // +1 pour le message user ajouté
     });
 
   } catch (error) {
@@ -226,6 +227,12 @@ async function getChatHistory(req, res) {
     const { conversationId } = req.params;
     const { limit = 20, before } = req.query;
     const userId = req.userId;
+
+    // SECURITY: Vérifier que l'utilisateur n'accède qu'à ses propres messages
+    const firstMessage = await ChatMessage.findOne({ conversationId }).select('userId');
+    if (!firstMessage || firstMessage.userId.toString() !== userId.toString()) {
+      return res.status(403).json({ error: 'Non autorisé à accéder à cette conversation.' });
+    }
 
     const query = { userId, conversationId };
 
@@ -274,6 +281,12 @@ async function escalateConversation(req, res) {
 
     if (!conversationId) {
       return res.status(400).json({ error: 'conversationId requis.' });
+    }
+
+    // SECURITY: Vérifier que l'utilisateur n'escalade que ses propres conversations
+    const firstMessage = await ChatMessage.findOne({ conversationId }).select('userId');
+    if (!firstMessage || firstMessage.userId.toString() !== userId.toString()) {
+      return res.status(403).json({ error: 'Non autorisé à escalader cette conversation.' });
     }
 
     // Vérifier si déjà escaladé
@@ -388,7 +401,7 @@ async function deleteAIConversation(req, res) {
     const { conversationId } = req.params;
     const userId = req.userId;
 
-    // Vérifier que la conversation appartient à l'utilisateur
+    // SECURITY: Vérifier que la conversation appartient à l'utilisateur
     const conversation = await AIConversation.findOne({
       userId,
       conversationId
@@ -396,6 +409,15 @@ async function deleteAIConversation(req, res) {
 
     if (!conversation) {
       return res.status(404).json({ error: 'Conversation non trouvée.' });
+    }
+
+    // Vérification supplémentaire: vérifier le userId de tous les messages
+    const messageCount = await ChatMessage.countDocuments({
+      conversationId,
+      userId: { $ne: userId }
+    });
+    if (messageCount > 0) {
+      return res.status(403).json({ error: 'Non autorisé à supprimer cette conversation.' });
     }
 
     // Marquer comme inactive (soft delete)
