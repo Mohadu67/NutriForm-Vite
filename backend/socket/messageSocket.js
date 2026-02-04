@@ -46,10 +46,15 @@ const authenticateSocket = async (socket, next) => {
     }
 
     const decoded = jwt.verify(token, config.jwtSecret);
-    // Le token contient 'id' pas 'userId'
-    const userId = decoded.userId || decoded.id;
-    logger.info(`🔌 WebSocket Auth SUCCESS: userId=${userId}`);
-    socket.userId = userId;
+
+    // SECURITY: Utiliser strictement 'userId' du token, pas un fallback incohérent
+    if (!decoded.userId) {
+      logger.error(`🔌 WebSocket: Token invalide - userId manquant (origin: ${origin})`);
+      return next(new Error('Authentication error: Invalid token structure'));
+    }
+
+    logger.info(`🔌 WebSocket Auth SUCCESS: userId=${decoded.userId}`);
+    socket.userId = decoded.userId;
     next();
   } catch (error) {
     logger.error('Socket authentication error:', error.message);
@@ -66,6 +71,7 @@ module.exports = (io) => {
 
   io.on('connection', (socket) => {
     const userId = socket.userId;
+    const userIdStr = userId.toString();
 
     // Vérifier que l'authentification a réussi
     if (!userId) {
@@ -75,35 +81,35 @@ module.exports = (io) => {
     }
 
     // Enregistrer l'utilisateur comme connecté
-    connectedUsers.set(userId.toString(), socket.id);
-    logger.info(`🔌 WebSocket: Utilisateur ${userId} connecté (socket: ${socket.id})`);
+    connectedUsers.set(userIdStr, socket.id);
+    logger.info(`🔌 WebSocket: Utilisateur ${userIdStr} connecté (socket: ${socket.id})`);
 
     // Rejoindre la room personnelle de l'utilisateur
-    socket.join(`user:${userId}`);
+    socket.join(`user:${userIdStr}`);
 
     // Informer l'utilisateur qu'il est connecté
-    socket.emit('connected', { userId, socketId: socket.id });
+    socket.emit('connected', { userId: userIdStr, socketId: socket.id });
 
     // Notifier tous les utilisateurs que cet utilisateur est en ligne
-    socket.broadcast.emit('user_online', { userId: userId.toString() });
+    socket.broadcast.emit('user_online', { userId: userIdStr });
 
     // Rejoindre une conversation
     socket.on('join_conversation', (conversationId) => {
       socket.join(`conversation:${conversationId}`);
-      logger.info(`👥 User ${userId} a rejoint la conversation ${conversationId}`);
+      logger.info(`👥 User ${userIdStr} a rejoint la conversation ${conversationId}`);
 
       // Notifier le nouvel arrivant des utilisateurs déjà présents dans cette conversation
       const presentUsers = conversationPresence.get(conversationId);
       if (presentUsers && presentUsers.size > 0) {
         presentUsers.forEach(presentUserId => {
-          if (presentUserId !== userId.toString()) {
+          if (presentUserId !== userIdStr) {
             // Envoyer la présence des autres utilisateurs au nouvel arrivant
             socket.emit('user_presence', {
               conversationId,
               userId: presentUserId,
               isPresent: true
             });
-            logger.info(`👁️ Notifié ${userId} que ${presentUserId} est présent dans ${conversationId}`);
+            logger.info(`👁️ Notifié ${userIdStr} que ${presentUserId} est présent dans ${conversationId}`);
           }
         });
       }
@@ -116,7 +122,6 @@ module.exports = (io) => {
       socket.leave(`conversation:${conversationId}`);
 
       // Nettoyer la présence de l'utilisateur dans cette conversation
-      const userIdStr = userId.toString();
       const presentUsers = conversationPresence.get(conversationId);
       if (presentUsers) {
         presentUsers.delete(userIdStr);
@@ -125,13 +130,13 @@ module.exports = (io) => {
         }
       }
 
-      logger.info(`👋 User ${userId} a quitté la conversation ${conversationId}`);
+      logger.info(`👋 User ${userIdStr} a quitté la conversation ${conversationId}`);
     });
 
     // Notification de saisie en cours
     socket.on('typing', ({ conversationId, isTyping }) => {
       socket.to(`conversation:${conversationId}`).emit('user_typing', {
-        userId,
+        userId: userIdStr,
         isTyping,
         conversationId
       });
@@ -139,8 +144,6 @@ module.exports = (io) => {
 
     // Notification de présence dans une conversation
     socket.on('user_presence', ({ conversationId, isPresent }) => {
-      const userIdStr = userId.toString();
-
       // Mettre à jour le tracking de présence
       if (isPresent) {
         if (!conversationPresence.has(conversationId)) {
@@ -163,14 +166,12 @@ module.exports = (io) => {
         userId: userIdStr,
         isPresent
       });
-      logger.info(`👁️ User ${userId} presence in ${conversationId}: ${isPresent}`);
+      logger.info(`👁️ User ${userIdStr} presence in ${conversationId}: ${isPresent}`);
     });
 
     // Notification de présence dans ChatHistory (liste des conversations)
     // Permet de savoir si l'autre peut VOIR le message dans sa liste (✓✓ gris)
     socket.on('chat_list_presence', ({ isPresent }) => {
-      const userIdStr = userId.toString();
-
       if (isPresent) {
         usersInChatList.add(userIdStr);
       } else {
@@ -182,7 +183,7 @@ module.exports = (io) => {
         userId: userIdStr,
         isInChatList: isPresent
       });
-      logger.info(`📋 User ${userId} chat list presence: ${isPresent}`);
+      logger.info(`📋 User ${userIdStr} chat list presence: ${isPresent}`);
     });
 
     // Marquer comme lu en temps réel
@@ -190,15 +191,14 @@ module.exports = (io) => {
       socket.to(`conversation:${conversationId}`).emit('messages_read', {
         conversationId,
         messageIds,
-        readBy: userId
+        readBy: userIdStr
       });
     });
 
     // Déconnexion
     socket.on('disconnect', () => {
-      const userIdStr = userId.toString();
       connectedUsers.delete(userIdStr);
-      logger.info(`🔌 WebSocket: Utilisateur ${userId} déconnecté`);
+      logger.info(`🔌 WebSocket: Utilisateur ${userIdStr} déconnecté`);
 
       // Nettoyer la présence dans ChatHistory
       if (usersInChatList.has(userIdStr)) {
@@ -231,7 +231,7 @@ module.exports = (io) => {
 
     // Gestion des erreurs
     socket.on('error', (error) => {
-      logger.error(`❌ WebSocket error for user ${userId}:`, error);
+      logger.error(`❌ WebSocket error for user ${userIdStr}:`, error);
     });
   });
 
