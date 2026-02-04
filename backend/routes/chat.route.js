@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middlewares/auth.middleware');
+const { messageLimiter } = require('../middlewares/messageRateLimit.middleware');
 const {
   sendMessage,
   getChatHistory,
@@ -13,7 +14,7 @@ const {
 /**
  * Routes chat (authentification requise)
  */
-router.post('/send', auth, sendMessage);
+router.post('/send', auth, messageLimiter, sendMessage);
 router.get('/history/:conversationId', auth, getChatHistory);
 router.post('/escalate', auth, escalateConversation);
 
