@@ -56,19 +56,29 @@ async function notifyAdmins({ title, message, link, type = 'admin', metadata = {
       logger.error(`Erreur sauvegarde notifications ${type}:`, err)
     );
 
-    // 3. Envoyer push notifications
-    for (const admin of admins) {
-      sendNotificationToUser(admin._id, {
-        type,
-        title,
-        body: message,
-        icon,
-        data: {
+    // 3. Envoyer push notifications (avec gestion d'erreur améliorée)
+    const pushResults = await Promise.allSettled(
+      admins.map(admin =>
+        sendNotificationToUser(admin._id, {
           type,
-          url: link,
-          ...metadata
-        }
-      }).catch(err => logger.error(`Erreur push notification admin ${admin._id}:`, err.message));
+          title,
+          body: message,
+          icon,
+          data: {
+            type,
+            url: link,
+            ...metadata
+          }
+        })
+      )
+    );
+
+    // ✅ FIX: Tracker combien de push notifications ont réussi
+    const pushSuccess = pushResults.filter(r => r.status === 'fulfilled').length;
+    const pushFailed = pushResults.filter(r => r.status === 'rejected').length;
+
+    if (pushFailed > 0) {
+      logger.warn(`⚠️  ${pushFailed}/${admins.length} push notifications admin échouées`);
     }
 
     logger.info(`${admins.length} admin(s) notifié(s) - ${type}: ${title}`);
@@ -120,17 +130,23 @@ async function notifySupport({ title, message, link, metadata = {}, io = null })
     logger.error('Erreur sauvegarde notifications support:', err)
   );
 
-  for (const user of staffUsers) {
-    sendNotificationToUser(user._id, {
-      type: 'support',
-      title,
-      body: message,
-      icon: '/assets/icons/notif-support.svg',
-      data: { type: 'support', url: link, ...metadata }
-    }).catch(err => logger.error(`Erreur push support ${user._id}:`, err.message));
-  }
+  // ✅ FIX: Utiliser Promise.allSettled pour tracker les erreurs
+  const pushResults = await Promise.allSettled(
+    staffUsers.map(user =>
+      sendNotificationToUser(user._id, {
+        type: 'support',
+        title,
+        body: message,
+        icon: '/assets/icons/notif-support.svg',
+        data: { type: 'support', url: link, ...metadata }
+      })
+    )
+  );
 
-  logger.info(`${staffUsers.length} staff notifié(s) - support: ${title}`);
+  const pushSuccess = pushResults.filter(r => r.status === 'fulfilled').length;
+  const pushFailed = pushResults.filter(r => r.status === 'rejected').length;
+
+  logger.info(`${staffUsers.length} staff notifié(s) - support: ${title}${pushFailed > 0 ? ` (${pushFailed} push échouées)` : ''}`);
 }
 
 /**
@@ -146,73 +162,93 @@ async function notifySupport({ title, message, link, metadata = {}, io = null })
  */
 async function notifyAllUsers({ title, message, link, type = 'promo', metadata = {}, io = null, icon = '/assets/icons/notif-reward.svg' }) {
   try {
-    // Récupérer tous les utilisateurs actifs
-    const users = await User.find({ isActive: { $ne: false } }).select('_id');
-
-    if (users.length === 0) {
-      logger.info('Aucun utilisateur à notifier');
-      return;
-    }
-
     const timestamp = Date.now();
+    const BATCH_SIZE = 100;  // ✅ FIX: Traiter par batch au lieu de charger tous les users en mémoire
+    let processed = 0;
+    let totalError = 0;
 
-    // 1. Sauvegarder en base de données (bulk)
-    const notificationsToCreate = users.map(user => ({
-      userId: user._id,
-      type,
-      title,
-      message,
-      link,
-      metadata
-    }));
+    // ✅ FIX: Utiliser cursor pour pagination efficace (streaming)
+    const cursor = User.find({ isActive: { $ne: false } }).select('_id').cursor();
 
-    await Notification.insertMany(notificationsToCreate, { ordered: false }).catch(err =>
-      logger.error(`Erreur sauvegarde notifications ${type}:`, err)
-    );
+    let batch = [];
 
-    // 2. Envoyer via WebSocket (temps réel) - par batch pour éviter surcharge
-    if (io && io.notifyUser) {
-      for (const user of users) {
-        const notifId = `${type}-${timestamp}-${user._id}`;
-        io.notifyUser(user._id.toString(), 'new_notification', {
-          id: notifId,
-          type,
-          title,
-          message,
-          link,
-          metadata,
-          timestamp: new Date().toISOString(),
-          read: false
-        });
+    for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+      batch.push(doc);
+
+      if (batch.length === BATCH_SIZE) {
+        // Traiter ce batch
+        await processBatch(batch, { type, title, message, link, metadata, io, icon, timestamp });
+        processed += batch.length;
+        batch = [];
       }
     }
 
-    // 3. Envoyer push notifications (en parallèle avec limite)
-    const BATCH_SIZE = 50;
-    for (let i = 0; i < users.length; i += BATCH_SIZE) {
-      const batch = users.slice(i, i + BATCH_SIZE);
-      await Promise.allSettled(
-        batch.map(user =>
-          sendNotificationToUser(user._id, {
-            type,
-            title,
-            body: message,
-            icon,
-            data: {
-              type,
-              url: link,
-              ...metadata
-            }
-          })
-        )
-      );
+    // Traiter le dernier batch s'il reste des users
+    if (batch.length > 0) {
+      await processBatch(batch, { type, title, message, link, metadata, io, icon, timestamp });
+      processed += batch.length;
     }
 
-    logger.info(`${users.length} utilisateur(s) notifié(s) - ${type}: ${title}`);
+    logger.info(`✅ ${processed} utilisateur(s) notifié(s) - ${type}: ${title}`);
 
   } catch (err) {
     logger.error('Erreur notifyAllUsers:', err);
   }
+}
+
+/**
+ * Traiter un batch de notifications
+ */
+async function processBatch(users, options) {
+  const { type, title, message, link, metadata, io, icon, timestamp } = options;
+
+  // 1. Sauvegarder en base de données (bulk)
+  const notificationsToCreate = users.map(user => ({
+    userId: user._id,
+    type,
+    title,
+    message,
+    link,
+    metadata
+  }));
+
+  await Notification.insertMany(notificationsToCreate, { ordered: false }).catch(err =>
+    logger.error(`Erreur sauvegarde notifications ${type}:`, err)
+  );
+
+  // 2. Envoyer via WebSocket (temps réel)
+  if (io && io.notifyUser) {
+    for (const user of users) {
+      const notifId = `${type}-${timestamp}-${user._id}`;
+      io.notifyUser(user._id.toString(), 'new_notification', {
+        id: notifId,
+        type,
+        title,
+        message,
+        link,
+        metadata,
+        timestamp: new Date().toISOString(),
+        read: false
+      });
+    }
+  }
+
+  // 3. Envoyer push notifications (en parallèle)
+  await Promise.allSettled(
+    users.map(user =>
+      sendNotificationToUser(user._id, {
+        type,
+        title,
+        body: message,
+        icon,
+        data: {
+          type,
+          url: link,
+          ...metadata
+        }
+      }).catch(err => logger.error(`Erreur push ${user._id}:`, err.message))
+    )
+  );
 }
 
 module.exports = {
