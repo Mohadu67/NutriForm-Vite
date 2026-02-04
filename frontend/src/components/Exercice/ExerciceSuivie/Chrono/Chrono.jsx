@@ -8,6 +8,7 @@ import useChronoCore from "./useChronoCore";
 import EchauffementModal from "./EchauffementModal";
 import SaveLoadingAnimation from "./SaveLoadingAnimation";
 import ShareModal from "../../../Share/ShareModal";
+import CancelSessionModal from "./CancelSessionModal";
 import logger from '../../../../shared/utils/logger.js';
 import { showError } from '../../../../utils/confirmDialog.jsx';
 
@@ -21,6 +22,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
   const [showShareModal, setShowShareModal] = useState(false);
   const [savedSession, setSavedSession] = useState(null);
   const [sessionStats, setSessionStats] = useState(null);
+  const [showCancelReasonModal, setShowCancelReasonModal] = useState(false);
 
   // Afficher le modal d'échauffement automatiquement au premier chargement
   useEffect(() => {
@@ -224,6 +226,26 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
     const est = Math.max(0, Math.round(kcal));
     return { totalExercises: total, doneExercises: done, calories: est };
   }, [items, time]);
+
+  const handleCancelSession = (reasonId) => {
+    setShowCancelReasonModal(false);
+    stopAndReset();
+    if (typeof onFinish === 'function') {
+      onFinish({
+        durationSec: 0,
+        savedCount: 0,
+        calories: 0,
+        doneExercises: 0,
+        totalExercises: 0,
+        cancelReason: reasonId
+      });
+    }
+  };
+
+  const handleContinueSession = () => {
+    setShowCancelReasonModal(false);
+    setShowConfirm(false);
+  };
 
   async function handleConfirmFinish() {
     setShowConfirm(false);
@@ -564,10 +586,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
               className={styles.cancelLink}
               onClick={() => {
                 setShowConfirm(false);
-                stopAndReset();
-                if (typeof onFinish === 'function') {
-                  onFinish({ durationSec: 0, savedCount: 0, calories: 0, doneExercises: 0, totalExercises: 0 });
-                }
+                setShowCancelReasonModal(true);
               }}
             >
               Annuler la séance
@@ -599,6 +618,12 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
           user={storage.get('user') || {}}
         />
       )}
+
+      <CancelSessionModal
+        show={showCancelReasonModal}
+        onCancel={handleCancelSession}
+        onContinue={handleContinueSession}
+      />
     </>
   );
 }
