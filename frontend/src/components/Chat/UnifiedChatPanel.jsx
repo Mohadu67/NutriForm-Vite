@@ -250,10 +250,12 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     if (!isConnected || !conversationIdToUse) return;
 
     const handleNewMessage = ({ conversationId: convId, message }) => {
-      if (convId === conversationIdToUse) {
+      // Comparaison en string pour éviter les problèmes de type ObjectId vs string
+      if (String(convId) === String(conversationIdToUse)) {
+        console.log('📨 Nouveau message reçu:', message._id, 'dans conversation:', convId);
         setMessages(prev => {
           // Éviter les doublons
-          if (prev.some(m => m._id === message._id)) {
+          if (prev.some(m => String(m._id) === String(message._id))) {
             return prev;
           }
           return [...prev, message];
@@ -286,7 +288,8 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     };
 
     const handleMessagesRead = ({ conversationId: convId, messageIds }) => {
-      if (convId === conversationIdToUse) {
+      // Comparaison en string pour éviter les problèmes de type ObjectId vs string
+      if (String(convId) === String(conversationIdToUse)) {
         // Convertir tous les IDs en strings pour comparaison fiable
         const messageIdStrings = messageIds.map(id => String(id));
         setMessages(prev => prev.map(msg => {
@@ -314,7 +317,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     // Écouter la présence de l'autre utilisateur dans cette conversation
     const handlePresence = ({ conversationId: convId, userId, isPresent }) => {
       // Comparaison en string pour éviter les problèmes de type ObjectId vs string
-      if (convId === conversationIdToUse && String(userId) !== String(currentUserId)) {
+      if (String(convId) === String(conversationIdToUse) && String(userId) !== String(currentUserId)) {
         setIsOtherPresent(isPresent);
       }
     };
