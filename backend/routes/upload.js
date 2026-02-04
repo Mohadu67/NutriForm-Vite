@@ -161,6 +161,71 @@ router.delete('/profile-photo', auth, async (req, res) => {
   }
 });
 
+// Configuration du stockage Cloudinary pour les recettes
+const recipeStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'harmonith/recipes',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    transformation: [{ width: 1200, height: 800, crop: 'limit', quality: 'auto' }],
+    public_id: (req, file) => `recipe-${req.userId}-${Date.now()}`
+  }
+});
+
+const uploadRecipe = multer({
+  storage: recipeStorage,
+  fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB max
+  }
+});
+
+/**
+ * @route   POST /api/upload/recipe-image
+ * @desc    Upload une image pour une recette
+ * @access  Private (Premium)
+ */
+router.post('/recipe-image', auth, uploadRecipe.single('image'), async (req, res) => {
+  try {
+    logger.info('🍳 Upload image recette - userId:', req.userId);
+
+    if (!req.file) {
+      logger.warn('🍳 Upload image recette - Aucun fichier reçu');
+      return res.status(400).json({
+        success: false,
+        message: 'Aucune image fournie'
+      });
+    }
+
+    // L'URL Cloudinary complète est dans req.file.path
+    const imageUrl = req.file.path;
+
+    logger.info('✅ Image recette uploadée:', imageUrl);
+
+    res.status(200).json({
+      success: true,
+      message: 'Image uploadée avec succès',
+      imageUrl
+    });
+  } catch (error) {
+    logger.error('Erreur upload image recette:', error);
+
+    // Tenter de supprimer l'image uploadée sur Cloudinary en cas d'erreur
+    if (req.file && req.file.filename) {
+      try {
+        await cloudinary.uploader.destroy(req.file.filename);
+      } catch (err) {
+        logger.error('Erreur nettoyage Cloudinary:', err);
+      }
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de l\'upload de l\'image'
+    });
+  }
+});
+
 
 router.use((error, req, res, next) => {
   logger.error('📸 Upload error:', error.message);
