@@ -4,6 +4,8 @@ import { toast } from 'sonner';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import MessageContent from '../../components/Chat/MessageContent';
+import Avatar from '../../components/Shared/Avatar';
+import { formatDisplayName } from '../../shared/utils/string';
 import {
   getOrCreateConversation,
   getMessages,
@@ -193,19 +195,11 @@ export default function Chat() {
             ← Retour
           </button>
           <div className={styles.userInfo}>
-            <img
-              src={
-                otherUser.profile?.profilePicture
-                  ? (otherUser.profile.profilePicture.startsWith('http')
-                      ? otherUser.profile.profilePicture
-                      : `http://localhost:3000${otherUser.profile.profilePicture}`)
-                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.pseudo || otherUser.prenom || 'U')}&background=f7b186&color=fff&size=128`
-              }
-              alt={otherUser.pseudo || otherUser.prenom}
+            <Avatar
+              src={otherUser.profile?.profilePicture}
+              name={formatDisplayName(otherUser, 'Utilisateur')}
+              size="lg"
               className={styles.avatar}
-              onError={(e) => {
-                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.pseudo || otherUser.prenom || 'U')}&background=f7b186&color=fff&size=128`;
-              }}
             />
             <div>
               <h2>{otherUser.pseudo || otherUser.prenom || 'Utilisateur'}</h2>

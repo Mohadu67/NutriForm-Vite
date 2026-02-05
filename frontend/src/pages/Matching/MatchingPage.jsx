@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useChat } from '../../contexts/ChatContext';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
+import Avatar from '../../components/Shared/Avatar';
 import ProgressRing from '../../components/ProgressRing/ProgressRing';
 import ProfileDetailModal from '../../components/ProfileDetailModal/ProfileDetailModal';
 import { getMatchSuggestions, likeProfile, rejectProfile, getMutualMatches, unlikeProfile, getRejectedProfiles, relikeProfile } from '../../shared/api/matching';
@@ -425,17 +426,12 @@ export default function MatchingPageFuturistic() {
 
                   {/* Avatar */}
                   <div className={styles.cardAvatarSection}>
-                    {(currentMatch.user.photo || currentMatch.user.profilePicture) ? (
-                      <img
-                        src={currentMatch.user.photo || currentMatch.user.profilePicture}
-                        alt={currentMatch.user.username}
-                        className={styles.cardAvatar}
-                      />
-                    ) : (
-                      <div className={styles.cardAvatarPlaceholder}>
-                        {currentMatch.user.username?.[0]?.toUpperCase() || '?'}
-                      </div>
-                    )}
+                    <Avatar
+                      src={currentMatch.user.photo || currentMatch.user.profilePicture}
+                      name={currentMatch.user.username || 'User'}
+                      size="lg"
+                      className={styles.cardAvatar}
+                    />
                   </div>
 
                   {/* Profile info */}
@@ -582,13 +578,11 @@ export default function MatchingPageFuturistic() {
                         onClick={() => handleOpenMatchProfile(match)}
                       >
                         <div className={styles.matchListAvatar}>
-                          {(match.user?.photo || match.user?.profilePicture) ? (
-                            <img src={match.user.photo || match.user.profilePicture} alt={match.user.username} />
-                          ) : (
-                            <div className={styles.matchListAvatarPlaceholder}>
-                              {match.user?.username?.[0]?.toUpperCase() || '?'}
-                            </div>
-                          )}
+                          <Avatar
+                            src={match.user?.photo || match.user?.profilePicture}
+                            name={match.user?.username || 'User'}
+                            size="md"
+                          />
                           <div className={styles.matchListScore}>{match.matchScore}%</div>
                         </div>
                         <div className={styles.matchListInfo}>
@@ -671,13 +665,11 @@ export default function MatchingPageFuturistic() {
                   onClick={() => setSelectedProfile(mutualMatchData)}
                 >
                   <div className={styles.matchPopupAvatar}>
-                    {(mutualMatchData.user.photo || mutualMatchData.user.profilePicture) ? (
-                      <img src={mutualMatchData.user.photo || mutualMatchData.user.profilePicture} alt={mutualMatchData.user.username} />
-                    ) : (
-                      <div className={styles.matchPopupAvatarPlaceholder}>
-                        {mutualMatchData.user.username[0].toUpperCase()}
-                      </div>
-                    )}
+                    <Avatar
+                      src={mutualMatchData.user.photo || mutualMatchData.user.profilePicture}
+                      name={mutualMatchData.user.username}
+                      size="lg"
+                    />
                     <div className={styles.matchPopupScore}>{mutualMatchData.matchScore}%</div>
                   </div>
                   <div className={styles.matchPopupInfo}>
@@ -763,13 +755,11 @@ export default function MatchingPageFuturistic() {
                         onClick={() => setSelectedProfile({ user: profile, matchScore: null })}
                       >
                         <div className={styles.matchListAvatar}>
-                          {(profile.photo || profile.profilePicture) ? (
-                            <img src={profile.photo || profile.profilePicture} alt={profile.username} />
-                          ) : (
-                            <div className={styles.matchListAvatarPlaceholder}>
-                              {profile.username?.[0]?.toUpperCase() || '?'}
-                            </div>
-                          )}
+                          <Avatar
+                            src={profile.photo || profile.profilePicture}
+                            name={profile.username || 'User'}
+                            size="md"
+                          />
                         </div>
                         <div className={styles.matchListInfo}>
                           <h5>{profile.username || 'Utilisateur'}</h5>
