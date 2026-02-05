@@ -4,6 +4,7 @@ import { useWebSocket } from '../../../contexts/WebSocketContext';
 import { useChat } from '../../../contexts/ChatContext';
 import { secureApiCall } from '../../../utils/authService';
 import endpoints from '../../../shared/api/endpoints';
+import Avatar from '../../Shared/Avatar';
 import ConfirmModal from '../../Modal/ConfirmModal';
 import SessionCongratsModal from '../../Modal/SessionCongratsModal';
 import {
@@ -439,7 +440,12 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
             >
               <div className={styles.itemIcon}>
                 {notif.avatar ? (
-                  <img src={notif.avatar} alt="" className={styles.avatar} />
+                  <Avatar
+                    src={notif.avatar}
+                    name={notif.title || 'Notification'}
+                    size="sm"
+                    className={styles.avatar}
+                  />
                 ) : (
                   <span className={styles.typeIcon}>
                     {TypeIcons[notif.type] || TypeIcons.system}
