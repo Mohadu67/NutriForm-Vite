@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import Avatar from '../Shared/Avatar';
 import styles from './ProfileDetailModal.module.css';
 import {
   GlobeIcon,
@@ -86,13 +87,12 @@ const ProfileDetailModal = ({ user, matchId, matchScore, onClose, onStartChat })
 
         <div className={styles.header}>
           <div className={styles.avatarWrapper}>
-            {(user.photo || user.profilePicture) ? (
-              <img src={user.photo || user.profilePicture} alt={user.username} className={styles.avatar} />
-            ) : (
-              <div className={styles.avatarPlaceholder}>
-                {user.username?.[0]?.toUpperCase() || '?'}
-              </div>
-            )}
+            <Avatar
+              src={user.photo || user.profilePicture}
+              name={user.username || 'User'}
+              size="lg"
+              className={styles.avatar}
+            />
             {matchScore && (
               <div className={styles.scoreBadge}>{matchScore}%</div>
             )}

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { FaWhatsapp, FaFacebook, FaTwitter, FaDownload, FaLink, FaTimes, FaCheckCircle, FaEnvelope } from 'react-icons/fa';
 import html2canvas from 'html2canvas';
+import Avatar from '../Shared/Avatar';
+import { formatDisplayName } from '../../shared/utils/string';
 import ShareSessionCard from './ShareSessionCard';
 import styles from './ShareModal.module.css';
 import logger from '../../shared/utils/logger.js';
@@ -433,16 +435,11 @@ const ShareModal = ({ show, onHide, session, user }) => {
                       disabled={sendingToConversation === conv._id}
                     >
                       <div className={styles.conversationAvatar}>
-                        {conv.otherUser?.profile?.profilePicture ? (
-                          <img
-                            src={conv.otherUser.profile.profilePicture}
-                            alt={conv.otherUser.pseudo}
-                          />
-                        ) : (
-                          <div className={styles.avatarPlaceholder}>
-                            {(conv.otherUser?.pseudo || conv.otherUser?.prenom || '?')[0].toUpperCase()}
-                          </div>
-                        )}
+                        <Avatar
+                          src={conv.otherUser?.profile?.profilePicture}
+                          name={formatDisplayName(conv.otherUser, 'User')}
+                          size="md"
+                        />
                       </div>
 
                       <div className={styles.conversationInfo}>
