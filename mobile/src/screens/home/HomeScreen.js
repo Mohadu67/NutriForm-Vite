@@ -237,16 +237,20 @@ export default function HomeScreen() {
 
       // Summary (stats précalculées) - compléter avec les séances locales et programmes
       const apiSummary = summaryResponse.data || {};
-      const localSessionsCount = localSessions.length;
+
+      // Compter SEULEMENT les séances locales non synchronisées
+      const unsyncedLocalSessions = localSessions.filter(s => !s.backendId && s.synced !== true);
+      const localSessionsCount = unsyncedLocalSessions.length;
+
       // L'API retourne { sessions: [...] } ou directement un tableau
       const programHistoryData = programHistoryResponse.data?.sessions || programHistoryResponse.data || [];
       const programSessionsArray = Array.isArray(programHistoryData) ? programHistoryData : [];
       const programSessionsCount = programSessionsArray.length;
 
-      // Calculer les séances des 7 derniers jours (locales + programmes)
+      // Calculer les séances des 7 derniers jours (SEULEMENT non synchronisées + programmes)
       const now = new Date();
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const localLast7Days = localSessions.filter(s => new Date(s.startTime) >= sevenDaysAgo).length;
+      const localLast7Days = unsyncedLocalSessions.filter(s => new Date(s.startTime) >= sevenDaysAgo).length;
       const programLast7Days = programSessionsArray.filter(s =>
         new Date(s.completedAt || s.createdAt) >= sevenDaysAgo
       ).length;
@@ -259,6 +263,17 @@ export default function HomeScreen() {
 
       // Sessions pour la liste récente - combiner API + local + programmes
       const historyData = historyResponse.data || [];
+
+      // 🔍 DEBUG: Voir toutes les données d'historique
+      console.log('📊 [DEBUG] History data:', {
+        total: historyData.length,
+        sample: historyData.slice(0, 3).map(h => ({
+          action: h.action,
+          hasEntries: !!h.meta?.entries?.length,
+          meta: h.meta
+        }))
+      });
+
       const apiSessions = Array.isArray(historyData)
         ? historyData.filter(h =>
             h.action?.toLowerCase().includes('workout') ||
@@ -297,31 +312,91 @@ export default function HomeScreen() {
         programId: s.programId || s.program?._id,
       }));
 
-      // Formater les séances locales
-      const formattedLocalSessions = localSessions.map(s => ({
-        id: s.id,
-        name: s.exercises?.length > 0
-          ? `Séance ${s.exercises.map(e => e.exercice?.name).filter(Boolean).slice(0, 2).join(', ')}`
-          : 'Séance',
-        date: s.startTime,
-        endedAt: s.endTime,
-        durationMinutes: s.duration,
-        caloriesBurned: 0,
-        entries: s.exercises?.map(e => ({
-          name: e.exercice?.name,
-          muscle: e.exercice?.muscle,
-          muscleGroup: e.exercice?.muscleGroup,
-          primaryMuscle: e.exercice?.primaryMuscle,
-          secondaryMuscles: e.exercice?.secondaryMuscles,
-          muscles: e.exercice?.muscles,
-          sets: e.sets,
-        })) || [],
-        source: 'local',
-      }));
+      // Formater les séances locales (exclure celles déjà synchronisées)
+      const formattedLocalSessions = localSessions
+        .filter(s => !s.backendId && s.synced !== true) // Exclure les séances déjà synchronisées
+        .map(s => ({
+          id: s.id,
+          name: s.exercises?.length > 0
+            ? `Séance ${s.exercises.map(e => e.exercice?.name).filter(Boolean).slice(0, 2).join(', ')}`
+            : 'Séance',
+          date: s.startTime,
+          endedAt: s.endTime,
+          durationMinutes: s.duration,
+          caloriesBurned: 0,
+          entries: s.exercises?.map(e => ({
+            name: e.exercice?.name,
+            muscle: e.exercice?.muscle,
+            muscleGroup: e.exercice?.muscleGroup,
+            primaryMuscle: e.exercice?.primaryMuscle,
+            secondaryMuscles: e.exercice?.secondaryMuscles,
+            muscles: e.exercice?.muscles,
+            sets: e.sets,
+          })) || [],
+          source: 'local',
+        }));
 
-      // Combiner et trier par date (local + api + programmes)
-      const allSessions = [...formattedLocalSessions, ...apiSessions, ...programSessions]
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
+      // Combiner toutes les sessions
+      const combinedSessions = [...formattedLocalSessions, ...apiSessions, ...programSessions];
+
+      // Dédupliquer intelligemment
+      const deduplicated = [];
+      const seenKeys = new Set();
+
+      for (const session of combinedSessions) {
+        // Créer une clé unique basée sur plusieurs critères
+        const dateKey = new Date(session.date).getTime();
+        const roundedDate = Math.floor(dateKey / 60000) * 60000; // Arrondir à la minute
+        const exerciseNames = (session.entries || [])
+          .map(e => e.name)
+          .filter(Boolean)
+          .sort()
+          .join('|');
+        const uniqueKey = `${roundedDate}_${exerciseNames}_${session.durationMinutes || 0}`;
+
+        // Vérifier si c'est un doublon
+        if (seenKeys.has(uniqueKey)) {
+          // Doublon détecté, on garde seulement si c'est de l'API (source de vérité)
+          if (session.source === 'api') {
+            // Remplacer le doublon local par la version API
+            const existingIndex = deduplicated.findIndex(s => {
+              const existingDate = Math.floor(new Date(s.date).getTime() / 60000) * 60000;
+              const existingExercises = (s.entries || [])
+                .map(e => e.name)
+                .filter(Boolean)
+                .sort()
+                .join('|');
+              const existingKey = `${existingDate}_${existingExercises}_${s.durationMinutes || 0}`;
+              return existingKey === uniqueKey && s.source === 'local';
+            });
+            if (existingIndex !== -1) {
+              deduplicated[existingIndex] = session; // Remplacer par la version API
+            }
+          }
+          // Sinon ignorer le doublon
+        } else {
+          // Pas de doublon, ajouter
+          seenKeys.add(uniqueKey);
+          deduplicated.push(session);
+        }
+      }
+
+      // Trier par date
+      const allSessions = deduplicated.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      // 🔍 DEBUG: Voir combien de sessions de chaque source
+      console.log('📊 [DEBUG] Sessions fusion:', {
+        local: formattedLocalSessions.length,
+        api: apiSessions.length,
+        programs: programSessions.length,
+        combined: combinedSessions.length,
+        deduplicated: allSessions.length,
+        recentSample: allSessions.slice(0, 3).map(s => ({
+          name: s.name,
+          source: s.source,
+          date: s.date
+        }))
+      });
 
       setSessions(allSessions);
 

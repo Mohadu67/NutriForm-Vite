@@ -217,13 +217,19 @@ const RecipeFormScreen = ({ route, navigation }) => {
         inst => inst && inst.trim().length > 0
       );
 
+      // Calculer prepTime, cookTime et totalTime avec valeurs par défaut
+      const prepTimeValue = prepTime ? parseInt(prepTime) : 0;
+      const cookTimeValue = cookTime ? parseInt(cookTime) : 0;
+      const totalTimeValue = prepTimeValue + cookTimeValue;
+
       const recipeData = {
         title: title.trim(),
         description: description.trim(),
         image: imageUri,
-        prepTime: prepTime ? parseInt(prepTime) : undefined,
-        cookTime: cookTime ? parseInt(cookTime) : undefined,
-        servings: servings ? parseInt(servings) : undefined,
+        prepTime: prepTimeValue,
+        cookTime: cookTimeValue,
+        totalTime: totalTimeValue, // Ajout du champ totalTime requis
+        servings: servings ? parseInt(servings) : 1, // Valeur par défaut 1
         difficulty,
         mealType: mealType ? [mealType] : [],
         dietType: dietary,
@@ -257,13 +263,20 @@ const RecipeFormScreen = ({ route, navigation }) => {
             },
           ]
         );
+      } else {
+        // En cas d'échec sans exception
+        Alert.alert(
+          'Erreur',
+          'Impossible de sauvegarder la recette. Vérifiez que tous les champs requis sont remplis.'
+        );
       }
     } catch (error) {
       console.error('Error saving recipe:', error);
-      Alert.alert(
-        'Erreur',
-        'Une erreur est survenue lors de l\'enregistrement de la recette.'
-      );
+      // Afficher un message plus détaillé si disponible
+      const errorMsg = error?.response?.data?.message ||
+                      error?.message ||
+                      'Une erreur est survenue lors de l\'enregistrement de la recette.';
+      Alert.alert('Erreur', errorMsg);
     } finally {
       setLoading(false);
     }
