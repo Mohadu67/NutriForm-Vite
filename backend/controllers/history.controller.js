@@ -1,5 +1,6 @@
 const History = require('../models/History');
 const WorkoutSession = require('../models/WorkoutSession');
+const DailyHealthData = require('../models/DailyHealthData');
 const { deriveFromHistory, deriveFromSessions } = require('../services/stats.service');
 const { computeSessionFromEntries } = require('../services/calorie.service');
 const logger = require('../utils/logger.js');

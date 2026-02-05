@@ -203,7 +203,7 @@ export default function RecipesScreen() {
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabsContainer}>
+      <View style={[styles.tabsContainer, isDark && styles.tabsContainerDark]}>
         <TouchableOpacity
           style={[
             styles.tab,
@@ -346,7 +346,8 @@ export default function RecipesScreen() {
         renderItem={renderRecipe}
         keyExtractor={item => item._id}
         ListHeaderComponent={ListHeader}
-        contentContainerStyle={styles.listContent}
+        style={[isDark && styles.flatListDark]}
+        contentContainerStyle={[styles.listContent, isDark && styles.listContentDark]}
         numColumns={2}
         columnWrapperStyle={styles.row}
         showsVerticalScrollIndicator={false}
@@ -549,6 +550,9 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: '#666',
   },
+  flatListDark: {
+    backgroundColor: '#121212',
+  },
   header: {
     paddingHorizontal: theme.spacing.md,
     paddingTop: theme.spacing.md,
@@ -597,6 +601,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F0F0',
     borderRadius: theme.borderRadius.lg,
     padding: 4,
+  },
+  tabsContainerDark: {
+    backgroundColor: '#2A2A2A',
   },
   tab: {
     flex: 1,
@@ -738,6 +745,10 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: theme.spacing.sm,
+    backgroundColor: '#F8F9FA',
+  },
+  listContentDark: {
+    backgroundColor: '#121212',
   },
   row: {
     gap: theme.spacing.sm,

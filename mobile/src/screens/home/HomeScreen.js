@@ -220,13 +220,14 @@ export default function HomeScreen() {
       const localSessions = localHistory ? JSON.parse(localHistory) : [];
 
       // Appels API en parallèle
-      // Optimisation: Limiter l'historique à 50 sessions au lieu de toutes
-      const [summaryResponse, historyResponse, programHistoryResponse, subscriptionResponse, notificationsResponse] = await Promise.all([
+      // Optimisation: Limiter les sessions à 50 au lieu de toutes
+      // Récupérer les vraies WorkoutSession pour avoir les infos de muscles
+      const [summaryResponse, workoutSessionsResponse, programHistoryResponse, subscriptionResponse, notificationsResponse] = await Promise.all([
         apiClient.get(endpoints.history.summary).catch((e) => {
           logger.app.warn('Summary error', e);
           return { data: null };
         }),
-        apiClient.get(`${endpoints.history.list}?limit=50`).catch(() => ({ data: [] })),
+        apiClient.get(`${endpoints.workouts.sessions}?limit=50`).catch(() => ({ data: [] })),
         apiClient.get(`${endpoints.programs.history}?limit=50`).catch(() => ({ data: { sessions: [] } })),
         apiClient.get(endpoints.subscription.status).catch(() => ({ data: { tier: 'free' } })),
         apiClient.get(endpoints.notifications.list).catch(() => ({ data: { unreadCount: 0 } })),
@@ -262,31 +263,43 @@ export default function HomeScreen() {
       });
 
       // Sessions pour la liste récente - combiner API + local + programmes
-      const historyData = historyResponse.data || [];
+      // Utiliser les vraies WorkoutSession au lieu de l'historique
+      // pour avoir les infos complètes de muscles (muscleGroup, muscles, etc.)
+      // Format: { items: [...], points, nextCursor }
+      const workoutSessionsData = workoutSessionsResponse.data?.items || [];
 
-      // 🔍 DEBUG: Voir toutes les données d'historique
-      console.log('📊 [DEBUG] History data:', {
-        total: historyData.length,
-        sample: historyData.slice(0, 3).map(h => ({
-          action: h.action,
-          hasEntries: !!h.meta?.entries?.length,
-          meta: h.meta
+      // 🔍 DEBUG: Voir les sessions reçues
+      console.log('📊 [DEBUG] WorkoutSessions data:', {
+        total: workoutSessionsData.length,
+        sample: workoutSessionsData.slice(0, 3).map(s => ({
+          name: s.name,
+          hasEntries: !!s.entries?.length,
+          firstEntry: s.entries?.[0] ? {
+            name: s.entries[0].exerciseName,
+            muscleGroup: s.entries[0].muscleGroup,
+            muscle: s.entries[0].muscle,
+            muscles: s.entries[0].muscles
+          } : null
         }))
       });
 
-      const apiSessions = Array.isArray(historyData)
-        ? historyData.filter(h =>
-            h.action?.toLowerCase().includes('workout') ||
-            h.action?.toLowerCase().includes('session') ||
-            h.meta?.entries?.length > 0
-          ).map(h => ({
-            id: h._id,
-            name: h.meta?.sessionName || h.meta?.label || h.action || 'Séance',
-            date: h.createdAt,
-            endedAt: h.createdAt,
-            durationMinutes: h.meta?.duration || h.meta?.durationMinutes,
-            caloriesBurned: h.meta?.caloriesBurned || h.meta?.kcal,
-            entries: h.meta?.entries || h.meta?.exercises || [],
+      const apiSessions = Array.isArray(workoutSessionsData)
+        ? workoutSessionsData.filter(s => s.status === 'finished')
+          .map(s => ({
+            id: s._id,
+            name: s.name || 'Séance',
+            date: s.endedAt || s.createdAt,
+            endedAt: s.endedAt || s.createdAt,
+            durationMinutes: Math.round((s.durationSec || 0) / 60),
+            caloriesBurned: s.calories || 0,
+            entries: (s.entries || []).map(e => ({
+              name: e.exerciseName || e.name,
+              muscle: e.muscle,
+              muscleGroup: e.muscleGroup,
+              primaryMuscle: e.primaryMuscle,
+              secondaryMuscles: e.secondaryMuscles,
+              muscles: e.muscles,
+            })),
             source: 'api',
           }))
         : [];
@@ -400,14 +413,21 @@ export default function HomeScreen() {
 
       setSessions(allSessions);
 
-      // Statut abonnement - verifier toutes les sources premium
+      // Statut abonnement - utiliser les données de l'API comme source de vérité
       const subData = subscriptionResponse.data || {};
       const isPremiumUser = subData.tier === 'premium' ||
-                            subData.hasXpPremium ||
-                            user?.isPremium ||
-                            user?.subscriptionTier === 'premium' ||
-                            user?.role === 'admin';
+                            subData.hasXpPremium;
       setSubscriptionTier(isPremiumUser ? 'premium' : 'free');
+
+      // DEBUG
+      console.log('[HOME SCREEN] Subscription Status:', {
+        apiTier: subData.tier,
+        hasXpPremium: subData.hasXpPremium,
+        userRole: user?.role,
+        isPremiumUser,
+        isFreeUser: !isPremiumUser,
+        fullSubData: subData
+      });
 
       logger.app.debug('Loaded data', {
         summary: !!summaryResponse.data,

@@ -22,6 +22,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { theme, colors } from '../../theme';
+import { useAuth } from '../../contexts/AuthContext';
 import { getConversations, getUnreadCount } from '../../api/matchChat';
 import { getMutualMatches, getMatchSuggestions, likeProfile, rejectProfile } from '../../api/matching';
 import ProfileModal from '../../components/matching/ProfileModal';
@@ -185,6 +186,20 @@ export default function MatchingScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation();
+  const { user } = useAuth();
+
+  // Vérifier si l'utilisateur est premium
+  const isUserFree = user?.subscriptionTier === 'free';
+
+  // DEBUG
+  useEffect(() => {
+    console.log('[MATCHING DEBUG] User subscription:', {
+      tier: user?.subscriptionTier,
+      isUserFree,
+      activeTab,
+      user: user
+    });
+  }, [user, activeTab]);
 
   // Animation refs
   const headerAnim = useRef(new Animated.Value(0)).current;
@@ -603,30 +618,58 @@ export default function MatchingScreen() {
 
   // Render messages tab
   const renderMessagesTab = () => (
-    <FlatList
-      data={conversations}
-      keyExtractor={(item) => item._id}
-      renderItem={renderConversationItem}
-      getItemLayout={getConversationItemLayout}
-      ListHeaderComponent={renderMessagesHeader}
-      ListEmptyComponent={!loading && renderEmptyMessages}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={colors.primary}
-        />
-      }
-      contentContainerStyle={[
-        styles.messagesListContent,
-        conversations.length === 0 && styles.emptyListContainer
-      ]}
-      showsVerticalScrollIndicator={false}
-      maxToRenderPerBatch={10}
-      removeClippedSubviews={true}
-      initialNumToRender={10}
-      windowSize={5}
-    />
+    <View style={styles.messagesTabContainer}>
+      <FlatList
+        data={conversations}
+        keyExtractor={(item) => item._id}
+        renderItem={renderConversationItem}
+        getItemLayout={getConversationItemLayout}
+        ListHeaderComponent={renderMessagesHeader}
+        ListEmptyComponent={!loading && renderEmptyMessages}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
+        contentContainerStyle={[
+          styles.messagesListContent,
+          conversations.length === 0 && styles.emptyListContainer
+        ]}
+        showsVerticalScrollIndicator={false}
+        maxToRenderPerBatch={10}
+        removeClippedSubviews={true}
+        initialNumToRender={10}
+        windowSize={5}
+      />
+
+      {/* Floutage Premium pour les utilisateurs free - Messages */}
+      {isUserFree && (
+        <View style={styles.premiumBlurOverlay} pointerEvents="box-none">
+          <View style={styles.premiumBlurContent} pointerEvents="auto">
+            <Ionicons name="chatbubbles" size={48} color="#F7B186" />
+            <Text style={[styles.premiumBlurTitle, isDark && styles.textDark]}>
+              Messagez vos matchs
+            </Text>
+            <Text style={[styles.premiumBlurSubtitle, isDark && styles.textMutedDark]}>
+              Passez Premium pour communiquer avec vos matchs
+            </Text>
+            <TouchableOpacity
+              style={styles.premiumBlurButton}
+              onPress={() => navigation.navigate('ProfileTab', { screen: 'Subscription' })}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="star" size={20} color="#FFF" />
+              <Text style={styles.premiumBlurButtonText}>Passer Premium</Text>
+            </TouchableOpacity>
+            <Text style={[styles.premiumBlurSmallText, isDark && styles.textMutedDark]}>
+              💬 Besoin d'aide ? Utilisez le chatBot d'assistance
+            </Text>
+          </View>
+        </View>
+      )}
+    </View>
   );
 
   // Card styles for discover
@@ -941,6 +984,29 @@ export default function MatchingScreen() {
         )}
       </Animated.View>
       {currentIndex < suggestions.length && renderActionButtons()}
+
+      {/* Floutage Premium pour les utilisateurs free - Discover tab */}
+      {isUserFree && activeTab === 'discover' && (
+        <View style={styles.premiumBlurOverlay} pointerEvents="box-none">
+          <View style={styles.premiumBlurContent} pointerEvents="auto">
+            <Ionicons name="people" size={48} color="#F7B186" />
+            <Text style={[styles.premiumBlurTitle, isDark && styles.textDark]}>
+              Découvrez plus de profils
+            </Text>
+            <Text style={[styles.premiumBlurSubtitle, isDark && styles.textMutedDark]}>
+              Passez Premium pour voir tous les profils et commencer à matcher
+            </Text>
+            <TouchableOpacity
+              style={styles.premiumBlurButton}
+              onPress={() => navigation.navigate('ProfileTab', { screen: 'Subscription' })}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="star" size={20} color="#FFF" />
+              <Text style={styles.premiumBlurButtonText}>Passer Premium</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </View>
   );
 
@@ -2079,5 +2145,69 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFF',
+  },
+  // Premium blur overlay
+  premiumBlurOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
+  },
+  premiumBlurContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    paddingHorizontal: 32,
+    paddingVertical: 40,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+    marginHorizontal: 20,
+  },
+  premiumBlurContentDark: {
+    backgroundColor: '#1F2937',
+  },
+  premiumBlurTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111827',
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  premiumBlurSubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 12,
+    marginBottom: 24,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  premiumBlurButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F7B186',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  premiumBlurButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFF',
+  },
+  messagesTabContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+  premiumBlurSmallText: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 16,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });

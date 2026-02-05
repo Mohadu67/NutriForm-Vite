@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   labelDark: {
-    color: '#E0E0E0',
+    color: '#FFFFFF',
   },
   container: {
     borderRadius: 14,

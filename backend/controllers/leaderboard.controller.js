@@ -1,5 +1,6 @@
 const LeaderboardEntry = require('../models/LeaderboardEntry');
 const WorkoutSession = require('../models/WorkoutSession');
+const DailyHealthData = require('../models/DailyHealthData');
 const User = require('../models/User');
 const logger = require('../utils/logger.js');
 
@@ -348,7 +349,19 @@ async function calculateUserStats(userId) {
   // Début du mois (1er jour du mois 00:00:00)
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
 
+  // Get total calories from DailyHealthData (phone data)
   let totalCalories = 0;
+  try {
+    const dailyHealthStats = await DailyHealthData.aggregate([
+      { $match: { userId } },
+      { $group: { _id: null, totalCalories: { $sum: '$caloriesBurned' } } }
+    ]);
+    totalCalories = dailyHealthStats[0]?.totalCalories || 0;
+  } catch (error) {
+    logger.error('Erreur lors de la récupération des calories de santé:', error);
+    // Fallback to WorkoutSession calories if DailyHealthData fails
+    totalCalories = 0;
+  }
   let totalDurationMin = 0;
   let thisWeekSessions = 0;
   let thisMonthSessions = 0;
@@ -363,7 +376,6 @@ async function calculateUserStats(userId) {
   let poidsCorpsThisMonthSessions = 0;
 
   sessions.forEach((session) => {
-    totalCalories += session.calories || 0;
     totalDurationMin += Math.floor((session.durationSec || 0) / 60);
 
     const sessionDate = new Date(session.endedAt || session.createdAt);

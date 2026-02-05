@@ -381,15 +381,38 @@ async function getSubscriptionStatus(req, res) {
     const hasXpPremium = user.xpPremiumExpiresAt && new Date(user.xpPremiumExpiresAt) > new Date();
     const xpPremiumExpiresAt = hasXpPremium ? user.xpPremiumExpiresAt : null;
 
+    // Verifier si le trial est encore actif
+    const isTrialActive = user.trialEndsAt && new Date(user.trialEndsAt) > new Date();
+
     // Verifier si l'abonnement Stripe est valide (pas un ID de test local)
     const hasValidStripeSubscription = subscription &&
       subscription.stripeSubscriptionId &&
-      !subscription.stripeSubscriptionId.includes('test_local');
+      !subscription.stripeSubscriptionId.includes('test_local') &&
+      subscription.isActive();
 
     if (!subscription || !hasValidStripeSubscription) {
-      // Pas d'abonnement Stripe, mais peut-etre un premium XP
+      // Pas d'abonnement Stripe, mais peut-etre un premium XP ou trial actif
+      let tier = 'free';
+      if (hasXpPremium) {
+        tier = 'premium';
+      } else if (isTrialActive) {
+        tier = 'premium';
+      } else if (user.subscriptionTier === 'premium') {
+        // Si tier est premium mais aucune source valide, le downgrader à free
+        user.subscriptionTier = 'free';
+        await user.save();
+      }
+
+      logger.info('[SUBSCRIPTION STATUS] No Stripe', {
+        userId,
+        hasXpPremium,
+        isTrialActive,
+        trialEndsAt: user.trialEndsAt,
+        tier
+      });
+
       return res.status(200).json({
-        tier: hasXpPremium ? 'premium' : (user.subscriptionTier || 'free'),
+        tier,
         hasSubscription: false,
         hasXpPremium,
         xpPremiumExpiresAt,
@@ -397,8 +420,15 @@ async function getSubscriptionStatus(req, res) {
       });
     }
 
+    // Avec abonnement Stripe valide
+    const tier = subscription.isActive() ? 'premium' : 'free';
+    if (user.subscriptionTier !== tier) {
+      user.subscriptionTier = tier;
+      await user.save();
+    }
+
     res.status(200).json({
-      tier: user.subscriptionTier || 'free',
+      tier,
       hasSubscription: true,
       hasXpPremium,
       xpPremiumExpiresAt,
