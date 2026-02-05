@@ -248,15 +248,6 @@ export default function ExercicesScreen() {
   const MAX_SESSIONS_FREE = 5;
   const isUserFree = user?.subscriptionTier === 'free';
 
-  // DEBUG
-  useEffect(() => {
-    console.log('[EXERCICES DEBUG] User subscription:', {
-      tier: user?.subscriptionTier,
-      isUserFree,
-      user: user
-    });
-  }, [user]);
-
   const [showBodyPicker, setShowBodyPicker] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [totalSessions, setTotalSessions] = useState(0);
@@ -297,7 +288,6 @@ export default function ExercicesScreen() {
       if (result.success && result.data) {
         const count = result.data.length;
         setTotalSessions(count);
-        console.log('[SESSIONS COUNT] Total sessions loaded:', count);
       }
     } catch (error) {
       console.error('Error loading session count:', error);

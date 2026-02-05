@@ -142,21 +142,6 @@ export default function SubscriptionScreen() {
   const trialEndDate = subscription?.trialEndsAt || subscription?.trialEnd;
   const isInTrial = subscription?.isInTrial || (trialEndDate && new Date(trialEndDate) > new Date());
   const cancelAtPeriodEnd = subscription?.cancelAtPeriodEnd;
-
-  // Debug subscription data
-  useEffect(() => {
-    if (subscription) {
-      console.log('[SUBSCRIPTION DEBUG]', {
-        hasXpPremium,
-        xpPremiumExpiresAt: subscription?.xpPremiumExpiresAt,
-        hasSubscription,
-        isPremium,
-        tier: subscription?.tier,
-        allData: subscription
-      });
-    }
-  }, [subscription, hasXpPremium, hasSubscription, isPremium]);
-
   // Formater la date
   const formatDate = (dateString) => {
     if (!dateString) return '';

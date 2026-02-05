@@ -275,19 +275,6 @@ export const RecentActivity = ({
         })}
       </View>
 
-      {/* Premium upsell */}
-      {isFreeUser && hiddenSessions > 0 && (
-        <TouchableOpacity
-          style={[styles.upsellContainer, isDark && styles.upsellContainerDark]}
-          onPress={() => navigation?.navigate('Subscription')}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.upsellText, isDark && styles.upsellTextDark]}>
-            📊 {hiddenSessions} séance{hiddenSessions > 1 ? 's' : ''} de plus dans ton historique
-          </Text>
-          <Text style={styles.upsellLink}>Voir tout avec Premium</Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 };

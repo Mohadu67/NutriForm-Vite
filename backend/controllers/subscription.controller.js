@@ -32,9 +32,17 @@ async function createCheckoutSession(req, res) {
       return res.status(404).json({ error: 'Utilisateur introuvable.' });
     }
 
-    // Vérifier si l'utilisateur a déjà un abonnement actif
+    // Vérifier si l'utilisateur a déjà un abonnement actif (VALIDE)
     const existingSubscription = await Subscription.findOne({ userId });
-    if (existingSubscription && existingSubscription.isActive()) {
+    const hasXpPremium = user.xpPremiumExpiresAt && new Date(user.xpPremiumExpiresAt) > new Date();
+    const isTrialActive = user.trialEndsAt && new Date(user.trialEndsAt) > new Date();
+    const hasValidStripeSubscription = existingSubscription &&
+      existingSubscription.stripeSubscriptionId &&
+      !existingSubscription.stripeSubscriptionId.includes('test_local') &&
+      existingSubscription.isActive();
+
+    // Bloquer seulement si l'utilisateur a VRAIMENT un premium actif (pas trial expiré)
+    if (hasXpPremium || isTrialActive || hasValidStripeSubscription) {
       return res.status(400).json({
         error: 'Vous avez déjà un abonnement actif.',
         subscription: existingSubscription
