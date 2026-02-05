@@ -28,9 +28,14 @@ const LoginScreen = ({ navigation }) => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showResendEmail, setShowResendEmail] = useState(false);
+  const [localError, setLocalError] = useState(null); // État local pour l'erreur
 
+  // Clear error seulement quand on quitte le screen
   useEffect(() => {
-    clearError();
+    return () => {
+      clearError();
+      setLocalError(null);
+    };
   }, []);
 
   const validateForm = () => {
@@ -53,12 +58,25 @@ const LoginScreen = ({ navigation }) => {
 
     setIsSubmitting(true);
     setShowResendEmail(false);
+
     try {
       await login(email.trim().toLowerCase(), password);
+      setLocalError(null);
     } catch (err) {
-      console.error('[LoginScreen] Login failed:', err);
+      const errorMsg = err?.message || 'Identifiants incorrects';
+
+      // Stocker l'erreur dans l'état local
+      setLocalError(errorMsg);
+
+      // Afficher une modal (Alert) pour l'erreur
+      Alert.alert(
+        'Erreur de connexion',
+        errorMsg,
+        [{ text: 'OK' }]
+      );
+
       // Vérifier si l'erreur est liée à un email non vérifié
-      const errorMessage = err?.message?.toLowerCase() || '';
+      const errorMessage = errorMsg.toLowerCase();
       if (
         errorMessage.includes('email non vérifié') ||
         errorMessage.includes('email not verified') ||
@@ -134,21 +152,17 @@ const LoginScreen = ({ navigation }) => {
           />
 
           <View style={styles.formContainer}>
-            {error && (
-              <View style={styles.errorBanner}>
-                <Text style={styles.errorBannerText}>{error}</Text>
-                {showResendEmail && (
-                  <TouchableOpacity
-                    onPress={handleResendEmail}
-                    disabled={isSubmitting}
-                    style={styles.resendButton}
-                  >
-                    <Text style={styles.resendButtonText}>
-                      {isSubmitting ? 'Envoi en cours...' : '📧 Renvoyer l\'email de vérification'}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+            {/* Bouton renvoyer email seulement si nécessaire */}
+            {showResendEmail && (
+              <TouchableOpacity
+                onPress={handleResendEmail}
+                disabled={isSubmitting}
+                style={styles.resendButton}
+              >
+                <Text style={styles.resendButtonText}>
+                  {isSubmitting ? 'Envoi en cours...' : '📧 Renvoyer l\'email de vérification'}
+                </Text>
+              </TouchableOpacity>
             )}
 
             <Input
@@ -158,6 +172,7 @@ const LoginScreen = ({ navigation }) => {
               onChangeText={(text) => {
                 setEmail(text);
                 if (errors.email) setErrors({ ...errors, email: null });
+                if (localError) setLocalError(null); // Clear error when typing
               }}
               error={errors.email}
               autoCapitalize="none"
@@ -171,6 +186,7 @@ const LoginScreen = ({ navigation }) => {
               onChangeText={(text) => {
                 setPassword(text);
                 if (errors.password) setErrors({ ...errors, password: null });
+                if (localError) setLocalError(null); // Clear error when typing
               }}
               error={errors.password}
             />
