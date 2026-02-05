@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ClockIcon, FireIcon, UtensilsIcon, ZapIcon, XCircleIcon } from '../../../components/Navbar/NavIcons';
+import { getProxiedImageUrl } from '../../../utils/imageProxy';
 import style from './RecipeCard.module.css';
 
 export default function RecipeCard({ recipe }) {
@@ -15,11 +16,10 @@ export default function RecipeCard({ recipe }) {
     <Link to={`/recettes/${recipe._id}`} className={style.card}>
       <div className={style.imageContainer}>
         <img
-          src={recipe.image}
+          src={getProxiedImageUrl(recipe.image)}
           alt={recipe.title}
           className={style.image}
           loading="eager"
-          crossOrigin="anonymous"
         />
         {recipe.isPremium && (
           <span className={style.premiumBadge}>Premium</span>
