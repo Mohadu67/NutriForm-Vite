@@ -4,6 +4,7 @@ import SearchBar from '../../../components/SearchBar/SearchBar.jsx';
 import Pagination from '../../../components/Pagination/Pagination.jsx';
 import PendingRecipes from '../RecipesAdmin/PendingRecipes.jsx';
 import { secureApiCall } from '../../../utils/authService';
+import { getProxiedImageUrl } from '../../../utils/imageProxy';
 import styles from '../AdminPage.module.css';
 
 export default function AdminRecipes({
@@ -116,7 +117,7 @@ export default function AdminRecipes({
             {paginatedRecipes.map((recipe) => (
               <div key={recipe._id} className={styles.recipeCard}>
                 <div className={styles.recipeImage}>
-                  <img src={recipe.image} alt={recipe.title} />
+                  <img src={getProxiedImageUrl(recipe.image)} alt={recipe.title} />
                   {recipe.isPremium && <span className={styles.premiumBadge}>Premium</span>}
                 </div>
                 <div className={styles.recipeContent}>
