@@ -21,7 +21,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { theme } from '../../theme';
 import { BodyPicker, ZONE_LABELS } from '../../components/BodyPicker';
 import { useWorkout } from '../../contexts/WorkoutContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { getExercises } from '../../api/exercises';
+import { getSessions } from '../../api/workouts';
 import useExerciseFilters from '../../hooks/useExerciseFilters';
 import logger from '../../services/logger';
 
@@ -227,7 +229,7 @@ const DIFFICULTY_LABELS = {
 };
 
 const TYPE_CONFIG = {
-  'muscu': { label: 'Muscu', icon: 'barbell', color: '#8B5CF6' },
+  'muscu': { label: 'Muscu', icon: 'barbell', color: '#F7B186' },
   'poids_du_corps': { label: 'Poids du corps', icon: 'body', color: '#06B6D4' },
   'cardio': { label: 'Cardio', icon: 'heart', color: '#EF4444' },
   'etirement': { label: 'Etirement', icon: 'flower', color: '#10B981' },
@@ -239,10 +241,25 @@ export default function ExercicesScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation();
+  const { user } = useAuth();
   const { currentWorkout, isWorkoutActive, getCompletedSetsCount, getTotalSetsCount, addExercise, isExerciseInWorkout, startWorkout } = useWorkout();
+
+  // Compteur de séances restantes pour les utilisateurs free
+  const MAX_SESSIONS_FREE = 5;
+  const isUserFree = user?.subscriptionTier === 'free';
+
+  // DEBUG
+  useEffect(() => {
+    console.log('[EXERCICES DEBUG] User subscription:', {
+      tier: user?.subscriptionTier,
+      isUserFree,
+      user: user
+    });
+  }, [user]);
 
   const [showBodyPicker, setShowBodyPicker] = useState(false);
   const [favorites, setFavorites] = useState([]);
+  const [totalSessions, setTotalSessions] = useState(0);
 
   // API states
   const [exercises, setExercises] = useState([]);
@@ -270,7 +287,22 @@ export default function ExercicesScreen() {
   useEffect(() => {
     loadExercises();
     loadFavorites();
+    loadSessionCount();
   }, []);
+
+  // Charger le nombre total de séances complétées
+  const loadSessionCount = async () => {
+    try {
+      const result = await getSessions({ limit: 1000 });
+      if (result.success && result.data) {
+        const count = result.data.length;
+        setTotalSessions(count);
+        console.log('[SESSIONS COUNT] Total sessions loaded:', count);
+      }
+    } catch (error) {
+      console.error('Error loading session count:', error);
+    }
+  };
 
   const loadExercises = async () => {
     try {
@@ -609,6 +641,58 @@ export default function ExercicesScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      {/* Compteur de séances pour users free */}
+      {isUserFree && (
+        <TouchableOpacity
+          style={[
+            styles.sessionsCounterCard,
+            isDark && styles.sessionsCounterCardDark,
+            totalSessions >= MAX_SESSIONS_FREE && styles.sessionsCounterCardLimitReached
+          ]}
+          onPress={() => navigation.navigate('ProfileTab', { screen: 'Subscription' })}
+          activeOpacity={0.7}
+        >
+          <View style={styles.sessionsCounterContent}>
+            <Ionicons
+              name={totalSessions >= MAX_SESSIONS_FREE ? 'warning' : 'flash'}
+              size={20}
+              color={totalSessions >= MAX_SESSIONS_FREE ? '#EF4444' : '#F7B186'}
+            />
+            <View style={styles.sessionsCounterText}>
+              <Text style={[styles.sessionsCounterLabel, isDark && styles.textDark]}>
+                {totalSessions >= MAX_SESSIONS_FREE ? 'Limite atteinte' : 'Séances enregistrées'}
+              </Text>
+              <Text
+                style={[
+                  styles.sessionsCounterValue,
+                  isDark && styles.textMutedDark,
+                  totalSessions >= MAX_SESSIONS_FREE && styles.sessionsCounterValueWarning
+                ]}
+              >
+                {totalSessions}/{MAX_SESSIONS_FREE}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.sessionsCounterProgress}>
+            <View
+              style={[
+                styles.progressBar,
+                totalSessions >= MAX_SESSIONS_FREE && styles.progressBarFull,
+                { width: `${Math.min(100, (totalSessions / MAX_SESSIONS_FREE) * 100)}%` }
+              ]}
+            />
+          </View>
+          <Text style={[styles.sessionsCounterCTA, totalSessions >= MAX_SESSIONS_FREE && styles.sessionsCounterCTAWarning]}>
+            {totalSessions >= MAX_SESSIONS_FREE ? 'Devenez Premium' : 'Passer Premium →'}
+          </Text>
+          {totalSessions >= MAX_SESSIONS_FREE && (
+            <Text style={[styles.sessionsCounterWarningText, isDark && styles.textMutedDark]}>
+              Les nouvelles séances ne seront pas sauvegardées
+            </Text>
+          )}
+        </TouchableOpacity>
+      )}
 
       {/* Type filter tabs - Multi-selection */}
       <View style={styles.filterSectionHeader}>
@@ -1442,5 +1526,80 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     fontSize: 13,
     marginTop: 2,
+  },
+  // Compteur de séances
+  sessionsCounterCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
+    borderLeftWidth: 4,
+    borderLeftColor: '#F7B186',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  sessionsCounterCardDark: {
+    backgroundColor: '#1F2937',
+    borderLeftColor: '#A78BFA',
+  },
+  sessionsCounterContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+  },
+  sessionsCounterText: {
+    flex: 1,
+  },
+  sessionsCounterLabel: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text.secondary,
+    fontWeight: '500',
+  },
+  sessionsCounterValue: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.bold,
+    color: '#F7B186',
+    marginTop: 2,
+  },
+  sessionsCounterProgress: {
+    height: 4,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 2,
+    marginBottom: theme.spacing.sm,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#F7B186',
+    borderRadius: 2,
+  },
+  sessionsCounterCTA: {
+    fontSize: theme.fontSize.sm,
+    color: '#F7B186',
+    fontWeight: theme.fontWeight.semiBold,
+    textAlign: 'right',
+  },
+  sessionsCounterCardLimitReached: {
+    borderLeftColor: '#EF4444',
+  },
+  sessionsCounterValueWarning: {
+    color: '#EF4444',
+  },
+  progressBarFull: {
+    backgroundColor: '#EF4444',
+  },
+  sessionsCounterCTAWarning: {
+    color: '#EF4444',
+  },
+  sessionsCounterWarningText: {
+    fontSize: theme.fontSize.xs,
+    color: '#EF4444',
+    marginTop: theme.spacing.xs,
+    fontWeight: theme.fontWeight.medium,
   },
 });

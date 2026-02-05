@@ -76,11 +76,11 @@ const styles = StyleSheet.create({
   label: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.medium,
-    color: theme.colors.text.primary,
+    color: '#333',
     marginBottom: theme.spacing.sm,
   },
   labelDark: {
-    color: theme.colors.text.inverse,
+    color: '#FFFFFF',
   },
   container: {
     borderRadius: theme.borderRadius.md,

@@ -231,6 +231,7 @@ const RegisterScreen = ({ navigation }) => {
               <View
                 style={[
                   styles.checkbox,
+                  isDark && styles.checkboxDark,
                   acceptPrivacy && styles.checkboxChecked,
                   errors.privacy && styles.checkboxError,
                 ]}
@@ -323,6 +324,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'transparent',
   },
+  checkboxDark: {
+    borderColor: '#666666',
+  },
   checkboxChecked: {
     backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
@@ -369,7 +373,7 @@ const styles = StyleSheet.create({
   loginLink: {
     fontSize: theme.fontSize.md,
     color: theme.colors.primary,
-    fontWeight: theme.fontWeight.semibold,
+    fontWeight: theme.fontWeight.semiBold,
   },
   successContainer: {
     flex: 1,

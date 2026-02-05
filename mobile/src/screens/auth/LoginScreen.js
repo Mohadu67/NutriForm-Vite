@@ -202,7 +202,7 @@ const LoginScreen = ({ navigation }) => {
               title="Se connecter"
               onPress={handleLogin}
               loading={isSubmitting || isLoading}
-              disabled={isSubmitting || isLoading}
+              disabled={isSubmitting || isLoading || !email.trim() || !password}
               style={styles.loginButton}
             />
 

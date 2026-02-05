@@ -25,6 +25,7 @@ import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
+import useHealthSync from '../../hooks/useHealthSync';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const AVATAR_SIZE = 110;
@@ -84,6 +85,9 @@ export default function ProfileScreen() {
   const [subscription, setSubscription] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
+  // Health sync hook
+  const { isInitialized: healthSyncReady, hasPermission: healthPermission, syncNow, requestPermissions: requestHealthPermissions } = useHealthSync();
+
   // Avatar URL
   const avatarUrl = user?.photo || null;
 
@@ -103,6 +107,25 @@ export default function ProfileScreen() {
       }),
     ]).start();
   }, []);
+
+  // Initialize health sync and check permissions
+  useEffect(() => {
+    const initHealthSync = async () => {
+      if (healthSyncReady && !healthPermission) {
+        // Permissions not granted - optionally request them
+        console.log('[PROFILE] Health permissions not granted, requesting...');
+        const granted = await requestHealthPermissions();
+        if (granted) {
+          console.log('[PROFILE] Health permissions granted');
+        } else {
+          console.log('[PROFILE] Health permissions denied');
+        }
+      } else if (healthSyncReady && healthPermission) {
+        console.log('[PROFILE] Health sync ready with permissions');
+      }
+    };
+    initHealthSync();
+  }, [healthSyncReady, healthPermission, requestHealthPermissions]);
 
   // Charger les donnees du profil
   const loadProfile = useCallback(async () => {
@@ -261,7 +284,9 @@ export default function ProfileScreen() {
   const currentLevel = Math.floor(totalXP / 1000) + 1;
   const xpForNextLevel = 1000;
   const xpProgress = (totalXP % 1000) / xpForNextLevel;
-  const totalCalories = leaderboardData?.stats?.totalCaloriesBurned || stats?.totalCaloriesBurned || 0;
+  // Use ONLY phone health data (DailyHealthData from leaderboard)
+  // Do NOT fallback to stats.totalCaloriesBurned (old WorkoutSession calories)
+  const totalCalories = leaderboardData?.stats?.totalCaloriesBurned || 0;
 
   // Quick Actions - actions rapides en haut
   const quickActions = [
