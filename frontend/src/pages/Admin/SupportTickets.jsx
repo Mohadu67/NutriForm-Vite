@@ -4,7 +4,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
+import StatusBadge from '../../components/Admin/StatusBadge/StatusBadge';
 import { useChat } from '../../contexts/ChatContext';
+import { useAdminNotification } from '../../hooks/admin/useAdminNotification';
+import { useConfirmModal } from '../../hooks/admin/useConfirmModal';
 import {
   getAllSupportTickets,
   getSupportTicketById,
@@ -22,6 +25,8 @@ export default function SupportTickets() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { openAIChat } = useChat() || {};
+  const notify = useAdminNotification();
+  const { modalConfig, openModal, closeModal, handleConfirm, handleCancel } = useConfirmModal();
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -31,14 +36,6 @@ export default function SupportTickets() {
   const [stats, setStats] = useState(null);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('open');
-  const [modalConfig, setModalConfig] = useState({
-    isOpen: false,
-    title: '',
-    message: '',
-    confirmText: '',
-    type: 'default',
-    onConfirm: () => {}
-  });
 
   const loadTickets = useCallback(async () => {
     try {
@@ -48,7 +45,7 @@ export default function SupportTickets() {
       setTickets(data.tickets);
     } catch (err) {
       logger.error('Erreur chargement tickets:', err);
-      setError('Impossible de charger les tickets.');
+      notify.error('Impossible de charger les tickets.');
     } finally {
       setLoading(false);
     }
@@ -86,7 +83,7 @@ export default function SupportTickets() {
       setReplyMessage('');
     } catch (err) {
       logger.error('Erreur chargement ticket:', err);
-      setError('Impossible de charger le ticket.');
+      notify.error('Impossible de charger le ticket.');
     }
   };
 
@@ -105,7 +102,7 @@ export default function SupportTickets() {
       );
     } catch (err) {
       logger.error('Erreur envoi réponse:', err);
-      setError('Impossible d\'envoyer la réponse.');
+      notify.error('Impossible d\'envoyer la réponse.');
     } finally {
       setSending(false);
     }
@@ -121,11 +118,10 @@ export default function SupportTickets() {
       );
       loadStats();
 
-      setError('✅ Ticket mis en cours.');
-      setTimeout(() => setError(null), 3000);
+      notify.success('Ticket mis en cours.');
     } catch (err) {
       logger.error('Erreur mise en cours ticket:', err);
-      setError('Impossible de mettre le ticket en cours.');
+      notify.error('Impossible de mettre le ticket en cours.');
     }
   };
 
@@ -142,14 +138,13 @@ export default function SupportTickets() {
       loadStats();
 
       if (result.messagesDeleted) {
-        setError('✅ Ticket résolu et messages supprimés.');
+        notify.success('Ticket résolu et messages supprimés.');
       } else {
-        setError('✅ Ticket résolu avec succès.');
+        notify.success('Ticket résolu avec succès.');
       }
-      setTimeout(() => setError(null), 3000);
     } catch (err) {
       logger.error('Erreur résolution ticket:', err);
-      setError('Impossible de résoudre le ticket.');
+      notify.error('Impossible de résoudre le ticket.');
     }
   };
 
@@ -165,11 +160,10 @@ export default function SupportTickets() {
       );
       loadStats();
 
-      setError('✅ Ticket rouvert avec succès.');
-      setTimeout(() => setError(null), 3000);
+      notify.success('Ticket rouvert avec succès.');
     } catch (err) {
       logger.error('Erreur réouverture ticket:', err);
-      setError('Impossible de rouvrir le ticket.');
+      notify.error('Impossible de rouvrir le ticket.');
     }
   };
 
@@ -184,17 +178,15 @@ export default function SupportTickets() {
       setMessages([]);
       loadStats();
 
-      setError('✅ Ticket supprimé avec succès.');
-      setTimeout(() => setError(null), 3000);
+      notify.success('Ticket supprimé avec succès.');
     } catch (err) {
       logger.error('Erreur suppression ticket:', err);
-      setError('Impossible de supprimer le ticket.');
+      notify.error('Impossible de supprimer le ticket.');
     }
   };
 
   const openResolveModal = () => {
-    setModalConfig({
-      isOpen: true,
+    openModal({
       title: 'Résoudre le ticket',
       message: 'Voulez-vous supprimer les messages de cette conversation ?\n\nOUI : Le ticket sera résolu et tous les messages seront supprimés.\nNON : Le ticket sera résolu mais les messages seront conservés.',
       confirmText: 'Supprimer les messages',
@@ -206,8 +198,7 @@ export default function SupportTickets() {
   };
 
   const openReopenModal = () => {
-    setModalConfig({
-      isOpen: true,
+    openModal({
       title: 'Rouvrir le ticket',
       message: 'Voulez-vous vraiment rouvrir ce ticket ? Il repassera en statut "Ouvert".',
       confirmText: 'Rouvrir',
@@ -217,8 +208,7 @@ export default function SupportTickets() {
   };
 
   const openDeleteModal = () => {
-    setModalConfig({
-      isOpen: true,
+    openModal({
       title: 'Supprimer le ticket',
       message: 'Voulez-vous supprimer les messages associés ?\n\nOUI : Le ticket ET tous les messages seront définitivement supprimés.\nNON : Seul le ticket sera supprimé, les messages seront conservés.',
       confirmText: 'Supprimer tout',
@@ -229,25 +219,10 @@ export default function SupportTickets() {
     });
   };
 
-  const closeModal = () => {
-    setModalConfig(prev => ({ ...prev, isOpen: false }));
-  };
-
   const handleOpenConversation = () => {
     if (selectedTicket?.conversationId && openAIChat) {
       openAIChat(selectedTicket.conversationId);
     }
-  };
-
-  const getStatusBadge = (status) => {
-    const statusMap = {
-      open: { text: 'Ouvert', class: styles.statusOpen },
-      in_progress: { text: 'En cours', class: styles.statusProgress },
-      resolved: { text: 'Résolu', class: styles.statusResolved },
-      closed: { text: 'Fermé', class: styles.statusClosed }
-    };
-    const s = statusMap[status] || statusMap.open;
-    return <span className={`${styles.badge} ${s.class}`}>{s.text}</span>;
   };
 
   const getPriorityBadge = (priority) => {
@@ -361,7 +336,7 @@ export default function SupportTickets() {
                       {ticket.subject}
                     </div>
                     <div className={styles.ticketBadges}>
-                      {getStatusBadge(ticket.status)}
+                      <StatusBadge type="ticket" value={ticket.status} />
                       {getPriorityBadge(ticket.priority)}
                     </div>
                   </div>
@@ -474,8 +449,8 @@ export default function SupportTickets() {
       <ConfirmModal
         isOpen={modalConfig.isOpen}
         onClose={closeModal}
-        onConfirm={modalConfig.onConfirm}
-        onCancel={modalConfig.onCancel}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
         title={modalConfig.title}
         message={modalConfig.message}
         confirmText={modalConfig.confirmText}

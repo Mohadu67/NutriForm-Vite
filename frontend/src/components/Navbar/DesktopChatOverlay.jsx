@@ -2,6 +2,8 @@ import { useChat } from "../../contexts/ChatContext";
 import UnifiedChatPanel from "../Chat/UnifiedChatPanel.jsx";
 import ChatHistory from "../Chat/ChatHistory.jsx";
 import ChatSettings from "../Chat/ChatSettings.jsx";
+import Avatar from "../Shared/Avatar";
+import { formatDisplayName } from "../../shared/utils/string";
 import styles from "./Navbar.module.css";
 import { BotIcon, MessageCircleIcon } from "./NavIcons";
 
@@ -20,9 +22,18 @@ export default function DesktopChatOverlay({
 }) {
   const { chatView, activeConversation, backToHistory } = useChat() || {};
 
+  const handleOverlayClick = () => {
+    // If a conversation is open, go back to history instead of closing completely
+    if (chatView === 'conversation' && backToHistory) {
+      backToHistory();
+    } else {
+      closeChat();
+    }
+  };
+
   return (
     <>
-      <div className={styles.chatOverlay} onClick={closeChat}>
+      <div className={styles.chatOverlay} onClick={handleOverlayClick}>
         <div className={styles.chatPanelContainer} onClick={(e) => e.stopPropagation()}>
           {chatView === 'history' ? (
             <>
@@ -45,9 +56,10 @@ export default function DesktopChatOverlay({
                 <div className={styles.chatHeaderProfile}>
                   {activeConversation.type === 'match' ? (
                     <>
-                      <img
-                        src={activeConversation.data?.otherUser?.profile?.profilePicture || '/default-avatar.png'}
-                        alt={activeConversation.data?.otherUser?.pseudo || 'User'}
+                      <Avatar
+                        src={activeConversation.data?.otherUser?.profile?.profilePicture}
+                        name={formatDisplayName(activeConversation.data?.otherUser, 'User')}
+                        size="md"
                         className={styles.chatProfileImage}
                         onClick={() => setShowChatSettings(true)}
                         style={{ cursor: 'pointer' }}

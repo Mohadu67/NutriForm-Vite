@@ -1,22 +1,25 @@
-
-
 const User = require('../models/User');
 const logger = require('../utils/logger.js');
+
+const FRONTEND_URL = process.env.FRONTEND_BASE_URL || 'https://harmonith.fr';
 
 async function verifyEmail(req, res) {
   try {
     const { token } = req.query || {};
-    if (!token) return res.status(400).json({ message: 'Token manquant ❌' });
+    if (!token) {
+      return res.redirect(`${FRONTEND_URL}/email-verified?status=error&message=token_missing`);
+    }
 
     const user = await User.findOne({ verificationToken: token })
       .select('+verificationToken +verificationExpires +emailVerifie');
 
-    if (!user) return res.status(400).json({ message: 'Token invalide ❌' });
+    if (!user) {
+      return res.redirect(`${FRONTEND_URL}/email-verified?status=error&message=token_invalid`);
+    }
 
     if (!user.verificationExpires || user.verificationExpires.getTime() < Date.now()) {
-
-        if (!user.emailVerifie) await User.deleteOne({ _id: user._id });
-      return res.status(410).json({ message: 'Token expiré ❌' });
+      if (!user.emailVerifie) await User.deleteOne({ _id: user._id });
+      return res.redirect(`${FRONTEND_URL}/email-verified?status=error&message=token_expired`);
     }
 
     user.emailVerifie = true;
@@ -24,10 +27,13 @@ async function verifyEmail(req, res) {
     user.verificationExpires = null;
     await user.save();
 
-    return res.json({ message: 'Email vérifié ✅' });
+    logger.info(`[VERIFY] Email verified for user: ${user.email}`);
+
+    // Rediriger vers page frontend qui détecte mobile et ouvre l'app
+    return res.redirect(`${FRONTEND_URL}/email-verified?status=success`);
   } catch (err) {
     logger.error('VERIFY_ERROR', err);
-    return res.status(500).json({ message: 'Erreur serveur ❌' });
+    return res.redirect(`${FRONTEND_URL}/email-verified?status=error&message=server_error`);
   }
 }
 

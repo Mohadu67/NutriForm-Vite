@@ -78,6 +78,23 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       setHasMore(moreAvailable);
       hasLoadedInitialMessages.current = true;
 
+      // Re-charger les messages après un court délai pour capter les messages arrivés pendant le chargement
+      // Cela résout les race conditions avec les WebSocket listeners
+      setTimeout(async () => {
+        if (isMatchChat && conversationIdToUse) {
+          try {
+            const { messages: freshMsgs } = await getMessages(conversationIdToUse, { limit: INITIAL_LIMIT });
+            if (freshMsgs && freshMsgs.length > msgs.length) {
+              // Il y a des messages nouveaux - mettre à jour
+              setMessages(freshMsgs);
+              setHasMore(freshMsgs.length === INITIAL_LIMIT);
+            }
+          } catch (err) {
+            // Ignorer silencieusement - ce n'est qu'une tentative de rafraîchir
+          }
+        }
+      }, 300);
+
       // Marquer comme lus si match chat
       if (isMatchChat && conversationIdToUse) {
         // Notifier via WebSocket pour mise à jour instantanée chez l'autre utilisateur
@@ -233,10 +250,12 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     if (!isConnected || !conversationIdToUse) return;
 
     const handleNewMessage = ({ conversationId: convId, message }) => {
-      if (convId === conversationIdToUse) {
+      // Comparaison en string pour éviter les problèmes de type ObjectId vs string
+      if (String(convId) === String(conversationIdToUse)) {
+        console.log('📨 Nouveau message reçu:', message._id, 'dans conversation:', convId);
         setMessages(prev => {
           // Éviter les doublons
-          if (prev.some(m => m._id === message._id)) {
+          if (prev.some(m => String(m._id) === String(message._id))) {
             return prev;
           }
           return [...prev, message];
@@ -269,7 +288,8 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     };
 
     const handleMessagesRead = ({ conversationId: convId, messageIds }) => {
-      if (convId === conversationIdToUse) {
+      // Comparaison en string pour éviter les problèmes de type ObjectId vs string
+      if (String(convId) === String(conversationIdToUse)) {
         // Convertir tous les IDs en strings pour comparaison fiable
         const messageIdStrings = messageIds.map(id => String(id));
         setMessages(prev => prev.map(msg => {
@@ -297,7 +317,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
     // Écouter la présence de l'autre utilisateur dans cette conversation
     const handlePresence = ({ conversationId: convId, userId, isPresent }) => {
       // Comparaison en string pour éviter les problèmes de type ObjectId vs string
-      if (convId === conversationIdToUse && String(userId) !== String(currentUserId)) {
+      if (String(convId) === String(conversationIdToUse) && String(userId) !== String(currentUserId)) {
         setIsOtherPresent(isPresent);
       }
     };
@@ -324,7 +344,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
       cleanupPresence?.();
       cleanupChatList?.();
     };
-  }, [isConnected, conversationIdToUse, on, currentUserId, matchConversation]);
+  }, [isConnected, conversationIdToUse, currentUserId]);
 
   // Note: Auto-scroll supprimé ici - géré dans loadInitialMessages, handleNewMessage et handleSendMessage
   // Cela évite de scroller vers le bas quand on charge l'historique (scroll vers le haut)

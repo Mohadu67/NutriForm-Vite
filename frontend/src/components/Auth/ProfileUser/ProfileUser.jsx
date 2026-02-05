@@ -80,6 +80,11 @@ export default function ProfileUser({ onLogout }) {
   const [redemptionHistory, setRedemptionHistory] = useState([]);
   const [showCelebration, setShowCelebration] = useState(false);
 
+  // Delete account state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
   const fetchRedemptionHistory = async () => {
     try {
       const result = await getXpRedemptionHistory();
@@ -341,6 +346,40 @@ export default function ProfileUser({ onLogout }) {
     window.dispatchEvent(new Event("userLogout"));
     onLogout?.();
     navigate('/');
+  };
+
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setError("");
+
+    if (!deletePassword) {
+      setError("Mot de passe requis pour confirmer la suppression");
+      return;
+    }
+
+    setDeletingAccount(true);
+    try {
+      const res = await secureApiCall('/auth/account', {
+        method: 'DELETE',
+        body: JSON.stringify({ password: deletePassword })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Erreur lors de la suppression");
+      }
+
+      // Compte supprimé avec succès
+      alert('Votre compte a été supprimé avec succès.');
+      window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new Event("userLogout"));
+      onLogout?.();
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
+      setDeletingAccount(false);
+    }
   };
 
   const handleAdminClick = () => {
@@ -977,6 +1016,54 @@ export default function ProfileUser({ onLogout }) {
                       Changer le mot de passe
                     </button>
                     <button type="button" onClick={() => setChangingPassword(false)} className={styles.cancelBtn}>
+                      Annuler
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>Zone de danger</h3>
+              {!showDeleteConfirm ? (
+                <button
+                  className={styles.deleteAccountBtn}
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  Supprimer mon compte
+                </button>
+              ) : (
+                <form onSubmit={handleDeleteAccount} className={styles.form}>
+                  <p className={styles.deleteWarning}>
+                    Cette action est irréversible. Toutes vos données seront définitivement supprimées.
+                  </p>
+                  <div className={styles.formField}>
+                    <label>Confirmez avec votre mot de passe</label>
+                    <input
+                      type="password"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                      className={styles.input}
+                      placeholder="Votre mot de passe"
+                      required
+                    />
+                  </div>
+                  <div className={styles.formActions}>
+                    <button
+                      type="submit"
+                      className={styles.deleteConfirmBtn}
+                      disabled={deletingAccount}
+                    >
+                      {deletingAccount ? 'Suppression...' : 'Confirmer la suppression'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowDeleteConfirm(false);
+                        setDeletePassword("");
+                      }}
+                      className={styles.cancelBtn}
+                    >
                       Annuler
                     </button>
                   </div>

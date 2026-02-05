@@ -1,0 +1,32 @@
+.badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* Newsletter statuses */
+.statusDraft { background: #e5e7eb; color: #374151; }
+.statusScheduled { background: #dbeafe; color: #1e40af; }
+.statusSent { background: #d1fae5; color: #065f46; }
+.statusFailed { background: #fee2e2; color: #991b1b; }
+
+/* Ticket statuses */
+.statusOpen { background: #fef3c7; color: #92400e; }
+.statusProgress { background: #dbeafe; color: #1e40af; }
+.statusResolved { background: #d1fae5; color: #065f46; }
+.statusClosed { background: #e5e7eb; color: #374151; }
+
+/* Priority levels */
+.priorityLow { background: #d1fae5; color: #065f46; }
+.priorityMedium { background: #fef3c7; color: #92400e; }
+.priorityHigh { background: #fed7aa; color: #9a3412; }
+.priorityUrgent { background: #fee2e2; color: #991b1b; }
+
+/* Partner statuses */
+.active { background: #d1fae5; color: #065f46; }
+.inactive { background: #e5e7eb; color: #374151; }
+.expired { background: #fee2e2; color: #991b1b; }
+.upcoming { background: #dbeafe; color: #1e40af; }
+.exhausted { background: #fed7aa; color: #9a3412; }

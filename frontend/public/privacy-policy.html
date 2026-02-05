@@ -8,32 +8,72 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
             color: #333;
         }
         h1 {
             color: #F7B186;
-            border-bottom: 2px solid #F7B186;
+            border-bottom: 3px solid #F7B186;
             padding-bottom: 10px;
         }
         h2 {
             color: #555;
-            margin-top: 30px;
+            margin-top: 35px;
+            border-left: 4px solid #F7B186;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #666;
+            margin-top: 25px;
         }
         .date {
             color: #888;
             font-style: italic;
+            margin-bottom: 30px;
         }
         ul {
             margin-left: 20px;
         }
-        .contact {
+        .contact, .important {
             background-color: #f9f9f9;
             padding: 15px;
             border-left: 4px solid #F7B186;
-            margin-top: 30px;
+            margin: 20px 0;
+        }
+        .important {
+            background-color: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #F7B186;
+            color: white;
+        }
+        .toc {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .toc a {
+            color: #F7B186;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -41,129 +81,631 @@
     <h1>Politique de Confidentialité - Harmonith</h1>
     <p class="date">Dernière mise à jour : 13 janvier 2026</p>
 
-    <h2>1. Introduction</h2>
+    <div class="toc">
+        <strong>Sommaire :</strong>
+        <ol>
+            <li><a href="#intro">Introduction et responsable du traitement</a></li>
+            <li><a href="#donnees">Données collectées</a></li>
+            <li><a href="#utilisation">Utilisation des données et bases légales</a></li>
+            <li><a href="#camera">Utilisation de la caméra</a></li>
+            <li><a href="#matching">Fonctionnalité de matching social</a></li>
+            <li><a href="#partage">Partage des données</a></li>
+            <li><a href="#securite">Sécurité des données</a></li>
+            <li><a href="#conservation">Conservation des données</a></li>
+            <li><a href="#droits">Vos droits RGPD</a></li>
+            <li><a href="#mineurs">Données des mineurs</a></li>
+            <li><a href="#transferts">Transferts internationaux</a></li>
+            <li><a href="#modifications">Modifications de cette politique</a></li>
+            <li><a href="#contact">Contact et réclamations</a></li>
+        </ol>
+    </div>
+
+    <h2 id="intro">1. Introduction et responsable du traitement</h2>
     <p>
-        Harmonith est une application mobile de santé et fitness conçue pour vous aider à suivre vos activités physiques,
-        votre nutrition et vos objectifs de bien-être. Cette politique de confidentialité explique comment nous collectons,
-        utilisons et protégeons vos données personnelles.
+        Harmonith est une application mobile de santé, fitness et matching social conçue pour vous aider à suivre vos activités physiques,
+        votre nutrition, vos objectifs de bien-être et vous connecter avec d'autres passionnés de fitness.
     </p>
 
-    <h2>2. Données collectées</h2>
-    <p>Harmonith collecte et traite les types de données suivants :</p>
+    <div class="important">
+        <strong>Responsable du traitement :</strong><br>
+        <strong>À COMPLÉTER :</strong> [Nom de l'entreprise]<br>
+        [Adresse du siège social]<br>
+        [N° SIRET si France]<br>
+        Email : contact.harmonith@gmail.com
+    </div>
 
-    <h3>2.1 Données de santé (via Health Connect)</h3>
-    <ul>
-        <li><strong>Activité physique :</strong> nombre de pas, distance parcourue, exercices, calories brûlées</li>
-        <li><strong>Mesures corporelles :</strong> poids, taille</li>
-        <li><strong>Données physiologiques :</strong> rythme cardiaque</li>
-        <li><strong>Cycle menstruel :</strong> informations sur les menstruations (si vous choisissez de les partager)</li>
-    </ul>
-
-    <h3>2.2 Données de profil</h3>
-    <ul>
-        <li><strong>Photo de profil :</strong> vous pouvez prendre une photo avec la caméra ou sélectionner une image depuis votre galerie</li>
-        <li><strong>Informations personnelles :</strong> nom, prénom, email, objectifs fitness</li>
-    </ul>
-
-    <h3>2.3 Contenu utilisateur</h3>
-    <ul>
-        <li><strong>Photos de recettes :</strong> vous pouvez photographier vos repas pour suivre votre nutrition</li>
-        <li><strong>Messages et médias :</strong> dans le cadre de la fonctionnalité de chat avec un coach ou la communauté</li>
-    </ul>
-
-    <h3>2.4 Données techniques</h3>
-    <ul>
-        <li><strong>Localisation :</strong> pour suggérer des activités et programmes adaptés à votre région (avec votre autorisation)</li>
-        <li><strong>Notifications :</strong> pour vous rappeler vos objectifs et entraînements</li>
-        <li><strong>Données d'utilisation :</strong> interactions avec l'app pour améliorer l'expérience utilisateur</li>
-    </ul>
-
-    <h2>3. Utilisation des données</h2>
-    <p>Nous utilisons vos données pour :</p>
-    <ul>
-        <li><strong>Personnaliser votre expérience :</strong> adapter les programmes d'entraînement et recommandations nutritionnelles</li>
-        <li><strong>Suivre vos progrès :</strong> visualiser votre évolution et atteindre vos objectifs</li>
-        <li><strong>Améliorer l'application :</strong> analyser l'utilisation pour optimiser les fonctionnalités</li>
-        <li><strong>Communication :</strong> vous envoyer des notifications sur vos progrès et rappels d'entraînement</li>
-        <li><strong>Support :</strong> répondre à vos questions et résoudre les problèmes techniques</li>
-    </ul>
-
-    <h2>4. Utilisation de la caméra</h2>
     <p>
-        L'application demande l'accès à votre caméra uniquement lorsque vous souhaitez :
+        Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos données personnelles
+        conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés.
+    </p>
+
+    <h2 id="donnees">2. Données collectées</h2>
+
+    <h3>2.1 Données de santé (via Health Connect / HealthKit)</h3>
+    <div class="important">
+        <strong>⚠️ Données sensibles (Article 9 RGPD)</strong><br>
+        Les données de santé sont des données sensibles nécessitant votre consentement explicite.
+    </div>
+
+    <table>
+        <tr>
+            <th>Catégorie</th>
+            <th>Données collectées</th>
+            <th>Source</th>
+        </tr>
+        <tr>
+            <td>Activité physique</td>
+            <td>Nombre de pas, distance parcourue, séances d'exercice, calories brûlées (actives et totales)</td>
+            <td>Health Connect (Android) / HealthKit (iOS)</td>
+        </tr>
+        <tr>
+            <td>Mesures corporelles</td>
+            <td>Poids, taille, IMC (calculé)</td>
+            <td>Health Connect / HealthKit</td>
+        </tr>
+        <tr>
+            <td>Données physiologiques</td>
+            <td>Fréquence cardiaque (min, max, moyenne)</td>
+            <td>Health Connect / HealthKit</td>
+        </tr>
+        <tr>
+            <td>Cycle menstruel</td>
+            <td>Périodes menstruelles, flux (si vous choisissez de partager)</td>
+            <td>Health Connect / HealthKit</td>
+        </tr>
+    </table>
+
+    <h3>2.2 Données de profil et d'identification</h3>
+    <ul>
+        <li><strong>Identité :</strong> prénom, pseudo, adresse email</li>
+        <li><strong>Photo de profil :</strong> prise avec la caméra ou depuis votre galerie</li>
+        <li><strong>Informations fitness :</strong> âge, niveau de forme physique (débutant/intermédiaire/avancé), types d'entraînement préférés</li>
+        <li><strong>Biographie :</strong> texte libre de présentation (optionnel)</li>
+        <li><strong>Authentification :</strong> via email/mot de passe, Google Sign-In ou Apple Sign-In</li>
+    </ul>
+
+    <h3>2.3 Données de géolocalisation</h3>
+    <ul>
+        <li><strong>Position GPS :</strong> latitude, longitude (précision à environ 10 mètres)</li>
+        <li><strong>Adresse :</strong> ville, code postal (obtenu via reverse geocoding)</li>
+        <li><strong>Finalité :</strong> matching social basé sur la proximité géographique</li>
+    </ul>
+    <p>
+        <strong>Important :</strong> Votre position GPS exacte est stockée sur nos serveurs pour permettre le matching par distance.
+        Elle n'est jamais affichée aux autres utilisateurs (seule la distance approximative est visible, ex: "à 5 km").
+    </p>
+
+    <h3>2.4 Données de matching et préférences sociales</h3>
+    <ul>
+        <li><strong>Disponibilités :</strong> créneaux horaires préférés (matin/après-midi/soir) pour chaque jour de la semaine</li>
+        <li><strong>Critères de matching :</strong>
+            <ul>
+                <li>Distance maximale acceptée (rayon de recherche)</li>
+                <li>Niveaux de forme physique préférés des partenaires</li>
+                <li>Types d'entraînement préférés</li>
+                <li>Tranche d'âge préférée (min-max)</li>
+            </ul>
+        </li>
+        <li><strong>Actions sociales :</strong> likes, rejets, matches mutuels, blocages</li>
+        <li><strong>Visibilité du profil :</strong> choix d'activer/désactiver le matching</li>
+    </ul>
+
+    <h3>2.5 Messages et communications</h3>
+    <ul>
+        <li><strong>Chat P2P :</strong> messages texte, photos, vidéos, documents avec vos matches</li>
+        <li><strong>Partages spéciaux :</strong>
+            <ul>
+                <li>Partage de localisation temporaire (expire après 1h)</li>
+                <li>Invitations à des séances d'entraînement</li>
+                <li>Partage de résumés de séances</li>
+            </ul>
+        </li>
+        <li><strong>Chatbot IA :</strong> conversations avec notre assistant virtuel pour le support et les conseils fitness</li>
+        <li><strong>Support client :</strong> historique d'échanges avec notre équipe</li>
+    </ul>
+
+    <h3>2.6 Contenu créé</h3>
+    <ul>
+        <li><strong>Recettes :</strong> titre, description, ingrédients, instructions, photos, informations nutritionnelles, temps de préparation/cuisson</li>
+        <li><strong>Programmes d'entraînement :</strong> exercices, séries, répétitions, poids utilisés</li>
+        <li><strong>Historique de séances :</strong> durée, calories brûlées, exercices effectués, notes personnelles</li>
+        <li><strong>Likes et sauvegardes :</strong> recettes et programmes que vous aimez</li>
+    </ul>
+
+    <h3>2.7 Données techniques et de connexion</h3>
+    <ul>
+        <li><strong>Token d'appareil :</strong> identifiant unique pour les notifications push (via Expo Push Notifications)</li>
+        <li><strong>Système d'exploitation :</strong> iOS ou Android et version</li>
+        <li><strong>Modèle d'appareil :</strong> pour optimiser l'affichage</li>
+        <li><strong>Adresse IP :</strong> lors de la connexion aux serveurs</li>
+        <li><strong>Logs de connexion :</strong> dates et heures d'utilisation de l'application</li>
+        <li><strong>Données d'utilisation :</strong> fonctionnalités utilisées, temps passé, parcours dans l'application</li>
+    </ul>
+
+    <h3>2.8 Système de récompenses</h3>
+    <ul>
+        <li><strong>Points XP :</strong> points gagnés via vos activités</li>
+        <li><strong>Historique de rédemption :</strong> récompenses échangées chez nos partenaires</li>
+        <li><strong>Éligibilité :</strong> suivi de votre progression</li>
+    </ul>
+
+    <h2 id="utilisation">3. Utilisation des données et bases légales (RGPD)</h2>
+
+    <table>
+        <tr>
+            <th>Finalité</th>
+            <th>Données utilisées</th>
+            <th>Base légale (RGPD)</th>
+        </tr>
+        <tr>
+            <td>Création et gestion de votre compte</td>
+            <td>Email, mot de passe, prénom, pseudo</td>
+            <td><strong>Contrat</strong> - Exécution du contrat de service</td>
+        </tr>
+        <tr>
+            <td>Authentification OAuth</td>
+            <td>Token Google/Apple, email</td>
+            <td><strong>Contrat</strong> - Exécution du contrat de service</td>
+        </tr>
+        <tr>
+            <td>Personnalisation des programmes fitness</td>
+            <td>Données de santé, niveau fitness, objectifs</td>
+            <td><strong>Consentement explicite</strong> (données sensibles Art. 9)</td>
+        </tr>
+        <tr>
+            <td>Matching social avec d'autres utilisateurs</td>
+            <td>Profil, photo, géolocalisation, préférences, disponibilités</td>
+            <td><strong>Consentement</strong> - Activation volontaire du matching</td>
+        </tr>
+        <tr>
+            <td>Affichage de votre profil aux autres utilisateurs</td>
+            <td>Photo, bio, âge, niveau fitness, types d'entraînement, distance</td>
+            <td><strong>Consentement</strong> - Profil visible uniquement si matching activé</td>
+        </tr>
+        <tr>
+            <td>Messagerie entre utilisateurs</td>
+            <td>Messages, médias partagés</td>
+            <td><strong>Contrat</strong> - Fourniture du service de messagerie</td>
+        </tr>
+        <tr>
+            <td>Chatbot IA et support</td>
+            <td>Messages, historique de conversations</td>
+            <td><strong>Contrat</strong> - Support client et assistance</td>
+        </tr>
+        <tr>
+            <td>Notifications push</td>
+            <td>Token appareil, préférences de notification</td>
+            <td><strong>Consentement</strong> - Permission système accordée</td>
+        </tr>
+        <tr>
+            <td>Suivi de vos progrès fitness</td>
+            <td>Historique séances, métriques Health Connect</td>
+            <td><strong>Consentement</strong> - Synchronisation volontaire</td>
+        </tr>
+        <tr>
+            <td>Création et partage de recettes</td>
+            <td>Contenu recettes, photos</td>
+            <td><strong>Contrat</strong> - Fourniture du service</td>
+        </tr>
+        <tr>
+            <td>Système de récompenses</td>
+            <td>XP, historique d'activités</td>
+            <td><strong>Contrat</strong> - Programme de fidélité</td>
+        </tr>
+        <tr>
+            <td>Amélioration du service et analytics</td>
+            <td>Données d'utilisation, logs</td>
+            <td><strong>Intérêt légitime</strong> - Optimisation du service</td>
+        </tr>
+        <tr>
+            <td>Sécurité et prévention de la fraude</td>
+            <td>Logs, IP, actions utilisateur</td>
+            <td><strong>Intérêt légitime</strong> - Protection de nos utilisateurs</td>
+        </tr>
+        <tr>
+            <td>Respect d'obligations légales</td>
+            <td>Données de compte, logs</td>
+            <td><strong>Obligation légale</strong> - Conformité aux lois</td>
+        </tr>
+    </table>
+
+    <h2 id="camera">4. Utilisation de la caméra (Permission CAMERA)</h2>
+    <p>
+        L'application demande l'autorisation d'accéder à votre caméra <strong>uniquement</strong> lorsque vous souhaitez :
     </p>
     <ul>
         <li>Prendre une photo de profil</li>
         <li>Photographier vos repas ou recettes</li>
-        <li>Envoyer des photos dans le chat</li>
+        <li>Envoyer des photos dans le chat avec vos matches</li>
     </ul>
+    <div class="important">
+        <strong>Garanties de confidentialité :</strong>
+        <ul>
+            <li>Les photos sont prises <strong>uniquement à votre demande explicite</strong> via un bouton dans l'interface</li>
+            <li>L'application <strong>n'accède JAMAIS à votre caméra en arrière-plan</strong></li>
+            <li>Aucune photo n'est prise ou uploadée sans votre action directe</li>
+            <li>Vous pouvez refuser cette permission : certaines fonctionnalités (photo de profil personnalisée, partage de photos) ne seront pas disponibles</li>
+        </ul>
+    </div>
+
+    <h2 id="matching">5. Fonctionnalité de matching social</h2>
+    <h3>5.1 Comment fonctionne le matching</h3>
     <p>
-        <strong>Important :</strong> Les photos sont prises uniquement à votre demande explicite. L'application n'accède jamais
-        à votre caméra en arrière-plan ou sans votre consentement. Vous pouvez refuser cette permission, mais certaines
-        fonctionnalités (photo de profil personnalisée, partage de photos) ne seront pas disponibles.
+        Harmonith propose une fonctionnalité de <strong>matching social</strong> pour vous connecter avec d'autres passionnés de fitness
+        près de chez vous. Cette fonctionnalité est <strong>entièrement optionnelle</strong>.
     </p>
 
-    <h2>5. Partage des données</h2>
+    <h3>5.2 Données visibles par les autres utilisateurs</h3>
+    <p>Lorsque vous activez le matching, votre profil devient visible aux autres utilisateurs selon vos critères :</p>
+    <ul>
+        <li><strong>Photo de profil</strong></li>
+        <li><strong>Prénom ou pseudo</strong></li>
+        <li><strong>Âge</strong></li>
+        <li><strong>Bio</strong> (si renseignée)</li>
+        <li><strong>Niveau de forme physique</strong></li>
+        <li><strong>Types d'entraînement préférés</strong></li>
+        <li><strong>Distance approximative</strong> (ex: "à 5 km") - JAMAIS votre position exacte</li>
+        <li><strong>Disponibilités générales</strong> (créneaux horaires)</li>
+    </ul>
+
+    <div class="important">
+        <strong>Ce qui n'est JAMAIS partagé :</strong>
+        <ul>
+            <li>Votre position GPS exacte (latitude/longitude)</li>
+            <li>Votre adresse précise</li>
+            <li>Votre nom de famille</li>
+            <li>Votre email</li>
+            <li>Vos données de santé (Health Connect)</li>
+        </ul>
+    </div>
+
+    <h3>5.3 Actions de matching</h3>
+    <ul>
+        <li><strong>Like :</strong> manifester votre intérêt pour un profil</li>
+        <li><strong>Reject :</strong> passer au profil suivant (vous ne verrez plus ce profil)</li>
+        <li><strong>Match mutuel :</strong> quand deux personnes se likent, vous pouvez commencer à discuter</li>
+        <li><strong>Block :</strong> bloquer un utilisateur (il ne pourra plus voir votre profil ni vous contacter)</li>
+    </ul>
+
+    <h3>5.4 Désactivation du matching</h3>
+    <p>
+        Vous pouvez désactiver le matching à tout moment dans les paramètres. Votre profil ne sera plus visible
+        par les autres utilisateurs, mais vos matches existants et conversations seront conservés.
+    </p>
+
+    <h2 id="partage">6. Partage des données</h2>
+
+    <h3>6.1 Partage avec d'autres utilisateurs</h3>
+    <p>
+        Comme expliqué dans la section Matching, certaines données de votre profil sont visibles par d'autres utilisateurs
+        si vous activez cette fonctionnalité. <strong>Vous contrôlez ce partage</strong> en activant/désactivant le matching.
+    </p>
+
+    <h3>6.2 Partage avec des tiers (sous-traitants et partenaires)</h3>
     <p>
         Vos données de santé sont <strong>strictement confidentielles</strong>. Nous ne vendons ni ne partageons vos données
-        personnelles avec des tiers à des fins commerciales. Les seules exceptions sont :
-    </p>
-    <ul>
-        <li><strong>Fournisseurs de services :</strong> hébergement cloud sécurisé (avec chiffrement des données)</li>
-        <li><strong>Obligation légale :</strong> si requis par la loi ou une autorité judiciaire</li>
-        <li><strong>Avec votre consentement :</strong> si vous choisissez de partager vos progrès avec des amis ou sur les réseaux sociaux</li>
-    </ul>
-
-    <h2>6. Sécurité des données</h2>
-    <p>
-        Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles pour protéger vos données :
-    </p>
-    <ul>
-        <li>Chiffrement des données en transit (HTTPS/TLS)</li>
-        <li>Stockage sécurisé avec chiffrement</li>
-        <li>Accès limité aux données personnelles (principe du moindre privilège)</li>
-        <li>Mises à jour régulières de sécurité</li>
-    </ul>
-
-    <h2>7. Vos droits</h2>
-    <p>Conformément au RGPD (pour les utilisateurs en Europe), vous disposez des droits suivants :</p>
-    <ul>
-        <li><strong>Accès :</strong> obtenir une copie de vos données personnelles</li>
-        <li><strong>Rectification :</strong> corriger des données inexactes</li>
-        <li><strong>Suppression :</strong> demander la suppression de votre compte et de vos données</li>
-        <li><strong>Portabilité :</strong> recevoir vos données dans un format structuré</li>
-        <li><strong>Opposition :</strong> vous opposer au traitement de vos données</li>
-        <li><strong>Retrait du consentement :</strong> retirer votre autorisation d'accès aux données Health Connect</li>
-    </ul>
-
-    <h2>8. Conservation des données</h2>
-    <p>
-        Vos données sont conservées tant que votre compte est actif. Si vous supprimez votre compte, vos données personnelles
-        seront supprimées dans un délai de 30 jours, sauf obligation légale de conservation.
+        personnelles avec des tiers à des fins commerciales ou publicitaires.
     </p>
 
-    <h2>9. Données des mineurs</h2>
+    <table>
+        <tr>
+            <th>Tiers</th>
+            <th>Données partagées</th>
+            <th>Finalité</th>
+            <th>Garanties</th>
+        </tr>
+        <tr>
+            <td><strong>Expo (Expo Application Services)</strong></td>
+            <td>Token de notification push, projectId</td>
+            <td>Envoi de notifications</td>
+            <td>Certifié, hébergement sécurisé</td>
+        </tr>
+        <tr>
+            <td><strong>Google (Health Connect)</strong></td>
+            <td>Accès lecture/écriture données santé</td>
+            <td>Synchronisation Health Connect (Android uniquement)</td>
+            <td>API sécurisée, données jamais transmises à Google</td>
+        </tr>
+        <tr>
+            <td><strong>Apple (HealthKit)</strong></td>
+            <td>Accès lecture/écriture données santé</td>
+            <td>Synchronisation HealthKit (iOS uniquement)</td>
+            <td>Données stockées localement sur l'appareil</td>
+        </tr>
+        <tr>
+            <td><strong>Google Sign-In</strong></td>
+            <td>Email, nom (si authentification OAuth)</td>
+            <td>Authentification simplifiée</td>
+            <td>OAuth 2.0, token révocable</td>
+        </tr>
+        <tr>
+            <td><strong>Apple Sign-In</strong></td>
+            <td>Email (caché possible), nom</td>
+            <td>Authentification simplifiée</td>
+            <td>OAuth 2.0, token révocable</td>
+        </tr>
+        <tr>
+            <td><strong>Hébergeur backend</strong></td>
+            <td>Toutes données applicatives</td>
+            <td>Hébergement des serveurs</td>
+            <td>Contrat de sous-traitance (Art. 28 RGPD), chiffrement</td>
+        </tr>
+        <tr>
+            <td><strong>Partenaires récompenses</strong></td>
+            <td>Pseudonyme, points XP (anonymisé)</td>
+            <td>Validation de rédemptions</td>
+            <td>Données pseudonymisées, contrat de confidentialité</td>
+        </tr>
+    </table>
+
+    <h3>6.3 Autres cas de partage</h3>
+    <ul>
+        <li><strong>Obligation légale :</strong> si requis par la loi, une autorité judiciaire ou administrative</li>
+        <li><strong>Protection de nos droits :</strong> en cas de litige, fraude ou violation des CGU</li>
+        <li><strong>Avec votre consentement :</strong> si vous choisissez de partager vos progrès sur les réseaux sociaux (via fonctionnalité de partage)</li>
+        <li><strong>Fusion/Acquisition :</strong> en cas de vente, fusion ou restructuration de notre entreprise (vous serez informé au préalable)</li>
+    </ul>
+
+    <h2 id="securite">7. Sécurité des données</h2>
     <p>
+        Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles robustes pour protéger vos données :
+    </p>
+
+    <h3>7.1 Mesures techniques</h3>
+    <ul>
+        <li><strong>Chiffrement en transit :</strong> HTTPS/TLS 1.3 pour toutes les communications</li>
+        <li><strong>Chiffrement au repos :</strong> données chiffrées dans les bases de données</li>
+        <li><strong>Stockage sécurisé sur appareil :</strong> tokens stockés dans le Keychain (iOS) / Keystore (Android)</li>
+        <li><strong>Tokens JWT :</strong> authentification sécurisée avec expiration et refresh automatique</li>
+        <li><strong>Hachage des mots de passe :</strong> bcrypt avec salt unique</li>
+        <li><strong>Protection contre les attaques :</strong> rate limiting, protection CSRF/XSS</li>
+        <li><strong>Logs d'accès :</strong> traçabilité des accès aux données sensibles</li>
+    </ul>
+
+    <h3>7.2 Mesures organisationnelles</h3>
+    <ul>
+        <li><strong>Principe du moindre privilège :</strong> accès limité aux données selon les besoins</li>
+        <li><strong>Formation du personnel :</strong> sensibilisation RGPD et sécurité</li>
+        <li><strong>Contrôle d'accès :</strong> authentification forte pour les administrateurs</li>
+        <li><strong>Audits réguliers :</strong> revue de sécurité et tests de pénétration</li>
+        <li><strong>Plan de continuité :</strong> sauvegardes régulières, plan de reprise d'activité</li>
+    </ul>
+
+    <h3>7.3 En cas de violation de données</h3>
+    <p>
+        Si une violation de données personnelles est détectée, nous nous engageons à :
+    </p>
+    <ul>
+        <li>Notifier la CNIL dans les 72 heures (si résidence en France/UE)</li>
+        <li>Vous informer directement si la violation présente un risque élevé pour vos droits</li>
+        <li>Prendre les mesures pour limiter l'impact et empêcher de nouvelles violations</li>
+    </ul>
+
+    <h2 id="conservation">8. Conservation des données</h2>
+
+    <table>
+        <tr>
+            <th>Type de données</th>
+            <th>Durée de conservation</th>
+            <th>Justification</th>
+        </tr>
+        <tr>
+            <td>Données de compte actif</td>
+            <td>Tant que le compte est actif</td>
+            <td>Fourniture du service</td>
+        </tr>
+        <tr>
+            <td>Données après suppression de compte</td>
+            <td>30 jours puis suppression définitive</td>
+            <td>Délai de rétractation, sauvegardes</td>
+        </tr>
+        <tr>
+            <td>Messages chat (conversations actives)</td>
+            <td>Tant que la conversation existe</td>
+            <td>Historique de messagerie</td>
+        </tr>
+        <tr>
+            <td>Messages chat (après suppression)</td>
+            <td>Supprimés immédiatement</td>
+            <td>Respect de la vie privée</td>
+        </tr>
+        <tr>
+            <td>Conversations chatbot IA</td>
+            <td>1 an ou jusqu'à suppression manuelle</td>
+            <td>Amélioration du service, support</td>
+        </tr>
+        <tr>
+            <td>Historique d'entraînement</td>
+            <td>Tant que le compte est actif</td>
+            <td>Suivi des progrès</td>
+        </tr>
+        <tr>
+            <td>Photos et médias</td>
+            <td>Tant que le compte est actif + 30 jours</td>
+            <td>Fourniture du service</td>
+        </tr>
+        <tr>
+            <td>Logs serveur</td>
+            <td>6 mois maximum</td>
+            <td>Sécurité, débogage, obligation légale</td>
+        </tr>
+        <tr>
+            <td>Données de matching (likes/rejets)</td>
+            <td>Tant que le compte est actif</td>
+            <td>Éviter de re-proposer les mêmes profils</td>
+        </tr>
+        <tr>
+            <td>Données anonymisées (analytics)</td>
+            <td>Indéfiniment</td>
+            <td>Statistiques, amélioration du service (non ré-identifiables)</td>
+        </tr>
+        <tr>
+            <td>Données factures/paiements (si abonnement)</td>
+            <td>10 ans</td>
+            <td>Obligation légale comptable</td>
+        </tr>
+    </table>
+
+    <div class="important">
+        <strong>Après suppression de votre compte :</strong>
+        <ul>
+            <li>Votre profil devient invisible immédiatement</li>
+            <li>Vos matches existants ne peuvent plus vous contacter</li>
+            <li>Vos données personnelles sont supprimées sous 30 jours</li>
+            <li>Les messages que vous avez envoyés restent visibles chez vos contacts (mais anonymisés : "Utilisateur supprimé")</li>
+            <li>Les recettes publiques que vous avez créées peuvent être conservées (anonymisées)</li>
+        </ul>
+    </div>
+
+    <h2 id="droits">9. Vos droits RGPD</h2>
+    <p>Conformément au RGPD, vous disposez des droits suivants sur vos données personnelles :</p>
+
+    <h3>9.1 Droit d'accès (Article 15)</h3>
+    <p>
+        Vous pouvez obtenir une copie de toutes vos données personnelles que nous détenons.
+        <br><strong>Comment :</strong> Menu Paramètres → Confidentialité → Télécharger mes données, ou par email.
+    </p>
+
+    <h3>9.2 Droit de rectification (Article 16)</h3>
+    <p>
+        Vous pouvez corriger des données inexactes ou incomplètes.
+        <br><strong>Comment :</strong> Menu Paramètres → Modifier le profil, ou contactez-nous.
+    </p>
+
+    <h3>9.3 Droit à l'effacement / "Droit à l'oubli" (Article 17)</h3>
+    <p>
+        Vous pouvez demander la suppression de votre compte et de vos données personnelles.
+        <br><strong>Comment :</strong> Menu Paramètres → Compte → Supprimer mon compte.
+    </p>
+
+    <h3>9.4 Droit à la limitation du traitement (Article 18)</h3>
+    <p>
+        Vous pouvez demander de "geler" temporairement le traitement de vos données (par exemple pendant une contestation).
+        <br><strong>Comment :</strong> Contactez-nous à contact.harmonith@gmail.com.
+    </p>
+
+    <h3>9.5 Droit à la portabilité (Article 20)</h3>
+    <p>
+        Vous pouvez recevoir vos données dans un format structuré (JSON) pour les transférer à un autre service.
+        <br><strong>Comment :</strong> Menu Paramètres → Confidentialité → Exporter mes données (format JSON).
+    </p>
+
+    <h3>9.6 Droit d'opposition (Article 21)</h3>
+    <p>
+        Vous pouvez vous opposer au traitement de vos données pour des raisons tenant à votre situation particulière.
+        <br><strong>Exemples :</strong> S'opposer à l'utilisation de vos données à des fins d'analytics, marketing.
+        <br><strong>Comment :</strong> Contactez-nous à contact.harmonith@gmail.com.
+    </p>
+
+    <h3>9.7 Retrait du consentement (Article 7)</h3>
+    <p>
+        Lorsque le traitement repose sur votre consentement, vous pouvez le retirer à tout moment :
+    </p>
+    <ul>
+        <li><strong>Health Connect / HealthKit :</strong> Paramètres téléphone → Applications → Harmonith → Autorisations → Révoquer</li>
+        <li><strong>Géolocalisation :</strong> Paramètres téléphone → Localisation → Harmonith → Jamais</li>
+        <li><strong>Notifications push :</strong> Paramètres téléphone → Notifications → Harmonith → Désactiver</li>
+        <li><strong>Matching social :</strong> Menu Harmonith → Paramètres → Matching → Désactiver ma visibilité</li>
+    </ul>
+
+    <h3>9.8 Droit de ne pas faire l'objet d'une décision automatisée (Article 22)</h3>
+    <p>
+        Harmonith n'utilise pas de prise de décision entièrement automatisée produisant des effets juridiques ou vous affectant significativement.
+        Le matching repose sur vos critères et actions volontaires (like/reject).
+    </p>
+
+    <h3>9.9 Délai de réponse</h3>
+    <p>
+        Nous nous engageons à répondre à vos demandes dans un délai de <strong>1 mois</strong> (extensible à 3 mois si complexe, avec justification).
+    </p>
+
+    <h2 id="mineurs">10. Données des mineurs</h2>
+    <div class="important">
+        <strong>Âge minimum : 13 ans</strong><br>
         Harmonith n'est pas destiné aux enfants de moins de 13 ans. Nous ne collectons pas sciemment de données
         personnelles d'enfants de moins de 13 ans.
+    </div>
+    <p>
+        Si vous avez connaissance qu'un enfant de moins de 13 ans nous a fourni des données personnelles,
+        merci de nous contacter immédiatement à contact.harmonith@gmail.com. Nous supprimerons ces données.
+    </p>
+    <p>
+        <strong>Pour les mineurs de 13 à 15 ans (en France) :</strong> Conformément à la loi, l'inscription nécessite
+        l'autorisation d'un titulaire de l'autorité parentale.
     </p>
 
-    <h2>10. Modifications de cette politique</h2>
+    <h2 id="transferts">11. Transferts internationaux de données</h2>
+    <div class="important">
+        <strong>À COMPLÉTER selon l'hébergement réel :</strong>
+    </div>
     <p>
-        Nous pouvons mettre à jour cette politique de confidentialité. Toute modification sera notifiée via l'application
-        ou par email. La date de dernière mise à jour est indiquée en haut de ce document.
+        Vos données peuvent être hébergées et traitées dans les pays suivants : <strong>[À préciser : France, UE, USA, etc.]</strong>
     </p>
+    <p>
+        Si vos données sont transférées hors de l'Union Européenne, nous nous assurons que :
+    </p>
+    <ul>
+        <li>Le pays bénéficie d'une décision d'adéquation de la Commission européenne, OU</li>
+        <li>Des garanties appropriées sont mises en place (Clauses Contractuelles Types de l'UE, Binding Corporate Rules), OU</li>
+        <li>Votre consentement explicite a été recueilli pour ce transfert</li>
+    </ul>
+
+    <h2 id="modifications">12. Modifications de cette politique</h2>
+    <p>
+        Nous pouvons mettre à jour cette politique de confidentialité pour refléter les évolutions de nos pratiques ou pour
+        des raisons légales, techniques ou commerciales.
+    </p>
+    <p>
+        <strong>En cas de modification substantielle :</strong>
+    </p>
+    <ul>
+        <li>Vous serez notifié via l'application (notification push)</li>
+        <li>Un email vous sera envoyé</li>
+        <li>La nouvelle version sera visible avec la date de mise à jour en haut de ce document</li>
+        <li>Vous pourrez accepter ou refuser les modifications (refus = suppression de compte si incompatible avec le service)</li>
+    </ul>
+    <p>
+        Nous vous encourageons à consulter régulièrement cette page.
+    </p>
+
+    <h2 id="contact">13. Contact et réclamations</h2>
 
     <div class="contact">
-        <h2>11. Contact</h2>
+        <h3>13.1 Contact du responsable du traitement</h3>
         <p>
-            Pour toute question concernant cette politique de confidentialité ou pour exercer vos droits,
-            vous pouvez nous contacter :
+            Pour toute question concernant cette politique de confidentialité ou pour exercer vos droits RGPD :
         </p>
         <ul>
             <li><strong>Email :</strong> contact.harmonith@gmail.com</li>
-            <li><strong>Via l'application :</strong> Menu → Paramètres → Support</li>
+            <li><strong>Via l'application :</strong> Menu → Paramètres → Support → Confidentialité et données</li>
+            <li><strong>Courrier :</strong> [Adresse postale à compléter]</li>
         </ul>
+
+        <h3>13.2 Délégué à la Protection des Données (DPO)</h3>
+        <p>
+            <strong>Si applicable :</strong> [Email DPO à compléter si entreprise > 250 employés ou traitement à grande échelle]
+        </p>
     </div>
+
+    <div class="important">
+        <h3>13.3 Réclamation auprès de la CNIL</h3>
+        <p>
+            Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation auprès de l'autorité de contrôle :
+        </p>
+        <p>
+            <strong>CNIL (Commission Nationale de l'Informatique et des Libertés)</strong><br>
+            3 Place de Fontenoy - TSA 80715<br>
+            75334 PARIS CEDEX 07<br>
+            Téléphone : 01 53 73 22 22<br>
+            Site web : <a href="https://www.cnil.fr" target="_blank">www.cnil.fr</a><br>
+            Formulaire en ligne : <a href="https://www.cnil.fr/fr/plaintes" target="_blank">https://www.cnil.fr/fr/plaintes</a>
+        </p>
+    </div>
+
+    <hr style="margin: 40px 0;">
+    <p style="text-align: center; color: #888; font-size: 0.9em;">
+        Cette politique de confidentialité a été rédigée conformément au Règlement Général sur la Protection des Données (RGPD - UE 2016/679)
+        et à la loi Informatique et Libertés modifiée.
+    </p>
 </body>
 </html>

@@ -1,5 +1,4 @@
 const webPush = require('web-push');
-const { Expo } = require('expo-server-sdk');
 const PushSubscription = require('../models/PushSubscription');
 const logger = require('../utils/logger.js');
 
@@ -11,64 +10,54 @@ if (process.env.NODE_ENV !== 'test' && process.env.VAPID_PUBLIC_KEY && process.e
     process.env.VAPID_PRIVATE_KEY
   );
 } else if (process.env.NODE_ENV !== 'test') {
-  logger.warn('⚠️  Clés VAPID manquantes - Notifications push web désactivées');
+  logger.warn('⚠️  Clés VAPID manquantes - Notifications push désactivées');
 }
 
-// Client Expo Push
-const expo = new Expo();
-
 /**
- * Envoyer une notification à un utilisateur (web + mobile)
+ * Envoyer une notification à un utilisateur
  */
 async function sendNotificationToUser(userId, payload) {
   try {
-    logger.info(`📱 sendNotificationToUser: userId=${userId}, payload.title=${payload.title}`);
+    // ✅ FIX: Valider la taille du payload (max 4KB pour Web Push)
+    const payloadString = JSON.stringify(payload);
+    const payloadSize = Buffer.byteLength(payloadString, 'utf8');
+
+    if (payloadSize > 4096) {
+      logger.warn(`⚠️  Payload trop volumineux (${payloadSize}B > 4KB) pour userId: ${userId}`);
+      return { success: false, message: 'Payload too large' };
+    }
 
     const subscriptions = await PushSubscription.find({
       userId,
       active: true
     });
 
-    logger.info(`📱 Subscriptions trouvées: ${subscriptions.length} (web: ${subscriptions.filter(s => s.type === 'web').length}, expo: ${subscriptions.filter(s => s.type === 'expo').length})`);
-
     if (subscriptions.length === 0) {
-      logger.warn(`⚠️ Aucune subscription active pour userId: ${userId}`);
+      logger.info(`Aucune subscription pour userId: ${userId}`);
       return { success: false, message: 'No subscriptions' };
     }
 
-    // Séparer les subscriptions web et Expo
-    const webSubs = subscriptions.filter(sub => sub.type === 'web' && sub.endpoint);
-    const expoSubs = subscriptions.filter(sub => sub.type === 'expo' && sub.expoPushToken);
+    const results = await Promise.allSettled(
+      subscriptions.map(sub =>
+        webPush.sendNotification(
+          {
+            endpoint: sub.endpoint,
+            keys: sub.keys
+          },
+          payloadString  // ✅ FIX: Utiliser la variable pré-validée
+        ).catch(async err => {
+          // Si erreur 410 (Gone), désactiver la subscription
+          if (err.statusCode === 410) {
+            sub.active = false;
+            await sub.save();  // ✅ FIX: Ajouter await
+            logger.info(`📱 Push subscription ${sub._id} désactivée (endpoint expiré)`);
+          }
+          throw err;
+        })
+      )
+    );
 
-    let successCount = 0;
-
-    // Envoyer les notifications web (VAPID)
-    if (webSubs.length > 0) {
-      const webResults = await Promise.allSettled(
-        webSubs.map(sub =>
-          webPush.sendNotification(
-            {
-              endpoint: sub.endpoint,
-              keys: sub.keys
-            },
-            JSON.stringify(payload)
-          ).catch(err => {
-            if (err.statusCode === 410) {
-              sub.active = false;
-              sub.save();
-            }
-            throw err;
-          })
-        )
-      );
-      successCount += webResults.filter(r => r.status === 'fulfilled').length;
-    }
-
-    // Envoyer les notifications Expo (mobile)
-    if (expoSubs.length > 0) {
-      const expoResults = await sendExpoPushNotifications(expoSubs, payload);
-      successCount += expoResults.successCount;
-    }
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
 
     return {
       success: successCount > 0,
@@ -82,118 +71,80 @@ async function sendNotificationToUser(userId, payload) {
 }
 
 /**
- * Envoyer des notifications via Expo Push
- */
-async function sendExpoPushNotifications(subscriptions, payload) {
-  logger.info(`📤 sendExpoPushNotifications: ${subscriptions.length} subscriptions, title="${payload.title}"`);
-  const messages = [];
-
-  for (const sub of subscriptions) {
-    if (!Expo.isExpoPushToken(sub.expoPushToken)) {
-      logger.warn(`❌ Token Expo invalide: ${sub.expoPushToken}`);
-      continue;
-    }
-
-    messages.push({
-      to: sub.expoPushToken,
-      sound: 'default',
-      title: payload.title,
-      body: payload.body,
-      data: payload.data || {},
-      badge: 1
-    });
-  }
-
-  logger.info(`📤 ${messages.length} messages Expo à envoyer`);
-
-  if (messages.length === 0) {
-    logger.warn('📤 Aucun message Expo à envoyer (tokens invalides?)');
-    return { successCount: 0, failCount: 0 };
-  }
-
-  // Envoyer par chunks
-  const chunks = expo.chunkPushNotifications(messages);
-  let successCount = 0;
-  let failCount = 0;
-
-  for (const chunk of chunks) {
-    try {
-      logger.info(`📤 Envoi chunk de ${chunk.length} notifications Expo...`);
-      const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
-      logger.info(`📤 Tickets reçus: ${JSON.stringify(ticketChunk)}`);
-
-      for (let i = 0; i < ticketChunk.length; i++) {
-        const ticket = ticketChunk[i];
-        if (ticket.status === 'ok') {
-          successCount++;
-          logger.info(`✅ Notification Expo envoyée, ticket: ${ticket.id}`);
-        } else {
-          failCount++;
-          logger.error(`❌ Échec notification Expo: ${JSON.stringify(ticket)}`);
-          // Si le token est invalide, désactiver la subscription
-          if (ticket.details?.error === 'DeviceNotRegistered') {
-            const token = chunk[i].to;
-            await PushSubscription.updateOne(
-              { expoPushToken: token },
-              { active: false }
-            );
-            logger.info(`Token Expo désactivé (DeviceNotRegistered): ${token}`);
-          }
-        }
-      }
-    } catch (error) {
-      logger.error('❌ Erreur envoi chunk Expo:', error.message);
-      failCount += chunk.length;
-    }
-  }
-
-  return { successCount, failCount };
-}
-
-/**
  * Notifier un nouveau match
  */
 async function notifyNewMatch(userId, matchData) {
-  const payload = {
-    type: 'new_match',
-    title: 'Nouveau Match !',
-    body: `${matchData.username} a liké ton profil !`,
-    icon: matchData.photo || '/assets/icons/notif-match.svg',
-    badge: '/assets/icons/badge-72x72.png',
-    data: {
-      url: '/matching',
-      matchId: matchData.matchId
+  try {
+    // ✅ FIX: Valider les données d'entrée
+    if (!userId || !matchData) {
+      logger.warn('⚠️  notifyNewMatch: données manquantes');
+      return { success: false, message: 'Missing required data' };
     }
-  };
 
-  return sendNotificationToUser(userId, payload);
+    const username = (matchData.username || 'Un utilisateur').substring(0, 50);
+    const matchId = matchData.matchId?.toString() || null;
+
+    if (!matchId) {
+      logger.warn('⚠️  notifyNewMatch: matchId manquant');
+      return { success: false, message: 'Missing matchId' };
+    }
+
+    const payload = {
+      type: 'new_match',
+      title: 'Nouveau Match !',
+      body: `${username} a liké ton profil !`,
+      icon: matchData.photo || '/assets/icons/notif-match.svg',
+      badge: '/assets/icons/badge-72x72.png',
+      data: {
+        url: '/matching',
+        matchId
+      }
+    };
+
+    return sendNotificationToUser(userId, payload);
+  } catch (error) {
+    logger.error('Erreur notifyNewMatch:', error);
+    return { success: false, message: error.message };
+  }
 }
 
 /**
  * Notifier un nouveau message
  */
 async function notifyNewMessage(userId, messageData) {
-  const payload = {
-    type: 'new_message',
-    title: `${messageData.senderName}`,
-    body: messageData.message,
-    icon: messageData.senderPhoto || '/assets/icons/notif-message.svg',
-    badge: '/assets/icons/badge-72x72.png',
-    data: {
-      type: 'message',
-      url: '/chat',
-      conversationId: messageData.conversationId,
-      senderName: messageData.senderName,
-      senderAvatar: messageData.senderPhoto,
-      otherUser: messageData.otherUser || {
-        _id: messageData.senderId,
-        pseudo: messageData.senderName,
-        photo: messageData.senderPhoto
-      }
+  try {
+    // ✅ FIX: Valider les données d'entrée
+    if (!userId || !messageData) {
+      logger.warn('⚠️  notifyNewMessage: données manquantes');
+      return { success: false, message: 'Missing required data' };
     }
-  };
 
-  return sendNotificationToUser(userId, payload);
+    const senderName = (messageData.senderName || 'Un utilisateur').substring(0, 50);
+    const messageText = (messageData.message || 'Nouveau message').substring(0, 100);
+    const conversationId = messageData.conversationId?.toString() || null;
+
+    if (!conversationId) {
+      logger.warn('⚠️  notifyNewMessage: conversationId manquant');
+      return { success: false, message: 'Missing conversationId' };
+    }
+
+    const payload = {
+      type: 'new_message',
+      title: senderName,
+      body: messageText,
+      icon: messageData.senderPhoto || '/assets/icons/notif-message.svg',
+      badge: '/assets/icons/badge-72x72.png',
+      data: {
+        url: '/chat',
+        conversationId
+      }
+    };
+
+    return sendNotificationToUser(userId, payload);
+  } catch (error) {
+    logger.error('Erreur notifyNewMessage:', error);
+    return { success: false, message: error.message };
+  }
 }
 
 module.exports = {

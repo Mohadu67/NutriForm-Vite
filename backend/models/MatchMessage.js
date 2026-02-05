@@ -151,7 +151,10 @@ matchMessageSchema.methods.isExpired = function() {
 
 // Méthode pour soft delete
 matchMessageSchema.methods.deleteForUser = function(userId) {
-  if (!this.deletedBy.includes(userId)) {
+  const userIdString = userId.toString();
+  const alreadyDeleted = this.deletedBy.some(id => id.toString() === userIdString);
+
+  if (!alreadyDeleted) {
     this.deletedBy.push(userId);
   }
   // Si les deux participants ont supprimé, marquer comme définitivement supprimé

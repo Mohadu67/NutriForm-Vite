@@ -44,6 +44,7 @@ const newsletterRoutes = require('./routes/newsletter.route.js');
 const newsletterAdminRoutes = require('./routes/newsletter-admin.route.js');
 const reviewsRoutes = require('./routes/reviews.js');
 const uploadRoutes = require('./routes/upload.js');
+const uploadFromUrlRoutes = require('./routes/uploadFromUrl.route.js');
 const leaderboardRoutes = require('./routes/leaderboard.route.js');
 const subscriptionRoutes = require('./routes/subscription.route.js');
 const xpRedemptionRoutes = require('./routes/xpRedemption.route.js');
@@ -52,7 +53,6 @@ const supportTicketRoutes = require('./routes/supportTicket.route.js');
 const profileRoutes = require('./routes/profile.route.js');
 const matchingRoutes = require('./routes/matching.route.js');
 const matchChatRoutes = require('./routes/matchChat.route.js');
-const chatUploadRoutes = require('./routes/chatUpload.js');
 const pushNotificationRoutes = require('./routes/pushNotification.route.js');
 const recipeRoutes = require('./routes/recipe.route.js');
 const notificationRoutes = require('./routes/notification.route.js');
@@ -62,7 +62,7 @@ const linkPreviewRoutes = require('./routes/linkPreview.route.js');
 const rateLimitRoutes = require('./routes/rateLimit.route.js');
 const partnerRoutes = require('./routes/partner.route.js');
 const analyticsRoutes = require('./routes/analytics.route.js');
-const exerciseRoutes = require('./routes/exercises.js');
+const imageProxyRoutes = require('./routes/imageProxy.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 const { startChallengeCron } = require('./cron/challengeCron');
@@ -168,12 +168,10 @@ const globalLimiter = rateLimit({
     res.status(429).sendFile(path.join(__dirname, 'public', 'rate-limit.html'));
   },
   skip: (req) => {
-    // Whitelist pour les tests de charge (comparaison stricte d'IP)
-    const whitelistedIPs = process.env.RATE_LIMIT_WHITELIST?.split(',').map(ip => ip.trim()) || [];
+    // Whitelist pour les tests de charge (ajouter ton IP ici)
+    const whitelistedIPs = process.env.RATE_LIMIT_WHITELIST?.split(',') || [];
     const clientIP = req.ip || req.connection.remoteAddress;
-    // Normaliser l'IP (enlever le préfixe ::ffff: pour IPv4 mappées en IPv6)
-    const normalizedIP = clientIP?.replace(/^::ffff:/, '');
-    if (normalizedIP && whitelistedIPs.includes(normalizedIP)) {
+    if (whitelistedIPs.some(ip => clientIP.includes(ip))) {
       return true;
     }
 
@@ -229,6 +227,7 @@ app.use('/api/programs', programRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/newsletter-admin', newsletterAdminRoutes);
 app.use('/api/reviews', reviewsRoutes);
+app.use('/api/upload/from-url', uploadFromUrlRoutes); // AVANT /api/upload
 app.use('/api/upload', uploadRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
@@ -238,7 +237,6 @@ app.use('/api/admin/support-tickets', supportTicketRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/matching', matchingRoutes);
 app.use('/api/match-chat', matchChatRoutes);
-app.use('/api/chat-upload', chatUploadRoutes);
 app.use('/api/push', pushNotificationRoutes);
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/notifications', notificationRoutes);
@@ -248,7 +246,7 @@ app.use('/api/link-preview', linkPreviewRoutes);
 app.use('/api/rate-limit', rateLimitRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/analytics', analyticsRoutes);
-app.use('/api/exercises', exerciseRoutes);
+app.use('/api/image-proxy', imageProxyRoutes);
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');

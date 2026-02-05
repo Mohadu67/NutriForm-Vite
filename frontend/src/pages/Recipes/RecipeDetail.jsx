@@ -6,6 +6,7 @@ import Alert from '../../components/MessageAlerte/Alert/Alert';
 import { useRecipeDetail } from './hooks/useRecipeDetail';
 import usePageTitle from '../../hooks/usePageTitle';
 import { storage } from '../../shared/utils/storage';
+import { getProxiedImageUrl } from '../../utils/imageProxy';
 import {
   ClockIcon,
   ChefHatIcon,
@@ -110,7 +111,14 @@ export default function RecipeDetail() {
 
           {/* Hero image */}
           <div className={style.hero}>
-            <img src={recipe.image} alt={recipe.title} className={style.heroImage} />
+            <img
+              src={getProxiedImageUrl(recipe.image)}
+              alt={recipe.title}
+              className={style.heroImage}
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
             <div className={style.heroOverlay}>
               {recipe.isPremium && (
                 <span className={style.premiumBadge}>Premium</span>

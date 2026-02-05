@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema(
     },
     motdepasse: {
       type: String,
-      required: true,
+      required: false, // Optionnel pour OAuth (Google, Apple)
       minlength: 8,
       select: false
     },
@@ -49,6 +49,11 @@ const userSchema = new mongoose.Schema(
     photo: {
       type: String,
       default: null
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true
     },
     imc: [imcSchema],
     calories: [caloriesSchema],

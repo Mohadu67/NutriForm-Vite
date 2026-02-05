@@ -5,6 +5,7 @@ import { storage } from '../../shared/utils/storage';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
+import Avatar from '../../components/Shared/Avatar';
 import ActiveChallenges from './components/ActiveChallenges';
 import ChallengeModal from './components/ChallengeModal';
 import ChallengeSentCard from './components/ChallengeSentCard';
@@ -449,11 +450,11 @@ const Leaderboard = () => {
                     <div className={`${styles.podiumItem} ${styles.silver}`}>
                       <div className={styles.podiumRank}>2</div>
                       <div className={styles.podiumAvatar}>
-                        {podium[1].avatarUrl ? (
-                          <img src={podium[1].avatarUrl} alt="" />
-                        ) : (
-                          <span>{podium[1].displayName?.charAt(0).toUpperCase()}</span>
-                        )}
+                        <Avatar
+                          src={podium[1].avatarUrl}
+                          name={podium[1].displayName || 'User'}
+                          size="lg"
+                        />
                       </div>
                       <div className={styles.podiumName}>{podium[1].displayName}</div>
                       {podium[1].league && <LeagueBadge league={podium[1].league} size="small" />}
@@ -485,11 +486,11 @@ const Leaderboard = () => {
                       <div className={styles.crown}><CrownIcon /></div>
                       <div className={styles.podiumRank}>1</div>
                       <div className={styles.podiumAvatar}>
-                        {podium[0].avatarUrl ? (
-                          <img src={podium[0].avatarUrl} alt="" />
-                        ) : (
-                          <span>{podium[0].displayName?.charAt(0).toUpperCase()}</span>
-                        )}
+                        <Avatar
+                          src={podium[0].avatarUrl}
+                          name={podium[0].displayName || 'User'}
+                          size="lg"
+                        />
                       </div>
                       <div className={styles.podiumName}>{podium[0].displayName}</div>
                       {podium[0].league && <LeagueBadge league={podium[0].league} size="small" />}
@@ -520,11 +521,11 @@ const Leaderboard = () => {
                     <div className={`${styles.podiumItem} ${styles.bronze}`}>
                       <div className={styles.podiumRank}>3</div>
                       <div className={styles.podiumAvatar}>
-                        {podium[2].avatarUrl ? (
-                          <img src={podium[2].avatarUrl} alt="" />
-                        ) : (
-                          <span>{podium[2].displayName?.charAt(0).toUpperCase()}</span>
-                        )}
+                        <Avatar
+                          src={podium[2].avatarUrl}
+                          name={podium[2].displayName || 'User'}
+                          size="lg"
+                        />
                       </div>
                       <div className={styles.podiumName}>{podium[2].displayName}</div>
                       {podium[2].league && <LeagueBadge league={podium[2].league} size="small" />}
@@ -562,11 +563,11 @@ const Leaderboard = () => {
                       <div key={entry._id} className={styles.listItem}>
                         <div className={styles.listRank}>#{entry.rank || index + 4}</div>
                         <div className={styles.listAvatar}>
-                          {entry.avatarUrl ? (
-                            <img src={entry.avatarUrl} alt="" />
-                          ) : (
-                            <span>{entry.displayName?.charAt(0).toUpperCase()}</span>
-                          )}
+                          <Avatar
+                            src={entry.avatarUrl}
+                            name={entry.displayName || 'User'}
+                            size="md"
+                          />
                         </div>
                         <div className={styles.listInfo}>
                           <div className={styles.listNameRow}>

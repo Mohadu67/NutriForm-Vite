@@ -217,11 +217,17 @@ export default function FormExo({ user: userProp }) {
       const response = await secureApiCall("/workouts/last-week-session");
       if (response.ok) {
         const data = await response.json();
-        if (data.session && Array.isArray(data.session.entries) && data.session.entries.length > 0) {
-          setLastWeekSession(data.session);
-          setShowRepeatModal(true);
-          setCheckingLastWeek(false);
-          return;
+        if (Array.isArray(data.sessions) && data.sessions.length > 0) {
+          // Filtrer les séances qui ont au moins un exercice
+          const sessionsWithExercises = data.sessions.filter(s =>
+            Array.isArray(s.entries) && s.entries.length > 0
+          );
+          if (sessionsWithExercises.length > 0) {
+            setLastWeekSession(sessionsWithExercises);
+            setShowRepeatModal(true);
+            setCheckingLastWeek(false);
+            return;
+          }
         }
       }
     } catch (error) {
@@ -383,8 +389,9 @@ export default function FormExo({ user: userProp }) {
     }
   })();
 
-  const handleAcceptRepeat = async () => {
-    if (!lastWeekSession || !Array.isArray(lastWeekSession.entries)) return;
+  const handleAcceptRepeat = async (sessionToRepeat) => {
+    const sessionData = sessionToRepeat || (Array.isArray(lastWeekSession) ? lastWeekSession[0] : lastWeekSession);
+    if (!sessionData || !Array.isArray(sessionData.entries)) return;
 
     try {
       // Charger tous les exercices disponibles depuis les JSONs
@@ -399,7 +406,7 @@ export default function FormExo({ user: userProp }) {
       });
 
       // Convertir les entries en exercices complets depuis le JSON
-      const exercises = lastWeekSession.entries.map((entry, index) => {
+      const exercises = sessionData.entries.map((entry, index) => {
         let matchedExercise = null;
 
         // Stratégie 1 : Match par ID (le plus fiable)
@@ -466,13 +473,14 @@ export default function FormExo({ user: userProp }) {
       setSelectedExercises(exercises);
       setCurrentStep(3);
       setShowRepeatModal(false);
-      setSessionName(lastWeekSession.name || "");
+      setShowWelcome(false);
+      setSessionName(sessionData.name || "");
       setDynamiKey(prev => prev + 1); // Force le remontage de DynamiChoice
 
       try {
         storage.set("formSelectedExercises", exercises);
         storage.set("dynamiSelected", exercises);
-        storage.set("formSessionName", lastWeekSession.name || "");
+        storage.set("formSessionName", sessionData.name || "");
         storage.set("formCurrentStep", "3");
         // Sauvegarder les muscles pour filtrer les exercices proposés
         if (muscleIds.length > 0) {
@@ -486,7 +494,7 @@ export default function FormExo({ user: userProp }) {
     } catch (error) {
       logger.error("Erreur lors du chargement des exercices:", error);
       // En cas d'erreur, utiliser quand même les données basiques
-      const exercises = lastWeekSession.entries.map((entry, index) => ({
+      const exercises = sessionData.entries.map((entry, index) => ({
         id: entry._id || `repeat-${index}`,
         name: entry.exerciseName || "Exercice",
         type: entry.type || "muscu",
@@ -515,13 +523,14 @@ export default function FormExo({ user: userProp }) {
       setSelectedExercises(exercises);
       setCurrentStep(3);
       setShowRepeatModal(false);
-      setSessionName(lastWeekSession.name || "");
+      setShowWelcome(false);
+      setSessionName(sessionData.name || "");
       setDynamiKey(prev => prev + 1); // Force le remontage de DynamiChoice
 
       try {
         storage.set("formSelectedExercises", exercises);
         storage.set("dynamiSelected", exercises);
-        storage.set("formSessionName", lastWeekSession.name || "");
+        storage.set("formSessionName", sessionData.name || "");
         storage.set("formCurrentStep", "3");
         if (muscleIds.length > 0) {
           storage.set("dynamiMuscle", muscleIds);

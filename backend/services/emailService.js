@@ -3,6 +3,7 @@ const config = require('../config');
 const logger = require('../utils/logger.js');
 
 const FROM_NAME = process.env.FROM_NAME || 'Harmonith';
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 logger.info('[EMAIL_SERVICE] Using Gmail SMTP for email delivery');
 
@@ -24,15 +25,17 @@ const getTransporter = () => {
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
-      },
-      pool: true,
-      maxConnections: 3,
-      maxMessages: 50,
-      rateDelta: 1000,
-      rateLimit: 3
+      }
     });
   }
   return transporter;
+};
+
+const validateEmail = (email) => {
+  if (!email || typeof email !== 'string') {
+    return false;
+  }
+  return EMAIL_REGEX.test(email.trim());
 };
 
 const getNewsletterTemplate = (subject, content) => {
@@ -94,6 +97,12 @@ const getNewsletterTemplate = (subject, content) => {
 
 const sendNewsletterEmail = async (to, subject, content, senderName = 'L\'équipe Harmonith') => {
   try {
+    // Validate email
+    if (!validateEmail(to)) {
+      logger.warn(`[EMAIL_SERVICE] ⚠️ Invalid email format: ${to}`);
+      return { success: false, error: 'Invalid email format' };
+    }
+
     const htmlContent = getNewsletterTemplate(subject, content)
       .replace('{{email}}', encodeURIComponent(to));
 
@@ -141,6 +150,17 @@ const sendNewsletterToAll = async (newsletter) => {
     const failedRecipients = [];
 
     for (const subscriber of subscribers) {
+      // Skip invalid email addresses
+      if (!validateEmail(subscriber.email)) {
+        logger.warn(`[EMAIL_SERVICE] Skipping invalid email: ${subscriber.email}`);
+        failedCount++;
+        failedRecipients.push({
+          email: subscriber.email,
+          error: 'Invalid email format'
+        });
+        continue;
+      }
+
       const result = await sendNewsletterEmail(
         subscriber.email,
         newsletter.subject,

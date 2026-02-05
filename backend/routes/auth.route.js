@@ -4,7 +4,7 @@ const rateLimit = require('express-rate-limit');
 
 const auth = require('../middlewares/auth.middleware');
 const verifyCaptcha = require('../middlewares/recaptcha.middleware');
-const { login, register, me, updateProfile, changePassword, logout, resendVerificationEmail, getWsToken, getNotificationPreferences, updateNotificationPreferences, deleteAccount, requestEmailChange, confirmEmailChange } = require('../controllers/auth.controller.js');
+const { login, register, me, updateProfile, changePassword, logout, resendVerificationEmail, getWsToken, getNotificationPreferences, updateNotificationPreferences, deleteAccount, googleAuth } = require('../controllers/auth.controller.js');
 
 // Rate limiting spécifique pour l'authentification
 const authLimiter = rateLimit({
@@ -37,6 +37,7 @@ const resendLimiter = rateLimit({
 
 router.post('/login', authLimiter, login);
 router.post('/register', authLimiter, verifyCaptcha, register);
+router.post('/auth/google', authLimiter, googleAuth);
 router.post('/resend-verification', resendLimiter, resendVerificationEmail);
 router.post('/logout', logout);
 router.get('/me', auth, me);
@@ -44,15 +45,11 @@ router.get('/ws-token', auth, getWsToken); // Token pour WebSocket
 router.put('/update-profile', auth, updateProfile);
 router.put('/change-password', auth, changePassword);
 
-// Changement d'email avec confirmation
-router.post('/request-email-change', auth, requestEmailChange);
-router.get('/confirm-email-change', confirmEmailChange);
-
 // Preferences de notifications
 router.get('/notification-preferences', auth, getNotificationPreferences);
 router.put('/notification-preferences', auth, updateNotificationPreferences);
 
-// Suppression de compte (conforme App Store / Google Play)
-router.delete('/account', auth, deleteAccount);
+// Suppression de compte
+router.delete('/auth/account', auth, deleteAccount);
 
 module.exports = router;

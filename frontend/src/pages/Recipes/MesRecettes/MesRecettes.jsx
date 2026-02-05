@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNotification } from '../../../hooks/useNotification.jsx';
 import { secureApiCall } from '../../../utils/authService';
 import logger from '../../../shared/utils/logger';
+import { getProxiedImageUrl } from '../../../utils/imageProxy';
 import styles from './MesRecettes.module.css';
 import { ClockIcon, FireIcon, UtensilsIcon } from '../../../components/Navbar/NavIcons';
 
@@ -225,7 +226,15 @@ export default function MesRecettes({ onBack, onEdit, onCreate, onView, refreshK
               <div key={recipe._id} className={styles.card}>
                 {recipe.image && (
                   <div className={styles.coverImage}>
-                    <img src={recipe.image} alt={recipe.title} loading="lazy" />
+                    <img
+                      src={getProxiedImageUrl(recipe.image)}
+                      alt={recipe.title}
+                      loading="lazy"
+                      onError={(e) => {
+                        // Fallback si l'image ne charge pas
+                        e.target.style.display = 'none';
+                      }}
+                    />
                   </div>
                 )}
 
