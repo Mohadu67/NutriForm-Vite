@@ -10,6 +10,7 @@ import ProgramForm from '../../components/Programs/ProgramForm/ProgramForm';
 import MyPrograms from '../../components/Programs/MyPrograms/MyPrograms';
 import { secureApiCall, isAuthenticated } from '../../utils/authService';
 import { getSubscriptionStatus } from '../../shared/api/subscription';
+import { getActiveSession, clearActiveSession, getSessionSummary } from '../../utils/programSession';
 import logger from '../../shared/utils/logger';
 import { retryApiCall, saveToLocalStorage } from '../../utils/apiRetry';
 import styles from './Programs.module.css';
@@ -24,6 +25,8 @@ export default function Programs() {
   const [saveStatus, setSaveStatus] = useState(null); // 'saving', 'saved', 'error', 'not_saved'
   const [editingProgram, setEditingProgram] = useState(null);
   const [myProgramsRefreshKey, setMyProgramsRefreshKey] = useState(0);
+  const [activeSession, setActiveSession] = useState(null);
+  const [sessionSummary, setSessionSummary] = useState(null);
 
   // Vérifier si on vient de la page admin
   const fromAdmin = location.state?.fromAdmin || false;
@@ -46,6 +49,14 @@ export default function Programs() {
     };
 
     checkPremiumStatus();
+
+    // Vérifier si une session active existe
+    const session = getActiveSession();
+    if (session) {
+      setActiveSession(session);
+      setSessionSummary(getSessionSummary());
+      logger.info('💪 Session active détectée');
+    }
   }, []);
 
   const handleSelectProgram = (program) => {
@@ -135,6 +146,9 @@ export default function Programs() {
   };
 
   const handleCancel = () => {
+    clearActiveSession();
+    setActiveSession(null);
+    setSessionSummary(null);
     setViewMode('browse');
     setSelectedProgram(null);
     setSaveStatus(null);
@@ -144,6 +158,20 @@ export default function Programs() {
     setViewMode('browse');
     setSelectedProgram(null);
     setSaveStatus(null);
+  };
+
+  const handleResumeSession = () => {
+    if (activeSession) {
+      setSelectedProgram(activeSession.program);
+      setViewMode('running');
+    }
+  };
+
+  const handleAbandonSession = () => {
+    clearActiveSession();
+    setActiveSession(null);
+    setSessionSummary(null);
+    notify.info('Session abandonnée');
   };
 
   const handleCreateProgram = () => {
@@ -223,6 +251,38 @@ export default function Programs() {
             </button>
           )}
 
+          {/* Banner pour reprendre la session */}
+          {sessionSummary && viewMode !== 'running' && (
+            <div className={styles.resumeSessionBanner}>
+              <div className={styles.resumeSessionContent}>
+                <div className={styles.resumeSessionIcon}>💪</div>
+                <div className={styles.resumeSessionInfo}>
+                  <h3>Séance en cours</h3>
+                  <p>
+                    {sessionSummary.programName} - {sessionSummary.currentCycleName}
+                  </p>
+                  <div className={styles.resumeSessionProgress}>
+                    <div className={styles.progressBar}>
+                      <div
+                        className={styles.progressFill}
+                        style={{ width: `${sessionSummary.progress}%` }}
+                      ></div>
+                    </div>
+                    <span>{sessionSummary.progress}% complété</span>
+                  </div>
+                </div>
+                <div className={styles.resumeSessionActions}>
+                  <button onClick={handleResumeSession} className={styles.resumeBtn}>
+                    Reprendre
+                  </button>
+                  <button onClick={handleAbandonSession} className={styles.abandonBtn}>
+                    Abandonner
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {viewMode === 'browse' && (
             <ProgramBrowser
               onSelectProgram={handleSelectProgram}
@@ -248,6 +308,7 @@ export default function Programs() {
               onBackToList={handleBackToList}
               isPremium={isPremium}
               saveStatus={saveStatus}
+              initialState={activeSession}
             />
           )}
 

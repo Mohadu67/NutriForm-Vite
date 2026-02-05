@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { formatDuration, getCycleTypeLabel } from '../../../utils/programUtils';
+import { loadExerciseImages, getExerciseImage } from '../../../utils/exerciseImages';
+import { saveActiveSession, clearActiveSession } from '../../../utils/programSession';
 import styles from './ProgramRunner.module.css';
 import logger from '../../../shared/utils/logger';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
@@ -13,14 +15,15 @@ import {
   FlameIcon
 } from '../ProgramIcons';
 
-export default function ProgramRunner({ program, onComplete, onCancel, onBackToList, isPremium, saveStatus }) {
-  const [currentCycleIndex, setCurrentCycleIndex] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+export default function ProgramRunner({ program, onComplete, onCancel, onBackToList, isPremium, saveStatus, initialState }) {
+  const [currentCycleIndex, setCurrentCycleIndex] = useState(initialState?.currentCycleIndex || 0);
+  const [timeRemaining, setTimeRemaining] = useState(initialState?.timeRemaining || 0);
+  const [isPaused, setIsPaused] = useState(initialState?.isPaused || false);
   const [isFinished, setIsFinished] = useState(false);
-  const [totalElapsedTime, setTotalElapsedTime] = useState(0);
+  const [totalElapsedTime, setTotalElapsedTime] = useState(initialState?.totalElapsedTime || 0);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [announcement, setAnnouncement] = useState('');
+  const [exerciseImages, setExerciseImages] = useState(new Map());
 
   const timerRef = useRef(null);
   const transitionRef = useRef(null);
@@ -28,6 +31,34 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
 
   const cycles = program?.cycles || [];
   const currentCycle = cycles[currentCycleIndex];
+
+  // Charger les images des exercices au montage
+  useEffect(() => {
+    loadExerciseImages().then(imageMap => {
+      setExerciseImages(imageMap);
+    });
+  }, []);
+
+  // Sauvegarder l'état de la session automatiquement
+  useEffect(() => {
+    if (!isFinished) {
+      const sessionState = {
+        program,
+        currentCycleIndex,
+        timeRemaining,
+        totalElapsedTime,
+        isPaused
+      };
+      saveActiveSession(sessionState);
+    }
+  }, [program, currentCycleIndex, timeRemaining, totalElapsedTime, isPaused, isFinished]);
+
+  // Nettoyer la session quand le programme est terminé
+  useEffect(() => {
+    if (isFinished) {
+      clearActiveSession();
+    }
+  }, [isFinished]);
 
   // Compter uniquement les exercices (pas les repos/transitions)
   const exerciseCycles = cycles.filter(c => c.type === 'exercise');
@@ -295,16 +326,21 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
       <div className={`${styles.currentCycle} ${getCycleColor(currentCycle?.type)}`}>
         <div className={styles.cycleType}>{getCycleTypeLabel(currentCycle?.type)}</div>
 
-        {currentCycle?.image && currentCycle?.type === 'exercise' && (
-          <div className={styles.cycleImageContainer}>
-            <img
-              src={currentCycle.image}
-              alt={`Démonstration de l'exercice : ${currentCycle?.exerciseName || getCycleTypeLabel(currentCycle?.type)}`}
-              className={styles.cycleImage}
-              loading="lazy"
-            />
-          </div>
-        )}
+        {currentCycle?.type === 'exercise' && (() => {
+          // Essayer d'obtenir l'image depuis le cycle ou depuis le map d'exercices
+          const imageUrl = currentCycle?.image || getExerciseImage(currentCycle?.exerciseName);
+
+          return imageUrl ? (
+            <div className={styles.cycleImageContainer}>
+              <img
+                src={imageUrl}
+                alt={`Démonstration de l'exercice : ${currentCycle?.exerciseName || getCycleTypeLabel(currentCycle?.type)}`}
+                className={styles.cycleImage}
+                loading="lazy"
+              />
+            </div>
+          ) : null;
+        })()}
 
         <h3 className={styles.cycleName}>
           {currentCycle?.type === 'exercise'
