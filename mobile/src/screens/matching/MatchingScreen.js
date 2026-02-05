@@ -191,16 +191,6 @@ export default function MatchingScreen() {
   // Vérifier si l'utilisateur est premium
   const isUserFree = user?.subscriptionTier === 'free';
 
-  // DEBUG
-  useEffect(() => {
-    console.log('[MATCHING DEBUG] User subscription:', {
-      tier: user?.subscriptionTier,
-      isUserFree,
-      activeTab,
-      user: user
-    });
-  }, [user, activeTab]);
-
   // Animation refs
   const headerAnim = useRef(new Animated.Value(0)).current;
   const tabIndicatorAnim = useRef(new Animated.Value(0)).current;
