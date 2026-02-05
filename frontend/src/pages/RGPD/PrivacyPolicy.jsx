@@ -1,153 +1,416 @@
-import styles from "./Rgpd.module.css";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import Header from "../../components/Header/Header";
+import LegalLinks from "./components/LegalLinks";
+import style from "./Rgpd.module.css";
+import { companyInfo, legalFramework, minorAgeRequirements, responsePolicy, versions } from "./config/legalData";
+import { dataProcessors, getInternationalTransferProcessors, getHealthDataProcessors } from "./config/processors";
 
-export default function PrivacyPolicy() {
+/**
+ * PRIVACY POLICY - RGPD COMPLETE
+ * Contains all data collection, processing, and user rights
+ * Updated: Feb 4, 2026
+ */
+const PrivacyPolicy = () => {
+  const navigate = useNavigate();
+  const internationalProcessors = getInternationalTransferProcessors();
+  const healthProcessors = getHealthDataProcessors();
+
   return (
-    <main className={styles.container}>
-      <article className={styles.card}>
-        <h1 className={styles.title}>Politique de Confidentialite</h1>
-        <p className={styles.updated}>Derniere mise a jour : Decembre 2024</p>
+    <>
+      <Header />
+      <main className={style.mentionsMain}>
+        <button onClick={() => navigate(-1)} className={style.backButton}>
+          ← Retour
+        </button>
 
-        <nav className={styles.cgvNav}>
-          <Link to="/cgv">CGV / CGU</Link>
-          <Link to="/mentions-legales">Mentions legales</Link>
-          <Link to="/cookies">Cookies</Link>
-        </nav>
+        <h1 className={style.pageTitle}>Politique de confidentialité</h1>
 
-        <section className={styles.section}>
-          <h2 className={styles.h2}>1. Introduction</h2>
-          <p className={styles.p}>
-            La protection de vos donnees personnelles est une priorite. Cette politique explique comment vos donnees sont collectees, utilisees et protegees lorsque vous utilisez notre site Harmonith.
-          </p>
-        </section>
+        <div className={style.legalContent}>
+          {/* 1. INTRODUCTION */}
+          <section className={style.legalCard}>
+            <h2 className={style.cardTitle}>📖 Introduction</h2>
+            <div className={style.cardContent}>
+              <p className={style.sectionText}>
+                Harmonith respecte votre vie privée et s'engage à protéger vos données personnelles en conformité avec le <strong>RGPD</strong> (Règlement UE 2016/679).
+              </p>
+              <div className={style.infoGroup}>
+                <span className={style.infoLabel}>Responsable de traitement</span>
+                <span className={style.infoValue}>{companyInfo.editor}, {companyInfo.address}</span>
+              </div>
+              <div className={style.infoGroup}>
+                <span className={style.infoLabel}>Dernière mise à jour</span>
+                <span className={style.infoValue}>{versions.privacyPolicy.date}</span>
+              </div>
+            </div>
+          </section>
 
-        <section className={styles.section}>
-          <h2 className={styles.h2}>2. Donnees collectees</h2>
-          <p className={styles.p}>
-            Nous collectons les informations suivantes :
-          </p>
-          <ul className={styles.list}>
-            <li><strong>Donnees d'identification :</strong> nom, prenom, pseudo, adresse e-mail</li>
-            <li><strong>Donnees de sante (optionnelles) :</strong> poids, taille, objectifs fitness</li>
-            <li><strong>Donnees d'utilisation :</strong> programmes suivis, recettes enregistrees, XP accumules</li>
-            <li><strong>Donnees de paiement :</strong> les paiements sont traites par Stripe. Nous ne stockons pas vos informations bancaires</li>
-          </ul>
-        </section>
+          {/* 2. DONNÉES COLLECTÉES */}
+          <section className={style.legalCard}>
+            <h2 className={style.cardTitle}>📊 Données collectées</h2>
+            <div className={style.cardContent}>
+              <div className={style.dataCategory}>
+                <h3>🧑 Données de profil</h3>
+                <ul className={style.featureList}>
+                  <li>Prénom, email, photo de profil</li>
+                  <li>Niveau de forme physique</li>
+                  <li>Préférences de matching</li>
+                </ul>
+              </div>
 
-        <section className={styles.section}>
-          <h2 className={styles.h2}>3. Utilisation des donnees</h2>
-          <p className={styles.p}>
-            Les donnees collectees servent a :
-          </p>
-          <ul className={styles.list}>
-            <li>Fournir et personnaliser nos services</li>
-            <li>Gerer votre compte et abonnement Premium</li>
-            <li>Calculer et attribuer les points d'experience (XP)</li>
-            <li>Ameliorer l'experience utilisateur</li>
-            <li>Vous contacter concernant votre compte ou nos services</li>
-          </ul>
-          <p className={styles.p}>
-            Vos donnees ne sont jamais revendues a des tiers.
-          </p>
-        </section>
+              <div className={style.dataCategory}>
+                <h3>❤️ Données de santé (Article 9 RGPD)</h3>
+                <p className={style.sectionText}>
+                  <strong>Consentement explicite requis</strong> - Ces données sensibles nécessitent votre accord express:
+                </p>
+                <ul className={style.featureList}>
+                  <li>Activité physique (pas, distance, calories brûlées)</li>
+                  <li>Fréquence cardiaque (min/max/moyenne)</li>
+                  <li>Cycle menstruel (optionnel)</li>
+                  <li>Mesures corporelles (poids, taille, IMC)</li>
+                </ul>
+              </div>
+
+              <div className={style.dataCategory}>
+                <h3>📍 Géolocalisation</h3>
+                <ul className={style.featureList}>
+                  <li>Coordonnées GPS (~10m de précision) - pour matching social</li>
+                  <li>Distance approximative avec autres utilisateurs</li>
+                </ul>
+              </div>
+
+              <div className={style.dataCategory}>
+                <h3>💬 Communications</h3>
+                <ul className={style.featureList}>
+                  <li>Messages P2P avec autres utilisateurs</li>
+                  <li>Photos et vidéos partagées</li>
+                  <li>Conversations avec chatbot IA</li>
+                </ul>
+              </div>
+
+              <div className={style.dataCategory}>
+                <h3>💳 Données de paiement</h3>
+                <ul className={style.featureList}>
+                  <li>Traité par Stripe (jamais accès carte complète)</li>
+                  <li>Montant et fréquence d'abonnement</li>
+                  <li>Historique de facturation</li>
+                </ul>
+              </div>
+
+              <div className={style.dataCategory}>
+                <h3>🔧 Données techniques</h3>
+                <ul className={style.featureList}>
+                  <li>Push tokens (notifications)</li>
+                  <li>Système d'exploitation et appareil</li>
+                  <li>Logs d'accès et adresses IP</li>
+                  <li>Google Analytics cookies</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          {/* 3. BASES LÉGALES */}
+          <section className={style.legalCard}>
+            <h2 className={style.cardTitle}>⚖️ Bases légales du traitement</h2>
+            <div className={style.cardContent}>
+              <table className={style.legalTable}>
+                <thead>
+                  <tr>
+                    <th>Traitement</th>
+                    <th>Base légale</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Créer un compte</td>
+                    <td><strong>Contrat</strong> (Article 6.1.b)</td>
+                  </tr>
+                  <tr>
+                    <td>Données de santé</td>
+                    <td><strong>Consentement explicite</strong> (Article 9.2.a)</td>
+                  </tr>
+                  <tr>
+                    <td>Matching social</td>
+                    <td><strong>Consentement</strong> (Article 6.1.a)</td>
+                  </tr>
+                  <tr>
+                    <td>Notifications push</td>
+                    <td><strong>Consentement</strong> (Article 6.1.a)</td>
+                  </tr>
+                  <tr>
+                    <td>Paiements premium</td>
+                    <td><strong>Contrat</strong> (Article 6.1.b)</td>
+                  </tr>
+                  <tr>
+                    <td>Analytics</td>
+                    <td><strong>Intérêt légitime</strong> (Article 6.1.f)</td>
+                  </tr>
+                  <tr>
+                    <td>Sécurité/Fraude</td>
+                    <td><strong>Intérêt légitime</strong> (Article 6.1.f)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* 4. ARTICLE 9 - DONNÉES DE SANTÉ */}
+          <section className={style.legalCard}>
+            <h2 className={style.cardTitle}>❤️ Données sensibles (Article 9)</h2>
+            <div className={style.cardContent}>
+              <p className={style.sectionText}>
+                Les données de santé sont <strong>strictement protégées</strong> et ne peuvent être traitées que avec votre <strong>consentement explicite</strong>.
+              </p>
+
+              <div className={style.note}>
+                <strong>ℹ️ Que se passe-t-il?</strong>
+                <ul style={{ marginTop: "0.5rem" }}>
+                  <li>À l'activation des fonctionnalités santé, vous acceptez explicitement ce traitement</li>
+                  <li>Vous pouvez retirer ce consentement à tout moment (Profil → Confidentialité)</li>
+                  <li>Les données de santé restent séparées des autres données</li>
+                  <li>Elles ne sont jamais partagées sans consentement</li>
+                </ul>
+              </div>
+
+              <h3>Processeurs de données de santé:</h3>
+              {healthProcessors.map((proc) => (
+                <div key={proc.id} className={style.processorCard}>
+                  <p>
+                    <strong>{proc.name}</strong> - {proc.purpose}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
 
         <section className={styles.section}>
           <h2 className={styles.h2}>4. Paiements et donnees financieres</h2>
           <p className={styles.p}>
-            Les paiements sont traites de maniere securisee selon la plateforme utilisee :
+            Les paiements sont traites de maniere securisee par <strong>Stripe</strong>, certifie PCI-DSS niveau 1. Harmonith n'a jamais acces a vos informations de carte bancaire completes.
           </p>
-          <ul className={styles.list}>
-            <li><strong>Site web :</strong> Stripe, certifie PCI-DSS niveau 1</li>
-            <li><strong>Application iOS :</strong> Apple App Store (In-App Purchase)</li>
-            <li><strong>Application Android :</strong> Google Play Billing</li>
-          </ul>
           <p className={styles.p}>
-            Harmonith n'a jamais acces a vos informations de carte bancaire completes. Nous conservons uniquement les identifiants de transaction pour la gestion de votre abonnement.
+            Nous conservons uniquement l'identifiant client Stripe et l'historique des transactions pour la gestion de votre abonnement.
           </p>
         </section>
 
-        <section className={styles.section}>
-          <h2 className={styles.h2}>4bis. Donnees de sante (Application mobile)</h2>
-          <p className={styles.p}>
-            L'application mobile Harmonith peut acceder, avec votre consentement, aux donnees de sante de votre appareil :
-          </p>
-          <ul className={styles.list}>
-            <li><strong>iOS (HealthKit) :</strong> nombre de pas, poids, taille, frequence cardiaque, calories brulees, distance parcourue</li>
-            <li><strong>Android (Health Connect) :</strong> memes donnees que HealthKit</li>
-          </ul>
-          <p className={styles.p}>
-            Ces donnees sont utilisees uniquement pour personnaliser vos objectifs fitness et suivre vos progres. Elles ne sont jamais partagees avec des tiers et restent stockees localement sur votre appareil ou dans votre compte Harmonith.
-          </p>
-          <p className={styles.p}>
-            Vous pouvez revoquer l'acces aux donnees de sante a tout moment dans les parametres de l'application ou de votre appareil.
-          </p>
-        </section>
+          {/* 6. PROCESSEURS (ARTICLE 28) */}
+          <section className={style.legalCard}>
+            <h2 className={style.cardTitle}>🔗 Processeurs de données</h2>
+            <div className={style.cardContent}>
+              <p className={style.sectionText}>
+                Vos données sont partagées avec ces tiers pour fonctionnalités spécifiques (tous sous Data Processing Agreement):
+              </p>
 
-        <section className={styles.section}>
-          <h2 className={styles.h2}>5. Conservation des donnees</h2>
-          <p className={styles.p}>
-            Vos donnees sont conservees pendant la duree de votre compte actif, puis 3 ans apres sa suppression pour des raisons legales (obligations fiscales et comptables).
-          </p>
-          <p className={styles.p}>
-            Les donnees de paiement sont conservees conformement aux obligations legales (10 ans pour les documents comptables).
-          </p>
-        </section>
+              {dataProcessors.map((processor) => (
+                <div key={processor.id} className={style.processorCard}>
+                  <h4>{processor.name}</h4>
+                  <div className={style.processorInfo}>
+                    <span><strong>Catégorie:</strong> {processor.category}</span>
+                    <span><strong>Données:</strong> {Array.isArray(processor.dataProcessed) ? processor.dataProcessed.slice(0, 2).join(", ") + "..." : processor.dataProcessed}</span>
+                    <span><strong>Transfert:</strong> {processor.dataTransfer}</span>
+                  </div>
+                </div>
+              ))}
 
-        <section className={styles.section}>
-          <h2 className={styles.h2}>6. Vos droits (RGPD)</h2>
-          <p className={styles.p}>
-            Conformement au RGPD, vous disposez des droits suivants :
-          </p>
-          <ul className={styles.list}>
-            <li><strong>Droit d'acces :</strong> obtenir une copie de vos donnees</li>
-            <li><strong>Droit de rectification :</strong> corriger vos informations</li>
-            <li><strong>Droit a l'effacement :</strong> supprimer votre compte et donnees</li>
-            <li><strong>Droit a la portabilite :</strong> exporter vos donnees</li>
-            <li><strong>Droit d'opposition :</strong> vous opposer au traitement marketing</li>
-          </ul>
-          <p className={styles.p}>
-            Pour exercer ces droits, contactez-nous a : <a href="mailto:contact.harmonith@gmail.com">contact.harmonith@gmail.com</a>
-          </p>
-        </section>
+              <div className={style.note}>
+                <strong>⚠️ Transferts internationaux:</strong> {internationalProcessors.length} processeurs transmettent vers l'étranger (USA). Harmonith utilise des mécanismes sécurisés (SCCs - Standard Contractual Clauses).
+              </div>
+            </div>
+          </section>
 
-        <section className={styles.section}>
-          <h2 className={styles.h2}>7. Publicite (Google AdSense)</h2>
-          <p className={styles.p}>
-            Notre site affiche des publicites via Google AdSense (utilisateurs gratuits uniquement). Google et ses partenaires utilisent des cookies pour personnaliser les annonces.
-          </p>
-          <p className={styles.p}>
-            Vous pouvez gerer vos preferences publicitaires via :
-          </p>
-          <ul className={styles.list}>
-            <li>Le gestionnaire de cookies de notre site</li>
-            <li>Les parametres Google Ads : <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">adssettings.google.com</a></li>
-          </ul>
-        </section>
+          {/* 7. SÉCURITÉ */}
+          <section className={style.legalCard}>
+            <h2 className={style.cardTitle}>🛡️ Mesures de sécurité</h2>
+            <div className={style.cardContent}>
+              <ul className={style.featureList}>
+                <li><strong>HTTPS/TLS 1.3</strong> - Chiffrement en transit</li>
+                <li><strong>Chiffrement au repos</strong> - Données stockées chiffrées</li>
+                <li><strong>JWT tokens</strong> - Sessions auto-expirantes (15 min)</li>
+                <li><strong>bcrypt hashing</strong> - Mots de passe (11 rounds)</li>
+                <li><strong>Keychain/Keystore</strong> - Tokens sécurisés par OS</li>
+                <li><strong>Audit logs</strong> - Traçabilité des accès sensibles</li>
+              </ul>
 
-        <section className={styles.section}>
-          <h2 className={styles.h2}>8. Securite</h2>
-          <p className={styles.p}>
-            Nous mettons en oeuvre des mesures de securite appropriees :
-          </p>
-          <ul className={styles.list}>
-            <li>Chiffrement HTTPS sur tout le site</li>
-            <li>Authentification securisee avec tokens</li>
-            <li>Hebergement securise (Render, Netlify)</li>
-            <li>Paiements via Stripe (PCI-DSS)</li>
-          </ul>
-        </section>
+              <div className={style.note}>
+                <strong>Breach notification:</strong> En cas de violation, vous serez notifié dans les 72h (CNIL + email).
+              </div>
+            </div>
+          </section>
 
-        <section className={styles.section}>
-          <h2 className={styles.h2}>9. Contact</h2>
-          <p className={styles.p}>
-            Pour toute question concernant cette politique ou vos donnees :
-          </p>
-          <ul className={styles.list}>
-            <li><strong>Email :</strong> <a href="mailto:contact.harmonith@gmail.com">contact.harmonith@gmail.com</a></li>
-            <li><strong>Formulaire :</strong> <Link to="/contact">Page de contact</Link></li>
-          </ul>
-        </section>
-      </article>
-    </main>
+          {/* 8. RÉTENTION DES DONNÉES */}
+          <section className={style.legalCard}>
+            <h2 className={style.cardTitle}>⏰ Conservation des données</h2>
+            <div className={style.cardContent}>
+              <table className={style.retentionTable}>
+                <thead>
+                  <tr>
+                    <th>Type de données</th>
+                    <th>Durée</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Données de compte (actif)</td>
+                    <td>Pendant toute la durée du compte</td>
+                  </tr>
+                  <tr>
+                    <td>Après suppression</td>
+                    <td>30 jours, puis destruction permanente</td>
+                  </tr>
+                  <tr>
+                    <td>Conversations actives</td>
+                    <td>Tant que la conversation existe</td>
+                  </tr>
+                  <tr>
+                    <td>Conversations supprimées</td>
+                    <td>Suppression immédiate (2 côtés)</td>
+                  </tr>
+                  <tr>
+                    <td>Conversations IA</td>
+                    <td>1 an ou suppression manuelle</td>
+                  </tr>
+                  <tr>
+                    <td>Logs techniques</td>
+                    <td>Maximum 6 mois</td>
+                  </tr>
+                  <tr>
+                    <td>Transactions (legales)</td>
+                    <td>10 ans (obligation légale)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* 9. VOS DROITS RGPD */}
+          <section className={style.legalCard}>
+            <h2 className={style.cardTitle}>✅ Vos droits RGPD</h2>
+            <div className={style.cardContent}>
+              <p className={style.sectionText}>
+                Vous pouvez exercer ces droits en contactant: <strong>{companyInfo.email}</strong>
+              </p>
+
+              <div className={style.rightsList}>
+                <div className={style.rightItem}>
+                  <h4>🔍 Droit d'accès (Article 15)</h4>
+                  <p>Accédez à toutes vos données personnelles</p>
+                </div>
+
+                <div className={style.rightItem}>
+                  <h4>✏️ Droit de rectification (Article 16)</h4>
+                  <p>Corrigez les informations inexactes</p>
+                </div>
+
+                <div className={style.rightItem}>
+                  <h4>🗑️ Droit à l'oubli (Article 17)</h4>
+                  <p>Demandez la suppression de vos données</p>
+                </div>
+
+                <div className={style.rightItem}>
+                  <h4>📦 Droit à la portabilité (Article 20)</h4>
+                  <p>Recevez vos données en format structuré (JSON/CSV)</p>
+                </div>
+
+                <div className={style.rightItem}>
+                  <h4>⛔ Droit d'opposition (Article 21)</h4>
+                  <p>Refusez certains traitements (matching, analytics)</p>
+                </div>
+
+                <div className={style.rightItem}>
+                  <h4>🔄 Retrait de consentement (Article 7)</h4>
+                  <p>Retirez votre consentement à tout moment</p>
+                </div>
+              </div>
+
+              <div className={style.infoGroup}>
+                <span className={style.infoLabel}>Délai de réponse</span>
+                <span className={style.infoValue}>
+                  {responsePolicy.gdprRequestResponseTime} (extensible à {responsePolicy.extensionMaxDays} jours)
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* 10. MINEURS */}
+          <section className={style.legalCard}>
+            <h2 className={style.cardTitle}>👶 Protection des mineurs</h2>
+            <div className={style.cardContent}>
+              <div className={style.infoGroup}>
+                <span className={style.infoLabel}>Âge minimum</span>
+                <span className={style.infoValue}>{minorAgeRequirements.minimumAge} ans</span>
+              </div>
+
+              <p className={style.sectionText}>
+                Si vous avez moins de {minorAgeRequirements.minimumAge} ans, vous devez avoir l'autorisation parentale avant d'utiliser Harmonith.
+              </p>
+
+              <p className={style.sectionText}>
+                Si vous découvrez un mineur sur la plateforme, signalez-le à: <strong>{minorAgeRequirements.reportMinor}</strong>
+              </p>
+            </div>
+          </section>
+
+          {/* 11. CONTACT ET RÉCLAMATIONS */}
+          <section className={style.legalCard}>
+            <h2 className={style.cardTitle}>📞 Réclamations et contact</h2>
+            <div className={style.cardContent}>
+              <h3>Nous contacter</h3>
+              <div className={style.contactBox}>
+                <a href={`mailto:${companyInfo.email}`} className={style.contactLink}>
+                  📧 {companyInfo.email}
+                </a>
+              </div>
+
+              <h3>Autorité de protection des données (CNIL)</h3>
+              <div className={style.infoGroup}>
+                <span className={style.infoLabel}>Adresse</span>
+                <span className={style.infoValue}>
+                  {legalFramework.cnil.address}
+                </span>
+              </div>
+              <div className={style.infoGroup}>
+                <span className={style.infoLabel}>Téléphone</span>
+                <span className={style.infoValue}>
+                  <a href={`tel:${legalFramework.cnil.phone}`} className={style.link}>
+                    {legalFramework.cnil.phone}
+                  </a>
+                </span>
+              </div>
+              <div className={style.infoGroup}>
+                <span className={style.infoLabel}>Formulaire de réclamation</span>
+                <span className={style.infoValue}>
+                  <a href={legalFramework.cnil.complaintForm} target="_blank" rel="noopener noreferrer" className={style.link}>
+                    Cliquez ici →
+                  </a>
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* 12. MODIFICATIONS */}
+          <section className={style.legalCard}>
+            <h2 className={style.cardTitle}>📝 Modifications de cette politique</h2>
+            <div className={style.cardContent}>
+              <p className={style.sectionText}>
+                Harmonith peut modifier cette politique à tout moment. Les modifications significatives vous seront notifiées par email ou notification in-app.
+              </p>
+              <div className={style.versionHistory}>
+                <div className={style.versionItem}>
+                  <strong>{versions.privacyPolicy.date}</strong>
+                  <p>{versions.privacyPolicy.changes}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* Related Pages */}
+        <div className={style.relatedLegalPages}>
+          <h2>Pages légales connexes</h2>
+          <LegalLinks variant="full" />
+        </div>
+      </main>
+    </>
   );
-}
+};
+
+export default PrivacyPolicy;

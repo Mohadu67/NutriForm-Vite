@@ -102,7 +102,7 @@ const userProfileSchema = new mongoose.Schema({
   },
   verificationMethod: {
     type: String,
-    enum: ['none', 'email', 'phone', 'id_card', 'social_media'],
+    enum: ['none', 'email', 'id_card', 'social_media'],
     default: 'email'
   },
 

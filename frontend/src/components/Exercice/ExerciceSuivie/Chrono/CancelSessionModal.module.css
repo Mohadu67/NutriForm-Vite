@@ -1,0 +1,220 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: var(--paper);
+  border-radius: 16px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-md);
+  animation: slideUp 0.3s ease-out;
+  position: relative;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.header {
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.closeBtn:hover {
+  background: color-mix(in srgb, var(--line) 80%, transparent);
+  color: var(--ink);
+}
+
+.content {
+  padding: 1.5rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: 0 0 1.25rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.reasonsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.reasonItem {
+  background: color-mix(in srgb, var(--paper) 99%, var(--muted) 1%);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  font-family: inherit;
+}
+
+.reasonItem:hover {
+  background: color-mix(in srgb, var(--couleur-bouton-action, #f7b186) 8%, transparent);
+  border-color: color-mix(in srgb, var(--couleur-bouton-action, #f7b186) 50%, transparent);
+  transform: translateX(4px);
+}
+
+.reasonItem:active {
+  transform: translateX(2px);
+}
+
+.emoji {
+  font-size: 1.75rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reasonContent {
+  flex: 1;
+}
+
+.reasonLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 0.25rem;
+}
+
+.reasonDescription {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.arrow {
+  font-size: 1.25rem;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.reasonItem:hover .arrow {
+  color: var(--couleur-bouton-action, #f7b186);
+  transform: translateX(4px);
+}
+
+.actions {
+  padding: 1rem 1.5rem 1.5rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+}
+
+.continueBtn {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: var(--couleur-bouton-selection, #b8ddd1);
+  color: white;
+}
+
+.continueBtn:hover {
+  background: color-mix(in oklab, var(--couleur-bouton-selection, #b8ddd1) 85%, #008b5c);
+  transform: translateY(-1px);
+}
+
+.continueBtn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 640px) {
+  .modal {
+    max-width: 100%;
+    border-radius: 12px;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .reasonItem {
+    padding: 0.875rem;
+  }
+
+  .emoji {
+    font-size: 1.5rem;
+  }
+
+  .reasonLabel {
+    font-size: 0.95rem;
+  }
+
+  .reasonDescription {
+    font-size: 0.8rem;
+  }
+}

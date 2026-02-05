@@ -32,11 +32,12 @@ const ProgramsPage = lazy(() => import("./pages/Programs/Programs.jsx"));
 const MentionsLegales = lazy(() => import("./pages/RGPD/MentionsLegales.jsx"));
 const CookiesPolicy = lazy(() => import("./pages/RGPD/CookiesPolicy.jsx"));
 const PrivacyPolicy = lazy(() => import("./pages/RGPD/PrivacyPolicy.jsx"));
-const CGV = lazy(() => import("./pages/RGPD/CGV.jsx"));
+const Terms = lazy(() => import("./pages/RGPD/Terms.jsx"));
 
 // Auth - lazy loaded
 const VerifyEmail = lazy(() => import("./components/Auth/VerifyEmail/VerifyEmail.jsx"));
 const ResetPassword = lazy(() => import("./components/Auth/ResetPassword/ResetPassword.jsx"));
+const EmailVerified = lazy(() => import("./pages/EmailVerified/EmailVerified.jsx"));
 
 // Newsletter - lazy loaded
 const NewsletterUnsubscribe = lazy(() => import("./pages/Newsletter/NewsletterUnsubscribe.jsx"));
@@ -105,10 +106,12 @@ export default function App() {
             <Route path="/cookies" element={<CookiesPolicy />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/mentions-legales" element={<MentionsLegales />} />
-            <Route path="/cgv" element={<CGV />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/cgv" element={<Terms />} /> {/* Backward compatibility */}
 
             {/* Auth - lazy loaded */}
             <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/email-verified" element={<EmailVerified />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Newsletter */}

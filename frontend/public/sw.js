@@ -4,7 +4,7 @@
 const CACHE_NAME = 'nutriform-v4';
 const API_CACHE = 'nutriform-api-v4';
 // Version basée sur timestamp pour forcer la détection de mise à jour
-const APP_VERSION = '3.1.0-26011401';
+const APP_VERSION = '3.0.1-' + Math.floor(Date.now() / 1000);
 
 // Événement d'installation
 self.addEventListener('install', (event) => {
@@ -161,7 +161,8 @@ self.addEventListener('push', (event) => {
     },
     actions: [],
     tag: type,
-    requireInteraction: type === 'new_match' // Match reste visible jusqu'à interaction
+    // Notifications qui restent visibles jusqu'à interaction
+    requireInteraction: type === 'new_match' || type === 'new_message'
   };
 
   // Ajouter des actions selon le type

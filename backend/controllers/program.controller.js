@@ -191,9 +191,19 @@ async function getProgramById(req, res) {
       }
     }
 
+    // Récupérer la note de l'utilisateur courant si authentifié
+    let userRating = null;
+    if (req.user && program.ratings) {
+      const userRatingObj = program.ratings.find(r => r.userId?.toString() === req.user.id);
+      userRating = userRatingObj?.rating || null;
+    }
+
+    // Ne pas exposer les ratings complets
+    const { ratings, ...programWithoutRatings } = program;
+
     return res.status(200).json({
       success: true,
-      program
+      program: { ...programWithoutRatings, userRating }
     });
   } catch (err) {
     logger.error("getProgramById error:", err);

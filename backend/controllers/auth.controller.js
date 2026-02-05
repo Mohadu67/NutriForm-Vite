@@ -1,12 +1,16 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const Subscription = require('../models/Subscription');
-const { sendVerifyEmail, sendChangeEmailConfirmation } = require('../services/mailer.service');
+const { sendVerifyEmail } = require('../services/mailer.service');
 const { validatePassword } = require('../utils/passwordValidator');
 const logger = require('../utils/logger.js');
 const config = require('../config');
+
+// Google OAuth client
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 function frontBase() {
   const base = process.env.FRONTEND_BASE_URL || 'http://localhost:5173';
@@ -99,8 +103,7 @@ exports.login = async (req, res) => {
         pseudo: user.pseudo,
         email: user.email,
         role: user.role,
-        photo: photoUrl,
-        subscriptionTier: user.subscriptionTier
+        photo: photoUrl
       },
     });
   } catch (err) {
@@ -506,222 +509,169 @@ exports.updateNotificationPreferences = async (req, res) => {
 };
 
 /**
- * Supprimer le compte utilisateur
- * DELETE /api/auth/account
- * Conforme aux exigences App Store et Google Play
+ * Connexion avec Google OAuth
+ * POST /api/auth/google
  */
-exports.deleteAccount = async (req, res) => {
+exports.googleAuth = async (req, res) => {
   try {
-    const userId = req.userId;
+    const { idToken } = req.body || {};
 
-    // Recuperer l'utilisateur
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'Utilisateur introuvable' });
+    if (!idToken) {
+      return res.status(400).json({ message: 'Token Google requis.' });
     }
 
-    logger.info(`[AUTH] Account deletion requested for user: ${user.email}`);
-
-    // 1. Annuler l'abonnement actif si existant
-    const subscription = await Subscription.findOne({ userId });
-    if (subscription && subscription.isActive()) {
-      subscription.status = 'canceled';
-      subscription.canceledAt = new Date();
-      await subscription.save();
-      logger.info(`[AUTH] Subscription cancelled for user: ${userId}`);
+    // Vérifier le token avec Google
+    let ticket;
+    try {
+      ticket = await googleClient.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+    } catch (verifyError) {
+      logger.error('[GOOGLE_AUTH] Token verification failed:', verifyError.message);
+      return res.status(401).json({ message: 'Token Google invalide.' });
     }
 
-    // 2. Supprimer les donnees associees
-    // Note: On peut soit supprimer immediatement, soit marquer pour suppression differee (30 jours)
-    // Pour la conformite, on fait une suppression effective
+    const payload = ticket.getPayload();
+    const { email, name, picture, sub: googleId } = payload;
 
-    // Supprimer les conversations et messages
-    const Conversation = require('../models/Conversation');
-    const Message = require('../models/Message');
-    await Message.deleteMany({ sender: userId });
-    await Conversation.deleteMany({ participants: userId });
+    if (!email) {
+      return res.status(400).json({ message: 'Email non fourni par Google.' });
+    }
 
-    // Supprimer les matchs
-    const Match = require('../models/Match');
-    await Match.deleteMany({ $or: [{ user1: userId }, { user2: userId }] });
+    // Chercher un utilisateur existant par email ou googleId
+    let user = await User.findOne({
+      $or: [{ email: email.toLowerCase() }, { googleId }]
+    });
 
-    // Supprimer les workouts
-    const Workout = require('../models/Workout');
-    await Workout.deleteMany({ userId });
+    if (user) {
+      // Utilisateur existant - mettre à jour googleId si nécessaire
+      if (!user.googleId) {
+        user.googleId = googleId;
+        await user.save();
+      }
+    } else {
+      // Nouvel utilisateur - créer le compte
+      const pseudo = email.split('@')[0].slice(0, 20).toLowerCase().replace(/[^a-z0-9]/g, '');
 
-    // Supprimer les recettes creees par l'utilisateur
-    const Recipe = require('../models/Recipe');
-    await Recipe.deleteMany({ createdBy: userId });
+      // Vérifier que le pseudo est unique
+      let uniquePseudo = pseudo;
+      let counter = 1;
+      while (await User.findOne({ pseudo: uniquePseudo })) {
+        uniquePseudo = `${pseudo}${counter}`;
+        counter++;
+      }
 
-    // Supprimer les programmes crees par l'utilisateur
-    const Program = require('../models/Program');
-    await Program.deleteMany({ createdBy: userId });
+      user = new User({
+        email: email.toLowerCase(),
+        pseudo: uniquePseudo,
+        prenom: name?.split(' ')[0] || '',
+        googleId,
+        photo: picture || null,
+        emailVerifie: true, // Email vérifié par Google
+        motdepasse: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10), // Mot de passe aléatoire
+      });
+      await user.save();
+      logger.info(`[GOOGLE_AUTH] New user created: ${user.email}`);
+    }
 
-    // Supprimer les challenges
-    const Challenge = require('../models/Challenge');
-    await Challenge.deleteMany({ $or: [{ challenger: userId }, { challenged: userId }] });
+    // Générer le token JWT
+    const token = jwt.sign(
+      { id: user._id, email: user.email, role: user.role },
+      config.jwtSecret,
+      { expiresIn: '7d' }
+    );
 
-    // Supprimer les favoris
-    const Favorite = require('../models/Favorite');
-    await Favorite.deleteMany({ userId });
+    const refreshToken = jwt.sign(
+      { id: user._id },
+      config.jwtSecret,
+      { expiresIn: '30d' }
+    );
 
-    // Supprimer l'abonnement
-    await Subscription.deleteMany({ userId });
+    const displayName = user.pseudo || user.prenom || user.email.split('@')[0];
 
-    // Supprimer les tokens de notification
-    const PushToken = require('../models/PushToken');
-    await PushToken.deleteMany({ userId });
+    // Convertir l'URL de la photo en URL complète si elle existe
+    let photoUrl = user.photo || null;
+    if (photoUrl && !photoUrl.startsWith('http')) {
+      const backendBase = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+      photoUrl = `${backendBase}${photoUrl}`;
+    }
 
-    // 3. Supprimer le compte utilisateur
-    await User.findByIdAndDelete(userId);
-
-    logger.info(`[AUTH] Account deleted successfully: ${user.email}`);
-
-    // 4. Supprimer le cookie de session
+    // Cookie pour le web
     const isProduction = process.env.NODE_ENV === 'production';
-    res.clearCookie('token', {
+    res.cookie('token', token, {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'lax' : 'strict',
       domain: isProduction ? '.harmonith.fr' : undefined,
       path: '/',
+      maxAge: 1000 * 60 * 60 * 24 * 7,
     });
+
+    logger.info(`[GOOGLE_AUTH] User logged in: ${user.email}`);
 
     return res.json({
-      success: true,
-      message: 'Votre compte et toutes vos donnees ont ete supprimes avec succes.'
+      message: 'Connexion Google réussie.',
+      displayName,
+      token,
+      refreshToken,
+      user: {
+        id: user._id,
+        prenom: user.prenom,
+        pseudo: user.pseudo,
+        email: user.email,
+        role: user.role,
+        photo: photoUrl,
+      },
     });
   } catch (err) {
-    logger.error('DELETE /auth/account:', err);
-    return res.status(500).json({ message: 'Erreur lors de la suppression du compte' });
-  }
-};
-
-/**
- * Demander un changement d'email
- * POST /api/request-email-change
- */
-exports.requestEmailChange = async (req, res) => {
-  try {
-    const { newEmail, password } = req.body || {};
-
-    if (!newEmail || !password) {
-      return res.status(400).json({ message: 'Nouvel email et mot de passe requis.' });
-    }
-
-    const emailNorm = String(newEmail).toLowerCase().trim();
-
-    // Validation email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailNorm)) {
-      return res.status(400).json({ message: 'Email invalide.' });
-    }
-
-    // Recuperer l'utilisateur avec le mot de passe
-    const user = await User.findById(req.userId).select('+motdepasse');
-    if (!user) {
-      return res.status(404).json({ message: 'Utilisateur introuvable.' });
-    }
-
-    // Verifier que le nouvel email est different
-    if (emailNorm === user.email) {
-      return res.status(400).json({ message: 'Le nouvel email doit etre different de l\'actuel.' });
-    }
-
-    // Verifier le mot de passe
-    const isValid = await bcrypt.compare(password, user.motdepasse);
-    if (!isValid) {
-      return res.status(401).json({ message: 'Mot de passe incorrect.' });
-    }
-
-    // Verifier que l'email n'est pas deja utilise
-    const emailExists = await User.findOne({ email: emailNorm, _id: { $ne: req.userId } }).lean();
-    if (emailExists) {
-      return res.status(409).json({ message: 'Cet email est deja utilise par un autre compte.' });
-    }
-
-    // Generer un token de confirmation
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 heures
-
-    // Sauvegarder le token et le nouvel email dans l'utilisateur
-    user.emailChangeToken = token;
-    user.emailChangeExpires = expiresAt;
-    user.pendingEmail = emailNorm;
-    await user.save();
-
-    // Envoyer l'email de confirmation au NOUVEL email
-    const confirmUrl = `${frontBase()}/confirm-email-change?token=${encodeURIComponent(token)}`;
-
-    logger.info('[AUTH] Email change requested:', { from: user.email, to: emailNorm });
-
-    try {
-      await sendChangeEmailConfirmation({
-        to: emailNorm,
-        toName: user.prenom || user.pseudo || user.email.split('@')[0],
-        newEmail: emailNorm,
-        confirmUrl
-      });
-
-      logger.info('[AUTH] Email change confirmation sent to:', emailNorm);
-
-      return res.json({
-        success: true,
-        message: 'Un email de confirmation a ete envoye a votre nouvelle adresse.'
-      });
-    } catch (mailErr) {
-      logger.error('[AUTH] Failed to send email change confirmation:', mailErr.message);
-      return res.status(502).json({ message: 'Impossible d\'envoyer l\'email. Reessayez plus tard.' });
-    }
-  } catch (err) {
-    logger.error('POST /request-email-change:', err);
+    logger.error('[GOOGLE_AUTH] Error:', err);
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
 
 /**
- * Confirmer le changement d'email
- * GET /api/confirm-email-change?token=xxx
+ * Supprimer le compte utilisateur
+ * DELETE /api/auth/account
  */
-exports.confirmEmailChange = async (req, res) => {
+exports.deleteAccount = async (req, res) => {
   try {
-    const { token } = req.query;
+    const { password } = req.body || {};
 
-    if (!token) {
-      return res.status(400).json({ message: 'Token manquant.' });
+    if (!password) {
+      return res.status(400).json({ message: 'Mot de passe requis pour confirmer la suppression.' });
     }
 
-    // Trouver l'utilisateur avec ce token
-    const user = await User.findOne({
-      emailChangeToken: token,
-      emailChangeExpires: { $gt: new Date() }
+    const user = await User.findById(req.userId).select('+motdepasse');
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable.' });
+    }
+
+    // Vérifier le mot de passe
+    const isMatch = await bcrypt.compare(password, user.motdepasse);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Mot de passe incorrect.' });
+    }
+
+    // Supprimer les données associées
+    await Subscription.deleteMany({ userId: req.userId });
+
+    // Supprimer l'utilisateur
+    await User.deleteOne({ _id: req.userId });
+
+    // Supprimer le cookie httpOnly
+    res.clearCookie('authToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
     });
 
-    if (!user) {
-      return res.status(400).json({ message: 'Lien invalide ou expire.' });
-    }
+    logger.info(`[AUTH] Account deleted: ${user.email}`);
 
-    if (!user.pendingEmail) {
-      return res.status(400).json({ message: 'Aucun changement d\'email en attente.' });
-    }
-
-    const oldEmail = user.email;
-    const newEmail = user.pendingEmail;
-
-    // Mettre a jour l'email
-    user.email = newEmail;
-    user.emailChangeToken = undefined;
-    user.emailChangeExpires = undefined;
-    user.pendingEmail = undefined;
-    await user.save();
-
-    logger.info('[AUTH] Email changed successfully:', { from: oldEmail, to: newEmail });
-
-    // Rediriger vers le frontend avec un message de succes
-    const successUrl = `${frontBase()}/email-changed?success=true`;
-    return res.redirect(successUrl);
+    return res.json({ success: true, message: 'Compte supprimé avec succès.' });
   } catch (err) {
-    logger.error('GET /confirm-email-change:', err);
+    logger.error('DELETE /delete-account:', err);
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };

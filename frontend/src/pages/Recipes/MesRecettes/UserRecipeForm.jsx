@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNotification } from '../../../hooks/useNotification.jsx';
 import { secureApiCall } from '../../../utils/authService';
 import logger from '../../../shared/utils/logger';
+import ErrorModal from '../../../components/Modal/ErrorModal';
 import styles from './UserRecipeForm.module.css';
 
 const GOALS = [
@@ -53,6 +54,11 @@ export default function UserRecipeForm({ recipe, onBack, onSave }) {
   const isEdit = Boolean(recipe?._id);
 
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingFromUrl, setUploadingFromUrl] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imageUrlInput, setImageUrlInput] = useState('');
+  const [error, setError] = useState(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -175,6 +181,111 @@ export default function UserRecipeForm({ recipe, onBack, onSave }) {
     }
   };
 
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Vérifier le type de fichier
+    if (!file.type.startsWith('image/')) {
+      notify.error('Veuillez sélectionner une image valide');
+      return;
+    }
+
+    // Vérifier la taille (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      notify.error('L\'image ne doit pas dépasser 5MB');
+      return;
+    }
+
+    setImageFile(file);
+  };
+
+  const handleImageUpload = async () => {
+    if (!imageFile) return;
+
+    setUploadingImage(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+
+      const response = await secureApiCall('/upload/recipe-image', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setFormData(prev => ({ ...prev, image: data.imageUrl }));
+        notify.success('Image uploadée avec succès !');
+        setImageFile(null);
+      } else {
+        setError({
+          title: 'Erreur d\'upload',
+          message: data.message || 'Impossible d\'uploader l\'image. Veuillez réessayer.',
+          details: response.status !== 200 ? `HTTP ${response.status}` : null
+        });
+      }
+    } catch (err) {
+      logger.error('Erreur upload image:', err);
+      setError({
+        title: 'Erreur d\'upload',
+        message: 'Une erreur s\'est produite lors de l\'upload de l\'image. Vérifiez votre connexion et réessayez.',
+        details: err.message
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData(prev => ({ ...prev, image: '' }));
+    setImageFile(null);
+    setImageUrlInput('');
+  };
+
+  const handleUploadFromUrl = async () => {
+    if (!imageUrlInput.trim()) {
+      notify.error('Veuillez entrer une URL d\'image');
+      return;
+    }
+
+    setUploadingFromUrl(true);
+    setError(null);
+
+    try {
+      const response = await secureApiCall('/upload/from-url', {
+        method: 'POST',
+        body: JSON.stringify({ url: imageUrlInput })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setFormData(prev => ({ ...prev, image: data.imageUrl }));
+        notify.success('Image uploadée sur Cloudinary avec succès !');
+        setImageUrlInput('');
+      } else {
+        setError({
+          title: 'Erreur d\'upload',
+          message: data.message || 'Impossible d\'uploader l\'image depuis cette URL.',
+          details: response.status !== 200 ? `HTTP ${response.status}` : null
+        });
+      }
+    } catch (err) {
+      logger.error('Erreur upload depuis URL:', err);
+      setError({
+        title: 'Erreur d\'upload',
+        message: 'Une erreur s\'est produite. Vérifiez que l\'URL pointe vers une image valide.',
+        details: err.message
+      });
+    } finally {
+      setUploadingFromUrl(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -224,16 +335,17 @@ export default function UserRecipeForm({ recipe, onBack, onSave }) {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <button onClick={onBack} className={styles.backBtn}>
-          <ArrowLeftIcon size={20} />
-          Retour
-        </button>
-        <h1>{isEdit ? 'Modifier la recette' : 'Nouvelle recette'}</h1>
-      </div>
+    <>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <button onClick={onBack} className={styles.backBtn}>
+            <ArrowLeftIcon size={20} />
+            Retour
+          </button>
+          <h1>{isEdit ? 'Modifier la recette' : 'Nouvelle recette'}</h1>
+        </div>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.form}>
         {/* Informations de base */}
         <section className={styles.section}>
           <h2>Informations de base</h2>
@@ -263,18 +375,77 @@ export default function UserRecipeForm({ recipe, onBack, onSave }) {
           </div>
 
           <div className={styles.formGroup}>
-            <label>URL de l'image (optionnel pour commencer)</label>
-            <input
-              type="url"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              placeholder="https://..."
-            />
-            {formData.image && (
-              <img src={formData.image} alt="Preview" className={styles.imagePreview} />
+            <label>Image de la recette</label>
+
+            {/* Si on a déjà une image uploadée */}
+            {formData.image ? (
+              <div className={styles.imagePreviewContainer}>
+                <img src={formData.image} alt="Preview" className={styles.imagePreview} />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className={styles.removeImageBtn}
+                >
+                  Supprimer l'image
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Input de sélection de fichier */}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  onChange={handleImageSelect}
+                  className={styles.fileInput}
+                />
+
+                {/* Aperçu du fichier sélectionné */}
+                {imageFile && (
+                  <div className={styles.filePreview}>
+                    <p>📷 {imageFile.name} ({(imageFile.size / 1024 / 1024).toFixed(2)} MB)</p>
+                    <button
+                      type="button"
+                      onClick={handleImageUpload}
+                      disabled={uploadingImage}
+                      className={styles.uploadBtn}
+                    >
+                      {uploadingImage ? 'Upload en cours...' : 'Uploader l\'image'}
+                    </button>
+                  </div>
+                )}
+
+                {/* Ou URL avec upload sur Cloudinary */}
+                <div className={styles.orDivider}>
+                  <span>ou collez une URL d'image</span>
+                </div>
+                <div className={styles.urlUploadSection}>
+                  <input
+                    type="url"
+                    value={imageUrlInput}
+                    onChange={(e) => setImageUrlInput(e.target.value)}
+                    placeholder="https://exemple.com/image.jpg"
+                    className={styles.urlInput}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleUploadFromUrl}
+                    disabled={uploadingFromUrl || !imageUrlInput.trim()}
+                    className={styles.uploadFromUrlBtn}
+                  >
+                    {uploadingFromUrl ? '⏳ Upload...' : '📤 Uploader sur Cloudinary'}
+                  </button>
+                </div>
+                <p className={styles.hint}>
+                  💡 L'image sera automatiquement téléchargée et hébergée sur Cloudinary
+                </p>
+              </>
             )}
-            <p className={styles.hint}>Une image sera requise pour proposer la recette au public</p>
+
+            <p className={styles.hint}>
+              {formData.image
+                ? '✅ Image ajoutée - Vous pouvez maintenant proposer la recette au public'
+                : '⚠️  Une image sera requise pour proposer la recette au public'}
+            </p>
           </div>
 
           <div className={styles.formRow}>
@@ -557,5 +728,16 @@ export default function UserRecipeForm({ recipe, onBack, onSave }) {
         </div>
       </form>
     </div>
+
+    <ErrorModal
+      isOpen={!!error}
+      title={error?.title}
+      message={error?.message}
+      details={error?.details}
+      onClose={() => setError(null)}
+      onRetry={handleImageUpload}
+      retryText="Réessayer l'upload"
+    />
+    </>
   );
 }
