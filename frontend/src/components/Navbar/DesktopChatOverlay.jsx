@@ -2,6 +2,8 @@ import { useChat } from "../../contexts/ChatContext";
 import UnifiedChatPanel from "../Chat/UnifiedChatPanel.jsx";
 import ChatHistory from "../Chat/ChatHistory.jsx";
 import ChatSettings from "../Chat/ChatSettings.jsx";
+import Avatar from "../Shared/Avatar";
+import { formatDisplayName } from "../../shared/utils/string";
 import styles from "./Navbar.module.css";
 import { BotIcon, MessageCircleIcon } from "./NavIcons";
 
@@ -54,9 +56,10 @@ export default function DesktopChatOverlay({
                 <div className={styles.chatHeaderProfile}>
                   {activeConversation.type === 'match' ? (
                     <>
-                      <img
-                        src={activeConversation.data?.otherUser?.profile?.profilePicture || '/default-avatar.svg'}
-                        alt={activeConversation.data?.otherUser?.pseudo || 'User'}
+                      <Avatar
+                        src={activeConversation.data?.otherUser?.profile?.profilePicture}
+                        name={formatDisplayName(activeConversation.data?.otherUser, 'User')}
+                        size="md"
                         className={styles.chatProfileImage}
                         onClick={() => setShowChatSettings(true)}
                         style={{ cursor: 'pointer' }}
