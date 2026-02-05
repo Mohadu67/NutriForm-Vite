@@ -55,7 +55,7 @@ export default function DesktopChatOverlay({
                   {activeConversation.type === 'match' ? (
                     <>
                       <img
-                        src={activeConversation.data?.otherUser?.profile?.profilePicture || '/default-avatar.png'}
+                        src={activeConversation.data?.otherUser?.profile?.profilePicture || '/default-avatar.svg'}
                         alt={activeConversation.data?.otherUser?.pseudo || 'User'}
                         className={styles.chatProfileImage}
                         onClick={() => setShowChatSettings(true)}

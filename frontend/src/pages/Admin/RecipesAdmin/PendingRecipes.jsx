@@ -4,6 +4,7 @@ import { secureApiCall } from '../../../utils/authService';
 import logger from '../../../shared/utils/logger';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
 import { ClockIcon, FireIcon, UtensilsIcon } from '../../../components/Navbar/NavIcons';
+import { getProxiedImageUrl } from '../../../utils/imageProxy';
 import styles from './PendingRecipes.module.css';
 
 // Icons
@@ -189,7 +190,7 @@ export default function PendingRecipes({ onClose }) {
                   <div className={styles.cardHeader} onClick={() => setSelectedRecipe(selectedRecipe?._id === recipe._id ? null : recipe)}>
                     <div className={styles.cardTitle}>
                       {recipe.image && (
-                        <img src={recipe.image} alt={recipe.title} className={styles.thumbnail} />
+                        <img src={getProxiedImageUrl(recipe.image)} alt={recipe.title} className={styles.thumbnail} />
                       )}
                       <div>
                         <h3>{recipe.title}</h3>
