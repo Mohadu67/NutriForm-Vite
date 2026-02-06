@@ -2,13 +2,13 @@ import { createContext, useContext, useEffect, useState, useRef, useCallback } f
 import { io } from 'socket.io-client';
 import { storage } from '../shared/utils/storage';
 import { isAuthenticated, secureApiCall } from '../utils/authService';
+import { API_BASE_URL } from '../shared/config/api';
 
 const WebSocketContext = createContext(null);
 
 // Extraire l'URL de base (sans /api) pour le WebSocket
-const API_URL = import.meta.env.VITE_API_URL || '';
 // En production, utiliser api.harmonith.fr si VITE_API_URL n'est pas défini
-const BACKEND_URL = API_URL.replace(/\/api\/?$/, '') ||
+const BACKEND_URL = API_BASE_URL.replace(/\/api\/?$/, '') ||
   (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
     ? 'https://api.harmonith.fr'
     : 'http://localhost:3000');

@@ -1,14 +1,8 @@
 import { storage, sessionStorage as sessionStore } from "../shared/utils/storage.js";
 import { authLogger } from "../shared/utils/logger.js";
+import { API_BASE_URL } from "../shared/config/api.js";
 
-// Protection contre import.meta.env undefined au build time
-const API_URL = (() => {
-  try {
-    return (import.meta.env?.VITE_API_URL || "").replace(/\/$/, "");
-  } catch {
-    return "";
-  }
-})();
+const API_URL = API_BASE_URL;
 
 // Cache global pour éviter les appels multiples à /api/me
 let authCheckInProgress = null;
