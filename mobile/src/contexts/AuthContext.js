@@ -64,11 +64,15 @@ export function AuthProvider({ children }) {
   };
 
   /**
-   * Stocker les données utilisateur en cache
+   * Stocker les données utilisateur en cache avec timestamp
    */
   const storeUserData = async (userData) => {
     try {
-      await storage.set('user_data', userData);
+      const cache = {
+        data: userData,
+        cachedAt: Date.now()
+      };
+      await storage.set('user_data', cache);
     } catch (error) {
       console.error('Erreur lors du stockage des données utilisateur:', error);
     }
@@ -76,10 +80,31 @@ export function AuthProvider({ children }) {
 
   /**
    * Récupérer les données utilisateur depuis le cache
+   * Invalide le cache après 24 heures
    */
   const getCachedUserData = async () => {
     try {
-      return await storage.get('user_data');
+      const cached = await storage.get('user_data');
+      if (!cached) return null;
+
+      // Rétrocompatibilité: si ancien format sans cachedAt
+      if (!cached.cachedAt) {
+        console.log('[AUTH] Cache: old format detected, treating as expired');
+        return cached; // Retourner les données mais elles seront rafraîchies
+      }
+
+      // Vérifier expiration (24 heures)
+      const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24h en millisecondes
+      const isExpired = Date.now() - cached.cachedAt > CACHE_DURATION;
+
+      if (isExpired) {
+        console.log('[AUTH] Cache: expired, will refresh from server');
+        await storage.remove('user_data');
+        return null;
+      }
+
+      console.log('[AUTH] Cache: valid, using cached data');
+      return cached.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des données utilisateur:', error);
       return null;
