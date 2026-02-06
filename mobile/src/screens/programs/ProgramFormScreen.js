@@ -49,6 +49,31 @@ const EQUIPMENT = [
   'aucun', 'poids-du-corps', 'haltères', 'barre', 'élastiques', 'tapis-de-course', 'vélo', 'rameur',
 ];
 
+// Helper function to detect exercise type and return required fields
+const getExerciseFields = (exerciseType) => {
+  if (!exerciseType) return 'cardio'; // default
+
+  const type = exerciseType.toLowerCase();
+
+  if (type.includes('cardio') || type.includes('course') || type.includes('vélo') || type.includes('elliptique') || type.includes('rameur')) {
+    return 'cardio';
+  }
+  if (type.includes('muscu') || type.includes('strength') || type.includes('poids') || type.includes('haltères')) {
+    return 'muscu';
+  }
+  if (type.includes('yoga')) {
+    return 'yoga';
+  }
+  if (type.includes('étirement') || type.includes('stretch') || type.includes('flexibility')) {
+    return 'stretch';
+  }
+  if (type.includes('natation') || type.includes('swim')) {
+    return 'swim';
+  }
+
+  return 'cardio'; // default
+};
+
 export default function ProgramFormScreen() {
   const navigation = useNavigation();
   const route = useRoute();
@@ -114,13 +139,13 @@ export default function ProgramFormScreen() {
       const match = /\.(\w+)$/.exec(filename);
       const type = match ? `image/${match[1]}` : 'image/jpeg';
 
+      // FormData for React Native
       formData.append('photo', {
         uri: imageUri,
         name: filename || 'cover.jpg',
         type,
       });
 
-      // Utiliser l'endpoint d'upload (il retourne une URL Cloudinary)
       const response = await apiClient.post(endpoints.upload.profilePhoto, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -129,6 +154,10 @@ export default function ProgramFormScreen() {
 
       if (response.data?.photoUrl) {
         setCoverImage(response.data.photoUrl);
+      } else if (response.data?.photo) {
+        setCoverImage(response.data.photo);
+      } else {
+        Alert.alert('Erreur', 'Réponse invalide du serveur');
       }
     } catch (error) {
       console.error('[PROGRAM FORM] Upload cover error:', error);
@@ -552,25 +581,116 @@ export default function ProgramFormScreen() {
               </TouchableOpacity>
             )}
 
-            {/* Durée */}
-            <View style={styles.durationRow}>
-              <Text style={[styles.durationLabel, isDark && styles.durationLabelDark]}>
-                Durée (sec):
-              </Text>
-              <TextInput
-                style={[styles.durationInput, isDark && styles.durationInputDark]}
-                keyboardType="numeric"
-                value={String(cycle.type === 'exercise' ? (cycle.durationSec || '') : (cycle.restSec || ''))}
-                onChangeText={(val) => {
-                  const numVal = parseInt(val) || 0;
-                  if (cycle.type === 'exercise') {
-                    updateCycle(index, 'durationSec', numVal);
-                  } else {
-                    updateCycle(index, 'restSec', numVal);
-                  }
-                }}
-              />
-            </View>
+            {/* Dynamic fields based on exercise type */}
+            {cycle.type === 'exercise' && (() => {
+              const fieldType = getExerciseFields(cycle.exerciseType);
+
+              if (fieldType === 'muscu') {
+                return (
+                  <>
+                    <View style={styles.durationRow}>
+                      <Text style={[styles.durationLabel, isDark && styles.durationLabelDark]}>
+                        Poids (kg):
+                      </Text>
+                      <TextInput
+                        style={[styles.durationInput, isDark && styles.durationInputDark]}
+                        keyboardType="numeric"
+                        placeholder="Ex: 20"
+                        value={String(cycle.weight || '')}
+                        onChangeText={(val) => updateCycle(index, 'weight', parseInt(val) || 0)}
+                      />
+                    </View>
+                    <View style={styles.durationRow}>
+                      <Text style={[styles.durationLabel, isDark && styles.durationLabelDark]}>
+                        Répétitions *:
+                      </Text>
+                      <TextInput
+                        style={[styles.durationInput, isDark && styles.durationInputDark]}
+                        keyboardType="numeric"
+                        placeholder="Ex: 10"
+                        value={String(cycle.repetitions || '')}
+                        onChangeText={(val) => updateCycle(index, 'repetitions', parseInt(val) || 0)}
+                      />
+                    </View>
+                  </>
+                );
+              } else if (fieldType === 'yoga') {
+                return (
+                  <View style={styles.durationRow}>
+                    <Text style={[styles.durationLabel, isDark && styles.durationLabelDark]}>
+                      Durée (min) *:
+                    </Text>
+                    <TextInput
+                      style={[styles.durationInput, isDark && styles.durationInputDark]}
+                      keyboardType="numeric"
+                      placeholder="Ex: 30"
+                      value={String(cycle.durationMin || '')}
+                      onChangeText={(val) => updateCycle(index, 'durationMin', parseInt(val) || 0)}
+                    />
+                  </View>
+                );
+              } else if (fieldType === 'stretch') {
+                return (
+                  <View style={styles.durationRow}>
+                    <Text style={[styles.durationLabel, isDark && styles.durationLabelDark]}>
+                      Durée (sec) *:
+                    </Text>
+                    <TextInput
+                      style={[styles.durationInput, isDark && styles.durationInputDark]}
+                      keyboardType="numeric"
+                      placeholder="Ex: 60"
+                      value={String(cycle.durationSec || '')}
+                      onChangeText={(val) => updateCycle(index, 'durationSec', parseInt(val) || 0)}
+                    />
+                  </View>
+                );
+              } else {
+                // Default cardio
+                return (
+                  <>
+                    <View style={styles.durationRow}>
+                      <Text style={[styles.durationLabel, isDark && styles.durationLabelDark]}>
+                        Durée (sec) *:
+                      </Text>
+                      <TextInput
+                        style={[styles.durationInput, isDark && styles.durationInputDark]}
+                        keyboardType="numeric"
+                        placeholder="Ex: 30"
+                        value={String(cycle.durationSec || '')}
+                        onChangeText={(val) => updateCycle(index, 'durationSec', parseInt(val) || 0)}
+                      />
+                    </View>
+                    <View style={styles.durationRow}>
+                      <Text style={[styles.durationLabel, isDark && styles.durationLabelDark]}>
+                        Intensité (1-10) *:
+                      </Text>
+                      <TextInput
+                        style={[styles.durationInput, isDark && styles.durationInputDark]}
+                        keyboardType="numeric"
+                        placeholder="Ex: 5"
+                        value={String(cycle.intensity || '')}
+                        onChangeText={(val) => updateCycle(index, 'intensity', parseInt(val) || 0)}
+                      />
+                    </View>
+                  </>
+                );
+              }
+            })()}
+
+            {/* Rest/Transition duration */}
+            {cycle.type !== 'exercise' && (
+              <View style={styles.durationRow}>
+                <Text style={[styles.durationLabel, isDark && styles.durationLabelDark]}>
+                  Durée (sec):
+                </Text>
+                <TextInput
+                  style={[styles.durationInput, isDark && styles.durationInputDark]}
+                  keyboardType="numeric"
+                  value={String(cycle.restSec || '')}
+                  onChangeText={(val) => updateCycle(index, 'restSec', parseInt(val) || 0)}
+                />
+              </View>
+            )}
           </View>
         ))}
 
