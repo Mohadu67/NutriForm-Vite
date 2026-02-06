@@ -94,7 +94,7 @@
       "eas": {
         "projectId": "aca61473-e5d7-4e41-a412-97e99452057a"
       },
-      "googleWebClientId": "45341856086-ja08fhmgetpb58riv647lfsdvgsuelvc.apps.googleusercontent.com"
+      "googleWebClientId": "${EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID}"
     }
   }
 }
