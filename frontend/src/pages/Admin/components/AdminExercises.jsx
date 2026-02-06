@@ -100,7 +100,7 @@ export default function AdminExercises({ notify }) {
     e.preventDefault();
 
     if (!formData.name || !formData.primaryMuscle || !formData.explanation) {
-      notify('Veuillez remplir tous les champs requis', 'error');
+      notify.error('Veuillez remplir tous les champs requis');
       return;
     }
 
@@ -108,7 +108,7 @@ export default function AdminExercises({ notify }) {
     try {
       const response = await createExercise(formData);
       if (response.success) {
-        notify('Exercice créé avec succès !', 'success');
+        notify.success('Exercice créé avec succès !');
         // Reset form
         setFormData({
           name: '',
@@ -129,7 +129,10 @@ export default function AdminExercises({ notify }) {
         });
       }
     } catch (error) {
-      notify(error.response?.data?.message || 'Erreur lors de la création', 'error');
+      console.error('Erreur création exercice:', error);
+      console.error('Response data:', error.response?.data);
+      console.error('Données envoyées:', formData);
+      notify.error(error.response?.data?.message || 'Erreur lors de la création');
     } finally {
       setLoading(false);
     }

@@ -431,6 +431,8 @@ exports.bulkInsert = async (req, res) => {
  */
 exports.createExercise = async (req, res) => {
   try {
+    logger.info('[ADMIN] Create exercise request body:', req.body);
+
     const {
       name,
       category,
@@ -451,23 +453,62 @@ exports.createExercise = async (req, res) => {
 
     // Validation
     if (!name || !category || !primaryMuscle || !explanation) {
+      logger.warn('[ADMIN] Validation failed:', { name, category, primaryMuscle, explanation: !!explanation });
       return res.status(400).json({
         success: false,
         message: 'Champs requis manquants: name, category, primaryMuscle, explanation',
+        debug: {
+          hasName: !!name,
+          hasCategory: !!category,
+          hasPrimaryMuscle: !!primaryMuscle,
+          hasExplanation: !!explanation
+        }
       });
     }
 
-    // Generate unique exoId
-    const count = await Exercise.countDocuments();
-    const exoId = `exo-${String(count + 1).padStart(3, '0')}`;
+    // Generate unique exoId - find the highest existing number
+    const allExercises = await Exercise.find({}, { exoId: 1 }).lean();
+
+    let maxNumber = 0;
+    allExercises.forEach(ex => {
+      if (ex.exoId) {
+        const match = ex.exoId.match(/exo-(\d+)/);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (num > maxNumber) {
+            maxNumber = num;
+          }
+        }
+      }
+    });
+
+    const exoId = `exo-${String(maxNumber + 1).padStart(3, '0')}`;
 
     // Generate slug from name
-    const slug = name
+    let baseSlug = name
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
+
+    // Check if slug exists and increment if necessary
+    let slug = baseSlug;
+    let slugExists = await Exercise.findOne({ slug });
+    let counter = 1;
+
+    while (slugExists) {
+      slug = `${baseSlug}-${counter}`;
+      slugExists = await Exercise.findOne({ slug });
+      counter++;
+      // Safety limit to avoid infinite loops
+      if (counter > 100) {
+        return res.status(400).json({
+          success: false,
+          message: 'Impossible de générer un slug unique. Veuillez choisir un nom très différent.',
+        });
+      }
+    }
 
     // Combine all muscles for search
     const muscles = [primaryMuscle, ...(secondaryMuscles || [])];
@@ -510,9 +551,19 @@ exports.createExercise = async (req, res) => {
     logger.error('[ADMIN] Create exercise error:', error);
 
     if (error.code === 11000) {
+      // Déterminer quel champ cause le conflit
+      let conflictField = 'inconnu';
+      if (error.keyValue) {
+        if (error.keyValue.exoId) conflictField = 'exoId';
+        if (error.keyValue.slug) conflictField = 'slug (nom)';
+        if (error.keyValue.name) conflictField = 'nom';
+      }
+
       return res.status(400).json({
         success: false,
-        message: 'Un exercice avec ce nom existe déjà',
+        message: `Un exercice avec ce ${conflictField} existe déjà. Veuillez choisir un nom différent.`,
+        field: conflictField,
+        value: error.keyValue
       });
     }
 

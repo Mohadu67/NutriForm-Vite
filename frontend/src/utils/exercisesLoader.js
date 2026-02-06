@@ -1,47 +1,46 @@
+import client from '../shared/api/client';
 
+/**
+ * Load exercises from API backend
+ * @param {string|string[]} types - Exercise types to load ('all' or specific types)
+ * @returns {Promise<Array>} Array of exercises
+ */
 export async function loadExercises(types = 'all') {
-  const fileMap = {
-    muscu: '/data/exo/muscu.json',
-    cardio: '/data/exo/cardio.json',
-    yoga: '/data/exo/yoga.json',
-    meditation: '/data/exo/meditation.json',
-    natation: '/data/exo/natation.json',
-    etirement: '/data/exo/etirement.json',
-    hiit: '/data/exo/hiit.json',
-  };
+  try {
+    // If types is 'all', don't filter by category
+    if (types === 'all') {
+      const response = await client.get('/exercises', {
+        params: { limit: 1000 }
+      });
+      return response.data.data || [];
+    }
 
-  
-  if (types === 'all') {
-    types = Object.keys(fileMap);
+    // Handle specific types/categories
+    const typeArray = Array.isArray(types) ? types : [types];
+
+    const promises = typeArray.map(async (type) => {
+      try {
+        const response = await client.get('/exercises', {
+          params: { category: type, limit: 500 }
+        });
+        return response.data.data || [];
+      } catch (error) {
+        console.error(`Failed to load exercises for category ${type}:`, error);
+        return [];
+      }
+    });
+
+    const results = await Promise.all(promises);
+    return results.flat();
+  } catch (error) {
+    console.error('Failed to load exercises:', error);
+    return [];
   }
-
-  
-  const typeArray = Array.isArray(types) ? types : [types];
-
-  
-  const promises = typeArray.map(async (type) => {
-    const url = fileMap[type];
-    if (!url) {
-      return [];
-    }
-
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      return data.exercises || [];
-    } catch {
-      return [];
-    }
-  });
-
-  const results = await Promise.all(promises);
-
-  
-  return results.flat();
 }
 
-
+/**
+ * Load generic data from db.json (fallback for other data)
+ */
 export async function loadData(dataKey) {
   try {
     const res = await fetch('/data/db.json');
