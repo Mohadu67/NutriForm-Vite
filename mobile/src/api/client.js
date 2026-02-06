@@ -55,6 +55,9 @@ client.interceptors.request.use(
 // Routes d'auth qui ne nécessitent pas de token refresh
 const AUTH_ROUTES = ['/login', '/register', '/forgot-password', '/reset-password'];
 
+// Variable globale pour stocker la promesse de refresh en cours
+let refreshPromise = null;
+
 // Response interceptor - Handle 401 errors and token refresh
 client.interceptors.response.use(
   (response) => {
@@ -83,29 +86,48 @@ client.interceptors.response.use(
     if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      try {
-        // Try to refresh token
-        const refreshToken = await secureStorage.getRefreshToken();
+      // Si un refresh est déjà en cours, attendre qu'il se termine
+      if (!refreshPromise) {
+        refreshPromise = (async () => {
+          try {
+            // Try to refresh token
+            const refreshToken = await secureStorage.getRefreshToken();
 
-        if (refreshToken) {
-          const { data } = await axios.post(`${API_URL}/refresh`, {
-            refreshToken,
-          });
+            if (!refreshToken) {
+              throw new Error('No refresh token available');
+            }
 
-          // Store new tokens
-          await secureStorage.setToken(data.token);
-          if (data.refreshToken) {
-            await secureStorage.setRefreshToken(data.refreshToken);
+            const { data } = await axios.post(`${API_URL}/refresh`, {
+              refreshToken,
+            });
+
+            // Store new tokens
+            await secureStorage.setToken(data.token);
+            if (data.refreshToken) {
+              await secureStorage.setRefreshToken(data.refreshToken);
+            }
+
+            return data.token;
+          } catch (refreshError) {
+            // If refresh fails, clear tokens
+            // The auth context will handle redirect to login
+            await secureStorage.clearAll();
+            throw refreshError;
+          } finally {
+            // Nettoyer la promesse après la tentative (succès ou échec)
+            refreshPromise = null;
           }
+        })();
+      }
 
-          // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${data.token}`;
-          return client(originalRequest);
-        }
+      try {
+        // Attendre le nouveau token (que ce soit notre refresh ou un refresh déjà en cours)
+        const newToken = await refreshPromise;
+
+        // Retry original request with new token
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return client(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, clear tokens
-        // The auth context will handle redirect to login
-        await secureStorage.clearAll();
         return Promise.reject(refreshError);
       }
     }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import DOMPurify from 'dompurify';
 import { XIcon } from "../../../components/Navbar/NavIcons";
 import styles from "./ArticlesImc.module.css"
 
@@ -123,7 +124,7 @@ export default function ArticlesImc() {
                 {article.excedent && typeof article.excedent === 'string' && article.excedent.includes('<') ? (
                   <div
                     className={styles.articleText}
-                    dangerouslySetInnerHTML={{ __html: article.excedent }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.excedent) }}
                   />
                 ) : (
                   article.excedent && (
@@ -133,7 +134,7 @@ export default function ArticlesImc() {
                 {article.fullContent && (
                   <div
                     className={styles.articleText}
-                    dangerouslySetInnerHTML={{ __html: article.fullContent }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.fullContent) }}
                   />
                 )}
               </article>
@@ -180,7 +181,7 @@ export default function ArticlesImc() {
                         {selectedArticle.excedent && typeof selectedArticle.excedent === 'string' && selectedArticle.excedent.includes('<') ? (
                             <div
                             className={`${styles.modalText} ${styles.fullArticle}`}
-                            dangerouslySetInnerHTML={{ __html: selectedArticle.excedent }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedArticle.excedent) }}
                             />
                         ) : (
                             selectedArticle.excedent && (
@@ -191,7 +192,7 @@ export default function ArticlesImc() {
                         {selectedArticle.fullContent && (
                           <div
                             className={`${styles.modalText} ${styles.fullArticle}`}
-                            dangerouslySetInnerHTML={{ __html: selectedArticle.fullContent }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedArticle.fullContent) }}
                           />
                         )}
 
