@@ -284,10 +284,7 @@ if (fs.existsSync(frontendDistPath)) {
 }
 
 // Middleware de gestion d'erreurs centralisé (doit être en toute dernière position)
-const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
-
-// 404 pour les routes API non trouvées (avant errorHandler)
-app.use('/api/*', notFoundHandler);
+const { errorHandler } = require('./middlewares/errorHandler');
 
 // Gestion globale des erreurs (en dernière position)
 app.use(errorHandler);
