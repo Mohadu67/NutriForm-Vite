@@ -21,6 +21,7 @@ import {
   IngredientList,
   InstructionsList,
 } from '../../components/recipes';
+import RatingDisplay from '../../components/common/RatingDisplay';
 
 const { width } = Dimensions.get('window');
 
@@ -39,6 +40,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
     toggleFavorite,
     toggleSaved,
     deleteRecipe,
+    rateRecipe,
     proposeRecipe,
     unpublishRecipe,
   } = useRecipe();
@@ -47,6 +49,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
 
   const [recipe, setRecipe] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(true);
+  const [userRating, setUserRating] = useState(null);
 
   useEffect(() => {
     loadRecipeDetail();
@@ -61,12 +64,18 @@ const RecipeDetailScreen = ({ route, navigation }) => {
       if (result) {
         console.log('[RecipeDetail] Recipe loaded:', {
           title: result.title,
+          avgRating: result.avgRating,
+          ratingsCount: result.ratingsCount,
           hasIngredients: !!result.ingredients,
           ingredientsCount: result.ingredients?.length,
           hasInstructions: !!result.instructions,
           instructionsCount: result.instructions?.length,
         });
         setRecipe(result);
+        // Set user rating if available
+        if (result.userRating !== undefined) {
+          setUserRating(result.userRating || 0);
+        }
       } else {
         Alert.alert('Erreur', 'Recette introuvable');
         navigation.goBack();
@@ -237,6 +246,31 @@ const RecipeDetailScreen = ({ route, navigation }) => {
         },
       ]
     );
+  };
+
+  const handleRate = async (rating) => {
+    const result = await rateRecipe(recipeId, rating);
+    console.log('[RecipeDetail] handleRate result:', result, 'recipe exists:', !!recipe);
+    // Update local and recipe state with new ratings data
+    if (result.success && recipe) {
+      setUserRating(result.userRating);
+      setRecipe({
+        ...recipe,
+        avgRating: result.avgRating,
+        ratingsCount: result.ratingsCount,
+      });
+      Alert.alert(
+        'Succès',
+        'Votre note a été enregistrée avec succès!',
+        [{ text: 'OK' }]
+      );
+    } else {
+      Alert.alert(
+        'Erreur',
+        'Impossible d\'enregistrer votre note. Veuillez réessayer.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   if (loadingDetail || !recipe) {
@@ -431,6 +465,13 @@ const RecipeDetailScreen = ({ route, navigation }) => {
             </View>
           </View>
 
+          {/* Rating - Afficher la note moyenne si disponible */}
+          <RatingDisplay
+            avgRating={recipe.avgRating}
+            ratingsCount={recipe.ratingsCount}
+            size="large"
+          />
+
           {/* Nutrition Card */}
           <NutritionCard nutrition={nutrition} />
 
@@ -474,6 +515,30 @@ const RecipeDetailScreen = ({ route, navigation }) => {
                       {item}
                     </Text>
                   </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Rating - afficher pour tous les non-propriétaires */}
+          {!isOwnRecipe && (
+            <View style={[styles.ratingSection, isDark && styles.ratingSectionDark]}>
+              <Text style={[styles.ratingTitle, isDark && styles.ratingTitleDark]}>
+                Noter cette recette
+              </Text>
+              <View style={styles.rateStars}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity
+                    key={star}
+                    onPress={() => handleRate(star)}
+                    style={styles.starButton}
+                  >
+                    <Ionicons
+                      name={star <= (userRating || 0) ? 'star' : 'star-outline'}
+                      size={36}
+                      color="#F59E0B"
+                    />
+                  </TouchableOpacity>
                 ))}
               </View>
             </View>
@@ -834,6 +899,61 @@ const styles = StyleSheet.create({
   },
   likesTextDark: {
     color: '#888',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: theme.spacing.md,
+    gap: theme.spacing.sm,
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: theme.spacing.md,
+    marginTop: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    paddingHorizontal: theme.spacing.md,
+    ...theme.shadows.sm,
+  },
+  ratingContainerDark: {
+    backgroundColor: '#2A2A2A',
+  },
+  ratingStars: {
+    flexDirection: 'row',
+  },
+  ratingText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text.secondary,
+  },
+  ratingTextDark: {
+    color: '#888',
+  },
+  ratingSection: {
+    backgroundColor: '#FFFFFF',
+    padding: theme.spacing.md,
+    marginHorizontal: theme.spacing.md,
+    marginTop: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    ...theme.shadows.sm,
+  },
+  ratingSectionDark: {
+    backgroundColor: '#2A2A2A',
+  },
+  ratingTitle: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: '600',
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.md,
+    textAlign: 'center',
+  },
+  ratingTitleDark: {
+    color: '#FFFFFF',
+  },
+  rateStars: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: theme.spacing.sm,
+  },
+  starButton: {
+    padding: 8,
   },
 });
 

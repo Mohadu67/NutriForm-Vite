@@ -307,6 +307,24 @@ export function RecipeProvider({ children }) {
   }, []);
 
   /**
+   * Noter une recette
+   */
+  const rateRecipe = useCallback(async (id, rating) => {
+    if (!isPremium) {
+      setError('Premium subscription required to rate recipes');
+      return { success: false };
+    }
+
+    try {
+      const result = await recipesApi.rateRecipe(id, rating);
+      return result;
+    } catch (err) {
+      console.error('[RecipeContext] Rate error:', err);
+      return { success: false };
+    }
+  }, [isPremium]);
+
+  /**
    * Effacer l'erreur
    */
   const clearError = useCallback(() => {
@@ -331,6 +349,7 @@ export function RecipeProvider({ children }) {
     createRecipe,
     updateRecipe,
     deleteRecipe,
+    rateRecipe,
     proposeRecipe,
     unpublishRecipe,
     loadFavorites,

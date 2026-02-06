@@ -145,6 +145,7 @@ export const endpoints = {
     delete: (id) => `/recipes/user/${id}`,
     like: (id) => `/recipes/${id}/like`,
     save: (id) => `/recipes/${id}/save`,
+    rate: (id) => `/recipes/${id}/rate`,
     propose: (id) => `/recipes/user/${id}/propose`,
     unpublish: (id) => `/recipes/user/${id}/unpublish`,
     byId: (id) => `/recipes/${id}`,

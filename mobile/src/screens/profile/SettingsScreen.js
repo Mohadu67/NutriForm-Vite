@@ -214,7 +214,7 @@ export default function SettingsScreen() {
                       console.error('[SETTINGS] Error deleting account:', error);
                       Alert.alert(
                         'Erreur',
-                        'Une erreur est survenue lors de la suppression du compte. Veuillez reessayer ou contacter le support a support@harmonith.fr'
+                        'Une erreur est survenue lors de la suppression du compte. Veuillez reessayer ou contacter le support a contact.harmonith@gmail.com'
                       );
                     }
                   },

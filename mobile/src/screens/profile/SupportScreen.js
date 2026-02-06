@@ -152,7 +152,7 @@ export default function SupportScreen() {
             <View style={styles.linkContent}>
               <Text style={[styles.linkLabel, isDark && styles.textDark]}>Email</Text>
               <Text style={[styles.linkValue, isDark && styles.textMutedDark]}>
-                support@nutriform.app
+                contact.harmonith@gmail.com
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={isDark ? '#555' : '#CCC'} />

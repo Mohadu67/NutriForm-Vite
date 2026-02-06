@@ -52,10 +52,22 @@ const RecipeCard = ({ recipe, isFavorite, onPress, onToggleFavorite }) => {
 
       {/* Info */}
       <View style={styles.info}>
-        <Text style={[styles.title, isDark && styles.titleDark]} numberOfLines={2}>
-          {recipe.title}
-        </Text>
+        {/* Title Row with Rating Badge */}
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, isDark && styles.titleDark]} numberOfLines={2}>
+            {recipe.title}
+          </Text>
+          {recipe.avgRating > 0 && (
+            <View style={styles.ratingBadge}>
+              <Ionicons name="star" size={12} color="#F59E0B" />
+              <Text style={styles.ratingText}>
+                {recipe.avgRating.toFixed(1)}
+              </Text>
+            </View>
+          )}
+        </View>
 
+        {/* Meta Row */}
         <View style={styles.meta}>
           <View style={styles.metaItem}>
             <Ionicons name="time-outline" size={14} color={isDark ? '#888' : '#666'} />
@@ -139,14 +151,35 @@ const styles = StyleSheet.create({
   info: {
     padding: theme.spacing.sm,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 6,
+  },
   title: {
+    flex: 1,
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.semiBold,
     color: '#1a1a1a',
-    marginBottom: 6,
   },
   titleDark: {
     color: '#FFFFFF',
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 6,
+    gap: 3,
+  },
+  ratingText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#D97706',
   },
   meta: {
     flexDirection: 'row',

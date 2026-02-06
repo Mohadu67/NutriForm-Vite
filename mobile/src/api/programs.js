@@ -217,12 +217,15 @@ export async function recordCompletion(id, sessionData) {
 export async function rateProgram(id, rating) {
   try {
     const response = await apiClient.post(endpoints.programs.rate(id), { rating });
+    console.log('[PROGRAMS API] rateProgram response:', response.data);
     return {
       success: true,
-      data: response.data || null,
+      avgRating: response.data?.avgRating || 0,
+      ratingsCount: response.data?.ratingsCount || 0,
+      userRating: response.data?.userRating || null,
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Rate error:', error.message);
+    console.log('[PROGRAMS API] Rate error:', error.message, error.response?.data);
     return { success: false, error: error.message };
   }
 }
