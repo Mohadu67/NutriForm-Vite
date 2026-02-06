@@ -11,13 +11,13 @@ import {
   ScrollView,
   Animated,
   ActivityIndicator,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import SafeImage from '../../components/ui/SafeImage';
 import { theme } from '../../theme';
 import { BodyPicker, ZONE_LABELS } from '../../components/BodyPicker';
 import { useWorkout } from '../../contexts/WorkoutContext';
@@ -510,10 +510,12 @@ export default function ExercicesScreen() {
       >
         {/* Image ou placeholder */}
         {item.image ? (
-          <Image
+          <SafeImage
             source={{ uri: item.image }}
             style={styles.exerciceImage}
             resizeMode="cover"
+            placeholderIcon="barbell-outline"
+            placeholderSize={28}
           />
         ) : (
           <View style={[styles.exerciceImage, { backgroundColor: `${typeConfig.color}15` }]}>

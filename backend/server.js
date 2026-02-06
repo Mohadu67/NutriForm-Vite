@@ -252,6 +252,10 @@ app.use('/api/image-proxy', imageProxyRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/exercises', exercisesRoutes);
 
+// Middleware de gestion d'erreurs centralisé (doit être après toutes les routes)
+const { errorHandler } = require('./middlewares/errorHandler');
+app.use(errorHandler);
+
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
 if (fs.existsSync(frontendDistPath)) {

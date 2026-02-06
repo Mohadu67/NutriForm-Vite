@@ -10,13 +10,13 @@ import {
   Alert,
   Animated,
   Vibration,
-  Image,
   Modal,
   Switch,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import SafeImage from '../../components/ui/SafeImage';
 import { useWorkout } from '../../contexts/WorkoutContext';
 import {
   useSmartTracking,
@@ -229,10 +229,12 @@ const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onTogg
           onPress={() => setShowInstructions(true)}
         >
           {exercice.image ? (
-            <Image
+            <SafeImage
               source={{ uri: exercice.image }}
               style={styles.exerciseImage}
               resizeMode="cover"
+              placeholderIcon="barbell-outline"
+              placeholderSize={20}
             />
           ) : (
             <Ionicons name={typeConfig.icon} size={20} color={typeConfig.color} />
@@ -286,10 +288,12 @@ const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onTogg
         >
           <View style={[styles.instructionsModal, isDark && styles.instructionsModalDark]}>
             {exercice.image && (
-              <Image
+              <SafeImage
                 source={{ uri: exercice.image }}
                 style={styles.instructionsImage}
                 resizeMode="cover"
+                placeholderIcon="barbell-outline"
+                placeholderSize={60}
               />
             )}
             <Text style={[styles.instructionsTitle, isDark && styles.textDark]}>
