@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const logger = require('../utils/logger');
 
 const recipeSchema = new mongoose.Schema({
   // Informations de base
@@ -199,34 +200,34 @@ recipeSchema.methods.addRating = async function(userId, rating) {
       { _id: this._id },
       { $pull: { ratings: { userId: userId } } }
     );
-    console.log('[Recipe.addRating] Old rating removed');
+    logger.info('[Recipe.addRating] Old rating removed');
 
     // Ajouter la nouvelle note
     await this.model('Recipe').updateOne(
       { _id: this._id },
       { $push: { ratings: { userId: userId, rating: rating, createdAt: new Date() } } }
     );
-    console.log('[Recipe.addRating] New rating added');
+    logger.info('[Recipe.addRating] New rating added');
 
     // Recharger le document complet
     const updated = await this.model('Recipe').findById(this._id);
-    console.log('[Recipe.addRating] Document reloaded, ratings count:', updated.ratings?.length);
+    logger.info('[Recipe.addRating] Document reloaded, ratings count:', updated.ratings?.length);
 
     // Calculer la moyenne manuellement (plus fiable que aggregate)
     if (updated.ratings && updated.ratings.length > 0) {
       const sum = updated.ratings.reduce((acc, r) => acc + r.rating, 0);
       const avgRating = sum / updated.ratings.length;
       updated.avgRating = avgRating;
-      console.log('[Recipe.addRating] Calculated avgRating:', avgRating);
+      logger.info('[Recipe.addRating] Calculated avgRating:', avgRating);
 
       await updated.save();
-      console.log('[Recipe.addRating] Document saved with avgRating:', updated.avgRating);
+      logger.info('[Recipe.addRating] Document saved with avgRating:', updated.avgRating);
 
       // Mettre à jour l'instance courante
       this.avgRating = avgRating;
     }
   } catch (error) {
-    console.error('[Recipe.addRating] Error:', error);
+    logger.error('[Recipe.addRating] Error:', error);
     throw error;
   }
 };

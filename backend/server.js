@@ -284,7 +284,12 @@ if (fs.existsSync(frontendDistPath)) {
 }
 
 // Middleware de gestion d'erreurs centralisé (doit être en toute dernière position)
-const { errorHandler } = require('./middlewares/errorHandler');
+const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
+
+// 404 pour les routes API non trouvées (avant errorHandler)
+app.use('/api/*', notFoundHandler);
+
+// Gestion globale des erreurs (en dernière position)
 app.use(errorHandler);
 
 // Configuration Socket.io pour la messagerie temps réel
