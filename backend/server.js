@@ -252,10 +252,6 @@ app.use('/api/image-proxy', imageProxyRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/exercises', exercisesRoutes);
 
-// Middleware de gestion d'erreurs centralisé (doit être après toutes les routes)
-const { errorHandler } = require('./middlewares/errorHandler');
-app.use(errorHandler);
-
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
 if (fs.existsSync(frontendDistPath)) {
@@ -286,6 +282,10 @@ if (fs.existsSync(frontendDistPath)) {
     res.send('Bienvenue sur le backend de NutriForm 🚀');
   });
 }
+
+// Middleware de gestion d'erreurs centralisé (doit être en toute dernière position)
+const { errorHandler } = require('./middlewares/errorHandler');
+app.use(errorHandler);
 
 // Configuration Socket.io pour la messagerie temps réel
 require('./socket/messageSocket')(io);
