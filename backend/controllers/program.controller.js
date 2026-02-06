@@ -198,12 +198,18 @@ async function getProgramById(req, res) {
       userRating = userRatingObj?.rating || null;
     }
 
-    // Ne pas exposer les ratings complets
+    // Ne pas exposer les ratings complets, mais inclure le count
     const { ratings, ...programWithoutRatings } = program;
+    const ratingsCount = program.ratings ? program.ratings.length : 0;
+
+    // S'assurer que avgRating existe
+    if (!programWithoutRatings.avgRating) {
+      programWithoutRatings.avgRating = 0;
+    }
 
     return res.status(200).json({
       success: true,
-      program: { ...programWithoutRatings, userRating }
+      program: { ...programWithoutRatings, userRating, ratingsCount }
     });
   } catch (err) {
     logger.error("getProgramById error:", err);
@@ -577,7 +583,7 @@ async function rateProgram(req, res) {
       return res.status(400).json({ error: "invalid_rating" });
     }
 
-    const program = await WorkoutProgram.findById(id);
+    let program = await WorkoutProgram.findById(id);
 
     if (!program) {
       return res.status(404).json({ error: "program_not_found" });
@@ -585,9 +591,24 @@ async function rateProgram(req, res) {
 
     await program.addRating(new mongoose.Types.ObjectId(userId), rating);
 
+    // Recharger pour avoir la dernière moyenne
+    program = await WorkoutProgram.findById(id);
+
+    // Retourner avgRating, ratingsCount et userRating
+    const ratingsCount = program.ratings ? program.ratings.length : 0;
+
+    // Récupérer la note de l'utilisateur qui vient de noter
+    let userRating = null;
+    if (program.ratings) {
+      const userRatingObj = program.ratings.find(r => r.userId?.toString() === userId);
+      userRating = userRatingObj?.rating || null;
+    }
+
     return res.status(200).json({
       success: true,
-      avgRating: program.avgRating
+      avgRating: program.avgRating,
+      ratingsCount: ratingsCount,
+      userRating: userRating
     });
   } catch (err) {
     logger.error("rateProgram error:", err);

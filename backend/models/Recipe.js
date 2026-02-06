@@ -107,11 +107,16 @@ const recipeSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
+  ratings: [{
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    rating: { type: Number, min: 1, max: 5 },
+    createdAt: { type: Date, default: Date.now }
+  }],
   views: {
     type: Number,
     default: 0
   },
-  averageRating: {
+  avgRating: {
     type: Number,
     default: 0,
     min: 0,
@@ -181,6 +186,48 @@ recipeSchema.methods.isLikedBy = function(userId) {
 // Méthode pour obtenir le nombre de likes
 recipeSchema.methods.getLikesCount = function() {
   return this.likes.length;
+};
+
+// Méthode pour ajouter une notation
+recipeSchema.methods.addRating = async function(userId, rating) {
+  console.log('[Recipe.addRating] Starting - userId:', userId, 'rating:', rating);
+
+  try {
+    // Supprimer l'ancienne note si elle existe
+    await this.model('Recipe').updateOne(
+      { _id: this._id },
+      { $pull: { ratings: { userId: userId } } }
+    );
+    console.log('[Recipe.addRating] Old rating removed');
+
+    // Ajouter la nouvelle note
+    await this.model('Recipe').updateOne(
+      { _id: this._id },
+      { $push: { ratings: { userId: userId, rating: rating, createdAt: new Date() } } }
+    );
+    console.log('[Recipe.addRating] New rating added');
+
+    // Recharger le document complet
+    const updated = await this.model('Recipe').findById(this._id);
+    console.log('[Recipe.addRating] Document reloaded, ratings count:', updated.ratings?.length);
+
+    // Calculer la moyenne manuellement (plus fiable que aggregate)
+    if (updated.ratings && updated.ratings.length > 0) {
+      const sum = updated.ratings.reduce((acc, r) => acc + r.rating, 0);
+      const avgRating = sum / updated.ratings.length;
+      updated.avgRating = avgRating;
+      console.log('[Recipe.addRating] Calculated avgRating:', avgRating);
+
+      await updated.save();
+      console.log('[Recipe.addRating] Document saved with avgRating:', updated.avgRating);
+
+      // Mettre à jour l'instance courante
+      this.avgRating = avgRating;
+    }
+  } catch (error) {
+    console.error('[Recipe.addRating] Error:', error);
+    throw error;
+  }
 };
 
 // Méthode virtuelle pour les macros par portion

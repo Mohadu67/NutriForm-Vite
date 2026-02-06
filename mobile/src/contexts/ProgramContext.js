@@ -341,15 +341,15 @@ export function ProgramProvider({ children }) {
   const rateProgram = useCallback(async (id, rating) => {
     if (!isPremium) {
       setError('Premium subscription required to rate programs');
-      return false;
+      return { success: false };
     }
 
     try {
       const result = await programsApi.rateProgram(id, rating);
-      return result.success;
+      return result;
     } catch (err) {
       console.error('[ProgramContext] Rate error:', err);
-      return false;
+      return { success: false };
     }
   }, [isPremium]);
 

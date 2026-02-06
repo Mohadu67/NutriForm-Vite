@@ -20,6 +20,7 @@ import { useProgram } from '../../contexts/ProgramContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getExercise } from '../../api/exercises';
 import CycleItem from '../../components/programs/CycleItem';
+import RatingDisplay from '../../components/common/RatingDisplay';
 import { theme } from '../../theme';
 
 // Configuration des types
@@ -154,24 +155,26 @@ export default function ProgramDetailScreen() {
     return enriched;
   };
 
-  // Charger le programme si pas déjà fourni
+  // Toujours charger le programme pour avoir les données à jour (ratingsCount, userRating)
   useEffect(() => {
-    if (!initialProgram && programId) {
+    if (programId) {
       loadProgram();
-    } else if (initialProgram?.cycles) {
-      // Enrichir les cycles du programme initial
-      enrichCyclesWithImages(initialProgram.cycles).then(setEnrichedCycles);
     }
-  }, [programId, initialProgram]);
+  }, [programId]);
 
   const loadProgram = async () => {
     setLoading(true);
     const data = await fetchProgramById(programId);
     if (data) {
+      console.log('[ProgramDetail] Program loaded:', {
+        name: data.name,
+        avgRating: data.avgRating,
+        ratingsCount: data.ratingsCount,
+      });
       setProgram(data);
       // Mettre à jour la note de l'utilisateur si elle existe
       if (data.userRating !== undefined) {
-        setUserRating(data.userRating || 0);
+        setUserRating(data.userRating);
       }
       // Enrichir les cycles avec les images
       const enriched = await enrichCyclesWithImages(data.cycles);
@@ -310,9 +313,28 @@ export default function ProgramDetailScreen() {
   };
 
   const handleRate = async (rating) => {
-    setUserRating(rating);
-    await rateProgram(program._id, rating);
-    loadProgram();
+    const result = await rateProgram(program._id, rating);
+    console.log('[ProgramDetail] handleRate result:', result, 'program exists:', !!program);
+    // Update local and program state with new ratings data
+    if (result.success && program) {
+      setUserRating(result.userRating);
+      setProgram({
+        ...program,
+        avgRating: result.avgRating,
+        ratingsCount: result.ratingsCount,
+      });
+      Alert.alert(
+        'Succès',
+        'Votre note a été enregistrée avec succès!',
+        [{ text: 'OK' }]
+      );
+    } else {
+      Alert.alert(
+        'Erreur',
+        'Impossible d\'enregistrer votre note. Veuillez réessayer.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   if (loading) {
@@ -412,23 +434,11 @@ export default function ProgramDetailScreen() {
         </View>
 
         {/* Rating */}
-        {program.avgRating > 0 && (
-          <View style={[styles.ratingContainer, isDark && styles.ratingContainerDark]}>
-            <View style={styles.ratingStars}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Ionicons
-                  key={star}
-                  name={star <= Math.round(program.avgRating) ? 'star' : 'star-outline'}
-                  size={20}
-                  color="#F59E0B"
-                />
-              ))}
-            </View>
-            <Text style={[styles.ratingText, isDark && styles.ratingTextDark]}>
-              {program.avgRating.toFixed(1)} ({program.ratings?.length || 0} avis)
-            </Text>
-          </View>
-        )}
+        <RatingDisplay
+          avgRating={program.avgRating}
+          ratingsCount={program.ratingsCount}
+          size="large"
+        />
 
         {/* Description */}
         {program.description && (

@@ -274,6 +274,25 @@ export async function unpublishRecipe(id) {
   }
 }
 
+/**
+ * Noter une recette
+ */
+export async function rateRecipe(id, rating) {
+  try {
+    const response = await apiClient.post(endpoints.recipes.rate(id), { rating });
+    console.log('[RECIPES API] rateRecipe response:', response.data);
+    return {
+      success: true,
+      avgRating: response.data?.avgRating || 0,
+      ratingsCount: response.data?.ratingsCount || 0,
+      userRating: response.data?.userRating || null,
+    };
+  } catch (error) {
+    console.log('[RECIPES API] Rate error:', error.message, error.response?.data);
+    return { success: false, error: error.message };
+  }
+}
+
 export default {
   getRecipes,
   getRecipe,
@@ -288,6 +307,7 @@ export default {
   deleteRecipe,
   toggleLikeRecipe,
   saveRecipe,
+  rateRecipe,
   proposeRecipe,
   unpublishRecipe,
 };

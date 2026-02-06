@@ -155,28 +155,31 @@ WorkoutProgramSchema.methods.incrementCompletion = async function() {
 
 // Méthode pour ajouter une note (optimisée avec opérations atomiques)
 WorkoutProgramSchema.methods.addRating = async function(userId, rating) {
-  // Supprimer l'ancienne note avec opération atomique
+  // Supprimer l'ancienne note si elle existe
   await this.model('WorkoutProgram').updateOne(
     { _id: this._id },
     { $pull: { ratings: { userId: userId } } }
   );
 
-  // Ajouter la nouvelle note avec opération atomique
+  // Ajouter la nouvelle note
   await this.model('WorkoutProgram').updateOne(
     { _id: this._id },
     { $push: { ratings: { userId: userId, rating: rating, createdAt: new Date() } } }
   );
 
-  // Recalculer la moyenne avec aggregate (plus performant)
-  const result = await this.model('WorkoutProgram').aggregate([
-    { $match: { _id: this._id } },
-    { $unwind: '$ratings' },
-    { $group: { _id: '$_id', avgRating: { $avg: '$ratings.rating' } } }
-  ]);
+  // Recharger le document complet
+  const updated = await this.model('WorkoutProgram').findById(this._id);
 
-  if (result.length > 0) {
-    this.avgRating = result[0].avgRating;
-    await this.save();
+  // Calculer la moyenne manuellement (plus fiable que aggregate)
+  if (updated.ratings && updated.ratings.length > 0) {
+    const sum = updated.ratings.reduce((acc, r) => acc + r.rating, 0);
+    const avgRating = sum / updated.ratings.length;
+    updated.avgRating = avgRating;
+
+    await updated.save();
+
+    // Mettre à jour l'instance courante
+    this.avgRating = avgRating;
   }
 };
 
