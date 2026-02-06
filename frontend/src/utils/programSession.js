@@ -1,6 +1,7 @@
 /**
  * Utilitaire pour gérer la sauvegarde/restauration des sessions de programme en cours
  */
+import { storage } from '../shared/utils/storage.js';
 
 const SESSION_STORAGE_KEY = 'active_program_session';
 
@@ -19,7 +20,7 @@ export function saveActiveSession(sessionState) {
       ...sessionState,
       savedAt: Date.now()
     };
-    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(dataToSave));
+    storage.set(SESSION_STORAGE_KEY, dataToSave);
     console.log('💾 Session sauvegardée');
   } catch (error) {
     console.error('Erreur lors de la sauvegarde de la session:', error);
@@ -32,10 +33,8 @@ export function saveActiveSession(sessionState) {
  */
 export function getActiveSession() {
   try {
-    const saved = localStorage.getItem(SESSION_STORAGE_KEY);
-    if (!saved) return null;
-
-    const session = JSON.parse(saved);
+    const session = storage.get(SESSION_STORAGE_KEY);
+    if (!session) return null;
 
     // Vérifier que la session n'est pas trop ancienne (max 24h)
     const MAX_AGE = 24 * 60 * 60 * 1000; // 24 heures
@@ -56,7 +55,7 @@ export function getActiveSession() {
  */
 export function clearActiveSession() {
   try {
-    localStorage.removeItem(SESSION_STORAGE_KEY);
+    storage.remove(SESSION_STORAGE_KEY);
     console.log('🗑️ Session supprimée');
   } catch (error) {
     console.error('Erreur lors de la suppression de la session:', error);

@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { consentDefaults, consentTypes, cookiesToClear } from "../pages/RGPD/config/consents";
+import { storage } from "../shared/utils/storage.js";
 
 const CONSENT_STORAGE_KEY = "harmonith_consent_preferences";
 const CONSENT_VERSION = "2026-02-04"; // Update when consent structure changes
@@ -17,10 +18,9 @@ export function useConsent() {
   useEffect(() => {
     const loadConsent = () => {
       try {
-        const stored = localStorage.getItem(CONSENT_STORAGE_KEY);
+        const data = storage.get(CONSENT_STORAGE_KEY);
 
-        if (stored) {
-          const data = JSON.parse(stored);
+        if (data) {
           // Check version - if outdated, reset
           if (data.version !== CONSENT_VERSION) {
             console.log("Consent version updated, resetting to defaults");
@@ -54,7 +54,7 @@ export function useConsent() {
         timestamp: new Date().toISOString(),
       };
 
-      localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(consentData));
+      storage.set(CONSENT_STORAGE_KEY, consentData);
       setConsentState(preferences);
       setConsentShown(true);
 
@@ -115,7 +115,7 @@ export function useConsent() {
 
   // Reset consent (show banner again)
   const resetConsent = useCallback(() => {
-    localStorage.removeItem(CONSENT_STORAGE_KEY);
+    storage.remove(CONSENT_STORAGE_KEY);
     setConsentState(consentDefaults);
     setConsentShown(false);
     clearAllCookies();

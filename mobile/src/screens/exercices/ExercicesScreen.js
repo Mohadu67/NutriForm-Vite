@@ -427,17 +427,50 @@ export default function ExercicesScreen() {
   const loadFavorites = async () => {
     try {
       const stored = await AsyncStorage.getItem(FAVORITES_KEY);
-      if (stored) {
-        setFavorites(JSON.parse(stored));
+      if (!stored) return;
+
+      const cached = JSON.parse(stored);
+
+      // Rétrocompatibilité: si ancien format (array direct)
+      if (Array.isArray(cached)) {
+        logger.storage.warn('Old favorites format detected, migrating...');
+        setFavorites(cached);
+        // Sauvegarder dans le nouveau format
+        saveFavorites(cached);
+        return;
+      }
+
+      // Nouveau format avec cachedAt
+      if (!cached.cachedAt) {
+        // Format invalide, réinitialiser
+        setFavorites([]);
+        return;
+      }
+
+      // Vérifier expiration (7 jours)
+      const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 jours en millisecondes
+      const isExpired = Date.now() - cached.cachedAt > CACHE_DURATION;
+
+      if (isExpired) {
+        logger.storage.info('Favorites cache expired, clearing...');
+        await AsyncStorage.removeItem(FAVORITES_KEY);
+        setFavorites([]);
+      } else {
+        setFavorites(cached.data || []);
       }
     } catch (error) {
       logger.storage.error('Error loading favorites', error);
+      setFavorites([]);
     }
   };
 
   const saveFavorites = async (newFavorites) => {
     try {
-      await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(newFavorites));
+      const cache = {
+        data: newFavorites,
+        cachedAt: Date.now()
+      };
+      await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(cache));
     } catch (error) {
       logger.storage.error('Error saving favorites', error);
     }

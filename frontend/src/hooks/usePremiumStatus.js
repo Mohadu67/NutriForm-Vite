@@ -1,25 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { secureApiCall } from '../utils/authService';
 import endpoints from '../shared/api/endpoints';
-
-// Storage helper
-const storage = {
-  get: (key) => {
-    try {
-      const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : null;
-    } catch {
-      return null;
-    }
-  },
-  set: (key, value) => {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch {
-      // Ignore storage errors
-    }
-  }
-};
+import { storage } from '../shared/utils/storage.js';
 
 /**
  * Hook centralisé pour gérer le statut premium
