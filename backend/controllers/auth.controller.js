@@ -189,12 +189,25 @@ exports.me = async (req, res) => {
       photoUrl = `${backendBase}${photoUrl}`;
     }
 
-    // TOUJOURS vérifier Subscription.isActive() pour déterminer isPremium
+    // Déterminer le tier premium de manière complète (comme dans getSubscriptionStatus)
+    // 1. Vérifier si XP Premium est actif
+    const hasXpPremium = user.xpPremiumExpiresAt && new Date(user.xpPremiumExpiresAt) > new Date();
+
+    // 2. Vérifier si trial est actif
+    const isTrialActive = user.trialEndsAt && new Date(user.trialEndsAt) > new Date();
+
+    // 3. Vérifier si abonnement Stripe est valide
     const subscription = await Subscription.findOne({ userId: req.userId });
-    const isPremium = subscription && subscription.isActive();
+    const hasValidStripeSubscription = subscription &&
+      subscription.stripeSubscriptionId &&
+      !subscription.stripeSubscriptionId.includes('test_local') &&
+      subscription.isActive();
+
+    // Déterminer isPremium et expectedTier
+    const isPremium = hasXpPremium || isTrialActive || hasValidStripeSubscription;
+    const expectedTier = isPremium ? 'premium' : 'free';
 
     // Synchroniser le tier User si nécessaire
-    const expectedTier = isPremium ? 'premium' : 'free';
     if (user.subscriptionTier !== expectedTier) {
       user.subscriptionTier = expectedTier;
       await user.save();

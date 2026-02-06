@@ -1,0 +1,48 @@
+
+{
+  "project_info": {
+    "project_number": "45341856086",
+    "project_id": "harmonith-62436",
+    "storage_bucket": "harmonith-62436.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:45341856086:android:f9d9f6540580d27d6786f7",
+        "android_client_info": {
+          "package_name": "com.harmonith.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "45341856086-79k0l4ej3u0ooffi87a7ccsj8pmbt5ig.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.harmonith.app",
+            "certificate_hash": "e64a944876ac6304caf6c64d439843ff0e010935"
+          }
+        },
+        {
+          "client_id": "45341856086-ja08fhmgetpb58riv647lfsdvgsuelvc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASwUGMAHM4iyv0J6ZchXe-TmpXlJYfqeg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "45341856086-ja08fhmgetpb58riv647lfsdvgsuelvc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,7 +1,39 @@
 const LeaderboardEntry = require('../models/LeaderboardEntry');
 const WorkoutSession = require('../models/WorkoutSession');
+const DailyHealthData = require('../models/DailyHealthData');
 const User = require('../models/User');
 const logger = require('../utils/logger.js');
+
+/**
+ * Helper: Obtenir le champ de tri selon type et période
+ */
+function getSortField(type, period) {
+  const typeMap = {
+    muscu: 'muscu',
+    cardio: 'cardio',
+    poids_corps: 'poidsCops',
+    all: ''
+  };
+
+  const periodMap = {
+    week: 'ThisWeek',
+    month: 'ThisMonth',
+    alltime: ''
+  };
+
+  const typePrefix = typeMap[type] || '';
+  const periodSuffix = periodMap[period] || '';
+
+  if (type === 'all') {
+    // Pour 'all', utiliser des champs spéciaux
+    if (period === 'week') return 'stats.thisWeekSessions';
+    if (period === 'month') return 'stats.thisMonthSessions';
+    return 'stats.totalSessions';
+  }
+
+  // Pour les types spécifiques
+  return `stats.${typePrefix}${periodSuffix}Sessions`;
+}
 
 /**
  * Obtenir le classement global
@@ -10,41 +42,8 @@ exports.getLeaderboard = async (req, res) => {
   try {
     const { period = 'alltime', type = 'all', limit = 50 } = req.query;
 
-    let sortField = 'stats.totalSessions';
-
-    // Déterminer le champ de tri selon la combinaison période + type
-    if (type === 'muscu') {
-      if (period === 'week') {
-        sortField = 'stats.muscuThisWeekSessions';
-      } else if (period === 'month') {
-        sortField = 'stats.muscuThisMonthSessions';
-      } else {
-        sortField = 'stats.muscuSessions';
-      }
-    } else if (type === 'cardio') {
-      if (period === 'week') {
-        sortField = 'stats.cardioThisWeekSessions';
-      } else if (period === 'month') {
-        sortField = 'stats.cardioThisMonthSessions';
-      } else {
-        sortField = 'stats.cardioSessions';
-      }
-    } else if (type === 'poids_corps') {
-      if (period === 'week') {
-        sortField = 'stats.poidsCorpsThisWeekSessions';
-      } else if (period === 'month') {
-        sortField = 'stats.poidsCorpsThisMonthSessions';
-      } else {
-        sortField = 'stats.poidsCorpsSessions';
-      }
-    } else {
-      // Type 'all' - filtrer uniquement par période
-      if (period === 'week') {
-        sortField = 'stats.thisWeekSessions';
-      } else if (period === 'month') {
-        sortField = 'stats.thisMonthSessions';
-      }
-    }
+    // Utiliser la fonction helper pour obtenir le champ de tri
+    const sortField = getSortField(type, period);
 
     const leaderboard = await LeaderboardEntry.find({ visibility: 'public' })
       .sort({ [sortField]: -1 })
@@ -91,41 +90,8 @@ exports.getUserRank = async (req, res) => {
       });
     }
 
-    let sortField = 'stats.totalSessions';
-
-    // Déterminer le champ de tri selon la combinaison période + type
-    if (type === 'muscu') {
-      if (period === 'week') {
-        sortField = 'stats.muscuThisWeekSessions';
-      } else if (period === 'month') {
-        sortField = 'stats.muscuThisMonthSessions';
-      } else {
-        sortField = 'stats.muscuSessions';
-      }
-    } else if (type === 'cardio') {
-      if (period === 'week') {
-        sortField = 'stats.cardioThisWeekSessions';
-      } else if (period === 'month') {
-        sortField = 'stats.cardioThisMonthSessions';
-      } else {
-        sortField = 'stats.cardioSessions';
-      }
-    } else if (type === 'poids_corps') {
-      if (period === 'week') {
-        sortField = 'stats.poidsCorpsThisWeekSessions';
-      } else if (period === 'month') {
-        sortField = 'stats.poidsCorpsThisMonthSessions';
-      } else {
-        sortField = 'stats.poidsCorpsSessions';
-      }
-    } else {
-      // Type 'all' - filtrer uniquement par période
-      if (period === 'week') {
-        sortField = 'stats.thisWeekSessions';
-      } else if (period === 'month') {
-        sortField = 'stats.thisMonthSessions';
-      }
-    }
+    // Utiliser la fonction helper pour obtenir le champ de tri
+    const sortField = getSortField(type, period);
 
     // Compter combien d'utilisateurs ont un meilleur score
     const rank = await LeaderboardEntry.countDocuments({
@@ -348,7 +314,19 @@ async function calculateUserStats(userId) {
   // Début du mois (1er jour du mois 00:00:00)
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
 
+  // Get total calories from DailyHealthData (phone data)
   let totalCalories = 0;
+  try {
+    const dailyHealthStats = await DailyHealthData.aggregate([
+      { $match: { userId } },
+      { $group: { _id: null, totalCalories: { $sum: '$caloriesBurned' } } }
+    ]);
+    totalCalories = dailyHealthStats[0]?.totalCalories || 0;
+  } catch (error) {
+    logger.error('Erreur lors de la récupération des calories de santé:', error);
+    // Fallback to WorkoutSession calories if DailyHealthData fails
+    totalCalories = 0;
+  }
   let totalDurationMin = 0;
   let thisWeekSessions = 0;
   let thisMonthSessions = 0;
@@ -363,7 +341,6 @@ async function calculateUserStats(userId) {
   let poidsCorpsThisMonthSessions = 0;
 
   sessions.forEach((session) => {
-    totalCalories += session.calories || 0;
     totalDurationMin += Math.floor((session.durationSec || 0) / 60);
 
     const sessionDate = new Date(session.endedAt || session.createdAt);

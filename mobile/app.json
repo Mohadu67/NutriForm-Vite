@@ -1,0 +1,100 @@
+{
+  "expo": {
+    "name": "Harmonith",
+    "slug": "harmonith",
+    "scheme": "harmonith",
+    "version": "1.0.2",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": false,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F7B186"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.harmonith.app",
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "Harmonith utilise vos données de santé pour personnaliser vos programmes fitness et suivre vos progrès.",
+        "NSHealthUpdateUsageDescription": "Harmonith enregistre vos séances d'entraînement dans l'app Santé.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.background-delivery": true
+      }
+    },
+    "android": {
+      "versionCode": 7,
+      "icon": "./assets/icon.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F7B186",
+        "monochromeImage": "./assets/adaptive-icon.png"
+      },
+      "androidNavigationBar": {
+        "visible": "leanback",
+        "barStyle": "light-content",
+        "backgroundColor": "#00000000"
+      },
+      "androidStatusBar": {
+        "barStyle": "dark-content",
+        "backgroundColor": "#00000000",
+        "translucent": true
+      },
+      "googleServicesFile": "./google-services.json",
+      "package": "com.harmonith.app",
+      "permissions": [
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_WEIGHT",
+        "android.permission.health.READ_HEIGHT",
+        "android.permission.health.READ_HEART_RATE",
+        "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
+        "android.permission.health.READ_DISTANCE",
+        "android.permission.health.READ_EXERCISE",
+        "android.permission.health.READ_MENSTRUATION",
+        "android.permission.health.WRITE_STEPS",
+        "android.permission.health.WRITE_ACTIVE_CALORIES_BURNED",
+        "android.permission.health.WRITE_EXERCISE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#F7B186"
+        }
+      ],
+      [
+        "react-native-health-connect",
+        {
+          "requestPermissionsOnFirstLaunch": false
+        }
+      ],
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          }
+        }
+      ],
+      "./app.plugin.js"
+    ],
+    "owner": "mohadu67",
+    "extra": {
+      "eas": {
+        "projectId": "aca61473-e5d7-4e41-a412-97e99452057a"
+      },
+      "googleWebClientId": "${EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID}"
+    }
+  }
+}

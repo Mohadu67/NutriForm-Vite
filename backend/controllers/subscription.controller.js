@@ -9,6 +9,18 @@ const logger = require('../utils/logger.js');
  */
 async function createCheckoutSession(req, res) {
   logger.info('🎯 createCheckoutSession appelé pour userId:', req.userId);
+
+  // Vérifier la configuration Stripe
+  if (!process.env.STRIPE_SECRET_KEY) {
+    logger.error('❌ STRIPE_SECRET_KEY manquant');
+    return res.status(500).json({ error: 'Configuration Stripe manquante (SECRET_KEY).' });
+  }
+
+  if (!process.env.STRIPE_PRICE_ID) {
+    logger.error('❌ STRIPE_PRICE_ID manquant');
+    return res.status(500).json({ error: 'Configuration Stripe manquante (PRICE_ID).' });
+  }
+
   logger.info('✅ Stripe configuré');
   logger.info('💰 Stripe Price ID:', process.env.STRIPE_PRICE_ID);
   try {
@@ -20,9 +32,17 @@ async function createCheckoutSession(req, res) {
       return res.status(404).json({ error: 'Utilisateur introuvable.' });
     }
 
-    // Vérifier si l'utilisateur a déjà un abonnement actif
+    // Vérifier si l'utilisateur a déjà un abonnement actif (VALIDE)
     const existingSubscription = await Subscription.findOne({ userId });
-    if (existingSubscription && existingSubscription.isActive()) {
+    const hasXpPremium = user.xpPremiumExpiresAt && new Date(user.xpPremiumExpiresAt) > new Date();
+    const isTrialActive = user.trialEndsAt && new Date(user.trialEndsAt) > new Date();
+    const hasValidStripeSubscription = existingSubscription &&
+      existingSubscription.stripeSubscriptionId &&
+      !existingSubscription.stripeSubscriptionId.includes('test_local') &&
+      existingSubscription.isActive();
+
+    // Bloquer seulement si l'utilisateur a VRAIMENT un premium actif (pas trial expiré)
+    if (hasXpPremium || isTrialActive || hasValidStripeSubscription) {
       return res.status(400).json({
         error: 'Vous avez déjà un abonnement actif.',
         subscription: existingSubscription
@@ -32,6 +52,22 @@ async function createCheckoutSession(req, res) {
     // Créer ou récupérer le customer Stripe
     let customerId = user.stripeCustomerId;
 
+    // Si un customerId existe, vérifier qu'il est toujours valide dans Stripe
+    if (customerId) {
+      try {
+        await stripe.customers.retrieve(customerId);
+        logger.info('✅ Customer Stripe existant valide:', customerId);
+      } catch (error) {
+        // Customer n'existe plus dans Stripe, on va en créer un nouveau
+        logger.warn('⚠️ Customer Stripe invalide ou supprimé:', customerId);
+        logger.warn('   Création d\'un nouveau customer...');
+        customerId = null;
+        user.stripeCustomerId = null;
+        await user.save();
+      }
+    }
+
+    // Créer un nouveau customer si nécessaire
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
@@ -44,6 +80,7 @@ async function createCheckoutSession(req, res) {
       customerId = customer.id;
       user.stripeCustomerId = customerId;
       await user.save();
+      logger.info('✅ Nouveau customer Stripe créé:', customerId);
     }
 
     // Prix ID de Stripe (à configurer dans l'env)
@@ -54,6 +91,15 @@ async function createCheckoutSession(req, res) {
         error: 'Configuration Stripe manquante. Contactez le support.'
       });
     }
+
+    // Vérifier FRONTEND_BASE_URL
+    const frontendUrl = process.env.FRONTEND_BASE_URL;
+    if (!frontendUrl) {
+      logger.error('❌ FRONTEND_BASE_URL manquant');
+      return res.status(500).json({ error: 'Configuration FRONTEND_BASE_URL manquante.' });
+    }
+
+    logger.info('🌐 Frontend URL:', frontendUrl);
 
     // Créer la session Checkout avec trial de 7 jours
     const session = await stripe.checkout.sessions.create({
@@ -72,19 +118,31 @@ async function createCheckoutSession(req, res) {
           userId: userId.toString()
         }
       },
-      success_url: `${process.env.FRONTEND_BASE_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}&success=true`,
-      cancel_url: `${process.env.FRONTEND_BASE_URL}/pricing?canceled=true`,
+      success_url: `${frontendUrl}/dashboard?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      cancel_url: `${frontendUrl}/pricing?canceled=true`,
       metadata: {
         userId: userId.toString()
       }
     });
+
+    logger.info('✅ Session Stripe créée:', session.id);
 
     res.status(200).json({
       sessionId: session.id,
       url: session.url
     });
   } catch (error) {
-    logger.error('Erreur createCheckoutSession:', error);
+    logger.error('❌ Erreur createCheckoutSession:', error.message);
+    logger.error('Stack:', error.stack);
+
+    // Erreurs Stripe spécifiques
+    if (error.type === 'StripeInvalidRequestError') {
+      return res.status(400).json({
+        error: 'Configuration Stripe invalide.',
+        details: error.message
+      });
+    }
+
     res.status(500).json({
       error: 'Erreur lors de la création de la session de paiement.',
       details: error.message
@@ -296,11 +354,18 @@ async function handlePaymentFailed(invoice) {
  * Créer ou mettre à jour une Subscription en DB
  */
 async function upsertSubscription(userId, stripeSubscription) {
+  // Vérifier que les données nécessaires existent
+  const priceId = stripeSubscription.items?.data?.[0]?.price?.id || process.env.STRIPE_PRICE_ID || null;
+
+  if (!priceId) {
+    logger.error('❌ Impossible de récupérer le priceId de la subscription');
+  }
+
   const subscriptionData = {
     userId,
     stripeCustomerId: stripeSubscription.customer,
     stripeSubscriptionId: stripeSubscription.id,
-    stripePriceId: stripeSubscription.items.data[0].price.id,
+    stripePriceId: priceId,
     status: stripeSubscription.status,
     currentPeriodStart: stripeSubscription.current_period_start
       ? new Date(stripeSubscription.current_period_start * 1000)
@@ -341,15 +406,38 @@ async function getSubscriptionStatus(req, res) {
     const hasXpPremium = user.xpPremiumExpiresAt && new Date(user.xpPremiumExpiresAt) > new Date();
     const xpPremiumExpiresAt = hasXpPremium ? user.xpPremiumExpiresAt : null;
 
+    // Verifier si le trial est encore actif
+    const isTrialActive = user.trialEndsAt && new Date(user.trialEndsAt) > new Date();
+
     // Verifier si l'abonnement Stripe est valide (pas un ID de test local)
     const hasValidStripeSubscription = subscription &&
       subscription.stripeSubscriptionId &&
-      !subscription.stripeSubscriptionId.includes('test_local');
+      !subscription.stripeSubscriptionId.includes('test_local') &&
+      subscription.isActive();
 
     if (!subscription || !hasValidStripeSubscription) {
-      // Pas d'abonnement Stripe, mais peut-etre un premium XP
+      // Pas d'abonnement Stripe, mais peut-etre un premium XP ou trial actif
+      let tier = 'free';
+      if (hasXpPremium) {
+        tier = 'premium';
+      } else if (isTrialActive) {
+        tier = 'premium';
+      } else if (user.subscriptionTier === 'premium') {
+        // Si tier est premium mais aucune source valide, le downgrader à free
+        user.subscriptionTier = 'free';
+        await user.save();
+      }
+
+      logger.info('[SUBSCRIPTION STATUS] No Stripe', {
+        userId,
+        hasXpPremium,
+        isTrialActive,
+        trialEndsAt: user.trialEndsAt,
+        tier
+      });
+
       return res.status(200).json({
-        tier: hasXpPremium ? 'premium' : (user.subscriptionTier || 'free'),
+        tier,
         hasSubscription: false,
         hasXpPremium,
         xpPremiumExpiresAt,
@@ -357,8 +445,15 @@ async function getSubscriptionStatus(req, res) {
       });
     }
 
+    // Avec abonnement Stripe valide
+    const tier = subscription.isActive() ? 'premium' : 'free';
+    if (user.subscriptionTier !== tier) {
+      user.subscriptionTier = tier;
+      await user.save();
+    }
+
     res.status(200).json({
-      tier: user.subscriptionTier || 'free',
+      tier,
       hasSubscription: true,
       hasXpPremium,
       xpPremiumExpiresAt,
@@ -388,7 +483,7 @@ async function cancelSubscription(req, res) {
     }
 
     // Annuler sur Stripe (cancel_at_period_end = true)
-    const updated = await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
       cancel_at_period_end: true
     });
 

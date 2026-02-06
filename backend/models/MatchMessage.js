@@ -34,14 +34,15 @@ const matchMessageSchema = new mongoose.Schema(
     // Type de message
     type: {
       type: String,
-      enum: ['text', 'location', 'session-invite', 'session-share', 'system'],
+      enum: ['text', 'image', 'video', 'file', 'location', 'session-invite', 'session-share', 'system'],
       default: 'text'
     },
 
-    // Contenu du message (chiffré)
+    // Contenu du message (chiffré) - optionnel pour les messages média
     content: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
       maxlength: 10000 // Plus long car chiffré
     },
 
@@ -54,6 +55,25 @@ const matchMessageSchema = new mongoose.Schema(
       authTag: {
         type: String,
         required: false
+      }
+    },
+
+    // Données média (images, vidéos, fichiers)
+    media: {
+      type: {
+        type: String,
+        enum: ['image', 'video', 'file']
+      },
+      url: String,
+      publicId: String,
+      thumbnail: String,
+      filename: String,
+      size: Number,
+      mimeType: String,
+      duration: Number,
+      dimensions: {
+        width: Number,
+        height: Number
       }
     },
 

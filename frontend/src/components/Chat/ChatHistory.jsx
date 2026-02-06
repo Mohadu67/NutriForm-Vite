@@ -103,6 +103,13 @@ function ConversationItem({ conv, onOpen, onDelete, onOpenSettings, formatDate, 
           e.stopPropagation();
           onOpenSettings?.();
         }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            onOpenSettings?.();
+          }
+        }}
         role="button"
         tabIndex={0}
         title="Paramètres du chat"

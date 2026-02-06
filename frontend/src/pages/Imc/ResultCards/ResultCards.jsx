@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import DOMPurify from "dompurify";
 import styles from "./ResultCards.module.css";
 
 export default function ResultCards({ categorie }) {
@@ -62,10 +63,10 @@ export default function ResultCards({ categorie }) {
 
       {ordered.map((entry, idx) => (
         <div key={idx} className={`${styles.bloc} ${entry.side === 'left' ? styles.left : styles.right}`}>
-          <p dangerouslySetInnerHTML={{ __html: entry.item.intro }} />
+          <p dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(entry.item.intro) }} />
 
           <div className={`${styles.moreContent} ${openIndex === idx ? styles.moreContentOpen : ""}`}>
-            <p dangerouslySetInnerHTML={{ __html: entry.item.more }} />
+            <p dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(entry.item.more) }} />
             {entry.item.link && (
               <Link to={entry.item.link} className={styles.ctaLink} aria-label={`Aller vers ${entry.item.link}`}>
                 Découvrir l'outil

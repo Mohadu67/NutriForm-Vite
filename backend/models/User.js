@@ -89,6 +89,11 @@ const userSchema = new mongoose.Schema(
     resetPasswordToken: { type: String, default: null, index: true, select: false },
     resetPasswordExpires: { type: Date, default: null, select: false },
 
+    // Changement d'email
+    emailChangeToken: { type: String, default: null, select: false },
+    emailChangeExpires: { type: Date, default: null, select: false },
+    pendingEmail: { type: String, default: null, select: false },
+
     // Préférences de notifications
     notificationPreferences: {
       // Push notifications - Social

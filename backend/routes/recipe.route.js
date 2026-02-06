@@ -128,9 +128,9 @@ router.post('/admin/:id/reject', adminMiddleware, recipeController.rejectRecipe)
 /**
  * @route   GET /api/recipes/:id
  * @desc    Obtenir le détail d'une recette
- * @access  Public
+ * @access  Public (authentification optionnelle pour recettes privées)
  */
-router.get('/:id', recipeController.getRecipeById);
+router.get('/:id', auth.optionalAuth, recipeController.getRecipeById);
 
 /**
  * @route   POST /api/recipes/:id/like
@@ -145,6 +145,13 @@ router.post('/:id/like', auth, recipeController.toggleLike);
  * @access  Private (Premium requis)
  */
 router.post('/:id/save', auth, requirePremium, recipeController.saveRecipe);
+
+/**
+ * @route   POST /api/recipes/:id/rate
+ * @desc    Noter une recette
+ * @access  Private (Premium requis)
+ */
+router.post('/:id/rate', auth, requirePremium, recipeController.rateRecipe);
 
 // =====================================================
 // ROUTES ADMIN - CRUD Recettes officielles

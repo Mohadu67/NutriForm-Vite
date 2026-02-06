@@ -2,8 +2,10 @@
  * Utilitaire pour gérer le proxy d'images et éviter les erreurs CORS
  */
 
+import { API_BASE_URL } from '../shared/config/api';
+
 const CLOUDINARY_DOMAINS = ['res.cloudinary.com', 'cloudinary.com'];
-const API_URL = import.meta.env?.VITE_API_URL || '/api';
+const API_URL = API_BASE_URL || '/api';
 
 /**
  * Vérifie si une URL d'image doit utiliser le proxy

@@ -108,6 +108,12 @@ export default function ChallengeCard({
       <div
         className={`${styles.cardCompact} ${styles.clickable}`}
         onClick={() => setExpanded(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setExpanded(true);
+          }
+        }}
         role="button"
         tabIndex={0}
       >

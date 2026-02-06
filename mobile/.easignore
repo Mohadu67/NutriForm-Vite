@@ -1,0 +1,42 @@
+# iOS folder (not needed for Android builds)
+ios/
+
+# Build outputs
+.expo/
+dist/
+build/
+*.jks
+*.keystore
+
+# Development files
+.git/
+.vscode/
+*.log
+*.local
+
+# Tests
+__tests__/
+*.test.js
+*.spec.js
+coverage/
+
+# Documentation
+*.md
+LICENSE
+
+# Other
+.DS_Store
+Thumbs.db
+
+# Large unnecessary files
+*.tar.gz
+*.zip
+*.tgz
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Test HTML files
+*.html

@@ -49,11 +49,12 @@ exports.getRecipes = async (req, res) => {
     if (maxCalories) filter['nutrition.calories'] = { $lte: parseInt(maxCalories) };
     if (minProtein) filter['nutrition.proteins'] = { $gte: parseInt(minProtein) };
 
-    // Recherche textuelle
+    // Recherche textuelle (échapper les caractères spéciaux regex pour éviter injection NoSQL)
     if (search) {
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
+        { title: { $regex: escapedSearch, $options: 'i' } },
+        { description: { $regex: escapedSearch, $options: 'i' } }
       ];
     }
 
@@ -82,12 +83,18 @@ exports.getRecipes = async (req, res) => {
         sortOption = { createdAt: -1 };
     }
 
-    const recipes = await Recipe.find(filter)
+    let recipes = await Recipe.find(filter)
       .select('-ingredients -instructions') // Ne pas envoyer les détails dans la liste
       .sort(sortOption)
       .limit(parseInt(limit))
       .skip(skip)
       .lean();
+
+    // Ajouter ratingsCount pour chaque recette
+    recipes = recipes.map(recipe => ({
+      ...recipe,
+      ratingsCount: recipe.ratings?.length || 0
+    }));
 
     const total = await Recipe.countDocuments(filter);
 
@@ -178,6 +185,7 @@ exports.getTrendingRecipes = async (req, res) => {
 exports.getRecipeById = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id; // Peut être undefined si non authentifié
 
     // Essayer d'abord de chercher par slug, puis par ID
     let recipe;
@@ -190,7 +198,16 @@ exports.getRecipeById = async (req, res) => {
       recipe = await Recipe.findOne({ slug: id });
     }
 
-    if (!recipe || !recipe.isPublished) {
+    if (!recipe) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recette introuvable'
+      });
+    }
+
+    // Vérifier si la recette est publiée OU si l'utilisateur en est l'auteur
+    const isAuthor = userId && recipe.author && recipe.author.toString() === userId;
+    if (!recipe.isPublished && !isAuthor) {
       return res.status(404).json({
         success: false,
         message: 'Recette introuvable'
@@ -201,10 +218,40 @@ exports.getRecipeById = async (req, res) => {
     recipe.views += 1;
     await recipe.save();
 
-    res.json({
+    // Extraire la note de l'utilisateur si authentifié
+    let userRating = null;
+    if (userId && recipe.ratings) {
+      const userRatingObj = recipe.ratings.find(r => r.userId?.toString() === userId);
+      userRating = userRatingObj?.rating || null;
+    }
+
+    // Retourner les données avec avgRating et ratingsCount pour le frontend
+    const recipeData = recipe.toObject();
+    const ratingsCount = recipeData.ratings?.length || 0;
+
+    // Support les deux noms (avgRating et averageRating pour backward compatibility)
+    if (!recipeData.avgRating && recipeData.averageRating) {
+      recipeData.avgRating = recipeData.averageRating;
+    }
+
+    // S'assurer que avgRating existe
+    if (!recipeData.avgRating) {
+      recipeData.avgRating = 0;
+    }
+
+    // Ne pas exposer les ratings complets, mais inclure le count
+    const { ratings, ...recipeWithoutRatings } = recipeData;
+
+    const response = {
       success: true,
-      recipe
-    });
+      recipe: {
+        ...recipeWithoutRatings,
+        ratingsCount,
+        userRating
+      }
+    };
+
+    res.json(response);
   } catch (error) {
     logger.error('Erreur getRecipeById:', error);
     res.status(500).json({
@@ -797,12 +844,12 @@ exports.updateUserRecipe = async (req, res) => {
       });
     }
 
-    // Si la recette est publique ou en attente, on ne peut plus la modifier
-    if (recipe.status !== 'private') {
-      return res.status(400).json({
-        success: false,
-        message: 'Vous ne pouvez modifier que les recettes privées'
-      });
+    // Si la recette est publique, la modification la repasse en pending pour validation
+    const wasPublic = recipe.status === 'public';
+    if (wasPublic) {
+      updateData.status = 'pending';
+      updateData.isPublished = false;
+      logger.info(`Recette ${id} publique modifiée - repasse en pending pour validation`);
     }
 
     // Régénérer le slug si le titre change
@@ -832,7 +879,10 @@ exports.updateUserRecipe = async (req, res) => {
 
     res.json({
       success: true,
-      recipe: updatedRecipe
+      recipe: updatedRecipe,
+      message: wasPublic
+        ? 'Recette modifiée avec succès. Elle sera de nouveau soumise à validation.'
+        : 'Recette modifiée avec succès'
     });
   } catch (error) {
     logger.error('Erreur updateUserRecipe:', error);
@@ -1227,5 +1277,63 @@ exports.rejectRecipe = async (req, res) => {
       success: false,
       message: 'Erreur lors du rejet de la recette'
     });
+  }
+};
+
+// Noter une recette
+exports.rateRecipe = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating } = req.body;
+    const userId = req.user.id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "invalid_recipe_id" });
+    }
+
+    // Validation stricte du rating
+    if (!rating || typeof rating !== 'number' || !Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: "invalid_rating" });
+    }
+
+    let recipe = await Recipe.findById(id);
+
+    if (!recipe) {
+      return res.status(404).json({ error: "recipe_not_found" });
+    }
+
+    await recipe.addRating(new mongoose.Types.ObjectId(userId), rating);
+
+    // Recharger pour avoir la dernière moyenne
+    recipe = await Recipe.findById(id);
+
+    // Retourner les données mises à jour avec avgRating et ratingsCount
+    const recipeData = recipe.toObject();
+    const ratingsCount = recipeData.ratings?.length || 0;
+
+    if (!recipeData.avgRating) {
+      recipeData.avgRating = 0;
+    }
+
+    if (recipeData.ratings) {
+      recipeData.ratingsCount = recipeData.ratings.length;
+    }
+
+    // Récupérer la note de l'utilisateur qui vient de noter
+    let userRating = null;
+    if (recipe.ratings) {
+      const userRatingObj = recipe.ratings.find(r => r.userId?.toString() === userId);
+      userRating = userRatingObj?.rating || null;
+    }
+
+    return res.status(200).json({
+      success: true,
+      avgRating: recipe.avgRating,
+      ratingsCount: ratingsCount,
+      userRating: userRating
+    });
+  } catch (err) {
+    logger.error("rateRecipe error:", err);
+    return res.status(500).json({ error: "server_error" });
   }
 };

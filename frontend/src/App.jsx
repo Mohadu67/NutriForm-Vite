@@ -58,6 +58,9 @@ const PartnersAdmin = lazy(() => import("./pages/Admin/PartnersAdmin/PartnersAdm
 import ProfileSetup from "./pages/Profile/ProfileSetup.jsx";
 import MatchingPage from "./pages/Matching/MatchingPage.jsx";
 
+// Protected Route
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute.jsx";
+
 // Chat - lazy loaded (feature social)
 const Chat = lazy(() => import("./pages/Chat/Chat.jsx"));
 
@@ -122,22 +125,22 @@ export default function App() {
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/pricing" element={<Pricing />} />
 
-            {/* Admin - lazy loaded */}
-            <Route path="/admin" element={<AdminPage />} />
-            <Route path="/admin/newsletter/new" element={<NewsletterAdmin />} />
-            <Route path="/admin/newsletter/:id" element={<NewsletterAdmin />} />
-            <Route path="/admin/support-tickets" element={<SupportTickets />} />
-            <Route path="/admin/programs" element={<ProgramsAdmin />} />
-            <Route path="/admin/partners" element={<PartnersAdmin />} />
-            <Route path="/admin/recipes/new" element={<RecipeForm />} />
-            <Route path="/admin/recipes/:id/edit" element={<RecipeForm />} />
+            {/* Admin - lazy loaded + protected */}
+            <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPage /></ProtectedRoute>} />
+            <Route path="/admin/newsletter/new" element={<ProtectedRoute requireAdmin><NewsletterAdmin /></ProtectedRoute>} />
+            <Route path="/admin/newsletter/:id" element={<ProtectedRoute requireAdmin><NewsletterAdmin /></ProtectedRoute>} />
+            <Route path="/admin/support-tickets" element={<ProtectedRoute requireAdmin><SupportTickets /></ProtectedRoute>} />
+            <Route path="/admin/programs" element={<ProtectedRoute requireAdmin><ProgramsAdmin /></ProtectedRoute>} />
+            <Route path="/admin/partners" element={<ProtectedRoute requireAdmin><PartnersAdmin /></ProtectedRoute>} />
+            <Route path="/admin/recipes/new" element={<ProtectedRoute requireAdmin><RecipeForm /></ProtectedRoute>} />
+            <Route path="/admin/recipes/:id/edit" element={<ProtectedRoute requireAdmin><RecipeForm /></ProtectedRoute>} />
 
             {/* Profile & Matching */}
             <Route path="/profile/setup" element={<ProfileSetup />} />
             <Route path="/matching" element={<MatchingPage />} />
 
-            {/* Chat - lazy loaded */}
-            <Route path="/chat/:matchId" element={<Chat />} />
+            {/* Chat - lazy loaded (Premium only) */}
+            <Route path="/chat/:matchId" element={<ProtectedRoute requirePremium><Chat /></ProtectedRoute>} />
 
             {/* Recipes - lazy loaded */}
             <Route path="/recettes" element={<RecipesPage />} />

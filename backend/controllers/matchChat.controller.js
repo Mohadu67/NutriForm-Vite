@@ -3,6 +3,7 @@ const Conversation = require('../models/Conversation');
 const MatchMessage = require('../models/MatchMessage');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
+const Notification = require('../models/Notification');
 const { notifyNewMessage } = require('../services/pushNotification.service');
 const logger = require('../utils/logger.js');
 const validator = require('validator');
@@ -79,7 +80,10 @@ async function getConversations(req, res) {
         _id: conv._id,
         matchId: conv.matchId,
         participants: conv.participants,
-        lastMessage: conv.lastMessage,
+        lastMessage: conv.lastMessage ? {
+          ...conv.lastMessage,
+          isOwn: iSentLastMessage // Indiquer si c'est moi qui ai envoyé le dernier message
+        } : null,
         isActive: conv.isActive,
         createdAt: conv.createdAt,
         updatedAt: conv.updatedAt,
@@ -237,28 +241,37 @@ async function sendMessage(req, res) {
     const { content, type = 'text', metadata = {} } = req.body;
     const userId = req.userId;
 
-    // Validation 1: Message non vide
-    if (!content || content.trim().length === 0) {
-      return res.status(400).json({ error: 'Le message ne peut pas être vide.' });
-    }
-
-    // Validation 2: Longueur maximale (5000 caractères)
-    if (content.length > 5000) {
-      return res.status(400).json({ error: 'Le message est trop long (maximum 5000 caractères).' });
-    }
-
-    // Validation 3: Type de message valide
-    const validTypes = ['text', 'location', 'session-invite', 'session-share'];
+    // Validation 1: Type de message valide
+    const validTypes = ['text', 'image', 'video', 'file', 'location', 'session-invite', 'session-share'];
     if (!validTypes.includes(type)) {
       return res.status(400).json({ error: 'Type de message invalide.' });
     }
 
-    // Sanitization: Nettoyer le contenu HTML/XSS
-    const sanitizedContent = xss(content.trim(), {
+    // Handle media messages
+    let mediaData = null;
+    const isMediaMessage = ['image', 'video', 'file'].includes(type);
+    if (isMediaMessage && req.body.media) {
+      mediaData = req.body.media;
+    }
+
+    // Validation 2: Message non vide (sauf pour les messages média avec media attaché)
+    const hasContent = content && content.trim().length > 0;
+    const hasMedia = isMediaMessage && mediaData;
+    if (!hasContent && !hasMedia) {
+      return res.status(400).json({ error: 'Le message ne peut pas être vide.' });
+    }
+
+    // Validation 3: Longueur maximale (5000 caractères) - seulement si content existe
+    if (content && content.length > 5000) {
+      return res.status(400).json({ error: 'Le message est trop long (maximum 5000 caractères).' });
+    }
+
+    // Sanitization: Nettoyer le contenu HTML/XSS (seulement si content existe)
+    const sanitizedContent = content ? xss(content.trim(), {
       whiteList: {}, // Aucun tag HTML autorisé
       stripIgnoreTag: true,
       stripIgnoreTagBody: ['script', 'style']
-    });
+    }) : '';
 
     // Récupérer la conversation
     const conversation = await Conversation.findById(conversationId);
@@ -279,8 +292,19 @@ async function sendMessage(req, res) {
     // Identifier le destinataire
     const receiverId = conversation.getOtherParticipant(userId);
 
-    // Chiffrer le contenu du message
-    const encryptedData = encrypt(sanitizedContent);
+    // Chiffrer le contenu du message (seulement si contenu non vide)
+    let encryptedData = null;
+    let messageContent = '';
+    let encryptionInfo = null;
+
+    if (sanitizedContent && sanitizedContent.length > 0) {
+      encryptedData = encrypt(sanitizedContent);
+      messageContent = encryptedData.encrypted;
+      encryptionInfo = {
+        iv: encryptedData.iv,
+        authTag: encryptedData.authTag
+      };
+    }
 
     // SECURITY: Vérification stricte que senderId == userId authentifiée
     const userObjectId = typeof userId === 'string' ? userId : userId.toString();
@@ -292,19 +316,24 @@ async function sendMessage(req, res) {
       senderId: userObjectId,
       receiverId,
       type,
-      content: encryptedData.encrypted,
-      encryption: {
-        iv: encryptedData.iv,
-        authTag: encryptedData.authTag
-      },
-      metadata
+      content: messageContent,
+      encryption: encryptionInfo,
+      metadata,
+      media: mediaData
     });
 
     // Mettre à jour le lastMessage de la conversation
+    // Pour les messages média, afficher un placeholder
+    let lastMessageContent = sanitizedContent;
+    if (!lastMessageContent && type === 'image') lastMessageContent = '📷 Photo';
+    else if (!lastMessageContent && type === 'video') lastMessageContent = '📹 Video';
+    else if (!lastMessageContent && type === 'file') lastMessageContent = '📎 Fichier';
+
     conversation.lastMessage = {
-      content: sanitizedContent,
+      content: lastMessageContent,
       senderId: userId,
-      timestamp: message.createdAt
+      timestamp: message.createdAt,
+      type: type
     };
 
     // Gérer le unhide pour les deux participants si nécessaire
@@ -362,12 +391,23 @@ async function sendMessage(req, res) {
         unreadIncrement: true
       });
 
+      // ✅ Émettre message_delivered si le destinataire VOIT le message dans sa liste
+      if (io.isUserInChatList && io.isUserInChatList(receiverId.toString())) {
+        logger.info(`📬 Destinataire ${receiverId} voit le message dans sa liste, émission de message_delivered`);
+        io.to(`user:${userId}`).emit('message_delivered', {
+          conversationId,
+          messageId: message._id.toString()
+        });
+      } else {
+        logger.info(`📭 Destinataire ${receiverId} ne voit pas encore le message`);
+      }
+
     }
 
     // Récupérer les infos de l'expéditeur pour les notifications
     const senderUser = await User.findById(userId).select('pseudo photo');
 
-    // Vérifier si le destinataire est dans la conversation (pas besoin de notif)
+    // Vérifier si le destinataire est dans la conversation (pas besoin de notif in-app)
     let receiverInConversation = false;
     if (io) {
       const roomName = `conversation:${conversationId}`;
@@ -376,29 +416,77 @@ async function sendMessage(req, res) {
       logger.info(`🔍 Receiver ${receiverId} dans la conv: ${receiverInConversation}`);
     }
 
-    // Envoyer une notification UNIQUEMENT si le destinataire n'est pas dans la conversation
-    if (!receiverInConversation && io && io.notifyUser && senderUser) {
+    // Générer le message de notification selon le type
+    let notificationMessage;
+    if (sanitizedContent) {
+      notificationMessage = sanitizedContent.substring(0, 50) + (sanitizedContent.length > 50 ? '...' : '');
+    } else if (type === 'image') {
+      notificationMessage = '📷 Photo';
+    } else if (type === 'video') {
+      notificationMessage = '📹 Vidéo';
+    } else if (type === 'file') {
+      notificationMessage = '📎 Fichier';
+    } else {
+      notificationMessage = 'Nouveau message';
+    }
+
+    const senderName = senderUser?.pseudo || 'Un utilisateur';
+    const fullNotificationMessage = `${senderName}: ${notificationMessage}`;
+
+    // Envoyer notification in-app (WebSocket + BDD) si destinataire pas dans la conversation
+    if (!receiverInConversation && senderUser) {
       logger.info(`🔔 Envoi new_notification à user ${receiverId} (pas dans la conv)`);
-      io.notifyUser(receiverId.toString(), 'new_notification', {
-        id: `msg-${message._id}-${Date.now()}`,
+
+      // Sauvegarder la notification en base de données
+      const notificationData = {
+        userId: receiverId,
         type: 'message',
         title: 'Nouveau message',
-        message: `${senderUser.pseudo || 'Un utilisateur'}: ${sanitizedContent.substring(0, 50)}${sanitizedContent.length > 50 ? '...' : ''}`,
+        message: fullNotificationMessage,
         avatar: senderUser.photo,
-        timestamp: new Date().toISOString(),
-        read: false,
-        link: `/matching?conversation=${conversationId}`
-      });
+        link: `/matching?conversation=${conversationId}`,
+        metadata: {
+          conversationId: conversationId,
+          messageId: message._id.toString(),
+          senderId: userId.toString()
+        }
+      };
 
-      // Envoyer une notification push au destinataire (seulement si pas dans la conv)
-      notifyNewMessage(receiverId, {
-        senderName: senderUser.pseudo || 'Un utilisateur',
-        senderPhoto: senderUser.photo,
-        message: sanitizedContent.substring(0, 100),
-        conversationId: conversationId
-      }).catch(err => logger.error('Erreur notification message:', err));
+      const savedNotification = await Notification.create(notificationData);
+      logger.info(`📝 Notification sauvegardée en BDD: ${savedNotification._id}`);
+
+      // Notification WebSocket temps réel (si disponible)
+      if (io && io.notifyUser) {
+        io.notifyUser(receiverId.toString(), 'new_notification', {
+          id: savedNotification._id.toString(),
+          type: 'message',
+          title: 'Nouveau message',
+          message: fullNotificationMessage,
+          avatar: senderUser.photo,
+          timestamp: new Date().toISOString(),
+          read: false,
+          link: `/matching?conversation=${conversationId}`
+        });
+      }
     } else if (receiverInConversation) {
-      logger.info(`🔕 Pas de notification pour ${receiverId} (déjà dans la conv)`);
+      logger.info(`🔕 Pas de notification in-app pour ${receiverId} (déjà dans la conv)`);
+    }
+
+    // TOUJOURS envoyer une notification PUSH si le destinataire n'est pas dans la conversation
+    // (séparé de la notification WebSocket pour garantir l'envoi)
+    if (!receiverInConversation) {
+      logger.info(`📱 Envoi notification PUSH à user ${receiverId}`);
+      notifyNewMessage(receiverId, {
+        senderName: senderName,
+        senderPhoto: senderUser?.photo,
+        senderId: userId,
+        message: notificationMessage,
+        conversationId: conversationId
+      }).then(result => {
+        logger.info(`📱 Résultat notification PUSH: ${JSON.stringify(result)}`);
+      }).catch(err => {
+        logger.error('❌ Erreur notification PUSH message:', err);
+      });
     }
 
     res.status(201).json({ message: messageObj });
@@ -436,8 +524,9 @@ async function getMessages(req, res) {
       deletedBy: { $ne: userId } // Ne pas afficher les messages supprimés par l'user
     };
 
+    // Pagination par ID de message (les ObjectId sont chronologiques)
     if (before) {
-      query.createdAt = { $lt: new Date(before) };
+      query._id = { $lt: before };
     }
 
     // Récupérer les messages

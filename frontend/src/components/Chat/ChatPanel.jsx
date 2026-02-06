@@ -4,6 +4,7 @@ import { Button, Spinner } from 'react-bootstrap';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { isAuthenticated } from '../../shared/api/auth';
 import { MessageCircleIcon, BotIcon, OnlineIcon } from '../Icons/GlobalIcons';
+import { logger } from '../../shared/utils/logger';
 import styles from './ChatPanel.module.css';
 
 export default function ChatPanel({ conversationId: propConversationId, initialMessage, onClose }) {
@@ -74,6 +75,15 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
         ]);
       }
     } catch (err) {
+      logger.error('Erreur lors de l\'envoi du message:', err);
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'bot',
+          content: "❌ Une erreur est survenue. Réessaie dans quelques instants.",
+          createdAt: new Date()
+        }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -96,10 +106,13 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
             createdAt: new Date()
           }
         ]);
-        // Envoyer le message initial automatiquement
-        setTimeout(() => {
+        // Envoyer le message initial automatiquement avec cleanup
+        const timer = setTimeout(() => {
           handleSendMessageDirect(initialMessage);
         }, 300);
+
+        // Cleanup du timeout pour éviter la race condition
+        return () => clearTimeout(timer);
       } else {
         // Message de bienvenue par défaut
         setMessages([

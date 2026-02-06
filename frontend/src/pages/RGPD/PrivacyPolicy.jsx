@@ -182,29 +182,15 @@ const PrivacyPolicy = () => {
             </div>
           </section>
 
-          {/* 5. ARTICLE 22 - DÉCISIONS AUTOMATISÉES */}
-          <section className={style.legalCard}>
-            <h2 className={style.cardTitle}>🤖 Décisions automatisées (Article 22)</h2>
-            <div className={style.cardContent}>
-              <p className={style.sectionText}>
-                Harmonith utilise un <strong>algorithme de matching</strong> pour suggérer des utilisateurs compatibles.
-              </p>
-
-              <div className={style.warningBox}>
-                <strong>Vos droits:</strong>
-                <ul style={{ marginTop: "0.5rem" }}>
-                  <li>✓ Droit d'accès: comprendre comment fonctionne le matching</li>
-                  <li>✓ Droit d'opposition: refuser le matching automatique</li>
-                  <li>✓ Droit à l'explication: demander les critères utilisés</li>
-                  <li>✓ Intervention humaine: contacter support pour révision</li>
-                </ul>
-              </div>
-
-              <p className={style.sectionText}>
-                Pour exercer ces droits ou désactiver le matching: {companyInfo.email}
-              </p>
-            </div>
-          </section>
+        <section className={styles.section}>
+          <h2 className={styles.h2}>4. Paiements et donnees financieres</h2>
+          <p className={styles.p}>
+            Les paiements sont traites de maniere securisee par <strong>Stripe</strong>, certifie PCI-DSS niveau 1. Harmonith n'a jamais acces a vos informations de carte bancaire completes.
+          </p>
+          <p className={styles.p}>
+            Nous conservons uniquement l'identifiant client Stripe et l'historique des transactions pour la gestion de votre abonnement.
+          </p>
+        </section>
 
           {/* 6. PROCESSEURS (ARTICLE 28) */}
           <section className={style.legalCard}>

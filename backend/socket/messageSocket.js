@@ -92,6 +92,10 @@ module.exports = (io) => {
     // Informer l'utilisateur qu'il est connecté
     socket.emit('connected', { userId: userIdStr, socketId: socket.id });
 
+    // Envoyer la liste des utilisateurs déjà en ligne à ce nouvel utilisateur
+    const onlineUsersList = Array.from(connectedUsers.keys()).filter(id => id !== userId.toString());
+    socket.emit('online_users_list', { users: onlineUsersList });
+
     // Notifier tous les utilisateurs que cet utilisateur est en ligne
     socket.broadcast.emit('user_online', { userId: userIdStr });
 
@@ -260,6 +264,13 @@ module.exports = (io) => {
    */
   io.isUserOnline = (userId) => {
     return connectedUsers.has(userId.toString());
+  };
+
+  /**
+   * Vérifier si un utilisateur est dans sa liste de conversations
+   */
+  io.isUserInChatList = (userId) => {
+    return usersInChatList.has(userId.toString());
   };
 
   /**
