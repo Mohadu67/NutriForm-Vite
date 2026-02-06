@@ -43,7 +43,7 @@ async function authMiddleware(req, res, next) {
       return res.status(401).json({ message: 'Token invalide.' });
     }
 
-    const user = await User.findById(userId).select('-password');
+    const user = await User.findById(userId).select('-motdepasse');
     if (!user || user.isDisabled || user.deletedAt) {
       return res.status(401).json({ message: 'Utilisateur introuvable ou désactivé.' });
     }
@@ -86,7 +86,7 @@ async function optionalAuthMiddleware(req, res, next) {
     const userId = decoded.id || decoded._id || decoded.sub;
 
     if (userId) {
-      const user = await User.findById(userId).select('-password');
+      const user = await User.findById(userId).select('-motdepasse');
       if (user && !user.isDisabled && !user.deletedAt) {
         req.userId = user.id;
         req.user = user;

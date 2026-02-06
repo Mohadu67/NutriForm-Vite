@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useChat } from "../../contexts/ChatContext";
 import { useWebSocket } from "../../contexts/WebSocketContext";
 import { usePremiumStatus } from "../../hooks/usePremiumStatus";
@@ -22,6 +22,7 @@ import {
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isChatOpen, chatView, activeConversation, openChat, closeChat, backToHistory } = useChat() || {};
   const { on, isConnected } = useWebSocket() || {};
   const { isPremium } = usePremiumStatus();

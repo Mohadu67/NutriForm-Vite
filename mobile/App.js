@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import ErrorBoundary from './src/components/ErrorBoundary';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { WorkoutProvider } from './src/contexts/WorkoutContext';
 import { ChatProvider } from './src/contexts/ChatContext';
@@ -32,25 +33,27 @@ export default function App() {
   }, []);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <AuthProvider>
-          <ToastProvider>
-            <WorkoutProvider>
-              <ChatProvider>
-                <RecipeProvider>
-                  <ProgramProvider>
-                    <StatusBar style="dark" />
-                    <Navigation />
-                    <HealthDisclaimerModal />
-                    <HealthConnectOnboarding />
-                  </ProgramProvider>
-                </RecipeProvider>
-              </ChatProvider>
-            </WorkoutProvider>
-          </ToastProvider>
-        </AuthProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <WorkoutProvider>
+                <ChatProvider>
+                  <RecipeProvider>
+                    <ProgramProvider>
+                      <StatusBar style="dark" />
+                      <Navigation />
+                      <HealthDisclaimerModal />
+                      <HealthConnectOnboarding />
+                    </ProgramProvider>
+                  </RecipeProvider>
+                </ChatProvider>
+              </WorkoutProvider>
+            </ToastProvider>
+          </AuthProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }
