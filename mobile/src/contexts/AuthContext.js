@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
+import { DeviceEventEmitter } from 'react-native';
 import { secureStorage, storage } from '../services/storageService';
 import authService from '../api/auth';
 import websocketService from '../services/websocket';
@@ -436,6 +437,26 @@ export function AuthProvider({ children }) {
     };
 
     initAuth();
+  }, []);
+
+  /**
+   * Écouter l'événement auth:logout émis par le client API
+   * Quand le refresh token échoue, déconnecter automatiquement
+   */
+  useEffect(() => {
+    const handleAuthLogout = () => {
+      console.log('[AUTH] Logout event received from API client');
+      // Déconnecter l'utilisateur sans appeler le backend (déjà 401)
+      websocketService.disconnect();
+      clearTokens();
+      setUser(null);
+    };
+
+    const subscription = DeviceEventEmitter.addListener('auth:logout', handleAuthLogout);
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   /**
