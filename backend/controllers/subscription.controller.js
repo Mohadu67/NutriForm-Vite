@@ -52,6 +52,22 @@ async function createCheckoutSession(req, res) {
     // Créer ou récupérer le customer Stripe
     let customerId = user.stripeCustomerId;
 
+    // Si un customerId existe, vérifier qu'il est toujours valide dans Stripe
+    if (customerId) {
+      try {
+        await stripe.customers.retrieve(customerId);
+        logger.info('✅ Customer Stripe existant valide:', customerId);
+      } catch (error) {
+        // Customer n'existe plus dans Stripe, on va en créer un nouveau
+        logger.warn('⚠️ Customer Stripe invalide ou supprimé:', customerId);
+        logger.warn('   Création d\'un nouveau customer...');
+        customerId = null;
+        user.stripeCustomerId = null;
+        await user.save();
+      }
+    }
+
+    // Créer un nouveau customer si nécessaire
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
@@ -64,6 +80,7 @@ async function createCheckoutSession(req, res) {
       customerId = customer.id;
       user.stripeCustomerId = customerId;
       await user.save();
+      logger.info('✅ Nouveau customer Stripe créé:', customerId);
     }
 
     // Prix ID de Stripe (à configurer dans l'env)
