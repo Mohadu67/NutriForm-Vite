@@ -82,7 +82,7 @@ export default function ExerciseSelector({
       exerciseId: exercise._id,
       exerciseName: exercise.name,
       exerciseImage: exercise.mainImage || (exercise.images && exercise.images[0]?.url) || null,
-      exerciseType: exercise.type || 'exercise',
+      exerciseType: exercise.category || 'cardio',
     });
     onClose();
   };
