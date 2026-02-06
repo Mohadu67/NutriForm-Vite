@@ -10,11 +10,11 @@ import {
   Animated,
   Vibration,
   Alert,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SafeImage from '../../components/ui/SafeImage';
 import theme from '../../theme';
 import { useWorkout } from '../../contexts/WorkoutContext';
 
@@ -408,10 +408,12 @@ export default function ExerciceDetailScreen({ navigation, route }) {
         {/* Image/GIF de l'exercice */}
         <View style={[styles.imageContainer, isDark && styles.imageContainerDark]}>
           {exercice.image ? (
-            <Image
+            <SafeImage
               source={{ uri: exercice.image }}
               style={styles.exerciseImage}
               resizeMode="cover"
+              placeholderIcon="barbell-outline"
+              placeholderSize={80}
             />
           ) : (
             <View style={[styles.imagePlaceholder, { backgroundColor: `${typeConfig.color}15` }]}>
