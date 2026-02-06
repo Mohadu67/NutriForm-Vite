@@ -1,4 +1,6 @@
 const Exercise = require('../models/Exercise');
+const { sendSuccess, sendError } = require('../utils/responseFormatter');
+const logger = require('../utils/logger');
 
 /**
  * Helper function to enrich exercises with image URLs
@@ -49,9 +51,11 @@ exports.getExercises = async (req, res) => {
       equipment,
       difficulty,
       type,
-      limit = 100,
-      page = 1,
     } = req.query;
+
+    // Validation pagination: limit max 100, page min 1
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 100);
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
 
     const filters = {
       category,
@@ -98,22 +102,16 @@ exports.getExercises = async (req, res) => {
     // Enrich with image URLs
     const enrichedExercises = exercises.map(ex => enrichExerciseWithImage(ex, req));
 
-    res.json({
-      success: true,
-      data: enrichedExercises,
-      pagination: {
-        total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(total / limit),
-      },
+    return sendSuccess(res, enrichedExercises, 200, {
+      total,
+      page: parseInt(page),
+      pageSize: parseInt(limit),
+      pages: Math.ceil(total / limit),
+      hasMore: (parseInt(page) * parseInt(limit)) < total,
     });
   } catch (error) {
-    console.error('[EXERCISES] Get error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la recuperation des exercices',
-    });
+    logger.error('[EXERCISES] Get error:', error);
+    return sendError(res, 'server_error', 'Erreur lors de la recuperation des exercices', 500);
   }
 };
 
@@ -136,26 +134,17 @@ exports.getExercise = async (req, res) => {
     }).select('-__v');
 
     if (!exercise) {
-      return res.status(404).json({
-        success: false,
-        message: 'Exercice non trouve',
-      });
+      return sendError(res, 'exercise_not_found', 'Exercice non trouve', 404);
     }
 
     // Increment usage count
     exercise.usageCount += 1;
     await exercise.save();
 
-    res.json({
-      success: true,
-      data: enrichExerciseWithImage(exercise, req),
-    });
+    return sendSuccess(res, enrichExerciseWithImage(exercise, req));
   } catch (error) {
-    console.error('[EXERCISES] Get one error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la recuperation de l\'exercice',
-    });
+    logger.error('[EXERCISES] Get one error:', error);
+    return sendError(res, 'server_error', 'Erreur lors de la recuperation de l\'exercice', 500);
   }
 };
 
@@ -182,7 +171,7 @@ exports.getByCategory = async (req, res) => {
       count: exercises.length,
     });
   } catch (error) {
-    console.error('[EXERCISES] Get by category error:', error);
+    logger.error('[EXERCISES] Get by category error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la recuperation',
@@ -213,7 +202,7 @@ exports.getByMuscle = async (req, res) => {
       count: exercises.length,
     });
   } catch (error) {
-    console.error('[EXERCISES] Get by muscle error:', error);
+    logger.error('[EXERCISES] Get by muscle error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la recuperation',
@@ -246,7 +235,7 @@ exports.getCategories = async (req, res) => {
       })),
     });
   } catch (error) {
-    console.error('[EXERCISES] Get categories error:', error);
+    logger.error('[EXERCISES] Get categories error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la recuperation des categories',
@@ -280,7 +269,7 @@ exports.getMuscles = async (req, res) => {
       })),
     });
   } catch (error) {
-    console.error('[EXERCISES] Get muscles error:', error);
+    logger.error('[EXERCISES] Get muscles error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la recuperation des muscles',
@@ -306,7 +295,7 @@ exports.getPopular = async (req, res) => {
       data: exercises.map(ex => enrichExerciseWithImage(ex, req)),
     });
   } catch (error) {
-    console.error('[EXERCISES] Get popular error:', error);
+    logger.error('[EXERCISES] Get popular error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la recuperation',
@@ -330,7 +319,7 @@ exports.createExercise = async (req, res) => {
       data: exercise,
     });
   } catch (error) {
-    console.error('[EXERCISES] Create error:', error);
+    logger.error('[EXERCISES] Create error:', error);
     res.status(500).json({
       success: false,
       message: error.code === 11000
@@ -355,10 +344,7 @@ exports.updateExercise = async (req, res) => {
     );
 
     if (!exercise) {
-      return res.status(404).json({
-        success: false,
-        message: 'Exercice non trouve',
-      });
+      return sendError(res, 'exercise_not_found', 'Exercice non trouve', 404);
     }
 
     res.json({
@@ -366,7 +352,7 @@ exports.updateExercise = async (req, res) => {
       data: exercise,
     });
   } catch (error) {
-    console.error('[EXERCISES] Update error:', error);
+    logger.error('[EXERCISES] Update error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la mise a jour',
@@ -390,10 +376,7 @@ exports.deleteExercise = async (req, res) => {
     );
 
     if (!exercise) {
-      return res.status(404).json({
-        success: false,
-        message: 'Exercice non trouve',
-      });
+      return sendError(res, 'exercise_not_found', 'Exercice non trouve', 404);
     }
 
     res.json({
@@ -401,7 +384,7 @@ exports.deleteExercise = async (req, res) => {
       message: 'Exercice supprime',
     });
   } catch (error) {
-    console.error('[EXERCISES] Delete error:', error);
+    logger.error('[EXERCISES] Delete error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la suppression',
@@ -433,7 +416,7 @@ exports.bulkInsert = async (req, res) => {
       inserted: result.length,
     });
   } catch (error) {
-    console.error('[EXERCISES] Bulk insert error:', error);
+    logger.error('[EXERCISES] Bulk insert error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de l\'insertion',

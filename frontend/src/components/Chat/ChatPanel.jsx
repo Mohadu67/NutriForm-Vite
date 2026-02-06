@@ -96,10 +96,13 @@ export default function ChatPanel({ conversationId: propConversationId, initialM
             createdAt: new Date()
           }
         ]);
-        // Envoyer le message initial automatiquement
-        setTimeout(() => {
+        // Envoyer le message initial automatiquement avec cleanup
+        const timer = setTimeout(() => {
           handleSendMessageDirect(initialMessage);
         }, 300);
+
+        // Cleanup du timeout pour éviter la race condition
+        return () => clearTimeout(timer);
       } else {
         // Message de bienvenue par défaut
         setMessages([

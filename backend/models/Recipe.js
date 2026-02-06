@@ -190,7 +190,8 @@ recipeSchema.methods.getLikesCount = function() {
 
 // Méthode pour ajouter une notation
 recipeSchema.methods.addRating = async function(userId, rating) {
-  console.log('[Recipe.addRating] Starting - userId:', userId, 'rating:', rating);
+  const logger = require('../utils/logger');
+  logger.info('[Recipe.addRating] Starting - userId:', userId, 'rating:', rating);
 
   try {
     // Supprimer l'ancienne note si elle existe
