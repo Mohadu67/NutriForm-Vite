@@ -1,6 +1,42 @@
 const Exercise = require('../models/Exercise');
 
 /**
+ * Helper function to enrich exercises with image URLs
+ */
+function enrichExerciseWithImage(exercise, req) {
+  const doc = exercise.toObject ? exercise.toObject() : exercise;
+
+  let baseUrl;
+  if (req) {
+    baseUrl = `${req.protocol}://${req.get('host')}`;
+  } else {
+    baseUrl = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+  }
+
+  // Ensure mainImage is a complete URL
+  if (doc.mainImage) {
+    // If it's already a full URL, keep it
+    if (!doc.mainImage.startsWith('http')) {
+      // If it's a relative path, make it absolute
+      doc.mainImage = `${baseUrl}${doc.mainImage}`;
+    }
+  } else if (doc.images && doc.images.length > 0) {
+    // Try images array if mainImage is not set
+    const firstImage = doc.images[0];
+    if (typeof firstImage === 'string') {
+      doc.mainImage = firstImage.startsWith('http') ? firstImage : `${baseUrl}${firstImage}`;
+    } else if (firstImage.url) {
+      doc.mainImage = firstImage.url.startsWith('http') ? firstImage.url : `${baseUrl}${firstImage.url}`;
+    }
+  } else if (doc.slug) {
+    // Fallback: construct URL from slug via filename matching
+    doc.mainImage = `${baseUrl}/api/exercises/image/${doc.slug}`;
+  }
+
+  return doc;
+}
+
+/**
  * Get all exercises with optional filters
  * GET /api/exercises
  */
@@ -59,9 +95,12 @@ exports.getExercises = async (req, res) => {
         .select('-__v');
     }
 
+    // Enrich with image URLs
+    const enrichedExercises = exercises.map(ex => enrichExerciseWithImage(ex, req));
+
     res.json({
       success: true,
-      data: exercises,
+      data: enrichedExercises,
       pagination: {
         total,
         page: parseInt(page),
@@ -109,7 +148,7 @@ exports.getExercise = async (req, res) => {
 
     res.json({
       success: true,
-      data: exercise,
+      data: enrichExerciseWithImage(exercise, req),
     });
   } catch (error) {
     console.error('[EXERCISES] Get one error:', error);
@@ -139,7 +178,7 @@ exports.getByCategory = async (req, res) => {
 
     res.json({
       success: true,
-      data: exercises,
+      data: exercises.map(ex => enrichExerciseWithImage(ex, req)),
       count: exercises.length,
     });
   } catch (error) {
@@ -170,7 +209,7 @@ exports.getByMuscle = async (req, res) => {
 
     res.json({
       success: true,
-      data: exercises,
+      data: exercises.map(ex => enrichExerciseWithImage(ex, req)),
       count: exercises.length,
     });
   } catch (error) {
@@ -264,7 +303,7 @@ exports.getPopular = async (req, res) => {
 
     res.json({
       success: true,
-      data: exercises,
+      data: exercises.map(ex => enrichExerciseWithImage(ex, req)),
     });
   } catch (error) {
     console.error('[EXERCISES] Get popular error:', error);

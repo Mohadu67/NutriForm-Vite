@@ -64,6 +64,7 @@ const partnerRoutes = require('./routes/partner.route.js');
 const analyticsRoutes = require('./routes/analytics.route.js');
 const imageProxyRoutes = require('./routes/imageProxy.route.js');
 const healthRoutes = require('./routes/health.route.js');
+const exercisesRoutes = require('./routes/exercises.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 const { startChallengeCron } = require('./cron/challengeCron');
@@ -249,6 +250,7 @@ app.use('/api/partners', partnerRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/image-proxy', imageProxyRoutes);
 app.use('/api/health', healthRoutes);
+app.use('/api/exercises', exercisesRoutes);
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
