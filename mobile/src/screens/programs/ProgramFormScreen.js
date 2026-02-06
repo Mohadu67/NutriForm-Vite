@@ -281,7 +281,11 @@ export default function ProgramFormScreen() {
         </TouchableOpacity>
       ),
       headerRight: () => (
-        <TouchableOpacity onPress={handleSave} disabled={loading}>
+        <TouchableOpacity
+          onPress={handleSave}
+          disabled={loading}
+          style={{ marginRight: 16 }}
+        >
           {loading ? (
             <ActivityIndicator size="small" color={theme.colors.primary} />
           ) : (
