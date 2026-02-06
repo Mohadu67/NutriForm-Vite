@@ -12,6 +12,7 @@ const baseURL = (() => {
 
 const client = axios.create({
   baseURL,
+  timeout: 15000, // 15 secondes par défaut
   withCredentials: true,
 });
 

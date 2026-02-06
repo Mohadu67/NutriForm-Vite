@@ -1,5 +1,6 @@
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { DeviceEventEmitter } from 'react-native';
 import { secureStorage } from '../services/storageService';
 import { API_URL as ENV_API_URL } from '@env';
 
@@ -110,8 +111,11 @@ client.interceptors.response.use(
             return data.token;
           } catch (refreshError) {
             // If refresh fails, clear tokens
-            // The auth context will handle redirect to login
             await secureStorage.clearAll();
+
+            // Émettre événement pour rediriger vers login
+            DeviceEventEmitter.emit('auth:logout');
+
             throw refreshError;
           } finally {
             // Nettoyer la promesse après la tentative (succès ou échec)
