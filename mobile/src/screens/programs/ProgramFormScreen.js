@@ -51,7 +51,7 @@ const EQUIPMENT = [
 
 // Helper function to detect exercise type and return required fields
 const getExerciseFields = (exerciseType) => {
-  if (!exerciseType) return 'cardio'; // default
+  if (!exerciseType || typeof exerciseType !== 'string') return 'cardio'; // default
 
   const type = exerciseType.toLowerCase();
 
@@ -93,7 +93,7 @@ export default function ProgramFormScreen() {
   const [muscleGroups, setMuscleGroups] = useState(existingProgram?.muscleGroups || []);
   const [equipment, setEquipment] = useState(existingProgram?.equipment || []);
   const [cycles, setCycles] = useState(existingProgram?.cycles || [
-    { order: 1, type: 'exercise', exerciseName: '', durationSec: 30 },
+    { order: 1, type: 'exercise', exerciseName: '', exerciseType: '', durationSec: 30 },
   ]);
   const [coverImage, setCoverImage] = useState(existingProgram?.coverImage || null);
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -176,7 +176,7 @@ export default function ProgramFormScreen() {
   const addCycle = () => {
     setCycles([
       ...cycles,
-      { order: cycles.length + 1, type: 'exercise', exerciseName: '', durationSec: 30 },
+      { order: cycles.length + 1, type: 'exercise', exerciseName: '', exerciseType: '', durationSec: 30 },
     ]);
   };
 
