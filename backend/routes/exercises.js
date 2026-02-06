@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const exerciseController = require('../controllers/exerciseController');
 const authMiddleware = require('../middlewares/auth.middleware');
+const adminMiddleware = require('../middlewares/admin.middleware');
 
 // ============ PUBLIC ROUTES ============
 
@@ -95,16 +96,16 @@ router.get('/:idOrSlug', exerciseController.getExercise);
 
 // ============ ADMIN ROUTES ============
 
-// Create exercise
-router.post('/', authMiddleware, exerciseController.createExercise);
+// Create exercise (Admin only)
+router.post('/', adminMiddleware, exerciseController.createExercise);
 
-// Bulk insert (for migration)
-router.post('/bulk', authMiddleware, exerciseController.bulkInsert);
+// Bulk insert (for migration - Admin only)
+router.post('/bulk', adminMiddleware, exerciseController.bulkInsert);
 
-// Update exercise
-router.put('/:id', authMiddleware, exerciseController.updateExercise);
+// Update exercise (Admin only)
+router.put('/:id', adminMiddleware, exerciseController.updateExercise);
 
-// Delete exercise
-router.delete('/:id', authMiddleware, exerciseController.deleteExercise);
+// Delete exercise (Admin only)
+router.delete('/:id', adminMiddleware, exerciseController.deleteExercise);
 
 module.exports = router;

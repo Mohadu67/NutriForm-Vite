@@ -424,3 +424,102 @@ exports.bulkInsert = async (req, res) => {
     });
   }
 };
+
+/**
+ * Create a single exercise (Admin only)
+ * POST /api/admin/exercises
+ */
+exports.createExercise = async (req, res) => {
+  try {
+    const {
+      name,
+      category,
+      type,
+      objectives,
+      primaryMuscle,
+      secondaryMuscles,
+      equipment,
+      difficulty,
+      explanation,
+      videoUrl,
+      tips,
+      restTime,
+      recommendedSets,
+      recommendedReps,
+      mainImage,
+    } = req.body;
+
+    // Validation
+    if (!name || !category || !primaryMuscle || !explanation) {
+      return res.status(400).json({
+        success: false,
+        message: 'Champs requis manquants: name, category, primaryMuscle, explanation',
+      });
+    }
+
+    // Generate unique exoId
+    const count = await Exercise.countDocuments();
+    const exoId = `exo-${String(count + 1).padStart(3, '0')}`;
+
+    // Generate slug from name
+    const slug = name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    // Combine all muscles for search
+    const muscles = [primaryMuscle, ...(secondaryMuscles || [])];
+
+    // Create exercise
+    const exercise = new Exercise({
+      exoId,
+      name,
+      slug,
+      category,
+      type: type || [category],
+      objectives: objectives || [],
+      primaryMuscle,
+      secondaryMuscles: secondaryMuscles || [],
+      muscles,
+      equipment: equipment || [],
+      difficulty: difficulty || 'intermediaire',
+      explanation,
+      mainImage: mainImage || null,
+      videoUrl: videoUrl || null,
+      tips: tips || [],
+      restTime: restTime || 60,
+      recommendedSets: recommendedSets || 3,
+      recommendedReps: recommendedReps || '8-12',
+      isActive: true,
+    });
+
+    await exercise.save();
+
+    logger.info(`[ADMIN] Exercise created: ${exercise.name} (${exercise.exoId})`);
+
+    const enrichedExercise = enrichExerciseWithImage(exercise, req);
+
+    res.status(201).json({
+      success: true,
+      message: 'Exercice créé avec succès',
+      exercise: enrichedExercise,
+    });
+  } catch (error) {
+    logger.error('[ADMIN] Create exercise error:', error);
+
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Un exercice avec ce nom existe déjà',
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la création de l\'exercice',
+      error: error.message,
+    });
+  }
+};
