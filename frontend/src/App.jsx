@@ -120,8 +120,8 @@ export default function App() {
             {/* Newsletter */}
             <Route path="/newsletter/unsubscribe" element={<NewsletterUnsubscribe />} />
 
-            {/* Dashboard & Premium - lazy loaded + protected */}
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            {/* Dashboard & Premium - lazy loaded */}
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/pricing" element={<Pricing />} />
 
