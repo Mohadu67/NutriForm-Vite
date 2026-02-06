@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import storage from '../../shared/utils/storage';
+import { storage } from '../../shared/utils/storage';
 
 /**
  * Composant pour protéger les routes nécessitant une authentification

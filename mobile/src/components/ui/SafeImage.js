@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Image, View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import logger from '../../utils/logger';
+import logger from '../../services/logger';
 
 /**
  * Composant Image avec gestion d'erreur et placeholder
