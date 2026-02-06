@@ -139,8 +139,8 @@ export default function App() {
             <Route path="/profile/setup" element={<ProfileSetup />} />
             <Route path="/matching" element={<MatchingPage />} />
 
-            {/* Chat - lazy loaded */}
-            <Route path="/chat/:matchId" element={<Chat />} />
+            {/* Chat - lazy loaded (Premium only) */}
+            <Route path="/chat/:matchId" element={<ProtectedRoute requirePremium><Chat /></ProtectedRoute>} />
 
             {/* Recipes - lazy loaded */}
             <Route path="/recettes" element={<RecipesPage />} />

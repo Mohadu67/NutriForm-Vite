@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback } from 'react';
 import { getConversations } from '../shared/api/matchChat';
+import { storage } from '../shared/utils/storage';
 
 const ChatContext = createContext(null);
 
@@ -32,6 +33,19 @@ export function ChatProvider({ children }) {
   // Ouvrir une conversation match par son ID (récupère les données et ouvre le modal)
   const openMatchChatById = useCallback(async (conversationId) => {
     try {
+      // Vérifier le statut premium avant d'ouvrir le chat
+      const subscriptionStatus = storage.get('subscriptionStatus');
+      const user = storage.get('user');
+      const isPremium = subscriptionStatus?.tier === 'premium' ||
+                       subscriptionStatus?.hasSubscription === true ||
+                       user?.isPremium === true;
+
+      if (!isPremium) {
+        // Rediriger vers la page pricing si pas premium
+        window.location.href = '/pricing';
+        return false;
+      }
+
       const { conversations } = await getConversations();
       const conversation = conversations.find(c => c._id === conversationId);
       if (conversation) {
