@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { getMessages } from '../shared/api/matchChat';
 import { getChatHistory } from '../shared/api/chat';
+import { storage } from '../shared/utils/storage.js';
 
 const RealTimeMessagesContext = createContext();
 
@@ -107,8 +108,8 @@ export function RealTimeMessagesProvider({ children }) {
    * Obtenir l'ID de l'utilisateur actuel (à implémenter selon votre système d'auth)
    */
   const getCurrentUserId = () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    return user._id || user.id;
+    const user = storage.get('user');
+    return user?._id || user?.id;
   };
 
   /**
