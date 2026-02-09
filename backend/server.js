@@ -63,6 +63,7 @@ const rateLimitRoutes = require('./routes/rateLimit.route.js');
 const partnerRoutes = require('./routes/partner.route.js');
 const analyticsRoutes = require('./routes/analytics.route.js');
 const imageProxyRoutes = require('./routes/imageProxy.route.js');
+const exercisesRoutes = require('./routes/exercises.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 const { startChallengeCron } = require('./cron/challengeCron');
@@ -247,6 +248,7 @@ app.use('/api/rate-limit', rateLimitRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/image-proxy', imageProxyRoutes);
+app.use('/api/exercises', exercisesRoutes);
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
