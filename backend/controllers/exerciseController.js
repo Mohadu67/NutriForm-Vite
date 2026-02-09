@@ -1,6 +1,4 @@
 const Exercise = require('../models/Exercise');
-const { sendSuccess, sendError } = require('../utils/responseFormatter');
-const logger = require('../utils/logger');
 const validator = require('validator');
 
 /**
@@ -103,16 +101,23 @@ exports.getExercises = async (req, res) => {
     // Enrich with image URLs
     const enrichedExercises = exercises.map(ex => enrichExerciseWithImage(ex, req));
 
-    return sendSuccess(res, enrichedExercises, 200, {
-      total,
-      page: parseInt(page),
-      pageSize: parseInt(limit),
-      pages: Math.ceil(total / limit),
-      hasMore: (parseInt(page) * parseInt(limit)) < total,
+    return res.json({
+      success: true,
+      data: enrichedExercises,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pageSize: parseInt(limit),
+        pages: Math.ceil(total / limit),
+        hasMore: (parseInt(page) * parseInt(limit)) < total,
+      }
     });
   } catch (error) {
-    logger.error('[EXERCISES] Get error:', error);
-    return sendError(res, 'server_error', 'Erreur lors de la recuperation des exercices', 500);
+    console.error('[EXERCISES] Get error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la recuperation des exercices'
+    });
   }
 };
 
@@ -135,17 +140,26 @@ exports.getExercise = async (req, res) => {
     }).select('-__v');
 
     if (!exercise) {
-      return sendError(res, 'exercise_not_found', 'Exercice non trouve', 404);
+      return res.status(404).json({
+        success: false,
+        message: 'Exercice non trouve'
+      });
     }
 
     // Increment usage count
     exercise.usageCount += 1;
     await exercise.save();
 
-    return sendSuccess(res, enrichExerciseWithImage(exercise, req));
+    return res.json({
+      success: true,
+      data: enrichExerciseWithImage(exercise, req)
+    });
   } catch (error) {
-    logger.error('[EXERCISES] Get one error:', error);
-    return sendError(res, 'server_error', 'Erreur lors de la recuperation de l\'exercice', 500);
+    console.error('[EXERCISES] Get one error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la recuperation de l\'exercice'
+    });
   }
 };
 
@@ -172,7 +186,7 @@ exports.getByCategory = async (req, res) => {
       count: exercises.length,
     });
   } catch (error) {
-    logger.error('[EXERCISES] Get by category error:', error);
+    console.error('[EXERCISES] Get by category error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la recuperation',
@@ -203,7 +217,7 @@ exports.getByMuscle = async (req, res) => {
       count: exercises.length,
     });
   } catch (error) {
-    logger.error('[EXERCISES] Get by muscle error:', error);
+    console.error('[EXERCISES] Get by muscle error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la recuperation',
@@ -236,7 +250,7 @@ exports.getCategories = async (req, res) => {
       })),
     });
   } catch (error) {
-    logger.error('[EXERCISES] Get categories error:', error);
+    console.error('[EXERCISES] Get categories error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la recuperation des categories',
@@ -270,7 +284,7 @@ exports.getMuscles = async (req, res) => {
       })),
     });
   } catch (error) {
-    logger.error('[EXERCISES] Get muscles error:', error);
+    console.error('[EXERCISES] Get muscles error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la recuperation des muscles',
@@ -296,7 +310,7 @@ exports.getPopular = async (req, res) => {
       data: exercises.map(ex => enrichExerciseWithImage(ex, req)),
     });
   } catch (error) {
-    logger.error('[EXERCISES] Get popular error:', error);
+    console.error('[EXERCISES] Get popular error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la recuperation',
@@ -315,7 +329,7 @@ exports.updateExercise = async (req, res) => {
     const { id } = req.params;
     const updateData = { ...req.body };
 
-    logger.info(`[ADMIN] Update exercise ${id} by ${req.user?.email || 'unknown'}`);
+    console.log(`[ADMIN] Update exercise ${id} by ${req.user?.email || 'unknown'}`);
 
     // Sanitization XSS pour les champs texte
     if (updateData.name) {
@@ -362,17 +376,20 @@ exports.updateExercise = async (req, res) => {
     );
 
     if (!exercise) {
-      return sendError(res, 'exercise_not_found', 'Exercice non trouve', 404);
+      return res.status(404).json({
+        success: false,
+        message: 'Exercice non trouve'
+      });
     }
 
-    logger.info(`[ADMIN] Exercise updated: ${exercise.name} (${exercise.exoId}) by ${req.user?.email || 'unknown'}`);
+    console.log(`[ADMIN] Exercise updated: ${exercise.name} (${exercise.exoId}) by ${req.user?.email || 'unknown'}`);
 
     res.json({
       success: true,
       data: exercise,
     });
   } catch (error) {
-    logger.error('[EXERCISES] Update error:', error);
+    console.error('[EXERCISES] Update error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la mise a jour',
@@ -388,7 +405,7 @@ exports.deleteExercise = async (req, res) => {
   try {
     const { id } = req.params;
 
-    logger.info(`[ADMIN] Delete exercise ${id} by ${req.user?.email || 'unknown'}`);
+    console.log(`[ADMIN] Delete exercise ${id} by ${req.user?.email || 'unknown'}`);
 
     // Soft delete
     const exercise = await Exercise.findByIdAndUpdate(
@@ -398,17 +415,20 @@ exports.deleteExercise = async (req, res) => {
     );
 
     if (!exercise) {
-      return sendError(res, 'exercise_not_found', 'Exercice non trouve', 404);
+      return res.status(404).json({
+        success: false,
+        message: 'Exercice non trouve'
+      });
     }
 
-    logger.info(`[ADMIN] Exercise soft-deleted: ${exercise.name} (${exercise.exoId}) by ${req.user?.email || 'unknown'}`);
+    console.log(`[ADMIN] Exercise soft-deleted: ${exercise.name} (${exercise.exoId}) by ${req.user?.email || 'unknown'}`);
 
     res.json({
       success: true,
       message: 'Exercice supprime',
     });
   } catch (error) {
-    logger.error('[EXERCISES] Delete error:', error);
+    console.error('[EXERCISES] Delete error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la suppression',
@@ -440,7 +460,7 @@ exports.bulkInsert = async (req, res) => {
       inserted: result.length,
     });
   } catch (error) {
-    logger.error('[EXERCISES] Bulk insert error:', error);
+    console.error('[EXERCISES] Bulk insert error:', error);
     res.status(500).json({
       success: false,
       message: 'Erreur lors de l\'insertion',
@@ -455,7 +475,7 @@ exports.bulkInsert = async (req, res) => {
  */
 exports.createExercise = async (req, res) => {
   try {
-    logger.info('[ADMIN] Create exercise request by:', req.user?.email || 'unknown');
+    console.log('[ADMIN] Create exercise request by:', req.user?.email || 'unknown');
 
     let {
       name,
@@ -477,7 +497,7 @@ exports.createExercise = async (req, res) => {
 
     // Validation des champs requis
     if (!name || !category || !primaryMuscle || !explanation) {
-      logger.warn('[ADMIN] Validation failed:', { name, category, primaryMuscle, explanation: !!explanation });
+      console.warn('[ADMIN] Validation failed:', { name, category, primaryMuscle, explanation: !!explanation });
       return res.status(400).json({
         success: false,
         message: 'Champs requis manquants: name, category, primaryMuscle, explanation',
@@ -598,7 +618,7 @@ exports.createExercise = async (req, res) => {
 
     await exercise.save();
 
-    logger.info(`[ADMIN] Exercise created: ${exercise.name} (${exercise.exoId}) by ${req.user?.email || 'unknown'}`);
+    console.log(`[ADMIN] Exercise created: ${exercise.name} (${exercise.exoId}) by ${req.user?.email || 'unknown'}`);
 
     const enrichedExercise = enrichExerciseWithImage(exercise, req);
 
@@ -608,7 +628,7 @@ exports.createExercise = async (req, res) => {
       exercise: enrichedExercise,
     });
   } catch (error) {
-    logger.error('[ADMIN] Create exercise error:', error);
+    console.error('[ADMIN] Create exercise error:', error);
 
     if (error.code === 11000) {
       // Déterminer quel champ cause le conflit
