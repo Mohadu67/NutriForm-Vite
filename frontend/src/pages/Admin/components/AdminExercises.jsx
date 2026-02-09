@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { createExercise } from '../../../shared/api/admin';
+import { useState, useEffect } from 'react';
+import { getAllExercises, createExercise, updateExercise, deleteExercise } from '../../../shared/api/admin';
+import ConfirmModal from '../../../components/Modal/ConfirmModal';
 import styles from '../AdminPage.module.css';
 
 const CATEGORIES = ['muscu', 'cardio', 'etirement', 'hiit', 'yoga', 'meditation', 'natation'];
@@ -7,29 +8,61 @@ const TYPES = ['muscu', 'poids-du-corps', 'cardio', 'etirement', 'hiit', 'yoga',
 const OBJECTIVES = ['force', 'hypertrophie', 'endurance', 'souplesse', 'relaxation', 'cardio', 'equilibre'];
 const DIFFICULTIES = ['debutant', 'intermediaire', 'avance'];
 
+const INITIAL_FORM_DATA = {
+  name: '',
+  category: 'muscu',
+  type: [],
+  objectives: [],
+  primaryMuscle: '',
+  secondaryMuscles: [],
+  equipment: [],
+  difficulty: 'intermediaire',
+  explanation: '',
+  videoUrl: '',
+  tips: [],
+  restTime: 60,
+  recommendedSets: 3,
+  recommendedReps: '8-12',
+  mainImage: '',
+};
+
 export default function AdminExercises({ notify }) {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    category: 'muscu',
-    type: [],
-    objectives: [],
-    primaryMuscle: '',
-    secondaryMuscles: [],
-    equipment: [],
-    difficulty: 'intermediaire',
-    explanation: '',
-    videoUrl: '',
-    tips: [],
-    restTime: 60,
-    recommendedSets: 3,
-    recommendedReps: '8-12',
-    mainImage: '',
-  });
+  const [exercises, setExercises] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [showForm, setShowForm] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [currentExerciseId, setCurrentExerciseId] = useState(null);
 
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [currentTip, setCurrentTip] = useState('');
   const [currentEquipment, setCurrentEquipment] = useState('');
   const [currentSecondaryMuscle, setCurrentSecondaryMuscle] = useState('');
+
+  // Modal de confirmation pour la suppression
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [exerciseToDelete, setExerciseToDelete] = useState(null);
+
+  // Load exercises on mount
+  useEffect(() => {
+    loadExercises();
+  }, []);
+
+  const loadExercises = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllExercises();
+      if (response.success) {
+        setExercises(response.data || []);
+      }
+    } catch (error) {
+      console.error('Erreur chargement exercices:', error);
+      notify.error('Erreur lors du chargement des exercices');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -96,6 +129,73 @@ export default function AdminExercises({ notify }) {
     }));
   };
 
+  const handleEdit = (exercise) => {
+    setEditMode(true);
+    setCurrentExerciseId(exercise._id);
+    setFormData({
+      name: exercise.name || '',
+      category: exercise.category || 'muscu',
+      type: exercise.type || [],
+      objectives: exercise.objectives || [],
+      primaryMuscle: exercise.primaryMuscle || '',
+      secondaryMuscles: exercise.secondaryMuscles || [],
+      equipment: exercise.equipment || [],
+      difficulty: exercise.difficulty || 'intermediaire',
+      explanation: exercise.explanation || '',
+      videoUrl: exercise.videoUrl || '',
+      tips: exercise.tips || [],
+      restTime: exercise.restTime || 60,
+      recommendedSets: exercise.recommendedSets || 3,
+      recommendedReps: exercise.recommendedReps || '8-12',
+      mainImage: exercise.mainImage || '',
+    });
+    setShowForm(true);
+    // Scroll to form
+    setTimeout(() => {
+      document.querySelector(`.${styles.exerciseForm}`)?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
+  const handleDeleteClick = (exercise) => {
+    setExerciseToDelete(exercise);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!exerciseToDelete) return;
+
+    setLoading(true);
+    try {
+      const response = await deleteExercise(exerciseToDelete._id);
+      if (response.success) {
+        notify.success('Exercice supprimé avec succès !');
+        loadExercises();
+      }
+    } catch (error) {
+      console.error('Erreur suppression exercice:', error);
+      notify.error(error.response?.data?.message || 'Erreur lors de la suppression');
+    } finally {
+      setLoading(false);
+      setShowDeleteModal(false);
+      setExerciseToDelete(null);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setExerciseToDelete(null);
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditMode(false);
+    setCurrentExerciseId(null);
+    setFormData(INITIAL_FORM_DATA);
+    setCurrentTip('');
+    setCurrentEquipment('');
+    setCurrentSecondaryMuscle('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -106,273 +206,402 @@ export default function AdminExercises({ notify }) {
 
     setLoading(true);
     try {
-      const response = await createExercise(formData);
+      let response;
+      if (editMode && currentExerciseId) {
+        response = await updateExercise(currentExerciseId, formData);
+        if (response.success) {
+          notify.success('Exercice modifié avec succès !');
+        }
+      } else {
+        response = await createExercise(formData);
+        if (response.success) {
+          notify.success('Exercice créé avec succès !');
+        }
+      }
+
       if (response.success) {
-        notify.success('Exercice créé avec succès !');
-        // Reset form
-        setFormData({
-          name: '',
-          category: 'muscu',
-          type: [],
-          objectives: [],
-          primaryMuscle: '',
-          secondaryMuscles: [],
-          equipment: [],
-          difficulty: 'intermediaire',
-          explanation: '',
-          videoUrl: '',
-          tips: [],
-          restTime: 60,
-          recommendedSets: 3,
-          recommendedReps: '8-12',
-          mainImage: '',
-        });
+        handleCancel();
+        loadExercises();
       }
     } catch (error) {
-      console.error('Erreur création exercice:', error);
-      console.error('Response data:', error.response?.data);
-      console.error('Données envoyées:', formData);
-      notify.error(error.response?.data?.message || 'Erreur lors de la création');
+      console.error('Erreur exercice:', error);
+      notify.error(error.response?.data?.message || 'Erreur lors de l\'opération');
     } finally {
       setLoading(false);
     }
   };
 
+  // Filter exercises
+  const filteredExercises = exercises.filter(ex => {
+    const matchesSearch = !searchQuery ||
+      ex.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ex.primaryMuscle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ex.category?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesCategory = selectedCategory === 'all' || ex.category === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  });
+
   return (
     <div className={styles.section}>
+      {/* Header avec bouton nouveau */}
       <div className={styles.sectionHeader}>
-        <h2>Créer un Exercice</h2>
+        <h2>Gestion des Exercices</h2>
+        <button
+          className={styles.createButton}
+          onClick={() => {
+            handleCancel();
+            setShowForm(!showForm);
+          }}
+        >
+          <span className={styles.buttonIcon}>{showForm ? '✕' : '+'}</span>
+          <span className={styles.buttonText}>{showForm ? 'Fermer' : 'Nouvel exercice'}</span>
+        </button>
       </div>
 
-      <form onSubmit={handleSubmit} className={styles.exerciseForm}>
-        {/* Basic Info */}
-        <div className={styles.formGroup}>
-          <label>Nom de l'exercice *</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            required
-            placeholder="Ex: Pompes"
-          />
-        </div>
+      {/* Formulaire création/édition */}
+      {showForm && (
+        <form onSubmit={handleSubmit} className={styles.exerciseForm}>
+          <h3>{editMode ? 'Modifier l\'exercice' : 'Créer un exercice'}</h3>
 
-        <div className={styles.formRow}>
+          {/* Basic Info */}
           <div className={styles.formGroup}>
-            <label>Catégorie *</label>
-            <select name="category" value={formData.category} onChange={handleInputChange}>
-              {CATEGORIES.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+            <label>Nom de l'exercice *</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              required
+              placeholder="Ex: Pompes"
+            />
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label>Catégorie *</label>
+              <select name="category" value={formData.category} onChange={handleInputChange}>
+                {CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Difficulté</label>
+              <select name="difficulty" value={formData.difficulty} onChange={handleInputChange}>
+                {DIFFICULTIES.map(diff => (
+                  <option key={diff} value={diff}>{diff}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Types */}
+          <div className={styles.formGroup}>
+            <label>Types</label>
+            <div className={styles.checkboxGroup}>
+              {TYPES.map(type => (
+                <label key={type} className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={formData.type.includes(type)}
+                    onChange={() => handleCheckboxChange('type', type)}
+                  />
+                  {type}
+                </label>
               ))}
-            </select>
+            </div>
           </div>
 
+          {/* Objectives */}
           <div className={styles.formGroup}>
-            <label>Difficulté</label>
-            <select name="difficulty" value={formData.difficulty} onChange={handleInputChange}>
-              {DIFFICULTIES.map(diff => (
-                <option key={diff} value={diff}>{diff}</option>
+            <label>Objectifs</label>
+            <div className={styles.checkboxGroup}>
+              {OBJECTIVES.map(obj => (
+                <label key={obj} className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={formData.objectives.includes(obj)}
+                    onChange={() => handleCheckboxChange('objectives', obj)}
+                  />
+                  {obj}
+                </label>
               ))}
-            </select>
+            </div>
           </div>
-        </div>
 
-        {/* Types */}
-        <div className={styles.formGroup}>
-          <label>Types</label>
-          <div className={styles.checkboxGroup}>
-            {TYPES.map(type => (
-              <label key={type} className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={formData.type.includes(type)}
-                  onChange={() => handleCheckboxChange('type', type)}
-                />
-                {type}
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Objectives */}
-        <div className={styles.formGroup}>
-          <label>Objectifs</label>
-          <div className={styles.checkboxGroup}>
-            {OBJECTIVES.map(obj => (
-              <label key={obj} className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={formData.objectives.includes(obj)}
-                  onChange={() => handleCheckboxChange('objectives', obj)}
-                />
-                {obj}
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Muscles */}
-        <div className={styles.formGroup}>
-          <label>Muscle principal *</label>
-          <input
-            type="text"
-            name="primaryMuscle"
-            value={formData.primaryMuscle}
-            onChange={handleInputChange}
-            required
-            placeholder="Ex: Pectoraux"
-          />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label>Muscles secondaires</label>
-          <div className={styles.addItemGroup}>
-            <input
-              type="text"
-              value={currentSecondaryMuscle}
-              onChange={(e) => setCurrentSecondaryMuscle(e.target.value)}
-              placeholder="Ajouter un muscle secondaire"
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSecondaryMuscle())}
-            />
-            <button type="button" onClick={addSecondaryMuscle}>Ajouter</button>
-          </div>
-          <div className={styles.tagList}>
-            {formData.secondaryMuscles.map((muscle, index) => (
-              <span key={index} className={styles.tag}>
-                {muscle}
-                <button type="button" onClick={() => removeSecondaryMuscle(index)}>×</button>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Equipment */}
-        <div className={styles.formGroup}>
-          <label>Équipement</label>
-          <div className={styles.addItemGroup}>
-            <input
-              type="text"
-              value={currentEquipment}
-              onChange={(e) => setCurrentEquipment(e.target.value)}
-              placeholder="Ajouter un équipement"
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addEquipment())}
-            />
-            <button type="button" onClick={addEquipment}>Ajouter</button>
-          </div>
-          <div className={styles.tagList}>
-            {formData.equipment.map((equip, index) => (
-              <span key={index} className={styles.tag}>
-                {equip}
-                <button type="button" onClick={() => removeEquipment(index)}>×</button>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Explanation */}
-        <div className={styles.formGroup}>
-          <label>Explication *</label>
-          <textarea
-            name="explanation"
-            value={formData.explanation}
-            onChange={handleInputChange}
-            required
-            placeholder="Décrivez comment réaliser l'exercice..."
-            rows={6}
-          />
-        </div>
-
-        {/* Tips */}
-        <div className={styles.formGroup}>
-          <label>Conseils</label>
-          <div className={styles.addItemGroup}>
-            <input
-              type="text"
-              value={currentTip}
-              onChange={(e) => setCurrentTip(e.target.value)}
-              placeholder="Ajouter un conseil"
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTip())}
-            />
-            <button type="button" onClick={addTip}>Ajouter</button>
-          </div>
-          <div className={styles.tagList}>
-            {formData.tips.map((tip, index) => (
-              <span key={index} className={styles.tag}>
-                {tip}
-                <button type="button" onClick={() => removeTip(index)}>×</button>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Recommendations */}
-        <div className={styles.formRow}>
+          {/* Muscles */}
           <div className={styles.formGroup}>
-            <label>Séries recommandées</label>
+            <label>Muscle principal *</label>
             <input
-              type="number"
-              name="recommendedSets"
-              value={formData.recommendedSets}
+              type="text"
+              name="primaryMuscle"
+              value={formData.primaryMuscle}
               onChange={handleInputChange}
-              min="1"
+              required
+              placeholder="Ex: Pectoraux"
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label>Répétitions recommandées</label>
-            <input
-              type="text"
-              name="recommendedReps"
-              value={formData.recommendedReps}
+            <label>Muscles secondaires</label>
+            <div className={styles.addItemGroup}>
+              <input
+                type="text"
+                value={currentSecondaryMuscle}
+                onChange={(e) => setCurrentSecondaryMuscle(e.target.value)}
+                placeholder="Ajouter un muscle secondaire"
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSecondaryMuscle())}
+              />
+              <button type="button" onClick={addSecondaryMuscle}>Ajouter</button>
+            </div>
+            <div className={styles.tagList}>
+              {formData.secondaryMuscles.map((muscle, index) => (
+                <span key={index} className={styles.tag}>
+                  {muscle}
+                  <button type="button" onClick={() => removeSecondaryMuscle(index)}>×</button>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Equipment */}
+          <div className={styles.formGroup}>
+            <label>Équipement</label>
+            <div className={styles.addItemGroup}>
+              <input
+                type="text"
+                value={currentEquipment}
+                onChange={(e) => setCurrentEquipment(e.target.value)}
+                placeholder="Ajouter un équipement"
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addEquipment())}
+              />
+              <button type="button" onClick={addEquipment}>Ajouter</button>
+            </div>
+            <div className={styles.tagList}>
+              {formData.equipment.map((equip, index) => (
+                <span key={index} className={styles.tag}>
+                  {equip}
+                  <button type="button" onClick={() => removeEquipment(index)}>×</button>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Explanation */}
+          <div className={styles.formGroup}>
+            <label>Explication *</label>
+            <textarea
+              name="explanation"
+              value={formData.explanation}
               onChange={handleInputChange}
-              placeholder="Ex: 8-12"
+              required
+              placeholder="Décrivez comment réaliser l'exercice..."
+              rows={6}
+            />
+          </div>
+
+          {/* Tips */}
+          <div className={styles.formGroup}>
+            <label>Conseils</label>
+            <div className={styles.addItemGroup}>
+              <input
+                type="text"
+                value={currentTip}
+                onChange={(e) => setCurrentTip(e.target.value)}
+                placeholder="Ajouter un conseil"
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTip())}
+              />
+              <button type="button" onClick={addTip}>Ajouter</button>
+            </div>
+            <div className={styles.tagList}>
+              {formData.tips.map((tip, index) => (
+                <span key={index} className={styles.tag}>
+                  {tip}
+                  <button type="button" onClick={() => removeTip(index)}>×</button>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Recommendations */}
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label>Séries recommandées</label>
+              <input
+                type="number"
+                name="recommendedSets"
+                value={formData.recommendedSets}
+                onChange={handleInputChange}
+                min="1"
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Répétitions recommandées</label>
+              <input
+                type="text"
+                name="recommendedReps"
+                value={formData.recommendedReps}
+                onChange={handleInputChange}
+                placeholder="Ex: 8-12"
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Temps de repos (secondes)</label>
+              <input
+                type="number"
+                name="restTime"
+                value={formData.restTime}
+                onChange={handleInputChange}
+                min="0"
+              />
+            </div>
+          </div>
+
+          {/* Media */}
+          <div className={styles.formGroup}>
+            <label>URL de l'image principale</label>
+            <input
+              type="url"
+              name="mainImage"
+              value={formData.mainImage}
+              onChange={handleInputChange}
+              placeholder="https://res.cloudinary.com/..."
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label>Temps de repos (secondes)</label>
+            <label>URL vidéo YouTube (optionnel)</label>
             <input
-              type="number"
-              name="restTime"
-              value={formData.restTime}
+              type="url"
+              name="videoUrl"
+              value={formData.videoUrl}
               onChange={handleInputChange}
-              min="0"
+              placeholder="https://youtube.com/watch?v=..."
             />
           </div>
-        </div>
 
-        {/* Media */}
-        <div className={styles.formGroup}>
-          <label>URL de l'image principale</label>
-          <input
-            type="url"
-            name="mainImage"
-            value={formData.mainImage}
-            onChange={handleInputChange}
-            placeholder="https://res.cloudinary.com/..."
-          />
-        </div>
+          <div className={styles.formActions}>
+            <button
+              type="button"
+              className={styles.cancelButton}
+              onClick={handleCancel}
+              disabled={loading}
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={loading}
+            >
+              {loading ? 'Enregistrement...' : (editMode ? 'Modifier' : 'Créer')}
+            </button>
+          </div>
+        </form>
+      )}
 
-        <div className={styles.formGroup}>
-          <label>URL vidéo YouTube (optionnel)</label>
-          <input
-            type="url"
-            name="videoUrl"
-            value={formData.videoUrl}
-            onChange={handleInputChange}
-            placeholder="https://youtube.com/watch?v=..."
-          />
-        </div>
-
-        <button
-          type="submit"
-          className={styles.submitButton}
-          disabled={loading}
+      {/* Filtres et recherche */}
+      <div className={styles.filtersRow}>
+        <input
+          type="text"
+          placeholder="🔍 Rechercher un exercice..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className={styles.searchInput}
+        />
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className={styles.filterSelect}
         >
-          {loading ? 'Création...' : 'Créer l\'exercice'}
-        </button>
-      </form>
+          <option value="all">Toutes catégories</option>
+          {CATEGORIES.map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Liste des exercices */}
+      <div className={styles.exercisesList}>
+        {loading && !exercises.length ? (
+          <div className={styles.loading}>Chargement...</div>
+        ) : filteredExercises.length === 0 ? (
+          <div className={styles.emptyState}>
+            Aucun exercice trouvé
+          </div>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Catégorie</th>
+                <th>Muscle principal</th>
+                <th>Difficulté</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredExercises.map(exercise => (
+                <tr key={exercise._id}>
+                  <td>
+                    <strong>{exercise.name}</strong>
+                    {exercise.exoId && <span className={styles.exoId}> ({exercise.exoId})</span>}
+                  </td>
+                  <td>
+                    <span className={styles.badge}>{exercise.category}</span>
+                  </td>
+                  <td>{exercise.primaryMuscle}</td>
+                  <td>
+                    <span className={`${styles.difficulty} ${styles[exercise.difficulty]}`}>
+                      {exercise.difficulty}
+                    </span>
+                  </td>
+                  <td>
+                    <div className={styles.actionButtons}>
+                      <button
+                        className={styles.editBtn}
+                        onClick={() => handleEdit(exercise)}
+                        title="Modifier"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className={styles.deleteBtn}
+                        onClick={() => handleDeleteClick(exercise)}
+                        title="Supprimer"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <div className={styles.exercisesCount}>
+        {filteredExercises.length} exercice(s) affiché(s) sur {exercises.length} total
+      </div>
+
+      {/* Modal de confirmation de suppression */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        title="Confirmer la suppression"
+        message={`Êtes-vous sûr de vouloir supprimer l'exercice "${exerciseToDelete?.name}" ?\n\nCette action est irréversible.`}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        type="danger"
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 const Exercise = require('../models/Exercise');
 const { sendSuccess, sendError } = require('../utils/responseFormatter');
 const logger = require('../utils/logger');
+const validator = require('validator');
 
 /**
  * Helper function to enrich exercises with image URLs
@@ -306,46 +307,65 @@ exports.getPopular = async (req, res) => {
 // ============ ADMIN ROUTES ============
 
 /**
- * Create exercise (Admin)
- * POST /api/exercises
- */
-exports.createExercise = async (req, res) => {
-  try {
-    const exercise = new Exercise(req.body);
-    await exercise.save();
-
-    res.status(201).json({
-      success: true,
-      data: exercise,
-    });
-  } catch (error) {
-    logger.error('[EXERCISES] Create error:', error);
-    res.status(500).json({
-      success: false,
-      message: error.code === 11000
-        ? 'Un exercice avec cet ID ou slug existe deja'
-        : 'Erreur lors de la creation',
-    });
-  }
-};
-
-/**
  * Update exercise (Admin)
  * PUT /api/exercises/:id
  */
 exports.updateExercise = async (req, res) => {
   try {
     const { id } = req.params;
+    const updateData = { ...req.body };
+
+    logger.info(`[ADMIN] Update exercise ${id} by ${req.user?.email || 'unknown'}`);
+
+    // Sanitization XSS pour les champs texte
+    if (updateData.name) {
+      updateData.name = validator.escape(updateData.name.trim());
+    }
+    if (updateData.explanation) {
+      updateData.explanation = validator.escape(updateData.explanation.trim());
+    }
+    if (updateData.primaryMuscle) {
+      updateData.primaryMuscle = validator.escape(updateData.primaryMuscle.trim());
+    }
+    if (updateData.secondaryMuscles && Array.isArray(updateData.secondaryMuscles)) {
+      updateData.secondaryMuscles = updateData.secondaryMuscles.map(m => validator.escape(m.trim()));
+    }
+    if (updateData.equipment && Array.isArray(updateData.equipment)) {
+      updateData.equipment = updateData.equipment.map(e => validator.escape(e.trim()));
+    }
+    if (updateData.tips && Array.isArray(updateData.tips)) {
+      updateData.tips = updateData.tips.map(t => validator.escape(t.trim()));
+    }
+
+    // Validation des URLs
+    if (updateData.mainImage && updateData.mainImage.trim() !== '') {
+      if (!validator.isURL(updateData.mainImage, { protocols: ['http', 'https'], require_protocol: true })) {
+        return res.status(400).json({
+          success: false,
+          message: 'URL de l\'image principale invalide. Doit commencer par http:// ou https://',
+        });
+      }
+    }
+    if (updateData.videoUrl && updateData.videoUrl.trim() !== '') {
+      if (!validator.isURL(updateData.videoUrl, { protocols: ['http', 'https'], require_protocol: true })) {
+        return res.status(400).json({
+          success: false,
+          message: 'URL de la vidéo invalide. Doit commencer par http:// ou https://',
+        });
+      }
+    }
 
     const exercise = await Exercise.findByIdAndUpdate(
       id,
-      { $set: req.body },
+      { $set: updateData },
       { new: true, runValidators: true }
     );
 
     if (!exercise) {
       return sendError(res, 'exercise_not_found', 'Exercice non trouve', 404);
     }
+
+    logger.info(`[ADMIN] Exercise updated: ${exercise.name} (${exercise.exoId}) by ${req.user?.email || 'unknown'}`);
 
     res.json({
       success: true,
@@ -368,6 +388,8 @@ exports.deleteExercise = async (req, res) => {
   try {
     const { id } = req.params;
 
+    logger.info(`[ADMIN] Delete exercise ${id} by ${req.user?.email || 'unknown'}`);
+
     // Soft delete
     const exercise = await Exercise.findByIdAndUpdate(
       id,
@@ -378,6 +400,8 @@ exports.deleteExercise = async (req, res) => {
     if (!exercise) {
       return sendError(res, 'exercise_not_found', 'Exercice non trouve', 404);
     }
+
+    logger.info(`[ADMIN] Exercise soft-deleted: ${exercise.name} (${exercise.exoId}) by ${req.user?.email || 'unknown'}`);
 
     res.json({
       success: true,
@@ -431,9 +455,9 @@ exports.bulkInsert = async (req, res) => {
  */
 exports.createExercise = async (req, res) => {
   try {
-    logger.info('[ADMIN] Create exercise request body:', req.body);
+    logger.info('[ADMIN] Create exercise request by:', req.user?.email || 'unknown');
 
-    const {
+    let {
       name,
       category,
       type,
@@ -451,7 +475,7 @@ exports.createExercise = async (req, res) => {
       mainImage,
     } = req.body;
 
-    // Validation
+    // Validation des champs requis
     if (!name || !category || !primaryMuscle || !explanation) {
       logger.warn('[ADMIN] Validation failed:', { name, category, primaryMuscle, explanation: !!explanation });
       return res.status(400).json({
@@ -464,6 +488,42 @@ exports.createExercise = async (req, res) => {
           hasExplanation: !!explanation
         }
       });
+    }
+
+    // Sanitization XSS - Échapper les caractères HTML dangereux
+    name = validator.escape(name.trim());
+    explanation = validator.escape(explanation.trim());
+    primaryMuscle = validator.escape(primaryMuscle.trim());
+
+    if (secondaryMuscles && Array.isArray(secondaryMuscles)) {
+      secondaryMuscles = secondaryMuscles.map(m => validator.escape(m.trim()));
+    }
+
+    if (equipment && Array.isArray(equipment)) {
+      equipment = equipment.map(e => validator.escape(e.trim()));
+    }
+
+    if (tips && Array.isArray(tips)) {
+      tips = tips.map(t => validator.escape(t.trim()));
+    }
+
+    // Validation des URLs
+    if (mainImage && mainImage.trim() !== '') {
+      if (!validator.isURL(mainImage, { protocols: ['http', 'https'], require_protocol: true })) {
+        return res.status(400).json({
+          success: false,
+          message: 'URL de l\'image principale invalide. Doit commencer par http:// ou https://',
+        });
+      }
+    }
+
+    if (videoUrl && videoUrl.trim() !== '') {
+      if (!validator.isURL(videoUrl, { protocols: ['http', 'https'], require_protocol: true })) {
+        return res.status(400).json({
+          success: false,
+          message: 'URL de la vidéo invalide. Doit commencer par http:// ou https://',
+        });
+      }
     }
 
     // Generate unique exoId - find the highest existing number
@@ -538,7 +598,7 @@ exports.createExercise = async (req, res) => {
 
     await exercise.save();
 
-    logger.info(`[ADMIN] Exercise created: ${exercise.name} (${exercise.exoId})`);
+    logger.info(`[ADMIN] Exercise created: ${exercise.name} (${exercise.exoId}) by ${req.user?.email || 'unknown'}`);
 
     const enrichedExercise = enrichExerciseWithImage(exercise, req);
 

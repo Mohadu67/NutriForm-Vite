@@ -92,11 +92,26 @@ const exerciseSchema = new mongoose.Schema(
     // Image principale (premiere image)
     mainImage: {
       type: String,
+      validate: {
+        validator: function(v) {
+          if (!v) return true; // Optionnel
+          // Simple validation: doit commencer par http:// ou https://
+          return /^https?:\/\/.+/.test(v);
+        },
+        message: 'mainImage doit être une URL valide (http:// ou https://)'
+      }
     },
 
     // Video YouTube ou autre (optionnel)
     videoUrl: {
       type: String,
+      validate: {
+        validator: function(v) {
+          if (!v) return true; // Optionnel
+          return /^https?:\/\/.+/.test(v);
+        },
+        message: 'videoUrl doit être une URL valide (http:// ou https://)'
+      }
     },
 
     // Conseils supplementaires

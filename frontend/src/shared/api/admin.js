@@ -168,8 +168,15 @@ export async function getSupportTicketStats() {
 // EXERCISES
 // ============================================
 
+/**
+ * Récupère tous les exercices pour l'admin
+ * TODO: Implémenter pagination réelle quand nb exercices > 500
+ * Actuellement limite à 1000 pour performance acceptable
+ */
 export async function getAllExercises() {
-  const response = await client.get('/exercises');
+  const response = await client.get('/exercises', {
+    params: { limit: 1000 }
+  });
   return response.data;
 }
 

@@ -3,6 +3,19 @@ const router = express.Router();
 const exerciseController = require('../controllers/exerciseController');
 const authMiddleware = require('../middlewares/auth.middleware');
 const adminMiddleware = require('../middlewares/admin.middleware');
+const rateLimit = require('express-rate-limit');
+
+// Rate limiter pour les endpoints admin - Protection contre le spam
+const adminRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limite de 100 requêtes par fenêtre par IP
+  message: {
+    success: false,
+    message: 'Trop de requêtes depuis cette IP, veuillez réessayer dans 15 minutes.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // ============ PUBLIC ROUTES ============
 
@@ -95,17 +108,18 @@ router.get('/muscle/:muscle', exerciseController.getByMuscle);
 router.get('/:idOrSlug', exerciseController.getExercise);
 
 // ============ ADMIN ROUTES ============
+// Toutes les routes admin sont protégées par adminMiddleware + rate limiting
 
 // Create exercise (Admin only)
-router.post('/', adminMiddleware, exerciseController.createExercise);
+router.post('/', adminRateLimiter, adminMiddleware, exerciseController.createExercise);
 
 // Bulk insert (for migration - Admin only)
-router.post('/bulk', adminMiddleware, exerciseController.bulkInsert);
+router.post('/bulk', adminRateLimiter, adminMiddleware, exerciseController.bulkInsert);
 
 // Update exercise (Admin only)
-router.put('/:id', adminMiddleware, exerciseController.updateExercise);
+router.put('/:id', adminRateLimiter, adminMiddleware, exerciseController.updateExercise);
 
 // Delete exercise (Admin only)
-router.delete('/:id', adminMiddleware, exerciseController.deleteExercise);
+router.delete('/:id', adminRateLimiter, adminMiddleware, exerciseController.deleteExercise);
 
 module.exports = router;
