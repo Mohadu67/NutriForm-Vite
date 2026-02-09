@@ -1,44 +1,40 @@
-
+/**
+ * Charge les exercices depuis l'API backend
+ * Remplace l'ancien système de fichiers JSON statiques
+ */
 export async function loadExercises(types = 'all') {
-  const fileMap = {
-    muscu: '/data/exo/muscu.json',
-    cardio: '/data/exo/cardio.json',
-    yoga: '/data/exo/yoga.json',
-    meditation: '/data/exo/meditation.json',
-    natation: '/data/exo/natation.json',
-    etirement: '/data/exo/etirement.json',
-    hiit: '/data/exo/hiit.json',
-  };
+  try {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-  
-  if (types === 'all') {
-    types = Object.keys(fileMap);
+    // Construire l'URL avec filtres
+    let url = `${apiUrl}/api/exercises?limit=1000`;
+
+    // Si types spécifiques demandés, filtrer par catégorie
+    if (types !== 'all') {
+      const typeArray = Array.isArray(types) ? types : [types];
+      const categories = typeArray.join(',');
+      url += `&category=${categories}`;
+    }
+
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error(`[exercisesLoader] HTTP ${res.status} from ${url}`);
+      return [];
+    }
+
+    const response = await res.json();
+
+    // Gérer le nouveau format de réponse de l'API
+    if (response.success && response.data) {
+      return response.data;
+    }
+
+    // Fallback pour ancien format
+    return response.exercises || response.data || [];
+  } catch (error) {
+    console.error('[exercisesLoader] Erreur chargement exercices:', error);
+    return [];
   }
-
-  
-  const typeArray = Array.isArray(types) ? types : [types];
-
-  
-  const promises = typeArray.map(async (type) => {
-    const url = fileMap[type];
-    if (!url) {
-      return [];
-    }
-
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      return data.exercises || [];
-    } catch {
-      return [];
-    }
-  });
-
-  const results = await Promise.all(promises);
-
-  
-  return results.flat();
 }
 
 
