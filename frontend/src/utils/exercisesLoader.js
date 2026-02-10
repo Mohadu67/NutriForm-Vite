@@ -4,10 +4,10 @@
  */
 export async function loadExercises(types = 'all') {
   try {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
     // Construire l'URL avec filtres
-    let url = `${apiUrl}/api/exercises?limit=1000`;
+    let url = `${apiUrl}/exercises?limit=1000`;
 
     // Si types spécifiques demandés, filtrer par catégorie
     if (types !== 'all') {

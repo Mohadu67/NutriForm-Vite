@@ -17,7 +17,11 @@ export default function ExerciceCard({
 
   if (!exo) return null;
 
-  const imgSrc = Array.isArray(exo.images) && exo.images.length > 0 ? exo.images[0] : null;
+  // Priorité: mainImage > images[0].url > images[0] (string legacy)
+  const imgSrc = exo.mainImage ||
+    (Array.isArray(exo.images) && exo.images.length > 0
+      ? (typeof exo.images[0] === 'string' ? exo.images[0] : exo.images[0]?.url)
+      : null);
   const initial = exo.name?.trim()?.[0]?.toUpperCase() || "?";
   const exId = idOf(exo);
 
