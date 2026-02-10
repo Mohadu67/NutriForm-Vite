@@ -6,7 +6,7 @@
 let exerciseImagesCache = null;
 
 /**
- * Charge toutes les images d'exercices depuis les fichiers JSON
+ * Charge toutes les images d'exercices depuis l'API
  * @returns {Promise<Map<string, string>>} Map nom d'exercice -> chemin image
  */
 export async function loadExerciseImages() {
@@ -17,40 +17,28 @@ export async function loadExerciseImages() {
   const imageMap = new Map();
 
   try {
-    // Charger tous les fichiers d'exercices
-    const exerciseFiles = [
-      '/data/exo/cardio.json',
-      '/data/exo/hiit.json',
-      '/data/exo/muscu.json',
-      '/data/exo/yoga.json',
-      '/data/exo/etirement.json',
-      '/data/exo/natation.json',
-      '/data/exo/meditation.json'
-    ];
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+    const response = await fetch(`${apiUrl}/exercises?limit=1000`);
 
-    const responses = await Promise.all(
-      exerciseFiles.map(file =>
-        fetch(file)
-          .then(res => res.ok ? res.json() : null)
-          .catch(() => null)
-      )
-    );
+    if (!response.ok) {
+      console.error(`[exerciseImages] HTTP ${response.status}`);
+      return imageMap;
+    }
+
+    const data = await response.json();
+    const exercises = data.success && data.data ? data.data : (data.exercises || data.data || []);
 
     // Construire le map
-    responses.forEach(data => {
-      if (data?.exercises) {
-        data.exercises.forEach(exercise => {
-          if (exercise.name && exercise.images?.[0]) {
-            // Normaliser le nom (minuscules, trim)
-            const normalizedName = exercise.name.toLowerCase().trim();
-            imageMap.set(normalizedName, exercise.images[0]);
-          }
-        });
+    exercises.forEach(exercise => {
+      if (exercise.name && exercise.mainImage) {
+        // Normaliser le nom (minuscules, trim)
+        const normalizedName = exercise.name.toLowerCase().trim();
+        imageMap.set(normalizedName, exercise.mainImage);
       }
     });
 
     exerciseImagesCache = imageMap;
-    console.log(`📸 ${imageMap.size} images d'exercices chargées`);
+    console.log(`📸 ${imageMap.size} images d'exercices chargées depuis l'API`);
   } catch (error) {
     console.error('Erreur lors du chargement des images d\'exercices:', error);
   }
