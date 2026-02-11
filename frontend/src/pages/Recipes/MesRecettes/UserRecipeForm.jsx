@@ -55,9 +55,7 @@ export default function UserRecipeForm({ recipe, onBack, onSave }) {
 
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadingFromUrl, setUploadingFromUrl] = useState(false);
   const [imageFile, setImageFile] = useState(null);
-  const [imageUrlInput, setImageUrlInput] = useState('');
   const [error, setError] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -243,47 +241,6 @@ export default function UserRecipeForm({ recipe, onBack, onSave }) {
   const handleRemoveImage = () => {
     setFormData(prev => ({ ...prev, image: '' }));
     setImageFile(null);
-    setImageUrlInput('');
-  };
-
-  const handleUploadFromUrl = async () => {
-    if (!imageUrlInput.trim()) {
-      notify.error('Veuillez entrer une URL d\'image');
-      return;
-    }
-
-    setUploadingFromUrl(true);
-    setError(null);
-
-    try {
-      const response = await secureApiCall('/upload/from-url', {
-        method: 'POST',
-        body: JSON.stringify({ url: imageUrlInput })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setFormData(prev => ({ ...prev, image: data.imageUrl }));
-        notify.success('Image uploadée sur Cloudinary avec succès !');
-        setImageUrlInput('');
-      } else {
-        setError({
-          title: 'Erreur d\'upload',
-          message: data.message || 'Impossible d\'uploader l\'image depuis cette URL.',
-          details: response.status !== 200 ? `HTTP ${response.status}` : null
-        });
-      }
-    } catch (err) {
-      logger.error('Erreur upload depuis URL:', err);
-      setError({
-        title: 'Erreur d\'upload',
-        message: 'Une erreur s\'est produite. Vérifiez que l\'URL pointe vers une image valide.',
-        details: err.message
-      });
-    } finally {
-      setUploadingFromUrl(false);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -413,31 +370,6 @@ export default function UserRecipeForm({ recipe, onBack, onSave }) {
                     </button>
                   </div>
                 )}
-
-                {/* Ou URL avec upload sur Cloudinary */}
-                <div className={styles.orDivider}>
-                  <span>ou collez une URL d'image</span>
-                </div>
-                <div className={styles.urlUploadSection}>
-                  <input
-                    type="url"
-                    value={imageUrlInput}
-                    onChange={(e) => setImageUrlInput(e.target.value)}
-                    placeholder="https://exemple.com/image.jpg"
-                    className={styles.urlInput}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleUploadFromUrl}
-                    disabled={uploadingFromUrl || !imageUrlInput.trim()}
-                    className={styles.uploadFromUrlBtn}
-                  >
-                    {uploadingFromUrl ? '⏳ Upload...' : '📤 Uploader sur Cloudinary'}
-                  </button>
-                </div>
-                <p className={styles.hint}>
-                  💡 L'image sera automatiquement téléchargée et hébergée sur Cloudinary
-                </p>
               </>
             )}
 
