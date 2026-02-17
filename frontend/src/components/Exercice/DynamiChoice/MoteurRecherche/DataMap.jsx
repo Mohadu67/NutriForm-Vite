@@ -79,7 +79,10 @@ export const MUSCLE_ZONES = Object.freeze({
     "tronc",
     "sangle-abdo",
     "sangle abdominale",
-    "centre du tronc"
+    "centre du tronc",
+    "abdominaux",
+    "abdominal",
+    "abdomen"
   ]),
   "abdos-lateraux": Object.freeze([
     "abdos-lateraux",
@@ -163,6 +166,8 @@ export const MUSCLE_ZONES = Object.freeze({
     "cuisses internes",
     "ischios",
     "isquios",
+    "ischio-jambiers",
+    "ischio jambiers",
     "hamstrings",
     "adducteurs",
     "adductors",

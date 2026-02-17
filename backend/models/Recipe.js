@@ -167,7 +167,7 @@ recipeSchema.index({ author: 1, status: 1 });
 
 // Méthode pour calculer le temps total automatiquement
 recipeSchema.pre('save', function(next) {
-  if (this.prepTime && this.cookTime) {
+   if (this.prepTime != null && this.cookTime != null) {
     this.totalTime = this.prepTime + this.cookTime;
   }
   next();

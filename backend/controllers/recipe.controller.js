@@ -696,7 +696,7 @@ exports.createUserRecipe = async (req, res) => {
     };
 
     // S'assurer que totalTime est calculé
-    if (newRecipeData.prepTime && newRecipeData.cookTime) {
+    if (newRecipeData.prepTime != null && newRecipeData.cookTime != null) {
       newRecipeData.totalTime = parseInt(newRecipeData.prepTime) + parseInt(newRecipeData.cookTime);
     }
 
