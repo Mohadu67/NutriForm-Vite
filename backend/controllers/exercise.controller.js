@@ -654,3 +654,166 @@ exports.createExercise = async (req, res) => {
     });
   }
 };
+
+/**
+ * Seed exercises from JSON files (Admin only)
+ * POST /api/exercises/seed
+ */
+exports.seedExercises = async (req, res) => {
+  try {
+    console.log('[ADMIN] Seed exercises requested by:', req.user?.email || 'unknown');
+
+    const fs = require('fs');
+    const path = require('path');
+
+    const JSON_FILES = {
+      muscu: path.join(__dirname, '../../frontend/public/data/exo/muscu.json'),
+      cardio: path.join(__dirname, '../../frontend/public/data/exo/cardio.json'),
+      yoga: path.join(__dirname, '../../frontend/public/data/exo/yoga.json'),
+      meditation: path.join(__dirname, '../../frontend/public/data/exo/meditation.json'),
+      natation: path.join(__dirname, '../../frontend/public/data/exo/natation.json'),
+      etirement: path.join(__dirname, '../../frontend/public/data/exo/etirement.json'),
+      hiit: path.join(__dirname, '../../frontend/public/data/exo/hiit.json'),
+    };
+
+    let totalImported = 0;
+    let totalSkipped = 0;
+    let totalErrors = 0;
+    const errors = [];
+
+    for (const [category, filePath] of Object.entries(JSON_FILES)) {
+      if (!fs.existsSync(filePath)) {
+        console.warn(`[SEED] File not found: ${category} (${filePath})`);
+        continue;
+      }
+
+      console.log(`[SEED] Processing: ${category}.json`);
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
+      const data = JSON.parse(fileContent);
+      const exercises = data.exercises || [];
+
+      console.log(`[SEED] Found ${exercises.length} exercises in ${category}`);
+
+      for (const exo of exercises) {
+        try {
+          // Generate exoId if missing
+          let exoId = exo.id || exo.exoId;
+          if (!exoId) {
+            const lastExercise = await Exercise.findOne()
+              .sort({ exoId: -1 })
+              .select('exoId')
+              .lean();
+
+            let maxNum = 0;
+            if (lastExercise && lastExercise.exoId) {
+              const match = lastExercise.exoId.match(/exo-(\d+)/);
+              if (match) maxNum = parseInt(match[1], 10);
+            }
+
+            exoId = `exo-${String(maxNum + 1).padStart(3, '0')}`;
+          }
+
+          // Check if exercise already exists
+          const existing = await Exercise.findOne({
+            $or: [
+              { exoId },
+              { name: exo.name }
+            ]
+          });
+
+          if (existing) {
+            console.log(`[SEED] Already exists: ${exo.name} (${existing.exoId})`);
+            totalSkipped++;
+            continue;
+          }
+
+          // Generate slug if missing
+          let slug = exo.slug;
+          if (!slug) {
+            slug = exo.name
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-|-$/g, '');
+          }
+
+          // Ensure slug uniqueness
+          let finalSlug = slug;
+          let counter = 1;
+          while (await Exercise.findOne({ slug: finalSlug })) {
+            finalSlug = `${slug}-${counter}`;
+            counter++;
+          }
+
+          // Combine muscles
+          const muscles = [
+            exo.primaryMuscle || exo.muscle || exo.muscles?.[0],
+            ...(exo.secondaryMuscles || []),
+            ...(Array.isArray(exo.muscles) ? exo.muscles : [])
+          ].filter(Boolean);
+
+          // Convert images to mainImage if needed
+          let mainImage = exo.mainImage || exo.image || exo.gif || null;
+          if (!mainImage && Array.isArray(exo.images) && exo.images.length > 0) {
+            mainImage = exo.images[0];
+          }
+
+          // Create exercise
+          const exercise = new Exercise({
+            exoId,
+            name: exo.name,
+            slug: finalSlug,
+            category: exo.category || category,
+            type: exo.type || [category],
+            objectives: exo.objectives || [],
+            primaryMuscle: exo.primaryMuscle || exo.muscle || 'Non spécifié',
+            secondaryMuscles: exo.secondaryMuscles || [],
+            muscles: muscles.length > 0 ? muscles : [exo.primaryMuscle || 'Non spécifié'],
+            equipment: exo.equipment || [],
+            difficulty: exo.difficulty || 'intermediaire',
+            explanation: exo.explanation || exo.instructions || 'Pas d\'explication disponible',
+            mainImage: mainImage || null,
+            videoUrl: exo.videoUrl || exo.video || null,
+            tips: exo.tips || exo.conseils || [],
+            restTime: exo.restTime || 60,
+            recommendedSets: exo.recommendedSets || exo.series || 3,
+            recommendedReps: exo.recommendedReps || exo.reps || '8-12',
+            isActive: true,
+            usageCount: exo.usageCount || 0,
+          });
+
+          await exercise.save();
+          console.log(`[SEED] Imported: ${exo.name} (${exoId})`);
+          totalImported++;
+
+        } catch (error) {
+          console.error(`[SEED] Error for ${exo.name}:`, error.message);
+          totalErrors++;
+          errors.push({ name: exo.name, error: error.message });
+        }
+      }
+    }
+
+    const totalInDB = await Exercise.countDocuments();
+    console.log(`[SEED] Summary: imported=${totalImported}, skipped=${totalSkipped}, errors=${totalErrors}, total=${totalInDB}`);
+
+    res.json({
+      success: true,
+      message: 'Seed completed',
+      imported: totalImported,
+      skipped: totalSkipped,
+      errors: totalErrors,
+      totalInDatabase: totalInDB,
+      errorDetails: errors
+    });
+
+  } catch (error) {
+    console.error('[SEED] Seed error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors du seed des exercices',
+      error: error.message,
+    });
+  }
+};
