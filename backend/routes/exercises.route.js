@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const exerciseController = require('../controllers/exerciseController');
+const exerciseController = require('../controllers/exercise.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 const adminMiddleware = require('../middlewares/admin.middleware');
 const rateLimit = require('express-rate-limit');
@@ -109,6 +109,9 @@ router.get('/:idOrSlug', exerciseController.getExercise);
 
 // ============ ADMIN ROUTES ============
 // Toutes les routes admin sont protégées par adminMiddleware + rate limiting
+
+// Seed exercises from JSON (Admin only)
+router.post('/seed', adminRateLimiter, adminMiddleware, exerciseController.seedExercises);
 
 // Create exercise (Admin only)
 router.post('/', adminRateLimiter, adminMiddleware, exerciseController.createExercise);
