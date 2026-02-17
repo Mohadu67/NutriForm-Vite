@@ -144,7 +144,7 @@ function matchMuscles(exerciseMuscleData, requestedZones, musclePolicy, fallback
 
   // Si l'exercice a un primaryMuscle défini ET qu'on veut filtrer strictement,
   // on ne matche que sur le muscle principal
-  const zoneSetToUse = (usePrimaryOnly && exerciseMuscleData.hasPrimaryMuscle)
+  const zoneSetToUse = (usePrimaryOnly && exerciseMuscleData.hasPrimaryMuscle && exerciseMuscleData.primaryZoneSet.size > 0)
     ? exerciseMuscleData.primaryZoneSet
     : exerciseMuscleData.zoneSet;
 

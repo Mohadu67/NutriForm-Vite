@@ -242,20 +242,25 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
     
     if (typeId === "natation") {
-      setEquipIds(["poids-du-corps"]);
+      setEquipIds([]);
       setMuscleIds(MUSCLE_CARDS.map(c => c.id));
     }
 
     
     if (typeId === "yoga") {
-      setEquipIds(["poids-du-corps"]);
+      setEquipIds([]);
       setMuscleIds(MUSCLE_CARDS.map(c => c.id));
     }
 
     
     if (typeId === "meditation") {
-      setEquipIds(["poids-du-corps"]);
+      setEquipIds([]);
       setMuscleIds([]);
+    }
+
+    if (typeId === "etirement") {
+      setEquipIds([]);
+      setMuscleIds(MUSCLE_CARDS.map(c => c.id));
     }
   }, [typeId]);
 
@@ -306,8 +311,8 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   function onNext() {
     if (step < 3) {
-      
-      if (step === 0 && (typeId === "natation" || typeId === "yoga" || typeId === "meditation")) {
+
+      if (step === 0 && (typeId === "natation" || typeId === "yoga" || typeId === "meditation" || typeId === "etirement")) {
         setStep(3);
       } else {
         setStep(step + 1);
@@ -327,8 +332,8 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   function onPrev() {
     if (step > 0) {
-      
-      if (step === 3 && (typeId === "natation" || typeId === "yoga" || typeId === "meditation")) {
+
+      if (step === 3 && (typeId === "natation" || typeId === "yoga" || typeId === "meditation" || typeId === "etirement")) {
         setStep(0);
       } else {
         setStep(step - 1);
