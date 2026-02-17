@@ -212,7 +212,7 @@ router.post('/:id/test', async (req, res) => {
     }
 
     
-    const { sendNewsletterEmail } = require('../services/emailService');
+    const { sendNewsletterEmail } = require('../services/email.service');
     const result = await sendNewsletterEmail(
       testEmail,
       newsletter.subject,
@@ -282,7 +282,7 @@ router.post('/:id/send-now', async (req, res) => {
 
     logger.info(`📨 Envoi immédiat de la newsletter: ${newsletter.title}`);
 
-    const { sendNewsletterToAll } = require('../services/emailService');
+    const { sendNewsletterToAll } = require('../services/email.service');
     const result = await sendNewsletterToAll(newsletter);
 
     newsletter.recipientCount = result.totalRecipients ?? 0;

@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const Newsletter = require('../models/Newsletter');
-const { sendNewsletterToAll } = require('../services/emailService');
+const { sendNewsletterToAll } = require('../services/email.service');
 const logger = require('../utils/logger.js');
 
 const checkAndSendNewsletters = async () => {
