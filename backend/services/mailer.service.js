@@ -4,6 +4,7 @@ const makeResetPassword = require('../templates/resetPassword');
 const logger = require('../utils/logger.js');
 
 const FROM_NAME = process.env.FROM_NAME || 'Harmonith';
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 logger.info('[MAILER] Using Gmail SMTP for email delivery');
 
@@ -42,6 +43,11 @@ async function sendMail({ to, subject, html, text, replyTo }) {
   }
   if (!to || !subject || (!html && !text)) {
     throw new Error('sendMail: paramètres manquants');
+  }
+
+  // Validate email format
+  if (!EMAIL_REGEX.test(to.trim())) {
+    throw new Error(`Invalid email format: ${to}`);
   }
 
   try {

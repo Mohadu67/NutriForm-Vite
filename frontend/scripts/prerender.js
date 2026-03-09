@@ -50,6 +50,55 @@ const routes = [
     ogTitle: 'Contact - Harmonith',
     ogDescription: 'Questions sur Harmonith ? Consultez notre FAQ ou contactez-nous directement.',
   },
+  {
+    path: '/programs',
+    title: 'Programmes d\'Entraînement Personnalisés - Harmonith | Fitness & Musculation',
+    description: 'Programmes d\'entraînement personnalisés pour tous niveaux. Musculation, cardio, yoga et étirements avec suivi de progression.',
+    ogTitle: 'Programmes d\'Entraînement - Harmonith',
+    ogDescription: 'Découvrez nos programmes d\'entraînement personnalisés pour atteindre vos objectifs fitness.',
+  },
+  {
+    path: '/recettes',
+    title: 'Recettes Healthy & Fitness - Harmonith | Nutrition Sportive',
+    description: 'Recettes healthy adaptées à vos objectifs : perte de poids, prise de masse ou maintien. Nutrition sportive équilibrée et savoureuse.',
+    ogTitle: 'Recettes Healthy - Harmonith',
+    ogDescription: 'Recettes équilibrées pour soutenir vos objectifs fitness et votre santé.',
+  },
+  {
+    path: '/pricing',
+    title: 'Tarifs - Harmonith | Application Fitness 100% Gratuite',
+    description: 'Harmonith est 100% gratuite. Accédez à tous les outils, exercices et programmes sans aucun frais. Pas d\'abonnement caché.',
+    ogTitle: 'Tarifs - Harmonith',
+    ogDescription: 'Application fitness 100% gratuite. Tous les outils et programmes accessibles sans frais.',
+  },
+  {
+    path: '/leaderboard',
+    title: 'Classement Communautaire - Harmonith | Top Sportifs',
+    description: 'Consultez le classement de la communauté Harmonith. Comparez vos performances et progressez avec les meilleurs sportifs.',
+    ogTitle: 'Classement Communautaire - Harmonith',
+    ogDescription: 'Rejoignez le classement et comparez vos performances avec la communauté.',
+  },
+  {
+    path: '/mentions-legales',
+    title: 'Mentions Légales - Harmonith',
+    description: 'Mentions légales et informations juridiques de Harmonith.',
+    ogTitle: 'Mentions Légales - Harmonith',
+    ogDescription: 'Informations juridiques et mentions légales.',
+  },
+  {
+    path: '/privacy-policy',
+    title: 'Politique de Confidentialité - Harmonith',
+    description: 'Politique de confidentialité et protection de vos données personnelles sur Harmonith.',
+    ogTitle: 'Politique de Confidentialité - Harmonith',
+    ogDescription: 'Comment nous protégeons vos données personnelles.',
+  },
+  {
+    path: '/cookies',
+    title: 'Politique des Cookies - Harmonith',
+    description: 'Informations sur l\'utilisation des cookies sur Harmonith.',
+    ogTitle: 'Politique des Cookies - Harmonith',
+    ogDescription: 'Gestion et utilisation des cookies sur notre site.',
+  },
 ];
 
 const distPath = path.join(__dirname, '../dist');
@@ -97,6 +146,20 @@ function injectMetadata(html, route) {
     /<meta name="twitter:url" content=".*?">/,
     `<meta name="twitter:url" content="https://harmonith.fr${route.path}">`
   );
+
+  // Remplacer ou ajouter la balise canonical
+  if (modifiedHtml.includes('<link rel="canonical"')) {
+    modifiedHtml = modifiedHtml.replace(
+      /<link rel="canonical" href=".*?">/,
+      `<link rel="canonical" href="https://harmonith.fr${route.path}">`
+    );
+  } else {
+    // Ajouter la canonical juste avant la balise sitemap
+    modifiedHtml = modifiedHtml.replace(
+      /<link rel="sitemap"/,
+      `<link rel="canonical" href="https://harmonith.fr${route.path}">\n    <link rel="sitemap"`
+    );
+  }
 
   return modifiedHtml;
 }

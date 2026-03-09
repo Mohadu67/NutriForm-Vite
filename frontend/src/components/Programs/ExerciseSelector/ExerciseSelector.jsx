@@ -35,31 +35,40 @@ export default function ExerciseSelector({
   useEffect(() => {
     const loadExercises = async () => {
       setLoading(true);
-      const files = PROGRAM_TYPE_TO_FILES[programType] || PROGRAM_TYPE_TO_FILES.custom;
-      const allExercises = [];
-      const seenIds = new Set();
+      const categories = PROGRAM_TYPE_TO_FILES[programType] || PROGRAM_TYPE_TO_FILES.custom;
 
-      for (const file of files) {
-        try {
-          const response = await fetch(`/data/exo/${file}.json`);
-          if (response.ok) {
-            const data = await response.json();
-            const exos = data.exercises || [];
-            for (const exo of exos) {
-              if (!seenIds.has(exo.id)) {
-                seenIds.add(exo.id);
-                allExercises.push(exo);
-              }
-            }
-          }
-        } catch (err) {
-          console.warn(`Erreur chargement ${file}.json:`, err);
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+        const categoryParam = categories.join(',');
+        const response = await fetch(`${apiUrl}/exercises?limit=1000&category=${categoryParam}`);
+
+        if (!response.ok) {
+          console.warn(`Erreur chargement exercices API: ${response.status}`);
+          setExercises([]);
+          setLoading(false);
+          return;
         }
+
+        const data = await response.json();
+        const exos = data.success && data.data ? data.data : (data.exercises || data.data || []);
+
+        // Mapper les exercices au format attendu par le composant
+        const mappedExercises = exos.map(exo => ({
+          id: exo._id || exo.exoId,
+          name: exo.name,
+          images: [exo.mainImage],
+          type: exo.type,
+          muscles: exo.muscles
+        }));
+
+        // Trier par nom
+        mappedExercises.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+        setExercises(mappedExercises);
+      } catch (err) {
+        console.error('Erreur chargement exercices:', err);
+        setExercises([]);
       }
 
-      // Trier par nom
-      allExercises.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
-      setExercises(allExercises);
       setLoading(false);
     };
 

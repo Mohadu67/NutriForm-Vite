@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import Avatar from '../Shared/Avatar';
+import { formatDisplayName } from '../../shared/utils/string';
 import styles from './ChatSettings.module.css';
 
 /**
@@ -47,12 +49,10 @@ export default function ChatSettings({
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
         {/* Header avec avatar */}
         <div className={styles.header}>
-          <img
-            src={
-              otherUser?.profile?.profilePicture ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser?.pseudo || otherUser?.prenom || 'U')}&background=f7b186&color=fff`
-            }
-            alt=""
+          <Avatar
+            src={otherUser?.profile?.profilePicture}
+            name={formatDisplayName(otherUser, 'Utilisateur')}
+            size="lg"
             className={styles.avatar}
           />
           <div className={styles.userInfo}>
