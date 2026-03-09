@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # MongoDB Database (Développement)
+  mongodb:
+    image: mongo:7-alpine
+    container_name: nutriform_mongodb_dev
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-admin}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-nutriform}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - nutriform_network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  # Backend Node.js API (Développement)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nutriform_backend_dev
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      MONGODB_URI: mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-admin}@mongodb:27017/${MONGO_DB:-nutriform}?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key-min-32-chars-long!}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-dev-refresh-secret-min-32-chars-long!}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+      CONTACT_EMAIL: ${CONTACT_EMAIL}
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:5173}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - nutriform_network
+    command: sh -c "npm install && npm run dev"
+
+  # Frontend React + Vite (Développement)
+  frontend:
+    image: node:20-alpine
+    container_name: nutriform_frontend_dev
+    working_dir: /app
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3001/api}
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - nutriform_network
+    command: sh -c "npm install && npm run dev"
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+
+networks:
+  nutriform_network:
+    driver: bridge
