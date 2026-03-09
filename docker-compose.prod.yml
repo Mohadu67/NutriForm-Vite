@@ -27,7 +27,7 @@ services:
 
   # Backend Node.js API (Production)
   backend:
-    image: ${IMAGE_BACKEND_LATEST}
+    image: ghcr.io/${GITHUB_OWNER}/nutriform-backend:latest
     container_name: nutriform_backend_prod
     restart: unless-stopped
     environment:
@@ -66,7 +66,7 @@ services:
 
   # Frontend React + Vite + Nginx (Production)
   frontend:
-    image: ${IMAGE_FRONTEND_LATEST}
+    image: ghcr.io/${GITHUB_OWNER}/nutriform-frontend:latest
     container_name: nutriform_frontend_prod
     restart: unless-stopped
     expose:
