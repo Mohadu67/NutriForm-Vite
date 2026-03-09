@@ -660,8 +660,9 @@
   background: rgba(0, 0, 0, 0.02);
   border-radius: 12px;
   padding: 12px;
-  margin: -4px -12px;
+  margin: -4px 0;
   border-bottom: none !important;
+  overflow: hidden;
 }
 
 :global(body.dark) .sessionItemExpanded,
@@ -681,6 +682,8 @@
   padding-bottom: 8px;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .sessionExpanded::-webkit-scrollbar {

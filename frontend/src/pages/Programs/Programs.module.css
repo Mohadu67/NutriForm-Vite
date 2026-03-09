@@ -95,3 +95,140 @@
     padding: 120px 24px 120px;
   }
 }
+
+/* ============================================
+   RESUME SESSION BANNER
+   ============================================ */
+
+.resumeSessionBanner {
+  background: linear-gradient(135deg, var(--couleur-bouton-action) 0%, #ffc9a5 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.resumeSessionContent {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.resumeSessionIcon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.resumeSessionInfo {
+  flex: 1;
+  min-width: 250px;
+}
+
+.resumeSessionInfo h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.resumeSessionInfo p {
+  margin: 0 0 0.75rem 0;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.resumeSessionProgress {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.resumeSessionProgress .progressBar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.resumeSessionProgress .progressFill {
+  height: 100%;
+  background: #fff;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.resumeSessionProgress span {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  white-space: nowrap;
+}
+
+.resumeSessionActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.resumeBtn,
+.abandonBtn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resumeBtn {
+  background: #fff;
+  color: var(--couleur-bouton-action);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.resumeBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.abandonBtn {
+  background: transparent;
+  color: #1a1a1a;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.abandonBtn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .resumeSessionContent {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .resumeSessionActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .resumeBtn,
+  .abandonBtn {
+    width: 100%;
+  }
+}

@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from 'sonner';
 import DOMPurify from "dompurify";
 import styles from "./NewsletterAdmin.module.css";
 import { secureApiCall, isAuthenticated, invalidateAuthCache } from "../../utils/authService.js";
 import ConfirmModal from "../../components/Modal/ConfirmModal";
+import StatusBadge from "../../components/Admin/StatusBadge/StatusBadge";
+import { useAdminNotification } from "../../hooks/admin/useAdminNotification";
+import { useConfirmModal } from "../../hooks/admin/useConfirmModal";
 
 const toDateTimeLocalValue = (value) => {
   if (!value) return "";
@@ -19,6 +21,8 @@ const toDateTimeLocalValue = (value) => {
 
 export default function NewsletterAdmin() {
   const navigate = useNavigate();
+  const notify = useAdminNotification();
+  const { modalConfig, openModal, closeModal, handleConfirm, handleCancel } = useConfirmModal();
   const [newsletters, setNewsletters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -27,17 +31,12 @@ export default function NewsletterAdmin() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
 
-  
   const [formData, setFormData] = useState({
     title: "",
     subject: "",
     content: "",
     scheduledDate: "",
     status: "draft"
-  });
-  const [deleteModalConfig, setDeleteModalConfig] = useState({
-    isOpen: false,
-    newsletterId: null
   });
 
   const checkAdminAccess = useCallback(async () => {
@@ -53,7 +52,7 @@ export default function NewsletterAdmin() {
       if (response.ok) {
         const data = await response.json();
         if (data.role !== 'admin') {
-          toast.warning('Accès refusé. Privilèges admin requis.');
+          notify.warning('Accès refusé. Privilèges admin requis.');
           navigate('/');
           return;
         }
@@ -65,14 +64,14 @@ export default function NewsletterAdmin() {
     } catch {
       navigate('/');
     }
-  }, [navigate]);
+  }, [navigate, notify]);
 
   const fetchNewsletters = useCallback(async () => {
     try {
       const res = await secureApiCall('/newsletter-admin');
 
       if (res.status === 401 || res.status === 403) {
-        toast.warning('Session expirée ou accès refusé');
+        notify.warning('Session expirée ou accès refusé');
         navigate('/');
         return;
       }
@@ -85,7 +84,7 @@ export default function NewsletterAdmin() {
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
+  }, [navigate, notify]);
 
 
   useEffect(() => {
@@ -123,14 +122,14 @@ export default function NewsletterAdmin() {
       const data = await res.json();
 
       if (data.success) {
-        toast.success(editingId ? "Newsletter mise à jour !" : "Newsletter créée !");
+        notify.success(editingId ? "Newsletter mise à jour !" : "Newsletter créée !");
         resetForm();
         fetchNewsletters();
       } else {
-        toast.error(data.message || "Erreur lors de la sauvegarde");
+        notify.error(data.message || "Erreur lors de la sauvegarde");
       }
     } catch {
-      toast.error("Erreur lors de la sauvegarde");
+      notify.error("Erreur lors de la sauvegarde");
     }
   };
 
@@ -147,9 +146,13 @@ export default function NewsletterAdmin() {
   };
 
   const confirmDelete = (id) => {
-    setDeleteModalConfig({
-      isOpen: true,
-      newsletterId: id
+    openModal({
+      title: "Supprimer la newsletter",
+      message: "Voulez-vous vraiment supprimer cette newsletter ? Cette action est irréversible.",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      type: "danger",
+      onConfirm: () => handleDelete(id),
     });
   };
 
@@ -162,13 +165,13 @@ export default function NewsletterAdmin() {
       const data = await res.json();
 
       if (data.success) {
-        toast.success("Newsletter supprimée !");
+        notify.success("Newsletter supprimée !");
         fetchNewsletters();
       } else {
-        toast.error(data.message);
+        notify.error(data.message);
       }
     } catch {
-      toast.error("Erreur lors de la suppression");
+      notify.error("Erreur lors de la suppression");
     }
   };
 
@@ -184,16 +187,6 @@ export default function NewsletterAdmin() {
     setShowForm(false);
   };
 
-  const getStatusBadge = (status) => {
-    const statusMap = {
-      draft: { label: "Brouillon", class: styles.statusDraft },
-      scheduled: { label: "Programmée", class: styles.statusScheduled },
-      sent: { label: "Envoyée", class: styles.statusSent },
-      failed: { label: "Échec", class: styles.statusFailed }
-    };
-    const s = statusMap[status] || statusMap.draft;
-    return <span className={`${styles.statusBadge} ${s.class}`}>{s.label}</span>;
-  };
 
   if (checkingAuth || loading) {
     return <div className={styles.container}>Chargement...</div>;
@@ -319,7 +312,7 @@ export default function NewsletterAdmin() {
                     </h3>
                     <p className={styles.cardSubject}>{newsletter.subject}</p>
                   </div>
-                  {getStatusBadge(newsletter.status)}
+                  <StatusBadge type="newsletter" value={newsletter.status} />
                 </div>
 
                 <div className={styles.cardMeta}>
@@ -374,15 +367,13 @@ export default function NewsletterAdmin() {
 
       {/* Modal de confirmation de suppression */}
       <ConfirmModal
-        isOpen={deleteModalConfig.isOpen}
-        onClose={() => setDeleteModalConfig({ isOpen: false, newsletterId: null })}
-        onConfirm={() => {
-          handleDelete(deleteModalConfig.newsletterId);
-          setDeleteModalConfig({ isOpen: false, newsletterId: null });
-        }}
-        title="Supprimer la newsletter"
-        message="Voulez-vous vraiment supprimer cette newsletter ? Cette action est irréversible."
-        type="danger"
+        isOpen={modalConfig.isOpen}
+        onClose={closeModal}
+        onConfirm={handleConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        type={modalConfig.type}
       />
     </div>
   );

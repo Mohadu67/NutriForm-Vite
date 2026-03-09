@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 import { getAllPartners, createPartner, updatePartner, deletePartner } from '../../../shared/api/partners';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
+import StatusBadge from '../../../components/Admin/StatusBadge/StatusBadge';
+import { useAdminNotification } from '../../../hooks/admin/useAdminNotification';
+import { useConfirmModal } from '../../../hooks/admin/useConfirmModal';
 import styles from './PartnersAdmin.module.css';
 
 const CATEGORIES = [
@@ -43,16 +45,13 @@ const emptyForm = {
 
 export default function PartnersAdmin() {
   const navigate = useNavigate();
+  const notify = useAdminNotification();
+  const { modalConfig, openModal, closeModal, handleConfirm, handleCancel } = useConfirmModal();
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingPartner, setEditingPartner] = useState(null);
   const [formData, setFormData] = useState(emptyForm);
-  const [deleteModalConfig, setDeleteModalConfig] = useState({
-    isOpen: false,
-    partnerId: null,
-    partnerName: ''
-  });
 
   useEffect(() => {
     fetchPartners();
@@ -66,7 +65,7 @@ export default function PartnersAdmin() {
         setPartners(data.partners || []);
       }
     } catch (error) {
-      toast.error('Erreur lors du chargement des partenaires');
+      notify.error('Erreur lors du chargement des partenaires');
     } finally {
       setLoading(false);
     }
@@ -84,7 +83,7 @@ export default function PartnersAdmin() {
     e.preventDefault();
 
     if (!formData.name || !formData.offerTitle || !formData.promoCode) {
-      toast.error('Veuillez remplir tous les champs obligatoires');
+      notify.error('Veuillez remplir tous les champs obligatoires');
       return;
     }
 
@@ -102,20 +101,20 @@ export default function PartnersAdmin() {
       if (editingPartner) {
         const data = await updatePartner(editingPartner._id, payload);
         if (data.success) {
-          toast.success('Partenaire mis a jour');
+          notify.success('Partenaire mis a jour');
           fetchPartners();
           resetForm();
         }
       } else {
         const data = await createPartner(payload);
         if (data.success) {
-          toast.success('Partenaire cree');
+          notify.success('Partenaire cree');
           fetchPartners();
           resetForm();
         }
       }
     } catch (error) {
-      toast.error(error.message || 'Erreur lors de la sauvegarde');
+      notify.error(error.message || 'Erreur lors de la sauvegarde');
     }
   };
 
@@ -144,24 +143,25 @@ export default function PartnersAdmin() {
   };
 
   const confirmDelete = (partner) => {
-    setDeleteModalConfig({
-      isOpen: true,
-      partnerId: partner._id,
-      partnerName: partner.name
+    openModal({
+      title: 'Supprimer le partenaire',
+      message: `Etes-vous sur de vouloir supprimer "${partner.name}" ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      type: 'danger',
+      onConfirm: () => handleDelete(partner._id),
     });
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (partnerId) => {
     try {
-      const data = await deletePartner(deleteModalConfig.partnerId);
+      const data = await deletePartner(partnerId);
       if (data.success) {
-        toast.success('Partenaire supprime');
+        notify.success('Partenaire supprime');
         fetchPartners();
       }
     } catch (error) {
-      toast.error('Erreur lors de la suppression');
-    } finally {
-      setDeleteModalConfig({ isOpen: false, partnerId: null, partnerName: '' });
+      notify.error('Erreur lors de la suppression');
     }
   };
 
@@ -186,7 +186,7 @@ export default function PartnersAdmin() {
     }
   };
 
-  const getStatusBadge = (partner) => {
+  const getPartnerStatusBadge = (partner) => {
     const now = new Date();
     if (!partner.isActive) return { label: 'Inactif', class: 'inactive' };
     if (partner.expiresAt && new Date(partner.expiresAt) < now) return { label: 'Expire', class: 'expired' };
@@ -350,9 +350,7 @@ export default function PartnersAdmin() {
           </div>
         ) : (
           <div className={styles.grid}>
-            {partners.map(partner => {
-              const status = getStatusBadge(partner);
-              return (
+            {partners.map(partner => (
                 <div key={partner._id} className={styles.partnerCard}>
                   <div className={styles.cardHeader}>
                     {partner.logo ? (
@@ -364,9 +362,9 @@ export default function PartnersAdmin() {
                       <h3>{partner.name}</h3>
                       <span className={styles.category}>{CATEGORIES.find(c => c.value === partner.category)?.label || partner.category}</span>
                     </div>
-                    <span className={`${styles.statusBadge} ${styles[status.class]}`}>
-                      {status.label}
-                    </span>
+                    <div className={styles.statusBadgeWrapper}>
+                      <StatusBadge type="partner" customLogic={() => getPartnerStatusBadge(partner)} />
+                    </div>
                   </div>
 
                   <div className={styles.cardBody}>
@@ -393,20 +391,19 @@ export default function PartnersAdmin() {
                     </button>
                   </div>
                 </div>
-              );
-            })}
+              ))}
           </div>
         )}
       </div>
 
       <ConfirmModal
-        isOpen={deleteModalConfig.isOpen}
-        onClose={() => setDeleteModalConfig({ isOpen: false, partnerId: null, partnerName: '' })}
-        onConfirm={handleDelete}
-        title="Supprimer le partenaire"
-        message={`Etes-vous sur de vouloir supprimer "${deleteModalConfig.partnerName}" ?`}
-        confirmText="Supprimer"
-        type="danger"
+        isOpen={modalConfig.isOpen}
+        onClose={closeModal}
+        onConfirm={handleConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        type={modalConfig.type}
       />
     </div>
   );
