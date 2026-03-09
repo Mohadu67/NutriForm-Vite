@@ -1,25 +1,30 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { MdStar, MdEmail, MdSupport, MdRestaurant, MdFitnessCenter, MdCardGiftcard } from 'react-icons/md';
+import { MdStar, MdEmail, MdSupport, MdRestaurant, MdFitnessCenter, MdCardGiftcard, MdDirectionsRun } from 'react-icons/md';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import ConfirmModal from '../../components/Modal/ConfirmModal.jsx';
 import { secureApiCall, isAuthenticated, invalidateAuthCache } from "../../utils/authService";
 import styles from "./AdminPage.module.css";
 import logger from '../../shared/utils/logger.js';
+import { useAdminNotification } from "../../hooks/admin/useAdminNotification";
+import { useConfirmModal } from "../../hooks/admin/useConfirmModal";
 
 // Section components
 import AdminDashboard from './components/AdminDashboard.jsx';
 import AdminReviews from './components/AdminReviews.jsx';
 import AdminNewsletters from './components/AdminNewsletters.jsx';
 import AdminRecipes from './components/AdminRecipes.jsx';
+import AdminExercises from './components/AdminExercises.jsx';
 
 const ITEMS_PER_PAGE = 20;
-const VALID_SECTIONS = ['dashboard', 'reviews', 'newsletters', 'recipes', 'programs', 'support'];
+const VALID_SECTIONS = ['dashboard', 'reviews', 'newsletters', 'recipes', 'exercises', 'programs', 'support'];
 
 export default function AdminPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const notify = useAdminNotification();
+  const { modalConfig, openModal, closeModal, handleConfirm } = useConfirmModal();
 
   // Lire la section depuis l'URL ou utiliser 'dashboard' par defaut
   const initialSection = searchParams.get('section');
@@ -31,7 +36,6 @@ export default function AdminPage() {
   const [recipes, setRecipes] = useState([]);
   const [newsletterStats, setNewsletterStats] = useState({ active: 0 });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedReviews, setSelectedReviews] = useState([]);
 
@@ -48,12 +52,6 @@ export default function AdminPage() {
   const [reviewsPage, setReviewsPage] = useState(1);
   const [newslettersPage, setNewslettersPage] = useState(1);
   const [recipesPage, setRecipesPage] = useState(1);
-
-  // Modal
-  const [modalConfig, setModalConfig] = useState({
-    isOpen: false, title: '', message: '', confirmText: 'Confirmer',
-    cancelText: 'Annuler', type: 'default', onConfirm: () => {}
-  });
 
   // Badge counters
   const [pendingProgramsCount, setPendingProgramsCount] = useState(0);
@@ -76,12 +74,6 @@ export default function AdminPage() {
     }
   }, [searchParams]);
 
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 4000);
-  };
-
-  const closeModal = () => setModalConfig(prev => ({ ...prev, isOpen: false }));
 
   // ============== FETCH FUNCTIONS ==============
   const checkAdmin = useCallback(async () => {
@@ -189,17 +181,18 @@ export default function AdminPage() {
       const response = await secureApiCall(`/reviews/users/${id}/approve`, { method: "PUT" });
       const data = await response.json();
       if (data.success) {
-        showMessage("success", "Avis approuve !");
+        notify.success( "Avis approuve !");
         setReviews((prev) => prev.map((r) => (r._id === id ? { ...r, isApproved: true } : r)));
-      } else showMessage("error", data.message || "Erreur");
-    } catch { showMessage("error", "Erreur lors de l'approbation"); }
+      } else notify.error( data.message || "Erreur");
+    } catch { notify.error( "Erreur lors de l'approbation"); }
   };
 
   const confirmDeleteReview = (id) => {
-    setModalConfig({
-      isOpen: true, title: 'Supprimer cet avis',
+    openModal({
+      title: 'Supprimer cet avis',
       message: 'Etes-vous sur de vouloir supprimer cet avis ?',
-      confirmText: 'Supprimer', type: 'danger',
+      confirmText: 'Supprimer',
+      type: 'danger',
       onConfirm: () => handleDeleteReview(id)
     });
   };
@@ -208,26 +201,27 @@ export default function AdminPage() {
     try {
       const response = await secureApiCall(`/reviews/users/${id}`, { method: "DELETE" });
       const data = await response.json();
-      if (data.success) { showMessage("success", "Avis supprime !"); fetchReviews(); }
-      else showMessage("error", data.message || "Erreur");
-    } catch { showMessage("error", "Erreur lors de la suppression"); }
+      if (data.success) { notify.success( "Avis supprime !"); fetchReviews(); }
+      else notify.error( data.message || "Erreur");
+    } catch { notify.error( "Erreur lors de la suppression"); }
   };
 
   const handleBulkApprove = async () => {
     if (selectedReviews.length === 0) return;
     try {
       await Promise.all(selectedReviews.map((id) => secureApiCall(`/reviews/users/${id}/approve`, { method: "PUT" })));
-      showMessage("success", `${selectedReviews.length} avis approuves !`);
+      notify.success( `${selectedReviews.length} avis approuves !`);
       setSelectedReviews([]); fetchReviews();
-    } catch { showMessage("error", "Erreur lors de l'approbation en masse"); }
+    } catch { notify.error( "Erreur lors de l'approbation en masse"); }
   };
 
   const confirmBulkDelete = () => {
     if (selectedReviews.length === 0) return;
-    setModalConfig({
-      isOpen: true, title: 'Suppression en masse',
+    openModal({
+      title: 'Suppression en masse',
       message: `Supprimer ${selectedReviews.length} avis ?`,
-      confirmText: 'Supprimer tout', type: 'danger',
+      confirmText: 'Supprimer tout',
+      type: 'danger',
       onConfirm: handleBulkDelete
     });
   };
@@ -235,9 +229,9 @@ export default function AdminPage() {
   const handleBulkDelete = async () => {
     try {
       await Promise.all(selectedReviews.map((id) => secureApiCall(`/reviews/users/${id}`, { method: "DELETE" })));
-      showMessage("success", `${selectedReviews.length} avis supprimes !`);
+      notify.success( `${selectedReviews.length} avis supprimes !`);
       setSelectedReviews([]); fetchReviews();
-    } catch { showMessage("error", "Erreur lors de la suppression en masse"); }
+    } catch { notify.error( "Erreur lors de la suppression en masse"); }
   };
 
   const toggleSelectReview = (id) => {
@@ -245,10 +239,11 @@ export default function AdminPage() {
   };
 
   const confirmDeleteNewsletter = (id) => {
-    setModalConfig({
-      isOpen: true, title: 'Supprimer la newsletter',
+    openModal({
+      title: 'Supprimer la newsletter',
       message: 'Supprimer cette newsletter ?',
-      confirmText: 'Supprimer', type: 'danger',
+      confirmText: 'Supprimer',
+      type: 'danger',
       onConfirm: () => handleDeleteNewsletter(id)
     });
   };
@@ -257,16 +252,17 @@ export default function AdminPage() {
     try {
       const response = await secureApiCall(`/newsletter-admin/${id}`, { method: "DELETE" });
       const data = await response.json();
-      if (data.success) { showMessage("success", "Newsletter supprimee !"); fetchNewsletters(); }
-      else showMessage("error", data.message || "Erreur");
-    } catch { showMessage("error", "Erreur lors de la suppression"); }
+      if (data.success) { notify.success( "Newsletter supprimee !"); fetchNewsletters(); }
+      else notify.error( data.message || "Erreur");
+    } catch { notify.error( "Erreur lors de la suppression"); }
   };
 
   const confirmSendNewsletter = (id, title) => {
-    setModalConfig({
-      isOpen: true, title: 'Envoyer la newsletter',
+    openModal({
+      title: 'Envoyer la newsletter',
       message: `Envoyer "${title}" a tous les abonnes ?`,
-      confirmText: 'Envoyer maintenant', type: 'warning',
+      confirmText: 'Envoyer maintenant',
+      type: 'warning',
       onConfirm: () => handleSendNow(id)
     });
   };
@@ -277,18 +273,19 @@ export default function AdminPage() {
       const response = await secureApiCall(`/newsletter-admin/${id}/send-now`, { method: "POST" });
       const data = await response.json();
       if (data.success) {
-        showMessage("success", `Newsletter envoyee a ${data.stats?.successCount || 0} abonnes !`);
+        notify.success( `Newsletter envoyee a ${data.stats?.successCount || 0} abonnes !`);
         fetchNewsletters(); fetchNewsletterStats();
-      } else showMessage("error", data.message || "Erreur");
-    } catch { showMessage("error", "Erreur lors de l'envoi"); }
+      } else notify.error( data.message || "Erreur");
+    } catch { notify.error( "Erreur lors de l'envoi"); }
     finally { setLoading(false); }
   };
 
   const confirmDeleteRecipe = (id) => {
-    setModalConfig({
-      isOpen: true, title: 'Supprimer la recette',
+    openModal({
+      title: 'Supprimer la recette',
       message: 'Supprimer cette recette ?',
-      confirmText: 'Supprimer', type: 'danger',
+      confirmText: 'Supprimer',
+      type: 'danger',
       onConfirm: () => handleDeleteRecipe(id)
     });
   };
@@ -297,9 +294,9 @@ export default function AdminPage() {
     try {
       const response = await secureApiCall(`/recipes/${id}`, { method: "DELETE" });
       const data = await response.json();
-      if (data.success) { showMessage("success", "Recette supprimee !"); fetchRecipes(); }
-      else showMessage("error", data.message || "Erreur");
-    } catch { showMessage("error", "Erreur lors de la suppression"); }
+      if (data.success) { notify.success( "Recette supprimee !"); fetchRecipes(); }
+      else notify.error( data.message || "Erreur");
+    } catch { notify.error( "Erreur lors de la suppression"); }
   };
 
   // ============== FILTERING & PAGINATION ==============
@@ -367,12 +364,6 @@ export default function AdminPage() {
           <p>Gerez votre plateforme</p>
         </div>
 
-        {message.text && (
-          <div className={`${styles.alert} ${styles[message.type]}`}>
-            {message.type === "success" ? "✓" : "⚠"} {message.text}
-            <button onClick={() => setMessage({ type: "", text: "" })} className={styles.alertClose}>×</button>
-          </div>
-        )}
 
         {/* Navigation */}
         <div className={styles.nav}>
@@ -381,6 +372,7 @@ export default function AdminPage() {
             <MdStar /> Avis {stats.pendingReviews > 0 && <span className={styles.badge}>{stats.pendingReviews}</span>}
           </button>
           <button className={`${styles.navBtn} ${activeSection === "recipes" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("recipes")}><MdRestaurant /> Recettes</button>
+          <button className={`${styles.navBtn} ${activeSection === "exercises" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("exercises")}><MdDirectionsRun /> Exercices</button>
           <button className={styles.navBtn} onClick={() => navigate("/admin/programs")}><MdFitnessCenter /> Programmes {pendingProgramsCount > 0 && <span className={styles.badge}>{pendingProgramsCount}</span>}</button>
           <button className={`${styles.navBtn} ${activeSection === "newsletter" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("newsletter")}><MdEmail /> Newsletter</button>
           <button className={styles.navBtn} onClick={() => navigate("/admin/partners")}><MdCardGiftcard /> Nos Partenaires</button>
@@ -416,9 +408,13 @@ export default function AdminPage() {
             onNavigate={navigate} recipesPage={recipesPage} setRecipesPage={setRecipesPage} ITEMS_PER_PAGE={ITEMS_PER_PAGE}
           />
         )}
+
+        {activeSection === "exercises" && (
+          <AdminExercises notify={notify} />
+        )}
       </div>
       <Footer />
-      <ConfirmModal isOpen={modalConfig.isOpen} onClose={closeModal} onConfirm={modalConfig.onConfirm}
+      <ConfirmModal isOpen={modalConfig.isOpen} onClose={closeModal} onConfirm={handleConfirm}
         title={modalConfig.title} message={modalConfig.message} confirmText={modalConfig.confirmText} cancelText={modalConfig.cancelText} type={modalConfig.type} />
     </>
   );
