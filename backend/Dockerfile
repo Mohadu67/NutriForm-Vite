@@ -10,6 +10,9 @@ COPY package*.json ./
 # Install all dependencies (dev + production)
 RUN npm ci
 
+# Copy application source code
+COPY . .
+
 # Stage 2: Production image
 FROM node:20-alpine AS production
 
@@ -18,11 +21,11 @@ WORKDIR /app
 # Set environment to production
 ENV NODE_ENV=production
 
-# Copy package files
+# Copy package files from builder
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Copy node_modules from builder stage
+COPY --from=builder /app/node_modules ./node_modules
 
 # Copy application source code
 COPY . .
