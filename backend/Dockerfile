@@ -4,11 +4,14 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
+
 # Copy package files
 COPY package*.json ./
 
 # Install all dependencies (dev + production)
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 # Copy application source code
 COPY . .
