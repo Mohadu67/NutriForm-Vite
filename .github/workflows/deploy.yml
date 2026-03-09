@@ -26,6 +26,6 @@ name: Deploy to VPS
 
               # Rebuild et restart le container Docker
               cd /home/moha/srv-docker/projects/harmonith
-              docker compose up -d --build harmonith-api
+              docker compose -f docker-compose.prod.yml up -d --build harmonith-api
 
               echo "Deploiement termine"
