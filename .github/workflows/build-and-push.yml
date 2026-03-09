@@ -127,7 +127,7 @@ jobs:
             docker pull ghcr.io/${{ env.GITHUB_OWNER }}/nutriform-frontend:latest
 
             # Démarrer les services avec docker-compose
-            docker-compose -f docker-compose.prod.yml up -d
+            docker compose -f docker-compose.prod.yml up -d --build harmonith-api
 
             # Nettoyer
             docker logout ghcr.io
