@@ -100,9 +100,15 @@ exports.getMatchSuggestions = async (req, res) => {
           ]
         });
 
-        // Ne pas montrer les matches déjà rejetés, bloqués ou mutuels
+        // Ne pas montrer les matches déjà rejetés, bloqués, ou mutuels
         if (existingMatch && ['rejected', 'blocked', 'mutual'].includes(existingMatch.status)) {
           logger.info(`[getMatchSuggestions] Filtering out ${candidateUsername}: status=${existingMatch.status}`);
+          continue;
+        }
+
+        // Ne pas montrer non plus si on a déjà liké (en attente de réponse)
+        if (existingMatch && existingMatch.likedBy?.some(id => id.equals(userId))) {
+          logger.info(`[getMatchSuggestions] Filtering out ${candidateUsername}: already liked`);
           continue;
         }
 
