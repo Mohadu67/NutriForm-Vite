@@ -2,9 +2,9 @@ version: '3.8'
 
 services:
   # MongoDB Database (Production)
-  mongodb:
-    image: mongo:7-alpine
-    container_name: nutriform_mongodb_prod
+  harmonith-mongodb:
+    image: mongo:7
+    container_name: harmonith-mongodb
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
@@ -26,14 +26,14 @@ services:
       start_period: 40s
 
   # Backend Node.js API (Production)
-  backend:
-    image: ghcr.io/${GITHUB_OWNER}/nutriform-backend:latest
-    container_name: nutriform_backend_prod
+  harmonith-api:
+    image: ghcr.io/${GITHUB_OWNER}/harmonith-harmonith-api:latest
+    container_name: harmonith-api
     restart: unless-stopped
     environment:
       NODE_ENV: production
       PORT: 3001
-      MONGODB_URI: mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-admin}@mongodb:27017/${MONGO_DB:-nutriform}?authSource=admin
+      MONGODB_URI: mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-admin}@harmonith-mongodb:27017/${MONGO_DB:-nutriform}?authSource=admin
       JWT_SECRET: ${JWT_SECRET}
       REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
       SMTP_HOST: ${SMTP_HOST}
@@ -54,7 +54,7 @@ services:
     expose:
       - "3001"
     depends_on:
-      mongodb:
+      harmonith-mongodb:
         condition: service_healthy
     networks:
       - nutriform_network
@@ -72,7 +72,7 @@ services:
     expose:
       - "80"
     depends_on:
-      - backend
+      - harmonith-api
     networks:
       - nutriform_network
     logging:
@@ -93,7 +93,7 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - frontend
-      - backend
+      - harmonith-api
     networks:
       - nutriform_network
     logging:

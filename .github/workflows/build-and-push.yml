@@ -39,7 +39,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.GITHUB_OWNER }}/nutriform-backend
+          images: ${{ env.REGISTRY }}/${{ env.GITHUB_OWNER }}/harmonith-harmonith-api
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
