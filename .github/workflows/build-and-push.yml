@@ -119,15 +119,18 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
+            # Définir GITHUB_OWNER pour docker-compose
+            export GITHUB_OWNER="mohadu67"
+
             # Login to GitHub Container Registry
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u mohadu67 --password-stdin
 
             # Pull les images Docker depuis ghcr.io
-            docker pull ghcr.io/${{ env.GITHUB_OWNER }}/harmonith-harmonith-api:latest
-            docker pull ghcr.io/${{ env.GITHUB_OWNER }}/nutriform-frontend:latest
+            docker pull ghcr.io/mohadu67/harmonith-harmonith-api:latest
+            docker pull ghcr.io/mohadu67/nutriform-frontend:latest
 
             # Démarrer les services avec docker-compose
-            docker compose -f docker-compose.prod.yml up -d --build harmonith-api
+            docker compose -f docker-compose.prod.yml up -d
 
             # Nettoyer
             docker logout ghcr.io
