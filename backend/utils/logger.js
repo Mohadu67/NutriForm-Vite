@@ -82,7 +82,9 @@ const authLogger = new Logger('auth');
 const dbLogger = new Logger('database');
 const emailLogger = new Logger('email');
 
+// Export as CommonJS with clear default
 module.exports = logger;
+module.exports.default = logger;  // For ES module interop
 module.exports.apiLogger = apiLogger;
 module.exports.authLogger = authLogger;
 module.exports.dbLogger = dbLogger;
