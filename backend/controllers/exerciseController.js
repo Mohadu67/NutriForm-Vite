@@ -53,8 +53,8 @@ exports.getExercises = async (req, res) => {
       type,
     } = req.query;
 
-    // Validation pagination: limit max 100, page min 1
-    const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 100);
+    // Validation pagination: limit max 1000, page min 1
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 1000);
     const page = Math.max(parseInt(req.query.page) || 1, 1);
 
     const filters = {
