@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # MongoDB Database (Développement)
   mongodb:
-    image: mongo:7-alpine
+    image: mongo:7
     container_name: nutriform_mongodb_dev
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
