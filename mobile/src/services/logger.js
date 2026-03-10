@@ -169,10 +169,13 @@ class Logger {
   }
 }
 
+// Instance générale (pour import default: import logger from ...)
+const appLogger = new Logger('APP');
+
 // Loggers par catégorie (pré-configurés)
-export const logger = {
-  // Logger général
-  app: new Logger('APP'),
+const logger = {
+  // Logger général - instance Logger complète
+  app: appLogger,
 
   // Authentification
   auth: new Logger('AUTH'),
@@ -206,6 +209,12 @@ export const logger = {
 
   // Storage
   storage: new Logger('STORAGE'),
+
+  // Méthodes de shortcut pour utilisation directe
+  debug: (message, data) => appLogger.debug(message, data),
+  info: (message, data) => appLogger.info(message, data),
+  warn: (message, data) => appLogger.warn(message, data),
+  error: (message, error) => appLogger.error(message, error),
 };
 
 /**
@@ -222,4 +231,8 @@ export function configureLogger(options) {
   Object.assign(config, options);
 }
 
+// Export named
+export { logger };
+
+// Export default - la même instance pour cohérence
 export default logger;
