@@ -31,7 +31,7 @@ services:
     container_name: nutriform_backend_dev
     environment:
       NODE_ENV: development
-      PORT: 3001
+      PORT: 3000
       MONGODB_URI: mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-admin}@mongodb:27017/${MONGO_DB:-nutriform}?authSource=admin
       JWT_SECRET: ${JWT_SECRET:-dev-secret-key-min-32-chars-long!}
       REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-dev-refresh-secret-min-32-chars-long!}
@@ -51,7 +51,7 @@ services:
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     ports:
-      - "3001:3001"
+      - "3000:3000"
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -68,7 +68,7 @@ services:
     container_name: nutriform_frontend_dev
     working_dir: /app
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:3001/api}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api}
       VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
     ports:
       - "5173:5173"
