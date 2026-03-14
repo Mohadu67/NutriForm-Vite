@@ -103,7 +103,7 @@ function validateCycle(cycle, index) {
   // Exercice: metriques requises
   if (cycle.type === "exercise") {
     const hasDuration = cycle.durationSec != null || cycle.durationMin != null;
-    const hasReps = cycle.reps != null;
+    const hasReps = cycle.reps != null || cycle.repetitions != null;
 
     if (!hasDuration && !hasReps) {
       return {
