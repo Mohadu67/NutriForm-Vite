@@ -312,7 +312,12 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <div className={styles.header}>
-        <h2>{initialData ? 'Modifier le programme' : 'Créer un programme'}</h2>
+        <div>
+          <h2>{initialData ? 'Modifier le programme' : 'Créer un programme'}</h2>
+          <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: 'var(--color-text-secondary)' }}>
+            {!formData.cycles.length ? '1️⃣ Infos de base → 2️⃣ Cycles → 3️⃣ Avancé' : `✓ ${formData.cycles.length} cycles configurés`}
+          </p>
+        </div>
         <button type="button" onClick={onCancel} className={styles.closeBtn}>
           <XIcon size={20} />
         </button>
@@ -522,9 +527,9 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
           </div>
         </section>
 
-        {/* Cycles */}
-        <section className={styles.section}>
-          <h3>Cycles d'exercices ({formData.cycles.length}) *</h3>
+        {/* Cycles - SECTION PRIORITAIRE */}
+        <section className={styles.section} style={{ backgroundColor: 'rgba(247, 177, 134, 0.12)', borderLeft: '4px solid var(--color-primary, #f7b186)' }}>
+          <h3 style={{ color: 'var(--color-primary, #f7b186)' }}>🎯 Cycles d'exercices ({formData.cycles.length}) *</h3>
           {errors.cycles && <span className={styles.errorMsg}>{errors.cycles}</span>}
 
           {/* Ajouter un cycle */}
