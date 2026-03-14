@@ -66,14 +66,16 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const responseClone = response.clone();
-          caches.open(API_CACHE).then((cache) => {
-            cache.put(request, responseClone);
-          });
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(API_CACHE).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
           return response;
         })
         .catch(() => {
-          return caches.match(request);
+          return caches.match(request) || new Response('Offline', { status: 503 });
         })
     );
     return;
@@ -85,9 +87,9 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Ne mettre en cache que si la réponse est valide (pas une page HTML)
-          if (response.ok && response.headers.get('content-type')?.includes('javascript') ||
-              response.headers.get('content-type')?.includes('css')) {
+          // Ne mettre en cache que si la réponse est valide
+          const contentType = response.headers.get('content-type') || '';
+          if (response.ok && (contentType.includes('javascript') || contentType.includes('css'))) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(request, responseClone);
@@ -96,7 +98,7 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          return caches.match(request);
+          return caches.match(request) || new Response('Offline', { status: 503 });
         })
     );
     return;
@@ -105,16 +107,22 @@ self.addEventListener('fetch', (event) => {
   // Autres assets: Cache First avec fallback network
   event.respondWith(
     caches.match(request).then((cached) => {
-      return cached || fetch(request).then((response) => {
+      if (cached) {
+        return cached;
+      }
+      return fetch(request).then((response) => {
         // Ne pas mettre en cache les erreurs
         if (response.ok) {
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, response.clone());
-            return response;
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
           });
         }
         return response;
       });
+    }).catch(() => {
+      // Si pas de cache et pas de réseau, retourner une erreur
+      return new Response('Offline', { status: 503 });
     })
   );
 });
