@@ -316,9 +316,13 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
           <p className={styles.cycleCounter}>
             Exercice {exercisesCompleted} / {totalExercises}
           </p>
+        ) : currentCycle?.type === 'rest' ? (
+          <p className={styles.cycleCounter}>
+            ⏸️ Repos entre exercices
+          </p>
         ) : (
           <p className={styles.cycleCounter}>
-            {getCycleTypeLabel(currentCycle?.type)}
+            ➡️ Transition
           </p>
         )}
       </div>
