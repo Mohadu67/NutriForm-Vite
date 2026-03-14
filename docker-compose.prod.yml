@@ -52,6 +52,7 @@ services:
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
       ENCRYPTION_SECRET: ${ENCRYPTION_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     ports:
       - "127.0.0.1:3001:3001"
     depends_on:
@@ -70,6 +71,8 @@ services:
     image: ghcr.io/${GITHUB_OWNER}/nutriform-frontend:latest
     container_name: nutriform_frontend_prod
     restart: unless-stopped
+    environment:
+      VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
     expose:
       - "80"
     depends_on:
