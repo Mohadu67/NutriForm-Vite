@@ -71,8 +71,6 @@ services:
     image: ghcr.io/${GITHUB_OWNER}/nutriform-frontend:latest
     container_name: nutriform_frontend_prod
     restart: unless-stopped
-    environment:
-      VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
     expose:
       - "80"
     depends_on:
