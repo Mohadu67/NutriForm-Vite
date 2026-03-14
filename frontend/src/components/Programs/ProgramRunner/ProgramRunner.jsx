@@ -72,9 +72,20 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
     if (!cycle) return 0;
 
     if (cycle.type === 'exercise') {
-      return cycle.durationSec || 0;
+      // Si durée spécifiée, l'utiliser
+      if (cycle.durationSec) {
+        return cycle.durationSec;
+      }
+      // Sinon, estimer basé sur reps/weight pour muscu
+      // 1 rep muscu ≈ 2-3 secondes
+      if (cycle.repetitions || cycle.reps) {
+        const reps = cycle.repetitions || cycle.reps || 0;
+        return Math.max(reps * 2, 30); // Min 30 secondes
+      }
+      // Fallback: 60 secondes
+      return 60;
     } else if (cycle.type === 'rest' || cycle.type === 'transition') {
-      return cycle.restSec || 0;
+      return cycle.restSec || 15; // Default 15 secondes pour repos
     }
 
     return 0;
@@ -211,8 +222,10 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
   const progress = ((currentCycleIndex + 1) / cycles.length) * 100;
 
   const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    // Sécurité: gérer les valeurs négatives ou invalides
+    const validSeconds = Math.max(0, Math.floor(seconds || 0));
+    const mins = Math.floor(validSeconds / 60);
+    const secs = validSeconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
