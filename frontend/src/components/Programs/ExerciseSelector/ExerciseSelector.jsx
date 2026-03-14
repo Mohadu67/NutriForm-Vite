@@ -39,8 +39,9 @@ export default function ExerciseSelector({
 
       try {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-        const categoryParam = categories.join(',');
-        const response = await fetch(`${apiUrl}/exercises?limit=1000&category=${categoryParam}`);
+        // Build query with type filter instead of category (API supports $in for multiple types)
+        const typeParam = categories.join(',');
+        const response = await fetch(`${apiUrl}/exercises?limit=1000&type=${typeParam}`);
 
         if (!response.ok) {
           console.warn(`Erreur chargement exercices API: ${response.status}`);
