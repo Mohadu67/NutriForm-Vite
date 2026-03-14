@@ -365,9 +365,53 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
             : currentCycle?.notes || getCycleTypeLabel(currentCycle?.type)}
         </h3>
 
-        {currentCycle?.intensity && (
+        {/* Intensité pour cardio */}
+        {currentCycle?.intensity && !currentCycle?.repetitions && !currentCycle?.reps && (
           <div className={styles.intensity}>
             Intensité : {currentCycle.intensity}/10
+          </div>
+        )}
+
+        {/* Infos Musculation: Reps + Poids */}
+        {currentCycle?.type === 'exercise' && (currentCycle?.repetitions || currentCycle?.reps) && (
+          <div style={{
+            background: 'rgba(247, 177, 134, 0.08)',
+            borderRadius: '12px',
+            padding: '1rem',
+            marginTop: '1rem',
+            borderLeft: '4px solid var(--color-primary)'
+          }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '0.75rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--color-primary)' }}>
+                  {currentCycle.repetitions || currentCycle.reps}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                  répétitions
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--color-primary)' }}>
+                  {currentCycle.weight ? `${currentCycle.weight}kg` : '💪'}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                  {currentCycle.weight ? 'poids' : 'poids du corps'}
+                </div>
+              </div>
+            </div>
+
+            {/* Conseils d'exécution */}
+            <div style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', lineHeight: '1.5', borderTop: '1px solid var(--color-border)', paddingTop: '0.75rem' }}>
+              {currentCycle.weight ? (
+                <p style={{ margin: '0' }}>
+                  💡 Fais {currentCycle.repetitions || currentCycle.reps} reps à {currentCycle.weight}kg. Si trop facile, augmente le poids. Si trop dur, réduis ou fais des reps partielles.
+                </p>
+              ) : (
+                <p style={{ margin: '0' }}>
+                  💡 Fais {currentCycle.repetitions || currentCycle.reps} reps au poids du corps. Cherche un poids qui te permet de faire {currentCycle.repetitions || currentCycle.reps} reps avec bonne forme.
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>

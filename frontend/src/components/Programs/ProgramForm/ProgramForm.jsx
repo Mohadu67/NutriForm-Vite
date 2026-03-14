@@ -773,8 +773,9 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
                           (() => {
                             const fieldType = cycle.exerciseFieldType || getExerciseFields(cycle.exerciseType);
                             if (fieldType === 'muscu') {
+                              const reps = cycle.repetitions || cycle.reps;
                               const weightDisplay = cycle.weight ? `${cycle.weight}kg` : 'poids du corps';
-                              return `${cycle.repetitions} reps • ${weightDisplay}`;
+                              return reps ? `${reps} reps • ${weightDisplay}` : weightDisplay;
                             } else if (fieldType === 'yoga') {
                               const minutes = Math.round(cycle.durationSec / 60);
                               return `${minutes}min${cycle.yogaStyle ? ` • ${cycle.yogaStyle}` : ''}`;
