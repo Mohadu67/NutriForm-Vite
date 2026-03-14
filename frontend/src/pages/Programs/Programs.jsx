@@ -203,10 +203,32 @@ export default function Programs() {
 
       if (response.ok) {
         const data = await response.json();
+        const createdProgram = data.program || data;
         logger.info('Programme sauvegardé avec succès');
-        notify.success('Programme créé avec succès !');
-        setMyProgramsRefreshKey(prev => prev + 1); // Forcer le rechargement de MyPrograms
-        setViewMode('my-programs');
+
+        setMyProgramsRefreshKey(prev => prev + 1);
+
+        // Créer une notification avec options pour lancer maintenant
+        if (!editingProgram) {
+          const launchNow = await notify.confirm(
+            'Programmé créé! Lancez-vous maintenant?',
+            {
+              title: '🚀 C\'est prêt!',
+              confirmText: 'Lancer',
+              cancelText: 'Plus tard'
+            }
+          );
+
+          if (launchNow && createdProgram) {
+            setSelectedProgram(createdProgram);
+            setViewMode('preview');
+          } else {
+            setViewMode('my-programs');
+          }
+        } else {
+          // Édition: juste aller à mes programmes
+          setViewMode('my-programs');
+        }
         setEditingProgram(null);
       } else {
         const error = await response.json();
