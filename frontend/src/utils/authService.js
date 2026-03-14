@@ -192,3 +192,41 @@ export function invalidateAuthCache() {
   authCheckTimestamp = 0;
   authCheckInProgress = null;
 }
+
+export async function googleAuth(idToken) {
+  const response = await apiCall('/auth/google', {
+    method: 'POST',
+    body: JSON.stringify({ idToken }),
+  });
+
+  // Gérer les réponses vides
+  const text = await response.text();
+  if (!text || text.trim() === "") {
+    return { success: false, message: "Réponse vide du serveur" };
+  }
+
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return { success: false, message: "Réponse invalide du serveur" };
+  }
+
+  if (response.ok && data.user) {
+    // Token envoyé via cookie httpOnly
+    storage.set("user", data.user);
+    storage.set("userId", data.user.id);
+
+    if (data.token) {
+      storage.set("wsToken", data.token);
+    }
+
+    // Invalider le cache auth
+    authCheckResult = null;
+    authCheckTimestamp = 0;
+
+    return { success: true, user: data.user };
+  } else {
+    return { success: false, message: data.message };
+  }
+}
