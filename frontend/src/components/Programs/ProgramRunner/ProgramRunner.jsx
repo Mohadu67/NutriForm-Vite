@@ -91,9 +91,8 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
     return 0;
   };
 
-  // Timer unifié - gère initialisation, décompte et transition
+  // Initialiser le timer au changement de cycle (SÉPARÉ du timer principal)
   useEffect(() => {
-    // Initialiser le timer au changement de cycle
     if (currentCycle) {
       const duration = getCycleDuration(currentCycle);
       setTimeRemaining(duration);
@@ -109,7 +108,10 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
         : getCycleTypeLabel(currentCycle.type);
       setAnnouncement(`${getCycleTypeLabel(currentCycle.type)} : ${cycleName}. Durée : ${formatTime(duration)}`);
     }
+  }, [currentCycleIndex, cycles]); // Seulement au changement de cycle, pas lors de isPaused
 
+  // Timer principal - gère le décompte et la transition
+  useEffect(() => {
     // Ne pas démarrer le timer si pausé ou terminé
     if (isPaused || isFinished) {
       return;
@@ -156,7 +158,7 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
         transitionRef.current = null;
       }
     };
-  }, [isPaused, isFinished, currentCycleIndex, cycles.length, currentCycle]);
+  }, [isPaused, isFinished, currentCycleIndex, cycles.length]);
 
   // Sons d'alerte
   useEffect(() => {
