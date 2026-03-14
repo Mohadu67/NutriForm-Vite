@@ -62,7 +62,6 @@ const exerciseSchema = new mongoose.Schema(
     // Tous les muscles travailles (pour recherche)
     muscles: [{
       type: String,
-      index: true,
     }],
 
     // Equipement necessaire

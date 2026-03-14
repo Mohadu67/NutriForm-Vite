@@ -102,7 +102,7 @@ const partnerSchema = new mongoose.Schema({
 // Index pour les recherches
 partnerSchema.index({ isActive: 1, startsAt: 1, expiresAt: 1 });
 partnerSchema.index({ category: 1 });
-partnerSchema.index({ slug: 1 });
+// Index sur slug géré par unique: true
 
 // Generer slug automatiquement si non fourni
 partnerSchema.pre('save', function(next) {
