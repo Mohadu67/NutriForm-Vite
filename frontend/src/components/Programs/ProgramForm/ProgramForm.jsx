@@ -156,8 +156,8 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
         }
         // Weight is optional for bodyweight exercises
       } else if (exerciseFieldType === 'yoga') {
-        if (!currentCycle.durationSec || parseInt(currentCycle.durationSec) < 1) {
-          cycleErrors.durationSec = 'Durée min. 1 minute';
+        if (!currentCycle.durationSec || parseInt(currentCycle.durationSec) < 60) {
+          cycleErrors.durationSec = 'Durée min. 60 secondes (1 minute)';
         }
       } else if (exerciseFieldType === 'stretch') {
         if (!currentCycle.durationSec || parseInt(currentCycle.durationSec) < 10) {
@@ -272,6 +272,27 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  // Calculer les stats du programme
+  const getProgramStats = () => {
+    let totalDuration = 0;
+    let exerciseCount = 0;
+
+    formData.cycles.forEach(cycle => {
+      if (cycle.type === 'exercise') {
+        totalDuration += cycle.durationSec || 0;
+        exerciseCount += 1;
+      } else {
+        totalDuration += cycle.restSec || 0;
+      }
+    });
+
+    return {
+      totalDuration: Math.round(totalDuration / 60),
+      totalCycles: formData.cycles.length,
+      exerciseCount
+    };
   };
 
   const handleSubmit = async (e) => {
@@ -590,7 +611,7 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
                     return (
                       <>
                         <div className={`${styles.formGroup} ${errors.durationSec ? styles.hasError : ''}`}>
-                          <label>Durée (minutes) *</label>
+                          <label>Durée (secondes) *</label>
                           <input
                             type="number"
                             value={currentCycle.durationSec}
@@ -599,7 +620,7 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
                               setErrors(prev => ({ ...prev, durationSec: null }));
                             }}
                             min="1"
-                            placeholder="Ex: 30"
+                            placeholder="Ex: 1800 (= 30 minutes)"
                             className={errors.durationSec ? styles.inputError : ''}
                           />
                           {errors.durationSec && <span className={styles.errorMsg}>{errors.durationSec}</span>}
@@ -747,17 +768,19 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
                           (() => {
                             const fieldType = cycle.exerciseFieldType || getExerciseFields(cycle.exerciseType);
                             if (fieldType === 'muscu') {
-                              return `${cycle.repetitions} reps${cycle.weight ? ` - ${cycle.weight}kg` : ''}`;
+                              const weightDisplay = cycle.weight ? `${cycle.weight}kg` : 'poids du corps';
+                              return `${cycle.repetitions} reps • ${weightDisplay}`;
                             } else if (fieldType === 'yoga') {
-                              return `${cycle.durationSec}min${cycle.yogaStyle ? ` - ${cycle.yogaStyle}` : ''}`;
+                              const minutes = Math.round(cycle.durationSec / 60);
+                              return `${minutes}min${cycle.yogaStyle ? ` • ${cycle.yogaStyle}` : ''}`;
                             } else if (fieldType === 'stretch') {
                               return `${cycle.durationSec}s`;
                             } else {
-                              return `${cycle.durationSec}s - Intensité ${cycle.intensity}/10`;
+                              return `${cycle.durationSec}s • Intensité ${cycle.intensity}/10`;
                             }
                           })()
                         ) : (
-                          `${cycle.restSec}s ${cycle.notes ? `- ${cycle.notes}` : ''}`
+                          `${cycle.restSec}s${cycle.notes ? ` • ${cycle.notes}` : ''}`
                         )}
                       </span>
                     </div>
@@ -793,6 +816,33 @@ export default function ProgramForm({ onSave, onCancel, initialData = null, isAd
             </div>
           )}
         </section>
+
+        {/* PROGRAMME SUMMARY - Preview */}
+        {formData.cycles.length > 0 && (
+          <section className={styles.section} style={{ backgroundColor: 'rgba(247, 177, 134, 0.08)', borderLeft: '4px solid var(--color-primary, #f7b186)' }}>
+            <h3>📊 Résumé du Programme</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+              <div style={{ textAlign: 'center', padding: '1rem', backgroundColor: 'var(--color-surface)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-primary, #f7b186)' }}>
+                  {getProgramStats().totalDuration}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>minutes estimées</div>
+              </div>
+              <div style={{ textAlign: 'center', padding: '1rem', backgroundColor: 'var(--color-surface)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-primary, #f7b186)' }}>
+                  {getProgramStats().exerciseCount}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>exercices</div>
+              </div>
+              <div style={{ textAlign: 'center', padding: '1rem', backgroundColor: 'var(--color-surface)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-primary, #f7b186)' }}>
+                  {getProgramStats().totalCycles}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>cycles totaux</div>
+              </div>
+            </div>
+          </section>
+        )}
       </div>
 
       {/* Footer */}
