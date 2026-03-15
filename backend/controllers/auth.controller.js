@@ -142,6 +142,7 @@ exports.register = async (req, res) => {
       motdepasse: pwd,
       prenom: (prenom || '').trim() || undefined,
       pseudo: pseudoNorm,
+      hasSetPassword: true,
       emailVerifie: false,
       verificationToken: token,
       verificationExpires: expiresAt,
@@ -213,6 +214,9 @@ exports.me = async (req, res) => {
       await user.save();
     }
 
+    // Vérifier si l'utilisateur est OAuth (pas de mot de passe défini)
+    const isOAuthUser = !!user.googleId;
+
     return res.json({
       id: user._id,
       email: user.email,
@@ -223,6 +227,8 @@ exports.me = async (req, res) => {
       subscriptionTier: expectedTier,
       isPremium,
       displayName,
+      hasSetPassword: isOAuthUser ? (user.hasSetPassword === true) : true,
+      isOAuthUser,
     });
   } catch (e) {
     logger.error('GET /me', e);
@@ -370,8 +376,16 @@ exports.resendVerificationEmail = async (req, res) => {
       return res.status(400).json({ message: 'Email requis.' });
     }
 
-    const emailNorm = String(email).toLowerCase().trim();
-    const user = await User.findOne({ email: emailNorm });
+    const identifier = String(email).toLowerCase().trim();
+
+    // Chercher par email ou par pseudo
+    let user;
+    if (identifier.includes('@')) {
+      user = await User.findOne({ email: identifier });
+    } else {
+      user = await User.findOne({ pseudo: { $eq: identifier } })
+        .collation({ locale: 'en', strength: 2 });
+    }
 
     if (!user) {
       // Ne pas révéler si l'email existe ou non pour des raisons de sécurité
@@ -393,13 +407,13 @@ exports.resendVerificationEmail = async (req, res) => {
 
     const verifyUrl = `${frontBase()}/verify-email?token=${encodeURIComponent(token)}`;
 
-    logger.info('[AUTH] Resend verification: sending email to', emailNorm);
+    logger.info('[AUTH] Resend verification: sending email to', user.email);
     logger.info('[AUTH] Verification URL:', verifyUrl);
 
     try {
       const result = await sendVerifyEmail({
-        to: emailNorm,
-        toName: user.prenom || user.pseudo || emailNorm,
+        to: user.email,
+        toName: user.prenom || user.pseudo || user.email,
         verifyUrl
       });
       logger.info('[AUTH] ✅ Verification email resent successfully:', result?.messageId || 'no messageId');
@@ -582,6 +596,7 @@ exports.googleAuth = async (req, res) => {
         googleId,
         photo: picture || null,
         emailVerifie: true, // Email vérifié par Google
+        hasSetPassword: false, // Pas de mot de passe défini par l'utilisateur
         motdepasse: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10), // Mot de passe aléatoire
       });
       await user.save();
@@ -635,6 +650,7 @@ exports.googleAuth = async (req, res) => {
         email: user.email,
         role: user.role,
         photo: photoUrl,
+        hasSetPassword: user.hasSetPassword === true ? true : false,
       },
     });
   } catch (err) {
@@ -651,16 +667,16 @@ exports.deleteAccount = async (req, res) => {
   try {
     const { password } = req.body || {};
 
-    if (!password) {
-      return res.status(400).json({ message: 'Mot de passe requis pour confirmer la suppression.' });
-    }
-
     const user = await User.findById(req.userId).select('+motdepasse');
     if (!user) {
       return res.status(404).json({ message: 'Utilisateur introuvable.' });
     }
 
-    // Vérifier le mot de passe
+    // Tous les utilisateurs doivent avoir un mot de passe (OAuth users le définissent après inscription)
+    if (!password) {
+      return res.status(400).json({ message: 'Mot de passe requis pour confirmer la suppression.' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.motdepasse);
     if (!isMatch) {
       return res.status(401).json({ message: 'Mot de passe incorrect.' });
@@ -673,10 +689,12 @@ exports.deleteAccount = async (req, res) => {
     await User.deleteOne({ _id: req.userId });
 
     // Supprimer le cookie httpOnly
-    res.clearCookie('authToken', {
+    const isProduction = process.env.NODE_ENV === 'production';
+    res.clearCookie('token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: isProduction,
+      sameSite: isProduction ? 'lax' : 'strict',
+      domain: isProduction ? '.harmonith.fr' : undefined,
       path: '/',
     });
 
@@ -685,6 +703,45 @@ exports.deleteAccount = async (req, res) => {
     return res.json({ success: true, message: 'Compte supprimé avec succès.' });
   } catch (err) {
     logger.error('DELETE /delete-account:', err);
+    return res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
+
+/**
+ * Définir un mot de passe (pour les comptes OAuth)
+ * POST /api/auth/set-password
+ */
+exports.setPassword = async (req, res) => {
+  try {
+    const { password } = req.body || {};
+
+    if (!password) {
+      return res.status(400).json({ message: 'Mot de passe requis.' });
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      return res.status(400).json({ message: passwordValidation.message });
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur introuvable.' });
+    }
+
+    if (user.hasSetPassword) {
+      return res.status(400).json({ message: 'Un mot de passe est déjà défini. Utilisez le changement de mot de passe.' });
+    }
+
+    user.motdepasse = password; // Le pre-save hook hash automatiquement
+    user.hasSetPassword = true;
+    await user.save();
+
+    logger.info(`[AUTH] Password set for OAuth user: ${user.email}`);
+
+    return res.json({ success: true, message: 'Mot de passe défini avec succès.' });
+  } catch (err) {
+    logger.error('POST /set-password:', err);
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
