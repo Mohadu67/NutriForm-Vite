@@ -14,7 +14,7 @@
 .body {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   animation: slideUp 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -56,21 +56,6 @@
 .header {
   text-align: center;
   margin-bottom: 8px;
-}
-
-.iconWrapper {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 20px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--auth-peach), var(--auth-green));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow:
-    0 8px 24px rgba(247, 177, 134, 0.25),
-    0 0 0 8px rgba(247, 177, 134, 0.1);
-  animation: float 3s ease-in-out infinite;
 }
 
 @keyframes float {
@@ -390,7 +375,7 @@
 /* Signup Section */
 .signupWrapper {
   text-align: center;
-  padding-top: 20px;
+  padding-top: 5px;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   margin-top: 8px;
 }
@@ -437,107 +422,25 @@
 }
 
 /* Google OAuth Button */
+
 .googleBtn {
-  padding: 16px 24px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  color: #2B2B2B;
-  font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.3px;
-  border: 1.5px solid rgba(0, 0, 0, 0.12);
-  border-radius: 14px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-top: 8px;
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    0 0 0 0 rgba(66, 133, 244, 0);
-  position: relative;
-  overflow: hidden;
-}
-
-.googleBtn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1;
-}
-
-.googleBtn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, rgba(66, 133, 244, 0.08) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: 0;
-}
-
-.googleBtn:hover {
-  border-color: rgba(66, 133, 244, 0.3);
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.12),
-    0 0 0 3px rgba(66, 133, 244, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  transform: translateY(-2px);
-}
-
-.googleBtn:hover::before {
-  left: 100%;
-}
-
-.googleBtn:hover::after {
-  opacity: 1;
-}
-
-.googleBtn:active {
-  transform: translateY(0);
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.1),
-    0 0 0 2px rgba(66, 133, 244, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.googleBtn:focus-visible {
-  outline: 2px solid rgba(66, 133, 244, 0.5);
-  outline-offset: 2px;
-}
-
-.googleBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.googleIcon {
-  width: 22px;
-  height: 22px;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 2;
-  transition: transform 0.3s ease;
-}
-
-.googleBtn:hover .googleIcon {
-  transform: scale(1.1);
+  padding: 12px 20px;
+  border-radius: 12px !important;
+  color: var(--auth-ink);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .divider {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 20px 0 16px;
   color: var(--auth-muted);
   font-size: 0.85rem;
   font-weight: 500;
@@ -559,11 +462,6 @@
 @media (max-width: 480px) {
   .title {
     font-size: 1.5rem;
-  }
-
-  .iconWrapper {
-    width: 64px;
-    height: 64px;
   }
 
   .submitBtn {
@@ -611,43 +509,6 @@
   border-top-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Dark mode - Google Button */
-:global(.dark) .googleBtn,
-:global(body.dark) .googleBtn,
-:global(html.dark) .googleBtn {
-  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-  border-color: rgba(255, 255, 255, 0.15);
-  color: #f5f7fa;
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.3),
-    0 0 0 0 rgba(96, 165, 250, 0);
-}
-
-:global(.dark) .googleBtn:hover,
-:global(body.dark) .googleBtn:hover,
-:global(html.dark) .googleBtn:hover {
-  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
-  border-color: rgba(96, 165, 250, 0.4);
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.4),
-    0 0 0 3px rgba(96, 165, 250, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-:global(.dark) .googleBtn:active,
-:global(body.dark) .googleBtn:active,
-:global(html.dark) .googleBtn:active {
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.3),
-    0 0 0 2px rgba(96, 165, 250, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-:global(.dark) .googleBtn:focus-visible,
-:global(body.dark) .googleBtn:focus-visible,
-:global(html.dark) .googleBtn:focus-visible {
-  outline-color: rgba(96, 165, 250, 0.5);
-}
 
 /* Dark mode - Divider */
 :global(.dark) .dividerLine,
