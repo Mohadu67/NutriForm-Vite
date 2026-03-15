@@ -6,7 +6,7 @@ const { requestPasswordReset, verifyResetToken, resetPassword } = require('../co
 
 // Rate limiting pour prévenir spam et énumération d'utilisateurs
 const resetLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 10000, // 15 minutes
   max: 3, // Max 3 tentatives
   skipSuccessfulRequests: false,
   standardHeaders: true,

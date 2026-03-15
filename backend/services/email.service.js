@@ -7,28 +7,16 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 logger.info('[EMAIL_SERVICE] Using Gmail SMTP for email delivery');
 
-let transporter = null;
-
 const getTransporter = () => {
-  if (!transporter) {
-    logger.info('[EMAIL_SERVICE] Creating Gmail SMTP transporter:', {
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: process.env.SMTP_PORT || 465,
-      secure: process.env.SMTP_SECURE === 'true',
-      user: process.env.SMTP_USER
-    });
-
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number(process.env.SMTP_PORT) || 465,
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
-    });
-  }
-  return transporter;
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: Number(process.env.SMTP_PORT) || 465,
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    }
+  });
 };
 
 const validateEmail = (email) => {
