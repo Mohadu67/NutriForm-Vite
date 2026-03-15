@@ -9,19 +9,8 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 logger.info('[MAILER] Using Gmail SMTP for email delivery');
 
-let transporter;
-
 function getTransporter() {
-  if (transporter) return transporter;
-
-  logger.info('[MAILER] Creating Gmail SMTP transporter:', {
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: process.env.SMTP_PORT || 465,
-    secure: process.env.SMTP_SECURE === 'true',
-    user: process.env.SMTP_USER
-  });
-
-  transporter = nodemailer.createTransport({
+  return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: Number(process.env.SMTP_PORT) || 465,
     secure: process.env.SMTP_SECURE === 'true',
@@ -30,8 +19,6 @@ function getTransporter() {
       pass: process.env.SMTP_PASS
     }
   });
-
-  return transporter;
 }
 
 async function sendMail({ to, subject, html, text, replyTo }) {

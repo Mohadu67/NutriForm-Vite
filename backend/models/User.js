@@ -83,6 +83,7 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null
     },
+    hasSetPassword: { type: Boolean },
     emailVerifie: { type: Boolean, default: false },
     verificationToken: { type: String, default: null, select: false },
     verificationExpires: { type: Date, default: null, select: false },
