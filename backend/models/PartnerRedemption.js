@@ -10,8 +10,7 @@ const partnerRedemptionSchema = new mongoose.Schema({
   partnerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Partner',
-    required: true,
-    index: true
+    required: true
   },
   xpSpent: {
     type: Number,

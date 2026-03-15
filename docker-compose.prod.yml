@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # MongoDB Database (Production)
+  harmonith-mongodb:
+    image: mongo:7
+    container_name: harmonith-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-admin}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-nutriform}
+    # Port non exposé publiquement (accessible uniquement via le réseau Docker interne)
+    expose:
+      - "27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - nutriform_network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Backend Node.js API (Production)
+  harmonith-api:
+    image: ghcr.io/${GITHUB_OWNER}/harmonith-harmonith-api:latest
+    container_name: harmonith-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      MONGODB_URI: mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-admin}@harmonith-mongodb:27017/${MONGO_DB:-nutriform}?authSource=admin
+      JWT_SECRET: ${JWT_SECRET}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_SECURE: ${SMTP_SECURE}
+      CONTACT_EMAIL: ${CONTACT_EMAIL}
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_PRICE_ID: ${STRIPE_PRICE_ID}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      ENCRYPTION_SECRET: ${ENCRYPTION_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+    ports:
+      - "127.0.0.1:3001:3001"
+    depends_on:
+      harmonith-mongodb:
+        condition: service_healthy
+    networks:
+      - nutriform_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Frontend React + Vite + Nginx (Production)
+  frontend:
+    image: ghcr.io/${GITHUB_OWNER}/nutriform-frontend:latest
+    container_name: nutriform_frontend_prod
+    restart: unless-stopped
+    expose:
+      - "80"
+    depends_on:
+      - harmonith-api
+    networks:
+      - nutriform_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nginx Reverse Proxy (Production)
+  # SSL est géré par le nginx global du VPS, ce container écoute en HTTP seulement
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: nutriform_nginx_prod
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - harmonith-api
+    networks:
+      - nutriform_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+
+networks:
+  nutriform_network:
+    driver: bridge

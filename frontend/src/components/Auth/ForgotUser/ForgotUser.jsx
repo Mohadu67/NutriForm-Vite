@@ -125,12 +125,6 @@ export default function ForgotUser({ toLogin, onClose, onSent, requestReset }) {
     <div className={styles.body}>
       {/* Header */}
       <div className={styles.header}>
-        <div className={styles.iconWrapper}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="4" />
-            <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94" />
-          </svg>
-        </div>
         <h3 className={styles.title}>Mot de passe oublié ?</h3>
         <p className={styles.subtitle}>Entre ton email pour recevoir un lien de réinitialisation</p>
       </div>

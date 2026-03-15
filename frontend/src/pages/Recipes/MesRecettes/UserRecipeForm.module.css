@@ -470,7 +470,33 @@
   transform: none;
 }
 
-/* Mobile responsive */
+/* iPad / Tablet */
+@media (max-width: 1024px) {
+  .container {
+    padding: 1.5rem;
+  }
+
+  .ingredientRow {
+    grid-template-columns: 2fr 1fr 1fr auto auto;
+    gap: 0.5rem;
+  }
+
+  .ingredientRow input {
+    font-size: 0.85rem;
+    padding: 0.6rem;
+  }
+
+  .checkbox {
+    font-size: 0.75rem;
+    gap: 0.25rem;
+  }
+
+  .nutritionGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Small tablets / large phones */
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
@@ -480,22 +506,35 @@
     font-size: 1.5rem;
   }
 
+  .section {
+    padding: 1rem;
+  }
+
   .ingredientRow {
     grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
   }
 
   .ingredientRow input:first-child {
     grid-column: 1 / -1;
   }
 
-  .instructionRow {
-    grid-template-columns: auto 1fr;
+  .checkbox {
+    font-size: 0.8rem;
   }
 
-  .instructionRow .removeBtn {
-    grid-column: 2;
-    justify-self: end;
-    margin-top: 0.5rem;
+  .removeBtn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
+
+  .instructionRow {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .nutritionGrid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .formActions {
@@ -522,5 +561,76 @@
 
   .uploadFromUrlBtn {
     width: 100%;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .container {
+    padding: 0.75rem;
+  }
+
+  .header h1 {
+    font-size: 1.25rem;
+  }
+
+  .section {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+
+  .section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .ingredientRow {
+    grid-template-columns: 1fr;
+  }
+
+  .ingredientRow input:first-child {
+    grid-column: auto;
+  }
+
+  .checkbox {
+    justify-self: start;
+  }
+
+  .removeBtn {
+    justify-self: end;
+  }
+
+  .instructionRow {
+    grid-template-columns: auto 1fr;
+  }
+
+  .instructionRow .removeBtn {
+    grid-column: 2;
+    justify-self: end;
+    margin-top: 0.25rem;
+  }
+
+  .nutritionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .pill {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .formGroup input,
+  .formGroup textarea,
+  .formGroup select {
+    font-size: 0.9rem;
+  }
+
+  .backBtn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
   }
 }

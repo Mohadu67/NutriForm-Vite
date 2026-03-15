@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { GoogleLogin } from "@react-oauth/google";
 import styles from "./LoginUser.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import useLogin from "./UseLogin.js";
@@ -9,7 +10,7 @@ export default function LoginUser({ onSuccess, toSignup, toForgot }) {
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { status, errorMsg, unverifiedEmail, handleSubmit, resendVerification } = useLogin(onSuccess, { minDurationMs: 1500 });
+  const { status, errorMsg, unverifiedEmail, handleSubmit, resendVerification, handleGoogleSuccess } = useLogin(onSuccess, { minDurationMs: 1500 });
 
   const loading = status === "loading";
 
@@ -34,12 +35,6 @@ export default function LoginUser({ onSuccess, toSignup, toForgot }) {
     <div className={styles.body}>
       {/* Header */}
       <div className={styles.header}>
-        <div className={styles.iconWrapper}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-        </div>
         <h3 className={styles.title}>Content de te revoir !</h3>
         <p className={styles.subtitle}>Connecte-toi pour continuer</p>
       </div>
@@ -150,6 +145,21 @@ export default function LoginUser({ onSuccess, toSignup, toForgot }) {
           Se connecter
         </button>
       </form>
+
+      {/* Divider */}
+      <div className={styles.divider}>
+        <div className={styles.dividerLine}></div>
+        <span>Ou</span>
+        <div className={styles.dividerLine}></div>
+      </div>
+
+      {/* Google OAuth Button */}
+      <div className={styles.googleBtn}>
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => {}}
+        />
+      </div>
 
       {/* Signup link */}
       <div className={styles.signupWrapper}>
