@@ -16,16 +16,18 @@ import authService from '../../api/auth';
 import { theme } from '../../theme';
 import { Input, Button } from '../../components/ui';
 import { AuthHeader } from '../../components/auth';
+import ErrorModal from '../../components/ui/ErrorModal';
+import SuccessModal from '../../components/ui/SuccessModal';
 
 const ForgotPasswordScreen = ({ navigation }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
   const [email, setEmail] = useState('');
-  const [error, setError] = useState(null);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [modalError, setModalError] = useState(null);
+  const [modalSuccess, setModalSuccess] = useState(null);
 
   const validateForm = () => {
     const newErrors = {};
@@ -44,112 +46,102 @@ const ForgotPasswordScreen = ({ navigation }) => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    setError(null);
 
     try {
       await authService.forgotPassword(email.trim().toLowerCase());
-      setIsSuccess(true);
+      setModalSuccess(`Un lien de réinitialisation a été envoyé à ${email}. Vérifiez votre boîte de réception.`);
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Une erreur est survenue';
-      setError(errorMessage);
+      setModalError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isSuccess) {
-    return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
-        <View style={styles.successContainer}>
-          <View style={styles.successIconCircle}>
-            <Ionicons name="checkmark" size={40} color="#FFFFFF" />
-          </View>
-          <Text style={[styles.successTitle, isDark && styles.successTitleDark]}>
-            Email envoyé !
-          </Text>
-          <Text style={[styles.successMessage, isDark && styles.successMessageDark]}>
-            Un lien de réinitialisation a été envoyé à {email}. Vérifiez votre boîte de réception.
-          </Text>
-          <Button
-            title="Retour à la connexion"
-            onPress={() => navigation.navigate('Login')}
-            style={styles.successButton}
-          />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+    <>
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
         >
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color={isDark ? '#FFFFFF' : theme.colors.text.primary}
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={isDark ? '#FFFFFF' : theme.colors.text.primary}
+              />
+            </TouchableOpacity>
+
+            <AuthHeader
+              title="Mot de passe oublié"
+              subtitle="Entrez votre email pour recevoir un lien de réinitialisation"
+              icon="lock-closed"
             />
-          </TouchableOpacity>
 
-          <AuthHeader
-            title="Mot de passe oublié"
-            subtitle="Entrez votre email pour recevoir un lien de réinitialisation"
-            icon="lock-closed"
-          />
+            <View style={styles.formContainer}>
+              <Input
+                label="Email"
+                placeholder="votre@email.com"
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  if (errors.email) setErrors({ ...errors, email: null });
+                }}
+                error={errors.email}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
 
-          <View style={styles.formContainer}>
-            {error && (
-              <View style={styles.errorBanner}>
-                <Text style={styles.errorBannerText}>{error}</Text>
+              <Button
+                title="Envoyer le lien"
+                onPress={handleSubmit}
+                loading={isSubmitting}
+                disabled={isSubmitting}
+                style={styles.submitButton}
+              />
+
+              <View style={styles.loginContainer}>
+                <Text style={[styles.loginText, isDark && styles.loginTextDark]}>
+                  Vous vous souvenez ?{' '}
+                </Text>
+                <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                  <Text style={styles.loginLink}>Connexion</Text>
+                </TouchableOpacity>
               </View>
-            )}
-
-            <Input
-              label="Email"
-              placeholder="votre@email.com"
-              value={email}
-              onChangeText={(text) => {
-                setEmail(text);
-                if (errors.email) setErrors({ ...errors, email: null });
-                if (error) setError(null);
-              }}
-              error={errors.email}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-
-            <Button
-              title="Envoyer le lien"
-              onPress={handleSubmit}
-              loading={isSubmitting}
-              disabled={isSubmitting}
-              style={styles.submitButton}
-            />
-
-            <View style={styles.loginContainer}>
-              <Text style={[styles.loginText, isDark && styles.loginTextDark]}>
-                Vous vous souvenez ?{' '}
-              </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                <Text style={styles.loginLink}>Connexion</Text>
-              </TouchableOpacity>
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+
+      {/* Error Modal */}
+      <ErrorModal
+        visible={!!modalError}
+        onClose={() => setModalError(null)}
+        title="Oups!"
+        message={modalError}
+      />
+
+      {/* Success Modal */}
+      <SuccessModal
+        visible={!!modalSuccess}
+        onClose={() => {
+          setModalSuccess(null);
+          navigation.navigate('Login');
+        }}
+        title="Email envoyé!"
+        message={modalSuccess}
+      />
+    </>
   );
 };
 
@@ -180,19 +172,6 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.xl,
     paddingBottom: theme.spacing['2xl'],
   },
-  errorBanner: {
-    backgroundColor: 'rgba(230, 57, 70, 0.1)',
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.lg,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.error,
-  },
-  errorBannerText: {
-    color: theme.colors.error,
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-  },
   submitButton: {
     marginTop: theme.spacing.md,
   },
@@ -213,44 +192,6 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.primary,
     fontWeight: theme.fontWeight.semibold,
-  },
-  successContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.xl,
-  },
-  successIconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: theme.colors.success,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: theme.spacing.lg,
-  },
-  successTitle: {
-    fontSize: theme.fontSize['2xl'],
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.md,
-    textAlign: 'center',
-  },
-  successTitleDark: {
-    color: '#FFFFFF',
-  },
-  successMessage: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.secondary,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: theme.spacing.xl,
-  },
-  successMessageDark: {
-    color: '#888888',
-  },
-  successButton: {
-    width: '100%',
   },
 });
 

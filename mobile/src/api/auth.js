@@ -113,10 +113,20 @@ export function loginWithGoogle(googleCredentials) {
 
 /**
  * Resend verification email
+ * @param {object} payload - { email }
  * @returns {Promise}
  */
-export function resendVerificationEmail() {
-  return client.post('/auth/resend-verification');
+export function resendVerificationEmail(payload) {
+  return client.post(endpoints.auth.resendVerification, payload);
+}
+
+/**
+ * Set password (for OAuth users)
+ * @param {string} password - New password
+ * @returns {Promise}
+ */
+export function setPassword(password) {
+  return client.post(endpoints.auth.setPassword, { password });
 }
 
 // Legacy export for backward compatibility
@@ -132,7 +142,8 @@ const authService = {
   forgotPassword: (email) => forgotPassword(email).then(res => res.data),
   resetPassword: (token, password) => resetPassword({ token, password }).then(res => res.data),
   verifyEmail: (token) => verifyEmail(token).then(res => res.data),
-  resendVerificationEmail: () => resendVerificationEmail().then(res => res.data),
+  resendVerificationEmail: (payload) => resendVerificationEmail(payload).then(res => res.data),
+  setPassword: (password) => setPassword(password).then(res => res.data),
 };
 
 export default authService;

@@ -8,7 +8,6 @@ import {
   Platform,
   TouchableOpacity,
   useColorScheme,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -16,27 +15,43 @@ import { useAuth } from '../../contexts/AuthContext';
 import { theme } from '../../theme';
 import { Input, Button } from '../../components/ui';
 import { AuthHeader, PasswordInput, SocialAuthButtons } from '../../components/auth';
+import ErrorModal from '../../components/ui/ErrorModal';
+import SuccessModal from '../../components/ui/SuccessModal';
+import authService from '../../api/auth';
+
+// Module-level variable to persist email across component remounts
+let lastAttemptedEmail = '';
 
 const LoginScreen = ({ navigation }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
+  // Use error from AuthContext - it persists across component remounts
   const { login, loginWithApple, loginWithGoogle, error, clearError, isLoading } = useAuth();
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(lastAttemptedEmail);
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showResendEmail, setShowResendEmail] = useState(false);
-  const [localError, setLocalError] = useState(null); // État local pour l'erreur
+  const [isResending, setIsResending] = useState(false);
+  const [modalSuccess, setModalSuccess] = useState(null);
+  const [isUnverifiedEmail, setIsUnverifiedEmail] = useState(false);
 
-  // Clear error seulement quand on quitte le screen
+  // Check if error is about unverified email
   useEffect(() => {
-    return () => {
-      clearError();
-      setLocalError(null);
-    };
-  }, []);
+    if (error) {
+      const errorLower = error.toLowerCase();
+      const isUnverified =
+        errorLower.includes('email non vérifié') ||
+        errorLower.includes('email not verified') ||
+        errorLower.includes('compte non vérifié') ||
+        errorLower.includes('vérifier votre email') ||
+        errorLower.includes('verify your email');
+      setIsUnverifiedEmail(isUnverified);
+    } else {
+      setIsUnverifiedEmail(false);
+    }
+  }, [error]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -57,35 +72,14 @@ const LoginScreen = ({ navigation }) => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    setShowResendEmail(false);
+    lastAttemptedEmail = email.trim().toLowerCase();
 
     try {
-      await login(email.trim().toLowerCase(), password);
-      setLocalError(null);
+      await login(lastAttemptedEmail, password);
     } catch (err) {
-      const errorMsg = err?.message || 'Identifiants incorrects';
-
-      // Stocker l'erreur dans l'état local
-      setLocalError(errorMsg);
-
-      // Afficher une modal (Alert) pour l'erreur
-      Alert.alert(
-        'Erreur de connexion',
-        errorMsg,
-        [{ text: 'OK' }]
-      );
-
-      // Vérifier si l'erreur est liée à un email non vérifié
-      const errorMessage = errorMsg.toLowerCase();
-      if (
-        errorMessage.includes('email non vérifié') ||
-        errorMessage.includes('email not verified') ||
-        errorMessage.includes('compte non vérifié') ||
-        errorMessage.includes('vérifier votre email') ||
-        errorMessage.includes('verify your email')
-      ) {
-        setShowResendEmail(true);
-      }
+      // Error is already set in AuthContext by the login function
+      // No need to set local state - it would be lost on remount anyway
+      console.log('🔴 Login error caught in screen:', err?.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -93,24 +87,16 @@ const LoginScreen = ({ navigation }) => {
 
   const handleResendEmail = async () => {
     try {
-      setIsSubmitting(true);
-      const authService = require('../../api/auth').default;
-      await authService.resendVerificationEmail();
-      Alert.alert(
-        'Email envoyé',
-        'Un nouvel email de vérification a été envoyé. Vérifie ta boîte mail et tes spams.',
-        [{ text: 'OK' }]
-      );
-      setShowResendEmail(false);
-    } catch (error) {
-      console.error('[LoginScreen] Resend email failed:', error);
-      Alert.alert(
-        'Erreur',
-        'Impossible d\'envoyer l\'email. Contacte le support si le problème persiste.',
-        [{ text: 'OK' }]
-      );
+      setIsResending(true);
+      const emailToSend = lastAttemptedEmail || email.trim().toLowerCase();
+      console.log('📧 Resending verification to:', emailToSend);
+      await authService.resendVerificationEmail({ email: emailToSend });
+      setModalSuccess('Un nouvel email de vérification a été envoyé. Vérifie ta boîte mail et tes spams.');
+      clearError();
+    } catch (err) {
+      console.error('[LoginScreen] Resend email failed:', err?.response?.data?.message || err.message);
     } finally {
-      setIsSubmitting(false);
+      setIsResending(false);
     }
   };
 
@@ -119,7 +105,7 @@ const LoginScreen = ({ navigation }) => {
       await loginWithApple();
     } catch (err) {
       if (err.message !== 'ERR_CANCELED') {
-        Alert.alert('Erreur', err.message || 'Erreur de connexion Apple');
+        // Error already set in AuthContext
       }
     }
   };
@@ -129,102 +115,109 @@ const LoginScreen = ({ navigation }) => {
       await loginWithGoogle();
     } catch (err) {
       if (err.message !== 'SIGN_IN_CANCELLED') {
-        Alert.alert('Erreur', err.message || 'Erreur de connexion Google');
+        // Error already set in AuthContext
       }
     }
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+    <>
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
         >
-          <AuthHeader
-            title="Connexion"
-            subtitle="Bienvenue ! Connectez-vous pour continuer"
-            icon="log-in"
-          />
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <AuthHeader
+              title="Connexion"
+              subtitle="Bienvenue ! Connectez-vous pour continuer"
+              icon="log-in"
+            />
 
-          <View style={styles.formContainer}>
-            {/* Bouton renvoyer email seulement si nécessaire */}
-            {showResendEmail && (
+            <View style={styles.formContainer}>
+              <Input
+                label="Email ou pseudo"
+                placeholder="votre@email.com ou pseudo"
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  if (errors.email) setErrors({ ...errors, email: null });
+                }}
+                error={errors.email}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+
+              <PasswordInput
+                label="Mot de passe"
+                placeholder="Votre mot de passe"
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (errors.password) setErrors({ ...errors, password: null });
+                }}
+                error={errors.password}
+              />
+
               <TouchableOpacity
-                onPress={handleResendEmail}
-                disabled={isSubmitting}
-                style={styles.resendButton}
+                style={styles.forgotPasswordLink}
+                onPress={() => navigation.navigate('ForgotPassword')}
               >
-                <Text style={styles.resendButtonText}>
-                  {isSubmitting ? 'Envoi en cours...' : '📧 Renvoyer l\'email de vérification'}
+                <Text style={styles.forgotPasswordText}>Mot de passe oublié ?</Text>
+              </TouchableOpacity>
+
+              <Button
+                title="Se connecter"
+                onPress={handleLogin}
+                loading={isSubmitting || isLoading}
+                disabled={isSubmitting || isLoading || !email.trim() || !password}
+                style={styles.loginButton}
+              />
+
+              <SocialAuthButtons
+                onAppleSignIn={handleAppleSignIn}
+                onGoogleSignIn={handleGoogleSignIn}
+                isLoading={isLoading}
+                disabled={isSubmitting}
+              />
+
+              <View style={styles.registerContainer}>
+                <Text style={[styles.registerText, isDark && styles.registerTextDark]}>
+                  Pas encore de compte ?{' '}
                 </Text>
-              </TouchableOpacity>
-            )}
-
-            <Input
-              label="Email ou pseudo"
-              placeholder="votre@email.com ou pseudo"
-              value={email}
-              onChangeText={(text) => {
-                setEmail(text);
-                if (errors.email) setErrors({ ...errors, email: null });
-                if (localError) setLocalError(null); // Clear error when typing
-              }}
-              error={errors.email}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-
-            <PasswordInput
-              label="Mot de passe"
-              placeholder="Votre mot de passe"
-              value={password}
-              onChangeText={(text) => {
-                setPassword(text);
-                if (errors.password) setErrors({ ...errors, password: null });
-                if (localError) setLocalError(null); // Clear error when typing
-              }}
-              error={errors.password}
-            />
-
-            <TouchableOpacity
-              style={styles.forgotPasswordLink}
-              onPress={() => navigation.navigate('ForgotPassword')}
-            >
-              <Text style={styles.forgotPasswordText}>Mot de passe oublié ?</Text>
-            </TouchableOpacity>
-
-            <Button
-              title="Se connecter"
-              onPress={handleLogin}
-              loading={isSubmitting || isLoading}
-              disabled={isSubmitting || isLoading || !email.trim() || !password}
-              style={styles.loginButton}
-            />
-
-            <SocialAuthButtons
-              onAppleSignIn={handleAppleSignIn}
-              onGoogleSignIn={handleGoogleSignIn}
-              isLoading={isLoading}
-              disabled={isSubmitting}
-            />
-
-            <View style={styles.registerContainer}>
-              <Text style={[styles.registerText, isDark && styles.registerTextDark]}>
-                Pas encore de compte ?{' '}
-              </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                <Text style={styles.registerLink}>Inscrivez-vous</Text>
-              </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                  <Text style={styles.registerLink}>Inscrivez-vous</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+
+      {/* Error Modal - uses error from AuthContext which persists across remounts */}
+      <ErrorModal
+        visible={!!error}
+        onClose={clearError}
+        title="Oups!"
+        message={error}
+        onResendEmail={isUnverifiedEmail ? handleResendEmail : null}
+        isResending={isResending}
+      />
+
+      {/* Success Modal */}
+      {modalSuccess && (
+        <SuccessModal
+          visible={true}
+          onClose={() => setModalSuccess(null)}
+          title="Succès!"
+          message={modalSuccess}
+        />
+      )}
+    </>
   );
 };
 
@@ -247,19 +240,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.xl,
     paddingBottom: theme.spacing['2xl'],
-  },
-  errorBanner: {
-    backgroundColor: 'rgba(230, 57, 70, 0.1)',
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.lg,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.error,
-  },
-  errorBannerText: {
-    color: theme.colors.error,
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
   },
   forgotPasswordLink: {
     alignSelf: 'flex-end',
@@ -291,19 +271,6 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.primary,
     fontWeight: theme.fontWeight.semibold,
-  },
-  resendButton: {
-    marginTop: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.md,
-    alignItems: 'center',
-  },
-  resendButtonText: {
-    fontSize: theme.fontSize.sm,
-    color: '#FFFFFF',
-    fontWeight: theme.fontWeight.medium,
   },
 });
 

@@ -178,54 +178,42 @@ export default function SettingsScreen() {
     }
   }, []);
 
+  const executeDeleteAccount = useCallback(async (data) => {
+    try {
+      await apiClient.delete('/auth/account', { data });
+      Alert.alert(
+        'Compte supprimé',
+        'Votre compte a été supprimé avec succès. Vous allez être déconnecté.',
+        [{ text: 'OK', onPress: () => logout() }]
+      );
+    } catch (error) {
+      console.error('[SETTINGS] Error deleting account:', error);
+      const msg = error?.response?.data?.message || 'Une erreur est survenue.';
+      Alert.alert('Erreur', msg);
+    }
+  }, [logout]);
+
   const handleDeleteAccount = useCallback(() => {
-    Alert.alert(
+    Alert.prompt(
       'Supprimer mon compte',
-      'ATTENTION : Cette action est irreversible.\n\nLa suppression de votre compte entraine :\n\n• La suppression definitive de toutes vos donnees personnelles\n• L\'annulation de votre abonnement Premium actif\n• La perte de vos XP, badges et historique\n\nVos donnees seront supprimees sous 30 jours.',
+      'ATTENTION : Cette action est irréversible.\n\nEntrez votre mot de passe pour confirmer.',
       [
         { text: 'Annuler', style: 'cancel' },
         {
-          text: 'Supprimer definitivement',
+          text: 'Supprimer',
           style: 'destructive',
-          onPress: () => {
-            // Confirmation supplementaire
-            Alert.alert(
-              'Confirmation finale',
-              'Etes-vous vraiment sur de vouloir supprimer votre compte ? Cette action ne peut pas etre annulee.',
-              [
-                { text: 'Non, annuler', style: 'cancel' },
-                {
-                  text: 'Oui, supprimer',
-                  style: 'destructive',
-                  onPress: async () => {
-                    try {
-                      await apiClient.delete('/auth/account');
-                      Alert.alert(
-                        'Compte supprime',
-                        'Votre compte a ete supprime avec succes. Vous allez etre deconnecte.',
-                        [
-                          {
-                            text: 'OK',
-                            onPress: () => logout(),
-                          },
-                        ]
-                      );
-                    } catch (error) {
-                      console.error('[SETTINGS] Error deleting account:', error);
-                      Alert.alert(
-                        'Erreur',
-                        'Une erreur est survenue lors de la suppression du compte. Veuillez reessayer ou contacter le support a contact.harmonith@gmail.com'
-                      );
-                    }
-                  },
-                },
-              ]
-            );
+          onPress: (password) => {
+            if (!password?.trim()) {
+              Alert.alert('Erreur', 'Le mot de passe est requis.');
+              return;
+            }
+            executeDeleteAccount({ password: password.trim() });
           },
         },
-      ]
+      ],
+      'secure-text'
     );
-  }, [logout]);
+  }, [executeDeleteAccount]);
 
   const handleClearCache = useCallback(() => {
     Alert.alert(
