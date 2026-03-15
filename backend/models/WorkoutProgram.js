@@ -25,10 +25,17 @@ const CycleSchema = new Schema({
   durationSec: { type: Number },
   durationMin: { type: Number },
   reps: { type: Number },
+  repetitions: { type: Number },  // Alias pour reps (du formulaire frontend)
   sets: { type: Number },
+  weight: { type: Number },  // Poids en kg pour la musculation
 
   // Intensité (1-10)
   intensity: { type: Number, min: 1, max: 10 },
+
+  // Yoga specifique
+  yogaStyle: { type: String },  // Ex: Vinyasa, Hatha
+  yogaFocus: { type: String },  // Ex: Flexibilité, Respiration
+  exerciseFieldType: { type: String },  // Ex: cardio, muscu, yoga, stretch
 
   // Si type = "rest" ou "transition"
   restSec: { type: Number },
@@ -37,7 +44,10 @@ const CycleSchema = new Schema({
   notes: { type: String },
 
   // Nombre de répétitions de ce cycle
-  repeat: { type: Number, default: 1 }
+  repeat: { type: Number, default: 1 },
+
+  // Image de l'exercice
+  exerciseImage: { type: String }
 }, { _id: false });
 
 /**

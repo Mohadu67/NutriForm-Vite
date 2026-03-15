@@ -309,6 +309,9 @@ async function sendMessage(req, res) {
     // SECURITY: Vérification stricte que senderId == userId authentifiée
     const userObjectId = typeof userId === 'string' ? userId : userId.toString();
 
+    // SECURITY: Vérification stricte que senderId == userId authentifiée
+    const userObjectId = typeof userId === 'string' ? userId : userId.toString();
+
     // Créer le message
     const message = await MatchMessage.create({
       conversationId,

@@ -72,17 +72,27 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
     if (!cycle) return 0;
 
     if (cycle.type === 'exercise') {
-      return cycle.durationSec || 0;
+      // Si durée spécifiée, l'utiliser
+      if (cycle.durationSec) {
+        return cycle.durationSec;
+      }
+      // Sinon, estimer basé sur reps/weight pour muscu
+      // 1 rep muscu ≈ 2-3 secondes
+      if (cycle.repetitions || cycle.reps) {
+        const reps = cycle.repetitions || cycle.reps || 0;
+        return Math.max(reps * 2, 30); // Min 30 secondes
+      }
+      // Fallback: 60 secondes
+      return 60;
     } else if (cycle.type === 'rest' || cycle.type === 'transition') {
-      return cycle.restSec || 0;
+      return cycle.restSec || 15; // Default 15 secondes pour repos
     }
 
     return 0;
   };
 
-  // Timer unifié - gère initialisation, décompte et transition
+  // Initialiser le timer au changement de cycle (SÉPARÉ du timer principal)
   useEffect(() => {
-    // Initialiser le timer au changement de cycle
     if (currentCycle) {
       const duration = getCycleDuration(currentCycle);
       setTimeRemaining(duration);
@@ -98,7 +108,10 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
         : getCycleTypeLabel(currentCycle.type);
       setAnnouncement(`${getCycleTypeLabel(currentCycle.type)} : ${cycleName}. Durée : ${formatTime(duration)}`);
     }
+  }, [currentCycleIndex, cycles]); // Seulement au changement de cycle, pas lors de isPaused
 
+  // Timer principal - gère le décompte et la transition
+  useEffect(() => {
     // Ne pas démarrer le timer si pausé ou terminé
     if (isPaused || isFinished) {
       return;
@@ -145,7 +158,7 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
         transitionRef.current = null;
       }
     };
-  }, [isPaused, isFinished, currentCycleIndex, cycles.length, currentCycle]);
+  }, [isPaused, isFinished, currentCycleIndex, cycles.length]);
 
   // Sons d'alerte
   useEffect(() => {
@@ -211,8 +224,10 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
   const progress = ((currentCycleIndex + 1) / cycles.length) * 100;
 
   const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    // Sécurité: gérer les valeurs négatives ou invalides
+    const validSeconds = Math.max(0, Math.floor(seconds || 0));
+    const mins = Math.floor(validSeconds / 60);
+    const secs = validSeconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -316,9 +331,13 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
           <p className={styles.cycleCounter}>
             Exercice {exercisesCompleted} / {totalExercises}
           </p>
+        ) : currentCycle?.type === 'rest' ? (
+          <p className={styles.cycleCounter}>
+            ⏸️ Repos entre exercices
+          </p>
         ) : (
           <p className={styles.cycleCounter}>
-            {getCycleTypeLabel(currentCycle?.type)}
+            ➡️ Transition
           </p>
         )}
       </div>
@@ -348,9 +367,53 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
             : currentCycle?.notes || getCycleTypeLabel(currentCycle?.type)}
         </h3>
 
-        {currentCycle?.intensity && (
+        {/* Intensité pour cardio */}
+        {currentCycle?.intensity && !currentCycle?.repetitions && !currentCycle?.reps && (
           <div className={styles.intensity}>
             Intensité : {currentCycle.intensity}/10
+          </div>
+        )}
+
+        {/* Infos Musculation: Reps + Poids */}
+        {currentCycle?.type === 'exercise' && (currentCycle?.repetitions || currentCycle?.reps) && (
+          <div style={{
+            background: 'rgba(247, 177, 134, 0.08)',
+            borderRadius: '12px',
+            padding: '1rem',
+            marginTop: '1rem',
+            borderLeft: '4px solid var(--color-primary)'
+          }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '0.75rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--color-primary)' }}>
+                  {currentCycle.repetitions || currentCycle.reps}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                  répétitions
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--color-primary)' }}>
+                  {currentCycle.weight ? `${currentCycle.weight}kg` : '💪'}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                  {currentCycle.weight ? 'poids' : 'poids du corps'}
+                </div>
+              </div>
+            </div>
+
+            {/* Conseils d'exécution */}
+            <div style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', lineHeight: '1.5', borderTop: '1px solid var(--color-border)', paddingTop: '0.75rem' }}>
+              {currentCycle.weight ? (
+                <p style={{ margin: '0' }}>
+                  💡 Fais {currentCycle.repetitions || currentCycle.reps} reps à {currentCycle.weight}kg. Si trop facile, augmente le poids. Si trop dur, réduis ou fais des reps partielles.
+                </p>
+              ) : (
+                <p style={{ margin: '0' }}>
+                  💡 Fais {currentCycle.repetitions || currentCycle.reps} reps au poids du corps. Cherche un poids qui te permet de faire {currentCycle.repetitions || currentCycle.reps} reps avec bonne forme.
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>

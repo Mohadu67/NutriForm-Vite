@@ -33,8 +33,6 @@ exports.getMatchSuggestions = async (req, res) => {
       });
     }
 
-    logger.info(`[getMatchSuggestions] My profile: isVisible=${myProfile.isVisible}, preferredGender=${myProfile.matchPreferences.preferredGender}, ageRange=${JSON.stringify(myProfile.matchPreferences.preferredAgeRange)}, maxDistance=${myProfile.matchPreferences.maxDistance}`);
-
     // Construire la query de recherche (sans $near pour inclure profils sans localisation)
     let baseQuery = {
       userId: {
@@ -59,37 +57,23 @@ exports.getMatchSuggestions = async (req, res) => {
       }
     }
 
-    logger.info(`[getMatchSuggestions] Base query:`, JSON.stringify(baseQuery, null, 2));
-
     // Récupérer les profils candidats (sans limite de distance dans la query)
     let candidates = await UserProfile.find(baseQuery).limit(200).populate('userId');
-
-    logger.info(`[getMatchSuggestions] Raw candidates from DB: ${candidates.length}`);
 
     // Si l'utilisateur a une localisation, filtrer par distance
     if (myProfile.location?.coordinates) {
       const maxDistanceKm = myProfile.matchPreferences.maxDistance;
-      const beforeFilter = candidates.length;
       candidates = candidates.filter(candidate => {
         const distance = myProfile.distanceTo(candidate);
-        const candidateUsername = candidate.userId?.pseudo || 'Unknown';
-        const pass = distance === null || distance <= maxDistanceKm;
-        logger.info(`[getMatchSuggestions] Distance filter - ${candidateUsername}: distance=${distance}km, maxDistance=${maxDistanceKm}km, pass=${pass}`);
-        return pass;
+        return distance === null || distance <= maxDistanceKm;
       });
-      logger.info(`[getMatchSuggestions] After distance filter: ${candidates.length} (filtered out ${beforeFilter - candidates.length})`);
     }
 
     // Calculer le score pour chaque candidat
     const scoredMatches = [];
 
-    logger.info(`[getMatchSuggestions] Found ${candidates.length} candidates for user ${userId}`);
-
     for (const candidate of candidates) {
       const score = calculateMatchScore(myProfile, candidate);
-      const candidateUsername = candidate.userId?.pseudo || 'Unknown';
-
-      logger.info(`[getMatchSuggestions] Candidate ${candidateUsername}: score=${score.total}, minScore=${minScore}`);
 
       if (score.total >= minScore) {
         // Vérifier si un match existe déjà
@@ -102,13 +86,11 @@ exports.getMatchSuggestions = async (req, res) => {
 
         // Ne pas montrer les matches déjà rejetés, bloqués, ou mutuels
         if (existingMatch && ['rejected', 'blocked', 'mutual'].includes(existingMatch.status)) {
-          logger.info(`[getMatchSuggestions] Filtering out ${candidateUsername}: status=${existingMatch.status}`);
           continue;
         }
 
         // Ne pas montrer non plus si on a déjà liké (en attente de réponse)
         if (existingMatch && existingMatch.likedBy?.some(id => id.equals(userId))) {
-          logger.info(`[getMatchSuggestions] Filtering out ${candidateUsername}: already liked`);
           continue;
         }
 
