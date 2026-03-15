@@ -318,7 +318,6 @@ export function AuthProvider({ children }) {
    */
   const register = async (userData) => {
     try {
-      setIsLoading(true);
       setError(null);
 
       // Adapter les champs pour le backend
@@ -357,8 +356,6 @@ export function AuthProvider({ children }) {
 
       setError(errorMessage);
       throw new Error(errorMessage);
-    } finally {
-      setIsLoading(false);
     }
   };
 

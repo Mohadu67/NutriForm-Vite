@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Platform,
   TouchableOpacity,
   useColorScheme,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,12 +17,18 @@ import { useAuth } from '../../contexts/AuthContext';
 import { theme } from '../../theme';
 import { Input, Button } from '../../components/ui';
 import { AuthHeader, PasswordInput } from '../../components/auth';
+import RegisterSuccessModal from '../../components/ui/RegisterSuccessModal';
+import authService from '../../api/auth';
+
+// Module-level variables to persist across component remounts (caused by isLoading → LoadingScreen)
+let pendingSuccess = false;
+let pendingEmail = '';
 
 const RegisterScreen = ({ navigation }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const { register, error, clearError, isLoading } = useAuth();
+  const { register, clearError, isLoading } = useAuth();
 
   const [pseudo, setPseudo] = useState('');
   const [email, setEmail] = useState('');
@@ -30,13 +37,8 @@ const RegisterScreen = ({ navigation }) => {
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [registeredEmail, setRegisteredEmail] = useState('');
-
-  useEffect(() => {
-    clearError();
-  }, []);
+  const [isSuccess, setIsSuccess] = useState(pendingSuccess);
+  const [registeredEmail, setRegisteredEmail] = useState(pendingEmail);
 
   const validateForm = () => {
     const newErrors = {};
@@ -88,76 +90,68 @@ const RegisterScreen = ({ navigation }) => {
       });
 
       if (result?.requiresVerification) {
-        setSuccessMessage(result.message);
+        const userEmail = email.trim().toLowerCase();
+        pendingSuccess = true;
+        pendingEmail = userEmail;
         setRegisteredEmail(userEmail);
         setIsSuccess(true);
       }
     } catch (err) {
-      console.error('[RegisterScreen] Registration failed:', err);
-      // Error handled by context
+      const errorMsg = err?.response?.data?.message || err?.message || 'Erreur lors de l\'inscription';
+      Alert.alert('Oups!', errorMsg, [
+        { text: 'OK', onPress: () => {} }
+      ]);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleResendEmail = async () => {
+    const emailToSend = registeredEmail || pendingEmail;
     try {
-      setIsSubmitting(true);
-      // Appeler l'API pour renvoyer l'email
-      const authService = require('../../api/auth').default;
-      await authService.resendVerificationEmail();
-      alert('Email renvoyé ! Vérifie ta boîte mail.');
+      await authService.resendVerificationEmail({ email: emailToSend });
+      Alert.alert('Succès!', 'Email renvoyé ! Vérifie ta boîte mail (et tes spams).', [{ text: 'OK' }]);
     } catch (error) {
       console.error('[RegisterScreen] Resend email failed:', error);
-      alert('Erreur lors de l\'envoi de l\'email. Contacte le support si le problème persiste.');
-    } finally {
-      setIsSubmitting(false);
+      Alert.alert('Erreur', 'Impossible d\'envoyer l\'email. Contacte le support si le problème persiste.', [{ text: 'OK' }]);
     }
+  };
+
+  const handleCloseSuccess = () => {
+    pendingSuccess = false;
+    pendingEmail = '';
+    setIsSuccess(false);
+    navigation.navigate('Login');
   };
 
   if (isSuccess) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
-        <View style={styles.successContainer}>
-          <View style={styles.successIconCircle}>
-            <Ionicons name="mail" size={40} color="#FFFFFF" />
-          </View>
-          <Text style={[styles.successTitle, isDark && styles.successTitleDark]}>
-            Inscription réussie !
-          </Text>
-          <Text style={[styles.successMessage, isDark && styles.successMessageDark]}>
-            {successMessage || 'Un email de vérification a été envoyé. Vérifie ta boîte mail pour activer ton compte.'}
-          </Text>
-          <Button
-            title="Retour à la connexion"
-            onPress={() => navigation.navigate('Login')}
-            style={styles.successButton}
-          />
-          <TouchableOpacity
-            onPress={handleResendEmail}
-            disabled={isSubmitting}
-            style={styles.resendButton}
-          >
-            <Text style={styles.resendButtonText}>
-              {isSubmitting ? 'Envoi en cours...' : 'Je n\'ai pas reçu l\'email'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <>
+        <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+          {/* Empty container - modal will be shown */}
+        </SafeAreaView>
+        <RegisterSuccessModal
+          visible={true}
+          email={registeredEmail || pendingEmail}
+          onClose={handleCloseSuccess}
+          onResendEmail={handleResendEmail}
+        />
+      </>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+    <>
+      <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
         >
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
           <AuthHeader
             title="Inscription"
             subtitle="Créez votre compte pour commencer"
@@ -165,11 +159,6 @@ const RegisterScreen = ({ navigation }) => {
           />
 
           <View style={styles.formContainer}>
-            {error && (
-              <View style={styles.errorBanner}>
-                <Text style={styles.errorBannerText}>{error}</Text>
-              </View>
-            )}
 
             <Input
               label="Pseudo"
@@ -268,9 +257,11 @@ const RegisterScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+
+    </>
   );
 };
 
