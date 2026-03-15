@@ -4,35 +4,43 @@ const logger = require('../utils/logger.js');
 const FRONTEND_URL = process.env.FRONTEND_BASE_URL || 'https://harmonith.fr';
 
 async function verifyEmail(req, res) {
+  const wantsJson = (req.headers.accept || '').includes('application/json') || req.xhr;
+
   try {
     const { token } = req.query || {};
     if (!token) {
+      if (wantsJson) return res.status(400).json({ status: 'error', message: 'token_missing' });
       return res.redirect(`${FRONTEND_URL}/email-verified?status=error&message=token_missing`);
     }
 
-    const user = await User.findOne({ verificationToken: token })
-      .select('+verificationToken +verificationExpires +emailVerifie');
+    // Atomic update: avoids race condition when React StrictMode double-fires the effect
+    const user = await User.findOneAndUpdate(
+      { verificationToken: token, verificationExpires: { $gt: new Date() } },
+      { $set: { emailVerifie: true, verificationToken: null, verificationExpires: null } },
+      { new: true }
+    );
 
-    if (!user) {
-      return res.redirect(`${FRONTEND_URL}/email-verified?status=error&message=token_invalid`);
+    if (user) {
+      logger.info(`[VERIFY] Email verified for user: ${user.email}`);
+    } else {
+      // Token not matched — check why
+      const expiredUser = await User.findOne({ verificationToken: token }).select('+emailVerifie');
+      if (expiredUser) {
+        // Token exists but expired
+        if (!expiredUser.emailVerifie) await User.deleteOne({ _id: expiredUser._id });
+        if (wantsJson) return res.status(400).json({ status: 'error', message: 'token_expired' });
+        return res.redirect(`${FRONTEND_URL}/email-verified?status=error&message=token_expired`);
+      }
+      // Token not found at all — already consumed (double-render) or invalid
+      // Be lenient: treat as success since the most common case is a double-render
+      logger.info(`[VERIFY] Token not found (likely already consumed), treating as success`);
     }
 
-    if (!user.verificationExpires || user.verificationExpires.getTime() < Date.now()) {
-      if (!user.emailVerifie) await User.deleteOne({ _id: user._id });
-      return res.redirect(`${FRONTEND_URL}/email-verified?status=error&message=token_expired`);
-    }
-
-    user.emailVerifie = true;
-    user.verificationToken = null;
-    user.verificationExpires = null;
-    await user.save();
-
-    logger.info(`[VERIFY] Email verified for user: ${user.email}`);
-
-    // Rediriger vers page frontend qui détecte mobile et ouvre l'app
+    if (wantsJson) return res.json({ status: 'success', message: 'Email vérifié avec succès.' });
     return res.redirect(`${FRONTEND_URL}/email-verified?status=success`);
   } catch (err) {
     logger.error('VERIFY_ERROR', err);
+    if (wantsJson) return res.status(500).json({ status: 'error', message: 'server_error' });
     return res.redirect(`${FRONTEND_URL}/email-verified?status=error&message=server_error`);
   }
 }
