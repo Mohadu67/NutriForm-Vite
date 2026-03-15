@@ -10,6 +10,7 @@ import { getConversations, deleteConversation, updateConversationSettings } from
 
 import styles from "./Navbar.module.css";
 import PopupUser from "../Auth/PopupUser.jsx";
+import SetPasswordModal from "../Auth/SetPasswordModal/SetPasswordModal.jsx";
 import NotificationCenter from "../Notifications/NotificationCenter/NotificationCenter";
 import MobileExpandedMenu from "./MobileExpandedMenu.jsx";
 import DesktopChatOverlay from "./DesktopChatOverlay.jsx";
@@ -39,6 +40,7 @@ export default function Navbar() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [path, setPath] = useState("/");
   const [showChatSettings, setShowChatSettings] = useState(false);
+  const [showSetPassword, setShowSetPassword] = useState(false);
 
   // Set path client-side
   useEffect(() => {
@@ -141,6 +143,10 @@ export default function Navbar() {
           storage.set("user", userData);
           storage.set("userId", userData.id);
           setIsLoggedIn(true);
+          // Afficher la modal pour définir un mot de passe si OAuth user sans mdp
+          if (userData.hasSetPassword === false) {
+            setShowSetPassword(true);
+          }
         } else if (response.status === 401 && !storage.get('user')) {
           setIsLoggedIn(false);
         }
@@ -423,6 +429,20 @@ export default function Navbar() {
           setPopupView('login');
           setIsPopupOpen(false);
           if (location.pathname === '/dashboard') navigate('/');
+        }}
+      />
+
+      {/* Set Password Modal (OAuth users) */}
+      <SetPasswordModal
+        open={showSetPassword}
+        onClose={() => setShowSetPassword(false)}
+        onSuccess={() => {
+          setShowSetPassword(false);
+          // Mettre à jour les données user en cache
+          const user = storage.get('user');
+          if (user) {
+            storage.set('user', { ...user, hasSetPassword: true });
+          }
         }}
       />
 

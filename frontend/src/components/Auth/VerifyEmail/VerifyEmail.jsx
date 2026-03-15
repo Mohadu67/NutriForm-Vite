@@ -26,18 +26,16 @@ export default function VerifyEmail() {
       setStatus("loading");
       try {
         const endpoint = API_URL ? `${API_URL}/verify-email` : "/verify-email";
-        let res = await fetch(`${endpoint}?token=${encodeURIComponent(token)}`);
-        if (res.status === 404) {
-          const fallbackEndpoint = API_URL ? `${API_URL}/verify-email` : "/verify-email";
-          res = await fetch(`${fallbackEndpoint}?token=${encodeURIComponent(token)}`);
-        }
+        const res = await fetch(`${endpoint}?token=${encodeURIComponent(token)}`, {
+          headers: { 'Accept': 'application/json' },
+        });
+        const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
           throw new Error(data?.message || `Erreur (${res.status})`);
         }
         if (ignore) return;
         setStatus("success");
-        setMessage("Adresse e-mail vérifiée. Tu peux maintenant te connecter.");
+        setMessage(data?.message || "Adresse e-mail vérifiée. Tu peux maintenant te connecter.");
       } catch (err) {
         if (ignore) return;
         setStatus("error");
