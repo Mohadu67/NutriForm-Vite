@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from 'sonner';
-import { login as secureLogin, secureApiCall } from '../../../utils/authService';
+import { login as secureLogin, googleAuth, secureApiCall } from '../../../utils/authService';
 import logger from '../../../shared/utils/logger.js';
 
 /**
@@ -122,5 +122,64 @@ export default function useLogin(onLoginSuccess, options = {}) {
     }
   };
 
-  return { status, errorMsg, unverifiedEmail, handleSubmit, resendVerification };
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setStatus("loading");
+    setErrorMsg("");
+    setUnverifiedEmail(null);
+    const start = (typeof performance !== "undefined" ? performance.now() : Date.now());
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    try {
+      const { credential: idToken } = credentialResponse;
+
+      if (!idToken) {
+        throw new Error("Token Google non reçu");
+      }
+
+      const result = await googleAuth(idToken);
+
+      if (!result.success) {
+        throw new Error(result.message || "Échec de connexion Google");
+      }
+
+      const { user } = result;
+
+      const redirectPath = sessionStorage.getItem("redirectAfterLogin");
+      if (redirectPath) {
+        sessionStorage.removeItem("redirectAfterLogin");
+        setTimeout(() => {
+          window.location.href = redirectPath;
+        }, 1000);
+      }
+
+      const end = (typeof performance !== "undefined" ? performance.now() : Date.now());
+      const elapsed = end - start;
+      if (elapsed < minDurationMs) {
+        await sleep(minDurationMs - elapsed);
+      }
+
+      setStatus("success");
+      toast.success("Connexion Google réussie !");
+
+      // Vérifier les programmes en attente pour les admins
+      checkPendingProgramsForAdmin(user);
+
+      if (onLoginSuccess && user) onLoginSuccess(user);
+      return { user };
+    } catch (e) {
+      const end = (typeof performance !== "undefined" ? performance.now() : Date.now());
+      const elapsed = end - start;
+      if (elapsed < minDurationMs) {
+        await sleep(minDurationMs - elapsed);
+      }
+
+      setStatus("error");
+      const message = e instanceof Error ? e.message : "Erreur lors de la connexion Google";
+      setErrorMsg(message);
+      toast.error(message);
+      return null;
+    }
+  };
+
+  return { status, errorMsg, unverifiedEmail, handleSubmit, resendVerification, handleGoogleSuccess };
 }

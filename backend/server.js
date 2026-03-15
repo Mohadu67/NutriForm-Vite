@@ -42,8 +42,8 @@ const workoutSessionRoutes = require('./routes/workoutSession.route.js');
 const programRoutes = require('./routes/program.route.js');
 const newsletterRoutes = require('./routes/newsletter.route.js');
 const newsletterAdminRoutes = require('./routes/newsletter-admin.route.js');
-const reviewsRoutes = require('./routes/reviews.js');
-const uploadRoutes = require('./routes/upload.js');
+const reviewsRoutes = require('./routes/reviews.route.js');
+const uploadRoutes = require('./routes/upload.route.js');
 const uploadFromUrlRoutes = require('./routes/uploadFromUrl.route.js');
 const leaderboardRoutes = require('./routes/leaderboard.route.js');
 const subscriptionRoutes = require('./routes/subscription.route.js');
@@ -63,8 +63,7 @@ const rateLimitRoutes = require('./routes/rateLimit.route.js');
 const partnerRoutes = require('./routes/partner.route.js');
 const analyticsRoutes = require('./routes/analytics.route.js');
 const imageProxyRoutes = require('./routes/imageProxy.route.js');
-const healthRoutes = require('./routes/health.route.js');
-const exercisesRoutes = require('./routes/exercises.js');
+const exercisesRoutes = require('./routes/exercises.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 const { startChallengeCron } = require('./cron/challengeCron');
@@ -249,7 +248,6 @@ app.use('/api/rate-limit', rateLimitRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/image-proxy', imageProxyRoutes);
-app.use('/api/health', healthRoutes);
 app.use('/api/exercises', exercisesRoutes);
 
 // Servir les fichiers statiques du frontend (en production)
@@ -282,12 +280,6 @@ if (fs.existsSync(frontendDistPath)) {
     res.send('Bienvenue sur le backend de NutriForm 🚀');
   });
 }
-
-// Middleware de gestion d'erreurs centralisé (doit être en toute dernière position)
-const { errorHandler } = require('./middlewares/errorHandler');
-
-// Gestion globale des erreurs (en dernière position)
-app.use(errorHandler);
 
 // Configuration Socket.io pour la messagerie temps réel
 require('./socket/messageSocket')(io);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { MdStar, MdEmail, MdSupport, MdRestaurant, MdFitnessCenter, MdCardGiftcard } from 'react-icons/md';
+import { MdStar, MdEmail, MdSupport, MdRestaurant, MdFitnessCenter, MdCardGiftcard, MdDirectionsRun } from 'react-icons/md';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import ConfirmModal from '../../components/Modal/ConfirmModal.jsx';
@@ -15,9 +15,10 @@ import AdminDashboard from './components/AdminDashboard.jsx';
 import AdminReviews from './components/AdminReviews.jsx';
 import AdminNewsletters from './components/AdminNewsletters.jsx';
 import AdminRecipes from './components/AdminRecipes.jsx';
+import AdminExercises from './components/AdminExercises.jsx';
 
 const ITEMS_PER_PAGE = 20;
-const VALID_SECTIONS = ['dashboard', 'reviews', 'newsletters', 'recipes', 'programs', 'support'];
+const VALID_SECTIONS = ['dashboard', 'reviews', 'newsletters', 'recipes', 'exercises', 'programs', 'support'];
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -371,6 +372,7 @@ export default function AdminPage() {
             <MdStar /> Avis {stats.pendingReviews > 0 && <span className={styles.badge}>{stats.pendingReviews}</span>}
           </button>
           <button className={`${styles.navBtn} ${activeSection === "recipes" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("recipes")}><MdRestaurant /> Recettes</button>
+          <button className={`${styles.navBtn} ${activeSection === "exercises" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("exercises")}><MdDirectionsRun /> Exercices</button>
           <button className={styles.navBtn} onClick={() => navigate("/admin/programs")}><MdFitnessCenter /> Programmes {pendingProgramsCount > 0 && <span className={styles.badge}>{pendingProgramsCount}</span>}</button>
           <button className={`${styles.navBtn} ${activeSection === "newsletter" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("newsletter")}><MdEmail /> Newsletter</button>
           <button className={styles.navBtn} onClick={() => navigate("/admin/partners")}><MdCardGiftcard /> Nos Partenaires</button>
@@ -405,6 +407,10 @@ export default function AdminPage() {
             setSearchRecipes={setSearchRecipes} sortRecipes={sortRecipes} setSortRecipes={setSortRecipes} confirmDeleteRecipe={confirmDeleteRecipe}
             onNavigate={navigate} recipesPage={recipesPage} setRecipesPage={setRecipesPage} ITEMS_PER_PAGE={ITEMS_PER_PAGE}
           />
+        )}
+
+        {activeSection === "exercises" && (
+          <AdminExercises notify={notify} />
         )}
       </div>
       <Footer />

@@ -176,21 +176,6 @@
   margin-bottom: 8px;
 }
 
-.iconWrapper {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 20px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--auth-peach), var(--auth-green));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow:
-    0 8px 24px rgba(247, 177, 134, 0.25),
-    0 0 0 8px rgba(247, 177, 134, 0.1);
-  animation: float 3s ease-in-out infinite;
-}
-
 @keyframes float {
   0%, 100% {
     transform: translateY(0);
@@ -582,11 +567,6 @@
 @media (max-width: 480px) {
   .title {
     font-size: 1.5rem;
-  }
-
-  .iconWrapper {
-    width: 64px;
-    height: 64px;
   }
 
   .submitBtn {
