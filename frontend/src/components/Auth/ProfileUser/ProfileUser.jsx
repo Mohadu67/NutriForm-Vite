@@ -370,7 +370,6 @@ export default function ProfileUser({ onLogout }) {
         throw new Error(data.message || "Erreur lors de la suppression");
       }
 
-      // Compte supprimé avec succès
       alert('Votre compte a été supprimé avec succès.');
       window.dispatchEvent(new Event("storage"));
       window.dispatchEvent(new Event("userLogout"));
