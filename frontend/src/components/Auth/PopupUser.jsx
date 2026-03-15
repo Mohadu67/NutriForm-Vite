@@ -5,10 +5,12 @@ import LoginUser from "./LoginUser/LoginUser.jsx";
 import CreatUser from "./CreatUser/CreatUser.jsx";
 import ForgotUser from "./ForgotUser/ForgotUser.jsx";
 import ProfileUser from "./ProfileUser/ProfileUser.jsx";
+import SetPasswordModal from "./SetPasswordModal/SetPasswordModal.jsx";
 
 
 export default function PopupUser({ open, view = "login", setView, onClose, onLoginSuccess, onLogout }) {
   const [currentView, setCurrentView] = useState(view);
+  const [showSetPassword, setShowSetPassword] = useState(false);
 
   useEffect(() => {
     if (open) setCurrentView(view);
@@ -29,7 +31,7 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!open && !showSetPassword) return null;
 
   const setBoth = (next) => {
     setView?.(next);
@@ -45,50 +47,71 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
     }
   };
 
+  const handleLoginSuccess = (user) => {
+    if (user?.hasSetPassword === false) {
+      // OAuth user sans mot de passe : afficher la modal
+      closeAndResetHash();
+      onLoginSuccess?.(user);
+      setShowSetPassword(true);
+    } else {
+      onLoginSuccess?.(user);
+    }
+  };
+
   return (
-    <div className={`${styles.overlay} ${styles['popup-overlay']}`} onClick={(e) => { if (e.target === e.currentTarget) closeAndResetHash(); }}>
-      <div className={`${styles.card} ${styles['popup-card']}`} role="dialog" aria-modal="true">
-        <button
-          type="button"
-          aria-label="Fermer"
-          className={`${styles.close} ${styles['popup-close']}`}
-          onClick={closeAndResetHash}
-        >
-          ×
-        </button>
+    <>
+      {open && (
+        <div className={`${styles.overlay} ${styles['popup-overlay']}`} onClick={(e) => { if (e.target === e.currentTarget) closeAndResetHash(); }}>
+          <div className={`${styles.card} ${styles['popup-card']}`} role="dialog" aria-modal="true">
+            <button
+              type="button"
+              aria-label="Fermer"
+              className={`${styles.close} ${styles['popup-close']}`}
+              onClick={closeAndResetHash}
+            >
+              ×
+            </button>
 
-        {currentView === "login" && (
-          <LoginUser
-            onSuccess={(payload) => { onLoginSuccess?.(payload); }}
-            toSignup={() => setBoth("create")}
-            toForgot={() => setBoth("forgot")}
-            onClose={closeAndResetHash}
-          />
-        )}
+            {currentView === "login" && (
+              <LoginUser
+                onSuccess={handleLoginSuccess}
+                toSignup={() => setBoth("create")}
+                toForgot={() => setBoth("forgot")}
+                onClose={closeAndResetHash}
+              />
+            )}
 
-        {currentView === "create" && (
-          <CreatUser
-            toLogin={() => setBoth("login")}
-            onCreated={() => setBoth("login")}
-            onClose={closeAndResetHash}
-          />
-        )}
+            {currentView === "create" && (
+              <CreatUser
+                toLogin={() => setBoth("login")}
+                onCreated={() => setBoth("login")}
+                onClose={closeAndResetHash}
+              />
+            )}
 
-        {currentView === "forgot" && (
-          <ForgotUser
-            toLogin={() => setBoth("login")}
-            onClose={closeAndResetHash}
-            onSent={() => setBoth("login")}
-          />
-        )}
+            {currentView === "forgot" && (
+              <ForgotUser
+                toLogin={() => setBoth("login")}
+                onClose={closeAndResetHash}
+                onSent={() => setBoth("login")}
+              />
+            )}
 
-        {currentView === "profile" && (
-          <ProfileUser
-            onClose={closeAndResetHash}
-            onLogout={onLogout}
-          />
-        )}
-      </div>
-    </div>
+            {currentView === "profile" && (
+              <ProfileUser
+                onClose={closeAndResetHash}
+                onLogout={onLogout}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      <SetPasswordModal
+        open={showSetPassword}
+        onClose={() => setShowSetPassword(false)}
+        onSuccess={() => setShowSetPassword(false)}
+      />
+    </>
   );
 }
