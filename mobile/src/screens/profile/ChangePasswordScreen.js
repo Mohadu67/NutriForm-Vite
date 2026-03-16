@@ -19,6 +19,7 @@ import { useNavigation } from '@react-navigation/native';
 import { theme } from '../../theme';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
+import logger from '../../services/logger';
 
 export default function ChangePasswordScreen() {
   const colorScheme = useColorScheme();
@@ -83,7 +84,7 @@ export default function ChangePasswordScreen() {
         [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
     } catch (error) {
-      console.error('[CHANGE_PASSWORD] Error:', error);
+      logger.app.error('[CHANGE_PASSWORD] Error:', error);
       const message = error.response?.data?.message || 'Erreur lors du changement de mot de passe';
       Alert.alert('Erreur', message);
     } finally {

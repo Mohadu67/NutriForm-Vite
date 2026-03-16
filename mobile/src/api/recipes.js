@@ -3,6 +3,7 @@
  */
 import apiClient from './client';
 import { endpoints } from './endpoints';
+import logger from '../services/logger';
 
 /**
  * Récupérer toutes les recettes avec filtres optionnels
@@ -38,9 +39,9 @@ export async function getRecipes(params = {}) {
     }
 
     const url = `${endpoints.recipes.list}?${queryParams.toString()}`;
-    console.log('[RECIPES API] Calling GET:', url);
+    logger.app.debug('[RECIPES API] Calling GET:', url);
     const response = await apiClient.get(url);
-    console.log('[RECIPES API] Response:', { status: response.status, dataCount: response.data?.recipes?.length });
+    logger.app.debug('[RECIPES API] Response:', { status: response.status, dataCount: response.data?.recipes?.length });
 
     return {
       success: true,
@@ -48,7 +49,7 @@ export async function getRecipes(params = {}) {
       pagination: response.data?.pagination || {},
     };
   } catch (error) {
-    console.log('[RECIPES API] Get error:', error.message);
+    logger.app.debug('[RECIPES API] Get error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -64,7 +65,7 @@ export async function getRecipe(id) {
       data: response.data?.recipe || null,
     };
   } catch (error) {
-    console.log('[RECIPES API] Get one error:', error.message);
+    logger.app.debug('[RECIPES API] Get one error:', error.message);
     return { success: false, data: null, error: error.message };
   }
 }
@@ -80,7 +81,7 @@ export async function getFeaturedRecipes(limit = 10) {
       data: response.data?.recipes || [],
     };
   } catch (error) {
-    console.log('[RECIPES API] Get featured error:', error.message);
+    logger.app.debug('[RECIPES API] Get featured error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -96,7 +97,7 @@ export async function getTrendingRecipes(limit = 10) {
       data: response.data?.recipes || [],
     };
   } catch (error) {
-    console.log('[RECIPES API] Get trending error:', error.message);
+    logger.app.debug('[RECIPES API] Get trending error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -112,7 +113,7 @@ export async function getSuggestedRecipes(limit = 10) {
       data: response.data?.recipes || [],
     };
   } catch (error) {
-    console.log('[RECIPES API] Get suggestions error:', error.message);
+    logger.app.debug('[RECIPES API] Get suggestions error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -128,7 +129,7 @@ export async function getLikedRecipes() {
       data: response.data?.recipes || [],
     };
   } catch (error) {
-    console.log('[RECIPES API] Get liked error:', error.message);
+    logger.app.debug('[RECIPES API] Get liked error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -144,7 +145,7 @@ export async function getSavedRecipes() {
       data: response.data?.recipes || [],
     };
   } catch (error) {
-    console.log('[RECIPES API] Get saved error:', error.message);
+    logger.app.debug('[RECIPES API] Get saved error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -160,7 +161,7 @@ export async function getMyRecipes() {
       data: response.data?.recipes || [],
     };
   } catch (error) {
-    console.log('[RECIPES API] Get my recipes error:', error.message);
+    logger.app.debug('[RECIPES API] Get my recipes error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -176,7 +177,7 @@ export async function createRecipe(recipeData) {
       data: response.data?.recipe || null,
     };
   } catch (error) {
-    console.log('[RECIPES API] Create error:', error.message);
+    logger.app.debug('[RECIPES API] Create error:', error.message);
     return { success: false, data: null, error: error.message };
   }
 }
@@ -192,7 +193,7 @@ export async function updateRecipe(id, recipeData) {
       data: response.data?.recipe || null,
     };
   } catch (error) {
-    console.log('[RECIPES API] Update error:', error.message);
+    logger.app.debug('[RECIPES API] Update error:', error.message);
     return { success: false, data: null, error: error.message };
   }
 }
@@ -205,7 +206,7 @@ export async function deleteRecipe(id) {
     await apiClient.delete(endpoints.recipes.delete(id));
     return { success: true };
   } catch (error) {
-    console.log('[RECIPES API] Delete error:', error.message);
+    logger.app.debug('[RECIPES API] Delete error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -221,7 +222,7 @@ export async function toggleLikeRecipe(id) {
       data: response.data?.data || null,
     };
   } catch (error) {
-    console.log('[RECIPES API] Toggle like error:', error.message);
+    logger.app.debug('[RECIPES API] Toggle like error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -237,7 +238,7 @@ export async function saveRecipe(id) {
       data: response.data?.data || null,
     };
   } catch (error) {
-    console.log('[RECIPES API] Save error:', error.message);
+    logger.app.debug('[RECIPES API] Save error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -253,7 +254,7 @@ export async function proposeRecipe(id) {
       data: response.data?.data || null,
     };
   } catch (error) {
-    console.log('[RECIPES API] Propose error:', error.message);
+    logger.app.debug('[RECIPES API] Propose error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -269,7 +270,7 @@ export async function unpublishRecipe(id) {
       data: response.data?.data || null,
     };
   } catch (error) {
-    console.log('[RECIPES API] Unpublish error:', error.message);
+    logger.app.debug('[RECIPES API] Unpublish error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -280,7 +281,7 @@ export async function unpublishRecipe(id) {
 export async function rateRecipe(id, rating) {
   try {
     const response = await apiClient.post(endpoints.recipes.rate(id), { rating });
-    console.log('[RECIPES API] rateRecipe response:', response.data);
+    logger.app.debug('[RECIPES API] rateRecipe response:', response.data);
     return {
       success: true,
       avgRating: response.data?.avgRating || 0,
@@ -288,7 +289,7 @@ export async function rateRecipe(id, rating) {
       userRating: response.data?.userRating || null,
     };
   } catch (error) {
-    console.log('[RECIPES API] Rate error:', error.message, error.response?.data);
+    logger.app.debug('[RECIPES API] Rate error:', error.message, error.response?.data);
     return { success: false, error: error.message };
   }
 }

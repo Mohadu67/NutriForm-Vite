@@ -16,6 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import { theme } from '../../theme';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
+import logger from '../../services/logger';
 
 // Definition des badges disponibles avec icones Ionicons
 const ALL_BADGES = [
@@ -90,7 +91,7 @@ export default function BadgesScreen() {
 
       setUnlockedBadges(unlocked);
     } catch (error) {
-      console.error('[BADGES] Error loading stats:', error);
+      logger.app.error('[BADGES] Error loading stats:', error);
     } finally {
       setLoading(false);
     }

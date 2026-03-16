@@ -16,6 +16,7 @@ import { SvgUri } from 'react-native-svg';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useProgram } from '../../contexts/ProgramContext';
 import { theme } from '../../theme';
+import logger from '../../services/logger';
 
 // États du runner
 const RUNNER_STATES = {
@@ -227,7 +228,7 @@ export default function ProgramRunnerScreen() {
             width={120}
             height={120}
             uri={imageUrl}
-            onError={() => console.log('[ProgramRunner] SVG load error:', imageUrl)}
+            onError={() => logger.app.debug('[ProgramRunner] SVG load error:', imageUrl)}
           />
         </View>
       );

@@ -19,6 +19,7 @@ import { Input, Button } from '../../components/ui';
 import { AuthHeader, PasswordInput } from '../../components/auth';
 import RegisterSuccessModal from '../../components/ui/RegisterSuccessModal';
 import authService from '../../api/auth';
+import logger from '../../services/logger';
 
 // Module-level variables to persist across component remounts (caused by isLoading → LoadingScreen)
 let pendingSuccess = false;
@@ -112,7 +113,7 @@ const RegisterScreen = ({ navigation }) => {
       await authService.resendVerificationEmail({ email: emailToSend });
       Alert.alert('Succès!', 'Email renvoyé ! Vérifie ta boîte mail (et tes spams).', [{ text: 'OK' }]);
     } catch (error) {
-      console.error('[RegisterScreen] Resend email failed:', error);
+      logger.app.error('[RegisterScreen] Resend email failed:', error);
       Alert.alert('Erreur', 'Impossible d\'envoyer l\'email. Contacte le support si le problème persiste.', [{ text: 'OK' }]);
     }
   };

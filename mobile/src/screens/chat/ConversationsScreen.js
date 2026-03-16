@@ -88,7 +88,7 @@ export default function ConversationsScreen({ navigation }) {
             setBotName(savedName);
           }
         } catch (error) {
-          console.error('Failed to load bot name:', error);
+          logger.app.error('Failed to load bot name:', error);
         }
       };
       loadBotName();

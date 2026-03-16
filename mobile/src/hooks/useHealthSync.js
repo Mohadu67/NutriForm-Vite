@@ -6,6 +6,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { AppState } from 'react-native';
 import healthSyncService from '../services/healthSyncService';
+import logger from '../services/logger';
 
 export default function useHealthSync() {
   const [isSyncing, setIsSyncing] = useState(false);
@@ -24,7 +25,7 @@ export default function useHealthSync() {
 
     const initSync = async () => {
       try {
-        console.log('[useHealthSync] Initializing health sync...');
+        logger.app.debug('[useHealthSync] Initializing health sync...');
 
         // Initialize health sync service
         const initialized = await healthSyncService.initialize();
@@ -51,7 +52,7 @@ export default function useHealthSync() {
         }
       } catch (err) {
         if (mounted) {
-          console.error('[useHealthSync] Init error:', err);
+          logger.app.error('[useHealthSync] Init error:', err);
           setError(err.message || 'Failed to initialize health sync');
         }
       }
@@ -76,11 +77,11 @@ export default function useHealthSync() {
 
     if (nextAppState === 'active') {
       // App came to foreground
-      console.log('[useHealthSync] App is active, syncing health data...');
+      logger.app.debug('[useHealthSync] App is active, syncing health data...');
       syncNow();
     } else if (nextAppState.match(/inactive|background/)) {
       // App went to background
-      console.log('[useHealthSync] App is in background');
+      logger.app.debug('[useHealthSync] App is in background');
     }
   }, []);
 
@@ -113,7 +114,7 @@ export default function useHealthSync() {
         return false;
       }
     } catch (err) {
-      console.error('[useHealthSync] Request permissions error:', err);
+      logger.app.error('[useHealthSync] Request permissions error:', err);
       setError(err.message);
       return false;
     } finally {
@@ -126,7 +127,7 @@ export default function useHealthSync() {
    */
   const syncNow = useCallback(async () => {
     if (!hasPermission) {
-      console.warn('[useHealthSync] No permissions to sync');
+      logger.app.warn('[useHealthSync] No permissions to sync');
       return false;
     }
 
@@ -139,14 +140,14 @@ export default function useHealthSync() {
       if (result) {
         const status = healthSyncService.getStatus();
         setLastSyncTime(status.lastSyncTime);
-        console.log('[useHealthSync] Sync successful');
+        logger.app.debug('[useHealthSync] Sync successful');
         return true;
       } else {
-        console.warn('[useHealthSync] Sync returned no data');
+        logger.app.warn('[useHealthSync] Sync returned no data');
         return false;
       }
     } catch (err) {
-      console.error('[useHealthSync] Sync error:', err);
+      logger.app.error('[useHealthSync] Sync error:', err);
       setError(err.message);
       return false;
     } finally {
@@ -159,7 +160,7 @@ export default function useHealthSync() {
    */
   const syncLastDays = useCallback(async (days = 7) => {
     if (!hasPermission) {
-      console.warn('[useHealthSync] No permissions to sync');
+      logger.app.warn('[useHealthSync] No permissions to sync');
       return false;
     }
 
@@ -171,10 +172,10 @@ export default function useHealthSync() {
 
       const status = healthSyncService.getStatus();
       setLastSyncTime(status.lastSyncTime);
-      console.log(`[useHealthSync] Synced last ${days} days`);
+      logger.app.debug(`[useHealthSync] Synced last ${days} days`);
       return true;
     } catch (err) {
-      console.error('[useHealthSync] Sync days error:', err);
+      logger.app.error('[useHealthSync] Sync days error:', err);
       setError(err.message);
       return false;
     } finally {

@@ -17,6 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { theme } from '../../theme';
 import { getSessions as getWorkoutSessions, deleteSession as deleteWorkoutSession } from '../../api/workouts';
+import logger from '../../services/logger';
 
 /**
  * HistoryScreen - Historique complet des seances
@@ -57,7 +58,7 @@ export default function HistoryScreen() {
           }));
         }
       } catch (apiError) {
-        console.log('[HISTORY] Backend API error:', apiError.message);
+        logger.app.debug('[HISTORY] Backend API error:', apiError.message);
       }
 
       // 2. Charger les séances locales (backup/non-sync)
@@ -87,7 +88,7 @@ export default function HistoryScreen() {
             synced: false,
           }));
       } catch (localError) {
-        console.log('[HISTORY] Local storage error:', localError.message);
+        logger.app.debug('[HISTORY] Local storage error:', localError.message);
       }
 
       // 3. Combiner: backend d'abord, puis local non-sync
@@ -100,7 +101,7 @@ export default function HistoryScreen() {
 
       setSessions(allSessions);
     } catch (error) {
-      console.error('[HISTORY] Error loading:', error);
+      logger.app.error('[HISTORY] Error loading:', error);
     } finally {
       setLoading(false);
     }
@@ -140,13 +141,13 @@ export default function HistoryScreen() {
                 // Supprimer via API backend
                 const result = await deleteWorkoutSession(sessionId);
                 if (!result.success) {
-                  console.log('[HISTORY] Delete backend error:', result.error);
+                  logger.app.debug('[HISTORY] Delete backend error:', result.error);
                   // Continuer quand meme pour retirer de l'UI
                 }
               }
               setSessions(prev => prev.filter(s => s.id !== sessionId));
             } catch (error) {
-              console.error('[HISTORY] Delete error:', error);
+              logger.app.error('[HISTORY] Delete error:', error);
             }
           },
         },

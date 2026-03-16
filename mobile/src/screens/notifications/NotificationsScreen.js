@@ -17,6 +17,7 @@ import * as Notifications from 'expo-notifications';
 import { theme } from '../../theme';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
+import logger from '../../services/logger';
 
 /**
  * NotificationsScreen - Liste des notifications
@@ -38,7 +39,7 @@ export default function NotificationsScreen() {
       const data = response.data?.notifications || response.data || [];
       setNotifications(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('[NOTIFICATIONS] Error loading:', error);
+      logger.app.error('[NOTIFICATIONS] Error loading:', error);
       setNotifications([]);
     } finally {
       setLoading(false);
@@ -55,7 +56,7 @@ export default function NotificationsScreen() {
   // Écouter les nouvelles notifications push pour rafraîchir la liste
   useEffect(() => {
     const subscription = Notifications.addNotificationReceivedListener((notification) => {
-      console.log('[NOTIFICATIONS] Push reçue, rafraîchissement...', notification);
+      logger.app.debug('[NOTIFICATIONS] Push reçue, rafraîchissement...', notification);
       // Rafraîchir la liste quand une notif push arrive
       loadNotifications();
     });
@@ -79,7 +80,7 @@ export default function NotificationsScreen() {
         )
       );
     } catch (error) {
-      console.error('[NOTIFICATIONS] Error marking as read:', error);
+      logger.app.error('[NOTIFICATIONS] Error marking as read:', error);
     }
   }, []);
 
@@ -89,7 +90,7 @@ export default function NotificationsScreen() {
       await apiClient.put(endpoints.notifications.markAllRead);
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
-      console.error('[NOTIFICATIONS] Error marking all as read:', error);
+      logger.app.error('[NOTIFICATIONS] Error marking all as read:', error);
     }
   }, []);
 
@@ -101,7 +102,7 @@ export default function NotificationsScreen() {
         prev.filter((n) => (n.id || n._id) !== notificationId)
       );
     } catch (error) {
-      console.error('[NOTIFICATIONS] Error deleting:', error);
+      logger.app.error('[NOTIFICATIONS] Error deleting:', error);
     }
   }, []);
 

@@ -27,6 +27,7 @@ import useThemedStyles from '../../hooks/useThemedStyles';
 import { blurIntensity } from '../../theme/glassmorphism';
 import * as chatbotApi from '../../api/chatbot';
 import websocketService from '../../services/websocket';
+import logger from '../../services/logger';
 
 const DEFAULT_BOT_NAME = 'Assistant Harmonith';
 const STORAGE_KEYS = {
@@ -104,7 +105,7 @@ export default function AIChatScreen({ route, navigation }) {
       const savedBotName = await AsyncStorage.getItem(STORAGE_KEYS.BOT_NAME);
       await loadHistory(conversationId, savedBotName || DEFAULT_BOT_NAME);
     } catch (error) {
-      console.error('Failed to refresh messages:', error);
+      logger.app.error('Failed to refresh messages:', error);
     }
   };
 
@@ -138,7 +139,7 @@ export default function AIChatScreen({ route, navigation }) {
             await AsyncStorage.setItem(STORAGE_KEYS.CONVERSATION_ID, convId);
           }
         } catch (err) {
-          console.log('No existing AI conversations found');
+          logger.app.debug('No existing AI conversations found');
         }
       }
 
@@ -150,7 +151,7 @@ export default function AIChatScreen({ route, navigation }) {
         setMessages([createWelcomeMessage(currentBotName)]);
       }
     } catch (error) {
-      console.error('Failed to initialize chat:', error);
+      logger.app.error('Failed to initialize chat:', error);
       setMessages([createWelcomeMessage(botName)]);
     } finally {
       setIsLoading(false);
@@ -169,7 +170,7 @@ export default function AIChatScreen({ route, navigation }) {
         setMessages([createWelcomeMessage(currentBotName)]);
       }
     } catch (error) {
-      console.error('Failed to load chat history:', error);
+      logger.app.error('Failed to load chat history:', error);
       setMessages([createWelcomeMessage(currentBotName)]);
     }
   };
@@ -190,7 +191,7 @@ export default function AIChatScreen({ route, navigation }) {
 
     // Écouter les nouveaux messages (du support)
     const handleNewMessage = (data) => {
-      console.log('New AI chat message received:', data);
+      logger.app.debug('New AI chat message received:', data);
 
       // Vérifier que c'est pour cette conversation
       if (data.conversationId !== conversationId) return;
@@ -220,7 +221,7 @@ export default function AIChatScreen({ route, navigation }) {
     const handleTyping = (data) => {
       if (data.conversationId === conversationId && data.isTyping) {
         // Optionnel: afficher un indicateur de frappe du support
-        console.log('Support is typing...');
+        logger.app.debug('Support is typing...');
       }
     };
 
@@ -263,7 +264,7 @@ export default function AIChatScreen({ route, navigation }) {
         setHasMoreMessages(hasMore);
       }
     } catch (error) {
-      console.error('Failed to load more messages:', error);
+      logger.app.error('Failed to load more messages:', error);
       setHasMoreMessages(false);
     } finally {
       setIsLoadingMore(false);
@@ -315,7 +316,7 @@ export default function AIChatScreen({ route, navigation }) {
         setMessages(prev => [escalationMessage, ...prev]);
       }
     } catch (error) {
-      console.error('Failed to send message:', error);
+      logger.app.error('Failed to send message:', error);
       const errorMessage = {
         _id: `error-${Date.now()}`,
         role: 'bot',
@@ -345,7 +346,7 @@ export default function AIChatScreen({ route, navigation }) {
       };
       setMessages(prev => [escalationMessage, ...prev]);
     } catch (error) {
-      console.error('Failed to escalate:', error);
+      logger.app.error('Failed to escalate:', error);
       Alert.alert('Erreur', "Impossible de contacter le support. Réessaie plus tard.");
     }
   };
@@ -371,7 +372,7 @@ export default function AIChatScreen({ route, navigation }) {
       setShowRenameModal(false);
       setNewBotName('');
     } catch (error) {
-      console.error('Failed to save bot name:', error);
+      logger.app.error('Failed to save bot name:', error);
     }
   };
 

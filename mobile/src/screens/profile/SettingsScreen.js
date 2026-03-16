@@ -21,6 +21,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import notificationService from '../../services/notificationService';
 import apiClient from '../../api/client';
 import useHealthData from '../../hooks/useHealthData';
+import logger from '../../services/logger';
 
 /**
  * SettingsScreen - Ecran parametres
@@ -65,7 +66,7 @@ export default function SettingsScreen() {
           setMenstrualTrackingEnabled(parsed.menstrualTrackingEnabled ?? false);
         }
       } catch (error) {
-        console.error('[SETTINGS] Error loading:', error);
+        logger.app.error('[SETTINGS] Error loading:', error);
       }
     };
     loadSettings();
@@ -79,7 +80,7 @@ export default function SettingsScreen() {
       parsed[key] = value;
       await AsyncStorage.setItem('userSettings', JSON.stringify(parsed));
     } catch (error) {
-      console.error('[SETTINGS] Error saving:', error);
+      logger.app.error('[SETTINGS] Error saving:', error);
     }
   }, []);
 
@@ -103,7 +104,7 @@ export default function SettingsScreen() {
     try {
       await apiClient.patch('/profile/preferences', { emailNotifications: value });
     } catch (error) {
-      console.error('[SETTINGS] Error updating email pref:', error);
+      logger.app.error('[SETTINGS] Error updating email pref:', error);
     }
   }, [saveSetting]);
 
@@ -115,7 +116,7 @@ export default function SettingsScreen() {
     try {
       await apiClient.patch('/profile/preferences', { weeklyReport: value });
     } catch (error) {
-      console.error('[SETTINGS] Error updating weekly report pref:', error);
+      logger.app.error('[SETTINGS] Error updating weekly report pref:', error);
     }
   }, [saveSetting]);
 
@@ -187,7 +188,7 @@ export default function SettingsScreen() {
         [{ text: 'OK', onPress: () => logout() }]
       );
     } catch (error) {
-      console.error('[SETTINGS] Error deleting account:', error);
+      logger.app.error('[SETTINGS] Error deleting account:', error);
       const msg = error?.response?.data?.message || 'Une erreur est survenue.';
       Alert.alert('Erreur', msg);
     }

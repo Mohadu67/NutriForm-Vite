@@ -3,6 +3,7 @@
  */
 import apiClient from './client';
 import { endpoints } from './endpoints';
+import logger from '../services/logger';
 
 /**
  * Récupérer les programmes publics avec filtres optionnels
@@ -37,9 +38,9 @@ export async function getPublicPrograms(params = {}) {
     }
 
     const url = `${endpoints.programs.public}?${queryParams.toString()}`;
-    console.log('[PROGRAMS API] Calling GET:', url);
+    logger.app.debug('[PROGRAMS API] Calling GET:', url);
     const response = await apiClient.get(url);
-    console.log('[PROGRAMS API] Response:', { status: response.status, dataCount: response.data?.programs?.length });
+    logger.app.debug('[PROGRAMS API] Response:', { status: response.status, dataCount: response.data?.programs?.length });
 
     return {
       success: true,
@@ -47,7 +48,7 @@ export async function getPublicPrograms(params = {}) {
       pagination: response.data?.pagination || {},
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Get public error:', error.message);
+    logger.app.debug('[PROGRAMS API] Get public error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -63,7 +64,7 @@ export async function getProgram(id) {
       data: response.data?.program || null,
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Get one error:', error.message);
+    logger.app.debug('[PROGRAMS API] Get one error:', error.message);
     return { success: false, data: null, error: error.message };
   }
 }
@@ -79,7 +80,7 @@ export async function getMyPrograms() {
       data: response.data?.programs || [],
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Get my programs error:', error.message);
+    logger.app.debug('[PROGRAMS API] Get my programs error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -95,7 +96,7 @@ export async function getFavorites() {
       data: response.data?.programs || [],
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Get favorites error:', error.message);
+    logger.app.debug('[PROGRAMS API] Get favorites error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -121,7 +122,7 @@ export async function getSessionHistory(params = {}) {
       pagination: response.data?.pagination || {},
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Get history error:', error.message);
+    logger.app.debug('[PROGRAMS API] Get history error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -137,7 +138,7 @@ export async function createProgram(programData) {
       data: response.data?.program || null,
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Create error:', error.message);
+    logger.app.debug('[PROGRAMS API] Create error:', error.message);
     return { success: false, data: null, error: error.message };
   }
 }
@@ -153,7 +154,7 @@ export async function updateProgram(id, programData) {
       data: response.data?.program || null,
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Update error:', error.message);
+    logger.app.debug('[PROGRAMS API] Update error:', error.message);
     return { success: false, data: null, error: error.message };
   }
 }
@@ -166,7 +167,7 @@ export async function deleteProgram(id) {
     await apiClient.delete(endpoints.programs.delete(id));
     return { success: true };
   } catch (error) {
-    console.log('[PROGRAMS API] Delete error:', error.message);
+    logger.app.debug('[PROGRAMS API] Delete error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -182,7 +183,7 @@ export async function startProgram(id) {
       data: response.data || null,
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Start error:', error.message);
+    logger.app.debug('[PROGRAMS API] Start error:', error.message);
     return { success: false, data: null, error: error.message };
   }
 }
@@ -204,7 +205,7 @@ export async function recordCompletion(id, sessionData) {
       data: response.data || null,
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Record completion error:', error.message);
+    logger.app.debug('[PROGRAMS API] Record completion error:', error.message);
     return { success: false, data: null, error: error.message };
   }
 }
@@ -217,7 +218,7 @@ export async function recordCompletion(id, sessionData) {
 export async function rateProgram(id, rating) {
   try {
     const response = await apiClient.post(endpoints.programs.rate(id), { rating });
-    console.log('[PROGRAMS API] rateProgram response:', response.data);
+    logger.app.debug('[PROGRAMS API] rateProgram response:', response.data);
     return {
       success: true,
       avgRating: response.data?.avgRating || 0,
@@ -225,7 +226,7 @@ export async function rateProgram(id, rating) {
       userRating: response.data?.userRating || null,
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Rate error:', error.message, error.response?.data);
+    logger.app.debug('[PROGRAMS API] Rate error:', error.message, error.response?.data);
     return { success: false, error: error.message };
   }
 }
@@ -241,7 +242,7 @@ export async function toggleFavorite(id) {
       data: response.data || null,
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Toggle favorite error:', error.message);
+    logger.app.debug('[PROGRAMS API] Toggle favorite error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -257,7 +258,7 @@ export async function proposeToPublic(id) {
       data: response.data || null,
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Propose error:', error.message);
+    logger.app.debug('[PROGRAMS API] Propose error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -273,7 +274,7 @@ export async function unpublishProgram(id) {
       data: response.data || null,
     };
   } catch (error) {
-    console.log('[PROGRAMS API] Unpublish error:', error.message);
+    logger.app.debug('[PROGRAMS API] Unpublish error:', error.message);
     return { success: false, error: error.message };
   }
 }

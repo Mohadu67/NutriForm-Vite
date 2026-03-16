@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import logger from '../services/logger';
 import { getLastExerciseData } from '../api/workouts';
 import {
   calculateProgression,
@@ -29,7 +30,7 @@ export function useSmartTracking() {
         // Par defaut active si pas de preference stockee
         setIsEnabled(stored === null ? true : stored === 'true');
       } catch (error) {
-        console.log('[SMART TRACKING] Error loading preference:', error);
+        logger.app.debug('[SMART TRACKING] Error loading preference:', error);
         setIsEnabled(true);
       } finally {
         setIsLoading(false);
@@ -46,7 +47,7 @@ export function useSmartTracking() {
       await AsyncStorage.setItem(SMART_TRACKING_KEY, newValue.toString());
       return newValue;
     } catch (error) {
-      console.log('[SMART TRACKING] Error saving preference:', error);
+      logger.app.debug('[SMART TRACKING] Error saving preference:', error);
       return isEnabled;
     }
   }, [isEnabled]);
@@ -100,7 +101,7 @@ export function useExerciseData(exerciseId, exerciseName, isEnabled = true) {
           setData(null);
         }
       } catch (err) {
-        console.log('[EXERCISE DATA] Error:', err);
+        logger.app.debug('[EXERCISE DATA] Error:', err);
         setError(err.message);
         setData(null);
       } finally {
