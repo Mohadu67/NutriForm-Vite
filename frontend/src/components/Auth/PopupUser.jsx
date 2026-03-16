@@ -5,12 +5,10 @@ import LoginUser from "./LoginUser/LoginUser.jsx";
 import CreatUser from "./CreatUser/CreatUser.jsx";
 import ForgotUser from "./ForgotUser/ForgotUser.jsx";
 import ProfileUser from "./ProfileUser/ProfileUser.jsx";
-import SetPasswordModal from "./SetPasswordModal/SetPasswordModal.jsx";
 
 
 export default function PopupUser({ open, view = "login", setView, onClose, onLoginSuccess, onLogout }) {
   const [currentView, setCurrentView] = useState(view);
-  const [showSetPassword, setShowSetPassword] = useState(false);
 
   useEffect(() => {
     if (open) setCurrentView(view);
@@ -31,7 +29,7 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
     };
   }, [open]);
 
-  if (!open && !showSetPassword) return null;
+  if (!open) return null;
 
   const setBoth = (next) => {
     setView?.(next);
@@ -48,14 +46,8 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
   };
 
   const handleLoginSuccess = (user) => {
-    if (user?.hasSetPassword === false) {
-      // OAuth user sans mot de passe : afficher la modal
-      closeAndResetHash();
-      onLoginSuccess?.(user);
-      setShowSetPassword(true);
-    } else {
-      onLoginSuccess?.(user);
-    }
+    closeAndResetHash();
+    onLoginSuccess?.(user);
   };
 
   return (
@@ -107,11 +99,6 @@ export default function PopupUser({ open, view = "login", setView, onClose, onLo
         </div>
       )}
 
-      <SetPasswordModal
-        open={showSetPassword}
-        onClose={() => setShowSetPassword(false)}
-        onSuccess={() => setShowSetPassword(false)}
-      />
     </>
   );
 }
