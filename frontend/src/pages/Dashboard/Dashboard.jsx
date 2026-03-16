@@ -9,7 +9,7 @@ import useHistoryData from "../../components/History/HistoryUser/UseHistoryData.
 import WeeklyGoalModal from "../../components/History/DashboardCards/WeeklyGoalModal.jsx";
 import { deleteSession, updateSession } from "../../components/History/SessionTracking/sessionApi.js";
 import { getSubscriptionStatus } from "../../shared/api/subscription.js";
-import { confirmDialog, showSuccess, showError } from "../../utils/confirmDialog.jsx";
+import ConfirmModal from "../../components/Modal/ConfirmModal.jsx";
 import { storage } from "../../shared/utils/storage.js";
 import { dashboardLogger } from "../../shared/utils/logger.js";
 
@@ -130,7 +130,10 @@ export default function Dashboard() {
     handleStartEditSessionName,
     handleSaveSessionName,
     handleCancelEdit,
-    handleDeleteSession
+    handleDeleteSession,
+    deleteConfirmSessionId,
+    confirmDeleteSession,
+    cancelDeleteSession
   } = useSessionManagement(handleSessionDeleted, handleSessionRenamed);
 
   const capitalizedName = useMemo(() => {
@@ -558,6 +561,15 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+      <ConfirmModal
+        isOpen={!!deleteConfirmSessionId}
+        onClose={cancelDeleteSession}
+        onConfirm={confirmDeleteSession}
+        title="Supprimer la séance"
+        message="Cette action est irréversible. Voulez-vous vraiment supprimer cette séance ?"
+        confirmText="Supprimer"
+        type="danger"
+      />
     </>
   );
 }

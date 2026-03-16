@@ -4,7 +4,7 @@ import { loadExerciseImages, getExerciseImage } from '../../../utils/exerciseIma
 import { saveActiveSession, clearActiveSession } from '../../../utils/programSession';
 import styles from './ProgramRunner.module.css';
 import logger from '../../../shared/utils/logger';
-import ConfirmModal from '../ConfirmModal/ConfirmModal';
+import ConfirmModal from '../../Modal/ConfirmModal';
 import {
   PlayIcon,
   PauseIcon,
@@ -490,10 +490,12 @@ export default function ProgramRunner({ program, onComplete, onCancel, onBackToL
 
       <ConfirmModal
         isOpen={showCancelModal}
+        onClose={handleCancelCancel}
         onConfirm={handleCancelConfirm}
-        onCancel={handleCancelCancel}
         title="Arrêter le programme ?"
         message="Êtes-vous sûr de vouloir arrêter le programme ? Votre progression ne sera pas sauvegardée."
+        confirmText="Arrêter"
+        type="danger"
       />
     </div>
   );
