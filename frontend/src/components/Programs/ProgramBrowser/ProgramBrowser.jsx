@@ -5,8 +5,10 @@ import CustomSelect from '../CustomSelect/CustomSelect';
 import styles from './ProgramBrowser.module.css';
 import logger from '../../../shared/utils/logger';
 import { DumbbellIcon, SparklesIcon, SearchIcon, LayersIcon, SlidersIcon } from '../../Programs/ProgramIcons';
+import { useAuth } from '../../../contexts/AuthContext.jsx';
 
 export default function ProgramBrowser({ onSelectProgram, onCreateProgram, onViewMyPrograms, isPremium }) {
+  const { isLoggedIn } = useAuth();
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -76,7 +78,7 @@ export default function ProgramBrowser({ onSelectProgram, onCreateProgram, onVie
             </div>
           </div>
 
-          {isPremium && (
+          {isLoggedIn && (
             <div className={styles.premiumActions}>
               {onViewMyPrograms && (
                 <button onClick={onViewMyPrograms} className={styles.myProgramsButton}>

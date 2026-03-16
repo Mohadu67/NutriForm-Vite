@@ -4,7 +4,8 @@ import { useChat } from "../../contexts/ChatContext";
 import { useWebSocket } from "../../contexts/WebSocketContext";
 import { usePremiumStatus } from "../../hooks/usePremiumStatus";
 import { useNotificationCount } from "../../hooks/useNotificationCount";
-import { invalidateAuthCache, secureApiCall } from "../../utils/authService";
+import { useAuth } from "../../contexts/AuthContext.jsx";
+import { invalidateAuthCache } from "../../utils/authService";
 import { storage } from "../../shared/utils/storage";
 import { getConversations, deleteConversation, updateConversationSettings } from "../../shared/api/matchChat";
 
@@ -28,10 +29,11 @@ export default function Navbar() {
   const { on, isConnected } = useWebSocket() || {};
   const { isPremium } = usePremiumStatus();
   const { unreadCount: notificationUnreadCount } = useNotificationCount();
+  const { user: authUser, isLoggedIn: authLoggedIn, refresh: refreshAuth } = useAuth();
 
   // State
   const [open, setOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(storage.get('user')));
+  const [isLoggedIn, setIsLoggedIn] = useState(() => authLoggedIn);
   const [darkMode, setDarkMode] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [popupView, setPopupView] = useState('login');
@@ -141,35 +143,18 @@ export default function Navbar() {
     }
   }, [isLoggedIn]);
 
-  // Monitor auth state
+  // Sync auth state from context
   useEffect(() => {
-    let isMounted = true;
-    const updateLoginState = async () => {
-      try {
-        const response = await secureApiCall('/me');
-        if (!isMounted) return;
-        if (response.ok) {
-          const userData = await response.json();
-          storage.set("user", userData);
-          storage.set("userId", userData.id);
-          setIsLoggedIn(true);
-          // Afficher la modal pour définir un mot de passe si OAuth user sans mdp
-          if (userData.hasSetPassword === false) {
-            setShowSetPassword(true);
-          }
-        } else if (response.status === 401 && !storage.get('user')) {
-          setIsLoggedIn(false);
-        }
-      } catch {
-        if (!storage.get('user')) setIsLoggedIn(false);
-      }
-    };
+    setIsLoggedIn(authLoggedIn);
+    if (authUser?.hasSetPassword === false) {
+      setShowSetPassword(true);
+    }
+  }, [authLoggedIn, authUser]);
 
-    updateLoginState();
-
+  useEffect(() => {
     const handleLoginSuccess = () => {
       invalidateAuthCache();
-      updateLoginState();
+      refreshAuth();
     };
     const handleLogoutEvent = () => {
       setIsLoggedIn(false);
@@ -179,11 +164,10 @@ export default function Navbar() {
     window.addEventListener('userLoggedIn', handleLoginSuccess);
     window.addEventListener('userLogout', handleLogoutEvent);
     return () => {
-      isMounted = false;
       window.removeEventListener('userLoggedIn', handleLoginSuccess);
       window.removeEventListener('userLogout', handleLogoutEvent);
     };
-  }, []);
+  }, [refreshAuth]);
 
   // Unread messages count
   useEffect(() => {

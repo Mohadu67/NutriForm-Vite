@@ -41,7 +41,7 @@ const {
 router.get("/public", getPublicPrograms);
 
 // Routes authentifiées - Routes spécifiques d'abord pour éviter les conflits avec /:id
-router.get("/user/my-programs", authMiddleware, requirePremium, getUserPrograms);
+router.get("/user/my-programs", authMiddleware, getUserPrograms);
 router.get("/history/sessions", authMiddleware, requirePremium, getProgramHistory);
 router.get("/favorites", authMiddleware, requirePremium, getFavorites);
 
@@ -66,10 +66,10 @@ router.post("/:id/rate", authMiddleware, requirePremium, rateProgramLimiter, rat
 router.post("/:id/favorite", authMiddleware, requirePremium, favoriteLimiter, addToFavorites);
 router.delete("/:id/favorite", authMiddleware, requirePremium, favoriteLimiter, removeFromFavorites);
 
-// Routes CRUD basiques (Premium avec rate limiting)
-router.post("/", authMiddleware, requirePremium, createProgramLimiter, createProgram);
-router.patch("/:id", authMiddleware, requirePremium, modifyProgramLimiter, updateProgram);
-router.delete("/:id", authMiddleware, requirePremium, modifyProgramLimiter, deleteProgram);
+// Routes CRUD basiques (authentifié avec rate limiting)
+router.post("/", authMiddleware, createProgramLimiter, createProgram);
+router.patch("/:id", authMiddleware, modifyProgramLimiter, updateProgram);
+router.delete("/:id", authMiddleware, modifyProgramLimiter, deleteProgram);
 
 // Route /:id en DERNIER (publique, match tout ce qui n'a pas été matché avant)
 router.get("/:id", getProgramById);

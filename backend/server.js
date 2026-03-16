@@ -154,7 +154,7 @@ app.use(helmet({
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'production' ? 2000 : 5000,
+  max: process.env.NODE_ENV === 'production' ? 5000 : 10000,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {

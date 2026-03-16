@@ -4,7 +4,8 @@ import styles from "./ProfileUser.module.css";
 import BoutonAction from "../../BoutonAction/BoutonAction.jsx";
 import ProfilePhoto from "./ProfilePhoto/ProfilePhoto.jsx";
 import NotificationSettings from "../../Notifications/NotificationSettings.jsx";
-import { secureApiCall, logout, isAuthenticated, invalidateAuthCache } from "../../../utils/authService.js";
+import { secureApiCall, logout } from "../../../utils/authService.js";
+import { useAuth } from "../../../contexts/AuthContext.jsx";
 import { getSubscriptionStatus, createCustomerPortalSession } from "../../../shared/api/subscription.js";
 import { getMyProfile, updateProfile } from "../../../shared/api/profile.js";
 import { redeemXpForPremium, getXpRedemptionHistory } from "../../../shared/api/xpRedemption.js";
@@ -41,6 +42,7 @@ const FITNESS_LEVELS = [
 export default function ProfileUser({ onLogout }) {
   const navigate = useNavigate();
   const notify = useNotification();
+  const { user: authUser, refresh: refreshAuth } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile'); // profile, premium, matching, settings
@@ -98,11 +100,18 @@ export default function ProfileUser({ onLogout }) {
     }
   };
 
+  // Sync user data from auth context
   useEffect(() => {
-    // Invalider le cache auth pour forcer un appel frais
-    invalidateAuthCache();
-    // Toujours essayer (cookie httpOnly détermine l'auth)
-    fetchUserData();
+    if (authUser) {
+      setUser(authUser);
+      setPrenom(authUser.prenom || "");
+      setPseudo(authUser.pseudo || "");
+      setEmail(authUser.email || "");
+      setLoading(false);
+    }
+  }, [authUser]);
+
+  useEffect(() => {
     fetchSubscriptionInfo();
     fetchMatchingProfile();
     fetchXpData();
@@ -202,34 +211,8 @@ export default function ProfileUser({ onLogout }) {
   };
 
   const fetchUserData = async () => {
-    try {
-      const res = await secureApiCall('/me');
-
-      if (!res.ok) {
-        if (res.status === 401) {
-          // logout() gère déjà le nettoyage localStorage proprement
-          await logout();
-          if (onLogout) onLogout();
-          window.location.href = '/';
-          return;
-        }
-
-        setError("Impossible de charger les données. Réessayez plus tard.");
-        setLoading(false);
-        return;
-      }
-
-      const data = await res.json();
-      setUser(data);
-      setPrenom(data.prenom || "");
-      setPseudo(data.pseudo || "");
-      setEmail(data.email || "");
-      setLoading(false);
-    } catch (err) {
-      logger.error('Erreur fetchUserData:', err);
-      setError("Erreur de connexion. Vérifiez votre connexion internet.");
-      setLoading(false);
-    }
+    // Refresh from centralized auth context
+    await refreshAuth();
   };
 
   const handleUpdateInfo = async (e) => {

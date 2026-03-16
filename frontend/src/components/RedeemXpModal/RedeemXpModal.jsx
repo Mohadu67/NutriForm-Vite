@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { XP_COST_PER_MONTH } from '../../shared/config/xp';
 import styles from './RedeemXpModal.module.css';
 
 export default function RedeemXpModal({
@@ -9,7 +10,6 @@ export default function RedeemXpModal({
   xpBalance,
   loading = false
 }) {
-  const XP_COST_PER_MONTH = 10000;
   const maxMonths = Math.min(Math.floor(xpBalance / XP_COST_PER_MONTH), 3);
   const [months, setMonths] = useState(1);
   const totalCost = months * XP_COST_PER_MONTH;
@@ -70,7 +70,7 @@ export default function RedeemXpModal({
         <div className={styles.body}>
           <div className={styles.conversionInfo}>
             <div className={styles.conversionRate}>
-              <span className={styles.xpIcon}>10 000 XP</span>
+              <span className={styles.xpIcon}>{XP_COST_PER_MONTH.toLocaleString()} XP</span>
               <span className={styles.arrow}>=</span>
               <span className={styles.premiumBadge}>1 mois Premium</span>
             </div>

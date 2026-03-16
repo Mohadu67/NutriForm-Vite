@@ -50,7 +50,7 @@ export default function CGV() {
           <h3 className={styles.h3}>3.2 Programme de fidelite XP</h3>
           <p className={styles.p}>
             Les utilisateurs peuvent egalement obtenir l'acces Premium en echange de points d'experience (XP)
-            accumules sur la plateforme. Le taux de conversion est de <strong>10 000 XP = 1 mois Premium</strong>.
+            accumules sur la plateforme. Le taux de conversion est de <strong>1 000 XP = 1 mois Premium</strong>.
           </p>
           <ul className={styles.list}>
             <li>Maximum 3 mois rachetables simultanement</li>

@@ -8,7 +8,7 @@ const { sendNotificationToUser } = require('../services/pushNotification.service
 const logger = require('../utils/logger.js');
 
 // Constantes
-const XP_COST_PER_MONTH = 10000;
+const XP_COST_PER_MONTH = 1000;
 const MAX_MONTHS_REDEEMABLE = 3;
 
 /**

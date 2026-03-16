@@ -4,11 +4,12 @@ import { MdStar, MdEmail, MdSupport, MdRestaurant, MdFitnessCenter, MdCardGiftca
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import ConfirmModal from '../../components/Modal/ConfirmModal.jsx';
-import { secureApiCall, isAuthenticated, invalidateAuthCache } from "../../utils/authService";
+import { secureApiCall } from "../../utils/authService";
 import styles from "./AdminPage.module.css";
 import logger from '../../shared/utils/logger.js';
 import { useAdminNotification } from "../../hooks/admin/useAdminNotification";
 import { useConfirmModal } from "../../hooks/admin/useConfirmModal";
+import { useAuth } from "../../contexts/AuthContext.jsx";
 
 // Section components
 import AdminDashboard from './components/AdminDashboard.jsx';
@@ -75,23 +76,9 @@ export default function AdminPage() {
   }, [searchParams]);
 
 
+  const { user: authUser, isLoggedIn, isAdmin: authIsAdmin } = useAuth();
+
   // ============== FETCH FUNCTIONS ==============
-  const checkAdmin = useCallback(async () => {
-    if (!isAuthenticated()) { navigate("/"); return false; }
-    try {
-      invalidateAuthCache();
-      const response = await secureApiCall('/me');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.role !== "admin") { navigate("/"); return false; }
-        return true;
-      }
-      navigate("/"); return false;
-    } catch (err) {
-      logger.error("Erreur verification admin:", err);
-      navigate("/"); return false;
-    }
-  }, [navigate]);
 
   const fetchNewsletterStats = useCallback(async () => {
     try {
@@ -149,20 +136,19 @@ export default function AdminPage() {
 
   // ============== EFFECTS ==============
   useEffect(() => {
-    const init = async () => {
-      const isAdmin = await checkAdmin();
-      if (isAdmin) {
-        fetchNewsletterStats();
-        fetchPendingProgramsCount();
-        fetchOpenTicketsCount();
-        if (activeSection === "reviews") fetchReviews();
-        if (activeSection === "newsletter") fetchNewsletters();
-        if (activeSection === "recipes") fetchRecipes();
-      }
-    };
-    init();
+    if (!isLoggedIn || !authIsAdmin) {
+      if (!isLoggedIn) navigate("/");
+      else if (!authIsAdmin) navigate("/");
+      return;
+    }
+    fetchNewsletterStats();
+    fetchPendingProgramsCount();
+    fetchOpenTicketsCount();
+    if (activeSection === "reviews") fetchReviews();
+    if (activeSection === "newsletter") fetchNewsletters();
+    if (activeSection === "recipes") fetchRecipes();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isLoggedIn, authIsAdmin]);
 
   useEffect(() => {
     if (activeSection === "reviews" && reviews.length === 0) fetchReviews();

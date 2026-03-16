@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import styles from "./UserReviews.module.css";
 import { secureApiCall } from "../../utils/authService.js";
+import { useAuth } from "../../contexts/AuthContext.jsx";
 
 export default function UserReviews() {
+  const { user: authUser, isLoggedIn } = useAuth();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     rating: 5,
@@ -15,24 +16,15 @@ export default function UserReviews() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  const checkAuth = useCallback(async () => {
-    try {
-      const response = await secureApiCall('/me');
-
-      if (response.ok) {
-        const data = await response.json();
-        setIsLoggedIn(true);
-        setFormData((prev) => ({
-          ...prev,
-          name: data.pseudo || data.prenom || data.displayName || "",
-        }));
-      } else {
-        setIsLoggedIn(false);
-      }
-    } catch {
-      setIsLoggedIn(false);
+  // Sync name from auth context
+  useEffect(() => {
+    if (authUser) {
+      setFormData((prev) => ({
+        ...prev,
+        name: authUser.pseudo || authUser.prenom || authUser.displayName || "",
+      }));
     }
-  }, []);
+  }, [authUser]);
 
   const fetchReviews = useCallback(async () => {
     try {
@@ -49,8 +41,7 @@ export default function UserReviews() {
 
   useEffect(() => {
     fetchReviews();
-    checkAuth();
-  }, [fetchReviews, checkAuth]);
+  }, [fetchReviews]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import styles from "./NewsletterAdmin.module.css";
-import { secureApiCall, isAuthenticated, invalidateAuthCache } from "../../utils/authService.js";
+import { secureApiCall } from "../../utils/authService.js";
 import ConfirmModal from "../../components/Modal/ConfirmModal";
 import StatusBadge from "../../components/Admin/StatusBadge/StatusBadge";
 import { useAdminNotification } from "../../hooks/admin/useAdminNotification";
 import { useConfirmModal } from "../../hooks/admin/useConfirmModal";
+import { useAuth } from "../../contexts/AuthContext.jsx";
 
 const toDateTimeLocalValue = (value) => {
   if (!value) return "";
@@ -23,12 +24,11 @@ export default function NewsletterAdmin() {
   const navigate = useNavigate();
   const notify = useAdminNotification();
   const { modalConfig, openModal, closeModal, handleConfirm, handleCancel } = useConfirmModal();
+  const { isLoggedIn, isAdmin } = useAuth();
   const [newsletters, setNewsletters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -38,33 +38,6 @@ export default function NewsletterAdmin() {
     scheduledDate: "",
     status: "draft"
   });
-
-  const checkAdminAccess = useCallback(async () => {
-    if (!isAuthenticated()) {
-      navigate('/');
-      return;
-    }
-
-    try {
-      invalidateAuthCache();
-      const response = await secureApiCall('/me');
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.role !== 'admin') {
-          notify.warning('Accès refusé. Privilèges admin requis.');
-          navigate('/');
-          return;
-        }
-        setIsAdmin(true);
-        setCheckingAuth(false);
-      } else {
-        navigate('/');
-      }
-    } catch {
-      navigate('/');
-    }
-  }, [navigate, notify]);
 
   const fetchNewsletters = useCallback(async () => {
     try {
@@ -88,14 +61,13 @@ export default function NewsletterAdmin() {
 
 
   useEffect(() => {
-    checkAdminAccess();
-  }, [checkAdminAccess]);
-
-  useEffect(() => {
-    if (isAdmin) {
-      fetchNewsletters();
+    if (!isLoggedIn || !isAdmin) {
+      if (!isLoggedIn) navigate('/');
+      else if (!isAdmin) { notify.warning('Accès refusé. Privilèges admin requis.'); navigate('/'); }
+      return;
     }
-  }, [isAdmin, fetchNewsletters]);
+    fetchNewsletters();
+  }, [isLoggedIn, isAdmin, fetchNewsletters, navigate, notify]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -188,7 +160,7 @@ export default function NewsletterAdmin() {
   };
 
 
-  if (checkingAuth || loading) {
+  if (loading) {
     return <div className={styles.container}>Chargement...</div>;
   }
 

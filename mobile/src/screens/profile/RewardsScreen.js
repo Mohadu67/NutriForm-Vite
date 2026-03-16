@@ -22,6 +22,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
 import logger from '../../services/logger';
+import { XP_COST_PER_MONTH } from '../../utils/xpConfig';
 
 const CATEGORIES = {
   sport: 'Sport',
@@ -99,14 +100,14 @@ export default function RewardsScreen() {
 
   // Echanger XP contre Premium
   const handleRedeemPremium = () => {
-    if (userXp < 10000) {
-      Alert.alert('XP insuffisant', `Il te manque ${(10000 - userXp).toLocaleString()} XP`);
+    if (userXp < XP_COST_PER_MONTH) {
+      Alert.alert('XP insuffisant', `Il te manque ${(XP_COST_PER_MONTH - userXp).toLocaleString()} XP`);
       return;
     }
 
     Alert.alert(
       'Debloquer Premium',
-      'Utiliser 10 000 XP pour obtenir 1 mois Premium ?',
+      `Utiliser ${XP_COST_PER_MONTH.toLocaleString()} XP pour obtenir 1 mois Premium ?`,
       [
         { text: 'Annuler', style: 'cancel' },
         {
@@ -328,7 +329,7 @@ export default function RewardsScreen() {
               Acces illimite : GymBro, creation de programmes/recettes, defis, et plus encore.
             </Text>
             <View style={styles.premiumCost}>
-              <Text style={styles.premiumXp}>10 000 XP</Text>
+              <Text style={styles.premiumXp}>{XP_COST_PER_MONTH.toLocaleString()} XP</Text>
             </View>
 
             {/* Progress bar */}
@@ -336,15 +337,15 @@ export default function RewardsScreen() {
               <View
                 style={[
                   styles.progressBar,
-                  { width: `${Math.min((userXp / 10000) * 100, 100)}%` },
+                  { width: `${Math.min((userXp / XP_COST_PER_MONTH) * 100, 100)}%` },
                 ]}
               />
             </View>
             <Text style={[styles.progressText, isDark && styles.textMutedDark]}>
-              {userXp >= 10000 ? 'Disponible !' : `${userXp.toLocaleString()} / 10 000 XP`}
+              {userXp >= XP_COST_PER_MONTH ? 'Disponible !' : `${userXp.toLocaleString()} / ${XP_COST_PER_MONTH.toLocaleString()} XP`}
             </Text>
 
-            {userXp >= 10000 ? (
+            {userXp >= XP_COST_PER_MONTH ? (
               <TouchableOpacity
                 style={styles.redeemButton}
                 onPress={handleRedeemPremium}
@@ -363,7 +364,7 @@ export default function RewardsScreen() {
               <View style={styles.lockedButton}>
                 <Ionicons name="lock-closed" size={18} color="#6B7280" />
                 <Text style={styles.lockedButtonText}>
-                  Il te manque {(10000 - userXp).toLocaleString()} XP
+                  Il te manque {(XP_COST_PER_MONTH - userXp).toLocaleString()} XP
                 </Text>
               </View>
             )}
