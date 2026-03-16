@@ -26,6 +26,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { getConversations, getUnreadCount } from '../../api/matchChat';
 import { getMutualMatches, getMatchSuggestions, likeProfile, rejectProfile } from '../../api/matching';
 import ProfileModal from '../../components/matching/ProfileModal';
+import { MatchModal } from '../../components/matching/MatchModal';
 import useSwipeGesture from '../../hooks/useSwipeGesture';
 import logger from '../../services/logger';
 import websocketService from '../../services/websocket';
@@ -194,9 +195,6 @@ export default function MatchingScreen() {
   // Animation refs
   const headerAnim = useRef(new Animated.Value(0)).current;
   const tabIndicatorAnim = useRef(new Animated.Value(0)).current;
-  const matchModalScale = useRef(new Animated.Value(0)).current;
-  const matchModalRotate = useRef(new Animated.Value(0)).current;
-  const heartBeatAnim = useRef(new Animated.Value(1)).current;
 
   const [activeTab, setActiveTab] = useState('messages');
   const [conversations, setConversations] = useState([]);
@@ -237,45 +235,6 @@ export default function MatchingScreen() {
       useNativeDriver: true,
     }).start();
   }, [activeTab]);
-
-  // Match modal animation
-  useEffect(() => {
-    if (showMatchModal) {
-      matchModalScale.setValue(0);
-      matchModalRotate.setValue(0);
-      Animated.parallel([
-        Animated.spring(matchModalScale, {
-          toValue: 1,
-          tension: 60,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-        Animated.timing(matchModalRotate, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      // Heart beat animation
-      const heartBeat = Animated.loop(
-        Animated.sequence([
-          Animated.timing(heartBeatAnim, {
-            toValue: 1.2,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(heartBeatAnim, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ])
-      );
-      heartBeat.start();
-      return () => heartBeat.stop();
-    }
-  }, [showMatchModal]);
 
   // Swipe gesture hook
   const {
@@ -382,7 +341,7 @@ export default function MatchingScreen() {
           const savedName = await AsyncStorage.getItem('@ai_chat_bot_name');
           if (savedName) setBotName(savedName);
         } catch (error) {
-          console.error('Failed to load bot name:', error);
+          logger.app.warn('Failed to load bot name', error);
         }
       };
       loadBotName();
@@ -1000,137 +959,12 @@ export default function MatchingScreen() {
     </View>
   );
 
-  // Match modal with enhanced animations
-  const renderMatchModal = () => {
-    const modalRotation = matchModalRotate.interpolate({
-      inputRange: [0, 1],
-      outputRange: ['0deg', '360deg'],
-    });
-
-    return (
-      <Modal
-        visible={showMatchModal}
-        transparent
-        animationType="none"
-        onRequestClose={() => setShowMatchModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <Animated.View
-            style={[
-              styles.matchModalContent,
-              isDark && styles.modalContentDark,
-              {
-                transform: [{ scale: matchModalScale }],
-              },
-            ]}
-          >
-            {/* Confetti decoration */}
-            <View style={styles.confettiContainer}>
-              {[...Array(12)].map((_, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.confetti,
-                    {
-                      left: `${(i * 8) + 4}%`,
-                      backgroundColor: [colors.primary, colors.accent, colors.secondary, colors.warning][i % 4],
-                      transform: [{ rotate: `${i * 30}deg` }],
-                    },
-                  ]}
-                />
-              ))}
-            </View>
-
-            {/* Animated heart icon */}
-            <Animated.View
-              style={[
-                styles.matchModalIconWrapper,
-                {
-                  transform: [
-                    { scale: heartBeatAnim },
-                    { rotate: modalRotation },
-                  ],
-                },
-              ]}
-            >
-              <LinearGradient
-                colors={THEME_COLORS.warmGradient}
-                style={styles.matchModalIcon}
-              >
-                <Ionicons name="heart" size={48} color="#FFF" />
-              </LinearGradient>
-            </Animated.View>
-
-            <Text style={[styles.matchModalTitle, isDark && styles.textLight]}>
-              C'est un match !
-            </Text>
-            <Text style={[styles.matchModalText, isDark && styles.textMuted]}>
-              Toi et {newMatch?.user?.username} vous êtes mutuellement likés
-            </Text>
-
-            {/* User avatars */}
-            <View style={styles.matchAvatars}>
-              <View style={styles.matchAvatarWrapper}>
-                <LinearGradient
-                  colors={THEME_COLORS.primaryGradient}
-                  style={styles.matchAvatarGradient}
-                >
-                  <View style={[styles.matchAvatarPlaceholder, isDark && styles.matchAvatarPlaceholderDark]}>
-                    <Ionicons name="person" size={24} color={isDark ? colors.dark.textTertiary : colors.light.textTertiary} />
-                  </View>
-                </LinearGradient>
-              </View>
-              <View style={[styles.matchHeartIcon, isDark && styles.matchHeartIconDark]}>
-                <Ionicons name="heart" size={20} color={colors.accent} />
-              </View>
-              <View style={styles.matchAvatarWrapper}>
-                <LinearGradient
-                  colors={THEME_COLORS.warmGradient}
-                  style={styles.matchAvatarGradient}
-                >
-                  {newMatch?.user?.photo ? (
-                    <Image source={{ uri: newMatch.user.photo }} style={styles.matchAvatar} />
-                  ) : (
-                    <View style={[styles.matchAvatarPlaceholder, isDark && styles.matchAvatarPlaceholderDark]}>
-                      <Ionicons name="person" size={24} color={isDark ? colors.dark.textTertiary : colors.light.textTertiary} />
-                    </View>
-                  )}
-                </LinearGradient>
-              </View>
-            </View>
-
-            <View style={styles.matchModalButtons}>
-              <TouchableOpacity
-                style={[styles.matchModalButton, styles.matchModalButtonOutline, isDark && styles.matchModalButtonOutlineDark]}
-                onPress={() => setShowMatchModal(false)}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.matchModalButtonOutlineText, isDark && styles.textLight]}>Continuer</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.matchModalButtonGradientWrapper}
-                onPress={() => {
-                  setShowMatchModal(false);
-                  navigation.navigate('ChatDetail', { matchId: newMatch?._id });
-                }}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={THEME_COLORS.primaryGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.matchModalButtonGradient}
-                >
-                  <Ionicons name="chatbubble" size={18} color="#FFF" />
-                  <Text style={styles.matchModalButtonPrimaryText}>Envoyer un message</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
-        </View>
-      </Modal>
-    );
-  };
+  // Match modal handlers
+  const handleMatchClose = useCallback(() => setShowMatchModal(false), []);
+  const handleMatchSendMessage = useCallback(() => {
+    setShowMatchModal(false);
+    navigation.navigate('ChatDetail', { matchId: newMatch?._id });
+  }, [navigation, newMatch]);
 
   if (loading) {
     return (
@@ -1263,7 +1097,12 @@ export default function MatchingScreen() {
       </View>
 
       {/* Modals */}
-      {renderMatchModal()}
+      <MatchModal
+        visible={showMatchModal}
+        matchedProfile={newMatch}
+        onClose={handleMatchClose}
+        onSendMessage={handleMatchSendMessage}
+      />
       <ProfileModal
         visible={showProfileModal}
         onClose={() => setShowProfileModal(false)}
