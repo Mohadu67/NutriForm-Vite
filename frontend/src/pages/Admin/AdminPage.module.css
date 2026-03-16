@@ -1498,6 +1498,21 @@
   border-bottom: none;
 }
 
+/* Exercise thumbnail */
+.exerciseThumb {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.noImage {
+  display: inline-block;
+  width: 50px;
+  text-align: center;
+  color: #ccc;
+}
+
 /* ExoId */
 .exoId {
   color: #999;

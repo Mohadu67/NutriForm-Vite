@@ -538,6 +538,7 @@ export default function AdminExercises({ notify }) {
           <table className={styles.table}>
             <thead>
               <tr>
+                <th>Image</th>
                 <th>Nom</th>
                 <th>Catégorie</th>
                 <th>Muscle principal</th>
@@ -548,6 +549,18 @@ export default function AdminExercises({ notify }) {
             <tbody>
               {filteredExercises.map(exercise => (
                 <tr key={exercise._id}>
+                  <td>
+                    {exercise.mainImage ? (
+                      <img
+                        src={exercise.mainImage}
+                        alt={exercise.name}
+                        className={styles.exerciseThumb}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span className={styles.noImage}>—</span>
+                    )}
+                  </td>
                   <td>
                     <strong>{exercise.name}</strong>
                     {exercise.exoId && <span className={styles.exoId}> ({exercise.exoId})</span>}

@@ -1,18 +1,11 @@
-const authMiddleware = require('./auth.middleware');
-
-
-async function adminMiddleware(req, res, next) {
-  
-  await authMiddleware(req, res, () => {
-    
-    if (!req.user || req.user.role !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Accès refusé. Privilèges admin requis.'
-      });
-    }
-    next();
-  });
+function adminMiddleware(req, res, next) {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Accès refusé. Privilèges admin requis.'
+    });
+  }
+  next();
 }
 
 module.exports = adminMiddleware;
