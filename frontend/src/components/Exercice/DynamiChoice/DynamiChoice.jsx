@@ -210,8 +210,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
 
   const allowedEquipIds = useMemo(() => {
     if (!typeId) return EQUIP_CARDS.map((c) => c.id);
-    if (["natation", "meditation", "yoga"].includes(typeId)) return ["poids-du-corps"];
-    if (typeId === "etirement") return ["poids-du-corps"];
+    if (["natation", "meditation", "yoga", "etirement", "cardio"].includes(typeId)) return ["poids-du-corps"];
     return EQUIP_CARDS.map((c) => c.id);
   }, [typeId]);
 
@@ -241,26 +240,12 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
     if (!typeId) return;
 
     
-    if (typeId === "natation") {
-      setEquipIds([]);
-      setMuscleIds(MUSCLE_CARDS.map(c => c.id));
-    }
-
-    
-    if (typeId === "yoga") {
-      setEquipIds([]);
-      setMuscleIds(MUSCLE_CARDS.map(c => c.id));
-    }
-
-    
-    if (typeId === "meditation") {
+    // Pour les types non-muscu, pas de filtre équipement/muscle
+    // Ces exercices ont des muscles non-standard ("corps entier", etc.)
+    // qui ne matchent pas les zones musculaires standard
+    if (["natation", "yoga", "meditation", "etirement", "cardio"].includes(typeId)) {
       setEquipIds([]);
       setMuscleIds([]);
-    }
-
-    if (typeId === "etirement") {
-      setEquipIds([]);
-      setMuscleIds(MUSCLE_CARDS.map(c => c.id));
     }
   }, [typeId]);
 
@@ -312,7 +297,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   function onNext() {
     if (step < 3) {
 
-      if (step === 0 && (typeId === "natation" || typeId === "yoga" || typeId === "meditation" || typeId === "etirement")) {
+      if (step === 0 && (["natation", "yoga", "meditation", "etirement", "cardio"].includes(typeId))) {
         setStep(3);
       } else {
         setStep(step + 1);
@@ -333,7 +318,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
   function onPrev() {
     if (step > 0) {
 
-      if (step === 3 && (typeId === "natation" || typeId === "yoga" || typeId === "meditation" || typeId === "etirement")) {
+      if (step === 3 && (["natation", "yoga", "meditation", "etirement", "cardio"].includes(typeId))) {
         setStep(0);
       } else {
         setStep(step - 1);

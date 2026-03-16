@@ -203,9 +203,14 @@ exerciseSchema.statics.search = async function(query, filters = {}) {
 
   searchQuery.isActive = true;
 
-  return this.find(searchQuery)
-    .sort(query ? { score: { $meta: 'textScore' } } : { order: 1, name: 1 })
-    .limit(filters.limit || 100);
+  const q = this.find(searchQuery)
+    .sort(query ? { score: { $meta: 'textScore' } } : { order: 1, name: 1 });
+
+  // limit: 0 = pas de limite (pour la pagination côté controller)
+  const lim = filters.limit;
+  if (lim && lim > 0) q.limit(lim);
+
+  return q;
 };
 
 const Exercise = mongoose.model('Exercise', exerciseSchema);

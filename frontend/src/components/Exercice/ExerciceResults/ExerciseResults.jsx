@@ -33,7 +33,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
   const [ordered, setOrdered] = useState(() => {
     try {
       const saved = storage.get("dynamiSelected");
-      return Array.isArray(saved) ? saved : (saved ? JSON.parse(saved) : []);
+      return Array.isArray(saved) ? saved : [];
     } catch {
       return [];
     }
@@ -155,7 +155,7 @@ export default function ExerciseResults({ typeId, equipIds = [], muscleIds = [],
       // Vérifier si on a des données sauvegardées qu'on devrait utiliser
       try {
         const saved = storage.get("dynamiSelected");
-        const savedArr = Array.isArray(saved) ? saved : (saved ? JSON.parse(saved) : []);
+        const savedArr = Array.isArray(saved) ? saved : [];
         if (savedArr.length > 0) {
           setOrdered(savedArr);
           setHasTouched(true);

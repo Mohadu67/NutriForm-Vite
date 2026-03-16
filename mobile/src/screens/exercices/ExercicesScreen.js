@@ -233,6 +233,9 @@ const TYPE_CONFIG = {
   'poids_du_corps': { label: 'Poids du corps', icon: 'body', color: '#06B6D4' },
   'cardio': { label: 'Cardio', icon: 'heart', color: '#EF4444' },
   'etirement': { label: 'Etirement', icon: 'flower', color: '#10B981' },
+  'natation': { label: 'Natation', icon: 'water', color: '#3B82F6' },
+  'yoga': { label: 'Yoga', icon: 'leaf', color: '#8B5CF6' },
+  'meditation': { label: 'Meditation', icon: 'cloudy-night', color: '#6366F1' },
 };
 
 const EQUIPMENT_LIST = ['barre', 'halteres', 'poulie', 'machine', 'poids_corps', 'aucun'];
@@ -316,10 +319,16 @@ export default function ExercicesScreen() {
             'bodyweight': 'poids_du_corps',
             'stretching': 'etirement',
             'étirement': 'etirement',
+            'etirement': 'etirement',
             'cardio': 'cardio',
             'hiit': 'cardio',
             'muscu': 'muscu',
             'musculation': 'muscu',
+            'natation': 'natation',
+            'swimming': 'natation',
+            'yoga': 'yoga',
+            'meditation': 'meditation',
+            'méditation': 'meditation',
           };
 
           // Prioriser poids_du_corps si présent dans le tableau type

@@ -75,9 +75,14 @@ export default function useExerciseFilters({ exercises = [], favorites = [] }) {
       results = results.filter(ex => favorites.includes(ex.id));
     }
 
-    // Filtre par types sélectionnés
+    // Filtre par types sélectionnés (ex.type peut être string ou array)
     if (selectedTypes.length > 0) {
-      results = results.filter(ex => selectedTypes.includes(ex.type));
+      results = results.filter(ex => {
+        const exTypes = Array.isArray(ex.type) ? ex.type : [ex.type];
+        // Vérifier aussi category pour les exercices avec type vide
+        if (ex.category && selectedTypes.includes(ex.category)) return true;
+        return exTypes.some(t => selectedTypes.includes(t));
+      });
     }
 
     // Filtre par muscles sélectionnés
@@ -103,9 +108,14 @@ export default function useExerciseFilters({ exercises = [], favorites = [] }) {
       });
     }
 
-    // Filtre par équipements (multi-selection)
+    // Filtre par équipements (multi-selection, gère les arrays)
     if (selectedEquipments.length > 0) {
-      results = results.filter(ex => selectedEquipments.includes(ex.equipment));
+      results = results.filter(ex => {
+        if (selectedEquipments.includes(ex.equipment)) return true;
+        // Vérifier aussi equipmentList si disponible (array complet)
+        if (ex.equipmentList?.some(e => selectedEquipments.includes(e))) return true;
+        return false;
+      });
     }
 
     return results;
