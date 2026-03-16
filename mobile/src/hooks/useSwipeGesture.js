@@ -1,5 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { Animated, PanResponder, Dimensions } from 'react-native';
+import logger from '../services/logger';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
@@ -104,7 +105,7 @@ export default function useSwipeGesture({
     try {
       await onSwipeRight(currentItem);
     } catch (err) {
-      console.error('[useSwipeGesture] Error in onSwipeRight callback:', err);
+      logger.app.error('[useSwipeGesture] Error in onSwipeRight callback:', err);
     }
   }, [items, position, onSwipeRight, goToNextCard]);
 
@@ -137,7 +138,7 @@ export default function useSwipeGesture({
     try {
       await onSwipeLeft(currentItem);
     } catch (err) {
-      console.error('[useSwipeGesture] Error in onSwipeLeft callback:', err);
+      logger.app.error('[useSwipeGesture] Error in onSwipeLeft callback:', err);
     }
   }, [items, position, onSwipeLeft, goToNextCard]);
 

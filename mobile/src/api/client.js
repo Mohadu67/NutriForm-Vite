@@ -3,6 +3,7 @@ import Constants from 'expo-constants';
 import { DeviceEventEmitter } from 'react-native';
 import { secureStorage } from '../services/storageService';
 import { API_URL as ENV_API_URL } from '@env';
+import logger from '../services/logger';
 
 // En dev, utiliser l'IP de la machine pour les appareils physiques
 const getDevApiUrl = () => {
@@ -21,7 +22,7 @@ const API_URL = __DEV__
   ? getDevApiUrl()
   : (ENV_API_URL || 'https://api.harmonith.fr/api');
 
-if (__DEV__) console.log('[API] Base URL:', API_URL);
+if (__DEV__) logger.app.debug('[API] Base URL:', API_URL);
 
 // Instance axios avec configuration React Native
 const client = axios.create({
@@ -40,7 +41,7 @@ client.interceptors.request.use(
   async (config) => {
     // Log request details in dev (sans données sensibles)
     if (__DEV__) {
-      console.log('[API] Request:', config.method?.toUpperCase(), config.url);
+      logger.app.debug('[API] Request:', config.method?.toUpperCase(), config.url);
       // Ne pas logger les données pour éviter d'exposer passwords/tokens
     }
 
@@ -63,7 +64,7 @@ let refreshPromise = null;
 client.interceptors.response.use(
   (response) => {
     if (__DEV__) {
-      console.log('[API] Response OK:', response.config.url, response.status);
+      logger.app.debug('[API] Response OK:', response.config.url, response.status);
     }
     return response;
   },
@@ -73,8 +74,8 @@ client.interceptors.response.use(
     const url = originalRequest?.url || '';
 
     if (__DEV__) {
-      console.log('[API] Response ERROR:', url, status);
-      console.log('[API] Error message:', error?.response?.data?.message || error?.message);
+      logger.app.debug('[API] Response ERROR:', url, status);
+      logger.app.debug('[API] Error message:', error?.response?.data?.message || error?.message);
     }
 
     // Ne pas essayer de refresh sur les routes d'auth

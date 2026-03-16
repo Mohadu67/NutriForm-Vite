@@ -20,6 +20,7 @@ import { theme } from '../../theme';
 import ExerciseSelector from '../../components/programs/ExerciseSelector';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
+import logger from '../../services/logger';
 
 // Configuration des types de programme
 const PROGRAM_TYPES = [
@@ -160,7 +161,7 @@ export default function ProgramFormScreen() {
         Alert.alert('Erreur', 'Réponse invalide du serveur');
       }
     } catch (error) {
-      console.error('[PROGRAM FORM] Upload cover error:', error);
+      logger.app.error('[PROGRAM FORM] Upload cover error:', error);
       Alert.alert('Erreur', 'Impossible de télécharger l\'image');
     } finally {
       setUploadingCover(false);

@@ -22,6 +22,7 @@ import { getExercise } from '../../api/exercises';
 import CycleItem from '../../components/programs/CycleItem';
 import RatingDisplay from '../../components/common/RatingDisplay';
 import { theme } from '../../theme';
+import logger from '../../services/logger';
 
 // Configuration des types
 const PROGRAM_TYPES = {
@@ -108,7 +109,7 @@ export default function ProgramDetailScreen() {
                 exerciseData = result.data;
               }
             } catch (e) {
-              console.log('[ProgramDetail] Failed to get exercise by ID:', cycle.exerciseId);
+              logger.app.debug('[ProgramDetail] Failed to get exercise by ID:', cycle.exerciseId);
             }
           }
 
@@ -126,7 +127,7 @@ export default function ProgramDetailScreen() {
                 exerciseData = result.data;
               }
             } catch (e) {
-              console.log('[ProgramDetail] Failed to get exercise by slug');
+              logger.app.debug('[ProgramDetail] Failed to get exercise by slug');
             }
           }
 
@@ -137,7 +138,7 @@ export default function ProgramDetailScreen() {
             }
 
             const imageUrl = exerciseData.mainImage || (exerciseData.images && exerciseData.images[0]?.url);
-            console.log('[ProgramDetail] Enriched cycle:', cycle.exerciseName, '-> Image:', imageUrl);
+            logger.app.debug('[ProgramDetail] Enriched cycle:', cycle.exerciseName, '-> Image:', imageUrl);
             return {
               ...cycle,
               exerciseId: exerciseData._id || exerciseData.exoId || cycle.exerciseId,
@@ -146,7 +147,7 @@ export default function ProgramDetailScreen() {
               exerciseData: exerciseData,
             };
           } else {
-            console.log('[ProgramDetail] Could not find exercise:', cycle.exerciseName || cycle.exerciseId);
+            logger.app.debug('[ProgramDetail] Could not find exercise:', cycle.exerciseName || cycle.exerciseId);
           }
         }
         return cycle;
@@ -166,7 +167,7 @@ export default function ProgramDetailScreen() {
     setLoading(true);
     const data = await fetchProgramById(programId);
     if (data) {
-      console.log('[ProgramDetail] Program loaded:', {
+      logger.app.debug('[ProgramDetail] Program loaded:', {
         name: data.name,
         avgRating: data.avgRating,
         ratingsCount: data.ratingsCount,
@@ -198,7 +199,7 @@ export default function ProgramDetailScreen() {
           setExerciseModalVisible(true);
         }
       } catch (e) {
-        console.log('[ProgramDetail] Failed to load exercise:', cycle.exerciseId);
+        logger.app.debug('[ProgramDetail] Failed to load exercise:', cycle.exerciseId);
       }
     }
   };
@@ -314,7 +315,7 @@ export default function ProgramDetailScreen() {
 
   const handleRate = async (rating) => {
     const result = await rateProgram(program._id, rating);
-    console.log('[ProgramDetail] handleRate result:', result, 'program exists:', !!program);
+    logger.app.debug('[ProgramDetail] handleRate result:', result, 'program exists:', !!program);
     // Update local and program state with new ratings data
     if (result.success && program) {
       setUserRating(result.userRating);

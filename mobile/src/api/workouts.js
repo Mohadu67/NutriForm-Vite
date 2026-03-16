@@ -3,6 +3,7 @@
  */
 import apiClient from './client';
 import { endpoints } from './endpoints';
+import logger from '../services/logger';
 
 /**
  * Convertir les donnees du WorkoutContext vers le format attendu par le backend
@@ -96,7 +97,7 @@ export async function saveSession(workout) {
       data: response.data,
     };
   } catch (error) {
-    console.log('[WORKOUTS API] Save session error:', error.message);
+    logger.app.debug('[WORKOUTS API] Save session error:', error.message);
     // 403 = pas premium, mais on ne bloque pas l'app
     if (error.response?.status === 403) {
       return { success: false, error: 'premium_required', data: null };
@@ -131,7 +132,7 @@ export async function getSessions(params = {}) {
       nextCursor: response.data?.nextCursor || null,
     };
   } catch (error) {
-    console.log('[WORKOUTS API] Get sessions error:', error.message);
+    logger.app.debug('[WORKOUTS API] Get sessions error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -148,7 +149,7 @@ export async function getSessionById(id) {
       data: transformBackendToWorkoutFormat(response.data),
     };
   } catch (error) {
-    console.log('[WORKOUTS API] Get session error:', error.message);
+    logger.app.debug('[WORKOUTS API] Get session error:', error.message);
     return { success: false, data: null, error: error.message };
   }
 }
@@ -165,7 +166,7 @@ export async function updateSession(id, updates) {
       data: response.data,
     };
   } catch (error) {
-    console.log('[WORKOUTS API] Update session error:', error.message);
+    logger.app.debug('[WORKOUTS API] Update session error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -179,7 +180,7 @@ export async function deleteSession(id) {
 
     return { success: true };
   } catch (error) {
-    console.log('[WORKOUTS API] Delete session error:', error.message);
+    logger.app.debug('[WORKOUTS API] Delete session error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -198,7 +199,7 @@ export async function getDailySummary(from, to) {
       data: response.data?.items || [],
     };
   } catch (error) {
-    console.log('[WORKOUTS API] Get daily summary error:', error.message);
+    logger.app.debug('[WORKOUTS API] Get daily summary error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -219,7 +220,7 @@ export async function getLastWeekSession() {
       data: transformBackendToWorkoutFormat(response.data.session),
     };
   } catch (error) {
-    console.log('[WORKOUTS API] Get last week session error:', error.message);
+    logger.app.debug('[WORKOUTS API] Get last week session error:', error.message);
     return { success: false, data: null, error: error.message };
   }
 }
@@ -319,7 +320,7 @@ export async function getLastExerciseData(exerciseIdOrName) {
 
     return { success: true, data };
   } catch (error) {
-    console.log('[WORKOUTS API] Get last exercise data error:', error.message);
+    logger.app.debug('[WORKOUTS API] Get last exercise data error:', error.message);
     return { success: false, data: null, error: error.message };
   }
 }

@@ -19,6 +19,7 @@ import { Picker } from '@react-native-picker/picker';
 import { useRecipe } from '../../contexts/RecipeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { theme } from '../../theme';
+import logger from '../../services/logger';
 
 const DIFFICULTY_OPTIONS = [
   { value: '', label: 'Sélectionner la difficulté' },
@@ -271,7 +272,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
         );
       }
     } catch (error) {
-      console.error('Error saving recipe:', error);
+      logger.app.error('Error saving recipe:', error);
       // Afficher un message plus détaillé si disponible
       const errorMsg = error?.response?.data?.message ||
                       error?.message ||

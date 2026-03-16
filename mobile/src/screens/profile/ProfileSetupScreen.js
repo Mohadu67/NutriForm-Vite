@@ -19,6 +19,7 @@ import * as Location from 'expo-location';
 import { theme, colors } from '../../theme';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
+import logger from '../../services/logger';
 
 const WORKOUT_TYPES = [
   { key: 'musculation', label: 'Musculation', icon: 'barbell' },
@@ -106,7 +107,7 @@ export default function ProfileSetupScreen() {
       const response = await apiClient.get(endpoints.profile.me);
       const profile = response.data.profile; // Le backend retourne { profile: {...} }
 
-      console.log('[PROFILE SETUP] Loaded profile:', profile);
+      logger.app.debug('[PROFILE SETUP] Loaded profile:', profile);
 
       // Profil de base
       setBio(profile?.bio || '');
@@ -159,7 +160,7 @@ export default function ProfileSetupScreen() {
         setMaxAge(String(prefs.preferredAgeRange?.max || 99));
       }
     } catch (error) {
-      console.error('[PROFILE SETUP] Error loading:', error);
+      logger.app.error('[PROFILE SETUP] Error loading:', error);
       Alert.alert('Erreur', 'Impossible de charger le profil');
     } finally {
       setLoading(false);
@@ -188,7 +189,7 @@ export default function ProfileSetupScreen() {
           longitude,
         };
 
-        console.log('[PROFILE SETUP] Saving location:', locationData);
+        logger.app.debug('[PROFILE SETUP] Saving location:', locationData);
         await apiClient.put(endpoints.profile.location, locationData);
       }
 
@@ -221,14 +222,14 @@ export default function ProfileSetupScreen() {
         },
       };
 
-      console.log('[PROFILE SETUP] Saving preferences:', preferencesData);
+      logger.app.debug('[PROFILE SETUP] Saving preferences:', preferencesData);
       await apiClient.put(endpoints.profile.preferences, preferencesData);
 
       Alert.alert('Succès', 'Profil mis à jour avec succès !');
       navigation.goBack();
 
     } catch (error) {
-      console.error('[PROFILE SETUP] Error saving:', error);
+      logger.app.error('[PROFILE SETUP] Error saving:', error);
       Alert.alert('Erreur', error.response?.data?.error || 'Erreur lors de la sauvegarde du profil');
     } finally {
       setSaving(false);
@@ -305,7 +306,7 @@ export default function ProfileSetupScreen() {
           if (address.postalCode) setPostalCode(address.postalCode);
         }
       } catch (geocodeError) {
-        console.log('[LOCATION] Geocoding error:', geocodeError);
+        logger.app.debug('[LOCATION] Geocoding error:', geocodeError);
       }
 
       Alert.alert(
@@ -314,7 +315,7 @@ export default function ProfileSetupScreen() {
         [{ text: 'OK' }]
       );
     } catch (error) {
-      console.error('[LOCATION] Error:', error);
+      logger.app.error('[LOCATION] Error:', error);
       Alert.alert(
         'Erreur',
         'Impossible d\'obtenir votre position. Veuillez réessayer.',

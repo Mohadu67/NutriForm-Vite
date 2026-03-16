@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Platform, Alert, Linking } from 'react-native';
 import healthService from '../services/healthService';
+import logger from '../services/logger';
 
 export default function useHealthData() {
   const [isAvailable, setIsAvailable] = useState(false);
@@ -33,7 +34,7 @@ export default function useHealthData() {
         setHasPermission(permissions.length > 0);
       }
     } catch (err) {
-      console.error('[useHealthData] Init error:', err);
+      logger.app.error('[useHealthData] Init error:', err);
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -74,7 +75,7 @@ export default function useHealthData() {
 
       return false;
     } catch (err) {
-      console.error('[useHealthData] Permission error:', err);
+      logger.app.error('[useHealthData] Permission error:', err);
       setError(err.message);
       return false;
     } finally {
@@ -94,7 +95,7 @@ export default function useHealthData() {
       setTodayData(data);
       return data;
     } catch (err) {
-      console.error('[useHealthData] Refresh today error:', err);
+      logger.app.error('[useHealthData] Refresh today error:', err);
       setError(err.message);
       return null;
     } finally {
@@ -114,7 +115,7 @@ export default function useHealthData() {
       setWeeklyData(data);
       return data;
     } catch (err) {
-      console.error('[useHealthData] Refresh weekly error:', err);
+      logger.app.error('[useHealthData] Refresh weekly error:', err);
       setError(err.message);
       return null;
     } finally {
@@ -134,7 +135,7 @@ export default function useHealthData() {
       setBodyMetrics(data);
       return data;
     } catch (err) {
-      console.error('[useHealthData] Refresh body metrics error:', err);
+      logger.app.error('[useHealthData] Refresh body metrics error:', err);
       setError(err.message);
       return null;
     } finally {
@@ -154,7 +155,7 @@ export default function useHealthData() {
       setMenstrualData(data);
       return data;
     } catch (err) {
-      console.error('[useHealthData] Refresh menstrual data error:', err);
+      logger.app.error('[useHealthData] Refresh menstrual data error:', err);
       setError(err.message);
       return null;
     } finally {

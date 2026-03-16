@@ -20,6 +20,7 @@ import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
+import logger from '../../services/logger';
 
 export default function ChangeEmailScreen() {
   const colorScheme = useColorScheme();
@@ -72,7 +73,7 @@ export default function ChangeEmailScreen() {
 
       setEmailSent(true);
     } catch (error) {
-      console.error('[CHANGE_EMAIL] Error:', error);
+      logger.app.error('[CHANGE_EMAIL] Error:', error);
       const message = error.response?.data?.message || 'Erreur lors de la demande';
       Alert.alert('Erreur', message);
     } finally {

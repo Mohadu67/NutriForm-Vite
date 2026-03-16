@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Alert } from 'react-native';
 import purchaseService from '../services/purchaseService';
+import logger from '../services/logger';
 
 export default function usePurchases(userId = null) {
   const [isLoading, setIsLoading] = useState(true);
@@ -44,7 +45,7 @@ export default function usePurchases(userId = null) {
         setIsPremium(premiumActive);
       });
     } catch (err) {
-      console.error('[usePurchases] Init error:', err);
+      logger.app.error('[usePurchases] Init error:', err);
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -75,7 +76,7 @@ export default function usePurchases(userId = null) {
         return false;
       }
     } catch (err) {
-      console.error('[usePurchases] Purchase monthly error:', err);
+      logger.app.error('[usePurchases] Purchase monthly error:', err);
       Alert.alert('Erreur', 'Une erreur est survenue lors de l\'achat. Veuillez reessayer.');
       return false;
     } finally {
@@ -107,7 +108,7 @@ export default function usePurchases(userId = null) {
         return false;
       }
     } catch (err) {
-      console.error('[usePurchases] Purchase yearly error:', err);
+      logger.app.error('[usePurchases] Purchase yearly error:', err);
       Alert.alert('Erreur', 'Une erreur est survenue lors de l\'achat. Veuillez reessayer.');
       return false;
     } finally {
@@ -132,7 +133,7 @@ export default function usePurchases(userId = null) {
         return false;
       }
     } catch (err) {
-      console.error('[usePurchases] Restore error:', err);
+      logger.app.error('[usePurchases] Restore error:', err);
       Alert.alert('Erreur', 'Une erreur est survenue lors de la restauration.');
       return false;
     } finally {

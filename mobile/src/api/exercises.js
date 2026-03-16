@@ -3,6 +3,7 @@
  */
 import apiClient from './client';
 import { endpoints } from './endpoints';
+import logger from '../services/logger';
 
 /**
  * Recuperer tous les exercices avec filtres optionnels
@@ -46,7 +47,7 @@ export async function getExercises(params = {}) {
       pagination: response.data?.pagination || {},
     };
   } catch (error) {
-    console.log('[EXERCISES API] Get error:', error.message);
+    logger.app.debug('[EXERCISES API] Get error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -62,7 +63,7 @@ export async function getExercise(idOrSlug) {
       data: response.data?.data || null,
     };
   } catch (error) {
-    console.log('[EXERCISES API] Get one error:', error.message);
+    logger.app.debug('[EXERCISES API] Get one error:', error.message);
     return { success: false, data: null, error: error.message };
   }
 }
@@ -78,7 +79,7 @@ export async function getExercisesByCategory(category, limit = 50) {
       data: response.data?.data || [],
     };
   } catch (error) {
-    console.log('[EXERCISES API] Get by category error:', error.message);
+    logger.app.debug('[EXERCISES API] Get by category error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -94,7 +95,7 @@ export async function getExercisesByMuscle(muscle, limit = 50) {
       data: response.data?.data || [],
     };
   } catch (error) {
-    console.log('[EXERCISES API] Get by muscle error:', error.message);
+    logger.app.debug('[EXERCISES API] Get by muscle error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -110,7 +111,7 @@ export async function getCategories() {
       data: response.data?.data || [],
     };
   } catch (error) {
-    console.log('[EXERCISES API] Get categories error:', error.message);
+    logger.app.debug('[EXERCISES API] Get categories error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -126,7 +127,7 @@ export async function getMuscles() {
       data: response.data?.data || [],
     };
   } catch (error) {
-    console.log('[EXERCISES API] Get muscles error:', error.message);
+    logger.app.debug('[EXERCISES API] Get muscles error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -142,7 +143,7 @@ export async function getPopularExercises(limit = 10) {
       data: response.data?.data || [],
     };
   } catch (error) {
-    console.log('[EXERCISES API] Get popular error:', error.message);
+    logger.app.debug('[EXERCISES API] Get popular error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }

@@ -20,6 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../../theme';
 import { getMutualMatches } from '../../api/matching';
 import ProfileModal from '../../components/matching/ProfileModal';
+import logger from '../../services/logger';
 
 const FITNESS_LEVELS = {
   beginner: { label: 'Debutant', color: '#22C55E' },
@@ -53,7 +54,7 @@ export default function MatchesListScreen() {
         setMatches(result.matches);
       }
     } catch (err) {
-      console.log('[MATCHES LIST] Error:', err.message);
+      logger.app.debug('[MATCHES LIST] Error:', err.message);
     } finally {
       setLoading(false);
       setRefreshing(false);

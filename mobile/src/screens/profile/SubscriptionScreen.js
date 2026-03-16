@@ -19,6 +19,7 @@ import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
+import logger from '../../services/logger';
 
 /**
  * SubscriptionScreen - Gestion de l'abonnement Premium
@@ -41,7 +42,7 @@ export default function SubscriptionScreen() {
       const response = await apiClient.get(endpoints.subscription.status);
       setSubscription(response.data);
     } catch (error) {
-      console.error('[SUBSCRIPTION] Error loading:', error);
+      logger.app.error('[SUBSCRIPTION] Error loading:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -75,7 +76,7 @@ export default function SubscriptionScreen() {
         }
       }
     } catch (error) {
-      console.error('[SUBSCRIPTION] Checkout error:', error);
+      logger.app.error('[SUBSCRIPTION] Checkout error:', error);
       const message = error.response?.data?.error || 'Erreur lors de la creation de la session de paiement';
       Alert.alert('Erreur', message);
     } finally {
@@ -103,7 +104,7 @@ export default function SubscriptionScreen() {
               );
               await loadSubscription();
             } catch (error) {
-              console.error('[SUBSCRIPTION] Cancel error:', error);
+              logger.app.error('[SUBSCRIPTION] Cancel error:', error);
               Alert.alert('Erreur', 'Impossible d\'annuler l\'abonnement');
             } finally {
               setCancelLoading(false);
@@ -128,7 +129,7 @@ export default function SubscriptionScreen() {
         }
       }
     } catch (error) {
-      console.error('[SUBSCRIPTION] Portal error:', error);
+      logger.app.error('[SUBSCRIPTION] Portal error:', error);
       Alert.alert('Erreur', 'Impossible d\'ouvrir le portail client');
     } finally {
       setCheckoutLoading(false);

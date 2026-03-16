@@ -3,6 +3,7 @@
  */
 import apiClient from './client';
 import { endpoints } from './endpoints';
+import logger from '../services/logger';
 
 /**
  * Ajouter une entree dans l'historique
@@ -21,7 +22,7 @@ export async function addHistory(action, meta) {
       data: response.data,
     };
   } catch (error) {
-    console.log('[HISTORY API] Add error:', error.message);
+    logger.app.debug('[HISTORY API] Add error:', error.message);
     return { success: false, error: error.message };
   }
 }
@@ -38,7 +39,7 @@ export async function getHistory() {
       data: response.data || [],
     };
   } catch (error) {
-    console.log('[HISTORY API] Get error:', error.message);
+    logger.app.debug('[HISTORY API] Get error:', error.message);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -55,7 +56,7 @@ export async function getUserSummary() {
       data: response.data || {},
     };
   } catch (error) {
-    console.log('[HISTORY API] Get summary error:', error.message);
+    logger.app.debug('[HISTORY API] Get summary error:', error.message);
     return { success: false, data: {}, error: error.message };
   }
 }
