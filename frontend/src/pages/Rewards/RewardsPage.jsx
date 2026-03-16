@@ -7,6 +7,7 @@ import { getActivePartners, getMyRewards, redeemPartnerOffer } from '../../share
 import { checkXpRedemptionEligibility, redeemXpForPremium } from '../../shared/api/xpRedemption';
 import { LockIcon, CheckIcon, CopyIcon } from '../../components/Icons/GlobalIcons';
 import ConfirmModal from '../../components/Modal/ConfirmModal';
+import { XP_COST_PER_MONTH } from '../../shared/config/xp';
 import styles from './RewardsPage.module.css';
 
 const CATEGORIES = {
@@ -109,8 +110,8 @@ export default function RewardsPage() {
   };
 
   const handleRedeemPremium = () => {
-    if (userXp < 10000) {
-      toast.error(`Il te manque ${(10000 - userXp).toLocaleString()} XP`);
+    if (userXp < XP_COST_PER_MONTH) {
+      toast.error(`Il te manque ${(XP_COST_PER_MONTH - userXp).toLocaleString()} XP`);
       return;
     }
     setRedeemModal({ isOpen: true, partner: null, type: 'premium' });
@@ -281,25 +282,25 @@ export default function RewardsPage() {
                   Acces illimite a toutes les fonctionnalites: GymBro, creation de contenu, et plus encore.
                 </p>
                 <div className={styles.premiumCost}>
-                  <span className={styles.premiumXp}>10 000 XP</span>
+                  <span className={styles.premiumXp}>{XP_COST_PER_MONTH.toLocaleString()} XP</span>
                 </div>
                 <div className={styles.premiumProgress}>
                   <div
                     className={styles.premiumProgressBar}
-                    style={{ width: `${Math.min((userXp / 10000) * 100, 100)}%` }}
+                    style={{ width: `${Math.min((userXp / XP_COST_PER_MONTH) * 100, 100)}%` }}
                   />
                 </div>
                 <span className={styles.premiumProgressText}>
-                  {userXp >= 10000 ? 'Disponible !' : `${userXp.toLocaleString()} / 10 000 XP`}
+                  {userXp >= XP_COST_PER_MONTH ? 'Disponible !' : `${userXp.toLocaleString()} / ${XP_COST_PER_MONTH.toLocaleString()} XP`}
                 </span>
-                {userXp >= 10000 ? (
+                {userXp >= XP_COST_PER_MONTH ? (
                   <button className={styles.premiumBtn} onClick={handleRedeemPremium}>
                     Debloquer maintenant
                   </button>
                 ) : (
                   <button className={styles.premiumBtnLocked} disabled>
                     <LockIcon size={16} />
-                    Il te manque {(10000 - userXp).toLocaleString()} XP
+                    Il te manque {(XP_COST_PER_MONTH - userXp).toLocaleString()} XP
                   </button>
                 )}
               </div>
@@ -483,7 +484,7 @@ export default function RewardsPage() {
         title={redeemModal.type === 'premium' ? 'Debloquer Premium' : 'Debloquer cette offre'}
         message={
           redeemModal.type === 'premium'
-            ? `Utiliser 10 000 XP pour obtenir 1 mois Premium ?`
+            ? `Utiliser ${XP_COST_PER_MONTH.toLocaleString()} XP pour obtenir 1 mois Premium ?`
             : redeemModal.partner
               ? `Utiliser ${redeemModal.partner.xpCost.toLocaleString()} XP pour debloquer "${redeemModal.partner.offerTitle}" chez ${redeemModal.partner.name} ?`
               : ''

@@ -53,7 +53,7 @@ export default function SupportScreen() {
     },
     {
       question: 'Comment echanger mes XP ?',
-      answer: 'Rendez-vous dans Profil > Recompenses. Avec 10 000 XP, vous pouvez obtenir 1 mois de Premium gratuit.',
+      answer: 'Rendez-vous dans Profil > Recompenses. Avec 1 000 XP, vous pouvez obtenir 1 mois de Premium gratuit.',
     },
   ];
 

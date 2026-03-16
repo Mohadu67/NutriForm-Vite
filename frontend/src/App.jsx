@@ -7,6 +7,7 @@ import UpdateBanner from "./components/UpdateBanner/UpdateBanner.jsx";
 import CanonicalLink from "./components/CanonicalLink/CanonicalLink.jsx";
 import NotificationPrompt from "./components/Notifications/NotificationPrompt.jsx";
 import LoadingSpinner from "./components/Shared/LoadingSpinner.jsx";
+import { AuthProvider } from "./contexts/AuthContext.jsx";
 import { ChatProvider } from "./contexts/ChatContext.jsx";
 import { WebSocketProvider } from "./contexts/WebSocketContext.jsx";
 import { initializeNotifications } from "./services/notificationService.js";
@@ -84,6 +85,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <Toaster richColors closeButton />
+      <AuthProvider>
       <WebSocketProvider>
         <ChatProvider>
           <UpdatePrompt />
@@ -137,7 +139,7 @@ export default function App() {
 
             {/* Profile & Matching */}
             <Route path="/profile/setup" element={<ProfileSetup />} />
-            <Route path="/matching" element={<MatchingPage />} />
+            <Route path="/matching" element={<ProtectedRoute requirePremium><MatchingPage /></ProtectedRoute>} />
 
             {/* Chat - lazy loaded (Premium only) */}
             <Route path="/chat/:matchId" element={<ProtectedRoute requirePremium><Chat /></ProtectedRoute>} />
@@ -155,6 +157,7 @@ export default function App() {
         </Suspense>
         </ChatProvider>
       </WebSocketProvider>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }

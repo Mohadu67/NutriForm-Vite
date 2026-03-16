@@ -7,24 +7,25 @@ import {
   isSubscribed
 } from '../../services/notificationService';
 import { storage } from '../../shared/utils/storage';
-import { secureApiCall } from '../../utils/authService';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import { BellIcon } from '../Icons/GlobalIcons';
 import styles from './NotificationPrompt.module.css';
 
 const NotificationPrompt = () => {
+  const { isLoggedIn } = useAuth();
   const [supported, setSupported] = useState(false);
   const [permission, setPermission] = useState('default');
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
-  const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
-    checkAuthAndNotificationStatus();
-  }, []);
+    if (!isLoggedIn) return;
+    checkNotificationStatus();
+  }, [isLoggedIn]);
 
-  const checkAuthAndNotificationStatus = async () => {
+  const checkNotificationStatus = async () => {
     // Vérifier si le prompt a été dismissed récemment
     const dismissedTime = storage.get('notificationPromptDismissed');
     const dismissCount = parseInt(storage.get('notificationPromptDismissCount') || '0', 10);
@@ -34,25 +35,11 @@ const NotificationPrompt = () => {
       const dismissed = parseInt(dismissedTime, 10);
       const hoursSinceDismiss = (now - dismissed) / (1000 * 60 * 60);
 
-      // Augmenter le délai selon le nombre de dismiss: 24h, 72h, 168h (1 semaine)
       const minHours = dismissCount <= 1 ? 24 : dismissCount <= 2 ? 72 : 168;
 
       if (hoursSinceDismiss < minHours) {
         return;
       }
-    }
-
-    // Vérifier l'authentification côté SERVEUR (pas juste localStorage)
-    try {
-      const response = await secureApiCall('/me');
-      if (!response.ok || response.status === 401) {
-        setIsAuth(false);
-        return;
-      }
-      setIsAuth(true);
-    } catch {
-      setIsAuth(false);
-      return;
     }
 
     // Vérifier le support
@@ -70,9 +57,8 @@ const NotificationPrompt = () => {
     const isSub = await isSubscribed();
     setSubscribed(isSub);
 
-    // Afficher le prompt si supporté, authentifié, pas encore abonné, et permission pas refusée
+    // Afficher le prompt si supporté, pas encore abonné, et permission pas refusée
     if (isSupported && !isSub && Notification.permission !== 'denied') {
-      // Afficher après 3 secondes pour ne pas déranger immédiatement
       setTimeout(() => setShowPrompt(true), 3000);
     }
   };
