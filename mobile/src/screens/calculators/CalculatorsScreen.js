@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { theme } from '../../theme';
 import { saveIMCCalc, saveCalorieCalc, saveRMCalc, saveFCMaxCalc } from '../../api/history';
+import logger from '../../services/logger';
 
 // Clé de stockage pour les données des calculateurs
 const CALCULATOR_STORAGE_KEY = '@calculator_data';
@@ -168,10 +169,10 @@ export default function CalculatorsScreen() {
         }
         backendSuccess = result?.success;
         if (backendSuccess) {
-          console.log(`[CALCULATOR] ${type} synchronise avec le backend`);
+          logger.app.debug(`[Calculator] ${type} synced with backend`);
         }
       } catch (backendError) {
-        console.log('[CALCULATOR] Erreur sync backend:', backendError.message);
+        logger.app.warn('[Calculator] Backend sync error', backendError.message);
       }
 
       // 2. Sauvegarder en local (backup)

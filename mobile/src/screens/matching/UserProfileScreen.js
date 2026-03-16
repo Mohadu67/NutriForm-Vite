@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { theme, colors } from '../../theme';
 import { getUserProfile } from '../../api/matching';
+import logger from '../../services/logger';
 
 const FITNESS_LEVELS = {
   beginner: { label: 'Debutant', color: colors.success, gradient: [colors.success, '#3D9140'] },
@@ -79,7 +80,7 @@ export default function UserProfileScreen({ route, navigation }) {
             _id: targetUserId,
           });
         } catch (err) {
-          console.log('Error loading profile:', err);
+          logger.app.debug('Error loading profile:', err);
           // Fallback sur les donnees de base si l'API echoue
           if (userParam) {
             setUser(userParam);

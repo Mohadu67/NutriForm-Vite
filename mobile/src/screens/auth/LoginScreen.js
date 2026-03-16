@@ -18,6 +18,7 @@ import { AuthHeader, PasswordInput, SocialAuthButtons } from '../../components/a
 import ErrorModal from '../../components/ui/ErrorModal';
 import SuccessModal from '../../components/ui/SuccessModal';
 import authService from '../../api/auth';
+import logger from '../../services/logger';
 
 // Module-level variable to persist email across component remounts
 let lastAttemptedEmail = '';
@@ -79,7 +80,7 @@ const LoginScreen = ({ navigation }) => {
     } catch (err) {
       // Error is already set in AuthContext by the login function
       // No need to set local state - it would be lost on remount anyway
-      console.log('🔴 Login error caught in screen:', err?.message);
+      logger.app.debug('Login error caught in screen:', err?.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -89,12 +90,12 @@ const LoginScreen = ({ navigation }) => {
     try {
       setIsResending(true);
       const emailToSend = lastAttemptedEmail || email.trim().toLowerCase();
-      console.log('📧 Resending verification to:', emailToSend);
+      logger.app.debug('Resending verification to:', emailToSend);
       await authService.resendVerificationEmail({ email: emailToSend });
       setModalSuccess('Un nouvel email de vérification a été envoyé. Vérifie ta boîte mail et tes spams.');
       clearError();
     } catch (err) {
-      console.error('[LoginScreen] Resend email failed:', err?.response?.data?.message || err.message);
+      logger.app.error('[LoginScreen] Resend email failed:', err?.response?.data?.message || err.message);
     } finally {
       setIsResending(false);
     }

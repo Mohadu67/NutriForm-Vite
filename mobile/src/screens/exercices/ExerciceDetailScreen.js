@@ -17,6 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SafeImage from '../../components/ui/SafeImage';
 import theme from '../../theme';
 import { useWorkout } from '../../contexts/WorkoutContext';
+import logger from '../../services/logger';
 
 const { width } = Dimensions.get('window');
 const FAVORITES_KEY = '@exercices_favorites';
@@ -290,7 +291,7 @@ export default function ExerciceDetailScreen({ navigation, route }) {
         setIsFavorite(favorites.includes(exercice.id));
       }
     } catch (error) {
-      console.log('Erreur chargement favori:', error);
+      logger.app.debug('Erreur chargement favori:', error);
     }
   };
 
@@ -315,7 +316,7 @@ export default function ExerciceDetailScreen({ navigation, route }) {
       await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
       setIsFavorite(!isFavorite);
     } catch (error) {
-      console.log('Erreur toggle favori:', error);
+      logger.app.debug('Erreur toggle favori:', error);
     }
   };
 

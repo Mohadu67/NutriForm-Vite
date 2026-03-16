@@ -22,6 +22,7 @@ import {
   InstructionsList,
 } from '../../components/recipes';
 import RatingDisplay from '../../components/common/RatingDisplay';
+import logger from '../../services/logger';
 
 const { width } = Dimensions.get('window');
 
@@ -62,7 +63,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
       // The list view excludes these fields for performance
       const result = await fetchRecipeById(recipeId);
       if (result) {
-        console.log('[RecipeDetail] Recipe loaded:', {
+        logger.app.debug('[RecipeDetail] Recipe loaded:', {
           title: result.title,
           avgRating: result.avgRating,
           ratingsCount: result.ratingsCount,
@@ -81,7 +82,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
         navigation.goBack();
       }
     } catch (error) {
-      console.error('Error loading recipe:', error);
+      logger.app.error('Error loading recipe:', error);
       Alert.alert('Erreur', 'Impossible de charger la recette');
       navigation.goBack();
     } finally {
@@ -250,7 +251,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
 
   const handleRate = async (rating) => {
     const result = await rateRecipe(recipeId, rating);
-    console.log('[RecipeDetail] handleRate result:', result, 'recipe exists:', !!recipe);
+    logger.app.debug('[RecipeDetail] handleRate result:', result, 'recipe exists:', !!recipe);
     // Update local and recipe state with new ratings data
     if (result.success && recipe) {
       setUserRating(result.userRating);
@@ -302,7 +303,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
   const canUnpublish = isOwnRecipe && isPremium && (recipe.status === 'public' || recipe.status === 'pending');
 
   // Debug logging
-  console.log('[RecipeDetail] Owner check:', {
+  logger.app.debug('[RecipeDetail] Owner check:', {
     recipeTitle: recipe.title,
     userId: user?._id || user?.id,
     authorId: authorId,

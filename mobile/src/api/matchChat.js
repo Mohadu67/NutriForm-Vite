@@ -1,5 +1,6 @@
 import client from './client';
 import endpoints from './endpoints';
+import logger from '../services/logger';
 
 /**
  * API for P2P chat between mutual matches
@@ -45,7 +46,7 @@ export const getOrCreateConversation = async (matchId) => {
  */
 export const sendMessage = async (conversationId, messageData) => {
   const response = await client.post(endpoints.matchChat.messages(conversationId), messageData);
-  console.log('[API] sendMessage response:', response.data);
+  logger.app.debug('[API] sendMessage response:', response.data);
   // L'API peut retourner { message: {...} } ou directement {...}
   return response.data.message || response.data;
 };
@@ -58,7 +59,7 @@ export const sendMessage = async (conversationId, messageData) => {
  */
 export const getMessages = async (conversationId, params = {}) => {
   const response = await client.get(endpoints.matchChat.messages(conversationId), { params });
-  console.log('[API] getMessages response:', response.data);
+  logger.app.debug('[API] getMessages response:', response.data);
   // L'API peut retourner { messages: [...] } ou directement [...]
   return Array.isArray(response.data) ? response.data : (response.data.messages || []);
 };

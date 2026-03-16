@@ -22,6 +22,7 @@ import { useRecipe } from '../../contexts/RecipeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import useRecipeFilters from '../../hooks/useRecipeFilters';
 import RecipeCard from '../../components/recipes/RecipeCard';
+import logger from '../../services/logger';
 
 const CUISINE_OPTIONS = [
   { value: 'francaise', label: 'Française', icon: '🇫🇷' },
@@ -112,15 +113,15 @@ export default function RecipesScreen() {
   }, [activeTab]);
 
   const loadData = async () => {
-    console.log('[RecipesScreen] Loading recipes...');
+    logger.app.debug('[RecipesScreen] Loading recipes...');
     const result = await fetchRecipes({ limit: 100 });
-    console.log('[RecipesScreen] Recipes loaded:', result?.length || 0);
+    logger.app.debug('[RecipesScreen] Recipes loaded:', result?.length || 0);
   };
 
   const loadMyRecipes = async () => {
-    console.log('[RecipesScreen] Loading my recipes...');
+    logger.app.debug('[RecipesScreen] Loading my recipes...');
     const result = await fetchMyRecipes();
-    console.log('[RecipesScreen] My recipes loaded:', result?.length || 0);
+    logger.app.debug('[RecipesScreen] My recipes loaded:', result?.length || 0);
   };
 
   const onRefresh = async () => {

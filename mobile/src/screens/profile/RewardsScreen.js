@@ -21,6 +21,7 @@ import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
+import logger from '../../services/logger';
 
 const CATEGORIES = {
   sport: 'Sport',
@@ -65,7 +66,7 @@ export default function RewardsScreen() {
           setPartners(partnersResponse.data.partners || []);
         }
       } catch (e) {
-        console.log('[REWARDS] Partners error:', e);
+        logger.app.debug('[REWARDS] Partners error:', e);
       }
 
       // Mes recompenses
@@ -77,10 +78,10 @@ export default function RewardsScreen() {
           setRedeemedPartners(redeemed);
         }
       } catch (e) {
-        console.log('[REWARDS] My rewards error:', e);
+        logger.app.debug('[REWARDS] My rewards error:', e);
       }
     } catch (error) {
-      console.error('[REWARDS] Load error:', error);
+      logger.app.error('[REWARDS] Load error:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);

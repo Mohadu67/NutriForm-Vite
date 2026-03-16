@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import logger from '../services/logger';
 
 /**
  * Hook pour gérer le filtrage de recettes
@@ -23,7 +24,7 @@ export default function useRecipeFilters({ recipes = [], favorites = [] }) {
    * Filtre les recettes selon tous les critères actifs
    */
   const filteredRecipes = useMemo(() => {
-    console.log('[useRecipeFilters] Initial recipes count:', recipes.length);
+    logger.app.debug('[useRecipeFilters] Initial recipes count:', recipes.length);
     let results = [...recipes];
 
     // Filtre par texte de recherche
@@ -75,7 +76,7 @@ export default function useRecipeFilters({ recipes = [], favorites = [] }) {
       );
     }
 
-    console.log('[useRecipeFilters] Filtered recipes count:', results.length);
+    logger.app.debug('[useRecipeFilters] Filtered recipes count:', results.length);
     return results;
   }, [
     recipes,

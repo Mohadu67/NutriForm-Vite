@@ -290,7 +290,7 @@ export default function ExercicesScreen() {
         setTotalSessions(count);
       }
     } catch (error) {
-      console.error('Error loading session count:', error);
+      logger.app.error('Error loading session count:', error);
     }
   };
 

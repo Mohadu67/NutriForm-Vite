@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useColorScheme } from 'react-native';
+import logger from '../services/logger';
 
 /**
  * Hook pour créer des styles adaptés au thème (light/dark)
@@ -32,7 +33,7 @@ export default function useThemedStyles(styleFactory) {
 
   const styles = useMemo(() => {
     if (typeof styleFactory !== 'function') {
-      console.warn('[useThemedStyles] styleFactory must be a function');
+      logger.app.warn('[useThemedStyles] styleFactory must be a function');
       return {};
     }
 

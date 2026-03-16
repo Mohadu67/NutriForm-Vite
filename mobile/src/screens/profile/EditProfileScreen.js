@@ -24,6 +24,7 @@ import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
+import logger from '../../services/logger';
 
 const AVATAR_SIZE = 100;
 
@@ -60,7 +61,7 @@ export default function EditProfileScreen() {
           if (profile.pseudo) setPseudo(profile.pseudo);
         }
       } catch (error) {
-        console.error('[EDIT_PROFILE] Load error:', error);
+        logger.app.error('[EDIT_PROFILE] Load error:', error);
       } finally {
         setLoading(false);
       }
@@ -106,7 +107,7 @@ export default function EditProfileScreen() {
         { text: 'OK', onPress: () => navigation.goBack() }
       ]);
     } catch (error) {
-      console.error('[EDIT_PROFILE] Save error:', error);
+      logger.app.error('[EDIT_PROFILE] Save error:', error);
       const message = error.response?.data?.message || 'Erreur lors de la sauvegarde';
       Alert.alert('Erreur', message);
     } finally {
@@ -134,7 +135,7 @@ export default function EditProfileScreen() {
         updateUser({ photo: photoUrl });
       }
     } catch (error) {
-      console.error('[EDIT_PROFILE] Upload error:', error);
+      logger.app.error('[EDIT_PROFILE] Upload error:', error);
       Alert.alert('Erreur', 'Impossible de mettre a jour la photo');
     } finally {
       setUploadingPhoto(false);
