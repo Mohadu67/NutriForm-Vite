@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CHALLENGE_TYPES, CHALLENGE_DURATIONS } from '../hooks/useChallenges';
 import styles from './ChallengeModal.module.css';
 
@@ -37,7 +38,7 @@ export default function ChallengeModal({
 
   const opponentName = opponent?.displayName || opponent?.pseudo || 'Adversaire';
 
-  return (
+  return createPortal(
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
@@ -137,6 +138,7 @@ export default function ChallengeModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

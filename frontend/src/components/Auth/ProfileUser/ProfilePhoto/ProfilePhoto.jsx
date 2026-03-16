@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import styles from "./ProfilePhoto.module.css";
 import { secureApiCall } from "../../../../utils/authService.js";
-import { confirmDialog } from "../../../../utils/confirmDialog.jsx";
 import { storage } from "../../../../shared/utils/storage";
 import logger from '../../../../shared/utils/logger.js';
+import ConfirmModal from "../../../Modal/ConfirmModal.jsx";
 
 export default function ProfilePhoto({ user }) {
   const [photo, setPhoto] = useState(user?.photo || null);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (user?.photo) {
@@ -72,18 +73,6 @@ export default function ProfilePhoto({ user }) {
   };
 
   const handleDeletePhoto = async () => {
-    const confirmed = await confirmDialog(
-      "Cette action est irréversible. Votre photo de profil sera définitivement supprimée.",
-      {
-        title: "Supprimer la photo de profil ?",
-        confirmText: "Supprimer",
-        cancelText: "Annuler",
-        type: "error"
-      }
-    );
-
-    if (!confirmed) return;
-
     setUploading(true);
     setMessage({ type: "", text: "" });
 
@@ -154,7 +143,7 @@ export default function ProfilePhoto({ user }) {
 
           {photo && (
             <button
-              onClick={handleDeletePhoto}
+              onClick={() => setShowDeleteConfirm(true)}
               className={styles.deleteButton}
               disabled={uploading}
             >
@@ -173,6 +162,19 @@ export default function ProfilePhoto({ user }) {
       <p className={styles.hint}>
         Formats acceptés : JPG, PNG, GIF, WEBP (max 5MB)
       </p>
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={() => {
+          setShowDeleteConfirm(false);
+          handleDeletePhoto();
+        }}
+        title="Supprimer la photo de profil ?"
+        message="Cette action est irréversible. Votre photo de profil sera définitivement supprimée."
+        confirmText="Supprimer"
+        type="danger"
+      />
     </div>
   );
 }

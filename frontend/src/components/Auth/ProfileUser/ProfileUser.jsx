@@ -14,6 +14,7 @@ import { storage } from "../../../shared/utils/storage";
 import logger from '../../../shared/utils/logger.js';
 import { LEAGUE_INFO, getLeagueForXP, getProgressToNextLeague } from '../../../pages/Leaderboard/hooks/useChallenges';
 import { useNotification } from '../../../hooks/useNotification.jsx';
+import ConfirmModal from '../../Modal/ConfirmModal.jsx';
 
 const WORKOUT_TYPES = [
   { value: 'musculation', label: 'Musculation', icon: '💪' },
@@ -84,6 +85,7 @@ export default function ProfileUser({ onLogout }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
 
   const fetchRedemptionHistory = async () => {
     try {
@@ -370,11 +372,7 @@ export default function ProfileUser({ onLogout }) {
         throw new Error(data.message || "Erreur lors de la suppression");
       }
 
-      alert('Votre compte a été supprimé avec succès.');
-      window.dispatchEvent(new Event("storage"));
-      window.dispatchEvent(new Event("userLogout"));
-      onLogout?.();
-      navigate('/');
+      setShowDeleteSuccess(true);
     } catch (err) {
       setError(err.message);
       setDeletingAccount(false);
@@ -1072,6 +1070,28 @@ export default function ProfileUser({ onLogout }) {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={showDeleteSuccess}
+        onClose={() => {
+          setShowDeleteSuccess(false);
+          window.dispatchEvent(new Event("storage"));
+          window.dispatchEvent(new Event("userLogout"));
+          onLogout?.();
+          navigate('/');
+        }}
+        onConfirm={() => {
+          window.dispatchEvent(new Event("storage"));
+          window.dispatchEvent(new Event("userLogout"));
+          onLogout?.();
+          navigate('/');
+        }}
+        title="Compte supprimé"
+        message="Votre compte a été supprimé avec succès. Toutes vos données ont été définitivement effacées."
+        confirmText="OK"
+        showCancel={false}
+        type="default"
+      />
     </div>
   );
 }

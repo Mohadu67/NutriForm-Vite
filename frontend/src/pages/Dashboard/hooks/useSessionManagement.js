@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
+import { toast } from 'sonner';
 import { deleteSession, updateSession } from "../../../components/History/SessionTracking/sessionApi.js";
-import { confirmDialog, showSuccess, showError } from "../../../utils/confirmDialog.jsx";
 import logger from "../../../shared/utils/logger";
 
 /**
@@ -12,6 +12,7 @@ export const useSessionManagement = (onSessionDeleted, onSessionRenamed) => {
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [editingSessionName, setEditingSessionName] = useState("");
   const [showSessionsPopup, setShowSessionsPopup] = useState(false);
+  const [deleteConfirmSessionId, setDeleteConfirmSessionId] = useState(null);
   const saveSessionNameRef = useRef();
 
   const editInputRef = useCallback((node) => {
@@ -44,15 +45,15 @@ export const useSessionManagement = (onSessionDeleted, onSessionRenamed) => {
     try {
       await updateSession(sessionId, { name: nameToSave.trim() });
       setEditingSessionId(null);
-      showSuccess('Séance renommée avec succès !');
+      toast.success('Séance renommée avec succès !');
       // Mettre à jour le state local
       onSessionRenamed?.(sessionId, nameToSave.trim());
     } catch (err) {
       logger.error("Erreur lors du renommage de la séance:", err);
       if (err?.isPremiumRequired || err?.status === 403) {
-        showError("Passe Premium pour modifier tes séances ✨");
+        toast.error("Passe Premium pour modifier tes séances ✨");
       } else {
-        showError("Impossible de renommer la séance");
+        toast.error("Impossible de renommer la séance");
       }
       setEditingSessionId(null);
     }
@@ -76,42 +77,45 @@ export const useSessionManagement = (onSessionDeleted, onSessionRenamed) => {
     setEditingSessionName("");
   }, []);
 
-  const handleDeleteSession = useCallback(async (sessionId) => {
-    const ok = await confirmDialog(
-      "Cette action est irréversible. Voulez-vous vraiment supprimer cette séance ?",
-      {
-        title: "Supprimer la séance",
-        confirmText: "Supprimer",
-        cancelText: "Annuler",
-        type: "error"
-      }
-    );
-    if (!ok) return;
+  const handleDeleteSession = useCallback((sessionId) => {
+    setDeleteConfirmSessionId(sessionId);
+  }, []);
+
+  const confirmDeleteSession = useCallback(async () => {
+    const sessionId = deleteConfirmSessionId;
+    setDeleteConfirmSessionId(null);
+    if (!sessionId) return;
     try {
       await deleteSession(sessionId);
-      showSuccess('Séance supprimée avec succès !');
-      // Mettre à jour le state local
+      toast.success('Séance supprimée avec succès !');
       onSessionDeleted?.(sessionId);
     } catch (err) {
       logger.error("Erreur lors de la suppression de la séance:", err);
       if (err?.isPremiumRequired || err?.status === 403) {
-        showError("Passe Premium pour supprimer tes séances ✨");
+        toast.error("Passe Premium pour supprimer tes séances ✨");
       } else {
-        showError("Impossible de supprimer la séance");
+        toast.error("Impossible de supprimer la séance");
       }
     }
-  }, [onSessionDeleted]);
+  }, [deleteConfirmSessionId, onSessionDeleted]);
+
+  const cancelDeleteSession = useCallback(() => {
+    setDeleteConfirmSessionId(null);
+  }, []);
 
   return {
     editingSessionId,
     editingSessionName,
     showSessionsPopup,
+    deleteConfirmSessionId,
     editInputRef,
     setShowSessionsPopup,
     setEditingSessionName,
     handleStartEditSessionName,
     handleSaveSessionName,
     handleCancelEdit,
-    handleDeleteSession
+    handleDeleteSession,
+    confirmDeleteSession,
+    cancelDeleteSession
   };
 };

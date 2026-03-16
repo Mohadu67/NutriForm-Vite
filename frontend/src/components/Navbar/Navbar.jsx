@@ -131,6 +131,16 @@ export default function Navbar() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  // Vérifier si l'utilisateur OAuth doit définir un mot de passe (après login)
+  useEffect(() => {
+    if (isLoggedIn) {
+      const user = storage.get('user');
+      if (user?.hasSetPassword === false) {
+        setShowSetPassword(true);
+      }
+    }
+  }, [isLoggedIn]);
+
   // Monitor auth state
   useEffect(() => {
     let isMounted = true;
@@ -416,10 +426,21 @@ export default function Navbar() {
         view={popupView}
         setView={setPopupView}
         onClose={() => setIsPopupOpen(false)}
-        onLoginSuccess={() => {
-          setIsLoggedIn(true);
+        onLoginSuccess={(user) => {
           setIsPopupOpen(false);
           window.dispatchEvent(new CustomEvent('userLoggedIn'));
+
+          // OAuth user sans mot de passe : afficher la modal
+          // Vérifier le param ET le localStorage (googleAuth stocke le user avant le callback)
+          const storedUser = storage.get('user');
+          const needsPassword = user?.hasSetPassword === false || storedUser?.hasSetPassword === false;
+          if (needsPassword) {
+            setShowSetPassword(true);
+          }
+
+          // setIsLoggedIn en dernier pour déclencher le useEffect safety-net
+          setIsLoggedIn(true);
+
           const wasSubscribing = sessionStorage.getItem('pendingSubscription');
           if (wasSubscribing) sessionStorage.removeItem('pendingSubscription');
           else navigate('/dashboard');

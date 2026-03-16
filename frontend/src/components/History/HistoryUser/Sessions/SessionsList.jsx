@@ -1,7 +1,8 @@
 import React, { useMemo, useEffect, useState } from "react";
+import { toast } from 'sonner';
 import style from "../HistoryUser.module.css";
 import { API_BASE_URL } from "../../../../shared/config/api.js";
-import { confirmDialog, showSuccess, showError } from "../../../../utils/confirmDialog.jsx";
+import ConfirmModal from "../../../Modal/ConfirmModal.jsx";
 
 function parseDate(raw) {
   if (!raw) return null;
@@ -33,6 +34,7 @@ function uniqByIdKeepLatest(items) {
 export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
   const [localRows, setLocalRows] = useState([]);
   const [deletingId, setDeletingId] = useState(null);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
 
   const rows = useMemo(() => {
     const items = (sessions || []).map((s, i) => {
@@ -64,18 +66,7 @@ export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
     }
   }, [rows, onData]);
 
-  async function handleDelete(id) {
-    if (!id) return;
-    const ok = await confirmDialog(
-      "Cette action est irréversible. Voulez-vous vraiment supprimer cette séance ?",
-      {
-        title: "Supprimer la séance",
-        confirmText: "Supprimer",
-        cancelText: "Annuler",
-        type: "error"
-      }
-    );
-    if (!ok) return;
+  async function executeDelete(id) {
     try {
       setDeletingId(id);
       const url = API_BASE_URL ? `${API_BASE_URL}/workouts/sessions/${id}` : `/workouts/sessions/${id}`;
@@ -90,9 +81,9 @@ export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
       setLocalRows(prev => prev.filter(r => r.id !== id));
       if (typeof onDeleteSuccess === 'function') onDeleteSuccess(id);
       if (typeof onData === 'function') onData(localRows.filter(r => r.id !== id));
-      showSuccess('Séance supprimée avec succès !');
+      toast.success('Séance supprimée avec succès !');
     } catch (e) {
-      showError(e.message || 'Erreur lors de la suppression');
+      toast.error(e.message || 'Erreur lors de la suppression');
     } finally {
       setDeletingId(null);
     }
@@ -119,7 +110,7 @@ export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
               type="button"
               aria-label="Supprimer la séance"
               className={style.sessionDeleteBtn || ''}
-              onClick={() => handleDelete(s.id)}
+              onClick={() => setDeleteTargetId(s.id)}
               disabled={deletingId === s.id}
               style={{ marginLeft: 'auto', fontSize: 12, color: '#b91c1c', background: 'transparent', border: 'none', cursor: 'pointer' }}
             >
@@ -128,6 +119,20 @@ export default function SessionsList({ sessions, onData, onDeleteSuccess }) {
           </li>
         ))}
       </ul>
+
+      <ConfirmModal
+        isOpen={!!deleteTargetId}
+        onClose={() => setDeleteTargetId(null)}
+        onConfirm={() => {
+          const id = deleteTargetId;
+          setDeleteTargetId(null);
+          executeDelete(id);
+        }}
+        title="Supprimer la séance"
+        message="Cette action est irréversible. Voulez-vous vraiment supprimer cette séance ?"
+        confirmText="Supprimer"
+        type="danger"
+      />
     </div>
   );
 }
