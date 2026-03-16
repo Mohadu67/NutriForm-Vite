@@ -410,7 +410,7 @@ export default function SubscriptionScreen() {
           </View>
           <Text style={[styles.xpInfoText, isDark && styles.textMutedDark]}>
             Gagnez des XP en faisant du sport et debloquez 1 mois de Premium gratuit
-            en echangeant 10 000 XP dans les recompenses !
+            en echangeant 1 000 XP dans les recompenses !
           </Text>
           <TouchableOpacity
             style={styles.xpInfoButton}

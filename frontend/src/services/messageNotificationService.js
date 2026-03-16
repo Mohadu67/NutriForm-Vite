@@ -154,40 +154,45 @@ class MessageNotificationService {
 // Créer une instance unique (singleton)
 const messageNotificationService = new MessageNotificationService();
 
-// Démarrer automatiquement si déjà connecté
-// Vérifier après un court délai pour laisser l'auth se mettre en place
-setTimeout(async () => {
+// Démarrer automatiquement si déjà connecté (sans appel API)
+setTimeout(() => {
   try {
-    // Tenter un appel API pour vérifier si connecté
-    const response = await fetch('/api/me', { credentials: 'include' });
-    if (response.ok) {
-      const data = await response.json();
-      // Si premium, démarrer le service
-      if (data.subscriptionTier === 'premium' || data.isPremium) {
-        messageNotificationService.start();
-      }
+    const raw = localStorage.getItem('user');
+    const user = raw ? JSON.parse(raw) : null;
+    if (user && (user.subscriptionTier === 'premium' || user.isPremium)) {
+      messageNotificationService.start();
     }
   } catch {
     // Silencieux
   }
-}, 1000);
+}, 2000);
 
-// Écouter les événements de connexion/déconnexion
-window.addEventListener('userLoggedIn', () => {
-  messageNotificationService.start();
-});
+// Écouter les événements de connexion/déconnexion (vérifier premium avant de démarrer)
+const startIfPremium = () => {
+  try {
+    const raw = localStorage.getItem('user');
+    const user = raw ? JSON.parse(raw) : null;
+    if (user && (user.subscriptionTier === 'premium' || user.isPremium)) {
+      messageNotificationService.start();
+    }
+  } catch {
+    // Silencieux
+  }
+};
 
-window.addEventListener('userLogin', () => {
-  messageNotificationService.start();
-});
+window.addEventListener('userLoggedIn', startIfPremium);
+window.addEventListener('userLogin', startIfPremium);
 
 window.addEventListener('userLogout', () => {
   messageNotificationService.stop();
   messageNotificationService.reset();
 });
 
-// Gérer les changements de focus pour optimiser les vérifications
+// Gérer les changements de focus avec debounce (seulement si le service était actif)
+let visibilityTimeout;
 document.addEventListener('visibilitychange', () => {
+  clearTimeout(visibilityTimeout);
+  if (!messageNotificationService.isActive) return;
   if (document.hidden) {
     // Réduire la fréquence quand l'app est en arrière-plan
     messageNotificationService.stop();
@@ -195,9 +200,11 @@ document.addEventListener('visibilitychange', () => {
       messageNotificationService.checkForNewMessages();
     }, 60000); // 1 minute en arrière-plan
   } else {
-    // Reprendre la fréquence normale quand l'app revient
-    messageNotificationService.stop();
-    messageNotificationService.start();
+    // Debounce 2s avant de reprendre pour éviter le flood
+    visibilityTimeout = setTimeout(() => {
+      messageNotificationService.stop();
+      messageNotificationService.start();
+    }, 2000);
   }
 });
 

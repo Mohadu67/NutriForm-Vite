@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { storage } from '../../../shared/utils/storage';
-import { secureApiCall, isAuthenticated } from "../../../utils/authService";
+import { secureApiCall } from "../../../utils/authService";
 import logger from '../../../shared/utils/logger.js';
 import { useNotification } from '../../../hooks/useNotification';
+import { useAuth } from '../../../contexts/AuthContext.jsx';
 
 export default function useHistoryData() {
   const [records, setRecords] = useState([]);
@@ -12,6 +13,8 @@ export default function useHistoryData() {
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
 
+  const { user: authUser, isLoggedIn } = useAuth();
+
   // Ne pas utiliser le cache si c'est "Utilisateur" (valeur par défaut)
   const cachedName = storage.get("cachedDisplayName");
   const [displayName, setDisplayName] = useState(
@@ -19,51 +22,27 @@ export default function useHistoryData() {
   );
   const [user, setUser] = useState(null);
 
+  // Sync user data from auth context
   useEffect(() => {
-    // Ne pas appeler l'API si l'utilisateur n'est pas authentifié
-    if (!isAuthenticated()) {
+    if (!authUser) return;
+    const name =
+      authUser.prenom ||
+      authUser.pseudo ||
+      authUser.displayName ||
+      (authUser.email ? authUser.email.split("@")[0] : "");
+    const finalName = name || "Utilisateur";
+    setDisplayName(finalName);
+    setUser(authUser);
+    storage.set("cachedDisplayName", finalName);
+  }, [authUser]);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
       setStatus("idle");
       return;
     }
 
     setStatus("loading");
-
-    secureApiCall('/me')
-      .then((res) => res.json())
-      .then((data) => {
-        const name =
-          data?.prenom ||
-          data?.pseudo ||
-          data?.displayName ||
-          (data?.email ? data.email.split("@")[0] : "");
-        const finalName = name || "Utilisateur";
-        setDisplayName(finalName);
-        setUser(data);
-        storage.set("cachedDisplayName", finalName);
-
-        const userData = storage.get("user");
-        if (userData) {
-          const updatedUser = { ...userData, ...data };
-          storage.set("user", updatedUser);
-        } else {
-          storage.set("user", data);
-        }
-      })
-      .catch((err) => {
-        const errorMsg = err?.message || '';
-        if (errorMsg === 'Not authenticated') {
-          setError("Non connecté. Connecte-toi pour voir tes données.");
-          setStatus("error");
-          return;
-        }
-
-        // Ne PAS vider le localStorage sur une erreur réseau ou autre
-        // Cela déconnecte l'utilisateur de façon inattendue
-        // Seule une vraie déconnexion (via logout) doit vider le storage
-        logger.warn('Erreur lors de la récupération des données utilisateur:', err);
-        setError("Erreur de chargement. Réessaie plus tard.");
-        setStatus("error");
-      });
 
     secureApiCall('/history')
       .then((res) => res.json())

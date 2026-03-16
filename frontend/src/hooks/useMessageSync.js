@@ -149,27 +149,22 @@ export function useMessageSync(conversationId, type, onNewMessages, options = {}
   }, [enabled, conversationId, startPolling, stopPolling]);
 
   /**
-   * Écouter les événements de focus pour rafraîchir
+   * Écouter les événements de focus pour rafraîchir (avec debounce)
    */
   useEffect(() => {
-    const handleFocus = () => {
-      if (enabled && conversationId) {
-        refresh();
-      }
-    };
-
+    let timeout;
     const handleVisibilityChange = () => {
       if (!document.hidden && enabled && conversationId) {
-        refresh();
+        clearTimeout(timeout);
+        timeout = setTimeout(() => refresh(), 2000);
       }
     };
 
-    window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearTimeout(timeout);
     };
   }, [enabled, conversationId, refresh]);
 

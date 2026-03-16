@@ -91,7 +91,7 @@ const Terms = () => {
               <div className={style.note}>
                 <strong>📱 Programme de fidélité XP:</strong>
                 <ul style={{ marginTop: "0.5rem" }}>
-                  <li>10 000 XP = 1 mois Premium gratuit</li>
+                  <li>1 000 XP = 1 mois Premium gratuit</li>
                   <li>Maximum 3 mois cumulés</li>
                   <li>Conversion immédiate et irrévocable</li>
                 </ul>

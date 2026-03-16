@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useChat } from '../../contexts/ChatContext';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import messageNotificationService from '../../services/messageNotificationService';
 
@@ -9,6 +10,7 @@ import messageNotificationService from '../../services/messageNotificationServic
  */
 export default function MessageNotificationManager() {
   const { openMatchChat, openChat, openMatchChatById, openAIChat } = useChat() || {};
+  const { isPremium } = useAuth();
   const navigate = useNavigate();
   const hasCheckedUrl = useRef(false);
 
@@ -97,8 +99,10 @@ export default function MessageNotificationManager() {
       navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
     }
 
-    // Démarrer le service de notifications
-    messageNotificationService.start();
+    // Démarrer le service de notifications uniquement pour les utilisateurs premium
+    if (isPremium) {
+      messageNotificationService.start();
+    }
 
     return () => {
       window.removeEventListener('openMatchConversation', handleOpenMatchConversation);
@@ -107,7 +111,7 @@ export default function MessageNotificationManager() {
         navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
       }
     };
-  }, [openMatchChat, openChat, openMatchChatById, openAIChat, navigate]);
+  }, [openMatchChat, openChat, openMatchChatById, openAIChat, navigate, isPremium]);
 
   // Ce composant ne rend rien visuellement
   return null;
