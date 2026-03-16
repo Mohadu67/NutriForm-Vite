@@ -105,21 +105,21 @@ router.post('/user/:id/unpublish', auth, requirePremium, recipeController.unpubl
  * @desc    Obtenir les recettes en attente de validation
  * @access  Private (Admin)
  */
-router.get('/admin/pending', adminMiddleware, recipeController.getPendingRecipes);
+router.get('/admin/pending', auth, adminMiddleware, recipeController.getPendingRecipes);
 
 /**
  * @route   POST /api/recipes/admin/:id/approve
  * @desc    Approuver une recette
  * @access  Private (Admin)
  */
-router.post('/admin/:id/approve', adminMiddleware, recipeController.approveRecipe);
+router.post('/admin/:id/approve', auth, adminMiddleware, recipeController.approveRecipe);
 
 /**
  * @route   POST /api/recipes/admin/:id/reject
  * @desc    Rejeter une recette
  * @access  Private (Admin)
  */
-router.post('/admin/:id/reject', adminMiddleware, recipeController.rejectRecipe);
+router.post('/admin/:id/reject', auth, adminMiddleware, recipeController.rejectRecipe);
 
 // =====================================================
 // ROUTES AVEC PARAMETRE :id - DOIVENT ETRE EN DERNIER
@@ -162,20 +162,20 @@ router.post('/:id/rate', auth, requirePremium, recipeController.rateRecipe);
  * @desc    Créer une nouvelle recette
  * @access  Private (Admin uniquement)
  */
-router.post('/', adminMiddleware, recipeController.createRecipe);
+router.post('/', auth, adminMiddleware, recipeController.createRecipe);
 
 /**
  * @route   PUT /api/recipes/:id
  * @desc    Modifier une recette
  * @access  Private (Admin uniquement)
  */
-router.put('/:id', adminMiddleware, recipeController.updateRecipe);
+router.put('/:id', auth, adminMiddleware, recipeController.updateRecipe);
 
 /**
  * @route   DELETE /api/recipes/:id
  * @desc    Supprimer une recette
  * @access  Private (Admin uniquement)
  */
-router.delete('/:id', adminMiddleware, recipeController.deleteRecipe);
+router.delete('/:id', auth, adminMiddleware, recipeController.deleteRecipe);
 
 module.exports = router;

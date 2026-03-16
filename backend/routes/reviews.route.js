@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Review = require('../models/Review');
+const authMiddleware = require('../middlewares/auth.middleware');
 const adminMiddleware = require('../middlewares/admin.middleware');
 const logger = require('../utils/logger.js');
 
@@ -124,7 +125,7 @@ router.post('/users', optionalAuth, async (req, res) => {
 });
 
 
-router.put('/users/:id/approve', adminMiddleware, async (req, res) => {
+router.put('/users/:id/approve', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const review = await Review.findByIdAndUpdate(
       req.params.id,
@@ -156,7 +157,7 @@ router.put('/users/:id/approve', adminMiddleware, async (req, res) => {
 });
 
 
-router.delete('/users/:id', adminMiddleware, async (req, res) => {
+router.delete('/users/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const review = await Review.findByIdAndDelete(req.params.id);
 
@@ -204,7 +205,7 @@ router.get('/users/pending', async (req, res) => {
 });
 
 
-router.get('/users/all', adminMiddleware, async (req, res) => {
+router.get('/users/all', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const reviews = await Review.find({})
       .sort({ createdAt: -1 })

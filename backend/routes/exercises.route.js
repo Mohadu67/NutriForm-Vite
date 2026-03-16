@@ -111,18 +111,18 @@ router.get('/:idOrSlug', exerciseController.getExercise);
 // Toutes les routes admin sont protégées par adminMiddleware + rate limiting
 
 // Seed exercises from JSON (Admin only)
-router.post('/seed', adminRateLimiter, adminMiddleware, exerciseController.seedExercises);
+router.post('/seed', adminRateLimiter, authMiddleware, adminMiddleware, exerciseController.seedExercises);
 
 // Create exercise (Admin only)
-router.post('/', adminRateLimiter, adminMiddleware, exerciseController.createExercise);
+router.post('/', adminRateLimiter, authMiddleware, adminMiddleware, exerciseController.createExercise);
 
 // Bulk insert (for migration - Admin only)
-router.post('/bulk', adminRateLimiter, adminMiddleware, exerciseController.bulkInsert);
+router.post('/bulk', adminRateLimiter, authMiddleware, adminMiddleware, exerciseController.bulkInsert);
 
 // Update exercise (Admin only)
-router.put('/:id', adminRateLimiter, adminMiddleware, exerciseController.updateExercise);
+router.put('/:id', adminRateLimiter, authMiddleware, adminMiddleware, exerciseController.updateExercise);
 
 // Delete exercise (Admin only)
-router.delete('/:id', adminRateLimiter, adminMiddleware, exerciseController.deleteExercise);
+router.delete('/:id', adminRateLimiter, authMiddleware, adminMiddleware, exerciseController.deleteExercise);
 
 module.exports = router;
