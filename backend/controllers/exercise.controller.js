@@ -77,9 +77,10 @@ exports.getExercises = async (req, res) => {
     let total;
 
     if (q) {
-      // Text search
-      exercises = await Exercise.search(q, filters);
-      total = exercises.length;
+      // Text search avec pagination
+      const allResults = await Exercise.search(q, { ...filters, limit: 0 });
+      total = allResults.length;
+      exercises = allResults.slice((page - 1) * limit, page * limit);
     } else {
       // Regular query
       const query = { isActive: true };
@@ -146,9 +147,8 @@ exports.getExercise = async (req, res) => {
       });
     }
 
-    // Increment usage count
-    exercise.usageCount += 1;
-    await exercise.save();
+    // Increment usage count atomically (pas de race condition)
+    await Exercise.updateOne({ _id: exercise._id }, { $inc: { usageCount: 1 } });
 
     return res.json({
       success: true,
@@ -599,7 +599,7 @@ exports.createExercise = async (req, res) => {
       name,
       slug,
       category,
-      type: type || [category],
+      type: (Array.isArray(type) && type.length) ? type : [category],
       objectives: objectives || [],
       primaryMuscle,
       secondaryMuscles: secondaryMuscles || [],
@@ -765,7 +765,7 @@ exports.seedExercises = async (req, res) => {
             name: exo.name,
             slug: finalSlug,
             category: exo.category || category,
-            type: exo.type || [category],
+            type: (Array.isArray(exo.type) && exo.type.length) ? exo.type : [category],
             objectives: exo.objectives || [],
             primaryMuscle: exo.primaryMuscle || exo.muscle || 'Non spécifié',
             secondaryMuscles: exo.secondaryMuscles || [],

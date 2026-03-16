@@ -93,9 +93,10 @@ function toArray(val) {
 }
 
 function matchTypes(exo, tSet) {
-  const exoTypes = toArray(exo.type);
-  const exoTypesN = normArr(exoTypes);
   if (!tSet.size) return true;
+  // Vérifier le champ type[] ET le champ category (certains exos n'ont que category)
+  const exoTypes = uniq([...toArray(exo.type), exo.category].filter(Boolean));
+  const exoTypesN = normArr(exoTypes);
   const crits = Array.from(tSet);
   return exoTypesN.some((t) => crits.some((crit) => t.includes(crit)));
 }
