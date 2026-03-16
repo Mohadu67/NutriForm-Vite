@@ -6,3 +6,4 @@ export { CardioStats } from './CardioStats';
 export { BodyMetrics } from './BodyMetrics';
 export { MuscleHeatmap } from './MuscleHeatmap';
 export { WeeklySummary } from './WeeklySummary';
+export { GoalModal } from './GoalModal';
