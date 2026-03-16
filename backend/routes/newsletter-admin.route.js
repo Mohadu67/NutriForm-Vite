@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const Newsletter = require('../models/Newsletter');
+const authMiddleware = require('../middlewares/auth.middleware');
 const adminMiddleware = require('../middlewares/admin.middleware');
 const logger = require('../utils/logger.js');
 
 
+router.use(authMiddleware);
 router.use(adminMiddleware);
 
 

@@ -13,35 +13,35 @@ const adminMiddleware = require('../middlewares/admin.middleware');
  * @desc    Obtenir tous les partenaires (admin)
  * @access  Private (Admin)
  */
-router.get('/admin/all', adminMiddleware, partnerController.getAllPartners);
+router.get('/admin/all', auth, adminMiddleware, partnerController.getAllPartners);
 
 /**
  * @route   POST /api/partners/admin
  * @desc    Creer un partenaire (admin)
  * @access  Private (Admin)
  */
-router.post('/admin', adminMiddleware, partnerController.createPartner);
+router.post('/admin', auth, adminMiddleware, partnerController.createPartner);
 
 /**
  * @route   PUT /api/partners/admin/:id
  * @desc    Modifier un partenaire (admin)
  * @access  Private (Admin)
  */
-router.put('/admin/:id', adminMiddleware, partnerController.updatePartner);
+router.put('/admin/:id', auth, adminMiddleware, partnerController.updatePartner);
 
 /**
  * @route   DELETE /api/partners/admin/:id
  * @desc    Supprimer un partenaire (admin)
  * @access  Private (Admin)
  */
-router.delete('/admin/:id', adminMiddleware, partnerController.deletePartner);
+router.delete('/admin/:id', auth, adminMiddleware, partnerController.deletePartner);
 
 /**
  * @route   GET /api/partners/admin/:id/stats
  * @desc    Obtenir les stats d'un partenaire (admin)
  * @access  Private (Admin)
  */
-router.get('/admin/:id/stats', adminMiddleware, partnerController.getPartnerStats);
+router.get('/admin/:id/stats', auth, adminMiddleware, partnerController.getPartnerStats);
 
 // ============================================
 // ROUTES USER (doivent etre AVANT /:id)
