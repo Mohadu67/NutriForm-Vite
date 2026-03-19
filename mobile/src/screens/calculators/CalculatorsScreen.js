@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { theme } from '../../theme';
 import { saveIMCCalc, saveCalorieCalc, saveRMCalc, saveFCMaxCalc } from '../../api/history';
+import { updateNutritionGoals } from '../../api/nutrition';
 import logger from '../../services/logger';
 
 // Clé de stockage pour les données des calculateurs
@@ -127,6 +128,9 @@ export default function CalculatorsScreen() {
 
   const [activeTab, setActiveTab] = useState('imc');
 
+  // Shared biometric state
+  const [sharedBio, setSharedBio] = useState({ poids: '', taille: '' });
+
   // IMC State
   const [imcData, setImcData] = useState({ poids: '', taille: '' });
   const [imcResult, setImcResult] = useState(null);
@@ -139,7 +143,39 @@ export default function CalculatorsScreen() {
     taille: '',
     age: '',
     activite: 'modere',
+    formule: 'mifflin',
+    masseGrasse: '',
   });
+
+  // Load shared biometrics on mount and sync across tabs
+  useEffect(() => {
+    AsyncStorage.getItem('@user_biometrics').then((data) => {
+      if (data) {
+        const bio = JSON.parse(data);
+        setSharedBio(bio);
+        if (bio.poids) {
+          setImcData(prev => ({ ...prev, poids: bio.poids }));
+          setCaloriesData(prev => ({ ...prev, poids: bio.poids }));
+        }
+        if (bio.taille) {
+          setImcData(prev => ({ ...prev, taille: bio.taille }));
+          setCaloriesData(prev => ({ ...prev, taille: bio.taille }));
+        }
+        if (bio.age) setCaloriesData(prev => ({ ...prev, age: bio.age }));
+        if (bio.sexe) setCaloriesData(prev => ({ ...prev, sexe: bio.sexe }));
+        if (bio.activite) setCaloriesData(prev => ({ ...prev, activite: bio.activite }));
+      }
+    });
+  }, []);
+
+  // Persist biometrics when they change
+  const updateSharedBio = useCallback((updates) => {
+    setSharedBio(prev => {
+      const next = { ...prev, ...updates };
+      AsyncStorage.setItem('@user_biometrics', JSON.stringify(next));
+      return next;
+    });
+  }, []);
   const [caloriesResult, setCaloriesResult] = useState(null);
   const [selectedCalorieType, setSelectedCalorieType] = useState(null);
 
@@ -271,6 +307,35 @@ export default function CalculatorsScreen() {
     });
   }, [cardioResult, cardioData, saveCalculatorData]);
 
+  // Définir comme objectif nutritionnel
+  const [settingGoal, setSettingGoal] = useState(false);
+  const setAsNutritionGoal = useCallback(async (type) => {
+    if (!caloriesResult) return;
+    const data = caloriesResult[type];
+    const goalMap = { perte: 'weight_loss', stabiliser: 'maintenance', prise: 'muscle_gain' };
+    setSettingGoal(true);
+    try {
+      const result = await updateNutritionGoals({
+        dailyCalories: data.calories,
+        macros: {
+          proteins: data.macros.proteines,
+          carbs: data.macros.glucides,
+          fats: data.macros.lipides,
+        },
+        goal: goalMap[type],
+      });
+      if (result.success) {
+        Alert.alert('Objectif mis à jour', 'Ton objectif nutritionnel a été enregistré. Il sera visible sur le dashboard et la page nutrition.');
+      } else {
+        Alert.alert('Erreur', result.error || 'Impossible de mettre à jour l\'objectif.');
+      }
+    } catch {
+      Alert.alert('Erreur', 'Connecte-toi pour définir un objectif nutritionnel.');
+    } finally {
+      setSettingGoal(false);
+    }
+  }, [caloriesResult]);
+
   // Helper pour fermer le clavier et scroller vers le résultat
   const dismissKeyboardAndScroll = useCallback(() => {
     Keyboard.dismiss();
@@ -330,13 +395,21 @@ export default function CalculatorsScreen() {
     });
     setShowImcDetails(true);
 
+    // Sync biometrics to shared state and calorie form
+    updateSharedBio({ poids: imcData.poids, taille: imcData.taille });
+    setCaloriesData(prev => ({
+      ...prev,
+      poids: imcData.poids,
+      taille: imcData.taille,
+    }));
+
     // Scroll vers le résultat
     setTimeout(() => {
       scrollViewRef.current?.scrollTo({ y: 350, animated: true });
     }, 100);
-  }, [imcData]);
+  }, [imcData, updateSharedBio]);
 
-  // Calcul Calories (Mifflin-St Jeor)
+  // Calcul Calories (multi-formules)
   const calculateCalories = useCallback(() => {
     const poids = parseFloat(caloriesData.poids);
     const taille = parseFloat(caloriesData.taille);
@@ -347,14 +420,34 @@ export default function CalculatorsScreen() {
       return;
     }
 
+    if (caloriesData.formule === 'katch') {
+      const mg = parseFloat(caloriesData.masseGrasse);
+      if (!mg || mg < 3 || mg > 70) {
+        Alert.alert('Erreur', 'Veuillez entrer un pourcentage de masse grasse valide (3-70%)');
+        return;
+      }
+    }
+
     Keyboard.dismiss();
 
-    // Formule Mifflin-St Jeor
     let tmb;
-    if (caloriesData.sexe === 'homme') {
-      tmb = 10 * poids + 6.25 * taille - 5 * age + 5;
+    if (caloriesData.formule === 'katch') {
+      const masseMaigre = poids * (1 - parseFloat(caloriesData.masseGrasse) / 100);
+      tmb = 370 + 21.6 * masseMaigre;
+    } else if (caloriesData.formule === 'standard') {
+      // Harris-Benedict
+      if (caloriesData.sexe === 'homme') {
+        tmb = 88.362 + 13.397 * poids + 4.799 * taille - 5.677 * age;
+      } else {
+        tmb = 447.593 + 9.247 * poids + 3.098 * taille - 4.330 * age;
+      }
     } else {
-      tmb = 10 * poids + 6.25 * taille - 5 * age - 161;
+      // Mifflin-St Jeor (default)
+      if (caloriesData.sexe === 'homme') {
+        tmb = 10 * poids + 6.25 * taille - 5 * age + 5;
+      } else {
+        tmb = 10 * poids + 6.25 * taille - 5 * age - 161;
+      }
     }
 
     const activityLevel = ACTIVITY_LEVELS.find(a => a.value === caloriesData.activite);
@@ -406,11 +499,25 @@ export default function CalculatorsScreen() {
       },
     });
 
+    // Sync biometrics to shared state and IMC form
+    updateSharedBio({
+      poids: caloriesData.poids,
+      taille: caloriesData.taille,
+      age: caloriesData.age,
+      sexe: caloriesData.sexe,
+      activite: caloriesData.activite,
+    });
+    setImcData(prev => ({
+      ...prev,
+      poids: caloriesData.poids,
+      taille: caloriesData.taille,
+    }));
+
     // Scroll vers le résultat
     setTimeout(() => {
       scrollViewRef.current?.scrollTo({ y: 500, animated: true });
     }, 100);
-  }, [caloriesData]);
+  }, [caloriesData, updateSharedBio]);
 
   // Calcul 1RM (Formule d'Epley)
   const calculateRM = useCallback(() => {
@@ -715,6 +822,12 @@ export default function CalculatorsScreen() {
     </View>
   );
 
+  const FORMULA_OPTIONS = [
+    { value: 'standard', label: 'Harris-Benedict', tag: 'Standard' },
+    { value: 'mifflin', label: 'Mifflin-St Jeor', tag: 'Recommandee' },
+    { value: 'katch', label: 'Katch-McArdle', tag: 'Avancee' },
+  ];
+
   // Render Calories Calculator
   const renderCalories = () => (
     <View style={[styles.calculatorContent, isDark && styles.calculatorContentDark]}>
@@ -727,9 +840,46 @@ export default function CalculatorsScreen() {
             Besoins Caloriques
           </Text>
           <Text style={[styles.calcSubtitle, isDark && styles.textMuted]}>
-            Formule Mifflin-St Jeor validee scientifiquement
+            {caloriesData.formule === 'katch'
+              ? 'Katch-McArdle — necessite le % masse grasse'
+              : caloriesData.formule === 'standard'
+                ? 'Harris-Benedict — formule classique'
+                : 'Mifflin-St Jeor — validee scientifiquement'}
           </Text>
         </View>
+      </View>
+
+      {/* Formula selector */}
+      <View style={styles.inputGroup}>
+        <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Formule</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.activityScroll}>
+          {FORMULA_OPTIONS.map((opt) => (
+            <TouchableOpacity
+              key={opt.value}
+              style={[
+                styles.activityChip,
+                caloriesData.formule === opt.value && styles.activityChipActive,
+                isDark && caloriesData.formule !== opt.value && styles.activityChipDark,
+              ]}
+              onPress={() => setCaloriesData(prev => ({ ...prev, formule: opt.value }))}
+            >
+              <Text style={[
+                styles.activityChipText,
+                caloriesData.formule === opt.value && styles.activityChipTextActive,
+                isDark && caloriesData.formule !== opt.value && { color: '#888' },
+              ]}>
+                {opt.label}
+              </Text>
+              <Text style={[
+                styles.activityChipDesc,
+                caloriesData.formule === opt.value && { color: 'rgba(255,255,255,0.8)' },
+                isDark && caloriesData.formule !== opt.value && { color: '#666' },
+              ]}>
+                {opt.tag}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       <View style={styles.sexeRow}>
@@ -795,6 +945,24 @@ export default function CalculatorsScreen() {
           onChangeText={(text) => setCaloriesData(prev => ({ ...prev, taille: text }))}
         />
       </View>
+
+      {/* Masse grasse — only for Katch-McArdle */}
+      {caloriesData.formule === 'katch' && (
+        <View style={styles.inputGroup}>
+          <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Masse grasse (%)</Text>
+          <TextInput
+            style={[styles.input, isDark && styles.inputDark]}
+            placeholder="ex: 18"
+            placeholderTextColor={isDark ? '#666' : '#999'}
+            keyboardType="decimal-pad"
+            value={caloriesData.masseGrasse}
+            onChangeText={(text) => setCaloriesData(prev => ({ ...prev, masseGrasse: text }))}
+          />
+          <Text style={[styles.formulaInfoText, isDark && { color: '#888' }]}>
+            La formule Katch-McArdle est la plus precise mais necessite de connaitre votre % de masse grasse.
+          </Text>
+        </View>
+      )}
 
       <View style={styles.inputGroup}>
         <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Niveau d'activite</Text>
@@ -941,6 +1109,19 @@ export default function CalculatorsScreen() {
                         Voir les recettes adaptees
                       </Text>
                       <Ionicons name="arrow-forward" size={18} color="#FFF" />
+                    </TouchableOpacity>
+
+                    {/* Bouton définir comme objectif */}
+                    <TouchableOpacity
+                      style={[styles.actionButton, styles.goalButton, { marginTop: theme.spacing.sm }]}
+                      onPress={() => setAsNutritionGoal(type)}
+                      disabled={settingGoal}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="flag" size={18} color="#FFF" />
+                      <Text style={styles.actionButtonText}>
+                        {settingGoal ? 'Enregistrement...' : 'Definir comme objectif'}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -1478,6 +1659,12 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#999',
   },
+  formulaInfoText: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 6,
+    lineHeight: 17,
+  },
   calcButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1657,6 +1844,9 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: '#22C55E',
+  },
+  goalButton: {
+    backgroundColor: '#0F172A',
   },
 
   // TMB Card
