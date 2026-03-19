@@ -78,21 +78,20 @@ export default function CaloriePage() {
   const computeMacros = (cals, type) => {
     if (type === "perte") {
       return {
-        glucides: Math.round((cals * 0.35) / 4),
         proteines: Math.round((cals * 0.35) / 4),
+        glucides: Math.round((cals * 0.35) / 4),
         lipides: Math.round((cals * 0.30) / 9),
       };
     } else if (type === "prise") {
       return {
-        glucides: Math.round((cals * 0.35) / 4),
-        proteines: Math.round((cals * 0.35) / 4),
-        lipides: Math.round((cals * 0.30) / 9),
+        proteines: Math.round((cals * 0.30) / 4),
+        glucides: Math.round((cals * 0.45) / 4),
+        lipides: Math.round((cals * 0.25) / 9),
       };
     } else {
-      
       return {
-        glucides: Math.round((cals * 0.45) / 4),
         proteines: Math.round((cals * 0.25) / 4),
+        glucides: Math.round((cals * 0.45) / 4),
         lipides: Math.round((cals * 0.30) / 9),
       };
     }
