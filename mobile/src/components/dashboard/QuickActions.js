@@ -37,17 +37,28 @@ export const QuickActions = ({ navigation, subscriptionTier = 'free' }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Row 2: Calculs */}
-      <TouchableOpacity
-        style={[styles.secondaryAction, isDark && styles.secondaryActionDark]}
-        onPress={() => navigation?.navigate('Calculators')}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="calculator" size={18} color={primaryColor} />
-        <Text style={[styles.secondaryActionText, { color: primaryColor }]}>
-          Calculateurs IMC, Calories, 1RM...
-        </Text>
-      </TouchableOpacity>
+      {/* Row 2: Nutrition et Calculs */}
+      <View style={styles.row}>
+        <TouchableOpacity
+          style={[styles.primaryAction, { backgroundColor: '#22C55E' }]}
+          onPress={() => navigation?.navigate('Nutrition')}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="nutrition" size={20} color="#FFFFFF" />
+          <Text style={styles.primaryActionText}>Nutrition</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.secondaryActionHalf, isDark && styles.secondaryActionDark]}
+          onPress={() => navigation?.navigate('Calculators')}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="calculator" size={18} color={primaryColor} />
+          <Text style={[styles.secondaryActionText, { color: primaryColor }]}>
+            Calculateurs
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -86,6 +97,19 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.md,
+    borderWidth: 1.5,
+    borderColor: theme.colors.primary,
+  },
+  secondaryActionHalf: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.xs,
+    backgroundColor: '#FFFFFF',
+    borderRadius: theme.borderRadius.lg,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.sm,
     borderWidth: 1.5,
     borderColor: theme.colors.primary,
   },

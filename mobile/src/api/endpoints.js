@@ -178,6 +178,17 @@ export const endpoints = {
     propose: (id) => `/programs/${id}/propose`,
     unpublish: (id) => `/programs/${id}/unpublish`,
   },
+  nutrition: {
+    log: "/nutrition/log",
+    logRecipe: "/nutrition/log-recipe",
+    daily: (date) => `/nutrition/daily/${date}`,
+    updateLog: (id) => `/nutrition/log/${id}`,
+    deleteLog: (id) => `/nutrition/log/${id}`,
+    summaryDaily: (date) => `/nutrition/summary/daily/${date}`,
+    summaryWeekly: "/nutrition/summary/weekly",
+    summaryMonthly: "/nutrition/summary/monthly",
+    goals: "/nutrition/goals",
+  },
 };
 
 export default endpoints;

@@ -14,6 +14,7 @@ import { storage } from "../../shared/utils/storage.js";
 import { dashboardLogger } from "../../shared/utils/logger.js";
 
 // Composants extraits
+import { NutritionWidget } from "./components/NutritionWidget.jsx";
 import { StatsOverview } from "./components/StatsOverview.jsx";
 import { WeeklyGoalSection } from "./components/WeeklyGoalSection.jsx";
 import { QuickActions } from "./components/QuickActions.jsx";
@@ -250,6 +251,9 @@ export default function Dashboard() {
             weeklyCalories={weeklyCalories}
             onEditGoal={handleOpenGoalModal}
           />
+
+          {/* Nutrition Widget */}
+          <NutritionWidget isPremium={!isFreeUser} />
 
           {/* Quick Actions */}
           <QuickActions navigate={navigate} subscriptionTier={subscriptionTier} />

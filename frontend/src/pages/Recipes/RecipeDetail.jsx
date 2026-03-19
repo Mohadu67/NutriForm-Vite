@@ -1,11 +1,13 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import Alert from '../../components/MessageAlerte/Alert/Alert';
 import { useRecipeDetail } from './hooks/useRecipeDetail';
 import usePageTitle from '../../hooks/usePageTitle';
 import { storage } from '../../shared/utils/storage';
+import { logRecipe } from '../../shared/api/nutrition';
 import { getProxiedImageUrl } from '../../utils/imageProxy';
 import {
   ClockIcon,
@@ -28,6 +30,9 @@ export default function RecipeDetail() {
   const navigate = useNavigate();
   const { recipe, loading, error, isLiked, likesCount, toggleLike, likeError, clearLikeError } = useRecipeDetail(id);
   const [servings, setServings] = useState(2);
+  const [showLogModal, setShowLogModal] = useState(false);
+  const [logMealType, setLogMealType] = useState('lunch');
+  const [logging, setLogging] = useState(false);
   const user = storage.get('user');
 
   usePageTitle(recipe?.title || 'Détail de la recette');
@@ -184,6 +189,18 @@ export default function RecipeDetail() {
                 <HeartIcon size={20} filled={isLiked} />
                 {(user && likesCount > 0) && <span>{likesCount}</span>}
               </button>
+              {user && (
+                <button
+                  onClick={() => setShowLogModal(true)}
+                  className={style.logRecipeButton}
+                  title="Logger cette recette"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  J'ai préparé
+                </button>
+              )}
             </div>
           </header>
 
@@ -285,6 +302,58 @@ export default function RecipeDetail() {
           </div>
         </div>
       </main>
+
+      {/* Modal log recette */}
+      {showLogModal && (
+        <div className={style.logModalOverlay} onClick={() => setShowLogModal(false)}>
+          <div className={style.logModal} onClick={(e) => e.stopPropagation()}>
+            <h3>Logger cette recette</h3>
+            <p className={style.logModalDesc}>Ajouter "{recipe.title}" à votre suivi nutritionnel</p>
+            <div className={style.logModalField}>
+              <label>Portions consommées</label>
+              <div className={style.logModalServings}>
+                <button onClick={() => setServings(Math.max(0.25, servings - 0.5))}>-</button>
+                <span>{servings}</span>
+                <button onClick={() => setServings(servings + 0.5)}>+</button>
+              </div>
+            </div>
+            <div className={style.logModalField}>
+              <label>Type de repas</label>
+              <select value={logMealType} onChange={(e) => setLogMealType(e.target.value)} className={style.logModalSelect}>
+                <option value="breakfast">Petit-déjeuner</option>
+                <option value="lunch">Déjeuner</option>
+                <option value="dinner">Dîner</option>
+                <option value="snack">Collation</option>
+              </select>
+            </div>
+            <div className={style.logModalActions}>
+              <button onClick={() => setShowLogModal(false)} className={style.logModalCancel}>Annuler</button>
+              <button
+                disabled={logging}
+                onClick={async () => {
+                  try {
+                    setLogging(true);
+                    await logRecipe({
+                      recipeId: recipe._id,
+                      servingsConsumed: servings,
+                      mealType: logMealType,
+                    });
+                    toast.success('Recette ajoutée au suivi nutritionnel !');
+                    setShowLogModal(false);
+                  } catch {
+                    toast.error('Erreur lors de l\'ajout');
+                  } finally {
+                    setLogging(false);
+                  }
+                }}
+                className={style.logModalConfirm}
+              >
+                {logging ? 'Ajout...' : 'Ajouter'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Alert pour les erreurs de like */}
       <Alert

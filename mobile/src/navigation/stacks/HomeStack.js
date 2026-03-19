@@ -19,6 +19,12 @@ import RecipesScreen from '../../screens/recipes/RecipesScreen';
 import RecipeDetailScreen from '../../screens/recipes/RecipeDetailScreen';
 import RecipeFormScreen from '../../screens/recipes/RecipeFormScreen';
 
+// Nutrition (accessible depuis le dashboard)
+import NutritionScreen from '../../screens/nutrition/NutritionScreen';
+import ManualFoodEntryScreen from '../../screens/nutrition/ManualFoodEntryScreen';
+import NutritionGoalsScreen from '../../screens/nutrition/NutritionGoalsScreen';
+import WeeklyNutritionScreen from '../../screens/nutrition/WeeklyNutritionScreen';
+
 const Stack = createNativeStackNavigator();
 
 // Placeholder screens pour les ecrans non encore crees
@@ -121,6 +127,19 @@ export default function HomeStack() {
           animation: 'slide_from_bottom',
         }}
       />
+
+      {/* Nutrition - accessible depuis le dashboard */}
+      <Stack.Screen name="Nutrition" component={NutritionScreen} />
+      <Stack.Screen
+        name="ManualFoodEntry"
+        component={ManualFoodEntryScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+      <Stack.Screen name="NutritionGoals" component={NutritionGoalsScreen} />
+      <Stack.Screen name="WeeklyNutrition" component={WeeklyNutritionScreen} />
     </Stack.Navigator>
   );
 }

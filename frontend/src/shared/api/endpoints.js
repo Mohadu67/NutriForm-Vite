@@ -100,6 +100,17 @@ export const endpoints = {
     adminUpdate: (id) => `/partners/admin/${id}`,
     adminDelete: (id) => `/partners/admin/${id}`,
     adminStats: (id) => `/partners/admin/${id}/stats`,
-  }
+  },
+  nutrition: {
+    log: "/nutrition/log",
+    logRecipe: "/nutrition/log-recipe",
+    daily: (date) => `/nutrition/daily/${date}`,
+    updateLog: (id) => `/nutrition/log/${id}`,
+    deleteLog: (id) => `/nutrition/log/${id}`,
+    summaryDaily: (date) => `/nutrition/summary/daily/${date}`,
+    summaryWeekly: "/nutrition/summary/weekly",
+    summaryMonthly: "/nutrition/summary/monthly",
+    goals: "/nutrition/goals",
+  },
 };
 export default endpoints;
