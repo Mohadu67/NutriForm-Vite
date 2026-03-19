@@ -15,14 +15,17 @@ export default function FormCalorie({ onResult, onCalculate }) {
   const [form, setForm] = useState(() => {
     const savedPoids = storage.get('userPoids');
     const savedTaille = storage.get('userTaille');
+    const savedAge = storage.get('userAge');
+    const savedSexe = storage.get('userSexe');
+    const savedActivite = storage.get('userActivite');
     return {
-      sexe: "homme",
+      sexe: savedSexe || "homme",
       poids: savedPoids || "",
       taille: savedTaille || "",
-      age: "",
+      age: savedAge || "",
       formule: "mifflin",
       masseGrasse: "",
-      activite: "faible",
+      activite: savedActivite || "faible",
       objectif: "stabiliser",
     };
   });
@@ -30,12 +33,15 @@ export default function FormCalorie({ onResult, onCalculate }) {
   const update = (name, value) => {
     setForm((prev) => ({ ...prev, [name]: value }));
 
-    
-    if (name === 'poids' && value) {
-      storage.set('userPoids', value);
-    }
-    if (name === 'taille' && value) {
-      storage.set('userTaille', value);
+    const storageMap = {
+      poids: 'userPoids',
+      taille: 'userTaille',
+      age: 'userAge',
+      sexe: 'userSexe',
+      activite: 'userActivite',
+    };
+    if (storageMap[name] && value) {
+      storage.set(storageMap[name], value);
     }
   };
 
@@ -44,10 +50,16 @@ export default function FormCalorie({ onResult, onCalculate }) {
     const handleStorageChange = () => {
       const savedPoids = storage.get('userPoids');
       const savedTaille = storage.get('userTaille');
+      const savedAge = storage.get('userAge');
+      const savedSexe = storage.get('userSexe');
+      const savedActivite = storage.get('userActivite');
       setForm((prev) => ({
         ...prev,
         poids: savedPoids || prev.poids,
         taille: savedTaille || prev.taille,
+        age: savedAge || prev.age,
+        sexe: savedSexe || prev.sexe,
+        activite: savedActivite || prev.activite,
       }));
     };
 

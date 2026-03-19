@@ -1,10 +1,15 @@
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { storage } from "../../../shared/utils/storage";
+import { updateNutritionGoals } from "../../../shared/api/nutrition";
 import styles from "./ResultatPopup.module.css";
 
 export default function ResultatPopup({ titre, calories, macros, onClose }) {
   const navigate = useNavigate();
+  const [settingGoal, setSettingGoal] = useState(false);
+  const isLoggedIn = Boolean(storage.get('user'));
 
   // Bloquer le scroll du body AVANT le paint
   useLayoutEffect(() => {
@@ -180,8 +185,47 @@ export default function ResultatPopup({ titre, calories, macros, onClose }) {
           </div>
         </div>
 
-        {/* Action Button */}
-        <button className={`${styles.actionBtn} ${styles[type]}`} onClick={onClose}>
+        {/* Set as Goal Button */}
+        {isLoggedIn && macros && (
+          <button
+            className={`${styles.goalBtn} ${styles[type]}`}
+            disabled={settingGoal}
+            onClick={async () => {
+              setSettingGoal(true);
+              try {
+                const goalMap = { perte: 'weight_loss', stabiliser: 'maintenance', prise: 'muscle_gain' };
+                await updateNutritionGoals({
+                  dailyCalories: calories,
+                  macros: {
+                    proteins: macros.proteines,
+                    carbs: macros.glucides,
+                    fats: macros.lipides,
+                  },
+                  goal: goalMap[type],
+                });
+                toast.success('Objectif nutritionnel mis à jour !');
+                onClose();
+              } catch {
+                toast.error('Erreur lors de la mise à jour de l\'objectif.');
+              } finally {
+                setSettingGoal(false);
+              }
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="6"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+            {settingGoal ? 'Enregistrement...' : 'Définir comme objectif'}
+          </button>
+        )}
+
+        {/* Action Button — ghost style when goal btn visible, primary style otherwise */}
+        <button
+          className={isLoggedIn ? styles.actionBtn : `${styles.actionBtnPrimary} ${styles[type]}`}
+          onClick={onClose}
+        >
           Compris
         </button>
       </div>
