@@ -122,19 +122,19 @@ export default function NutritionGoalsScreen() {
 
         {/* Macros */}
         <Text style={[styles.sectionTitle, isDark && styles.labelDark]}>Macronutriments</Text>
-        <View style={styles.row}>
-          <View style={[styles.field, { flex: 1 }]}>
+        <View style={styles.macroRow}>
+          <View style={[styles.field, styles.macroField]}>
             <Text style={[styles.label, isDark && styles.labelDark]}>Protéines (g)</Text>
             <TextInput style={[styles.input, isDark && styles.inputDark]} value={proteins} onChangeText={setProteins} keyboardType="numeric" />
           </View>
-          <View style={[styles.field, { flex: 1 }]}>
+          <View style={[styles.field, styles.macroField]}>
             <Text style={[styles.label, isDark && styles.labelDark]}>Glucides (g)</Text>
             <TextInput style={[styles.input, isDark && styles.inputDark]} value={carbs} onChangeText={setCarbs} keyboardType="numeric" />
           </View>
-          <View style={[styles.field, { flex: 1 }]}>
-            <Text style={[styles.label, isDark && styles.labelDark]}>Lipides (g)</Text>
-            <TextInput style={[styles.input, isDark && styles.inputDark]} value={fats} onChangeText={setFats} keyboardType="numeric" />
-          </View>
+        </View>
+        <View style={styles.field}>
+          <Text style={[styles.label, isDark && styles.labelDark]}>Lipides (g)</Text>
+          <TextInput style={[styles.input, isDark && styles.inputDark]} value={fats} onChangeText={setFats} keyboardType="numeric" />
         </View>
 
         <TouchableOpacity
@@ -181,13 +181,16 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   inputDark: { backgroundColor: '#2A2A2A', borderColor: '#444', color: '#E0E0E0' },
-  row: { flexDirection: 'row', gap: theme.spacing.sm },
-  goalRow: { flexDirection: 'row', gap: theme.spacing.sm, marginBottom: theme.spacing.lg },
+  macroRow: { flexDirection: 'row', gap: theme.spacing.sm },
+  macroField: { flex: 1 },
+  goalRow: { flexDirection: 'column', gap: theme.spacing.sm, marginBottom: theme.spacing.lg },
   goalBtn: {
-    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'center',
+    gap: 8,
     paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
     borderWidth: 1.5,
     borderColor: '#E0E0E0',

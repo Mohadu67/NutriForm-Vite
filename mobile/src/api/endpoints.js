@@ -189,6 +189,9 @@ export const endpoints = {
     summaryMonthly: "/nutrition/summary/monthly",
     goals: "/nutrition/goals",
   },
+  health: {
+    sync: "/health/sync",
+  },
 };
 
 export default endpoints;

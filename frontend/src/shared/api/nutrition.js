@@ -80,3 +80,15 @@ export async function updateNutritionGoals(data) {
   const response = await client.put(endpoints.nutrition.goals, data);
   return response.data;
 }
+
+/**
+ * Enregistrer les calories brûlées (saisie manuelle)
+ */
+export async function syncBurnedCalories(date, caloriesBurned) {
+  const response = await client.post(endpoints.health.sync, {
+    date,
+    caloriesBurned,
+    source: 'calculated',
+  });
+  return response.data;
+}

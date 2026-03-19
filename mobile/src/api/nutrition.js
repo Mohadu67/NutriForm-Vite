@@ -137,6 +137,24 @@ export async function updateNutritionGoals(data) {
   }
 }
 
+/**
+ * Enregistrer les calories brûlées (saisie manuelle)
+ */
+export async function syncBurnedCalories(date, caloriesBurned) {
+  try {
+    logger.app.debug('[NUTRITION API] syncBurnedCalories:', { date, caloriesBurned });
+    const response = await apiClient.post(endpoints.health.sync, {
+      date,
+      caloriesBurned,
+      source: 'calculated',
+    });
+    return { success: true, data: response.data };
+  } catch (error) {
+    logger.app.debug('[NUTRITION API] syncBurnedCalories error:', error.message);
+    return { success: false, error: error.response?.data?.message || error.message };
+  }
+}
+
 export default {
   addFoodLog,
   logRecipe,
@@ -148,4 +166,5 @@ export default {
   getMonthlySummary,
   getNutritionGoals,
   updateNutritionGoals,
+  syncBurnedCalories,
 };
