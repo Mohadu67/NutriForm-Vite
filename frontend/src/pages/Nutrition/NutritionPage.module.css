@@ -1,0 +1,628 @@
+/* Page layout */
+.page {
+  min-height: 100vh;
+  background-color: #f8f9fb;
+  padding: 2rem 0;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.pageTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.goalBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+  color: #555;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.goalBtn:hover {
+  border-color: #F7B186;
+  color: #F7B186;
+}
+
+/* Date Selector */
+.dateSelector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.dateArrow {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 8px;
+  color: #555;
+  transition: background 0.15s;
+}
+.dateArrow:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+.dateArrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.dateLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  min-width: 200px;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Summary Card */
+.summaryCard {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ringContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ringText {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ringValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.ringUnit {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.summaryStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.summaryStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.summaryStatLabel {
+  font-size: 0.72rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summaryStatValue {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.positive {
+  color: #22C55E;
+}
+
+.negative {
+  color: #EF4444;
+}
+
+/* Macro Card */
+.macroCard {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.macroContent {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.macroLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex: 1;
+}
+
+.macroRow,
+.macroTextRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.macroDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.macroLabel {
+  font-size: 0.82rem;
+  color: #555;
+  flex: 1;
+}
+
+.macroValue {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.macroTextOnly {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Balance Card */
+.balanceCard {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 1rem;
+}
+
+.balanceBars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.balanceRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.balanceLabel {
+  font-size: 0.8rem;
+  color: #666;
+  min-width: 80px;
+}
+
+.balanceBarBg {
+  flex: 1;
+  height: 10px;
+  background: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.balanceBarFill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+
+.balanceValue {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #333;
+  min-width: 50px;
+  text-align: right;
+}
+
+/* Meal List */
+.mealList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.mealGroup {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.mealGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.mealGroupTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.mealGroupCal {
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.mealAddBtn {
+  background: none;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0.3rem;
+  cursor: pointer;
+  color: #888;
+  transition: all 0.15s;
+  display: flex;
+}
+.mealAddBtn:hover {
+  border-color: #F7B186;
+  color: #F7B186;
+}
+
+.mealGroupEntries {
+  padding: 0.5rem 0;
+}
+
+/* Food Log Entry */
+.logEntry {
+  padding: 0.6rem 1rem;
+  transition: background 0.15s;
+}
+.logEntry:hover {
+  background: #fafafa;
+}
+
+.logEntryMain {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logEntryInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logEntryName {
+  font-size: 0.88rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.logEntryBadge {
+  font-size: 0.65rem;
+  background: #EFF6FF;
+  color: #3B82F6;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.logEntryCal {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.logEntryMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}
+
+.logEntryMacros {
+  font-size: 0.72rem;
+  color: #999;
+}
+
+.logEntryActions {
+  display: flex;
+  gap: 0.3rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.logEntry:hover .logEntryActions {
+  opacity: 1;
+}
+
+.logEntryBtn {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  color: #999;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+.logEntryBtn:hover {
+  color: #555;
+}
+.logEntryBtnDanger:hover {
+  color: #EF4444;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem 0.75rem;
+}
+
+.modalHeader h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  padding: 0.25rem;
+}
+
+.modalForm {
+  padding: 0.5rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.formGroup label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #666;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  border-color: #F7B186;
+}
+
+.formRow {
+  display: flex;
+  gap: 0.75rem;
+}
+.formRow > * {
+  flex: 1;
+}
+
+.modalActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.btnPrimary {
+  padding: 0.6rem 1.25rem;
+  background: #F7B186;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btnPrimary:hover {
+  opacity: 0.9;
+}
+
+.btnSecondary {
+  padding: 0.6rem 1.25rem;
+  background: #f5f5f5;
+  color: #555;
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btnSecondary:hover {
+  background: #eee;
+}
+
+/* Weekly Chart */
+.weeklyCard {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 1.5rem;
+}
+
+.weeklyChart {
+  overflow-x: auto;
+  margin-bottom: 0.75rem;
+}
+
+.weeklyLegend {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.legendDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.3rem;
+}
+
+.weeklyAverages {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.78rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+/* Premium Teaser */
+.premiumTeaser {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.premiumTeaserIcon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.premiumTeaser h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.4rem;
+}
+
+.premiumTeaser p {
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 1rem;
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+/* Recipe Log Button (used in RecipeDetail) */
+.recipeLogBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: #22C55E;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.recipeLogBtn:hover {
+  opacity: 0.9;
+}

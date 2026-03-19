@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { theme } from '../../theme';
 import { useHomeData } from '../../hooks/useHomeData';
+import { getDailySummary, getNutritionGoals } from '../../api/nutrition';
 
 import {
   StatsOverview,
@@ -63,6 +64,23 @@ export default function HomeScreen() {
   } = useHomeData();
 
   const [showGoalModal, setShowGoalModal] = useState(false);
+  const [nutritionData, setNutritionData] = useState(null);
+
+  // Fetch nutrition data for today
+  React.useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    Promise.all([getDailySummary(today), getNutritionGoals()])
+      .then(([summaryRes, goalsRes]) => {
+        if (summaryRes.success || goalsRes.success) {
+          setNutritionData({
+            consumed: summaryRes.data?.consumed?.calories || 0,
+            burned: summaryRes.data?.burned || 0,
+            goal: goalsRes.data?.dailyCalories || 2000,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSessionsClick = useCallback(() => navigation.navigate('History'), [navigation]);
   const handleBadgesClick = useCallback(() => navigation.navigate('Badges'), [navigation]);
@@ -167,6 +185,44 @@ export default function HomeScreen() {
           weeklyCalories={weeklyCalories}
           onEditGoal={() => setShowGoalModal(true)}
         />
+
+        {/* Nutrition Mini Widget */}
+        {nutritionData && (
+          <TouchableOpacity
+            style={[styles.nutritionWidget, isDark && styles.nutritionWidgetDark]}
+            onPress={() => navigation.navigate('Nutrition')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.nutritionWidgetHeader}>
+              <Text style={[styles.nutritionWidgetTitle, isDark && { color: '#FFF' }]}>
+                Nutrition du jour
+              </Text>
+              <Ionicons name="chevron-forward" size={16} color={isDark ? '#888' : '#999'} />
+            </View>
+            <View style={styles.nutritionWidgetRow}>
+              <View style={styles.nutritionWidgetStat}>
+                <Text style={[styles.nutritionWidgetValue, isDark && { color: '#FFF' }]}>
+                  {nutritionData.consumed}
+                </Text>
+                <Text style={styles.nutritionWidgetLabel}>consommé</Text>
+              </View>
+              <View style={[styles.nutritionWidgetDivider, isDark && { backgroundColor: '#444' }]} />
+              <View style={styles.nutritionWidgetStat}>
+                <Text style={[styles.nutritionWidgetValue, isDark && { color: '#FFF' }]}>
+                  {Math.max(nutritionData.goal - nutritionData.consumed, 0)}
+                </Text>
+                <Text style={styles.nutritionWidgetLabel}>restant</Text>
+              </View>
+              <View style={[styles.nutritionWidgetDivider, isDark && { backgroundColor: '#444' }]} />
+              <View style={styles.nutritionWidgetStat}>
+                <Text style={[styles.nutritionWidgetValue, isDark && { color: '#FFF' }]}>
+                  {nutritionData.burned}
+                </Text>
+                <Text style={styles.nutritionWidgetLabel}>brûlé</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        )}
 
         {/* Quick Actions */}
         <QuickActions navigation={navigation} subscriptionTier={subscriptionTier} />
@@ -428,5 +484,54 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semiBold,
+  },
+  nutritionWidget: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  nutritionWidgetDark: {
+    backgroundColor: '#2A2A2A',
+  },
+  nutritionWidgetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.sm,
+  },
+  nutritionWidgetTitle: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.semiBold,
+    color: theme.colors.text.primary,
+  },
+  nutritionWidgetRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  nutritionWidgetStat: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  nutritionWidgetValue: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.text.primary,
+  },
+  nutritionWidgetLabel: {
+    fontSize: theme.fontSize.xs,
+    color: '#888',
+    marginTop: 2,
+  },
+  nutritionWidgetDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: '#E5E5E5',
   },
 });

@@ -70,6 +70,9 @@ const RecipesPage = lazy(() => import("./pages/Recipes/RecipesPage.jsx"));
 const RecipeDetail = lazy(() => import("./pages/Recipes/RecipeDetail.jsx"));
 const RecipeForm = lazy(() => import("./pages/Admin/RecipeForm.jsx"));
 
+// Nutrition - lazy loaded
+const NutritionPage = lazy(() => import("./pages/Nutrition/NutritionPage.jsx"));
+
 // Rewards - lazy loaded
 const RewardsPage = lazy(() => import("./pages/Rewards/RewardsPage.jsx"));
 
@@ -147,6 +150,9 @@ export default function App() {
             {/* Recipes - lazy loaded */}
             <Route path="/recettes" element={<RecipesPage />} />
             <Route path="/recettes/:id" element={<RecipeDetail />} />
+
+            {/* Nutrition - lazy loaded */}
+            <Route path="/nutrition" element={<ProtectedRoute><NutritionPage /></ProtectedRoute>} />
 
             {/* Rewards - lazy loaded */}
             <Route path="/rewards" element={<RewardsPage />} />
