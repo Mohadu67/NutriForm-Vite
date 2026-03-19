@@ -2,7 +2,7 @@
 .page {
   min-height: 100vh;
   background-color: #f8f9fb;
-  padding: 2rem 0;
+  padding: 6rem 0 2rem;
 }
 
 .container {
@@ -16,6 +16,31 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+}
+
+.pageTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fff;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+.backBtn:hover {
+  border-color: #F7B186;
+  color: #F7B186;
 }
 
 .pageTitle {
@@ -335,6 +360,7 @@
 .logEntry {
   padding: 0.6rem 1rem;
   transition: background 0.15s;
+  cursor: pointer;
 }
 .logEntry:hover {
   background: #fafafa;
@@ -350,12 +376,17 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .logEntryName {
   font-size: 0.88rem;
   color: #333;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .logEntryBadge {
@@ -365,12 +396,14 @@
   padding: 0.1rem 0.4rem;
   border-radius: 4px;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 .logEntryCal {
   font-size: 0.85rem;
   font-weight: 600;
   color: #555;
+  flex-shrink: 0;
 }
 
 .logEntryMeta {
@@ -388,38 +421,49 @@
 .logEntryActions {
   display: flex;
   gap: 0.3rem;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-.logEntry:hover .logEntryActions {
   opacity: 1;
+}
+
+/* Desktop: hide actions until hover */
+@media (min-width: 640px) {
+  .logEntryActions {
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .logEntry:hover .logEntryActions {
+    opacity: 1;
+  }
 }
 
 .logEntryBtn {
   background: none;
   border: none;
-  padding: 0.25rem;
+  padding: 0.35rem;
   cursor: pointer;
   color: #999;
-  border-radius: 4px;
-  transition: color 0.15s;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
 }
 .logEntryBtn:hover {
   color: #555;
+  background: rgba(0,0,0,0.04);
 }
 .logEntryBtnDanger:hover {
   color: #EF4444;
+  background: rgba(239,68,68,0.06);
 }
 
 /* Modal */
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
   padding: 1rem;
 }
 
@@ -428,8 +472,10 @@
   border-radius: 16px;
   width: 100%;
   max-width: 480px;
-  max-height: 90vh;
+  max-height: 85vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
 .modalHeader {
@@ -491,10 +537,12 @@
 
 .formRow {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
 }
 .formRow > * {
   flex: 1;
+  min-width: 120px;
 }
 
 .modalActions {
@@ -532,6 +580,28 @@
 }
 .btnSecondary:hover {
   background: #eee;
+}
+
+.importBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.08) 0%, rgba(247, 177, 134, 0.04) 100%);
+  border: 1.5px dashed rgba(247, 177, 134, 0.5);
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #D4895A;
+  cursor: pointer;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 0.5rem;
+}
+.importBtn:hover {
+  background: linear-gradient(135deg, rgba(247, 177, 134, 0.15) 0%, rgba(247, 177, 134, 0.08) 100%);
+  border-color: #F7B186;
 }
 
 /* Weekly Chart */
@@ -598,6 +668,43 @@
   font-size: 0.85rem;
   color: #888;
   margin-bottom: 1rem;
+}
+
+/* Burned Calories Inline Edit */
+.burnedBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.burnedBtn:hover {
+  color: #F7B186;
+}
+.burnedBtn svg {
+  opacity: 0.4;
+  transition: opacity 0.15s;
+}
+.burnedBtn:hover svg {
+  opacity: 1;
+}
+
+.burnedInput {
+  width: 70px;
+  padding: 0.15rem 0.4rem;
+  border: 1.5px solid #F7B186;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  outline: none;
 }
 
 /* Loading */

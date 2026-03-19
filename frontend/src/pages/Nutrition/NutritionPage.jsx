@@ -16,6 +16,7 @@ import ManualFoodForm from './components/ManualFoodForm';
 import WeeklyNutritionChart from './components/WeeklyNutritionChart';
 import NutritionGoalSetup from './components/NutritionGoalSetup';
 
+import { syncBurnedCalories } from '../../shared/api/nutrition';
 import { useNutritionData } from './hooks/useNutritionData';
 import { useNutritionGoals } from './hooks/useNutritionGoals';
 import { useFoodLog } from './hooks/useFoodLog';
@@ -88,6 +89,15 @@ export default function NutritionPage() {
     }
   }, [addManual, update]);
 
+  const handleBurnedChange = useCallback(async (value) => {
+    try {
+      await syncBurnedCalories(selectedDate, value);
+      refresh();
+    } catch {
+      toast.error('Erreur lors de la mise à jour des calories brûlées');
+    }
+  }, [selectedDate, refresh]);
+
   const handleSaveGoals = useCallback(async (data) => {
     try {
       await saveGoals(data);
@@ -108,7 +118,14 @@ export default function NutritionPage() {
       <main className={style.page}>
         <div className={style.container}>
           <header className={style.pageHeader}>
-            <h1 className={style.pageTitle}>Suivi Nutritionnel</h1>
+            <div className={style.pageTitleRow}>
+              <button onClick={() => navigate(-1)} className={style.backBtn} aria-label="Retour">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h1 className={style.pageTitle}>Suivi Nutritionnel</h1>
+            </div>
             <button onClick={() => setShowGoalSetup(true)} className={style.goalBtn}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="3" />
@@ -125,7 +142,7 @@ export default function NutritionPage() {
           ) : (
             <>
               <div className={style.grid}>
-                <DailySummaryCard consumed={consumed} goal={goalCalories} burned={burned} />
+                <DailySummaryCard consumed={consumed} goal={goalCalories} burned={burned} onBurnedChange={handleBurnedChange} />
                 <MacroBreakdown
                   proteins={dailySummary?.consumed?.proteins || 0}
                   carbs={dailySummary?.consumed?.carbs || 0}
