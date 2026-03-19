@@ -22,6 +22,7 @@ import {
   InstructionsList,
 } from '../../components/recipes';
 import RatingDisplay from '../../components/common/RatingDisplay';
+import { logRecipe } from '../../api/nutrition';
 import logger from '../../services/logger';
 
 const { width } = Dimensions.get('window');
@@ -274,6 +275,19 @@ const RecipeDetailScreen = ({ route, navigation }) => {
     }
   };
 
+  const handleLogRecipe = async (mealType) => {
+    const result = await logRecipe({
+      recipeId,
+      servingsConsumed: recipe.servings || 1,
+      mealType,
+    });
+    if (result.success) {
+      Alert.alert('Ajouté', 'Recette ajoutée à votre suivi nutritionnel !', [{ text: 'OK' }]);
+    } else {
+      Alert.alert('Erreur', result.error || 'Impossible d\'ajouter la recette.', [{ text: 'OK' }]);
+    }
+  };
+
   if (loadingDetail || !recipe) {
     return (
       <View style={[styles.loadingContainer, isDark && styles.loadingContainerDark]}>
@@ -475,6 +489,38 @@ const RecipeDetailScreen = ({ route, navigation }) => {
 
           {/* Nutrition Card */}
           <NutritionCard nutrition={nutrition} />
+
+          {/* Log Recipe Button */}
+          {user && (
+            <TouchableOpacity
+              style={styles.logRecipeBtn}
+              activeOpacity={0.8}
+              onPress={() => {
+                Alert.alert(
+                  'Logger cette recette',
+                  `Ajouter "${recipe.title}" à votre suivi nutritionnel ?`,
+                  [
+                    { text: 'Annuler', style: 'cancel' },
+                    {
+                      text: 'Petit-déj',
+                      onPress: () => handleLogRecipe('breakfast'),
+                    },
+                    {
+                      text: 'Déjeuner',
+                      onPress: () => handleLogRecipe('lunch'),
+                    },
+                    {
+                      text: 'Dîner',
+                      onPress: () => handleLogRecipe('dinner'),
+                    },
+                  ]
+                );
+              }}
+            >
+              <Ionicons name="add-circle-outline" size={20} color="#FFF" />
+              <Text style={styles.logRecipeBtnText}>J'ai préparé cette recette</Text>
+            </TouchableOpacity>
+          )}
 
           {/* Ingredients List */}
           {recipe.ingredients && recipe.ingredients.length > 0 && (
@@ -955,6 +1001,22 @@ const styles = StyleSheet.create({
   },
   starButton: {
     padding: 8,
+  },
+  logRecipeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#22C55E',
+    borderRadius: theme.borderRadius.lg,
+    paddingVertical: theme.spacing.md,
+    marginHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+  },
+  logRecipeBtnText: {
+    color: '#FFF',
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.fontWeight.semiBold,
   },
 });
 
