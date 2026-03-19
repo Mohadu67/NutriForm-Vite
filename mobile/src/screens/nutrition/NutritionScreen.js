@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,14 +9,16 @@ import {
   RefreshControl,
   Alert,
   ActivityIndicator,
+  Modal,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Svg, { Circle } from 'react-native-svg';
 
 import { theme } from '../../theme';
-import { getDailySummary, getNutritionGoals, deleteFoodLog } from '../../api/nutrition';
+import { getDailySummary, getNutritionGoals, deleteFoodLog, syncBurnedCalories } from '../../api/nutrition';
 
 const MEAL_ORDER = ['breakfast', 'lunch', 'dinner', 'snack'];
 const MEAL_LABELS = {
@@ -57,10 +59,13 @@ export default function NutritionScreen() {
     }
   }, [selectedDate]);
 
-  useEffect(() => {
-    setLoading(true);
-    fetchData();
-  }, [fetchData]);
+  // Re-fetch on screen focus (e.g. coming back from ManualFoodEntry)
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      fetchData();
+    }, [fetchData])
+  );
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -79,6 +84,22 @@ export default function NutritionScreen() {
     const next = d.toISOString().split('T')[0];
     const today = new Date().toISOString().split('T')[0];
     if (next <= today) setSelectedDate(next);
+  };
+
+  const [burnedModalVisible, setBurnedModalVisible] = useState(false);
+  const [burnedDraft, setBurnedDraft] = useState('');
+
+  const handleBurnedEdit = () => {
+    setBurnedDraft(String(burned));
+    setBurnedModalVisible(true);
+  };
+
+  const handleBurnedSave = async () => {
+    const num = Number(burnedDraft);
+    setBurnedModalVisible(false);
+    if (isNaN(num) || num < 0) return;
+    await syncBurnedCalories(selectedDate, num);
+    fetchData();
   };
 
   const handleDelete = (id) => {
@@ -178,10 +199,13 @@ export default function NutritionScreen() {
                     <Text style={styles.statLabel}>Restant</Text>
                     <Text style={[styles.statValue, isDark && styles.statValueDark]}>{remaining}</Text>
                   </View>
-                  <View style={styles.statItem}>
+                  <TouchableOpacity style={styles.burnedStat} onPress={handleBurnedEdit} activeOpacity={0.6}>
                     <Text style={styles.statLabel}>Brûlé</Text>
-                    <Text style={[styles.statValue, isDark && styles.statValueDark]}>{burned}</Text>
-                  </View>
+                    <View style={styles.burnedValueRow}>
+                      <Text style={[styles.statValue, isDark && styles.statValueDark]}>{burned}</Text>
+                      <Ionicons name="pencil-outline" size={12} color="#AAA" />
+                    </View>
+                  </TouchableOpacity>
                 </View>
               </View>
 
@@ -237,7 +261,9 @@ export default function NutritionScreen() {
                     <TouchableOpacity
                       key={item._id}
                       style={styles.foodItem}
+                      onPress={() => navigation.navigate('ManualFoodEntry', { entry: item, date: selectedDate })}
                       onLongPress={() => handleDelete(item._id)}
+                      activeOpacity={0.6}
                     >
                       <View style={styles.foodItemMain}>
                         <Text style={[styles.foodName, isDark && styles.foodNameDark]} numberOfLines={1}>
@@ -249,9 +275,12 @@ export default function NutritionScreen() {
                           </View>
                         )}
                       </View>
-                      <Text style={[styles.foodCal, isDark && styles.foodCalDark]}>
-                        {item.nutrition?.calories || 0} kcal
-                      </Text>
+                      <View style={styles.foodItemRight}>
+                        <Text style={[styles.foodCal, isDark && styles.foodCalDark]}>
+                          {item.nutrition?.calories || 0} kcal
+                        </Text>
+                        <Ionicons name="chevron-forward" size={14} color="#CCC" />
+                      </View>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -272,6 +301,32 @@ export default function NutritionScreen() {
       >
         <Ionicons name="add" size={28} color="#FFF" />
       </TouchableOpacity>
+
+      {/* Burned Calories Modal */}
+      <Modal visible={burnedModalVisible} transparent animationType="fade" onRequestClose={() => setBurnedModalVisible(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setBurnedModalVisible(false)}>
+          <View style={[styles.burnedModal, isDark && styles.cardDark]} onStartShouldSetResponder={() => true}>
+            <Text style={[styles.burnedModalTitle, isDark && { color: '#FFF' }]}>Calories brûlées</Text>
+            <TextInput
+              style={[styles.burnedModalInput, isDark && { backgroundColor: '#333', color: '#FFF', borderColor: '#555' }]}
+              value={burnedDraft}
+              onChangeText={setBurnedDraft}
+              keyboardType="numeric"
+              autoFocus
+              placeholder="0"
+              placeholderTextColor="#999"
+            />
+            <View style={styles.burnedModalActions}>
+              <TouchableOpacity style={styles.burnedModalCancel} onPress={() => setBurnedModalVisible(false)}>
+                <Text style={styles.burnedModalCancelText}>Annuler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.burnedModalSave} onPress={handleBurnedSave}>
+                <Text style={styles.burnedModalSaveText}>Enregistrer</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -324,6 +379,8 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: theme.fontSize.sm, color: '#888' },
   statValue: { fontSize: theme.fontSize.sm, fontWeight: theme.fontWeight.semiBold, color: '#333' },
   statValueDark: { color: '#E0E0E0' },
+  burnedStat: { flexDirection: 'row', justifyContent: 'space-between' },
+  burnedValueRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   macroRow: { flexDirection: 'row', gap: theme.spacing.sm, marginTop: theme.spacing.md },
   macroPill: {
     flex: 1,
@@ -367,11 +424,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: theme.spacing.xs,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.xs,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#F0F0F0',
+    minHeight: 44,
   },
   foodItemMain: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.xs, flex: 1 },
+  foodItemRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   foodName: { fontSize: theme.fontSize.sm, color: '#333', flex: 1 },
   foodNameDark: { color: '#E0E0E0' },
   recipeBadge: { backgroundColor: '#EFF6FF', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
@@ -393,5 +453,67 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 6,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  burnedModal: {
+    backgroundColor: '#FFF',
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing.lg,
+    width: '100%',
+    maxWidth: 320,
+  },
+  burnedModalTitle: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.semiBold,
+    color: '#333',
+    marginBottom: theme.spacing.md,
+    textAlign: 'center',
+  },
+  burnedModalInput: {
+    backgroundColor: '#F5F5F5',
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.semiBold,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  burnedModalActions: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+  },
+  burnedModalCancel: {
+    flex: 1,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: '#F0F0F0',
+    alignItems: 'center',
+  },
+  burnedModalCancelText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.medium,
+    color: '#666',
+  },
+  burnedModalSave: {
+    flex: 1,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+  },
+  burnedModalSaveText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.semiBold,
+    color: '#FFF',
   },
 });

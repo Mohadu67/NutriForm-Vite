@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { theme } from '../../theme';
-import { addFoodLog } from '../../api/nutrition';
+import { addFoodLog, updateFoodLog } from '../../api/nutrition';
 
 const MEAL_OPTIONS = [
   { value: 'breakfast', label: 'Petit-déjeuner', icon: 'sunny-outline' },
@@ -29,16 +29,17 @@ export default function ManualFoodEntryScreen() {
   const isDark = useColorScheme() === 'dark';
   const navigation = useNavigation();
   const route = useRoute();
-  const { mealType: defaultMealType, date } = route.params || {};
+  const { mealType: defaultMealType, date, entry: editEntry } = route.params || {};
+  const isEdit = Boolean(editEntry);
 
-  const [name, setName] = useState('');
-  const [mealType, setMealType] = useState(defaultMealType || 'lunch');
-  const [calories, setCalories] = useState('');
-  const [proteins, setProteins] = useState('');
-  const [carbs, setCarbs] = useState('');
-  const [fats, setFats] = useState('');
-  const [fiber, setFiber] = useState('');
-  const [notes, setNotes] = useState('');
+  const [name, setName] = useState(editEntry?.name || '');
+  const [mealType, setMealType] = useState(editEntry?.mealType || defaultMealType || 'lunch');
+  const [calories, setCalories] = useState(editEntry?.nutrition?.calories ? String(editEntry.nutrition.calories) : '');
+  const [proteins, setProteins] = useState(editEntry?.nutrition?.proteins ? String(editEntry.nutrition.proteins) : '');
+  const [carbs, setCarbs] = useState(editEntry?.nutrition?.carbs ? String(editEntry.nutrition.carbs) : '');
+  const [fats, setFats] = useState(editEntry?.nutrition?.fats ? String(editEntry.nutrition.fats) : '');
+  const [fiber, setFiber] = useState(editEntry?.nutrition?.fiber ? String(editEntry.nutrition.fiber) : '');
+  const [notes, setNotes] = useState(editEntry?.notes || '');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
@@ -48,27 +49,39 @@ export default function ManualFoodEntryScreen() {
     }
 
     setSubmitting(true);
-    const result = await addFoodLog({
-      name: name.trim(),
-      mealType,
-      date: date || new Date().toISOString().split('T')[0],
-      nutrition: {
-        calories: Number(calories),
-        proteins: Number(proteins) || 0,
-        carbs: Number(carbs) || 0,
-        fats: Number(fats) || 0,
-        fiber: Number(fiber) || 0,
-      },
-      notes: notes.trim() || undefined,
-    });
-    setSubmitting(false);
+    try {
+      const payload = {
+        name: name.trim(),
+        mealType,
+        nutrition: {
+          calories: Number(calories),
+          proteins: Number(proteins) || 0,
+          carbs: Number(carbs) || 0,
+          fats: Number(fats) || 0,
+          fiber: Number(fiber) || 0,
+        },
+        notes: notes.trim() || undefined,
+      };
 
-    if (result.success) {
-      navigation.goBack();
-    } else if (result.errorData?.error === 'free_limit_reached') {
-      Alert.alert('Limite atteinte', result.errorData.message);
-    } else {
-      Alert.alert('Erreur', result.error || 'Impossible d\'ajouter l\'aliment.');
+      let result;
+      if (isEdit) {
+        result = await updateFoodLog(editEntry._id, payload);
+      } else {
+        payload.date = date || new Date().toISOString().split('T')[0];
+        result = await addFoodLog(payload);
+      }
+
+      if (result.success) {
+        navigation.goBack();
+      } else if (result.errorData?.error === 'free_limit_reached') {
+        Alert.alert('Limite atteinte', result.errorData.message);
+      } else {
+        Alert.alert('Erreur', result.error || (isEdit ? 'Impossible de modifier l\'aliment.' : 'Impossible d\'ajouter l\'aliment.'));
+      }
+    } catch (err) {
+      Alert.alert('Erreur', 'Une erreur inattendue est survenue.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -78,7 +91,7 @@ export default function ManualFoodEntryScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="close" size={24} color={isDark ? '#FFF' : '#000'} />
         </TouchableOpacity>
-        <Text style={[styles.title, isDark && styles.titleDark]}>Ajouter un aliment</Text>
+        <Text style={[styles.title, isDark && styles.titleDark]}>{isEdit ? 'Modifier l\'aliment' : 'Ajouter un aliment'}</Text>
         <View style={{ width: 32 }} />
       </View>
 
@@ -165,17 +178,17 @@ export default function ManualFoodEntryScreen() {
                 placeholderTextColor="#999"
               />
             </View>
-            <View style={[styles.field, { flex: 1 }]}>
-              <Text style={[styles.label, isDark && styles.labelDark]}>Lipides (g)</Text>
-              <TextInput
-                style={[styles.input, isDark && styles.inputDark]}
-                value={fats}
-                onChangeText={setFats}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor="#999"
-              />
-            </View>
+          </View>
+          <View style={styles.field}>
+            <Text style={[styles.label, isDark && styles.labelDark]}>Lipides (g)</Text>
+            <TextInput
+              style={[styles.input, isDark && styles.inputDark]}
+              value={fats}
+              onChangeText={setFats}
+              keyboardType="numeric"
+              placeholder="0"
+              placeholderTextColor="#999"
+            />
           </View>
 
           {/* Fiber */}
@@ -213,7 +226,7 @@ export default function ManualFoodEntryScreen() {
             activeOpacity={0.8}
           >
             <Text style={styles.submitBtnText}>
-              {submitting ? 'Ajout en cours...' : 'Ajouter'}
+              {submitting ? (isEdit ? 'Modification...' : 'Ajout en cours...') : (isEdit ? 'Modifier' : 'Ajouter')}
             </Text>
           </TouchableOpacity>
         </ScrollView>
@@ -254,13 +267,13 @@ const styles = StyleSheet.create({
   inputDark: { backgroundColor: '#2A2A2A', borderColor: '#444', color: '#E0E0E0' },
   textArea: { minHeight: 70, textAlignVertical: 'top' },
   row: { flexDirection: 'row', gap: theme.spacing.sm },
-  mealTypeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.xs },
+  mealTypeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
   mealTypeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.sm,
+    gap: 6,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
     borderWidth: 1.5,
     borderColor: '#E0E0E0',
