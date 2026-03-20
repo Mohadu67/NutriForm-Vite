@@ -43,6 +43,9 @@ export default function EditProfileScreen() {
   const [pseudo, setPseudo] = useState(user?.pseudo || '');
   const [bio, setBio] = useState('');
   const [age, setAge] = useState('');
+  const [weight, setWeight] = useState('');
+  const [height, setHeight] = useState('');
+  const [bodyFatPercent, setBodyFatPercent] = useState('');
 
   // Avatar
   const avatarUrl = user?.photo || null;
@@ -57,6 +60,9 @@ export default function EditProfileScreen() {
         if (profile) {
           setBio(profile.bio || '');
           setAge(profile.age ? String(profile.age) : '');
+          setWeight(profile.weight ? String(profile.weight) : '');
+          setHeight(profile.height ? String(profile.height) : '');
+          setBodyFatPercent(profile.bodyFatPercent ? String(profile.bodyFatPercent) : '');
           if (profile.prenom) setPrenom(profile.prenom);
           if (profile.pseudo) setPseudo(profile.pseudo);
         }
@@ -89,10 +95,13 @@ export default function EditProfileScreen() {
         pseudo: pseudo.trim(),
       });
 
-      // Update profile (bio, age)
+      // Update profile (bio, age, mensurations)
       await apiClient.put(endpoints.profile.update, {
         bio: bio.trim(),
         age: age ? parseInt(age, 10) : null,
+        weight: weight ? parseFloat(weight) : null,
+        height: height ? parseFloat(height) : null,
+        bodyFatPercent: bodyFatPercent ? parseFloat(bodyFatPercent) : null,
       });
 
       // Update local user
@@ -113,7 +122,7 @@ export default function EditProfileScreen() {
     } finally {
       setSaving(false);
     }
-  }, [prenom, pseudo, bio, age, updateUser, navigation]);
+  }, [prenom, pseudo, bio, age, weight, height, bodyFatPercent, updateUser, navigation]);
 
   // Photo handlers
   const uploadPhoto = useCallback(async (imageUri) => {
@@ -333,6 +342,51 @@ export default function EditProfileScreen() {
                 placeholderTextColor={isDark ? '#666' : '#999'}
                 keyboardType="number-pad"
                 maxLength={2}
+              />
+            </View>
+
+            {/* Mensurations */}
+            <Text style={[styles.sectionTitle, isDark && styles.textLight, { marginTop: 8 }]}>
+              Mensurations
+            </Text>
+
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <View style={[styles.inputGroup, { flex: 1 }]}>
+                <Text style={[styles.inputLabel, isDark && styles.textMuted]}>Poids (kg)</Text>
+                <TextInput
+                  style={[styles.input, isDark && styles.inputDark]}
+                  value={weight}
+                  onChangeText={(text) => setWeight(text.replace(/[^0-9.]/g, ''))}
+                  placeholder="75"
+                  placeholderTextColor={isDark ? '#666' : '#999'}
+                  keyboardType="decimal-pad"
+                  maxLength={5}
+                />
+              </View>
+              <View style={[styles.inputGroup, { flex: 1 }]}>
+                <Text style={[styles.inputLabel, isDark && styles.textMuted]}>Taille (cm)</Text>
+                <TextInput
+                  style={[styles.input, isDark && styles.inputDark]}
+                  value={height}
+                  onChangeText={(text) => setHeight(text.replace(/[^0-9]/g, ''))}
+                  placeholder="175"
+                  placeholderTextColor={isDark ? '#666' : '#999'}
+                  keyboardType="number-pad"
+                  maxLength={3}
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={[styles.inputLabel, isDark && styles.textMuted]}>% masse grasse (optionnel)</Text>
+              <TextInput
+                style={[styles.input, isDark && styles.inputDark]}
+                value={bodyFatPercent}
+                onChangeText={(text) => setBodyFatPercent(text.replace(/[^0-9.]/g, ''))}
+                placeholder="15"
+                placeholderTextColor={isDark ? '#666' : '#999'}
+                keyboardType="decimal-pad"
+                maxLength={4}
               />
             </View>
 
