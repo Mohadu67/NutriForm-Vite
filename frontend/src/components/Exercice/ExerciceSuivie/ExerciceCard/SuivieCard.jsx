@@ -75,7 +75,7 @@ export default function SuivieCard({ exo, value, onChange }) {
   const sets = Array.isArray(data?.sets) ? data.sets : [];
   const cardioSets = Array.isArray(data?.cardioSets) ? data.cardioSets : [];
 
-  const imgSrc = Array.isArray(exo?.images) && exo.images.length ? exo.images[0] : null;
+  const imgSrc = exo?.mainImage || exo?.image || (Array.isArray(exo?.images) && exo.images.length ? (exo.images[0]?.url || exo.images[0]) : null) || null;
   const initialLetter = exo?.name?.trim()?.[0]?.toUpperCase() || "?";
 
   // Déterminer si l'exercice est commencé
