@@ -1,0 +1,114 @@
+.wrapper {
+  margin-bottom: 2rem;
+}
+
+.track {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  padding: 0 1rem;
+}
+
+.track::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: calc(1rem + 18px);
+  right: calc(1rem + 18px);
+  height: 3px;
+  background: var(--color-neutral-200);
+  border-radius: 2px;
+  z-index: 0;
+}
+
+:global(body.dark) .track::before {
+  background: var(--color-neutral-700);
+}
+
+.trackFill {
+  position: absolute;
+  top: 18px;
+  left: calc(1rem + 18px);
+  height: 3px;
+  background: var(--color-primary-500);
+  border-radius: 2px;
+  z-index: 1;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: calc(100% - 2rem - 36px);
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+.dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  background: var(--color-neutral-0);
+  border: 2px solid var(--color-neutral-300);
+  color: var(--color-neutral-400);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:global(body.dark) .dot {
+  background: var(--color-neutral-800);
+  border-color: var(--color-neutral-600);
+  color: var(--color-neutral-500);
+}
+
+.active .dot {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-neutral-0);
+  box-shadow: 0 4px 14px rgba(247, 177, 134, 0.35);
+}
+
+.current .dot {
+  transform: scale(1.1);
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-neutral-400);
+  transition: color 0.3s ease;
+  white-space: nowrap;
+}
+
+.active .label {
+  color: var(--color-primary-600);
+  font-weight: 600;
+}
+
+:global(body.dark) .active .label {
+  color: var(--color-primary-400);
+}
+
+@media (max-width: 480px) {
+  .dot {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+
+  .label {
+    font-size: 0.7rem;
+  }
+
+  .track::before,
+  .trackFill {
+    top: 16px;
+  }
+}

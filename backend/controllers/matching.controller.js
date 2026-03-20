@@ -16,6 +16,12 @@ const logger = require('../utils/logger.js');
  * - Disponibilité commune: 15 points
  */
 
+// Helper: extraire un distance safe (null si pas de coordonnees)
+function safeDistance(profile1, profile2) {
+  const d = profile1.distanceTo(profile2);
+  return d !== null ? parseFloat(d.toFixed(2)) : null;
+}
+
 // Obtenir les suggestions de matches pour un utilisateur
 exports.getMatchSuggestions = async (req, res) => {
   try {
@@ -33,14 +39,22 @@ exports.getMatchSuggestions = async (req, res) => {
       });
     }
 
-    // Construire la query de recherche (sans $near pour inclure profils sans localisation)
-    let baseQuery = {
+    // Construire la query de recherche
+    const baseQuery = {
       userId: {
         $ne: userId,
         $nin: myProfile.blockedUsers || []
       },
       isVisible: true
     };
+
+    // [BUG FIX #8] Filtre bidirectionnel: exclure aussi les profils qui nous ont bloques
+    baseQuery.blockedUsers = { $ne: userId };
+
+    // [BUG FIX #9] Appliquer la preference onlyVerified
+    if (myProfile.matchPreferences.onlyVerified) {
+      baseQuery.verified = true;
+    }
 
     // Filtres supplémentaires basés sur les préférences
     if (myProfile.matchPreferences.preferredGender !== 'any') {
@@ -57,45 +71,57 @@ exports.getMatchSuggestions = async (req, res) => {
       }
     }
 
-    // Récupérer les profils candidats (sans limite de distance dans la query)
+    // Récupérer les profils candidats
     let candidates = await UserProfile.find(baseQuery).limit(200).populate('userId');
 
-    // Si l'utilisateur a une localisation, filtrer par distance
+    // [BUG FIX #4] Filtrer par distance — exclure les profils SANS localisation
     if (myProfile.location?.coordinates) {
       const maxDistanceKm = myProfile.matchPreferences.maxDistance;
       candidates = candidates.filter(candidate => {
         const distance = myProfile.distanceTo(candidate);
-        return distance === null || distance <= maxDistanceKm;
+        // Exclure les candidats sans coordonnees (distance === null)
+        if (distance === null) return false;
+        return distance <= maxDistanceKm;
       });
+    }
+
+    // [BUG FIX #7] Batch: charger tous les matches existants en une seule requete
+    const candidateUserIds = candidates.map(c => c.userId._id || c.userId);
+    const existingMatches = await Match.find({
+      $or: [
+        { user1Id: userId, user2Id: { $in: candidateUserIds } },
+        { user2Id: userId, user1Id: { $in: candidateUserIds } }
+      ]
+    });
+
+    // Indexer les matches existants par partnerId pour lookup O(1)
+    const matchByPartnerId = {};
+    for (const m of existingMatches) {
+      const partnerId = m.user1Id.equals(userId) ? m.user2Id.toString() : m.user1Id.toString();
+      matchByPartnerId[partnerId] = m;
     }
 
     // Calculer le score pour chaque candidat
     const scoredMatches = [];
 
     for (const candidate of candidates) {
+      const candidateUserId = candidate.userId._id || candidate.userId;
+      const existingMatch = matchByPartnerId[candidateUserId.toString()] || null;
+
+      // Ne pas montrer les matches déjà rejetés, bloqués, ou mutuels
+      if (existingMatch && ['rejected', 'blocked', 'mutual'].includes(existingMatch.status)) {
+        continue;
+      }
+
+      // Ne pas montrer non plus si on a déjà liké (en attente de réponse)
+      if (existingMatch && existingMatch.likedBy?.some(id => id.equals(userId))) {
+        continue;
+      }
+
       const score = calculateMatchScore(myProfile, candidate);
 
       if (score.total >= minScore) {
-        // Vérifier si un match existe déjà
-        const existingMatch = await Match.findOne({
-          $or: [
-            { user1Id: userId, user2Id: candidate.userId._id || candidate.userId },
-            { user1Id: candidate.userId._id || candidate.userId, user2Id: userId }
-          ]
-        });
-
-        // Ne pas montrer les matches déjà rejetés, bloqués, ou mutuels
-        if (existingMatch && ['rejected', 'blocked', 'mutual'].includes(existingMatch.status)) {
-          continue;
-        }
-
-        // Ne pas montrer non plus si on a déjà liké (en attente de réponse)
-        if (existingMatch && existingMatch.likedBy?.some(id => id.equals(userId))) {
-          continue;
-        }
-
-        const distance = myProfile.distanceTo(candidate);
-        const candidateUserId = candidate.userId._id || candidate.userId;
+        const distance = safeDistance(myProfile, candidate);
         const candidateUser = candidate.userId.pseudo ? candidate.userId : null;
 
         scoredMatches.push({
@@ -118,7 +144,7 @@ exports.getMatchSuggestions = async (req, res) => {
           },
           matchScore: score.total,
           scoreBreakdown: score.breakdown,
-          distance: distance !== null ? parseFloat(distance.toFixed(2)) : 0,
+          distance: distance, // [BUG FIX #3] null au lieu de 0 si pas de coords
           status: existingMatch?.status || 'new',
           hasLiked: existingMatch?.likedBy?.includes(userId) || false,
           isMutual: existingMatch?.isMutual() || false
@@ -184,7 +210,7 @@ exports.likeProfile = async (req, res) => {
     if (match) {
       // Match existe déjà, ajouter le like
       const wasMutual = match.isMutual();
-      match.addLike(userId);
+      match.addLike(userId); // addLike gere maintenant le nettoyage de rejectedBy
       await match.save();
       await match.populate('user1Id user2Id');
 
@@ -192,9 +218,9 @@ exports.likeProfile = async (req, res) => {
 
       // Si le match devient mutuel, envoyer des notifications
       if (!wasMutual && isMutual) {
-        // Récupérer les données des utilisateurs pour les notifications
-        const user1 = await User.findById(match.user1Id._id || match.user1Id);
-        const user2 = await User.findById(match.user2Id._id || match.user2Id);
+        // Apres populate, user1Id/user2Id sont deja des User documents
+        const user1 = match.user1Id;
+        const user2 = match.user2Id;
 
         if (user1 && user2) {
           // Notifier l'utilisateur 1 (Web Push)
@@ -214,7 +240,6 @@ exports.likeProfile = async (req, res) => {
           // Envoyer via WebSocket pour affichage dans le modal
           const io = req.app.get('io');
           if (io && io.notifyUser) {
-            // Notifier user1 du match avec user2
             io.notifyUser(user1._id.toString(), 'new_notification', {
               id: `match-${match._id}-${Date.now()}`,
               type: 'match',
@@ -226,7 +251,6 @@ exports.likeProfile = async (req, res) => {
               link: '/matching'
             });
 
-            // Notifier user2 du match avec user1
             io.notifyUser(user2._id.toString(), 'new_notification', {
               id: `match-${match._id}-${Date.now()}`,
               type: 'match',
@@ -276,14 +300,14 @@ exports.likeProfile = async (req, res) => {
 
     // Créer un nouveau match
     const score = calculateMatchScore(myProfile, theirProfile);
-    const distance = myProfile.distanceTo(theirProfile);
+    const distance = safeDistance(myProfile, theirProfile);
 
     match = new Match({
       user1Id: userId,
       user2Id: targetUserId,
       matchScore: score.total,
       scoreBreakdown: score.breakdown,
-      distance: distance !== null ? parseFloat(distance.toFixed(2)) : 0,
+      distance: distance !== null ? distance : 0, // [BUG FIX #3] distance field required, 0 comme fallback en DB
       likedBy: [userId],
       status: 'user1_liked'
     });
@@ -376,14 +400,14 @@ exports.rejectMatch = async (req, res) => {
 
       if (myProfile && theirProfile) {
         const score = calculateMatchScore(myProfile, theirProfile);
-        const distance = myProfile.distanceTo(theirProfile);
+        const distance = safeDistance(myProfile, theirProfile);
 
         const rejectedMatch = new Match({
           user1Id: userId,
           user2Id: targetUserId,
           matchScore: score.total,
           scoreBreakdown: score.breakdown,
-          distance: distance !== null ? parseFloat(distance.toFixed(2)) : 0,
+          distance: distance !== null ? distance : 0,
           status: 'rejected',
           rejectedBy: userId
         });
@@ -394,9 +418,16 @@ exports.rejectMatch = async (req, res) => {
         logger.warn(`[rejectMatch] Could not create rejected match - myProfile: ${!!myProfile}, theirProfile: ${!!theirProfile}`);
       }
     } else {
+      // [BUG FIX #5] Empecher de rejeter un match mutuel via cet endpoint
+      if (match.status === 'mutual') {
+        return res.status(400).json({ error: 'Impossible de rejeter un match mutuel. Utilisez la suppression de match.' });
+      }
+
       logger.info(`[rejectMatch] Existing match found: ${match._id}, current status: ${match.status}`);
       match.status = 'rejected';
       match.rejectedBy = userId;
+      // Nettoyer likedBy du user qui rejette pour coherence
+      match.likedBy = match.likedBy.filter(id => !id.equals(userId));
       const savedMatch = await match.save();
       logger.info(`[rejectMatch] Match updated: ${savedMatch._id}, status: ${savedMatch.status}, rejectedBy: ${savedMatch.rejectedBy}`);
     }
@@ -430,7 +461,7 @@ exports.getMutualMatches = async (req, res) => {
         user: {
           _id: partnerId,
           username: partnerUser.pseudo,
-          email: partnerUser.email,
+          // [BUG FIX #2] Suppression de la fuite d'email
           photo: partnerUser.photo,
           bio: partnerProfile?.bio || '',
           age: partnerProfile?.age || null,
@@ -504,11 +535,6 @@ exports.getRejectedProfiles = async (req, res) => {
 
     logger.info(`[getRejectedProfiles] Found ${rejectedMatches.length} rejected matches for userId: ${userIdStr}`);
 
-    // Log détaillé des matches trouvés
-    rejectedMatches.forEach((m, idx) => {
-      logger.info(`[getRejectedProfiles] Match[${idx}]: _id=${m._id}, user1=${m.user1Id}, user2=${m.user2Id}, rejectedBy=${m.rejectedBy}, status=${m.status}`);
-    });
-
     const formattedProfiles = [];
 
     for (const match of rejectedMatches) {
@@ -516,8 +542,6 @@ exports.getRejectedProfiles = async (req, res) => {
       const user1IdStr = match.user1Id?.toString();
       const user2IdStr = match.user2Id?.toString();
       const partnerId = user1IdStr === userIdStr ? match.user2Id : match.user1Id;
-
-      logger.info(`[getRejectedProfiles] Processing match ${match._id}: user1=${user1IdStr}, user2=${user2IdStr}, partnerId=${partnerId}`);
 
       if (!partnerId) {
         logger.warn(`[getRejectedProfiles] No partnerId for match ${match._id}`);
@@ -532,8 +556,6 @@ exports.getRejectedProfiles = async (req, res) => {
         logger.warn(`[getRejectedProfiles] Partner user not found for ${partnerId}`);
         continue;
       }
-
-      logger.info(`[getRejectedProfiles] Partner found: ${partnerUser.pseudo || 'no pseudo'}`);
 
       formattedProfiles.push({
         _id: partnerId,

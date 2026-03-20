@@ -133,7 +133,7 @@ export default function MatchesListScreen() {
               <Ionicons name="location-outline" size={14} color={isDark ? '#888' : '#666'} />
               <Text style={[styles.locationText, isDark && styles.textMutedDark]} numberOfLines={1}>
                 {user.location.city}
-                {item.distance > 0 && ` • ${item.distance} km`}
+                {item.distance != null && item.distance > 0 && ` • ${item.distance} km`}
               </Text>
             </View>
           )}
