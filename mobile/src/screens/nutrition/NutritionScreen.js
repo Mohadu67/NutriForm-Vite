@@ -119,8 +119,10 @@ export default function NutritionScreen() {
   const consumed = summary?.consumed?.calories || 0;
   const burned = summary?.burned || 0;
   const goalCal = goals?.dailyCalories || 2000;
-  const pct = goalCal > 0 ? Math.min((consumed / goalCal) * 100, 100) : 0;
-  const remaining = Math.max(goalCal - consumed, 0);
+  const totalBudget = goalCal + burned;
+  const pct = totalBudget > 0 ? Math.min((consumed / totalBudget) * 100, 100) : 0;
+  const remaining = Math.max(totalBudget - consumed, 0);
+  const balance = consumed - totalBudget;
   const entries = summary?.entries || [];
 
   const today = new Date().toISOString().split('T')[0];
@@ -193,19 +195,25 @@ export default function NutritionScreen() {
                 <View style={styles.statsColumn}>
                   <View style={styles.statItem}>
                     <Text style={styles.statLabel}>Objectif</Text>
-                    <Text style={[styles.statValue, isDark && styles.statValueDark]}>{goalCal}</Text>
+                    <Text style={[styles.statValue, isDark && styles.statValueDark]}>{goalCal} kcal</Text>
                   </View>
                   <View style={styles.statItem}>
                     <Text style={styles.statLabel}>Restant</Text>
-                    <Text style={[styles.statValue, isDark && styles.statValueDark]}>{remaining}</Text>
+                    <Text style={[styles.statValue, isDark && styles.statValueDark]}>{remaining} kcal</Text>
                   </View>
                   <TouchableOpacity style={styles.burnedStat} onPress={handleBurnedEdit} activeOpacity={0.6}>
                     <Text style={styles.statLabel}>Brûlé</Text>
                     <View style={styles.burnedValueRow}>
-                      <Text style={[styles.statValue, isDark && styles.statValueDark]}>{burned}</Text>
+                      <Text style={[styles.statValue, isDark && styles.statValueDark]}>{burned} kcal</Text>
                       <Ionicons name="pencil-outline" size={12} color="#AAA" />
                     </View>
                   </TouchableOpacity>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statLabel}>Balance</Text>
+                    <Text style={[styles.statValue, isDark && styles.statValueDark, { color: balance > 0 ? '#EF4444' : '#22C55E' }]}>
+                      {balance > 0 ? '+' : ''}{balance} kcal
+                    </Text>
+                  </View>
                 </View>
               </View>
 
