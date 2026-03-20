@@ -1,12 +1,13 @@
-import React, { useMemo, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, ScrollView } from 'react-native';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, ActivityIndicator } from 'react-native';
 import Svg, { Path, G } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../theme';
-import { FRONT_PATHS, BACK_PATHS, SVG_VIEWBOX_FRONT, SVG_VIEWBOX_BACK, ELEM_TO_ZONE } from '../BodyPicker/bodyPaths';
+import { FRONT_PATHS, BACK_PATHS, SVG_VIEWBOX_FRONT, SVG_VIEWBOX_BACK } from '../BodyPicker/bodyPaths';
 import { ZONE_LABELS } from '../BodyPicker/muscleZones';
+import { getBodyCompositionSummary } from '../../api/bodyComposition';
 
-// Mapping des noms de muscles vers les zones du SVG
+// ─── Mapping muscles → zones SVG ────────────────────────────────────
 const MUSCLE_TO_ZONE = {
   pectoraux: 'pectoraux', chest: 'pectoraux', pecs: 'pectoraux',
   epaules: 'epaules', shoulders: 'epaules', deltoides: 'epaules', deltoïdes: 'epaules',
@@ -19,75 +20,91 @@ const MUSCLE_TO_ZONE = {
   quadriceps: 'cuisses-externes', quads: 'cuisses-externes', cuisses: 'cuisses-externes',
   'cuisses-externes': 'cuisses-externes', 'cuisses-internes': 'cuisses-internes',
   ischio: 'cuisses-internes', ischios: 'cuisses-internes', hamstrings: 'cuisses-internes',
-  // Adducteurs et Abducteurs
   adducteurs: 'cuisses-internes', adductor: 'cuisses-internes',
   abducteurs: 'cuisses-externes', abductor: 'cuisses-externes',
   fessiers: 'fessiers', glutes: 'fessiers', gluteus: 'fessiers',
   mollets: 'mollets', calves: 'mollets',
 };
 
-// Couleurs d'intensité avec gradient moderne (du cyan au orange/rouge)
-const INTENSITY_COLORS = [
-  { fill: '#94E8B4', stroke: '#5ED389', gradient: ['#94E8B4', '#5ED389'] }, // Léger
-  { fill: '#7DD3A8', stroke: '#4AC17A', gradient: ['#7DD3A8', '#4AC17A'] },
-  { fill: '#F7B186', stroke: '#F59E0B', gradient: ['#F7B186', '#F59E0B'] }, // Moyen
-  { fill: '#FB923C', stroke: '#EA580C', gradient: ['#FB923C', '#EA580C'] },
-  { fill: '#F87171', stroke: '#DC2626', gradient: ['#F87171', '#DC2626'] }, // Intense
+// ─── Palettes ────────────────────────────────────────────────────────
+// Mode Effort : vert → rouge
+const EFFORT_COLORS = [
+  { fill: '#94E8B4', stroke: '#5ED389' },
+  { fill: '#7DD3A8', stroke: '#4AC17A' },
+  { fill: '#F7B186', stroke: '#F59E0B' },
+  { fill: '#FB923C', stroke: '#EA580C' },
+  { fill: '#F87171', stroke: '#DC2626' },
 ];
 
-// Mapping elem SVG vers zone
+// Mode Gains : sage green clair → foncé (charte graphique)
+const GAINS_COLORS = [
+  { fill: '#d1ebe3', stroke: '#b8ddd1' },
+  { fill: '#b8ddd1', stroke: '#9fcfbf' },
+  { fill: '#9fcfbf', stroke: '#86c1ad' },
+  { fill: '#86c1ad', stroke: '#6db39b' },
+  { fill: '#6db39b', stroke: '#549589' },
+];
+
+// Mapping elem SVG → zone
 const ELEM_TO_ZONE_MAP = {
-  BICEPS: 'biceps',
-  TRICEPS: 'triceps',
-  FOREARMS: 'avant-bras',
-  CHEST: 'pectoraux',
-  SHOULDERS: 'epaules',
-  ABDOMINALS: 'abdos-centre',
-  OBLIQUES: 'abdos-lateraux',
-  TRAPS: 'dos-superieur',
-  BACK: 'dos-inferieur',
-  GLUTES: 'fessiers',
-  QUADRICEPS: 'cuisses-externes',
-  HAMSTRINGS: 'cuisses-internes',
+  BICEPS: 'biceps', TRICEPS: 'triceps', FOREARMS: 'avant-bras',
+  CHEST: 'pectoraux', SHOULDERS: 'epaules', ABDOMINALS: 'abdos-centre',
+  OBLIQUES: 'abdos-lateraux', TRAPS: 'dos-superieur', BACK: 'dos-inferieur',
+  GLUTES: 'fessiers', QUADRICEPS: 'cuisses-externes', HAMSTRINGS: 'cuisses-internes',
   CALVES: 'mollets',
 };
 
-/**
- * MuscleHeatmap - Carte du corps avec intensité musculaire
- * Affiche les muscles travaillés avec un dégradé de couleur selon l'intensité
- */
+// ─── Composant ───────────────────────────────────────────────────────
 export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const [view, setView] = useState('front');
   const [filter, setFilter] = useState('week-0');
+  const [mode, setMode] = useState('effort'); // "effort" | "gains"
+  const [bodyComp, setBodyComp] = useState(null);
+  const [bodyCompLoading, setBodyCompLoading] = useState(false);
+
+  // Fetch body composition en mode gains
+  useEffect(() => {
+    if (mode !== 'gains') return;
+    let cancelled = false;
+    const fetchData = async () => {
+      setBodyCompLoading(true);
+      try {
+        const days = filter === 'all' ? 30 : filter === 'week-1' ? 14 : 7;
+        const result = await getBodyCompositionSummary(days);
+        if (!cancelled && result.success) setBodyComp(result.data);
+      } catch {
+        // silencieux
+      } finally {
+        if (!cancelled) setBodyCompLoading(false);
+      }
+    };
+    fetchData();
+    return () => { cancelled = true; };
+  }, [mode, filter]);
 
   // Obtenir les limites de la semaine
   const getWeekBounds = useCallback((weeksAgo = 0) => {
     const now = new Date();
     const dayOfWeek = now.getDay();
     const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-
     const startOfThisWeek = new Date(now);
     startOfThisWeek.setDate(now.getDate() - diff - (weeksAgo * 7));
     startOfThisWeek.setHours(0, 0, 0, 0);
-
     const endOfWeek = new Date(startOfThisWeek);
     endOfWeek.setDate(startOfThisWeek.getDate() + 7);
-
     return { start: startOfThisWeek, end: endOfWeek };
   }, []);
 
-  // Sessions triées et filtrées
+  // Sessions filtrées
   const filteredSessions = useMemo(() => {
     const sorted = [...sessions].sort((a, b) => {
       const dateA = new Date(a?.startedAt || a?.endedAt || a?.createdAt || 0);
       const dateB = new Date(b?.startedAt || b?.endedAt || b?.createdAt || 0);
       return dateB - dateA;
     });
-
     if (filter === 'all') return sorted;
-
     if (filter.startsWith('week-')) {
       const weeksAgo = parseInt(filter.replace('week-', ''), 10);
       const { start, end } = getWeekBounds(weeksAgo);
@@ -96,18 +113,13 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
         return date >= start && date < end;
       });
     }
-
     return sorted;
   }, [sessions, filter, getWeekBounds]);
 
-  // Calculer les stats musculaires
+  // Stats musculaires mode Effort
   const muscleStats = useMemo(() => {
-    if (externalStats && filter === 'all' && !sessions.length) {
-      return externalStats;
-    }
-
+    if (externalStats && filter === 'all' && !sessions.length) return externalStats;
     if (!filteredSessions.length) return {};
-
     const muscleCount = {};
     const addMuscle = (muscle, weight = 1) => {
       const key = String(muscle || '').toLowerCase().trim();
@@ -115,27 +127,18 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
         muscleCount[key] = (muscleCount[key] || 0) + weight;
       }
     };
-
     filteredSessions.forEach((session) => {
       const entries = session?.entries || session?.items || session?.exercises || [];
-      if (entries.length > 0) {
-        console.log('[MuscleHeatmap] Session entries sample:', entries[0]);
-      }
       entries.forEach((entry) => {
         if (!entry) return;
-
         if (entry.primaryMuscle) {
           addMuscle(entry.primaryMuscle, 1);
           const secondaries = entry.secondaryMuscles || [];
-          if (Array.isArray(secondaries)) {
-            secondaries.forEach((m) => addMuscle(m, 0.3));
-          }
+          if (Array.isArray(secondaries)) secondaries.forEach((m) => addMuscle(m, 0.3));
           return;
         }
-
         if (entry.muscle) { addMuscle(entry.muscle, 1); return; }
         if (entry.muscleGroup) { addMuscle(entry.muscleGroup, 1); return; }
-
         const entryMuscles = entry.muscles;
         if (Array.isArray(entryMuscles) && entryMuscles.length > 0) {
           addMuscle(entryMuscles[0], 1);
@@ -143,38 +146,52 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
         }
       });
     });
-
     return muscleCount;
   }, [filteredSessions, externalStats, filter, sessions.length]);
 
-  // Calculer l'intensité pour chaque zone
-  const zoneIntensities = useMemo(() => {
+  // Zone intensities Effort
+  const effortZoneIntensities = useMemo(() => {
     const zones = {};
     let maxCount = 0;
-
     Object.entries(muscleStats).forEach(([muscle, count]) => {
       const zone = MUSCLE_TO_ZONE[muscle.toLowerCase()];
       if (zone) {
         zones[zone] = (zones[zone] || 0) + count;
         maxCount = Math.max(maxCount, zones[zone]);
-      } else {
-        console.log('[MuscleHeatmap] Muscle not mapped:', muscle);
       }
     });
-
-    if (Object.keys(zones).length > 0) {
-      console.log('[MuscleHeatmap] Zone intensities:', zones);
-    }
-
     const normalized = {};
     Object.entries(zones).forEach(([zone, count]) => {
       const ratio = maxCount > 0 ? count / maxCount : 0;
       const level = Math.min(4, Math.floor(ratio * 5));
-      normalized[zone] = { count, level, color: INTENSITY_COLORS[level] };
+      normalized[zone] = { count, level, color: EFFORT_COLORS[level] };
     });
-
     return normalized;
   }, [muscleStats]);
+
+  // Zone intensities Gains
+  const gainsZoneIntensities = useMemo(() => {
+    if (!bodyComp?.muscleGain?.byZone) return {};
+    const byZone = bodyComp.muscleGain.byZone;
+    const zones = {};
+    let maxGain = 0;
+    Object.entries(byZone).forEach(([zone, data]) => {
+      if (data.gainG > 0) {
+        zones[zone] = data;
+        maxGain = Math.max(maxGain, data.gainG);
+      }
+    });
+    const normalized = {};
+    Object.entries(zones).forEach(([zone, data]) => {
+      const ratio = maxGain > 0 ? data.gainG / maxGain : 0;
+      const level = Math.min(4, Math.floor(ratio * 5));
+      normalized[zone] = { count: data.gainG, level, color: GAINS_COLORS[level], gainG: data.gainG };
+    });
+    return normalized;
+  }, [bodyComp]);
+
+  const zoneIntensities = mode === 'gains' ? gainsZoneIntensities : effortZoneIntensities;
+  const colorPalette = mode === 'gains' ? GAINS_COLORS : EFFORT_COLORS;
 
   // Top 3 muscles
   const topMuscles = useMemo(() => {
@@ -188,21 +205,28 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
   const currentPaths = view === 'front' ? FRONT_PATHS : BACK_PATHS;
   const currentViewBox = view === 'front' ? SVG_VIEWBOX_FRONT : SVG_VIEWBOX_BACK;
 
-  // Couleurs inactives
   const inactiveFill = isDark ? 'rgba(80, 80, 80, 0.4)' : 'rgba(52, 72, 94, 0.15)';
   const inactiveStroke = isDark ? 'rgba(100, 100, 100, 0.6)' : 'rgba(38, 48, 68, 0.35)';
 
-  // Rendu d'un groupe de paths
+  // Composition banner data
+  const compositionBanner = useMemo(() => {
+    if (!bodyComp) return null;
+    return {
+      muscleG: bodyComp.muscleGain?.totalG || 0,
+      fatG: bodyComp.fatChange?.g || 0,
+      proteinStatus: bodyComp.nutrition?.proteinStatus || 'insufficient',
+      proteinPerKg: bodyComp.nutrition?.proteinPerKg || 0,
+      insights: bodyComp.insights || [],
+    };
+  }, [bodyComp]);
+
   const renderMuscleGroup = (elemName, paths) => {
     if (elemName === 'DECORATIVE') return null;
-
     const zoneId = ELEM_TO_ZONE_MAP[elemName];
     if (!zoneId) return null;
-
     const intensity = zoneIntensities[zoneId];
     const fillColor = intensity ? intensity.color.fill : inactiveFill;
     const strokeColor = intensity ? intensity.color.stroke : inactiveStroke;
-
     return (
       <G key={elemName}>
         {paths.map((pathData, index) => (
@@ -225,12 +249,101 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
     { value: 'all', label: 'Tout', icon: 'stats-chart' },
   ];
 
-  // Calculer le pourcentage max pour les barres de progression
   const maxMuscleCount = topMuscles.length > 0 ? topMuscles[0].count : 1;
+
+  const proteinStatusConfig = {
+    optimal: { color: '#37b24d', bg: 'rgba(81, 207, 102, 0.12)', darkColor: '#69db7c', darkBg: 'rgba(81, 207, 102, 0.15)' },
+    adequate: { color: '#f76707', bg: 'rgba(255, 146, 43, 0.12)', darkColor: '#ffa94d', darkBg: 'rgba(255, 146, 43, 0.15)' },
+    insufficient: { color: '#f03e3e', bg: 'rgba(255, 107, 107, 0.12)', darkColor: '#ff8787', darkBg: 'rgba(255, 107, 107, 0.15)' },
+  };
+
+  const insightTypeConfig = {
+    success: { bg: 'rgba(81, 207, 102, 0.08)', color: '#2b8a3e', darkBg: 'rgba(81, 207, 102, 0.1)', darkColor: '#69db7c' },
+    alert: { bg: 'rgba(255, 107, 107, 0.08)', color: '#c92a2a', darkBg: 'rgba(255, 107, 107, 0.1)', darkColor: '#ff8787' },
+    warning: { bg: 'rgba(255, 146, 43, 0.08)', color: '#e8590c', darkBg: 'rgba(255, 146, 43, 0.1)', darkColor: '#ffa94d' },
+    info: { bg: 'rgba(116, 192, 252, 0.08)', color: '#1971c2', darkBg: 'rgba(116, 192, 252, 0.1)', darkColor: '#74c0fc' },
+  };
 
   return (
     <View style={[styles.container, isDark && styles.containerDark]}>
-      {/* Header avec filtres */}
+      {/* Toggle Effort / Gains */}
+      <View style={[styles.modeToggle, isDark && styles.modeToggleDark]}>
+        <TouchableOpacity
+          style={[
+            styles.modeBtn,
+            mode === 'effort' && styles.modeBtnActive,
+            mode === 'effort' && isDark && styles.modeBtnActiveDark,
+          ]}
+          onPress={() => setMode('effort')}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="flame-outline" size={14} color={mode === 'effort' ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#666' : '#9CA3AF')} />
+          <Text style={[
+            styles.modeBtnText,
+            isDark && styles.modeBtnTextDark,
+            mode === 'effort' && styles.modeBtnTextActive,
+            mode === 'effort' && isDark && styles.modeBtnTextActiveDark,
+          ]}>Effort</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.modeBtn,
+            mode === 'gains' && styles.modeBtnActiveGains,
+            mode === 'gains' && isDark && styles.modeBtnActiveGainsDark,
+          ]}
+          onPress={() => setMode('gains')}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="trending-up-outline" size={14} color={mode === 'gains' ? (isDark ? '#86c1ad' : '#549589') : (isDark ? '#666' : '#9CA3AF')} />
+          <Text style={[
+            styles.modeBtnText,
+            isDark && styles.modeBtnTextDark,
+            mode === 'gains' && styles.modeBtnTextActiveGains,
+            mode === 'gains' && isDark && styles.modeBtnTextActiveGainsDark,
+          ]}>Gains</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Bandeau composition (mode gains) */}
+      {mode === 'gains' && bodyCompLoading && (
+        <ActivityIndicator size="small" color={isDark ? '#86c1ad' : '#549589'} style={{ marginVertical: 8 }} />
+      )}
+
+      {mode === 'gains' && compositionBanner && !bodyCompLoading && (
+        <View style={[styles.compositionBanner, isDark && styles.compositionBannerDark]}>
+          <View style={styles.bannerStat}>
+            <Text style={[styles.bannerValue, { color: compositionBanner.muscleG > 0 ? '#549589' : (isDark ? '#666' : '#9CA3AF') }]}>
+              {compositionBanner.muscleG > 0 ? '+' : ''}{compositionBanner.muscleG}g
+            </Text>
+            <Text style={[styles.bannerLabel, isDark && styles.bannerLabelDark]}>Muscle</Text>
+          </View>
+          <View style={[styles.bannerDivider, isDark && styles.bannerDividerDark]} />
+          <View style={styles.bannerStat}>
+            <Text style={[styles.bannerValue, {
+              color: compositionBanner.fatG < 0 ? '#51cf66' : compositionBanner.fatG > 0 ? '#ff6b6b' : (isDark ? '#666' : '#9CA3AF')
+            }]}>
+              {compositionBanner.fatG > 0 ? '+' : ''}{compositionBanner.fatG}g
+            </Text>
+            <Text style={[styles.bannerLabel, isDark && styles.bannerLabelDark]}>Gras</Text>
+          </View>
+          <View style={[styles.bannerDivider, isDark && styles.bannerDividerDark]} />
+          <View style={styles.bannerStat}>
+            {(() => {
+              const cfg = proteinStatusConfig[compositionBanner.proteinStatus] || proteinStatusConfig.insufficient;
+              return (
+                <View style={[styles.bannerPill, { backgroundColor: isDark ? cfg.darkBg : cfg.bg }]}>
+                  <Text style={[styles.bannerPillText, { color: isDark ? cfg.darkColor : cfg.color }]}>
+                    {compositionBanner.proteinPerKg}g/kg
+                  </Text>
+                </View>
+              );
+            })()}
+            <Text style={[styles.bannerLabel, isDark && styles.bannerLabelDark]}>Protéines</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Filtres */}
       <View style={styles.headerRow}>
         <View style={styles.filters}>
           {periodOptions.map((option) => {
@@ -268,94 +381,44 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
         </View>
       </View>
 
-      {/* Corps principal avec toggle intégré */}
+      {/* Corps SVG */}
       <View style={styles.bodySection}>
-        {/* Toggle Face/Dos - Design moderne */}
         <View style={[styles.toggleContainer, isDark && styles.toggleContainerDark]}>
           <TouchableOpacity
-            style={[
-              styles.toggleButton,
-              view === 'front' && styles.toggleButtonActive,
-              view === 'front' && isDark && styles.toggleButtonActiveDark,
-            ]}
+            style={[styles.toggleButton, view === 'front' && styles.toggleButtonActive, view === 'front' && isDark && styles.toggleButtonActiveDark]}
             onPress={() => setView('front')}
             activeOpacity={0.7}
           >
-            <Ionicons
-              name="person"
-              size={14}
-              color={view === 'front' ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#666' : '#999')}
-            />
-            <Text style={[
-              styles.toggleText,
-              view === 'front' && styles.toggleTextActive,
-              view === 'front' && isDark && styles.toggleTextActiveDark,
-              isDark && view !== 'front' && styles.toggleTextDark,
-            ]}>
-              Face
-            </Text>
+            <Ionicons name="person" size={14} color={view === 'front' ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#666' : '#999')} />
+            <Text style={[styles.toggleText, view === 'front' && styles.toggleTextActive, view === 'front' && isDark && styles.toggleTextActiveDark, isDark && view !== 'front' && styles.toggleTextDark]}>Face</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.toggleButton,
-              view === 'back' && styles.toggleButtonActive,
-              view === 'back' && isDark && styles.toggleButtonActiveDark,
-            ]}
+            style={[styles.toggleButton, view === 'back' && styles.toggleButtonActive, view === 'back' && isDark && styles.toggleButtonActiveDark]}
             onPress={() => setView('back')}
             activeOpacity={0.7}
           >
-            <Ionicons
-              name="person"
-              size={14}
-              color={view === 'back' ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#666' : '#999')}
-              style={{ transform: [{ scaleX: -1 }] }}
-            />
-            <Text style={[
-              styles.toggleText,
-              view === 'back' && styles.toggleTextActive,
-              view === 'back' && isDark && styles.toggleTextActiveDark,
-              isDark && view !== 'back' && styles.toggleTextDark,
-            ]}>
-              Dos
-            </Text>
+            <Ionicons name="person" size={14} color={view === 'back' ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#666' : '#999')} style={{ transform: [{ scaleX: -1 }] }} />
+            <Text style={[styles.toggleText, view === 'back' && styles.toggleTextActive, view === 'back' && isDark && styles.toggleTextActiveDark, isDark && view !== 'back' && styles.toggleTextDark]}>Dos</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Corps SVG avec effet glow */}
         <View style={styles.bodyWrapper}>
           <View style={[styles.bodyGlow, hasData && styles.bodyGlowActive]} />
-          <Svg
-            width="100%"
-            height={260}
-            viewBox={currentViewBox}
-            preserveAspectRatio="xMidYMid meet"
-          >
-            {/* Éléments décoratifs */}
+          <Svg width="100%" height={260} viewBox={currentViewBox} preserveAspectRatio="xMidYMid meet">
             {currentPaths.DECORATIVE && currentPaths.DECORATIVE.map((pathData, index) => (
-              <Path
-                key={`deco-${index}`}
-                d={pathData.d}
-                fill={isDark ? '#3A3A3A' : '#D1D5DB'}
-                stroke={isDark ? '#4A4A4A' : '#9CA3AF'}
-                strokeWidth={0.8}
-                strokeLinejoin="round"
-              />
+              <Path key={`deco-${index}`} d={pathData.d} fill={isDark ? '#3A3A3A' : '#D1D5DB'} stroke={isDark ? '#4A4A4A' : '#9CA3AF'} strokeWidth={0.8} strokeLinejoin="round" />
             ))}
-
-            {/* Zones musculaires */}
-            {Object.entries(currentPaths).map(([elemName, paths]) =>
-              renderMuscleGroup(elemName, paths)
-            )}
+            {Object.entries(currentPaths).map(([elemName, paths]) => renderMuscleGroup(elemName, paths))}
           </Svg>
         </View>
       </View>
 
-      {/* Légende redessinée */}
+      {/* Légende */}
       {hasData ? (
         <View style={styles.legend}>
           <View style={styles.legendHeader}>
             <Text style={[styles.legendTitle, isDark && styles.legendTitleDark]}>
-              🔥 Top muscles travaillés
+              {mode === 'gains' ? 'Zones de croissance estimées' : 'Top muscles travaillés'}
             </Text>
             <View style={[styles.sessionsBadge, isDark && styles.sessionsBadgeDark]}>
               <Text style={[styles.sessionsBadgeText, isDark && styles.sessionsBadgeTextDark]}>
@@ -376,52 +439,85 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
                       {ZONE_LABELS[muscle.zone] || muscle.zone}
                     </Text>
                     <Text style={[styles.muscleCount, isDark && styles.muscleCountDark]}>
-                      {muscle.count % 1 === 0 ? muscle.count : muscle.count.toFixed(1)}
+                      {mode === 'gains'
+                        ? `+${muscle.gainG || Math.round(muscle.count)}g`
+                        : (muscle.count % 1 === 0 ? muscle.count : muscle.count.toFixed(1))
+                      }
                     </Text>
                   </View>
                   <View style={[styles.progressBarBg, isDark && styles.progressBarBgDark]}>
-                    <View
-                      style={[
-                        styles.progressBarFill,
-                        {
-                          width: `${percentage}%`,
-                          backgroundColor: muscle.color.fill,
-                        }
-                      ]}
-                    />
+                    <View style={[styles.progressBarFill, { width: `${percentage}%`, backgroundColor: muscle.color.fill }]} />
                   </View>
                 </View>
               );
             })}
           </View>
 
-          {/* Échelle d'intensité redessinée */}
+          {/* Échelle */}
           <View style={[styles.intensityScale, isDark && styles.intensityScaleDark]}>
             <View style={styles.scaleLabels}>
-              <Text style={[styles.scaleLabel, isDark && styles.scaleLabelDark]}>Léger</Text>
-              <Text style={[styles.scaleLabel, isDark && styles.scaleLabelDark]}>Intense</Text>
+              <Text style={[styles.scaleLabel, isDark && styles.scaleLabelDark]}>
+                {mode === 'gains' ? 'Faible' : 'Léger'}
+              </Text>
+              <Text style={[styles.scaleLabel, isDark && styles.scaleLabelDark]}>
+                {mode === 'gains' ? 'Fort' : 'Intense'}
+              </Text>
             </View>
             <View style={styles.scaleBar}>
-              {INTENSITY_COLORS.map((color, i) => (
+              {colorPalette.map((color, i) => (
                 <View key={i} style={[styles.scaleStep, { backgroundColor: color.fill }]} />
               ))}
             </View>
           </View>
         </View>
       ) : (
-        <View style={[styles.emptyState, isDark && styles.emptyStateDark]}>
-          <Ionicons name="body-outline" size={40} color={isDark ? '#4A4A4A' : '#D1D5DB'} />
-          <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>
-            {filter === 'all'
-              ? 'Complète des séances pour voir ta répartition'
-              : 'Aucune séance sur cette période'}
-          </Text>
+        mode === 'effort' && (
+          <View style={[styles.emptyState, isDark && styles.emptyStateDark]}>
+            <Ionicons name="body-outline" size={40} color={isDark ? '#4A4A4A' : '#D1D5DB'} />
+            <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>
+              {filter === 'all'
+                ? 'Complète des séances pour voir ta répartition'
+                : 'Aucune séance sur cette période'
+              }
+            </Text>
+          </View>
+        )
+      )}
+
+      {/* Insights actionnables (mode gains) — tous affichés */}
+      {mode === 'gains' && compositionBanner?.insights?.length > 0 && (
+        <View style={styles.insightsList}>
+          {compositionBanner.insights.map((insight, i) => (
+            <View
+              key={insight.key || i}
+              style={[
+                styles.insightBar,
+                {
+                  backgroundColor: isDark
+                    ? (insightTypeConfig[insight.type]?.darkBg || 'rgba(255,255,255,0.06)')
+                    : (insightTypeConfig[insight.type]?.bg || 'rgba(0,0,0,0.03)'),
+                },
+              ]}
+            >
+              <Text style={[
+                styles.insightText,
+                {
+                  color: isDark
+                    ? (insightTypeConfig[insight.type]?.darkColor || '#e5e7eb')
+                    : (insightTypeConfig[insight.type]?.color || '#1f2933'),
+                },
+              ]}>
+                {insight.message}
+              </Text>
+            </View>
+          ))}
         </View>
       )}
     </View>
   );
 };
 
+// ─── Styles ──────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
@@ -437,6 +533,128 @@ const styles = StyleSheet.create({
   containerDark: {
     backgroundColor: '#1F1F1F',
   },
+
+  // Mode Toggle
+  modeToggle: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+    borderRadius: 12,
+    padding: 3,
+    marginBottom: theme.spacing.md,
+  },
+  modeToggleDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  modeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  modeBtnActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  modeBtnActiveDark: {
+    backgroundColor: 'rgba(247, 177, 134, 0.15)',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  modeBtnActiveGains: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#549589',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  modeBtnActiveGainsDark: {
+    backgroundColor: 'rgba(184, 221, 209, 0.15)',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  modeBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#9CA3AF',
+  },
+  modeBtnTextDark: {
+    color: '#666',
+  },
+  modeBtnTextActive: {
+    color: theme.colors.primary,
+  },
+  modeBtnTextActiveDark: {
+    color: '#F7B186',
+  },
+  modeBtnTextActiveGains: {
+    color: '#549589',
+  },
+  modeBtnTextActiveGainsDark: {
+    color: '#86c1ad',
+  },
+
+  // Composition Banner
+  compositionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(184, 221, 209, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(184, 221, 209, 0.2)',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: theme.spacing.md,
+  },
+  compositionBannerDark: {
+    backgroundColor: 'rgba(184, 221, 209, 0.08)',
+    borderColor: 'rgba(184, 221, 209, 0.18)',
+  },
+  bannerStat: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+  },
+  bannerValue: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  bannerLabel: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#6B7280',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  bannerLabelDark: {
+    color: '#9CA3AF',
+  },
+  bannerDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+  },
+  bannerDividerDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  bannerPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  bannerPillText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+
+  // Header & Filters
   headerRow: {
     marginBottom: theme.spacing.md,
   },
@@ -482,6 +700,8 @@ const styles = StyleSheet.create({
   filterPillTextActiveDark: {
     color: '#F7B186',
   },
+
+  // Body Section
   bodySection: {
     alignItems: 'center',
   },
@@ -553,6 +773,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 40,
   },
+
+  // Legend
   legend: {
     gap: theme.spacing.md,
     marginTop: theme.spacing.sm,
@@ -566,6 +788,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: theme.colors.text.primary,
+    flex: 1,
   },
   legendTitleDark: {
     color: '#FFFFFF',
@@ -631,6 +854,8 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 4,
   },
+
+  // Intensity Scale
   intensityScale: {
     backgroundColor: '#F9FAFB',
     borderRadius: 12,
@@ -662,6 +887,8 @@ const styles = StyleSheet.create({
   scaleStep: {
     flex: 1,
   },
+
+  // Empty State
   emptyState: {
     alignItems: 'center',
     paddingVertical: theme.spacing.xl,
@@ -675,5 +902,21 @@ const styles = StyleSheet.create({
   },
   emptyTextDark: {
     color: '#6B7280',
+  },
+
+  // Insights
+  insightsList: {
+    gap: 6,
+    marginTop: theme.spacing.sm,
+  },
+  insightBar: {
+    borderRadius: 10,
+    padding: 10,
+  },
+  insightText: {
+    fontSize: 13,
+    fontWeight: '500',
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });
