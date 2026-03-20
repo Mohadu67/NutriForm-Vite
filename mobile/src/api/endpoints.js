@@ -192,6 +192,14 @@ export const endpoints = {
   health: {
     sync: "/health/sync",
   },
+  bodyComposition: {
+    summary: "/body-composition/summary",
+    trend: "/body-composition/trend",
+    logWeight: "/body-composition/weight",
+    weightHistory: "/body-composition/weight",
+    deleteWeight: (id) => `/body-composition/weight/${id}`,
+    metrics: "/body-composition/metrics",
+  },
 };
 
 export default endpoints;
