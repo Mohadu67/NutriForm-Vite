@@ -1,9 +1,10 @@
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState, useCallback } from "react";
 import styles from "./MuscleHeatmap.module.css";
 import bodySvgMarkup from "../../../components/Exercice/DynamiChoice/BodyPicker/body.svg?raw";
-import { CalendarIcon, ClockIcon, ActivityIcon, DumbbellIcon } from "../../../components/Icons/GlobalIcons";
+import { CalendarIcon, ClockIcon, ActivityIcon } from "../../../components/Icons/GlobalIcons";
+import { getBodyCompositionSummary } from "../../../shared/api/bodyComposition";
 
-// Mapping des noms de muscles vers les zones du SVG
+// ─── Mapping muscles → zones SVG ────────────────────────────────────
 const MUSCLE_TO_ZONE = {
   pectoraux: "pectoraux", chest: "pectoraux", pecs: "pectoraux",
   epaules: "epaules", épaules: "epaules", shoulders: "epaules", deltoides: "epaules", deltoïdes: "epaules",
@@ -27,7 +28,9 @@ const ZONE_LABELS = {
   "cuisses-externes": "Quadriceps", "cuisses-internes": "Ischio-jambiers", mollets: "Mollets",
 };
 
-const INTENSITY_COLORS = [
+// ─── Palettes ────────────────────────────────────────────────────────
+// Mode Effort : vert → rouge (existant)
+const EFFORT_COLORS = [
   { fill: "#b8e6cf", stroke: "#7bc9a3" },
   { fill: "#8fd9b6", stroke: "#5cb88a" },
   { fill: "#f7d794", stroke: "#f5b041" },
@@ -35,7 +38,16 @@ const INTENSITY_COLORS = [
   { fill: "#e74c3c", stroke: "#c0392b" },
 ];
 
-// Muscles secondaires pour le calcul
+// Mode Gains : sage green clair → foncé (charte graphique secondary)
+const GAINS_COLORS = [
+  { fill: "#d1ebe3", stroke: "#b8ddd1" },
+  { fill: "#b8ddd1", stroke: "#9fcfbf" },
+  { fill: "#9fcfbf", stroke: "#86c1ad" },
+  { fill: "#86c1ad", stroke: "#6db39b" },
+  { fill: "#6db39b", stroke: "#549589" },
+];
+
+// Muscles secondaires pour le calcul effort
 const SECONDARY_MUSCLES = {
   pectoraux: ["triceps", "epaules"],
   "dos-lats": ["biceps", "avant-bras"],
@@ -49,19 +61,16 @@ const SECONDARY_MUSCLES = {
   biceps: [], triceps: [],
 };
 
-// Utilitaires de date
+// ─── Utilitaires de date ─────────────────────────────────────────────
 function getWeekBounds(weeksAgo = 0) {
   const now = new Date();
   const dayOfWeek = now.getDay();
-  const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Lundi = début de semaine
-
+  const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
   const startOfThisWeek = new Date(now);
   startOfThisWeek.setDate(now.getDate() - diff - (weeksAgo * 7));
   startOfThisWeek.setHours(0, 0, 0, 0);
-
   const endOfWeek = new Date(startOfThisWeek);
   endOfWeek.setDate(startOfThisWeek.getDate() + 7);
-
   return { start: startOfThisWeek, end: endOfWeek };
 }
 
@@ -72,12 +81,15 @@ function formatSessionDate(session) {
   return d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
 }
 
+// ─── Composant ───────────────────────────────────────────────────────
 export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null }) {
   const containerRef = useRef(null);
   const svgRootRef = useRef(null);
   const [isDark, setIsDark] = useState(false);
-  const [filter, setFilter] = useState("week-0"); // week-0, week-1, week-2, all, session-{id}
-  const [selectedSessionId, setSelectedSessionId] = useState(null);
+  const [filter, setFilter] = useState("week-0");
+  const [mode, setMode] = useState("effort"); // "effort" | "gains"
+  const [bodyComp, setBodyComp] = useState(null);
+  const [bodyCompLoading, setBodyCompLoading] = useState(false);
 
   // Détecter le dark mode
   useEffect(() => {
@@ -93,7 +105,27 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
     return () => observer.disconnect();
   }, []);
 
-  // Sessions triées par date (plus récentes en premier)
+  // Fetch body composition quand on passe en mode gains
+  useEffect(() => {
+    if (mode !== "gains") return;
+    let cancelled = false;
+    const fetchData = async () => {
+      setBodyCompLoading(true);
+      try {
+        const days = filter === "all" ? 30 : filter === "week-2" ? 21 : filter === "week-1" ? 14 : 7;
+        const data = await getBodyCompositionSummary(days);
+        if (!cancelled) setBodyComp(data);
+      } catch {
+        // silencieux
+      } finally {
+        if (!cancelled) setBodyCompLoading(false);
+      }
+    };
+    fetchData();
+    return () => { cancelled = true; };
+  }, [mode, filter]);
+
+  // Sessions triées
   const sortedSessions = useMemo(() => {
     return [...sessions].sort((a, b) => {
       const dateA = new Date(a?.startedAt || a?.endedAt || a?.createdAt || 0);
@@ -102,15 +134,13 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
     });
   }, [sessions]);
 
-  // Filtrer les sessions selon le filtre sélectionné
+  // Filtrer sessions
   const filteredSessions = useMemo(() => {
     if (filter === "all") return sortedSessions;
-
     if (filter.startsWith("session-")) {
       const sessionId = filter.replace("session-", "");
       return sortedSessions.filter(s => (s._id || s.id) === sessionId);
     }
-
     if (filter.startsWith("week-")) {
       const weeksAgo = parseInt(filter.replace("week-", ""), 10);
       const { start, end } = getWeekBounds(weeksAgo);
@@ -119,19 +149,13 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
         return date >= start && date < end;
       });
     }
-
     return sortedSessions;
   }, [sortedSessions, filter]);
 
-  // Calculer les stats musculaires pour les sessions filtrées
+  // Stats musculaires mode Effort
   const muscleStats = useMemo(() => {
-    // Si des stats externes sont fournies et pas de filtre spécifique, les utiliser
-    if (externalStats && filter === "all" && !sessions.length) {
-      return externalStats;
-    }
-
+    if (externalStats && filter === "all" && !sessions.length) return externalStats;
     if (!filteredSessions.length) return {};
-
     const muscleCount = {};
     const addMuscle = (muscle, weight = 1) => {
       const key = String(muscle || "").toLowerCase().trim();
@@ -139,7 +163,6 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
         muscleCount[key] = (muscleCount[key] || 0) + weight;
       }
     };
-
     const addMuscleWithSecondaries = (primaryMuscle) => {
       const key = String(primaryMuscle || "").toLowerCase().trim();
       if (!key) return;
@@ -147,47 +170,33 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
       const secondaries = SECONDARY_MUSCLES[key] || [];
       secondaries.forEach((secondary) => addMuscle(secondary, 0.5));
     };
-
     filteredSessions.forEach((session) => {
       const entries = session?.entries || session?.items || session?.exercises || [];
       entries.forEach((entry) => {
         if (!entry) return;
-
-        // Priorité 1: Utiliser primaryMuscle si défini (le plus précis)
         if (entry.primaryMuscle) {
           addMuscle(entry.primaryMuscle, 1);
-          // Ajouter les muscles secondaires avec un poids réduit
           const secondaries = entry.secondaryMuscles || [];
-          if (Array.isArray(secondaries)) {
-            secondaries.forEach((m) => addMuscle(m, 0.3));
-          }
+          if (Array.isArray(secondaries)) secondaries.forEach((m) => addMuscle(m, 0.3));
           return;
         }
-
-        // Priorité 2: Utiliser muscle ou muscleGroup avec les secondaires calculés
         if (entry.muscle) { addMuscleWithSecondaries(entry.muscle); return; }
         if (entry.muscleGroup) { addMuscleWithSecondaries(entry.muscleGroup); return; }
-
-        // Fallback: Utiliser le tableau muscles (ancien comportement)
         const entryMuscles = entry.muscles;
         if (Array.isArray(entryMuscles) && entryMuscles.length > 0) {
-          // Prendre le premier comme principal, les autres comme secondaires
           addMuscle(entryMuscles[0], 1);
           entryMuscles.slice(1).forEach((m) => addMuscle(m, 0.3));
-          return;
         }
       });
     });
-
     Object.keys(muscleCount).forEach((key) => {
       muscleCount[key] = Math.round(muscleCount[key] * 10) / 10;
     });
-
     return muscleCount;
   }, [filteredSessions, externalStats, filter, sessions.length]);
 
-  // Calculer l'intensité pour chaque zone
-  const zoneIntensities = useMemo(() => {
+  // Zone intensities pour mode Effort
+  const effortZoneIntensities = useMemo(() => {
     const zones = {};
     let maxCount = 0;
     Object.entries(muscleStats).forEach(([muscle, count]) => {
@@ -201,11 +210,36 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
     Object.entries(zones).forEach(([zone, count]) => {
       const ratio = maxCount > 0 ? count / maxCount : 0;
       const level = Math.min(4, Math.floor(ratio * 5));
-      normalized[zone] = { count, level, color: INTENSITY_COLORS[level] };
+      normalized[zone] = { count, level, color: EFFORT_COLORS[level] };
     });
     return normalized;
   }, [muscleStats]);
 
+  // Zone intensities pour mode Gains
+  const gainsZoneIntensities = useMemo(() => {
+    if (!bodyComp?.muscleGain?.byZone) return {};
+    const byZone = bodyComp.muscleGain.byZone;
+    const zones = {};
+    let maxGain = 0;
+    Object.entries(byZone).forEach(([zone, data]) => {
+      if (data.gainG > 0) {
+        zones[zone] = data;
+        maxGain = Math.max(maxGain, data.gainG);
+      }
+    });
+    const normalized = {};
+    Object.entries(zones).forEach(([zone, data]) => {
+      const ratio = maxGain > 0 ? data.gainG / maxGain : 0;
+      const level = Math.min(4, Math.floor(ratio * 5));
+      normalized[zone] = { count: data.gainG, level, color: GAINS_COLORS[level], gainG: data.gainG };
+    });
+    return normalized;
+  }, [bodyComp]);
+
+  // Zone intensities actives selon le mode
+  const zoneIntensities = mode === "gains" ? gainsZoneIntensities : effortZoneIntensities;
+
+  // Top muscles
   const topMuscles = useMemo(() => {
     return Object.entries(zoneIntensities)
       .sort((a, b) => b[1].count - a[1].count)
@@ -213,6 +247,7 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
       .map(([zone, data]) => ({ zone, ...data }));
   }, [zoneIntensities]);
 
+  // SVG zone detector
   const getZoneFromSvgElem = (raw) => {
     if (!raw) return null;
     const low = raw.toLowerCase();
@@ -233,6 +268,7 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
     return null;
   };
 
+  // Appliquer les couleurs au SVG
   useEffect(() => {
     const host = containerRef.current;
     if (!host) return;
@@ -276,8 +312,22 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
   }, [zoneIntensities, isDark]);
 
   const hasData = Object.keys(zoneIntensities).length > 0;
+  const colorPalette = mode === "gains" ? GAINS_COLORS : EFFORT_COLORS;
 
-  // Options de période
+  // ─── Bandeau résumé composition (mode gains) ──────────────────────
+  const compositionBanner = useMemo(() => {
+    if (!bodyComp) return null;
+    return {
+      muscleG: bodyComp.muscleGain?.totalG || 0,
+      fatG: bodyComp.fatChange?.g || 0,
+      proteinStatus: bodyComp.nutrition?.proteinStatus || "insufficient",
+      proteinPerKg: bodyComp.nutrition?.proteinPerKg || 0,
+      insights: bodyComp.insights || [],
+      progressScore: bodyComp.progressScore || 0,
+    };
+  }, [bodyComp]);
+
+  // Période options
   const periodOptions = [
     { value: "week-0", label: "Cette semaine", shortLabel: "Semaine", icon: CalendarIcon },
     { value: "week-1", label: "Sem. dernière", shortLabel: "-1 sem.", icon: ClockIcon },
@@ -285,8 +335,64 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
     { value: "all", label: "Tout", shortLabel: "Tout", icon: ActivityIcon },
   ];
 
+  const proteinStatusConfig = {
+    optimal: { label: "Optimal", className: styles.statusGreen },
+    adequate: { label: "Suffisant", className: styles.statusOrange },
+    insufficient: { label: "Insuffisant", className: styles.statusRed },
+  };
+
   return (
     <div className={styles.container}>
+      {/* Toggle Effort / Gains */}
+      <div className={styles.modeToggle}>
+        <button
+          type="button"
+          className={`${styles.modeBtn} ${mode === "effort" ? styles.modeBtnActive : ""}`}
+          onClick={() => setMode("effort")}
+        >
+          <span className={styles.modeBtnIcon}>&#xe901;</span>
+          Effort
+        </button>
+        <button
+          type="button"
+          className={`${styles.modeBtn} ${mode === "gains" ? styles.modeBtnActiveGains : ""}`}
+          onClick={() => setMode("gains")}
+        >
+          <span className={styles.modeBtnIcon}>&#xe902;</span>
+          Gains
+        </button>
+      </div>
+
+      {/* Bandeau résumé composition (mode gains uniquement) */}
+      {mode === "gains" && compositionBanner && !bodyCompLoading && (
+        <div className={styles.compositionBanner}>
+          <div className={styles.bannerStat}>
+            <span className={styles.bannerValue} style={{ color: compositionBanner.muscleG > 0 ? "#549589" : "var(--muted)" }}>
+              {compositionBanner.muscleG > 0 ? "+" : ""}{compositionBanner.muscleG}g
+            </span>
+            <span className={styles.bannerLabel}>Muscle</span>
+          </div>
+          <div className={styles.bannerDivider} />
+          <div className={styles.bannerStat}>
+            <span className={styles.bannerValue} style={{ color: compositionBanner.fatG < 0 ? "#51cf66" : compositionBanner.fatG > 0 ? "#ff6b6b" : "var(--muted)" }}>
+              {compositionBanner.fatG > 0 ? "+" : ""}{compositionBanner.fatG}g
+            </span>
+            <span className={styles.bannerLabel}>Gras</span>
+          </div>
+          <div className={styles.bannerDivider} />
+          <div className={styles.bannerStat}>
+            <span className={`${styles.bannerPill} ${proteinStatusConfig[compositionBanner.proteinStatus]?.className || styles.statusRed}`}>
+              {compositionBanner.proteinPerKg}g/kg
+            </span>
+            <span className={styles.bannerLabel}>Protéines</span>
+          </div>
+        </div>
+      )}
+
+      {mode === "gains" && bodyCompLoading && (
+        <div className={styles.bannerLoading}>Calcul en cours...</div>
+      )}
+
       {/* Filtres */}
       <div className={styles.filters}>
         <div className={styles.periodPills}>
@@ -308,7 +414,7 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
           })}
         </div>
 
-        {sortedSessions.length > 0 && (
+        {mode === "effort" && sortedSessions.length > 0 && (
           <select
             className={`${styles.pillBtn} ${filter.startsWith("session-") ? styles.pillActive : ""}`}
             value={filter.startsWith("session-") ? filter : ""}
@@ -330,20 +436,29 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
 
       {hasData ? (
         <div className={styles.legend}>
-          <h4 className={styles.legendTitle}>Muscles les plus travaillés</h4>
+          <h4 className={styles.legendTitle}>
+            {mode === "gains" ? "Zones de croissance estimées" : "Muscles les plus travaillés"}
+          </h4>
           <div className={styles.topMuscles}>
             {topMuscles.map((muscle, index) => (
               <div key={muscle.zone} className={styles.muscleItem}>
                 <span className={styles.muscleRank}>{index + 1}</span>
                 <span className={styles.muscleName}>{ZONE_LABELS[muscle.zone] || muscle.zone}</span>
-                <span className={styles.muscleCount}>{muscle.count % 1 === 0 ? muscle.count : muscle.count.toFixed(1)} pts</span>
+                <span className={styles.muscleCount}>
+                  {mode === "gains"
+                    ? `+${muscle.gainG || Math.round(muscle.count)}g`
+                    : `${muscle.count % 1 === 0 ? muscle.count : muscle.count.toFixed(1)} pts`
+                  }
+                </span>
               </div>
             ))}
           </div>
           <div className={styles.intensityScale}>
-            <span className={styles.scaleLabel}>Intensité</span>
+            <span className={styles.scaleLabel}>
+              {mode === "gains" ? "Croissance" : "Intensité"}
+            </span>
             <div className={styles.scaleBar}>
-              {INTENSITY_COLORS.map((color, i) => (
+              {colorPalette.map((color, i) => (
                 <div key={i} className={styles.scaleStep} style={{ background: color.fill }} />
               ))}
             </div>
@@ -351,7 +466,23 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
         </div>
       ) : (
         <div className={styles.emptyState}>
-          <p>{filter === "all" ? "Complète des séances pour voir ta répartition musculaire" : "Aucune séance sur cette période"}</p>
+          <p>
+            {mode === "effort" && (filter === "all"
+              ? "Complète des séances pour voir ta répartition musculaire"
+              : "Aucune séance sur cette période"
+            )}
+          </p>
+        </div>
+      )}
+
+      {/* Insights actionnables (mode gains) — tous affichés */}
+      {mode === "gains" && compositionBanner?.insights?.length > 0 && (
+        <div className={styles.insightsList}>
+          {compositionBanner.insights.map((insight, i) => (
+            <div key={insight.key || i} className={`${styles.insightBar} ${styles[`insight_${insight.type}`] || ""}`}>
+              {insight.message}
+            </div>
+          ))}
         </div>
       )}
     </div>
