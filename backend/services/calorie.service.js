@@ -53,21 +53,91 @@ function estimateExerciseDurationMin(exo = {}) {
   return Math.max(1, Math.round(totalSec / 60));
 }
 
-function computeExerciseCalories(exo = {}, userWeightKg) {
-  const w = toNumber(userWeightKg);
+// ─── BMR individualisé ───────────────────────────────────────────────
+// Calcule le VO2 au repos (ml/kg/min) à partir du BMR réel de l'utilisateur.
+// La formule MET standard suppose VO2repos = 3.5 ml/kg/min pour tout le monde,
+// ce qui surestime pour les personnes légères/jeunes et sous-estime pour les lourds.
+// En utilisant le BMR réel : VO2repos = BMR / (poids × 1440) × 200
+
+/**
+ * Calcule le BMR en kcal/jour.
+ * Katch-McArdle si bodyFatPercent dispo (plus précis), sinon Mifflin-St Jeor.
+ */
+function computeBMR(userMetrics) {
+  const { weight, height, age, gender, bodyFatPercent } = userMetrics;
+  if (!weight) return null;
+
+  // Katch-McArdle (basé sur la masse maigre)
+  if (bodyFatPercent && bodyFatPercent > 0 && bodyFatPercent < 60) {
+    const leanMass = weight * (1 - bodyFatPercent / 100);
+    return 370 + 21.6 * leanMass;
+  }
+
+  // Mifflin-St Jeor
+  const h = height || 170;
+  const a = age || 30;
+  if (gender === 'female' || gender === 'femme') {
+    return 10 * weight + 6.25 * h - 5 * a - 161;
+  }
+  return 10 * weight + 6.25 * h - 5 * a + 5;
+}
+
+/**
+ * Calcule les calories brûlées pour un exercice.
+ *
+ * Formule améliorée :
+ *   kcal = MET × BMR/24/60 × minutes
+ *
+ * Où BMR/24/60 = dépense métabolique par minute au repos (kcal/min).
+ * MET × kcal/min repos = kcal/min réelles de l'activité.
+ *
+ * La formule standard (MET × 3.5 × kg / 200 × min) suppose un VO2 repos
+ * de 3.5 ml/kg/min pour TOUT LE MONDE. En réalité, ça varie selon
+ * l'âge, le sexe, la taille et la composition corporelle.
+ *
+ * @param {Object} exo - Données de l'exercice
+ * @param {Object} userMetrics - { weight, height, age, gender, bodyFatPercent }
+ */
+function computeExerciseCalories(exo = {}, userMetrics = {}) {
+  const w = toNumber(userMetrics.weight || userMetrics);
   if (!w || w <= 0) return 0;
+
   const met = toNumber(exo.met) ?? pickMet(exo);
   const minutes = estimateExerciseDurationMin(exo);
-  const kcal = met * 3.5 * w / 200 * minutes;
+
+  // Si on a des métriques complètes → formule précise basée sur le BMR
+  const bmr = (typeof userMetrics === 'object' && userMetrics.weight)
+    ? computeBMR(userMetrics)
+    : null;
+
+  let kcal;
+  if (bmr) {
+    // BMR en kcal/jour → kcal/min au repos = bmr / 1440
+    const kcalPerMinRest = bmr / 1440;
+    // Calories nettes de l'activité (on soustrait le repos car le BMR tourne déjà)
+    // Calories totales = MET × kcalPerMinRest × minutes
+    // Calories NETTES (au-dessus du repos) = (MET - 1) × kcalPerMinRest × minutes
+    // On retourne les calories totales (convention standard)
+    kcal = met * kcalPerMinRest * minutes;
+  } else {
+    // Fallback : formule standard avec VO2=3.5 constant
+    kcal = met * 3.5 * w / 200 * minutes;
+  }
+
   return Math.max(0, Math.round(kcal));
 }
 
-function computeSessionFromEntries(entries = [], userWeightKg) {
+/**
+ * Calcule les calories totales d'une séance complète.
+ * @param {Array} entries - Liste des exercices
+ * @param {Object} userMetrics - { weight, height, age, gender, bodyFatPercent }
+ */
+function computeSessionFromEntries(entries = [], userMetrics = {}) {
   const clean = Array.isArray(entries) ? entries : [];
   let totalMin = 0;
   let totalKcal = 0;
   for (const ex of clean) {
-    const m = computeExerciseCalories(ex, userWeightKg);
+    const m = computeExerciseCalories(ex, userMetrics);
     const d = estimateExerciseDurationMin(ex);
     totalKcal += m;
     totalMin += d;
@@ -81,6 +151,7 @@ function computeSessionFromEntries(entries = [], userWeightKg) {
 module.exports = {
   computeExerciseCalories,
   computeSessionFromEntries,
+  computeBMR,
   pickMet,
   estimateExerciseDurationMin,
 };
