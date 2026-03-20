@@ -209,7 +209,7 @@ export default function HomeScreen() {
               <View style={[styles.nutritionWidgetDivider, isDark && { backgroundColor: '#444' }]} />
               <View style={styles.nutritionWidgetStat}>
                 <Text style={[styles.nutritionWidgetValue, isDark && { color: '#FFF' }]}>
-                  {Math.max(nutritionData.goal - nutritionData.consumed, 0)}
+                  {Math.max(nutritionData.goal + nutritionData.burned - nutritionData.consumed, 0)}
                 </Text>
                 <Text style={styles.nutritionWidgetLabel}>restant</Text>
               </View>

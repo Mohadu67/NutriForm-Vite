@@ -37,8 +37,9 @@ export const NutritionWidget = ({ isPremium }) => {
 
   if (!loaded) return null;
 
-  const pct = goal > 0 ? Math.min(Math.round((consumed / goal) * 100), 100) : 0;
-  const remaining = Math.max(goal - consumed, 0);
+  const effectiveGoal = goal + burned;
+  const pct = effectiveGoal > 0 ? Math.min(Math.round((consumed / effectiveGoal) * 100), 100) : 0;
+  const remaining = Math.max(effectiveGoal - consumed, 0);
 
   return (
     <section

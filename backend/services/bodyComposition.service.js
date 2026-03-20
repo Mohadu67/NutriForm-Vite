@@ -248,20 +248,42 @@ async function computeBodyComposition(userId, days = 7) {
   logger.info(`[bodyComp] profile keys: ${profile ? Object.keys(profile).join(',') : 'NULL'}`);
   logger.info(`[bodyComp] foodLogs=${foodLogs.length} sessions=${sessions.length} weightLogs=${weightLogs.length} goal=${goalType} dailyCal=${dailyCalorieGoal}`);
 
-  // ── Nutrition agrégée ──
+  // ── Nutrition agrégée (globale + par jour) ──
   const daysWithFood = new Set();
   let totalCaloriesConsumed = 0;
   let totalProteins = 0;
   let totalCarbs = 0;
   let totalFats = 0;
 
+  // Map jour → { calories, proteins, carbs, fats }
+  const dailyNutrition = {};
+
   for (const log of foodLogs) {
     const dayKey = new Date(log.date).toISOString().split('T')[0];
     daysWithFood.add(dayKey);
-    totalCaloriesConsumed += log.nutrition?.calories || 0;
-    totalProteins += log.nutrition?.proteins || 0;
-    totalCarbs += log.nutrition?.carbs || 0;
-    totalFats += log.nutrition?.fats || 0;
+    const cal = log.nutrition?.calories || 0;
+    const prot = log.nutrition?.proteins || 0;
+    const carb = log.nutrition?.carbs || 0;
+    const fat = log.nutrition?.fats || 0;
+    totalCaloriesConsumed += cal;
+    totalProteins += prot;
+    totalCarbs += carb;
+    totalFats += fat;
+
+    if (!dailyNutrition[dayKey]) dailyNutrition[dayKey] = { calories: 0, proteins: 0 };
+    dailyNutrition[dayKey].calories += cal;
+    dailyNutrition[dayKey].proteins += prot;
+  }
+
+  // Map jour → true si séance muscu ce jour
+  const trainingDays = new Set();
+  for (const s of sessions) {
+    const entries = s.entries || s.items || s.exercises || [];
+    const hasMuscu = entries.some(e => e && e.type !== 'cardio');
+    if (hasMuscu) {
+      const dayKey = new Date(s.date || s.createdAt || s.endedAt).toISOString().split('T')[0];
+      trainingDays.add(dayKey);
+    }
   }
 
   const activeDays = Math.max(daysWithFood.size, 1);
@@ -287,7 +309,7 @@ async function computeBodyComposition(userId, days = 7) {
   // dailyBalance = ce qu'on mange - ce qu'on dépense réellement
   let dailyBalance = 0;
   if (maintenanceCalories && daysWithFood.size >= 1) {
-    dailyBalance = avgDailyCalories - maintenanceCalories;
+    dailyBalance = avgDailyCalories - maintenanceCalories - avgDailyBurned;
   }
 
   // ── Analyse protéique ──
@@ -296,6 +318,38 @@ async function computeBodyComposition(userId, days = 7) {
   let proteinStatus = 'insufficient'; // < 1.2g/kg
   if (proteinPerKg >= PROTEIN_THRESHOLD_OPT) proteinStatus = 'optimal';     // >= 1.6g/kg
   else if (proteinPerKg >= PROTEIN_THRESHOLD_LOW) proteinStatus = 'adequate'; // 1.2-1.6g/kg
+
+  // ── Score MPS : protéines pondérées par fenêtre post-entraînement ──
+  // La synthèse protéique musculaire (MPS) pic 24-48h après l'entraînement.
+  // Protéines le jour J de training = 100% d'efficacité
+  // Protéines J+1 (rattrapage) = 70% d'efficacité
+  // Protéines hors fenêtre = maintien uniquement
+  let mpsScore = pScore; // fallback si pas assez de données
+  if (weight && trainingDays.size > 0) {
+    const addDay = (dateStr, n) => {
+      const d = new Date(dateStr + 'T00:00:00Z');
+      d.setUTCDate(d.getUTCDate() + n);
+      return d.toISOString().split('T')[0];
+    };
+
+    let totalMpsScore = 0;
+    for (const tDay of trainingDays) {
+      const protDay0 = dailyNutrition[tDay]?.proteins || 0;
+      const protDay1 = dailyNutrition[addDay(tDay, 1)]?.proteins || 0;
+
+      const scoreDay0 = proteinScore(protDay0, weight);
+      const scoreDay1 = proteinScore(protDay1, weight);
+
+      // Score MPS pour cette séance :
+      // - Protéines le jour même = effet principal (60%)
+      // - Protéines J+1 = rattrapage partiel (40%, pondéré à 70% d'efficacité)
+      const sessionMps = scoreDay0 * 0.6 + scoreDay1 * 0.4 * 0.7;
+      totalMpsScore += sessionMps;
+    }
+    mpsScore = totalMpsScore / trainingDays.size;
+    // Ne jamais être pire que le score moyen global (couvre les jours sans données)
+    mpsScore = Math.max(mpsScore, pScore * 0.5);
+  }
 
   // ── Volume musculaire par zone ──
   const { raw: rawVolume, normalized: normalizedVolume } = computeMuscleVolume(sessions);
@@ -313,7 +367,7 @@ async function computeBodyComposition(userId, days = 7) {
 
   // DEBUG — à retirer plus tard
   logger.info(`[bodyComp] bmr=${bmr} tdee=${estimatedTDEE} maintenance=${maintenanceCalories} avgCal=${avgDailyCalories} daysFood=${daysWithFood.size}`);
-  logger.info(`[bodyComp] pScore=${pScore} proteinPerKg=${proteinPerKg} avgProteins=${avgDailyProteins} dailyBalance=${dailyBalance}`);
+  logger.info(`[bodyComp] pScore=${pScore} mpsScore=${mpsScore.toFixed(3)} proteinPerKg=${proteinPerKg} avgProteins=${avgDailyProteins} dailyBalance=${dailyBalance}`);
   logger.info(`[bodyComp] hasTraining=${hasTraining} muscuSessions=${muscuSessionCount} sessionsPerWeek=${sessionsPerWeek} freqFactor=${frequencyFactor}`);
   logger.info(`[bodyComp] zones: ${JSON.stringify(rawVolume)}`);
 
@@ -324,7 +378,8 @@ async function computeBodyComposition(userId, days = 7) {
 
   let muscleGainTotal = 0;
   // Conditions minimales : entraînement muscu + protéines suffisantes (score > 0.3 = au moins ~1.2g/kg)
-  if (hasTraining && pScore >= 0.3) {
+  // On utilise mpsScore (pondéré par fenêtre MPS) au lieu du pScore moyen global
+  if (hasTraining && mpsScore >= 0.3) {
     // Le surplus calorique donne un petit bonus (10-20%) mais n'est PAS requis
     let surplusBonus = 1;
     if (dailyBalance > 500) surplusBonus = 1.2;
@@ -350,9 +405,9 @@ async function computeBodyComposition(userId, days = 7) {
       }
     }
 
-    muscleGainTotal = maxWeeklyGain * weekCount * pScore * frequencyFactor * surplusBonus * bfFactor;
+    muscleGainTotal = maxWeeklyGain * weekCount * mpsScore * frequencyFactor * surplusBonus * bfFactor;
     muscleGainTotal = Math.round(muscleGainTotal * 1000) / 1000; // kg
-  } else if (hasTraining && pScore > 0 && pScore < 0.3) {
+  } else if (hasTraining && mpsScore > 0 && mpsScore < 0.3) {
     // Protéines très insuffisantes : gain négligeable (maintien au mieux)
     muscleGainTotal = 0;
   }
@@ -525,6 +580,7 @@ async function computeBodyComposition(userId, days = 7) {
       proteinPerKg,
       proteinStatus,
       proteinScore: Math.round(pScore * 100) / 100,
+      mpsScore: Math.round(mpsScore * 100) / 100,
       dailyBalance,
     },
     training: {
