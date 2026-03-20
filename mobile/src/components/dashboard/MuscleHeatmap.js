@@ -60,7 +60,8 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
   const isDark = colorScheme === 'dark';
   const [view, setView] = useState('front');
   const [filter, setFilter] = useState('week-0');
-  const [mode, setMode] = useState('effort'); // "effort" | "gains"
+  const [mode, setMode] = useState('effort'); // "
+  // " | "gains"
   const [bodyComp, setBodyComp] = useState(null);
   const [bodyCompLoading, setBodyCompLoading] = useState(false);
 
