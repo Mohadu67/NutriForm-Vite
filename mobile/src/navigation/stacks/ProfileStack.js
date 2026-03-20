@@ -78,7 +78,14 @@ export default function ProfileStack() {
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-      <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
+      <Stack.Screen
+        name="ProfileSetup"
+        component={ProfileSetupScreen}
+        options={{
+          animation: 'slide_from_right',
+          gestureEnabled: true,
+        }}
+      />
       <Stack.Screen name="Subscription" component={SubscriptionScreen} />
       <Stack.Screen name="Rewards" component={RewardsScreen} />
       <Stack.Screen name="Badges" component={BadgesScreen} />

@@ -13,6 +13,7 @@ import {
   Dimensions,
   Animated,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -226,7 +227,7 @@ export default function MatchingScreen() {
     }).start();
   }, []);
 
-  // Tab indicator animation
+  // Tab indicator animation + refresh unread count on messages tab
   useEffect(() => {
     Animated.spring(tabIndicatorAnim, {
       toValue: activeTab === 'messages' ? 0 : 1,
@@ -234,6 +235,16 @@ export default function MatchingScreen() {
       friction: 10,
       useNativeDriver: true,
     }).start();
+
+    // Rafraichir le compteur non-lus et conversations quand on revient sur l'onglet messages
+    if (activeTab === 'messages') {
+      getUnreadCount().then(res => {
+        if (res?.success) setUnreadCount(res.count || 0);
+      }).catch(() => {});
+      getConversations().then(res => {
+        if (res?.success && res.conversations) setConversations(res.conversations);
+      }).catch(() => {});
+    }
   }, [activeTab]);
 
   // Swipe gesture hook
@@ -257,6 +268,7 @@ export default function MatchingScreen() {
         }
       } catch (err) {
         logger.matching.error('Like error', err);
+        Alert.alert('Erreur', 'Impossible d\'envoyer le like. Veuillez reessayer.');
       }
     },
     onSwipeLeft: async (profile) => {
@@ -264,6 +276,7 @@ export default function MatchingScreen() {
         await rejectProfile(profile.user._id);
       } catch (err) {
         logger.matching.error('Reject error', err);
+        Alert.alert('Erreur', 'Impossible de rejeter le profil. Veuillez reessayer.');
       }
     },
     onNextCard: () => {
@@ -276,32 +289,40 @@ export default function MatchingScreen() {
     try {
       setLoading(true);
 
-      const [convRes, matchesRes, suggestionsRes, unreadRes] = await Promise.all([
+      const results = await Promise.allSettled([
         getConversations(),
         getMutualMatches(),
         getMatchSuggestions({ limit: 20 }),
         getUnreadCount(),
       ]);
 
-      if (convRes?.success && convRes.conversations) {
-        setConversations(convRes.conversations);
-        logger.matching.info('Conversations chargées:', convRes.conversations.length);
+      const [convRes, matchesRes, suggestionsRes, unreadRes] = results;
+
+      if (convRes.status === 'fulfilled' && convRes.value?.success && convRes.value.conversations) {
+        setConversations(convRes.value.conversations);
+        logger.matching.info('Conversations chargées:', convRes.value.conversations.length);
+      } else if (convRes.status === 'rejected') {
+        logger.matching.warn('Conversations non chargées:', convRes.reason?.message);
       }
 
-      if (matchesRes?.matches) {
-        setMutualMatches(matchesRes.matches);
-        logger.matching.info('Matchs mutuels chargés:', matchesRes.matches.length);
+      if (matchesRes.status === 'fulfilled' && matchesRes.value?.matches) {
+        setMutualMatches(matchesRes.value.matches);
+        logger.matching.info('Matchs mutuels chargés:', matchesRes.value.matches.length);
+      } else if (matchesRes.status === 'rejected') {
+        logger.matching.warn('Matchs mutuels non chargés:', matchesRes.reason?.message);
       }
 
-      if (suggestionsRes?.matches) {
-        const filtered = suggestionsRes.matches.filter(s => !s.hasLiked && !s.isMutual);
+      if (suggestionsRes.status === 'fulfilled' && suggestionsRes.value?.matches) {
+        const filtered = suggestionsRes.value.matches.filter(s => !s.hasLiked && !s.isMutual);
         setSuggestions(filtered);
         setPendingSuggestions(filtered.length);
         logger.matching.info('Suggestions chargées:', filtered.length);
+      } else if (suggestionsRes.status === 'rejected') {
+        logger.matching.warn('Suggestions non chargées:', suggestionsRes.reason?.message);
       }
 
-      if (unreadRes?.success) {
-        setUnreadCount(unreadRes.count || 0);
+      if (unreadRes.status === 'fulfilled' && unreadRes.value?.success) {
+        setUnreadCount(unreadRes.value.count || 0);
       }
     } catch (err) {
       logger.matching.error('Error loading data', err);
@@ -738,7 +759,7 @@ export default function MatchingScreen() {
                   <View style={styles.locationRow}>
                     <Ionicons name="location" size={14} color="rgba(255,255,255,0.8)" />
                     <Text style={styles.locationText}>
-                      {user.location.city}{profile.distance > 0 && ` • ${profile.distance} km`}
+                      {user.location.city}{profile.distance != null && profile.distance > 0 && ` • ${profile.distance} km`}
                     </Text>
                   </View>
                 )}

@@ -1,0 +1,157 @@
+.stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 1.5rem;
+}
+
+.statCard {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  min-width: 80px;
+}
+
+:global(body.dark) .statCard {
+  background: rgba(26, 29, 36, 0.55);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.statCard:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.statCard.disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.iconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconWrap[data-variant="heart"] {
+  background: var(--color-primary-100);
+  color: var(--color-primary-600);
+}
+
+:global(body.dark) .iconWrap[data-variant="heart"] {
+  background: rgba(247, 177, 134, 0.15);
+  color: var(--color-primary-400);
+}
+
+.iconWrap[data-variant="users"] {
+  background: var(--color-secondary-100);
+  color: var(--color-secondary-700);
+}
+
+:global(body.dark) .iconWrap[data-variant="users"] {
+  background: rgba(184, 221, 209, 0.15);
+  color: var(--color-secondary-400);
+}
+
+.statValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+}
+
+:global(body.dark) .statValue {
+  color: var(--color-neutral-100);
+}
+
+.statLabel {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-neutral-400);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ===== PROGRESS RING ===== */
+.progressCard {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+}
+
+.ring {
+  width: 100%;
+  height: 100%;
+}
+
+.ringBg {
+  stroke: var(--color-neutral-200);
+}
+
+:global(body.dark) .ringBg {
+  stroke: var(--color-neutral-700);
+}
+
+.ringFill {
+  stroke: var(--color-primary-500);
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 4px rgba(247, 177, 134, 0.3));
+}
+
+.ringText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ringValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  line-height: 1;
+}
+
+:global(body.dark) .ringValue {
+  color: var(--color-neutral-100);
+}
+
+.ringLabel {
+  font-size: 0.65rem;
+  color: var(--color-neutral-400);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 2px;
+}
+
+@media (max-width: 400px) {
+  .stats {
+    gap: 10px;
+  }
+
+  .statCard {
+    padding: 10px 12px;
+    min-width: 68px;
+  }
+
+  .progressCard {
+    width: 76px;
+    height: 76px;
+  }
+}

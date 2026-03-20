@@ -1,0 +1,263 @@
+.card {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 16px;
+  padding: 1.75rem;
+  animation: fadeIn 0.4s ease-out;
+}
+
+:global(body.dark) .card {
+  background: rgba(26, 29, 36, 0.55);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cardHeader {
+  margin-bottom: 1.5rem;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin-bottom: 4px;
+}
+
+:global(body.dark) .cardTitle {
+  color: var(--color-neutral-100);
+}
+
+.cardDesc {
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+}
+
+/* ===== FIELDS ===== */
+.field {
+  margin-bottom: 1.25rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  margin-bottom: 6px;
+}
+
+:global(body.dark) .label {
+  color: var(--color-neutral-300);
+}
+
+.hint {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-neutral-400);
+  margin-top: 6px;
+}
+
+.input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background: var(--color-neutral-0);
+  border: 1.5px solid var(--color-neutral-200);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: var(--color-neutral-800);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+:global(body.dark) .input {
+  background: rgba(15, 17, 23, 0.6);
+  border-color: var(--color-neutral-700);
+  color: var(--color-neutral-100);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(247, 177, 134, 0.12);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ageField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ageField small {
+  font-size: 0.75rem;
+  color: var(--color-neutral-400);
+  font-weight: 500;
+}
+
+/* ===== RANGE ===== */
+.rangeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.rangeValue {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-primary-500);
+}
+
+.range {
+  width: 100%;
+  height: 5px;
+  background: var(--color-neutral-200);
+  border-radius: 10px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+:global(body.dark) .range {
+  background: var(--color-neutral-700);
+}
+
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  background: var(--color-primary-500);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.35);
+  transition: transform 0.15s ease;
+}
+
+.range::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  background: var(--color-primary-500);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.35);
+}
+
+/* ===== LEVEL GRID ===== */
+.levelGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.levelCard {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: var(--color-neutral-0);
+  border: 1.5px solid var(--color-neutral-200);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-neutral-700);
+  transition: all 0.25s ease;
+  text-align: center;
+}
+
+:global(body.dark) .levelCard {
+  background: rgba(15, 17, 23, 0.4);
+  border-color: var(--color-neutral-700);
+  color: var(--color-neutral-300);
+}
+
+.levelCard:hover {
+  border-color: var(--color-primary-300);
+}
+
+.levelSelected {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-neutral-0);
+  box-shadow: 0 4px 16px rgba(247, 177, 134, 0.3);
+}
+
+:global(body.dark) .levelSelected {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-neutral-0);
+}
+
+/* ===== CHIPS ===== */
+.chipGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  background: var(--color-neutral-0);
+  border: 1.5px solid var(--color-neutral-200);
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--color-neutral-700);
+}
+
+:global(body.dark) .chip {
+  background: rgba(15, 17, 23, 0.4);
+  border-color: var(--color-neutral-700);
+  color: var(--color-neutral-300);
+}
+
+.chip:hover {
+  border-color: var(--color-primary-300);
+}
+
+.chipSelected {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-neutral-0);
+  box-shadow: 0 2px 10px rgba(247, 177, 134, 0.25);
+}
+
+:global(body.dark) .chipSelected {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-neutral-0);
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 1.25rem;
+    border-radius: 14px;
+  }
+
+  .levelGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -210,14 +210,13 @@ exports.getProfileById = async (req, res) => {
       return res.status(404).json({ error: 'Profil non trouvé.' });
     }
 
-    // Récupérer aussi le pseudo de l'utilisateur
-    const user = await User.findById(userId).select('pseudo email');
+    // Récupérer aussi le pseudo de l'utilisateur (sans email pour profil public)
+    const user = await User.findById(userId).select('pseudo');
 
     res.json({
       profile,
       user: {
-        pseudo: user?.pseudo,
-        email: user?.email
+        pseudo: user?.pseudo
       }
     });
   } catch (error) {

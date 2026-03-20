@@ -88,6 +88,18 @@ const matchSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Desactiver le TTL pour les matches mutuels et renouveler a chaque save
+matchSchema.pre('save', function(next) {
+  if (this.status === 'mutual' || this.status === 'blocked') {
+    // Les matches mutuels et bloques ne doivent jamais expirer
+    this.expiresAt = null;
+  } else if (this.isModified('status')) {
+    // Renouveler le TTL quand le statut change (ex: relike)
+    this.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  }
+  next();
+});
+
 // Index composites pour performance
 matchSchema.index({ user1Id: 1, user2Id: 1 }, { unique: true });
 matchSchema.index({ user1Id: 1, matchScore: -1 });
@@ -102,6 +114,11 @@ matchSchema.methods.isMutual = function() {
 
 // Méthode pour enregistrer un like
 matchSchema.methods.addLike = function(userId) {
+  // Nettoyer le rejet si le match etait rejete
+  if (this.status === 'rejected') {
+    this.rejectedBy = null;
+  }
+
   if (!this.likedBy.some(id => id.equals(userId))) {
     this.likedBy.push(userId);
   }
