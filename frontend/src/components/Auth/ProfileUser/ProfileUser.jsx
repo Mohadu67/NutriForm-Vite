@@ -54,6 +54,12 @@ export default function ProfileUser({ onLogout }) {
   const [pseudo, setPseudo] = useState("");
   const [email, setEmail] = useState("");
 
+  // Mensurations
+  const [age, setAge] = useState("");
+  const [weight, setWeight] = useState("");
+  const [height, setHeight] = useState("");
+  const [bodyFatPercent, setBodyFatPercent] = useState("");
+
   // Matching profile data
   const [matchingProfile, setMatchingProfile] = useState(null);
   const [matchingData, setMatchingData] = useState({
@@ -139,6 +145,11 @@ export default function ProfileUser({ onLogout }) {
         workoutTypes: profile.workoutTypes || [],
         city: profile.location?.city || ''
       });
+      // Mensurations
+      setAge(profile.age || '');
+      setWeight(profile.weight || '');
+      setHeight(profile.height || '');
+      setBodyFatPercent(profile.bodyFatPercent || '');
     } catch (err) {
       logger.error('Erreur récupération profil matching:', err);
     }
@@ -231,9 +242,20 @@ export default function ProfileUser({ onLogout }) {
         throw new Error(data.message || "Erreur de mise à jour");
       }
 
+      // Sauvegarder aussi les mensurations dans le profil
+      const mensurationsData = {};
+      if (age !== '') mensurationsData.age = Number(age);
+      if (weight !== '') mensurationsData.weight = Number(weight);
+      if (height !== '') mensurationsData.height = Number(height);
+      if (bodyFatPercent !== '') mensurationsData.bodyFatPercent = Number(bodyFatPercent);
+      if (Object.keys(mensurationsData).length > 0) {
+        await updateProfile(mensurationsData);
+      }
+
       setMessage("Informations mises à jour avec succès");
       setEditing(false);
       fetchUserData();
+      fetchMatchingProfile();
     } catch (err) {
       setError(err.message);
     }
@@ -459,6 +481,27 @@ export default function ProfileUser({ onLogout }) {
                       <span className={styles.dataValue}>{user?.email || "Non renseigné"}</span>
                     </div>
                   </div>
+
+                  <h3 className={styles.sectionTitle} style={{ marginTop: 16 }}>Mensurations</h3>
+                  <div className={styles.dataGrid}>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>Âge</span>
+                      <span className={styles.dataValue}>{age ? `${age} ans` : "Non renseigné"}</span>
+                    </div>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>Poids</span>
+                      <span className={styles.dataValue}>{weight ? `${weight} kg` : "Non renseigné"}</span>
+                    </div>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>Taille</span>
+                      <span className={styles.dataValue}>{height ? `${height} cm` : "Non renseigné"}</span>
+                    </div>
+                    <div className={styles.dataItem}>
+                      <span className={styles.dataLabel}>% Masse grasse</span>
+                      <span className={styles.dataValue}>{bodyFatPercent ? `${bodyFatPercent}%` : "Non renseigné"}</span>
+                    </div>
+                  </div>
+
                   <button
                     className={styles.editBtn}
                     onClick={() => setEditing(true)}
@@ -675,6 +718,63 @@ export default function ProfileUser({ onLogout }) {
                       className={styles.input}
                     />
                   </div>
+
+                  <h4 className={styles.sectionTitle} style={{ marginTop: 16, marginBottom: 8 }}>Mensurations</h4>
+                  <div className={styles.formField}>
+                    <label>Âge</label>
+                    <input
+                      type="number"
+                      min="13"
+                      max="120"
+                      step="1"
+                      value={age}
+                      onChange={(e) => setAge(e.target.value)}
+                      className={styles.input}
+                      placeholder="Ex: 25"
+                    />
+                  </div>
+                  <div className={styles.formRow}>
+                    <div className={styles.formField}>
+                      <label>Poids (kg)</label>
+                      <input
+                        type="number"
+                        min="20"
+                        max="400"
+                        step="0.1"
+                        value={weight}
+                        onChange={(e) => setWeight(e.target.value)}
+                        className={styles.input}
+                        placeholder="Ex: 75"
+                      />
+                    </div>
+                    <div className={styles.formField}>
+                      <label>Taille (cm)</label>
+                      <input
+                        type="number"
+                        min="80"
+                        max="280"
+                        step="1"
+                        value={height}
+                        onChange={(e) => setHeight(e.target.value)}
+                        className={styles.input}
+                        placeholder="Ex: 178"
+                      />
+                    </div>
+                  </div>
+                  <div className={styles.formField}>
+                    <label>% Masse grasse</label>
+                    <input
+                      type="number"
+                      min="2"
+                      max="60"
+                      step="0.1"
+                      value={bodyFatPercent}
+                      onChange={(e) => setBodyFatPercent(e.target.value)}
+                      className={styles.input}
+                      placeholder="Ex: 18"
+                    />
+                  </div>
+
                   <div className={styles.formActions}>
                     <button type="submit" className={styles.saveBtn}>
                       Enregistrer

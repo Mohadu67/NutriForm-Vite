@@ -121,6 +121,9 @@ export default function ProfileSetupFuturistic() {
     bio: '',
     age: '',
     gender: 'prefer_not_say',
+    weight: '',
+    height: '',
+    bodyFatPercent: '',
     fitnessLevel: 'beginner',
     workoutTypes: [],
     isVisible: true
@@ -171,6 +174,9 @@ export default function ProfileSetupFuturistic() {
           bio: existingProfile.bio || '',
           age: existingProfile.age || '',
           gender: existingProfile.gender || 'prefer_not_say',
+          weight: existingProfile.weight || '',
+          height: existingProfile.height || '',
+          bodyFatPercent: existingProfile.bodyFatPercent || '',
           fitnessLevel: existingProfile.fitnessLevel || 'beginner',
           workoutTypes: existingProfile.workoutTypes || [],
           isVisible: existingProfile.isVisible !== false
@@ -456,6 +462,45 @@ export default function ProfileSetupFuturistic() {
                     <option value="other">Autre</option>
                     <option value="prefer_not_say">Ne pas préciser</option>
                   </select>
+                </div>
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Poids (kg)</label>
+                  <input
+                    type="number"
+                    className={styles.formControl}
+                    value={profile.weight}
+                    onChange={(e) => setProfile({ ...profile, weight: e.target.value })}
+                    min={20}
+                    max={400}
+                    placeholder="75"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Taille (cm)</label>
+                  <input
+                    type="number"
+                    className={styles.formControl}
+                    value={profile.height}
+                    onChange={(e) => setProfile({ ...profile, height: e.target.value })}
+                    min={80}
+                    max={280}
+                    placeholder="175"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>% gras (optionnel)</label>
+                  <input
+                    type="number"
+                    className={styles.formControl}
+                    value={profile.bodyFatPercent}
+                    onChange={(e) => setProfile({ ...profile, bodyFatPercent: e.target.value })}
+                    min={2}
+                    max={60}
+                    placeholder="15"
+                  />
                 </div>
               </div>
 

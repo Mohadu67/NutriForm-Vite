@@ -25,6 +25,23 @@ const userProfileSchema = new mongoose.Schema({
     default: 'prefer_not_say'
   },
 
+  // Mensurations physiques (persistées depuis le calculateur)
+  weight: {
+    type: Number,
+    min: 20,
+    max: 400,
+  },
+  height: {
+    type: Number,
+    min: 80,
+    max: 280,
+  },
+  bodyFatPercent: {
+    type: Number,
+    min: 2,
+    max: 60,
+  },
+
   // Localisation hyper-locale
   location: {
     type: {
