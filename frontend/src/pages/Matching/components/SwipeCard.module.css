@@ -1,0 +1,344 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+/* ===== CARD ===== */
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+}
+
+:global(body.dark) .card {
+  background: rgba(26, 29, 36, 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.enter {
+  animation: cardEnter 0.4s ease-out;
+}
+
+.likeExit {
+  animation: cardLikeExit 0.4s ease-in forwards;
+}
+
+.rejectExit {
+  animation: cardRejectExit 0.4s ease-in forwards;
+}
+
+@keyframes cardEnter {
+  from { opacity: 0; transform: scale(0.95) translateY(16px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes cardLikeExit {
+  to { opacity: 0; transform: translateX(120%) rotate(15deg); }
+}
+
+@keyframes cardRejectExit {
+  to { opacity: 0; transform: translateX(-120%) rotate(-15deg); }
+}
+
+.clickable {
+  cursor: pointer;
+  padding: 1.5rem;
+}
+
+/* ===== TOP ROW ===== */
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.scoreBadge {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  background: var(--color-primary-100);
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+:global(body.dark) .scoreBadge {
+  background: rgba(247, 177, 134, 0.15);
+}
+
+.scoreValue {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--color-primary-600);
+}
+
+:global(body.dark) .scoreValue {
+  color: var(--color-primary-400);
+}
+
+.scoreLabel {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-primary-500);
+  text-transform: uppercase;
+}
+
+.verified {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-success);
+  background: var(--color-success-light);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* ===== AVATAR ===== */
+.avatarSection {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+/* ===== INFO ===== */
+.info {
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin-bottom: 6px;
+}
+
+:global(body.dark) .name {
+  color: var(--color-neutral-100);
+}
+
+.location {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  margin-bottom: 8px;
+}
+
+.distance {
+  padding: 2px 8px;
+  background: var(--color-neutral-100);
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+:global(body.dark) .distance {
+  background: var(--color-neutral-800);
+}
+
+.level {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--color-secondary-100);
+  color: var(--color-secondary-700);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+:global(body.dark) .level {
+  background: rgba(184, 221, 209, 0.12);
+  color: var(--color-secondary-400);
+}
+
+/* ===== BIO ===== */
+.bio {
+  font-size: 0.85rem;
+  color: var(--color-neutral-600);
+  line-height: 1.5;
+  text-align: center;
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+:global(body.dark) .bio {
+  color: var(--color-neutral-400);
+}
+
+/* ===== WORKOUTS ===== */
+.workouts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.workoutChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 10px;
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 16px;
+  font-size: 0.75rem;
+  color: var(--color-neutral-600);
+}
+
+:global(body.dark) .workoutChip {
+  background: rgba(15, 17, 23, 0.4);
+  border-color: var(--color-neutral-700);
+  color: var(--color-neutral-400);
+}
+
+.workoutMore {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  background: var(--color-primary-50);
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary-600);
+}
+
+/* ===== VIEW HINT ===== */
+.viewHint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--color-neutral-400);
+  padding-top: 0.5rem;
+}
+
+/* ===== SWIPE HINTS ===== */
+.swipeHint {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.swipeLeft {
+  left: 16px;
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  border: 2px solid var(--color-danger);
+}
+
+.swipeRight {
+  right: 16px;
+  background: var(--color-success-light);
+  color: var(--color-success);
+  border: 2px solid var(--color-success);
+}
+
+.swipeHint.visible {
+  opacity: 1;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.actions {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.rejectBtn,
+.likeBtn {
+  all: unset;
+  box-sizing: border-box;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.rejectBtn {
+  background: rgba(255, 255, 255, 0.7);
+  border: 2px solid var(--color-neutral-200);
+  color: var(--color-danger);
+}
+
+:global(body.dark) .rejectBtn {
+  background: rgba(26, 29, 36, 0.6);
+  border-color: var(--color-neutral-700);
+}
+
+.rejectBtn:hover {
+  background: var(--color-danger-light);
+  border-color: var(--color-danger);
+  transform: scale(1.1);
+}
+
+.likeBtn {
+  background: var(--color-primary-500);
+  color: var(--color-neutral-0);
+  box-shadow: 0 4px 16px rgba(247, 177, 134, 0.35);
+}
+
+.likeBtn:hover {
+  background: var(--color-primary-600);
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(247, 177, 134, 0.45);
+}
+
+.rejectBtn:disabled,
+.likeBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.rejectBtn:active,
+.likeBtn:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 400px) {
+  .card {
+    border-radius: 16px;
+  }
+
+  .clickable {
+    padding: 1.25rem;
+  }
+
+  .rejectBtn,
+  .likeBtn {
+    width: 50px;
+    height: 50px;
+  }
+}

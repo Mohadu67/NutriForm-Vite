@@ -1,0 +1,187 @@
+.card {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 16px;
+  padding: 1.75rem;
+  animation: fadeIn 0.4s ease-out;
+}
+
+:global(body.dark) .card {
+  background: rgba(26, 29, 36, 0.55);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cardHeader {
+  margin-bottom: 1.25rem;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin-bottom: 4px;
+}
+
+:global(body.dark) .cardTitle {
+  color: var(--color-neutral-100);
+}
+
+.cardDesc {
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  background: var(--color-primary-100);
+  color: var(--color-primary-700);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+:global(body.dark) .badge {
+  background: rgba(247, 177, 134, 0.15);
+  color: var(--color-primary-400);
+}
+
+/* ===== DAYS ===== */
+.daysList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dayRow {
+  padding: 12px 14px;
+  background: var(--color-neutral-50);
+  border-radius: 12px;
+  transition: background 0.2s ease;
+}
+
+:global(body.dark) .dayRow {
+  background: rgba(15, 17, 23, 0.35);
+}
+
+.dayHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.dayLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+}
+
+:global(body.dark) .dayLabel {
+  color: var(--color-neutral-200);
+}
+
+.addBtn {
+  all: unset;
+  box-sizing: border-box;
+  padding: 4px 10px;
+  background: var(--color-primary-500);
+  color: var(--color-neutral-0);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.addBtn:hover {
+  background: var(--color-primary-600);
+}
+
+.empty {
+  font-size: 0.8rem;
+  color: var(--color-neutral-400);
+  font-style: italic;
+  margin: 4px 0 0;
+}
+
+/* ===== SLOTS ===== */
+.slotRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  animation: slideIn 0.25s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.timeInput {
+  flex: 1;
+  padding: 8px 10px;
+  background: var(--color-neutral-0);
+  border: 1.5px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: var(--color-neutral-800);
+  transition: border-color 0.2s ease;
+}
+
+:global(body.dark) .timeInput {
+  background: rgba(15, 17, 23, 0.6);
+  border-color: var(--color-neutral-700);
+  color: var(--color-neutral-100);
+}
+
+.timeInput:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+}
+
+.sep {
+  font-size: 0.8rem;
+  color: var(--color-neutral-400);
+  font-weight: 500;
+}
+
+.removeBtn {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.removeBtn:hover {
+  background: var(--color-danger);
+  color: var(--color-neutral-0);
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 1.25rem;
+    border-radius: 14px;
+  }
+}

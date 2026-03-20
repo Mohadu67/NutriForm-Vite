@@ -90,7 +90,7 @@ export default function EditProfileScreen() {
       setSaving(true);
 
       // Update user info
-      await apiClient.put(endpoints.auth.me, {
+      await apiClient.put(endpoints.auth.updateProfile, {
         prenom: prenom.trim(),
         pseudo: pseudo.trim(),
       });

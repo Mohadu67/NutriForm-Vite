@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import * as Location from 'expo-location';
 
 import { theme, colors } from '../../theme';
@@ -226,7 +226,13 @@ export default function ProfileSetupScreen() {
       await apiClient.put(endpoints.profile.preferences, preferencesData);
 
       Alert.alert('Succès', 'Profil mis à jour avec succès !');
-      navigation.goBack();
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.dispatch(
+          CommonActions.reset({ index: 0, routes: [{ name: 'Profile' }] })
+        );
+      }
 
     } catch (error) {
       logger.app.error('[PROFILE SETUP] Error saving:', error);
@@ -340,7 +346,16 @@ export default function ProfileSetupScreen() {
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
       {/* Header */}
       <View style={[styles.header, isDark && styles.headerDark]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => {
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          } else {
+            // Fallback: quand on arrive depuis un autre tab, la pile est vide
+            navigation.dispatch(
+              CommonActions.reset({ index: 0, routes: [{ name: 'Profile' }] })
+            );
+          }
+        }} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={isDark ? '#FFF' : '#000'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDark && styles.textDark]}>Configuration du profil</Text>

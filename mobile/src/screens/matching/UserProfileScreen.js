@@ -64,10 +64,9 @@ export default function UserProfileScreen({ route, navigation }) {
           // Fusionner les donnees de base avec le profil complet
           setUser({
             ...userParam,
-            // Donnees de l'utilisateur (pseudo, email)
+            // Donnees de l'utilisateur (pseudo)
             pseudo: userData.pseudo || userParam?.pseudo,
             username: userData.pseudo || userParam?.username || userParam?.pseudo,
-            email: userData.email,
             // Donnees du profil
             bio: profileData.bio,
             workoutTypes: profileData.workoutTypes || [],
