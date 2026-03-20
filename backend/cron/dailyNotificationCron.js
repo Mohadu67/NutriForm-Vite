@@ -4,6 +4,7 @@ const LeaderboardEntry = require('../models/LeaderboardEntry');
 const WorkoutSession = require('../models/WorkoutSession');
 const logger = require('../utils/logger');
 const { sendNotificationToUser } = require('../services/pushNotification.service');
+const bodyCompositionService = require('../services/bodyComposition.service');
 
 // Templates de notifications quotidiennes
 const DAILY_TEMPLATES = {
@@ -260,7 +261,7 @@ async function notifyInactiveUsers() {
   }
 }
 
-// Récap hebdomadaire (Dimanche 10h00)
+// Récap hebdomadaire (Samedi 10h00)
 async function sendWeeklyRecap() {
   logger.info('📊 CRON: Envoi des récaps hebdomadaires...');
 
@@ -304,25 +305,41 @@ async function sendWeeklyRecap() {
         const calories = weeklyCalories[0]?.total || 0;
         const userName = user.prenom || user.pseudo || 'Champion';
 
+        // Body composition de la semaine (gain muscle, perte gras, bilan calorique)
+        let bodyCompLine = '';
+        try {
+          const bodyComp = await bodyCompositionService.computeBodyComposition(user._id, 7);
+          if (bodyComp) {
+            const parts = [];
+            const balance = bodyComp.nutrition?.dailyBalance || 0;
+            if (balance !== 0) {
+              parts.push(`${balance > 0 ? '+' : ''}${balance} kcal/jour`);
+            }
+            const muscleG = bodyComp.muscleGain?.totalG || 0;
+            if (muscleG > 0) parts.push(`+${muscleG}g muscle`);
+            const fatG = bodyComp.fatChange?.g || 0;
+            if (fatG !== 0) parts.push(`${fatG > 0 ? '+' : ''}${fatG}g gras`);
+            if (parts.length > 0) bodyCompLine = ' | ' + parts.join(', ');
+          }
+        } catch (e) {
+          // Body comp optionnel, on continue sans
+        }
+
         // Message motivant selon l'activite
         let title, body;
 
         if (weeklySessions === 0) {
-          // Aucune activite
-          title = 'Ta semaine t\'attend!';
-          body = `${userName}, c'est pas grave, on recommence! Viens voir ton dashboard et lance-toi cette semaine.`;
+          title = 'Ton recap semaine est pret!';
+          body = `${userName}, c'est pas grave, on recommence! Viens voir ton bilan et lance-toi cette semaine.${bodyCompLine}`;
         } else if (weeklySessions <= 2) {
-          // Peu d'activite
-          title = 'Bon debut!';
-          body = `${weeklySessions} seance${weeklySessions > 1 ? 's' : ''} cette semaine, c'est un debut! Continue sur ta lancee.`;
+          title = 'Recap semaine - Bon debut!';
+          body = `${weeklySessions} seance${weeklySessions > 1 ? 's' : ''} cette semaine.${bodyCompLine}`;
         } else if (weeklySessions <= 4) {
-          // Activite moyenne
-          title = 'Belle semaine!';
-          body = `${weeklySessions} seances et ${calories} kcal brulees. Tu progresses bien, continue!`;
+          title = 'Recap semaine - Belle perf!';
+          body = `${weeklySessions} seances, ${calories} kcal brulees.${bodyCompLine}`;
         } else {
-          // Beaucoup d'activite
-          title = 'Semaine incroyable!';
-          body = `${weeklySessions} seances, ${calories} kcal! Tu es une machine, felicitations!`;
+          title = 'Recap semaine - Machine!';
+          body = `${weeklySessions} seances, ${calories} kcal!${bodyCompLine}`;
         }
 
         await sendNotificationToUser(user._id, {
@@ -367,8 +384,8 @@ function startDailyNotificationCron() {
     timezone: 'Europe/Paris'
   });
 
-  // Récap hebdomadaire le dimanche à 10h00
-  cron.schedule('0 10 * * 0', sendWeeklyRecap, {
+  // Récap hebdomadaire le samedi à 10h00
+  cron.schedule('0 10 * * 6', sendWeeklyRecap, {
     timezone: 'Europe/Paris'
   });
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import style from "../Dashboard.module.css";
 import { endpoints } from "../../../shared/api/endpoints.js";
 import { secureApiCall } from "../../../utils/authService.js";
+import { getBodyCompositionSummary } from "../../../shared/api/bodyComposition";
 
 /**
  * WeeklySummary - Resume motivant enrichi de la semaine
@@ -9,17 +10,19 @@ import { secureApiCall } from "../../../utils/authService.js";
  */
 export const WeeklySummary = ({ weeklySessions, weeklyCalories, userName }) => {
   const [analytics, setAnalytics] = useState(null);
+  const [bodyComp, setBodyComp] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Charger les analytics enrichis
+  // Charger les analytics enrichis + body comp
   useEffect(() => {
-    const fetchAnalytics = async () => {
+    const fetchData = async () => {
       try {
-        const response = await secureApiCall(endpoints.analytics.weekly);
-        if (response.ok) {
-          const data = await response.json();
-          setAnalytics(data);
-        }
+        const [analyticsRes, bodyCompData] = await Promise.all([
+          secureApiCall(endpoints.analytics.weekly).then(r => r.ok ? r.json() : null).catch(() => null),
+          getBodyCompositionSummary(7).catch(() => null),
+        ]);
+        if (analyticsRes) setAnalytics(analyticsRes);
+        if (bodyCompData) setBodyComp(bodyCompData);
       } catch (error) {
         console.error("Erreur chargement analytics:", error);
       } finally {
@@ -27,7 +30,7 @@ export const WeeklySummary = ({ weeklySessions, weeklyCalories, userName }) => {
       }
     };
 
-    fetchAnalytics();
+    fetchData();
   }, []);
 
   // Message principal base sur les donnees enrichies ou fallback simple
@@ -117,6 +120,17 @@ export const WeeklySummary = ({ weeklySessions, weeklyCalories, userName }) => {
   const neglectedMuscles = analytics?.neglectedMuscles || [];
   const insights = analytics?.motivation?.slice(1) || []; // Messages supplementaires
 
+  // Nutrition recap
+  const nutritionRecap = bodyComp ? {
+    dailyBalance: bodyComp.nutrition?.dailyBalance || 0,
+    avgCalories: bodyComp.nutrition?.daily?.calories || 0,
+    avgProteins: bodyComp.nutrition?.daily?.proteins || 0,
+    proteinPerKg: bodyComp.nutrition?.proteinPerKg || 0,
+    muscleGainG: bodyComp.muscleGain?.totalG || 0,
+    fatChangeG: bodyComp.fatChange?.g || 0,
+    projectedWeight: bodyComp.projectedWeight || null,
+  } : null;
+
   return (
     <section className={`${style.weeklySummary} ${style[`weeklySummary_${motivation.type}`]}`}>
       {/* Icone principale */}
@@ -155,6 +169,44 @@ export const WeeklySummary = ({ weeklySessions, weeklyCalories, userName }) => {
           </div>
         )}
       </div>
+
+      {/* Recap Nutrition */}
+      {nutritionRecap && (
+        <div className={style.nutritionRecap}>
+          <h4 className={style.nutritionRecapTitle}>Bilan nutrition</h4>
+          <div className={style.nutritionRecapGrid}>
+            <div className={style.nutritionRecapItem}>
+              <span className={style.nutritionRecapValue}>{nutritionRecap.avgCalories}</span>
+              <span className={style.nutritionRecapLabel}>kcal/jour</span>
+            </div>
+            <div className={style.nutritionRecapItem}>
+              <span className={style.nutritionRecapValue}>{nutritionRecap.avgProteins}g</span>
+              <span className={style.nutritionRecapLabel}>prot/jour ({nutritionRecap.proteinPerKg}g/kg)</span>
+            </div>
+            <div className={style.nutritionRecapItem}>
+              <span className={`${style.nutritionRecapValue} ${nutritionRecap.dailyBalance >= 0 ? style.nutritionRecapPositive : style.nutritionRecapNegative}`}>
+                {nutritionRecap.dailyBalance >= 0 ? '+' : ''}{nutritionRecap.dailyBalance}
+              </span>
+              <span className={style.nutritionRecapLabel}>kcal/jour ({nutritionRecap.dailyBalance >= 0 ? 'surplus' : 'deficit'})</span>
+            </div>
+          </div>
+          <div className={style.nutritionRecapBody}>
+            {nutritionRecap.muscleGainG > 0 && (
+              <span className={style.nutritionRecapTag}>
+                +{nutritionRecap.muscleGainG}g muscle
+              </span>
+            )}
+            <span className={`${style.nutritionRecapTag} ${nutritionRecap.fatChangeG > 0 ? style.nutritionRecapTagBad : style.nutritionRecapTagGood}`}>
+              {nutritionRecap.fatChangeG >= 0 ? '+' : ''}{nutritionRecap.fatChangeG}g gras
+            </span>
+            {nutritionRecap.projectedWeight && (
+              <span className={style.nutritionRecapTag}>
+                Poids proj. {nutritionRecap.projectedWeight} kg
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Insights supplementaires */}
       {insights.length > 0 && (
