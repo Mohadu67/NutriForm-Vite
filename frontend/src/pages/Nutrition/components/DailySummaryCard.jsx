@@ -48,8 +48,11 @@ function BurnedInput({ value, onChange }) {
 }
 
 export default function DailySummaryCard({ consumed, goal, burned, onBurnedChange }) {
-  const pct = goal > 0 ? Math.min((consumed / goal) * 100, 100) : 0;
-  const remaining = Math.max(goal - consumed, 0);
+  // Budget total = objectif + calories brûlées (exercice)
+  // Restant = budget total - consommé
+  const totalBudget = goal + burned;
+  const pct = totalBudget > 0 ? Math.min((consumed / totalBudget) * 100, 100) : 0;
+  const remaining = Math.max(totalBudget - consumed, 0);
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (pct / 100) * circumference;
@@ -100,8 +103,8 @@ export default function DailySummaryCard({ consumed, goal, burned, onBurnedChang
         </div>
         <div className={style.summaryStat}>
           <span className={style.summaryStatLabel}>Balance</span>
-          <span className={`${style.summaryStatValue} ${consumed - burned > goal ? style.negative : style.positive}`}>
-            {consumed - burned > 0 ? '+' : ''}{consumed - burned} kcal
+          <span className={`${style.summaryStatValue} ${consumed > totalBudget ? style.negative : style.positive}`}>
+            {consumed - totalBudget > 0 ? '+' : ''}{consumed - totalBudget} kcal
           </span>
         </div>
       </div>
