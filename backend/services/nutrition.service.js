@@ -52,8 +52,14 @@ async function computeDailySummary(userId, date) {
   const sessionCalories = sessions.reduce((sum, s) => sum + (s.calories || 0), 0);
   const healthCalories = healthData?.caloriesBurned || 0;
 
-  // Use whichever is higher to avoid double counting
-  const burned = Math.max(healthCalories, sessionCalories);
+  // Si l'utilisateur a renseigné manuellement une valeur, elle prime (même 0)
+  // Sinon on utilise les calories calculées des séances
+  let burned;
+  if (healthData) {
+    burned = healthCalories;
+  } else {
+    burned = sessionCalories;
+  }
 
   return {
     date: d.toISOString(),
