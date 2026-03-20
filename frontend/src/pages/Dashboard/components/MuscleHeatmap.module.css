@@ -7,7 +7,181 @@
   padding: 1rem;
 }
 
-/* Filtres - Mobile First */
+/* ─── Mode Toggle (Effort / Gains) ─── */
+.modeToggle {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  padding: 3px;
+}
+
+:global(.dark) .modeToggle,
+:global(body.dark) .modeToggle,
+:global(html.dark) .modeToggle {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.modeBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted, #6b7280);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.modeBtn:hover {
+  color: var(--ink, #1f2933);
+}
+
+:global(.dark) .modeBtn:hover,
+:global(body.dark) .modeBtn:hover,
+:global(html.dark) .modeBtn:hover {
+  color: #f5f7fa;
+}
+
+.modeBtnIcon {
+  font-size: 0;
+  width: 0;
+  display: none;
+}
+
+.modeBtnActive {
+  background: #fff;
+  color: var(--primary, #f7b186);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+:global(.dark) .modeBtnActive,
+:global(body.dark) .modeBtnActive,
+:global(html.dark) .modeBtnActive {
+  background: rgba(247, 177, 134, 0.15);
+  color: #f7b186;
+  box-shadow: none;
+}
+
+.modeBtnActiveGains {
+  background: #fff;
+  color: #549589;
+  box-shadow: 0 1px 4px rgba(84, 149, 137, 0.12);
+}
+
+:global(.dark) .modeBtnActiveGains,
+:global(body.dark) .modeBtnActiveGains,
+:global(html.dark) .modeBtnActiveGains {
+  background: rgba(184, 221, 209, 0.15);
+  color: #86c1ad;
+  box-shadow: none;
+}
+
+/* ─── Composition Banner ─── */
+.compositionBanner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: linear-gradient(135deg, rgba(184, 221, 209, 0.12), rgba(134, 193, 173, 0.08));
+  border: 1px solid rgba(184, 221, 209, 0.2);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+}
+
+:global(.dark) .compositionBanner,
+:global(body.dark) .compositionBanner,
+:global(html.dark) .compositionBanner {
+  background: linear-gradient(135deg, rgba(184, 221, 209, 0.1), rgba(134, 193, 173, 0.06));
+  border-color: rgba(184, 221, 209, 0.18);
+}
+
+.bannerStat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.bannerValue {
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.bannerLabel {
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+:global(.dark) .bannerLabel,
+:global(body.dark) .bannerLabel,
+:global(html.dark) .bannerLabel {
+  color: #9ca3af;
+}
+
+.bannerDivider {
+  width: 1px;
+  height: 28px;
+  background: rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+
+:global(.dark) .bannerDivider,
+:global(body.dark) .bannerDivider,
+:global(html.dark) .bannerDivider {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.bannerPill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.statusGreen {
+  background: rgba(81, 207, 102, 0.12);
+  color: #37b24d;
+}
+
+.statusOrange {
+  background: rgba(255, 146, 43, 0.12);
+  color: #f76707;
+}
+
+.statusRed {
+  background: rgba(255, 107, 107, 0.12);
+  color: #f03e3e;
+}
+
+:global(.dark) .statusGreen { background: rgba(81, 207, 102, 0.15); color: #69db7c; }
+:global(.dark) .statusOrange { background: rgba(255, 146, 43, 0.15); color: #ffa94d; }
+:global(.dark) .statusRed { background: rgba(255, 107, 107, 0.15); color: #ff8787; }
+
+.bannerLoading {
+  width: 100%;
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--muted, #6b7280);
+}
+
+/* ─── Filtres - Mobile First ─── */
 .filters {
   width: 100%;
   display: flex;
@@ -64,7 +238,7 @@ select.pillBtn.pillActive {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 }
 
-/* Dark mode */
+/* Dark mode pills */
 :global(.dark) .pillBtn,
 :global(body.dark) .pillBtn,
 :global(html.dark) .pillBtn {
@@ -96,7 +270,7 @@ select.pillBtn.pillActive {
   }
 }
 
-
+/* ─── Body SVG ─── */
 .bodyWrapper {
   flex: 0 0 auto;
   width: 100%;
@@ -120,7 +294,7 @@ select.pillBtn.pillActive {
   display: block;
 }
 
-/* Legend */
+/* ─── Legend ─── */
 .legend {
   flex: 1;
   min-width: 150px;
@@ -142,7 +316,7 @@ select.pillBtn.pillActive {
   color: #f5f7fa;
 }
 
-/* Top muscles list */
+/* ─── Top muscles list ─── */
 .topMuscles {
   display: flex;
   flex-direction: column;
@@ -208,6 +382,7 @@ select.pillBtn.pillActive {
   background: rgba(0, 0, 0, 0.05);
   padding: 0.2rem 0.5rem;
   border-radius: 12px;
+  font-variant-numeric: tabular-nums;
 }
 
 :global(.dark) .muscleCount,
@@ -217,7 +392,7 @@ select.pillBtn.pillActive {
   color: #d1d5db;
 }
 
-/* Intensity scale */
+/* ─── Intensity scale ─── */
 .intensityScale {
   display: flex;
   align-items: center;
@@ -258,7 +433,7 @@ select.pillBtn.pillActive {
   border-radius: 2px 4px 4px 2px;
 }
 
-/* Empty state */
+/* ─── Empty state ─── */
 .emptyState {
   text-align: center;
   padding: 1rem;
@@ -275,3 +450,63 @@ select.pillBtn.pillActive {
 :global(html.dark) .emptyState p {
   color: #9ca3af;
 }
+
+/* ─── Insights List ─── */
+.insightsList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* ─── Insight Bar ─── */
+.insightBar {
+  width: 100%;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--ink, #1f2933);
+}
+
+:global(.dark) .insightBar,
+:global(body.dark) .insightBar,
+:global(html.dark) .insightBar {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+}
+
+.insight_success {
+  background: rgba(81, 207, 102, 0.08);
+  color: #2b8a3e;
+  border: 1px solid rgba(81, 207, 102, 0.15);
+}
+
+:global(.dark) .insight_success { background: rgba(81, 207, 102, 0.1); color: #69db7c; border-color: rgba(81, 207, 102, 0.2); }
+
+.insight_alert {
+  background: rgba(255, 107, 107, 0.08);
+  color: #c92a2a;
+  border: 1px solid rgba(255, 107, 107, 0.15);
+}
+
+:global(.dark) .insight_alert { background: rgba(255, 107, 107, 0.1); color: #ff8787; border-color: rgba(255, 107, 107, 0.2); }
+
+.insight_warning {
+  background: rgba(255, 146, 43, 0.08);
+  color: #e8590c;
+  border: 1px solid rgba(255, 146, 43, 0.15);
+}
+
+:global(.dark) .insight_warning { background: rgba(255, 146, 43, 0.1); color: #ffa94d; border-color: rgba(255, 146, 43, 0.2); }
+
+.insight_info {
+  background: rgba(116, 192, 252, 0.08);
+  color: #1971c2;
+  border: 1px solid rgba(116, 192, 252, 0.15);
+}
+
+:global(.dark) .insight_info { background: rgba(116, 192, 252, 0.1); color: #74c0fc; border-color: rgba(116, 192, 252, 0.2); }
