@@ -9,6 +9,8 @@ const { calculateScore } = require("./challenge.controller");
 const { sendNotificationToUser } = require("../services/pushNotification.service");
 const Notification = require("../models/Notification");
 const User = require("../models/User");
+const UserProfile = require("../models/UserProfile");
+const WeightLog = require("../models/WeightLog");
 let HistoryModel = null;
 try { HistoryModel = require("../models/History"); } catch (_) { HistoryModel = null; }
 
@@ -262,18 +264,45 @@ function normalizeEntry(e = {}) {
   return out;
 }
 
-async function getLatestWeight(userId) {
-  if (!HistoryModel) return null;
+/**
+ * Récupère les métriques complètes de l'utilisateur pour le calcul de calories.
+ * Priorité : WeightLog récent > UserProfile > History (legacy)
+ * Retourne { weight, height, age, gender, bodyFatPercent }
+ */
+async function getUserMetrics(userId) {
   try {
-    const doc = await HistoryModel.findOne({ userId: new mongoose.Types.ObjectId(userId), $or: [
-      { "meta.poids": { $exists: true } },
-      { "meta.weightKg": { $exists: true } },
-      { "meta.weight": { $exists: true } },
-    ] }).sort({ createdAt: -1 }).lean();
-    if (!doc) return null;
-    const m = doc.meta || {};
-    return Number(m.poids ?? m.weightKg ?? m.weight) || null;
-  } catch (_) { return null; }
+    const [profile, latestWeightLog] = await Promise.all([
+      UserProfile.findOne({ userId }).lean(),
+      WeightLog.findOne({ userId }).sort({ date: -1 }).lean(),
+    ]);
+
+    const metrics = {
+      weight: latestWeightLog?.weight || profile?.weight || null,
+      height: profile?.height || null,
+      age: profile?.age || null,
+      gender: profile?.gender || null,
+      bodyFatPercent: latestWeightLog?.bodyFatPercent || profile?.bodyFatPercent || null,
+    };
+
+    // Fallback legacy History model si aucun poids trouvé
+    if (!metrics.weight && HistoryModel) {
+      try {
+        const doc = await HistoryModel.findOne({ userId: new mongoose.Types.ObjectId(userId), $or: [
+          { "meta.poids": { $exists: true } },
+          { "meta.weightKg": { $exists: true } },
+          { "meta.weight": { $exists: true } },
+        ] }).sort({ createdAt: -1 }).lean();
+        if (doc) {
+          const m = doc.meta || {};
+          metrics.weight = Number(m.poids ?? m.weightKg ?? m.weight) || null;
+        }
+      } catch (_) { /* ignore */ }
+    }
+
+    return metrics;
+  } catch (_) {
+    return { weight: null, height: null, age: null, gender: null, bodyFatPercent: null };
+  }
 }
 
 function buildClientSummary(entries = [], existing = null) {
@@ -418,8 +447,8 @@ async function createSession(req, res) {
       logger.error('Erreur lors de la répartition de la durée sur les exercices cardio:', err);
     }
 
-    const userWeight = await getLatestWeight(userId);
-    const derived = computeSessionFromEntries(normalized, userWeight);
+    const userMetrics = await getUserMetrics(userId);
+    const derived = computeSessionFromEntries(normalized, userMetrics);
 
     const durationSec = (derived && Number.isFinite(Number(derived.durationMinutes)))
       ? Math.round(Number(derived.durationMinutes) * 60)
@@ -576,8 +605,8 @@ async function updateSession(req, res) {
     }
 
     if (needRecalc) {
-      const userWeight = await getLatestWeight(userId);
-      const derived = computeSessionFromEntries(payload.entries || [], userWeight);
+      const userMetrics = await getUserMetrics(userId);
+      const derived = computeSessionFromEntries(payload.entries || [], userMetrics);
 
       const updDurationSec = (derived && Number.isFinite(Number(derived.durationMinutes)))
         ? Math.round(Number(derived.durationMinutes) * 60)
