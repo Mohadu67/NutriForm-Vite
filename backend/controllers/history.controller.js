@@ -1,6 +1,8 @@
 const History = require('../models/History');
 const WorkoutSession = require('../models/WorkoutSession');
 const DailyHealthData = require('../models/DailyHealthData');
+const UserProfile = require('../models/UserProfile');
+const WeightLog = require('../models/WeightLog');
 const { deriveFromHistory, deriveFromSessions } = require('../services/stats.service');
 const { computeSessionFromEntries } = require('../services/calorie.service');
 const logger = require('../utils/logger.js');
@@ -166,10 +168,22 @@ async function getUserSummary(req, res) {
         if (Array.isArray(sessions) && sessions.length) {
           totalSessions = Math.max(totalSessions, sessions.length);
 
-          const weightForCalc = derived.latestWeight ?? (() => {
+          // Récupérer les métriques complètes pour un calcul précis
+          const [_profile, _wLog] = await Promise.all([
+            UserProfile.findOne({ userId }).lean().catch(() => null),
+            WeightLog.findOne({ userId }).sort({ date: -1 }).lean().catch(() => null),
+          ]);
+          const legacyWeight = derived.latestWeight ?? (() => {
             const hw = history.find(h => pickWeight(h.meta) != null);
             return hw ? pickWeight(hw.meta) : null;
           })();
+          const weightForCalc = {
+            weight: _wLog?.weight || _profile?.weight || legacyWeight,
+            height: _profile?.height || null,
+            age: _profile?.age || null,
+            gender: _profile?.gender || null,
+            bodyFatPercent: _wLog?.bodyFatPercent || _profile?.bodyFatPercent || null,
+          };
 
           const pickKcal = (obj) => {
             const v = obj?.calories ?? obj?.caloriesBurned ?? obj?.kcal;
