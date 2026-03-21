@@ -148,6 +148,26 @@ const EXERCICES_DATA = [
   { id: 'cat-cow', name: 'Chat-vache', muscle: 'dos-inferieur', secondary: ['abdos-centre'], equipment: 'aucun', difficulty: 'debutant', type: 'etirement', image: null },
   { id: 'pigeon-pose', name: 'Posture du pigeon', muscle: 'fessiers', secondary: ['cuisses-internes'], equipment: 'aucun', difficulty: 'intermediaire', type: 'etirement', image: null },
   { id: 'cobra-stretch', name: 'Etirement cobra', muscle: 'abdos-centre', secondary: ['dos-inferieur'], equipment: 'aucun', difficulty: 'debutant', type: 'etirement', image: null },
+
+  // MARCHE / COURSE
+  { id: 'walking', name: 'Marche plein air', muscle: 'cuisses-externes', secondary: ['fessiers', 'mollets'], equipment: 'aucun', difficulty: 'debutant', type: 'cardio', image: null },
+  { id: 'running-outdoor', name: 'Course plein air', muscle: 'cuisses-externes', secondary: ['fessiers', 'mollets', 'abdos-centre'], equipment: 'aucun', difficulty: 'debutant', type: 'cardio', image: null },
+  { id: 'footing', name: 'Footing', muscle: 'cuisses-externes', secondary: ['fessiers', 'mollets'], equipment: 'aucun', difficulty: 'debutant', type: 'cardio', image: null },
+
+  // NATATION
+  { id: 'crawl', name: 'Crawl', muscle: 'dos-superieur', secondary: ['epaules', 'triceps', 'abdos-centre'], equipment: 'aucun', difficulty: 'intermediaire', type: 'natation', image: null },
+  { id: 'brasse', name: 'Brasse', muscle: 'pectoraux', secondary: ['epaules', 'cuisses-internes'], equipment: 'aucun', difficulty: 'debutant', type: 'natation', image: null },
+  { id: 'dos-crawle', name: 'Dos crawle', muscle: 'dos-superieur', secondary: ['epaules', 'triceps'], equipment: 'aucun', difficulty: 'intermediaire', type: 'natation', image: null },
+  { id: 'papillon', name: 'Papillon', muscle: 'epaules', secondary: ['dos-superieur', 'pectoraux', 'abdos-centre'], equipment: 'aucun', difficulty: 'avance', type: 'natation', image: null },
+  { id: 'nage-libre', name: 'Nage libre', muscle: 'dos-superieur', secondary: ['epaules', 'abdos-centre'], equipment: 'aucun', difficulty: 'debutant', type: 'natation', image: null },
+
+  // YOGA
+  { id: 'yoga-hatha', name: 'Yoga Hatha', muscle: 'abdos-centre', secondary: ['dos-inferieur', 'fessiers'], equipment: 'aucun', difficulty: 'debutant', type: 'yoga', image: null },
+  { id: 'yoga-vinyasa', name: 'Yoga Vinyasa', muscle: 'abdos-centre', secondary: ['epaules', 'dos-inferieur'], equipment: 'aucun', difficulty: 'intermediaire', type: 'yoga', image: null },
+  { id: 'yoga-yin', name: 'Yoga Yin', muscle: 'fessiers', secondary: ['cuisses-internes', 'dos-inferieur'], equipment: 'aucun', difficulty: 'debutant', type: 'yoga', image: null },
+
+  // MEDITATION
+  { id: 'meditation', name: 'Meditation', muscle: 'abdos-centre', secondary: [], equipment: 'aucun', difficulty: 'debutant', type: 'meditation', image: null },
 ];
 
 // Mapping muscles vers zones body picker (avec variantes API)
