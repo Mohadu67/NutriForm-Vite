@@ -231,7 +231,7 @@ export default function Dashboard() {
           {status === "loading" && <p className={style.loading}>Chargement...</p>}
           {status === "error" && <p className={style.error}>{error}</p>}
 
-          {/* Stats Overview */}
+          {/* ── En-tête : métriques globales (compact) ── */}
           <StatsOverview
             stats={stats}
             sessionsTrend={sessionsTrend}
@@ -243,7 +243,18 @@ export default function Dashboard() {
             onBadgesClick={() => setShowBadgesPopup(true)}
           />
 
-          {/* Weekly Goal */}
+          {/* ── Bloc 1 : Motivation + Objectif ── */}
+
+          {/* Recap motivant de la semaine */}
+          {stats.totalSessions > 0 && (
+            <WeeklySummary
+              weeklySessions={stats.last7Days}
+              weeklyCalories={weeklyCalories}
+              userName={capitalizedName}
+            />
+          )}
+
+          {/* Objectif semaine */}
           <WeeklyGoalSection
             stats={stats}
             weeklyGoal={weeklyGoal}
@@ -252,13 +263,7 @@ export default function Dashboard() {
             onEditGoal={handleOpenGoalModal}
           />
 
-          {/* Nutrition Widget */}
-          <NutritionWidget isPremium={!isFreeUser} />
-
-          {/* Quick Actions */}
-          <QuickActions navigate={navigate} subscriptionTier={subscriptionTier} />
-
-          {/* Recent Activity */}
+          {/* ── Bloc 2 : Activité récente ── */}
           <RecentActivity
             recentSessions={limitedRecentSessions}
             editingSessionId={editingSessionId}
@@ -275,10 +280,12 @@ export default function Dashboard() {
             totalSessions={recentSessions.length}
           />
 
-          {/* Cardio Stats */}
-          <CardioStats sportStats={sportStats} />
+          {/* ── Bloc 3 : Nutrition + Analyse ── */}
 
-          {/* Muscle Heatmap */}
+          {/* Nutrition du jour */}
+          <NutritionWidget isPremium={!isFreeUser} />
+
+          {/* Heatmap musculaire */}
           {stats.totalSessions > 0 && (
             <section className={style.heatmapSection}>
               <h2 className={style.sectionTitle}>Répartition musculaire</h2>
@@ -286,14 +293,16 @@ export default function Dashboard() {
             </section>
           )}
 
-          {/* Body Metrics */}
+          {/* Body Metrics + Cardio */}
           <BodyMetrics
             weightData={weightData}
             calorieTargets={calorieTargets}
             weightChange={weightChange}
           />
 
-          {/* 1RM History - Groupé par exercice avec scroll horizontal */}
+          <CardioStats sportStats={sportStats} />
+
+          {/* 1RM History */}
           {rmTests.length > 0 && (
             <section className={style.rmSection}>
               <h2 className={style.sectionTitle}>Historique 1RM</h2>
@@ -391,14 +400,8 @@ export default function Dashboard() {
             </section>
           )}
 
-          {/* Weekly Summary - Resume motivant */}
-          {stats.totalSessions > 0 && (
-            <WeeklySummary
-              weeklySessions={stats.last7Days}
-              weeklyCalories={weeklyCalories}
-              userName={capitalizedName}
-            />
-          )}
+          {/* ── Actions rapides (en bas) ── */}
+          <QuickActions navigate={navigate} subscriptionTier={subscriptionTier} />
 
           {/* Empty State */}
           {stats.totalSessions === 0 && (

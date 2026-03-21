@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import Svg, { Circle } from 'react-native-svg';
 
 import { theme } from '../../theme';
 import { useHomeData } from '../../hooks/useHomeData';
@@ -32,6 +33,97 @@ import { GoalModal } from '../../components/dashboard/GoalModal';
 /**
  * HomeScreen - Dashboard principal de l'application
  */
+// ─── Arc gauge + macros bars ─────────────────────────────────────────
+const ARC_R = 54;
+const ARC_CX = 65;
+const ARC_CY = 65;
+const ARC_START = 135; // degrees
+const ARC_SPAN = 270;  // degrees
+const ARC_CIRC = 2 * Math.PI * ARC_R;
+const ARC_LEN = (ARC_SPAN / 360) * ARC_CIRC;
+
+function NutritionGauge({ consumed, burned, goal, macros, macroGoals, isDark }) {
+  const effectiveGoal = goal + burned;
+  const remaining = Math.max(effectiveGoal - consumed, 0);
+  const pct = effectiveGoal > 0 ? Math.min(consumed / effectiveGoal, 1) : 0;
+  const filledLen = pct * ARC_LEN;
+
+  const dotAngle = ARC_START + pct * ARC_SPAN;
+  const dotRad = (dotAngle * Math.PI) / 180;
+  const dotX = ARC_CX + ARC_R * Math.cos(dotRad);
+  const dotY = ARC_CY + ARC_R * Math.sin(dotRad);
+
+  const trackColor = isDark ? '#3a3a3a' : '#e5e7eb';
+  const accent = '#6db39b';
+
+  return (
+    <View>
+      {/* Calories row */}
+      <View style={styles.nwCalRow}>
+        <View style={styles.nwCalSide}>
+          <Text style={[styles.nwCalValue, isDark && { color: '#FFF' }]}>{consumed}</Text>
+          <Text style={styles.nwCalLabel}>Mangées</Text>
+        </View>
+
+        <View style={styles.nwCalCenter}>
+          <Svg width={130} height={130} viewBox="0 0 130 130">
+            <Circle
+              cx={ARC_CX} cy={ARC_CY} r={ARC_R}
+              fill="none" stroke={trackColor} strokeWidth={7}
+              strokeLinecap="round"
+              strokeDasharray={`${ARC_LEN} ${ARC_CIRC}`}
+              rotation={ARC_START} origin={`${ARC_CX}, ${ARC_CY}`}
+            />
+            {pct > 0 && (
+              <Circle
+                cx={ARC_CX} cy={ARC_CY} r={ARC_R}
+                fill="none" stroke={accent} strokeWidth={7}
+                strokeLinecap="round"
+                strokeDasharray={`${filledLen} ${ARC_CIRC}`}
+                rotation={ARC_START} origin={`${ARC_CX}, ${ARC_CY}`}
+              />
+            )}
+            <Circle cx={dotX} cy={dotY} r={5} fill={accent} />
+          </Svg>
+          <View style={styles.nwCenterText}>
+            <Text style={[styles.nwRemainingValue, isDark && { color: '#FFF' }]}>{remaining}</Text>
+            <Text style={styles.nwRemainingLabel}>Restantes</Text>
+          </View>
+        </View>
+
+        <View style={styles.nwCalSide}>
+          <Text style={[styles.nwCalValue, isDark && { color: '#FFF' }]}>{burned}</Text>
+          <Text style={styles.nwCalLabel}>Brûlées</Text>
+        </View>
+      </View>
+
+      {/* Macros bars */}
+      {macros && macroGoals && (
+        <View style={[styles.nwMacrosRow, isDark && { borderTopColor: 'rgba(255,255,255,0.08)' }]}>
+          <MacroBar label="Glucides" current={macros.carbs} goal={macroGoals.carbs} isDark={isDark} />
+          <MacroBar label="Protéines" current={macros.proteins} goal={macroGoals.proteins} isDark={isDark} />
+          <MacroBar label="Lipides" current={macros.fats} goal={macroGoals.fats} isDark={isDark} />
+        </View>
+      )}
+    </View>
+  );
+}
+
+function MacroBar({ label, current, goal, isDark }) {
+  const pct = goal > 0 ? Math.min(current / goal, 1) : 0;
+  const trackColor = isDark ? '#3a3a3a' : '#e5e7eb';
+
+  return (
+    <View style={styles.nwMacro}>
+      <Text style={[styles.nwMacroLabel, isDark && { color: '#e0e0e0' }]}>{label}</Text>
+      <View style={[styles.nwMacroTrack, { backgroundColor: trackColor }]}>
+        <View style={[styles.nwMacroDot, { left: `${pct * 100}%` }]} />
+      </View>
+      <Text style={styles.nwMacroValue}>{current} / {goal} g</Text>
+    </View>
+  );
+}
+
 export default function HomeScreen() {
   const isDark = useColorScheme() === 'dark';
   const navigation = useNavigation();
@@ -76,6 +168,12 @@ export default function HomeScreen() {
             consumed: summaryRes.data?.consumed?.calories || 0,
             burned: summaryRes.data?.burned || 0,
             goal: goalsRes.data?.dailyCalories || 2000,
+            macros: {
+              proteins: summaryRes.data?.consumed?.proteins || 0,
+              carbs: summaryRes.data?.consumed?.carbs || 0,
+              fats: summaryRes.data?.consumed?.fats || 0,
+            },
+            macroGoals: goalsRes.data?.macros || null,
           });
         }
       })
@@ -165,7 +263,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
 
-        {/* Stats Overview */}
+        {/* ── En-tête : métriques globales (compact) ── */}
         <StatsOverview
           stats={stats}
           sessionsTrend={stats.sessionsTrend}
@@ -177,7 +275,18 @@ export default function HomeScreen() {
           onBadgesClick={handleBadgesClick}
         />
 
-        {/* Weekly Goal */}
+        {/* ── Bloc 1 : Motivation + Objectif ── */}
+
+        {/* Recap motivant de la semaine */}
+        {stats.totalSessions > 0 && (
+          <WeeklySummary
+            weeklySessions={stats.last7Days}
+            weeklyCalories={weeklyCalories}
+            userName={displayName}
+          />
+        )}
+
+        {/* Objectif semaine */}
         <WeeklyGoalSection
           stats={stats}
           weeklyGoal={weeklyGoal}
@@ -186,48 +295,7 @@ export default function HomeScreen() {
           onEditGoal={() => setShowGoalModal(true)}
         />
 
-        {/* Nutrition Mini Widget */}
-        {nutritionData && (
-          <TouchableOpacity
-            style={[styles.nutritionWidget, isDark && styles.nutritionWidgetDark]}
-            onPress={() => navigation.navigate('Nutrition')}
-            activeOpacity={0.8}
-          >
-            <View style={styles.nutritionWidgetHeader}>
-              <Text style={[styles.nutritionWidgetTitle, isDark && { color: '#FFF' }]}>
-                Nutrition du jour
-              </Text>
-              <Ionicons name="chevron-forward" size={16} color={isDark ? '#888' : '#999'} />
-            </View>
-            <View style={styles.nutritionWidgetRow}>
-              <View style={styles.nutritionWidgetStat}>
-                <Text style={[styles.nutritionWidgetValue, isDark && { color: '#FFF' }]}>
-                  {nutritionData.consumed}
-                </Text>
-                <Text style={styles.nutritionWidgetLabel}>consommé</Text>
-              </View>
-              <View style={[styles.nutritionWidgetDivider, isDark && { backgroundColor: '#444' }]} />
-              <View style={styles.nutritionWidgetStat}>
-                <Text style={[styles.nutritionWidgetValue, isDark && { color: '#FFF' }]}>
-                  {Math.max(nutritionData.goal + nutritionData.burned - nutritionData.consumed, 0)}
-                </Text>
-                <Text style={styles.nutritionWidgetLabel}>restant</Text>
-              </View>
-              <View style={[styles.nutritionWidgetDivider, isDark && { backgroundColor: '#444' }]} />
-              <View style={styles.nutritionWidgetStat}>
-                <Text style={[styles.nutritionWidgetValue, isDark && { color: '#FFF' }]}>
-                  {nutritionData.burned}
-                </Text>
-                <Text style={styles.nutritionWidgetLabel}>brûlé</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        )}
-
-        {/* Quick Actions */}
-        <QuickActions navigation={navigation} subscriptionTier={subscriptionTier} />
-
-        {/* Recent Activity */}
+        {/* ── Bloc 2 : Activité récente ── */}
         <RecentActivity
           recentSessions={recentSessions}
           formatDate={formatDate}
@@ -239,11 +307,29 @@ export default function HomeScreen() {
           navigation={navigation}
         />
 
-        {/* Sections lourdes (lazy loaded) */}
+        {/* ── Bloc 3 : Nutrition + Analyse ── */}
+
+        {/* Nutrition du jour */}
+        {nutritionData && (
+          <TouchableOpacity
+            style={[styles.nwCard, isDark && styles.nwCardDark]}
+            onPress={() => navigation.navigate('Nutrition')}
+            activeOpacity={0.8}
+          >
+            <NutritionGauge
+              consumed={nutritionData.consumed}
+              burned={nutritionData.burned}
+              goal={nutritionData.goal}
+              macros={nutritionData.macros}
+              macroGoals={nutritionData.macroGoals}
+              isDark={isDark}
+            />
+          </TouchableOpacity>
+        )}
+
+        {/* Analyse (lazy loaded) */}
         {showHeavySections ? (
           <>
-            <CardioStats sportStats={sportStats} />
-
             {stats.totalSessions > 0 && (
               <View style={styles.section}>
                 <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
@@ -260,13 +346,7 @@ export default function HomeScreen() {
               cardioData={cardioDataHistory}
             />
 
-            {stats.totalSessions > 0 && (
-              <WeeklySummary
-                weeklySessions={stats.last7Days}
-                weeklyCalories={weeklyCalories}
-                userName={displayName}
-              />
-            )}
+            <CardioStats sportStats={sportStats} />
           </>
         ) : (
           <View style={styles.loadingPlaceholder}>
@@ -276,6 +356,9 @@ export default function HomeScreen() {
             </Text>
           </View>
         )}
+
+        {/* Actions rapides (en bas) */}
+        <QuickActions navigation={navigation} subscriptionTier={subscriptionTier} />
 
         {/* Empty State */}
         {stats.totalSessions === 0 && (
@@ -485,7 +568,8 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semiBold,
   },
-  nutritionWidget: {
+  /* ── Nutrition Widget (arc gauge + macros) ── */
+  nwCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: theme.borderRadius.xl,
     padding: theme.spacing.md,
@@ -496,42 +580,80 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  nutritionWidgetDark: {
+  nwCardDark: {
     backgroundColor: '#2A2A2A',
   },
-  nutritionWidgetHeader: {
+  nwCalRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: theme.spacing.sm,
   },
-  nutritionWidgetTitle: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semiBold,
+  nwCalSide: {
+    alignItems: 'center',
+    minWidth: 60,
+  },
+  nwCalValue: {
+    fontSize: 20,
+    fontWeight: '700',
     color: theme.colors.text.primary,
   },
-  nutritionWidgetRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-  },
-  nutritionWidgetStat: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  nutritionWidgetValue: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
-  },
-  nutritionWidgetLabel: {
-    fontSize: theme.fontSize.xs,
+  nwCalLabel: {
+    fontSize: 12,
     color: '#888',
     marginTop: 2,
   },
-  nutritionWidgetDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: '#E5E5E5',
+  nwCalCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nwCenterText: {
+    position: 'absolute',
+    alignItems: 'center',
+  },
+  nwRemainingValue: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: theme.colors.text.primary,
+  },
+  nwRemainingLabel: {
+    fontSize: 12,
+    color: '#888',
+  },
+  nwMacrosRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.06)',
+  },
+  nwMacro: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  nwMacroLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.text.primary,
+  },
+  nwMacroTrack: {
+    width: '100%',
+    height: 6,
+    borderRadius: 3,
+    position: 'relative',
+  },
+  nwMacroDot: {
+    position: 'absolute',
+    top: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#6db39b',
+    marginLeft: -5,
+  },
+  nwMacroValue: {
+    fontSize: 11,
+    color: '#888',
   },
 });

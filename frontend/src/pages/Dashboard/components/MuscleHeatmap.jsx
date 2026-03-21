@@ -1,7 +1,6 @@
 import { useEffect, useRef, useMemo, useState, useCallback } from "react";
 import styles from "./MuscleHeatmap.module.css";
 import bodySvgMarkup from "../../../components/Exercice/DynamiChoice/BodyPicker/body.svg?raw";
-import { CalendarIcon, ClockIcon, ActivityIcon } from "../../../components/Icons/GlobalIcons";
 import { getBodyCompositionSummary } from "../../../shared/api/bodyComposition";
 
 // ─── Mapping muscles → zones SVG ────────────────────────────────────
@@ -29,7 +28,6 @@ const ZONE_LABELS = {
 };
 
 // ─── Palettes ────────────────────────────────────────────────────────
-// Mode Effort : vert → rouge (existant)
 const EFFORT_COLORS = [
   { fill: "#b8e6cf", stroke: "#7bc9a3" },
   { fill: "#8fd9b6", stroke: "#5cb88a" },
@@ -38,7 +36,6 @@ const EFFORT_COLORS = [
   { fill: "#e74c3c", stroke: "#c0392b" },
 ];
 
-// Mode Gains : sage green clair → foncé (charte graphique secondary)
 const GAINS_COLORS = [
   { fill: "#d1ebe3", stroke: "#b8ddd1" },
   { fill: "#b8ddd1", stroke: "#9fcfbf" },
@@ -47,7 +44,6 @@ const GAINS_COLORS = [
   { fill: "#6db39b", stroke: "#549589" },
 ];
 
-// Muscles secondaires pour le calcul effort
 const SECONDARY_MUSCLES = {
   pectoraux: ["triceps", "epaules"],
   "dos-lats": ["biceps", "avant-bras"],
@@ -61,24 +57,16 @@ const SECONDARY_MUSCLES = {
   biceps: [], triceps: [],
 };
 
-// ─── Utilitaires de date ─────────────────────────────────────────────
+// ─── Utils ───────────────────────────────────────────────────────────
 function getWeekBounds(weeksAgo = 0) {
   const now = new Date();
-  const dayOfWeek = now.getDay();
-  const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  const startOfThisWeek = new Date(now);
-  startOfThisWeek.setDate(now.getDate() - diff - (weeksAgo * 7));
-  startOfThisWeek.setHours(0, 0, 0, 0);
-  const endOfWeek = new Date(startOfThisWeek);
-  endOfWeek.setDate(startOfThisWeek.getDate() + 7);
-  return { start: startOfThisWeek, end: endOfWeek };
-}
-
-function formatSessionDate(session) {
-  const date = session?.startedAt || session?.endedAt || session?.createdAt;
-  if (!date) return "Date inconnue";
-  const d = new Date(date);
-  return d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
+  const diff = (now.getDay() || 7) - 1;
+  const start = new Date(now);
+  start.setDate(now.getDate() - diff - weeksAgo * 7);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 7);
+  return { start, end };
 }
 
 // ─── Composant ───────────────────────────────────────────────────────
@@ -86,189 +74,141 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
   const containerRef = useRef(null);
   const svgRootRef = useRef(null);
   const [isDark, setIsDark] = useState(false);
-  const [filter, setFilter] = useState("week-0");
-  const [mode, setMode] = useState("effort"); // "effort" | "gains"
+  const [weeksAgo, setWeeksAgo] = useState(0);
+  const [mode, setMode] = useState("effort");
   const [bodyComp, setBodyComp] = useState(null);
   const [bodyCompLoading, setBodyCompLoading] = useState(false);
 
-  // Détecter le dark mode
+  // Detect dark mode
   useEffect(() => {
-    const checkDarkMode = () => {
-      const isDarkMode = document.body.classList.contains('dark') ||
-                         document.documentElement.classList.contains('dark');
-      setIsDark(isDarkMode);
-    };
-    checkDarkMode();
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
+    const check = () => setIsDark(document.body.classList.contains("dark") || document.documentElement.classList.contains("dark"));
+    check();
+    const obs = new MutationObserver(check);
+    obs.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => obs.disconnect();
   }, []);
 
-  // Fetch body composition quand on passe en mode gains
+  // Fetch body composition for gains mode
   useEffect(() => {
     if (mode !== "gains") return;
     let cancelled = false;
-    const fetchData = async () => {
-      setBodyCompLoading(true);
-      try {
-        const days = filter === "all" ? 30 : filter === "week-2" ? 21 : filter === "week-1" ? 14 : 7;
-        const data = await getBodyCompositionSummary(days);
-        if (!cancelled) setBodyComp(data);
-      } catch {
-        // silencieux
-      } finally {
-        if (!cancelled) setBodyCompLoading(false);
-      }
-    };
-    fetchData();
+    setBodyCompLoading(true);
+    getBodyCompositionSummary((weeksAgo + 1) * 7)
+      .then(data => { if (!cancelled) setBodyComp(data); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setBodyCompLoading(false); });
     return () => { cancelled = true; };
-  }, [mode, filter]);
+  }, [mode, weeksAgo]);
 
-  // Sessions triées
-  const sortedSessions = useMemo(() => {
-    return [...sessions].sort((a, b) => {
-      const dateA = new Date(a?.startedAt || a?.endedAt || a?.createdAt || 0);
-      const dateB = new Date(b?.startedAt || b?.endedAt || b?.createdAt || 0);
-      return dateB - dateA;
-    });
-  }, [sessions]);
+  // Sorted sessions
+  const sortedSessions = useMemo(() =>
+    [...sessions].sort((a, b) =>
+      new Date(b?.startedAt || b?.endedAt || b?.createdAt || 0) -
+      new Date(a?.startedAt || a?.endedAt || a?.createdAt || 0)
+    ), [sessions]);
 
-  // Filtrer sessions
+  // Filtered by week
   const filteredSessions = useMemo(() => {
-    if (filter === "all") return sortedSessions;
-    if (filter.startsWith("session-")) {
-      const sessionId = filter.replace("session-", "");
-      return sortedSessions.filter(s => (s._id || s.id) === sessionId);
-    }
-    if (filter.startsWith("week-")) {
-      const weeksAgo = parseInt(filter.replace("week-", ""), 10);
-      const { start, end } = getWeekBounds(weeksAgo);
-      return sortedSessions.filter(s => {
-        const date = new Date(s?.startedAt || s?.endedAt || s?.createdAt || 0);
-        return date >= start && date < end;
-      });
-    }
-    return sortedSessions;
-  }, [sortedSessions, filter]);
+    const { start, end } = getWeekBounds(weeksAgo);
+    return sortedSessions.filter(s => {
+      const d = new Date(s?.startedAt || s?.endedAt || s?.createdAt || 0);
+      return d >= start && d < end;
+    });
+  }, [sortedSessions, weeksAgo]);
 
-  // Stats musculaires mode Effort
+  // Muscle stats (effort)
   const muscleStats = useMemo(() => {
-    if (externalStats && filter === "all" && !sessions.length) return externalStats;
+    if (externalStats && !sessions.length) return externalStats;
     if (!filteredSessions.length) return {};
-    const muscleCount = {};
-    const addMuscle = (muscle, weight = 1) => {
-      const key = String(muscle || "").toLowerCase().trim();
-      if (key && key !== "undefined" && key !== "null") {
-        muscleCount[key] = (muscleCount[key] || 0) + weight;
-      }
+    const counts = {};
+    const add = (m, w = 1) => {
+      const k = String(m || "").toLowerCase().trim();
+      if (k && k !== "undefined" && k !== "null") counts[k] = (counts[k] || 0) + w;
     };
-    const addMuscleWithSecondaries = (primaryMuscle) => {
-      const key = String(primaryMuscle || "").toLowerCase().trim();
-      if (!key) return;
-      addMuscle(key, 1);
-      const secondaries = SECONDARY_MUSCLES[key] || [];
-      secondaries.forEach((secondary) => addMuscle(secondary, 0.5));
+    const addWithSecondaries = (primary) => {
+      const k = String(primary || "").toLowerCase().trim();
+      if (!k) return;
+      add(k, 1);
+      (SECONDARY_MUSCLES[k] || []).forEach(s => add(s, 0.5));
     };
-    filteredSessions.forEach((session) => {
-      const entries = session?.entries || session?.items || session?.exercises || [];
-      entries.forEach((entry) => {
-        if (!entry) return;
-        if (entry.primaryMuscle) {
-          addMuscle(entry.primaryMuscle, 1);
-          const secondaries = entry.secondaryMuscles || [];
-          if (Array.isArray(secondaries)) secondaries.forEach((m) => addMuscle(m, 0.3));
-          return;
-        }
-        if (entry.muscle) { addMuscleWithSecondaries(entry.muscle); return; }
-        if (entry.muscleGroup) { addMuscleWithSecondaries(entry.muscleGroup); return; }
-        const entryMuscles = entry.muscles;
-        if (Array.isArray(entryMuscles) && entryMuscles.length > 0) {
-          addMuscle(entryMuscles[0], 1);
-          entryMuscles.slice(1).forEach((m) => addMuscle(m, 0.3));
-        }
+    filteredSessions.forEach(session => {
+      (session?.entries || session?.items || session?.exercises || []).forEach(e => {
+        if (!e) return;
+        if (e.primaryMuscle) { add(e.primaryMuscle, 1); (e.secondaryMuscles || []).forEach(m => add(m, 0.3)); }
+        else if (e.muscle) addWithSecondaries(e.muscle);
+        else if (e.muscleGroup) addWithSecondaries(e.muscleGroup);
+        else if (Array.isArray(e.muscles) && e.muscles.length) { add(e.muscles[0], 1); e.muscles.slice(1).forEach(m => add(m, 0.3)); }
       });
     });
-    Object.keys(muscleCount).forEach((key) => {
-      muscleCount[key] = Math.round(muscleCount[key] * 10) / 10;
-    });
-    return muscleCount;
-  }, [filteredSessions, externalStats, filter, sessions.length]);
+    Object.keys(counts).forEach(k => { counts[k] = Math.round(counts[k] * 10) / 10; });
+    return counts;
+  }, [filteredSessions, externalStats, sessions.length]);
 
-  // Zone intensities pour mode Effort
-  const effortZoneIntensities = useMemo(() => {
+  // Zone intensities
+  const effortZones = useMemo(() => {
     const zones = {};
-    let maxCount = 0;
+    let max = 0;
     Object.entries(muscleStats).forEach(([muscle, count]) => {
       const zone = MUSCLE_TO_ZONE[muscle.toLowerCase()];
-      if (zone) {
-        zones[zone] = (zones[zone] || 0) + count;
-        maxCount = Math.max(maxCount, zones[zone]);
-      }
+      if (zone) { zones[zone] = (zones[zone] || 0) + count; max = Math.max(max, zones[zone]); }
     });
-    const normalized = {};
+    const out = {};
     Object.entries(zones).forEach(([zone, count]) => {
-      const ratio = maxCount > 0 ? count / maxCount : 0;
-      const level = Math.min(4, Math.floor(ratio * 5));
-      normalized[zone] = { count, level, color: EFFORT_COLORS[level] };
+      const level = Math.min(4, Math.floor((max > 0 ? count / max : 0) * 5));
+      out[zone] = { count, level, color: EFFORT_COLORS[level] };
     });
-    return normalized;
+    return out;
   }, [muscleStats]);
 
-  // Zone intensities pour mode Gains
-  const gainsZoneIntensities = useMemo(() => {
+  const gainsZones = useMemo(() => {
     if (!bodyComp?.muscleGain?.byZone) return {};
     const byZone = bodyComp.muscleGain.byZone;
+    let max = 0;
     const zones = {};
-    let maxGain = 0;
     Object.entries(byZone).forEach(([zone, data]) => {
-      if (data.gainG > 0) {
-        zones[zone] = data;
-        maxGain = Math.max(maxGain, data.gainG);
-      }
+      if (data.gainG > 0) { zones[zone] = data; max = Math.max(max, data.gainG); }
     });
-    const normalized = {};
+    const out = {};
     Object.entries(zones).forEach(([zone, data]) => {
-      const ratio = maxGain > 0 ? data.gainG / maxGain : 0;
-      const level = Math.min(4, Math.floor(ratio * 5));
-      normalized[zone] = { count: data.gainG, level, color: GAINS_COLORS[level], gainG: data.gainG };
+      const level = Math.min(4, Math.floor((max > 0 ? data.gainG / max : 0) * 5));
+      out[zone] = { count: data.gainG, level, color: GAINS_COLORS[level], gainG: data.gainG };
     });
-    return normalized;
+    return out;
   }, [bodyComp]);
 
-  // Zone intensities actives selon le mode
-  const zoneIntensities = mode === "gains" ? gainsZoneIntensities : effortZoneIntensities;
+  const zoneIntensities = mode === "gains" ? gainsZones : effortZones;
+  const colorPalette = mode === "gains" ? GAINS_COLORS : EFFORT_COLORS;
+  const isGains = mode === "gains";
 
-  // Top muscles
-  const topMuscles = useMemo(() => {
-    return Object.entries(zoneIntensities)
+  const topMuscles = useMemo(() =>
+    Object.entries(zoneIntensities)
       .sort((a, b) => b[1].count - a[1].count)
       .slice(0, 3)
-      .map(([zone, data]) => ({ zone, ...data }));
-  }, [zoneIntensities]);
+      .map(([zone, data]) => ({ zone, ...data })),
+    [zoneIntensities]);
 
-  // SVG zone detector
-  const getZoneFromSvgElem = (raw) => {
+  // SVG zone detection
+  const getZone = (raw) => {
     if (!raw) return null;
-    const low = raw.toLowerCase();
-    const lowNorm = low.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s._-]+/g, "");
-    if (low.includes("chest") || low.includes("pec") || lowNorm.includes("pectoraux")) return "pectoraux";
-    if (low.includes("shoulder") || low.includes("epaule") || low.includes("deltoid") || lowNorm.includes("epaules")) return "epaules";
-    if (low.includes("oblique") || lowNorm.includes("obliques")) return "abdos-lateraux";
-    if (low.includes("abs") || low.includes("abdo") || low.includes("abdominal")) return "abdos-centre";
-    if (low.includes("bicep")) return "biceps";
-    if (low.includes("tricep")) return "triceps";
-    if (low.includes("forearm") || low.includes("avant-bras") || lowNorm.includes("avantbras")) return "avant-bras";
-    if (low.includes("quad") || low.includes("cuisse")) return "cuisses-externes";
-    if (low.includes("hamstring") || low.includes("ischio")) return "cuisses-internes";
-    if (low.includes("calf") || low.includes("calves") || low.includes("mollet")) return "mollets";
-    if (low.includes("glute") || low.includes("fess")) return "fessiers";
-    if (low.includes("trap")) return "dos-superieur";
-    if (low.includes("back") || low.includes("dos") || low.includes("lat")) return "dos-inferieur";
+    const l = raw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s._-]+/g, "");
+    if (l.includes("chest") || l.includes("pec") || l.includes("pectoraux")) return "pectoraux";
+    if (l.includes("shoulder") || l.includes("epaule") || l.includes("deltoid")) return "epaules";
+    if (l.includes("oblique")) return "abdos-lateraux";
+    if (l.includes("abs") || l.includes("abdo")) return "abdos-centre";
+    if (l.includes("bicep")) return "biceps";
+    if (l.includes("tricep")) return "triceps";
+    if (l.includes("forearm") || l.includes("avantbras")) return "avant-bras";
+    if (l.includes("quad") || l.includes("cuisse")) return "cuisses-externes";
+    if (l.includes("hamstring") || l.includes("ischio")) return "cuisses-internes";
+    if (l.includes("calf") || l.includes("calves") || l.includes("mollet")) return "mollets";
+    if (l.includes("glute") || l.includes("fess")) return "fessiers";
+    if (l.includes("trap")) return "dos-superieur";
+    if (l.includes("back") || l.includes("dos") || l.includes("lat")) return "dos-inferieur";
     return null;
   };
 
-  // Appliquer les couleurs au SVG
+  // Apply colors to SVG
   useEffect(() => {
     const host = containerRef.current;
     if (!host) return;
@@ -277,34 +217,27 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
     const svg = svgRootRef.current;
     if (!svg) return;
 
-    try {
-      if (!svg.hasAttribute("viewBox")) {
-        const b = svg.getBBox();
-        if (b?.width && b?.height) svg.setAttribute("viewBox", `0 0 ${b.width} ${b.height}`);
-      }
-    } catch { /* ignore */ }
+    try { if (!svg.hasAttribute("viewBox")) { const b = svg.getBBox(); if (b?.width && b?.height) svg.setAttribute("viewBox", `0 0 ${b.width} ${b.height}`); } } catch {}
     svg.removeAttribute("width");
     svg.removeAttribute("height");
     svg.style.width = "100%";
     svg.style.height = "auto";
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
-    const inactiveFill = isDark ? "rgba(80, 80, 80, 0.4)" : "rgba(52, 72, 94, 0.15)";
-    const inactiveStroke = isDark ? "rgba(100, 100, 100, 0.6)" : "rgba(38, 48, 68, 0.35)";
+    const inFill = isDark ? "rgba(80,80,80,0.25)" : "rgba(52,72,94,0.08)";
+    const inStroke = isDark ? "rgba(100,100,100,0.4)" : "rgba(38,48,68,0.2)";
 
-    const muscleNodes = svg.querySelectorAll("[data-elem]");
-    muscleNodes.forEach((node) => {
-      const dataElem = node.getAttribute("data-elem") || "";
-      const matchedZone = getZoneFromSvgElem(dataElem);
-      if (matchedZone && zoneIntensities[matchedZone]) {
-        const { color } = zoneIntensities[matchedZone];
+    svg.querySelectorAll("[data-elem]").forEach(node => {
+      const zone = getZone(node.getAttribute("data-elem") || "");
+      if (zone && zoneIntensities[zone]) {
+        const { color } = zoneIntensities[zone];
         node.style.setProperty("fill", color.fill, "important");
         node.style.setProperty("stroke", color.stroke, "important");
         node.style.setProperty("stroke-width", "1.5", "important");
       } else {
-        node.style.setProperty("fill", inactiveFill, "important");
-        node.style.setProperty("stroke", inactiveStroke, "important");
-        node.style.setProperty("stroke-width", "0.8", "important");
+        node.style.setProperty("fill", inFill, "important");
+        node.style.setProperty("stroke", inStroke, "important");
+        node.style.setProperty("stroke-width", "0.5", "important");
       }
     });
 
@@ -312,177 +245,87 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
   }, [zoneIntensities, isDark]);
 
   const hasData = Object.keys(zoneIntensities).length > 0;
-  const colorPalette = mode === "gains" ? GAINS_COLORS : EFFORT_COLORS;
-
-  // ─── Bandeau résumé composition (mode gains) ──────────────────────
-  const compositionBanner = useMemo(() => {
-    if (!bodyComp) return null;
-    return {
-      muscleG: bodyComp.muscleGain?.totalG || 0,
-      fatG: bodyComp.fatChange?.g || 0,
-      proteinStatus: bodyComp.nutrition?.proteinStatus || "insufficient",
-      proteinPerKg: bodyComp.nutrition?.proteinPerKg || 0,
-      insights: bodyComp.insights || [],
-      progressScore: bodyComp.progressScore || 0,
-    };
-  }, [bodyComp]);
-
-  // Période options
-  const periodOptions = [
-    { value: "week-0", label: "Cette semaine", shortLabel: "Semaine", icon: CalendarIcon },
-    { value: "week-1", label: "Sem. dernière", shortLabel: "-1 sem.", icon: ClockIcon },
-    { value: "week-2", label: "Il y a 2 sem.", shortLabel: "-2 sem.", icon: ClockIcon },
-    { value: "all", label: "Tout", shortLabel: "Tout", icon: ActivityIcon },
-  ];
-
-  const proteinStatusConfig = {
-    optimal: { label: "Optimal", className: styles.statusGreen },
-    adequate: { label: "Suffisant", className: styles.statusOrange },
-    insufficient: { label: "Insuffisant", className: styles.statusRed },
-  };
+  const weekLabel = weeksAgo === 0 ? "Cette semaine" : weeksAgo === 1 ? "Semaine dernière" : `Il y a ${weeksAgo} sem.`;
 
   return (
     <div className={styles.container}>
-      {/* Toggle Effort / Gains */}
-      <div className={styles.modeToggle}>
-        <button
-          type="button"
-          className={`${styles.modeBtn} ${mode === "effort" ? styles.modeBtnActive : ""}`}
-          onClick={() => setMode("effort")}
-        >
-          <span className={styles.modeBtnIcon}>&#xe901;</span>
-          Effort
-        </button>
-        <button
-          type="button"
-          className={`${styles.modeBtn} ${mode === "gains" ? styles.modeBtnActiveGains : ""}`}
-          onClick={() => setMode("gains")}
-        >
-          <span className={styles.modeBtnIcon}>&#xe902;</span>
-          Gains
-        </button>
-      </div>
-
-      {/* Bandeau résumé composition (mode gains uniquement) */}
-      {mode === "gains" && compositionBanner && !bodyCompLoading && (
-        <div className={styles.compositionBanner}>
-          <div className={styles.bannerStat}>
-            <span className={styles.bannerValue} style={{ color: compositionBanner.muscleG > 0 ? "#549589" : "var(--muted)" }}>
-              {compositionBanner.muscleG > 0 ? "+" : ""}{compositionBanner.muscleG}g
-            </span>
-            <span className={styles.bannerLabel}>Muscle</span>
-          </div>
-          <div className={styles.bannerDivider} />
-          <div className={styles.bannerStat}>
-            <span className={styles.bannerValue} style={{ color: compositionBanner.fatG < 0 ? "#51cf66" : compositionBanner.fatG > 0 ? "#ff6b6b" : "var(--muted)" }}>
-              {compositionBanner.fatG > 0 ? "+" : ""}{compositionBanner.fatG}g
-            </span>
-            <span className={styles.bannerLabel}>Gras</span>
-          </div>
-          <div className={styles.bannerDivider} />
-          <div className={styles.bannerStat}>
-            <span className={`${styles.bannerPill} ${proteinStatusConfig[compositionBanner.proteinStatus]?.className || styles.statusRed}`}>
-              {compositionBanner.proteinPerKg}g/kg
-            </span>
-            <span className={styles.bannerLabel}>Protéines</span>
-          </div>
-        </div>
-      )}
-
-      {mode === "gains" && bodyCompLoading && (
-        <div className={styles.bannerLoading}>Calcul en cours...</div>
-      )}
-
-      {/* Filtres */}
-      <div className={styles.filters}>
-        <div className={styles.periodPills}>
-          {periodOptions.map((option) => {
-            const Icon = option.icon;
-            const isActive = filter === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                className={`${styles.pillBtn} ${isActive ? styles.pillActive : ""}`}
-                onClick={() => setFilter(option.value)}
-                title={option.label}
-              >
-                <Icon size={14} />
-                <span className={styles.pillLabel}>{option.shortLabel}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {mode === "effort" && sortedSessions.length > 0 && (
-          <select
-            className={`${styles.pillBtn} ${filter.startsWith("session-") ? styles.pillActive : ""}`}
-            value={filter.startsWith("session-") ? filter : ""}
-            onChange={(e) => e.target.value && setFilter(e.target.value)}
+      {/* Mode toggle */}
+      <div className={styles.segmented}>
+        {["effort", "gains"].map(m => (
+          <button
+            key={m}
+            type="button"
+            className={`${styles.seg} ${mode === m ? (m === "gains" ? styles.segActiveGains : styles.segActive) : ""}`}
+            onClick={() => setMode(m)}
           >
-            <option value="">Séance</option>
-            {sortedSessions.slice(0, 8).map((session) => (
-              <option key={session._id || session.id} value={`session-${session._id || session.id}`}>
-                {formatSessionDate(session)}
-              </option>
-            ))}
-          </select>
-        )}
+            {m === "gains" ? "Gains" : "Effort"}
+          </button>
+        ))}
       </div>
 
-      <div className={styles.bodyWrapper}>
-        <div ref={containerRef} className={styles.svgContainer} />
+      {/* Week navigation */}
+      <div className={styles.weekNav}>
+        <button type="button" className={styles.weekArrow} onClick={() => setWeeksAgo(w => Math.min(w + 1, 4))}>
+          &#8249;
+        </button>
+        <span className={styles.weekLabel}>{weekLabel}</span>
+        <button
+          type="button"
+          className={`${styles.weekArrow} ${weeksAgo === 0 ? styles.weekArrowHidden : ""}`}
+          onClick={() => setWeeksAgo(w => Math.max(w - 1, 0))}
+          disabled={weeksAgo === 0}
+        >
+          &#8250;
+        </button>
+      </div>
+
+      {/* Body SVG */}
+      {isGains && bodyCompLoading ? (
+        <div className={styles.loadingArea}>Chargement...</div>
+      ) : (
+        <div className={styles.bodyWrapper}>
+          <div ref={containerRef} className={styles.svgContainer} />
+        </div>
+      )}
+
+      {/* Session count + top muscles */}
+      <div className={styles.meta}>
+        <span className={styles.sessionCount}>
+          {filteredSessions.length} séance{filteredSessions.length !== 1 ? "s" : ""}
+        </span>
       </div>
 
       {hasData ? (
-        <div className={styles.legend}>
-          <h4 className={styles.legendTitle}>
-            {mode === "gains" ? "Zones de croissance estimées" : "Muscles les plus travaillés"}
-          </h4>
-          <div className={styles.topMuscles}>
-            {topMuscles.map((muscle, index) => (
-              <div key={muscle.zone} className={styles.muscleItem}>
-                <span className={styles.muscleRank}>{index + 1}</span>
-                <span className={styles.muscleName}>{ZONE_LABELS[muscle.zone] || muscle.zone}</span>
-                <span className={styles.muscleCount}>
-                  {mode === "gains"
-                    ? `+${muscle.gainG || Math.round(muscle.count)}g`
-                    : `${muscle.count % 1 === 0 ? muscle.count : muscle.count.toFixed(1)} pts`
-                  }
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className={styles.intensityScale}>
-            <span className={styles.scaleLabel}>
-              {mode === "gains" ? "Croissance" : "Intensité"}
-            </span>
-            <div className={styles.scaleBar}>
-              {colorPalette.map((color, i) => (
-                <div key={i} className={styles.scaleStep} style={{ background: color.fill }} />
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className={styles.emptyState}>
-          <p>
-            {mode === "effort" && (filter === "all"
-              ? "Complète des séances pour voir ta répartition musculaire"
-              : "Aucune séance sur cette période"
-            )}
-          </p>
-        </div>
-      )}
-
-      {/* Insights actionnables (mode gains) — tous affichés */}
-      {mode === "gains" && compositionBanner?.insights?.length > 0 && (
-        <div className={styles.insightsList}>
-          {compositionBanner.insights.map((insight, i) => (
-            <div key={insight.key || i} className={`${styles.insightBar} ${styles[`insight_${insight.type}`] || ""}`}>
-              {insight.message}
+        <div className={styles.topList}>
+          {topMuscles.map(muscle => (
+            <div key={muscle.zone} className={styles.topRow}>
+              <span className={styles.topDot} style={{ background: muscle.color.fill }} />
+              <span className={styles.topName}>{ZONE_LABELS[muscle.zone] || muscle.zone}</span>
+              <span className={styles.topValue}>
+                {isGains
+                  ? `+${muscle.gainG || Math.round(muscle.count)}g`
+                  : `${muscle.count % 1 === 0 ? muscle.count : muscle.count.toFixed(1)}`
+                }
+              </span>
             </div>
           ))}
+        </div>
+      ) : (
+        <p className={styles.empty}>
+          {isGains ? "Pas de données de croissance" : "Aucune séance sur cette période"}
+        </p>
+      )}
+
+      {/* Scale */}
+      {hasData && (
+        <div className={styles.scaleRow}>
+          <span className={styles.scaleLabel}>Peu</span>
+          <div className={styles.scaleBar}>
+            {colorPalette.map((c, i) => (
+              <div key={i} className={styles.scaleStep} style={{ background: c.fill }} />
+            ))}
+          </div>
+          <span className={styles.scaleLabel}>Max</span>
         </div>
       )}
     </div>

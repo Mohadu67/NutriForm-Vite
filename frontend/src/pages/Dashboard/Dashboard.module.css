@@ -539,11 +539,11 @@
   transform: translateY(-1px);
 }
 
-/* Nutrition Widget */
+/* ========== NUTRITION WIDGET (calorie gauge + macros) ========== */
 .nutritionWidget {
   background: var(--card-bg, #ffffff);
   border-radius: 16px;
-  padding: 1rem 1.25rem;
+  padding: 1.25rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   margin-bottom: 1.5rem;
   transition: box-shadow 0.2s;
@@ -552,78 +552,151 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-.nutritionWidgetHeader {
+:global(body.dark) .nutritionWidget,
+:global(html.dark) .nutritionWidget {
+  --nw-track: #3a3a3a;
+  --nw-accent: #6db39b;
+  background: var(--card-bg-dark, #2a2a2e);
+}
+
+/* — Calories row (Mangées | Gauge | Brûlées) — */
+.nwCaloriesRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
 }
 
-.nutritionWidgetTitle {
-  font-size: 0.9rem;
-  font-weight: 600;
+.nwCalSide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 60px;
+}
+
+.nwCalValue {
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--text-primary, #333);
 }
 
-.nutritionWidgetContent {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.nwCalLabel {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #888);
 }
 
-.nutritionWidgetRing {
+/* Center gauge */
+.nwCalCenter {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.nutritionWidgetPct {
-  position: absolute;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text-primary, #333);
+.nwArc {
+  display: block;
 }
 
-.nutritionWidgetStats {
+.nwCenterText {
+  position: absolute;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  flex: 1;
-  font-size: 0.78rem;
-  color: var(--text-secondary, #666);
+  align-items: center;
+  gap: 2px;
 }
 
-.nutritionWidgetStats strong {
-  margin-left: 0.3rem;
+.nwRemainingValue {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary, #333);
+  line-height: 1;
+}
+
+.nwRemainingLabel {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #888);
+}
+
+/* — Macros row — */
+.nwMacrosRow {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+.nwMacro {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.nwMacroLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
   color: var(--text-primary, #333);
 }
 
-.nutritionWidgetLabel {
+.nwMacroTrack {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background: var(--nw-track, #e5e7eb);
+  border-radius: 3px;
+  overflow: visible;
+}
+
+.nwMacroFill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--nw-track, #e5e7eb);
+}
+
+.nwMacroDot {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--nw-accent, #6db39b);
+  transform: translate(-50%, -50%);
+}
+
+.nwMacroValue {
   font-size: 0.72rem;
   color: var(--text-secondary, #888);
 }
 
-.nutritionWidgetMacros {
-  display: flex;
-  gap: 1rem;
-  margin-top: 0.5rem;
-  font-size: 0.72rem;
-  color: var(--text-secondary, #888);
-}
-
-:global(body.dark) .nutritionWidget,
-:global(html.dark) .nutritionWidget {
-  background: var(--card-bg-dark, #2a2a2e);
-}
-
-:global(body.dark) .nutritionWidgetTitle,
-:global(html.dark) .nutritionWidgetTitle,
-:global(body.dark) .nutritionWidgetStats strong,
-:global(html.dark) .nutritionWidgetStats strong,
-:global(body.dark) .nutritionWidgetPct,
-:global(html.dark) .nutritionWidgetPct {
+/* — Dark mode overrides — */
+:global(body.dark) .nwCalValue,
+:global(html.dark) .nwCalValue,
+:global(body.dark) .nwRemainingValue,
+:global(html.dark) .nwRemainingValue,
+:global(body.dark) .nwMacroLabel,
+:global(html.dark) .nwMacroLabel {
   color: #e0e0e0;
+}
+
+:global(body.dark) .nwCalLabel,
+:global(html.dark) .nwCalLabel,
+:global(body.dark) .nwRemainingLabel,
+:global(html.dark) .nwRemainingLabel,
+:global(body.dark) .nwMacroValue,
+:global(html.dark) .nwMacroValue {
+  color: #aaa;
+}
+
+:global(body.dark) .nwMacroTrack,
+:global(html.dark) .nwMacroTrack {
+  background: #3a3a3a;
+}
+
+:global(body.dark) .nwMacrosRow,
+:global(html.dark) .nwMacrosRow {
+  border-top-color: rgba(255, 255, 255, 0.08);
 }
 
 /* ========== RECENT SECTION ========== */
