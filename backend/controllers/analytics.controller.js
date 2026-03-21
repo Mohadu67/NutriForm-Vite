@@ -1,4 +1,5 @@
 const WorkoutSession = require('../models/WorkoutSession');
+const DailyHealthData = require('../models/DailyHealthData');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
 const logger = require('../utils/logger');
@@ -74,6 +75,18 @@ exports.getWeeklyAnalytics = async (req, res) => {
         });
       });
     });
+
+    // Inclure les calories de DailyHealthData (loguées manuellement / HealthKit)
+    try {
+      const healthEntries = await DailyHealthData.find({
+        userId,
+        date: { $gte: weekStart },
+      }).lean();
+      const healthCalories = healthEntries.reduce((sum, e) => sum + (e.caloriesBurned || 0), 0);
+      totalCalories += healthCalories;
+    } catch (err) {
+      logger.error('Erreur DailyHealthData analytics:', err);
+    }
 
     // Calculer les moyennes
     const avgSessionDuration = thisWeekSessions.length > 0

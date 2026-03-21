@@ -286,6 +286,20 @@ async function getUserSummary(req, res) {
     }
     caloriesBurnedWeek = Math.max(caloriesBurnedWeek, derived.caloriesBurnedWeek ?? 0);
 
+    // Include DailyHealthData calories (manually logged / HealthKit / Google Fit)
+    try {
+      const healthEntries = await DailyHealthData.find({
+        userId,
+        date: { $gte: weekAgo },
+      }).lean();
+      if (healthEntries.length > 0) {
+        const healthCalories = healthEntries.reduce((sum, e) => sum + (e.caloriesBurned || 0), 0);
+        caloriesBurnedWeek += healthCalories;
+      }
+    } catch (err) {
+      logger.error('Erreur récupération DailyHealthData pour caloriesBurnedWeek:', err);
+    }
+
     return res.json({
       avgWorkoutDurationMin: derived.avgWorkoutDurationMin ?? null,
       avgCaloriesPerWorkout: derived.avgCaloriesPerWorkout ?? avgKcalAll ?? null,
