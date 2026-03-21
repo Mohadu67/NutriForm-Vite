@@ -1,246 +1,271 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import style from "../Dashboard.module.css";
 import { endpoints } from "../../../shared/api/endpoints.js";
 import { secureApiCall } from "../../../utils/authService.js";
 import { getBodyCompositionSummary } from "../../../shared/api/bodyComposition";
 
-/**
- * WeeklySummary - Resume motivant enrichi de la semaine
- * Utilise l'API analytics pour des insights detailles
- */
+const ZONE_LABELS = {
+  pectoraux: "Pectoraux", epaules: "Épaules", biceps: "Biceps", triceps: "Triceps",
+  "abdos-centre": "Abdos", "dos-superieur": "Haut du dos", "dos-inferieur": "Dos",
+  fessiers: "Fessiers", "cuisses-externes": "Quadriceps", "cuisses-internes": "Ischio-jambiers",
+  mollets: "Mollets",
+};
+
+// ─── Génération des conseils personnalisés ───────────────────────────
+function generateTips(bc, weeklySessions) {
+  if (!bc) return [];
+  const tips = [];
+  const { nutrition: n, muscleGain: mg, userMetrics: u } = bc;
+  const goal = u?.goalType || "maintenance";
+  const weight = u?.weight;
+
+  // Fréquence
+  if (weeklySessions === 0) {
+    tips.push({ emoji: "🎯", title: "Lance-toi", text: "Aucune séance cette semaine. Un seul entraînement peut relancer ta dynamique.", tint: "blue" });
+  } else if (weeklySessions < 3) {
+    tips.push({ emoji: "📈", title: "Augmente la cadence", text: `${weeklySessions} séance${weeklySessions > 1 ? "s" : ""} cette semaine. Vise 3 à 5 pour des résultats visibles.`, tint: "amber" });
+  } else if (weeklySessions <= 5) {
+    tips.push({ emoji: "✅", title: "Fréquence idéale", text: `${weeklySessions} séances — c'est le sweet spot pour progresser sans se cramer.`, tint: "green" });
+  } else {
+    tips.push({ emoji: "😴", title: "Pense au repos", text: `${weeklySessions} séances, c'est intense. Les muscles se construisent au repos.`, tint: "amber" });
+  }
+
+  // Protéines
+  if (n?.daysLogged >= 1) {
+    if (n.proteinStatus === "insufficient" && n.avgDaily?.proteins > 0) {
+      const target = weight ? Math.round(weight * 1.6) : null;
+      tips.push({ emoji: "🥩", title: "Plus de protéines", text: `${n.proteinPerKg}g/kg.${target ? ` Vise ${target}g/jour (1.6g/kg)` : " Vise 1.6g/kg"} pour maximiser tes gains.`, tint: "red" });
+    } else if (n.proteinStatus === "adequate") {
+      const gap = weight ? Math.round(weight * 1.6 - n.avgDaily.proteins) : null;
+      tips.push({ emoji: "💪", title: "Protéines correctes", text: `${n.proteinPerKg}g/kg, bien joué.${gap ? ` Encore ${gap}g pour l'optimal.` : ""}`, tint: "green" });
+    } else if (n.proteinStatus === "optimal") {
+      tips.push({ emoji: "🏆", title: "Protéines au top", text: `${n.proteinPerKg}g/kg — synthèse musculaire maximisée.`, tint: "green" });
+    }
+  }
+
+  // Balance calorique
+  if (n?.dailyBalance !== undefined && n?.daysLogged >= 1) {
+    const bal = n.dailyBalance;
+    if (goal === "muscle_gain") {
+      if (bal < 0) tips.push({ emoji: "🍽️", title: "Mange plus", text: `Déficit de ${Math.abs(Math.round(bal))} kcal en prise de masse. Ajoute ${Math.abs(Math.round(bal)) + 200} kcal pour un surplus favorable.`, tint: "red" });
+      else if (bal > 500) tips.push({ emoji: "⚖️", title: "Surplus élevé", text: `+${Math.round(bal)} kcal/jour. Au-delà de 300-500 kcal, l'excès part en gras.`, tint: "amber" });
+      else if (bal >= 100) tips.push({ emoji: "✅", title: "Surplus parfait", text: `+${Math.round(bal)} kcal/jour — idéal pour du muscle propre.`, tint: "green" });
+    } else if (goal === "weight_loss") {
+      if (bal > 0) tips.push({ emoji: "⚠️", title: "Pas de déficit", text: `+${Math.round(bal)} kcal au-dessus de ta maintenance. Réduis pour relancer ta perte.`, tint: "red" });
+      else if (bal < -800) tips.push({ emoji: "⚠️", title: "Déficit agressif", text: `${Math.abs(Math.round(bal))} kcal de déficit — risque de perte musculaire. Reste autour de -500 kcal.`, tint: "amber" });
+      else if (bal < 0) tips.push({ emoji: "🔥", title: "Bon déficit", text: `${Math.abs(Math.round(bal))} kcal de déficit — ~${Math.round(Math.abs(bal) * 7 / 7700 * 1000)}g de gras/semaine.`, tint: "green" });
+    }
+  }
+
+  // Focus musculaire croisé avec nutrition
+  if (mg?.byZone && weeklySessions > 0) {
+    const zones = Object.entries(mg.byZone).filter(([, d]) => d.gainG > 0).sort((a, b) => b[1].gainG - a[1].gainG);
+    if (zones.length > 0) {
+      const topLabel = ZONE_LABELS[zones[0][0]] || zones[0][0];
+      if (n?.proteinStatus === "insufficient") {
+        tips.push({ emoji: "🎯", title: `Focus ${topLabel}`, text: `Bon travail sur les ${topLabel.toLowerCase()} mais protéines insuffisantes. Plus de protéines = meilleurs résultats.`, tint: "amber" });
+      }
+    }
+
+    const mainZones = ["pectoraux", "epaules", "dos-inferieur", "cuisses-externes", "fessiers"];
+    const trained = new Set(zones.map(([z]) => z));
+    const neglected = mainZones.filter(z => !trained.has(z));
+    if (neglected.length > 0 && neglected.length <= 3) {
+      const labels = neglected.slice(0, 2).map(z => (ZONE_LABELS[z] || z).toLowerCase()).join(" et ");
+      tips.push({ emoji: "🔄", title: "Équilibre", text: `Pense à travailler les ${labels} pour un développement harmonieux.`, tint: "blue" });
+    }
+  }
+
+  // Nutrition non renseignée
+  if (!n?.daysLogged || n.daysLogged === 0) {
+    tips.push({ emoji: "📝", title: "Log ta nutrition", text: "Aucun repas enregistré. Renseigne tes repas pour des conseils précis sur tes macros.", tint: "blue" });
+  } else if (n.daysLogged < 3) {
+    tips.push({ emoji: "📝", title: "Continue de logger", text: `${n.daysLogged} jour${n.daysLogged > 1 ? "s" : ""} enregistré${n.daysLogged > 1 ? "s" : ""}. Plus de données = meilleurs conseils.`, tint: "blue" });
+  }
+
+  // Surentraînement + mauvaise nutrition
+  if (weeklySessions > 5 && n?.proteinStatus !== "optimal") {
+    tips.push({ emoji: "🧘", title: "Récupération", text: "Beaucoup de séances + protéines insuffisantes. Tu risques le surentraînement.", tint: "red" });
+  }
+
+  // Timing protéines (MPS)
+  if (n?.mpsScore !== undefined && n.mpsScore < 0.3 && weeklySessions > 0) {
+    tips.push({ emoji: "🧬", title: "Timing protéines", text: "Mange tes protéines le jour de l'entraînement et le lendemain. La fenêtre MPS dure 24-48h.", tint: "blue" });
+  }
+
+  return tips;
+}
+
+// ─── Icônes motivation ───────────────────────────────────────────────
+const ICONS = {
+  encourage: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  ),
+  progress: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <path d="m9 11 3 3L22 4" />
+    </svg>
+  ),
+  good: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+    </svg>
+  ),
+  champion: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+      <path d="M4 22h16" />
+      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+      <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+    </svg>
+  ),
+};
+
+// ─── Composant ───────────────────────────────────────────────────────
 export const WeeklySummary = ({ weeklySessions, weeklyCalories, userName }) => {
   const [analytics, setAnalytics] = useState(null);
   const [bodyComp, setBodyComp] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [showTips, setShowTips] = useState(false);
 
-  // Charger les analytics enrichis + body comp
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [analyticsRes, bodyCompData] = await Promise.all([
-          secureApiCall(endpoints.analytics.weekly).then(r => r.ok ? r.json() : null).catch(() => null),
-          getBodyCompositionSummary(7).catch(() => null),
-        ]);
-        if (analyticsRes) setAnalytics(analyticsRes);
-        if (bodyCompData) setBodyComp(bodyCompData);
-      } catch (error) {
-        console.error("Erreur chargement analytics:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    Promise.all([
+      secureApiCall(endpoints.analytics.weekly).then(r => r.ok ? r.json() : null).catch(() => null),
+      getBodyCompositionSummary(7).catch(() => null),
+    ]).then(([analyticsRes, bodyCompData]) => {
+      if (analyticsRes) setAnalytics(analyticsRes);
+      if (bodyCompData) setBodyComp(bodyCompData);
+    });
   }, []);
 
-  // Message principal base sur les donnees enrichies ou fallback simple
-  const getMainMotivation = () => {
-    // Si on a les analytics enrichis, utiliser les messages generes par le backend
+  // Message motivation
+  const motivation = useMemo(() => {
     if (analytics?.motivation?.length > 0) {
-      const main = analytics.motivation[0];
-      return {
-        type: main.type === 'encourage' ? 'encourage' :
-              main.type === 'progress' ? 'progress' :
-              main.type === 'champion' ? 'champion' : 'good',
-        title: main.title,
-        message: main.text
-      };
+      const m = analytics.motivation[0];
+      return { type: m.type === "encourage" ? "encourage" : m.type === "progress" ? "progress" : m.type === "champion" ? "champion" : "good", title: m.title, message: m.text };
     }
+    if (weeklySessions === 0) return { type: "encourage", title: "C'est pas grave !", message: "Reste focus, faut juste se lancer. Une séance et tu es reparti !" };
+    if (weeklySessions <= 2) return { type: "progress", title: "Bon début !", message: `${weeklySessions} séance${weeklySessions > 1 ? "s" : ""} cette semaine, c'est un bon début !` };
+    if (weeklySessions <= 4) return { type: "good", title: "Belle semaine !", message: `${weeklySessions} séances${weeklyCalories > 0 ? ` et ${weeklyCalories} kcal brûlées` : ""} !` };
+    return { type: "champion", title: "Semaine incroyable !", message: `${weeklySessions} séances ! Tu es une machine !` };
+  }, [analytics, weeklySessions, weeklyCalories]);
 
-    // Fallback sur la logique simple
-    if (weeklySessions === 0) {
-      return {
-        type: "encourage",
-        title: "C'est pas grave!",
-        message: "Reste focus, faut juste se lancer. Une seance et tu es reparti!"
-      };
-    } else if (weeklySessions <= 2) {
-      return {
-        type: "progress",
-        title: "Bon debut!",
-        message: `${weeklySessions} seance${weeklySessions > 1 ? 's' : ''} cette semaine, c'est un bon debut!`
-      };
-    } else if (weeklySessions <= 4) {
-      return {
-        type: "good",
-        title: "Belle semaine!",
-        message: `${weeklySessions} seances${weeklyCalories > 0 ? ` et ${weeklyCalories} kcal brulees` : ''}!`
-      };
-    } else {
-      return {
-        type: "champion",
-        title: "Semaine incroyable!",
-        message: `${weeklySessions} seances! Tu es une machine!`
-      };
-    }
-  };
-
-  const motivation = getMainMotivation();
-
-  // Icone selon le type
-  const getIcon = (type) => {
-    switch (type) {
-      case 'encourage':
-        return (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-          </svg>
-        );
-      case 'progress':
-        return (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-            <path d="m9 11 3 3L22 4" />
-          </svg>
-        );
-      case 'good':
-        return (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
-          </svg>
-        );
-      case 'champion':
-      default:
-        return (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-            <path d="M4 22h16"/>
-            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-          </svg>
-        );
-    }
-  };
-
-  // Donnees a afficher
-  const thisWeek = analytics?.thisWeek || { sessions: weeklySessions, totalCalories: weeklyCalories };
-  const topMuscle = analytics?.topMuscle;
-  const neglectedMuscles = analytics?.neglectedMuscles || [];
-  const insights = analytics?.motivation?.slice(1) || []; // Messages supplementaires
+  // Calories brûlées : priorité bodyComp (inclut DailyHealthData) > analytics > props
+  const burnedFromBodyComp = bodyComp?.nutrition?.avgDaily?.burned
+    ? Math.round(bodyComp.nutrition.avgDaily.burned * (bodyComp.nutrition.daysLogged || 7))
+    : 0;
+  const bestCalories = burnedFromBodyComp || weeklyCalories;
+  const thisWeek = analytics?.thisWeek || { sessions: weeklySessions, totalCalories: bestCalories };
 
   // Nutrition recap
   const nutritionRecap = bodyComp ? {
     dailyBalance: bodyComp.nutrition?.dailyBalance || 0,
-    avgCalories: bodyComp.nutrition?.daily?.calories || 0,
-    avgProteins: bodyComp.nutrition?.daily?.proteins || 0,
+    avgCalories: bodyComp.nutrition?.avgDaily?.calories || 0,
+    avgProteins: bodyComp.nutrition?.avgDaily?.proteins || 0,
     proteinPerKg: bodyComp.nutrition?.proteinPerKg || 0,
     muscleGainG: bodyComp.muscleGain?.totalG || 0,
     fatChangeG: bodyComp.fatChange?.g || 0,
     projectedWeight: bodyComp.projectedWeight || null,
   } : null;
 
+  // Tips personnalisés
+  const tips = useMemo(() => generateTips(bodyComp, weeklySessions), [bodyComp, weeklySessions]);
+
   return (
-    <section className={`${style.weeklySummary} ${style[`weeklySummary_${motivation.type}`]}`}>
-      {/* Icone principale */}
-      <div className={style.weeklySummaryIcon}>
-        {getIcon(motivation.type)}
+    <section className={style.wsCard}>
+      {/* Header motivation */}
+      <div className={style.wsHeader}>
+        <div className={`${style.wsIcon} ${style[`wsIcon_${motivation.type}`] || ""}`}>
+          {ICONS[motivation.type] || ICONS.good}
+        </div>
+        <div className={style.wsHeaderContent}>
+          <h3 className={style.wsTitle}>{motivation.title}</h3>
+          <p className={style.wsMessage}>{motivation.message}</p>
+        </div>
       </div>
 
-      {/* Message principal */}
-      <div className={style.weeklySummaryContent}>
-        <h3 className={style.weeklySummaryTitle}>{motivation.title}</h3>
-        <p className={style.weeklySummaryMessage}>{motivation.message}</p>
-      </div>
-
-      {/* Stats principales */}
-      <div className={style.weeklySummaryStats}>
-        <div className={style.weeklySummaryStat}>
-          <span className={style.weeklySummaryStatValue}>{thisWeek.sessions}</span>
-          <span className={style.weeklySummaryStatLabel}>seance{thisWeek.sessions !== 1 ? 's' : ''}</span>
+      {/* Stats */}
+      <div className={style.wsStatsRow}>
+        <div className={style.wsStat}>
+          <span className={style.wsStatVal}>{thisWeek.sessions}</span>
+          <span className={style.wsStatLabel}>séance{thisWeek.sessions !== 1 ? "s" : ""}</span>
         </div>
         {thisWeek.totalCalories > 0 && (
-          <div className={style.weeklySummaryStat}>
-            <span className={style.weeklySummaryStatValue}>{thisWeek.totalCalories}</span>
-            <span className={style.weeklySummaryStatLabel}>kcal</span>
+          <div className={style.wsStat}>
+            <span className={style.wsStatVal}>{thisWeek.totalCalories}</span>
+            <span className={style.wsStatLabel}>kcal</span>
           </div>
         )}
         {thisWeek.totalDuration > 0 && (
-          <div className={style.weeklySummaryStat}>
-            <span className={style.weeklySummaryStatValue}>{thisWeek.totalDuration}</span>
-            <span className={style.weeklySummaryStatLabel}>min</span>
+          <div className={style.wsStat}>
+            <span className={style.wsStatVal}>{thisWeek.totalDuration}</span>
+            <span className={style.wsStatLabel}>min</span>
           </div>
         )}
         {thisWeek.trainingDays > 0 && (
-          <div className={style.weeklySummaryStat}>
-            <span className={style.weeklySummaryStatValue}>{thisWeek.trainingDays}</span>
-            <span className={style.weeklySummaryStatLabel}>jour{thisWeek.trainingDays !== 1 ? 's' : ''}</span>
+          <div className={style.wsStat}>
+            <span className={style.wsStatVal}>{thisWeek.trainingDays}</span>
+            <span className={style.wsStatLabel}>jour{thisWeek.trainingDays !== 1 ? "s" : ""}</span>
           </div>
         )}
       </div>
 
-      {/* Recap Nutrition */}
+      {/* Bilan nutrition */}
       {nutritionRecap && (
-        <div className={style.nutritionRecap}>
-          <h4 className={style.nutritionRecapTitle}>Bilan nutrition</h4>
-          <div className={style.nutritionRecapGrid}>
-            <div className={style.nutritionRecapItem}>
-              <span className={style.nutritionRecapValue}>{nutritionRecap.avgCalories}</span>
-              <span className={style.nutritionRecapLabel}>kcal/jour</span>
+        <div className={style.wsNutrition}>
+          <h4 className={style.wsNutritionTitle}>Bilan nutrition</h4>
+          <div className={style.wsNutritionGrid}>
+            <div className={style.wsNutritionItem}>
+              <span className={style.wsNutritionValue}>{nutritionRecap.avgCalories}</span>
+              <span className={style.wsNutritionLabel}>kcal/jour</span>
             </div>
-            <div className={style.nutritionRecapItem}>
-              <span className={style.nutritionRecapValue}>{nutritionRecap.avgProteins}g</span>
-              <span className={style.nutritionRecapLabel}>prot/jour ({nutritionRecap.proteinPerKg}g/kg)</span>
+            <div className={style.wsNutritionItem}>
+              <span className={style.wsNutritionValue}>{nutritionRecap.avgProteins}g</span>
+              <span className={style.wsNutritionLabel}>prot/jour ({nutritionRecap.proteinPerKg}g/kg)</span>
             </div>
-            <div className={style.nutritionRecapItem}>
-              <span className={`${style.nutritionRecapValue} ${nutritionRecap.dailyBalance >= 0 ? style.nutritionRecapPositive : style.nutritionRecapNegative}`}>
-                {nutritionRecap.dailyBalance >= 0 ? '+' : ''}{nutritionRecap.dailyBalance}
+            <div className={style.wsNutritionItem}>
+              <span className={`${style.wsNutritionValue} ${nutritionRecap.dailyBalance >= 0 ? style.wsPositive : style.wsNegative}`}>
+                {nutritionRecap.dailyBalance >= 0 ? "+" : ""}{nutritionRecap.dailyBalance}
               </span>
-              <span className={style.nutritionRecapLabel}>kcal/jour ({nutritionRecap.dailyBalance >= 0 ? 'surplus' : 'deficit'})</span>
+              <span className={style.wsNutritionLabel}>kcal/jour ({nutritionRecap.dailyBalance >= 0 ? "surplus" : "déficit"})</span>
             </div>
           </div>
-          <div className={style.nutritionRecapBody}>
+          <div className={style.wsNutritionBody}>
             {nutritionRecap.muscleGainG > 0 && (
-              <span className={style.nutritionRecapTag}>
-                +{nutritionRecap.muscleGainG}g muscle
-              </span>
+              <span className={`${style.wsTag} ${style.wsTagGood}`}>+{nutritionRecap.muscleGainG}g muscle</span>
             )}
-            <span className={`${style.nutritionRecapTag} ${nutritionRecap.fatChangeG > 0 ? style.nutritionRecapTagBad : style.nutritionRecapTagGood}`}>
-              {nutritionRecap.fatChangeG >= 0 ? '+' : ''}{nutritionRecap.fatChangeG}g gras
+            <span className={`${style.wsTag} ${nutritionRecap.fatChangeG > 0 ? style.wsTagBad : style.wsTagGood}`}>
+              {nutritionRecap.fatChangeG >= 0 ? "+" : ""}{nutritionRecap.fatChangeG}g gras
             </span>
             {nutritionRecap.projectedWeight && (
-              <span className={style.nutritionRecapTag}>
-                Poids proj. {nutritionRecap.projectedWeight} kg
-              </span>
+              <span className={style.wsTag}>Poids proj. {nutritionRecap.projectedWeight} kg</span>
             )}
           </div>
         </div>
       )}
 
-      {/* Insights supplementaires */}
-      {insights.length > 0 && (
-        <div className={style.weeklySummaryInsights}>
-          {insights.slice(0, 2).map((insight, index) => (
-            <div key={index} className={`${style.weeklySummaryInsight} ${style[`insight_${insight.type}`]}`}>
-              <span className={style.insightIcon}>
-                {insight.type === 'insight' && '💪'}
-                {insight.type === 'tip' && '💡'}
-                {insight.type === 'achievement' && '🏆'}
-                {insight.type === 'engagement' && '🔔'}
-              </span>
-              <div className={style.insightContent}>
-                <strong>{insight.title}</strong>
-                <span>{insight.text}</span>
-              </div>
+      {/* CTA conseils */}
+      {tips.length > 0 && !showTips && (
+        <button className={style.wsCta} onClick={() => setShowTips(true)}>
+          Mes conseils personnalisés
+          <span className={style.wsCtaChevron}>›</span>
+        </button>
+      )}
+
+      {/* Tips carousel */}
+      {showTips && tips.length > 0 && (
+        <div className={style.wsTipsRow}>
+          {tips.map((tip, i) => (
+            <div key={i} className={`${style.wsTipCard} ${style[`wsTint_${tip.tint}`] || ""}`}>
+              <span className={style.wsTipEmoji}>{tip.emoji}</span>
+              <span className={style.wsTipTitle}>{tip.title}</span>
+              <span className={style.wsTipText}>{tip.text}</span>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Muscles negliges */}
-      {neglectedMuscles.length > 0 && neglectedMuscles.length <= 3 && thisWeek.sessions > 0 && (
-        <div className={style.weeklySummaryTip}>
-          <span className={style.tipIcon}>💡</span>
-          <span>N'oublie pas: {neglectedMuscles.slice(0, 2).join(', ')}</span>
-        </div>
-      )}
-
-      {/* Top muscle */}
-      {topMuscle && (
-        <div className={style.weeklySummaryHighlight}>
-          <span className={style.highlightIcon}>🎯</span>
-          <span>Focus: <strong>{topMuscle.name}</strong> ({topMuscle.count} exos)</span>
         </div>
       )}
     </section>
