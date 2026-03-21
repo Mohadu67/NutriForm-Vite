@@ -19,7 +19,6 @@ import { useHomeData } from '../../hooks/useHomeData';
 import { getDailySummary, getNutritionGoals } from '../../api/nutrition';
 
 import {
-  StatsOverview,
   WeeklyGoalSection,
   QuickActions,
   RecentActivity,
@@ -143,6 +142,8 @@ export default function HomeScreen() {
     rmDataHistory,
     cardioDataHistory,
     weeklyCalories,
+    weeklyDuration,
+    weeklyTrainingDays,
     weeklyGoal,
     weeklyProgress,
     displayName,
@@ -263,18 +264,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
 
-        {/* ── En-tête : métriques globales (compact) ── */}
-        <StatsOverview
-          stats={stats}
-          sessionsTrend={stats.sessionsTrend}
-          bestStreak={stats.streak}
-          avgSessionDuration={stats.totalSessions > 0 ? Math.round(stats.totalMinutes / stats.totalSessions) : 0}
-          badgeCount={3}
-          nextBadge={{ emoji: '🔥', name: 'Série 7j' }}
-          onSessionsClick={handleSessionsClick}
-          onBadgesClick={handleBadgesClick}
-        />
-
         {/* ── Bloc 1 : Motivation + Objectif ── */}
 
         {/* Recap motivant de la semaine */}
@@ -282,7 +271,8 @@ export default function HomeScreen() {
           <WeeklySummary
             weeklySessions={stats.last7Days}
             weeklyCalories={weeklyCalories}
-            userName={displayName}
+            weeklyDuration={weeklyDuration}
+            weeklyTrainingDays={weeklyTrainingDays}
           />
         )}
 
