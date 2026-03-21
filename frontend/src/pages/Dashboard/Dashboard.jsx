@@ -15,7 +15,6 @@ import { dashboardLogger } from "../../shared/utils/logger.js";
 
 // Composants extraits
 import { NutritionWidget } from "./components/NutritionWidget.jsx";
-import { StatsOverview } from "./components/StatsOverview.jsx";
 import { WeeklyGoalSection } from "./components/WeeklyGoalSection.jsx";
 import { QuickActions } from "./components/QuickActions.jsx";
 import { RecentActivity } from "./components/RecentActivity.jsx";
@@ -230,18 +229,6 @@ export default function Dashboard() {
 
           {status === "loading" && <p className={style.loading}>Chargement...</p>}
           {status === "error" && <p className={style.error}>{error}</p>}
-
-          {/* ── En-tête : métriques globales (compact) ── */}
-          <StatsOverview
-            stats={stats}
-            sessionsTrend={sessionsTrend}
-            bestStreak={bestStreak}
-            avgSessionDuration={avgSessionDuration}
-            badgeCount={badgeCount}
-            nextBadge={nextBadge}
-            onSessionsClick={() => setShowSessionsPopup(true)}
-            onBadgesClick={() => setShowBadgesPopup(true)}
-          />
 
           {/* ── Bloc 1 : Motivation + Objectif ── */}
 

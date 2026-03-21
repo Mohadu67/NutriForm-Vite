@@ -118,6 +118,24 @@ export function useHomeData() {
   }, [getHistory]);
 
   const weeklyCalories = summary?.caloriesBurnedWeek || 0;
+
+  const weeklyDuration = useMemo(() => {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    return sessions
+      .filter(s => new Date(s.date) >= sevenDaysAgo)
+      .reduce((sum, s) => sum + (s.durationMinutes || 0), 0);
+  }, [sessions]);
+
+  const weeklyTrainingDays = useMemo(() => {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const days = new Set();
+    sessions.forEach(s => {
+      const d = new Date(s.date);
+      if (d >= sevenDaysAgo) days.add(d.toISOString().slice(0, 10));
+    });
+    return days.size;
+  }, [sessions]);
+
   const recentSessions = useMemo(() => sessions.slice(0, 5), [sessions]);
 
   const sessionsForHeatmap = useMemo(() => sessions.slice(0, 30), [sessions]);
@@ -420,6 +438,8 @@ export function useHomeData() {
     rmDataHistory,
     cardioDataHistory,
     weeklyCalories,
+    weeklyDuration,
+    weeklyTrainingDays,
     weeklyGoal,
     weeklyProgress,
 
