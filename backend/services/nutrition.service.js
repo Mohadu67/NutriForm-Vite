@@ -52,14 +52,8 @@ async function computeDailySummary(userId, date) {
   const sessionCalories = sessions.reduce((sum, s) => sum + (s.calories || 0), 0);
   const healthCalories = healthData?.caloriesBurned || 0;
 
-  // Si l'utilisateur a renseigné manuellement une valeur, elle prime (même 0)
-  // Sinon on utilise les calories calculées des séances
-  let burned;
-  if (healthData) {
-    burned = healthCalories;
-  } else {
-    burned = sessionCalories;
-  }
+  // Calories brûlées = saisie manuelle/HealthKit + séances d'entraînement
+  const burned = healthCalories + sessionCalories;
 
   return {
     date: d.toISOString(),
