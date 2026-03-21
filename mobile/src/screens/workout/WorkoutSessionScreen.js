@@ -25,6 +25,13 @@ import {
   getSmartSuggestedValues,
 } from '../../hooks/useSmartTracking';
 import { detectRecord, calculateDifference } from '../../utils/progressionHelper';
+import { detectExerciseMode, getAvailableModes, MODE_LABELS, MODE_ICONS } from '../../utils/exerciseTypeDetector';
+import SwimForm from '../../components/workout/forms/SwimForm';
+import CardioForm from '../../components/workout/forms/CardioSetRow';
+import YogaForm from '../../components/workout/forms/YogaForm';
+import StretchForm from '../../components/workout/forms/StretchForm';
+import WalkRunForm from '../../components/workout/forms/WalkRunForm';
+import PdcSetRow from '../../components/workout/forms/PdcSetRow';
 import theme from '../../theme';
 
 const TYPE_CONFIG = {
@@ -32,6 +39,9 @@ const TYPE_CONFIG = {
   'poids_du_corps': { icon: 'body', color: '#06B6D4' },
   'cardio': { icon: 'heart', color: '#EF4444' },
   'etirement': { icon: 'flower', color: '#10B981' },
+  'natation': { icon: 'water', color: '#3B82F6' },
+  'yoga': { icon: 'leaf', color: '#8B5CF6' },
+  'meditation': { icon: 'cloudy-night', color: '#6366F1' },
 };
 
 // Timer Component
@@ -179,35 +189,57 @@ const SetRow = ({ set, index, exerciceId, onUpdate, onToggle, onRemove, canRemov
   );
 };
 
-// Exercise Card Component avec suivi intelligent
-const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onToggleSet, onRemoveExercise, onMoveUp, onMoveDown, isFirst, isLast, isDark, smartEnabled, onAddSmartSet }) => {
-  const { exercice, sets } = exerciseData;
-  const typeConfig = TYPE_CONFIG[exercice.type] || TYPE_CONFIG.muscu;
-  const completedSets = sets.filter(s => s.completed).length;
-  const [showInstructions, setShowInstructions] = useState(false);
-  const isPdc = exercice.type === 'poids_du_corps';
+// Mode labels longs pour le sous-titre de la carte
+const MODE_DISPLAY_LABELS = {
+  'muscu': 'Musculation',
+  'pdc': 'Poids du corps',
+  'cardio': 'Cardio',
+  'swim': 'Natation',
+  'yoga': 'Yoga',
+  'stretch': 'Etirement',
+  'walk_run': 'Course / Marche',
+};
 
-  // Donnees historiques pour cet exercice
+// Exercise Card Component avec suivi intelligent et formulaires type-specifiques
+const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onToggleSet, onRemoveExercise, onMoveUp, onMoveDown, isFirst, isLast, isDark, smartEnabled, onAddSmartSet, onAddCardioSet, onRemoveCardioSet, onUpdateCardioSet, onUpdateExerciseData, onChangeMode }) => {
+  const { exercice, sets, mode: exerciseMode, cardioSets, swim, yoga, stretch, walkRun } = exerciseData;
+  const mode = exerciseMode || detectExerciseMode(exercice);
+  const availableModes = useMemo(() => getAvailableModes(exercice), [exercice]);
+  const canSwitchMode = availableModes.length > 1;
+  const typeConfig = TYPE_CONFIG[exercice.type] || TYPE_CONFIG.muscu;
+  const hasSets = mode === 'muscu' || mode === 'pdc';
+  const completedSets = hasSets && sets ? sets.filter(s => s.completed).length : 0;
+  const totalSetsCount = hasSets && sets ? sets.length : (cardioSets ? cardioSets.length : 1);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const isPdc = mode === 'pdc';
+
+  // Donnees historiques pour cet exercice (seulement pour muscu/pdc)
   const { data: historyData, isLoading: historyLoading } = useExerciseData(
     exercice.id,
     exercice.name,
-    smartEnabled
+    smartEnabled && hasSets
   );
 
-  // Suggestion de progression
-  const suggestion = useProgressionSuggestion(historyData, isPdc, exercice.name, smartEnabled);
+  // Suggestion de progression (seulement pour muscu/pdc)
+  const suggestion = useProgressionSuggestion(historyData, isPdc, exercice.name, smartEnabled && hasSets);
 
   // Handler pour ajouter une serie intelligente
   const handleAddSet = useCallback(() => {
-    if (smartEnabled && (historyData || sets.length > 0)) {
-      const suggested = getSmartSuggestedValues(sets, historyData, isPdc, smartEnabled);
+    if (mode === 'cardio') {
+      onAddCardioSet(exercice.id);
+      return;
+    }
+    if (!hasSets) return;
+
+    if (smartEnabled && (historyData || (sets && sets.length > 0))) {
+      const suggested = getSmartSuggestedValues(sets || [], historyData, isPdc, smartEnabled);
       onAddSmartSet(exercice.id, suggested);
     } else {
       onAddSet(exercice.id);
     }
-  }, [smartEnabled, historyData, sets, isPdc, exercice.id, onAddSet, onAddSmartSet]);
+  }, [mode, smartEnabled, historyData, sets, isPdc, exercice.id, onAddSet, onAddSmartSet, onAddCardioSet, hasSets]);
 
-  // Instructions par défaut (simplified version)
+  // Instructions par defaut (simplified version)
   const getInstructions = () => {
     if (exercice.explanation) return exercice.explanation.split('\n');
     return [
@@ -217,6 +249,140 @@ const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onTogg
       'Expirez pendant l\'effort, inspirez lors du retour',
       'Maintenez la tension musculaire tout au long du mouvement',
     ];
+  };
+
+  // Progress label adapte au mode
+  const getProgressLabel = () => {
+    if (hasSets) return `${completedSets}/${totalSetsCount} series`;
+    if (mode === 'cardio') return `${cardioSets?.length || 0} series`;
+    return MODE_DISPLAY_LABELS[mode] || '';
+  };
+
+  // Rendu du formulaire selon le mode
+  const renderForm = () => {
+    switch (mode) {
+      case 'swim':
+        return (
+          <SwimForm
+            swim={swim || {}}
+            onPatch={(patch) => onUpdateExerciseData(exercice.id, 'swim', patch)}
+            isDark={isDark}
+          />
+        );
+
+      case 'yoga':
+        return (
+          <YogaForm
+            yoga={yoga || {}}
+            onPatch={(patch) => onUpdateExerciseData(exercice.id, 'yoga', patch)}
+            isDark={isDark}
+          />
+        );
+
+      case 'stretch':
+        return (
+          <StretchForm
+            stretch={stretch || {}}
+            onPatch={(patch) => onUpdateExerciseData(exercice.id, 'stretch', patch)}
+            isDark={isDark}
+          />
+        );
+
+      case 'walk_run':
+        return (
+          <WalkRunForm
+            walkRun={walkRun || {}}
+            onPatch={(patch) => onUpdateExerciseData(exercice.id, 'walkRun', patch)}
+            isDark={isDark}
+          />
+        );
+
+      case 'cardio':
+        return (
+          <CardioForm
+            cardioSets={cardioSets || []}
+            onAdd={() => onAddCardioSet(exercice.id)}
+            onRemove={(idx) => onRemoveCardioSet(exercice.id, idx)}
+            onPatch={(idx, patch) => onUpdateCardioSet(exercice.id, idx, patch)}
+            isDark={isDark}
+          />
+        );
+
+      case 'pdc':
+        return (
+          <>
+            {/* PDC Header */}
+            <View style={styles.setsHeader}>
+              <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { flex: 0.5 }]}>Serie</Text>
+              <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { flex: 1 }]}>Reps</Text>
+              <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { width: 60 }]}></Text>
+            </View>
+            {(sets || []).map((set, index) => (
+              <PdcSetRow
+                key={index}
+                set={set}
+                index={index}
+                exerciceId={exercice.id}
+                onUpdate={onUpdateSet}
+                onToggle={onToggleSet}
+                onRemove={onRemoveSet}
+                canRemove={(sets || []).length > 1}
+                isDark={isDark}
+                isSuggested={set.isSuggested}
+              />
+            ))}
+            <TouchableOpacity
+              style={[styles.addSetButton, isDark && styles.addSetButtonDark]}
+              onPress={handleAddSet}
+            >
+              <Ionicons name="add" size={20} color={theme.colors.primary} />
+              <Text style={styles.addSetText}>Ajouter une serie</Text>
+            </TouchableOpacity>
+          </>
+        );
+
+      case 'muscu':
+      default:
+        return (
+          <>
+            {/* Muscu Header */}
+            <View style={styles.setsHeader}>
+              <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { flex: 0.5 }]}>Serie</Text>
+              <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { flex: 1 }]}>Poids</Text>
+              <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { flex: 1 }]}>Reps</Text>
+              <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { width: 80 }]}></Text>
+            </View>
+            {(sets || []).map((set, index) => (
+              <SetRow
+                key={index}
+                set={set}
+                index={index}
+                exerciceId={exercice.id}
+                onUpdate={onUpdateSet}
+                onToggle={onToggleSet}
+                onRemove={onRemoveSet}
+                canRemove={(sets || []).length > 1}
+                isDark={isDark}
+                exerciseData={historyData}
+                smartEnabled={smartEnabled}
+                isSuggested={set.isSuggested}
+              />
+            ))}
+            <TouchableOpacity
+              style={[styles.addSetButton, isDark && styles.addSetButtonDark]}
+              onPress={handleAddSet}
+            >
+              <Ionicons name="add" size={20} color={theme.colors.primary} />
+              <Text style={styles.addSetText}>Ajouter une serie</Text>
+              {smartEnabled && historyData && (
+                <View style={styles.smartBadge}>
+                  <Ionicons name="sparkles" size={12} color="#F59E0B" />
+                </View>
+              )}
+            </TouchableOpacity>
+          </>
+        );
+    }
   };
 
   return (
@@ -244,7 +410,7 @@ const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onTogg
         <View style={styles.exerciseInfo}>
           <Text style={[styles.exerciseName, isDark && styles.textDark]}>{exercice.name}</Text>
           <Text style={[styles.exerciseProgress, isDark && styles.textMuted]}>
-            {completedSets}/{sets.length} series
+            {getProgressLabel()}
           </Text>
         </View>
 
@@ -321,8 +487,8 @@ const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onTogg
         </TouchableOpacity>
       </Modal>
 
-      {/* Banniere de suggestion intelligente */}
-      {smartEnabled && suggestion?.message && (
+      {/* Banniere de suggestion intelligente (muscu/pdc seulement) */}
+      {hasSets && smartEnabled && suggestion?.message && (
         <View style={[styles.suggestionBanner, isDark && styles.suggestionBannerDark]}>
           <View style={styles.suggestionContent}>
             <Ionicons name="bulb" size={16} color="#F59E0B" />
@@ -339,7 +505,7 @@ const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onTogg
       )}
 
       {/* Loading historique */}
-      {smartEnabled && historyLoading && (
+      {hasSets && smartEnabled && historyLoading && (
         <View style={styles.historyLoading}>
           <ActivityIndicator size="small" color={theme.colors.primary} />
           <Text style={[styles.historyLoadingText, isDark && styles.textMuted]}>
@@ -348,45 +514,40 @@ const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onTogg
         </View>
       )}
 
-      {/* Sets Header */}
-      <View style={styles.setsHeader}>
-        <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { flex: 0.5 }]}>Serie</Text>
-        <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { flex: 1 }]}>Poids</Text>
-        <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { flex: 1 }]}>Reps</Text>
-        <Text style={[styles.setsHeaderText, isDark && styles.textMuted, { width: 80 }]}></Text>
-      </View>
+      {/* Selecteur de mode (si plusieurs modes possibles) */}
+      {canSwitchMode && (
+        <View style={styles.modeSwitcher}>
+          {availableModes.map((m) => (
+            <TouchableOpacity
+              key={m}
+              style={[
+                styles.modeChip,
+                mode === m && styles.modeChipActive,
+                isDark && mode !== m && styles.modeChipDark,
+              ]}
+              onPress={() => {
+                if (m !== mode) onChangeMode(exercice.id, m);
+              }}
+            >
+              <Ionicons
+                name={MODE_ICONS[m] || 'ellipse'}
+                size={14}
+                color={mode === m ? '#FFF' : (isDark ? '#888' : '#666')}
+              />
+              <Text style={[
+                styles.modeChipText,
+                mode === m && styles.modeChipTextActive,
+                isDark && mode !== m && styles.modeChipTextDark,
+              ]}>
+                {MODE_LABELS[m] || m}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
-      {/* Sets */}
-      {sets.map((set, index) => (
-        <SetRow
-          key={index}
-          set={set}
-          index={index}
-          exerciceId={exercice.id}
-          onUpdate={onUpdateSet}
-          onToggle={onToggleSet}
-          onRemove={onRemoveSet}
-          canRemove={sets.length > 1}
-          isDark={isDark}
-          exerciseData={historyData}
-          smartEnabled={smartEnabled}
-          isSuggested={set.isSuggested}
-        />
-      ))}
-
-      {/* Add Set Button */}
-      <TouchableOpacity
-        style={[styles.addSetButton, isDark && styles.addSetButtonDark]}
-        onPress={handleAddSet}
-      >
-        <Ionicons name="add" size={20} color={theme.colors.primary} />
-        <Text style={styles.addSetText}>Ajouter une serie</Text>
-        {smartEnabled && historyData && (
-          <View style={styles.smartBadge}>
-            <Ionicons name="sparkles" size={12} color="#F59E0B" />
-          </View>
-        )}
-      </TouchableOpacity>
+      {/* Formulaire adapte au mode */}
+      {renderForm()}
     </View>
   );
 };
@@ -403,8 +564,13 @@ export default function WorkoutSessionScreen({ navigation }) {
     isWorkoutActive,
     startWorkout,
     addSet,
+    addCardioSet,
     removeSet,
+    removeCardioSet,
     updateSet,
+    updateCardioSet,
+    updateExerciseData,
+    changeExerciseMode,
     toggleSetComplete,
     removeExercise,
     moveExerciseUp,
@@ -601,8 +767,12 @@ export default function WorkoutSessionScreen({ navigation }) {
             key={exerciseData.exercice.id}
             exerciseData={exerciseData}
             onAddSet={addSet}
+            onAddCardioSet={addCardioSet}
             onRemoveSet={removeSet}
+            onRemoveCardioSet={removeCardioSet}
             onUpdateSet={updateSet}
+            onUpdateCardioSet={updateCardioSet}
+            onUpdateExerciseData={updateExerciseData}
             onToggleSet={toggleSetComplete}
             onRemoveExercise={handleRemoveExercise}
             onMoveUp={moveExerciseUp}
@@ -612,6 +782,7 @@ export default function WorkoutSessionScreen({ navigation }) {
             isDark={isDark}
             smartEnabled={smartEnabled}
             onAddSmartSet={handleAddSmartSet}
+            onChangeMode={changeExerciseMode}
           />
         ))}
 
@@ -967,6 +1138,41 @@ const styles = StyleSheet.create({
     height: 24,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  // Mode switcher
+  modeSwitcher: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 12,
+    flexWrap: 'wrap',
+  },
+  modeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+    backgroundColor: '#F0F0F0',
+  },
+  modeChipActive: {
+    backgroundColor: theme.colors.primary,
+  },
+  modeChipDark: {
+    backgroundColor: '#2A2A2A',
+  },
+  modeChipText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#666',
+  },
+  modeChipTextActive: {
+    color: '#FFF',
+    fontWeight: '600',
+  },
+  modeChipTextDark: {
+    color: '#888',
   },
 
   // Add Set Button
