@@ -292,10 +292,10 @@ async function computeBodyComposition(userId, days = 7) {
   const avgDailyCarbs = Math.round(totalCarbs / activeDays);
   const avgDailyFats = Math.round(totalFats / activeDays);
 
-  // ── Calories brûlées (exercice uniquement, pas BMR) ──
+  // ── Calories brûlées (séances + saisie manuelle/HealthKit) ──
   const sessionCalories = sessions.reduce((sum, s) => sum + (s.calories || 0), 0);
   const healthCalories = healthData.reduce((sum, h) => sum + (h.caloriesBurned || 0), 0);
-  const totalBurned = Math.max(sessionCalories, healthCalories);
+  const totalBurned = sessionCalories + healthCalories;
   const avgDailyBurned = Math.round(totalBurned / days);
 
   // ── Estimation TDEE (dépense totale journalière) ──
