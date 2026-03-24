@@ -207,9 +207,23 @@ function countMuscuSessions(sessions) {
 async function computeBodyComposition(userId, days = 7) {
   const endDate = new Date();
   endDate.setUTCHours(23, 59, 59, 999);
-  const startDate = new Date();
-  startDate.setUTCDate(startDate.getUTCDate() - (days - 1));
+
+  let startDate;
+  if (days === 7) {
+    // Aligner sur la semaine calendaire (lundi → aujourd'hui)
+    // pour être cohérent avec analytics.controller
+    startDate = new Date();
+    const day = startDate.getDay(); // 0=dim, 1=lun, ..., 6=sam
+    const diff = day === 0 ? -6 : 1 - day;
+    startDate.setDate(startDate.getDate() + diff);
+  } else {
+    startDate = new Date();
+    startDate.setUTCDate(startDate.getUTCDate() - (days - 1));
+  }
   startDate.setUTCHours(0, 0, 0, 0);
+
+  // Nombre réel de jours dans la période (important pour les moyennes)
+  const periodDays = Math.max(1, Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)));
 
   // ── Fetch toutes les données en parallèle ──
   const [profile, goal, foodLogs, sessions, weightLogs, healthData] = await Promise.all([
@@ -296,10 +310,10 @@ async function computeBodyComposition(userId, days = 7) {
   const sessionCalories = sessions.reduce((sum, s) => sum + (s.calories || 0), 0);
   const healthCalories = healthData.reduce((sum, h) => sum + (h.caloriesBurned || 0), 0);
   const totalBurned = sessionCalories + healthCalories;
-  const avgDailyBurned = Math.round(totalBurned / days);
+  const avgDailyBurned = Math.round(totalBurned / periodDays);
 
   // ── Estimation TDEE (dépense totale journalière) ──
-  const sessionsPerWeekEstimate = Math.round((sessions.length / days) * 7 * 10) / 10;
+  const sessionsPerWeekEstimate = Math.round((sessions.length / periodDays) * 7 * 10) / 10;
   const bmr = estimateBMR(weight, heightCm, userAge, userGender, bodyFatPct);
   const estimatedTDEE = estimateTDEE(bmr, sessionsPerWeekEstimate);
   // Priorité : objectif calorique > TDEE estimé
@@ -357,7 +371,7 @@ async function computeBodyComposition(userId, days = 7) {
   const hasTraining = muscuSessionCount > 0;
 
   // ── Fréquence d'entraînement (séances/semaine) ──
-  const sessionsPerWeek = Math.round((muscuSessionCount / days) * 7 * 10) / 10;
+  const sessionsPerWeek = Math.round((muscuSessionCount / periodDays) * 7 * 10) / 10;
 
   // Facteur de fréquence (0-1) : 3-5 séances/semaine = optimal
   let frequencyFactor = 0;
@@ -374,7 +388,7 @@ async function computeBodyComposition(userId, days = 7) {
   // ── CALCUL GAIN MUSCULAIRE ──
   // Gain = taux_max × score_protéines × facteur_fréquence × (jours/7)
   const maxWeeklyGain = MUSCLE_GAIN_RATE[fitnessLevel] || MUSCLE_GAIN_RATE.beginner;
-  const weekCount = days / 7;
+  const weekCount = periodDays / 7;
 
   let muscleGainTotal = 0;
   // Conditions minimales : entraînement muscu + protéines suffisantes (score > 0.3 = au moins ~1.2g/kg)
@@ -554,7 +568,7 @@ async function computeBodyComposition(userId, days = 7) {
   }
 
   return {
-    period: { days, startDate: startDate.toISOString(), endDate: endDate.toISOString() },
+    period: { days: periodDays, startDate: startDate.toISOString(), endDate: endDate.toISOString() },
     userMetrics: {
       weight,
       height: heightCm,
