@@ -27,10 +27,8 @@ export default function SupportScreen() {
   const handleOpenSupportChat = () => {
     // Naviguer vers le chat AI qui peut escalader vers le support
     // AIChat est maintenant dans MatchingStack
-    navigation.navigate('MatchingTab', {
-      screen: 'AIChat',
-      params: { mode: 'support' },
-    });
+    // AIChat est défini au niveau root (navigation/index.js)
+    navigation.navigate('AIChat', { mode: 'support' });
   };
 
   // FAQ items

@@ -217,6 +217,10 @@ export default function MatchingScreen() {
   // Card refresh animation
   const cardRefreshAnim = useRef(new Animated.Value(1)).current;
 
+  // Flag pour éviter le double-chargement au montage initial
+  // (useFocusEffect charge déjà tout, useEffect[activeTab] ne doit pas recharger au premier render)
+  const isInitialMount = useRef(true);
+
   // Initial animations
   useEffect(() => {
     Animated.spring(headerAnim, {
@@ -235,6 +239,12 @@ export default function MatchingScreen() {
       friction: 10,
       useNativeDriver: true,
     }).start();
+
+    // Ne pas recharger au montage initial : useFocusEffect s'en charge déjà
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
 
     // Rafraichir le compteur non-lus et conversations quand on revient sur l'onglet messages
     if (activeTab === 'messages') {

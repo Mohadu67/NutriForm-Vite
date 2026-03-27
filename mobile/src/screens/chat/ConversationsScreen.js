@@ -263,7 +263,7 @@ export default function ConversationsScreen({ navigation }) {
 
         <TouchableOpacity
           style={styles.emptyButton}
-          onPress={() => navigation.navigate('MatchingTab')}
+          onPress={() => navigation.navigate('Matching')}
           activeOpacity={0.8}
         >
           <LinearGradient
