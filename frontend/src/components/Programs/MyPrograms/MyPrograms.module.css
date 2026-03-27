@@ -257,9 +257,9 @@
 }
 
 .editBtn:hover {
-  background: rgba(59, 130, 246, 0.1) !important;
-  color: #3b82f6 !important;
-  border-color: #3b82f6 !important;
+  background: rgba(247, 177, 134, 0.1) !important;
+  color: #F7B186 !important;
+  border-color: #F7B186 !important;
 }
 
 .proposeBtn:hover {

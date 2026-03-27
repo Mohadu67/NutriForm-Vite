@@ -636,7 +636,7 @@ export default function RouteTracker({ onRouteUpdate, onTrackingStart, onTrackin
                   <Polyline
                     positions={route.map(p => [p.lat, p.lng])}
                     pathOptions={{
-                      color: paused ? '#ff9800' : '#667eea',
+                      color: paused ? '#FFC107' : '#F7B186',
                       weight: 6,
                       opacity: 1,
                       lineJoin: 'round',

@@ -28,7 +28,7 @@ export const QuickActions = ({ navigation, subscriptionTier = 'free' }) => {
 
         {/* Recettes */}
         <TouchableOpacity
-          style={[styles.primaryAction, { backgroundColor: '#22C55E' }]}
+          style={[styles.primaryAction, { backgroundColor: '#A0C9BD' }]}
           onPress={() => navigation?.navigate('Recipes')}
           activeOpacity={0.8}
         >
@@ -40,7 +40,7 @@ export const QuickActions = ({ navigation, subscriptionTier = 'free' }) => {
       {/* Row 2: Nutrition et Calculs */}
       <View style={styles.row}>
         <TouchableOpacity
-          style={[styles.primaryAction, { backgroundColor: '#22C55E' }]}
+          style={[styles.primaryAction, { backgroundColor: '#A0C9BD' }]}
           onPress={() => navigation?.navigate('Nutrition')}
           activeOpacity={0.8}
         >

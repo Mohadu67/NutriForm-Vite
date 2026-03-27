@@ -482,8 +482,8 @@
 }
 
 .targetMaintenance {
-  background: rgba(37, 99, 235, 0.12);
-  color: #1d4ed8;
+  background: rgba(184, 221, 209, 0.15);
+  color: #A0C9BD;
 }
 
 .targetSurplus {
@@ -521,7 +521,7 @@
 }
 
 .legendDotMaintenance {
-  background: #2563eb;
+  background: #A0C9BD;
 }
 
 .legendDotDeficit {
