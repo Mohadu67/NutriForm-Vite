@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -44,7 +44,6 @@
         "backgroundColor": "#00000000",
         "translucent": true
       },
-      "googleServicesFile": "./google-services.json",
       "package": "com.harmonith.app",
       "permissions": [
         "android.permission.health.READ_STEPS",

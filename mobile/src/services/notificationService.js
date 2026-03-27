@@ -7,14 +7,19 @@ import client from '../api/client';
 
 /**
  * Configuration du comportement des notifications
+ * Wrappé dans try/catch car expo-notifications n'est pas supporté dans Expo Go SDK 53+
  */
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+} catch {
+  // Silencieux en Expo Go — fonctionne sur dev build
+}
 
 class NotificationService {
   constructor() {
