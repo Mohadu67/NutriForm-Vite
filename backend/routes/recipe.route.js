@@ -56,44 +56,51 @@ router.get('/saved', auth, requirePremium, recipeController.getSavedRecipes);
 /**
  * @route   GET /api/recipes/user/my-recipes
  * @desc    Obtenir les recettes personnelles de l'utilisateur
- * @access  Private (Premium)
+ * @access  Private
  */
-router.get('/user/my-recipes', auth, requirePremium, recipeController.getUserRecipes);
+router.get('/user/my-recipes', auth, recipeController.getUserRecipes);
+
+/**
+ * @route   GET /api/recipes/user/:id
+ * @desc    Consulter une recette personnelle par ID (avant de la partager)
+ * @access  Private
+ */
+router.get('/user/:id', auth, recipeController.getUserRecipeById);
 
 /**
  * @route   POST /api/recipes/user
  * @desc    Créer une recette personnelle
- * @access  Private (Premium)
+ * @access  Private
  */
-router.post('/user', auth, requirePremium, recipeController.createUserRecipe);
+router.post('/user', auth, recipeController.createUserRecipe);
 
 /**
  * @route   PUT /api/recipes/user/:id
  * @desc    Modifier une recette personnelle
- * @access  Private (Premium)
+ * @access  Private
  */
-router.put('/user/:id', auth, requirePremium, recipeController.updateUserRecipe);
+router.put('/user/:id', auth, recipeController.updateUserRecipe);
 
 /**
  * @route   DELETE /api/recipes/user/:id
  * @desc    Supprimer une recette personnelle
- * @access  Private (Premium)
+ * @access  Private
  */
-router.delete('/user/:id', auth, requirePremium, recipeController.deleteUserRecipe);
+router.delete('/user/:id', auth, recipeController.deleteUserRecipe);
 
 /**
  * @route   POST /api/recipes/user/:id/propose
  * @desc    Proposer une recette au public
- * @access  Private (Premium)
+ * @access  Private
  */
-router.post('/user/:id/propose', auth, requirePremium, recipeController.proposeRecipeToPublic);
+router.post('/user/:id/propose', auth, recipeController.proposeRecipeToPublic);
 
 /**
  * @route   POST /api/recipes/user/:id/unpublish
  * @desc    Retirer une recette du public pour modification
- * @access  Private (Premium)
+ * @access  Private
  */
-router.post('/user/:id/unpublish', auth, requirePremium, recipeController.unpublishRecipe);
+router.post('/user/:id/unpublish', auth, recipeController.unpublishRecipe);
 
 // =====================================================
 // ROUTES ADMIN - Validation des recettes

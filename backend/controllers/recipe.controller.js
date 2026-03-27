@@ -810,6 +810,54 @@ exports.getUserRecipes = async (req, res) => {
 };
 
 /**
+ * @route   GET /api/recipes/user/:id
+ * @desc    Obtenir les détails complets d'une recette personnelle (avant publication)
+ * @access  Private
+ */
+exports.getUserRecipeById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    let recipe;
+
+    // Essayer d'abord par ID MongoDB
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      recipe = await Recipe.findById(id);
+    } else {
+      // Sinon, chercher par slug
+      recipe = await Recipe.findOne({ slug: id });
+    }
+
+    if (!recipe) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recette introuvable'
+      });
+    }
+
+    // Vérifier que l'utilisateur est le propriétaire de la recette
+    if (!recipe.author || recipe.author.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Accès non autorisé à cette recette'
+      });
+    }
+
+    res.json({
+      success: true,
+      recipe: recipe.toObject()
+    });
+  } catch (error) {
+    logger.error('Erreur getUserRecipeById:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la récupération de la recette'
+    });
+  }
+};
+
+/**
  * @route   PUT /api/recipes/user/:id
  * @desc    Modifier une recette personnelle (User Premium)
  * @access  Private (Premium)

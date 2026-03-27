@@ -42,7 +42,7 @@ const FITNESS_LEVELS = [
 export default function ProfileUser({ onLogout }) {
   const navigate = useNavigate();
   const notify = useNotification();
-  const { user: authUser, refresh: refreshAuth } = useAuth();
+  const { user: authUser, refresh: refreshAuth, logout: authLogout } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile'); // profile, premium, matching, settings
@@ -349,8 +349,7 @@ export default function ProfileUser({ onLogout }) {
 
   const handleLogout = async () => {
     await logout();
-    window.dispatchEvent(new Event("storage"));
-    window.dispatchEvent(new Event("userLogout"));
+    authLogout();
     onLogout?.();
     navigate('/');
   };
