@@ -26,7 +26,7 @@ class ErrorBoundary extends React.Component {
             style={{
               marginTop: '1rem',
               padding: '0.5rem 1rem',
-              background: 'var(--couleur-bouton-action, #007bff)',
+              background: 'var(--couleur-bouton-action, #F7B186)',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
