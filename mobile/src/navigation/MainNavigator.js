@@ -8,7 +8,7 @@ import { BlurView } from 'expo-blur';
 
 import HomeStack from './stacks/HomeStack';
 import ExercicesStack from './stacks/ExercicesStack';
-import MatchingStack from './stacks/MatchingStack';
+import FluxStack from './stacks/FluxStack';
 import ProfileStack from './stacks/ProfileStack';
 
 import { useAuth } from '../contexts/AuthContext';
@@ -31,7 +31,7 @@ const COLORS = {
 const ICON_MAP = {
   HomeTab:     'home',
   ExercicesTab:'barbell',
-  MatchingTab: 'people',
+  FluxTab:     'newspaper',
   ProfileTab:  'person',
 };
 
@@ -40,7 +40,7 @@ const TAB_BAR_HEIGHT = 68;
 const BASE_TAB_CONFIG = [
   { name: 'HomeTab',      component: HomeStack,      label: 'Home',     requiresPremium: false },
   { name: 'ExercicesTab', component: ExercicesStack, label: 'Train',    requiresPremium: false },
-  { name: 'MatchingTab',  component: MatchingStack,  label: 'Chat',     requiresPremium: true  },
+  { name: 'FluxTab',      component: FluxStack,      label: 'Flux',     requiresPremium: false },
   { name: 'ProfileTab',   component: ProfileStack,   label: 'Moi',      requiresPremium: false },
 ];
 
@@ -137,7 +137,7 @@ function FloatingTabBar({ state, descriptors, navigation }) {
                 onPress={onPress}
                 onLongPress={onLongPress}
                 label={label}
-                unreadCount={route.name === 'MatchingTab' ? unreadCount : 0}
+                unreadCount={route.name === 'FluxTab' ? unreadCount : 0}
               />
             );
           })}
