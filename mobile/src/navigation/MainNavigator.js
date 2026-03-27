@@ -1,112 +1,170 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme, Platform, View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Pressable, Text, Animated } from 'react-native';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
 
 import HomeStack from './stacks/HomeStack';
 import ExercicesStack from './stacks/ExercicesStack';
 import MatchingStack from './stacks/MatchingStack';
 import ProfileStack from './stacks/ProfileStack';
 
-import { theme } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
 import { useChat } from '../contexts/ChatContext';
 
 const Tab = createBottomTabNavigator();
 
-// Configuration de base des tabs - Navigation simplifiée
-// Chat accessible depuis Matching uniquement, Recettes/Programmes depuis dashboard
-const BASE_TAB_CONFIG = [
-  {
-    name: 'HomeTab',
-    component: HomeStack,
-    label: 'Accueil',
-    icon: 'home',
-    requiresPremium: false,
-  },
-  {
-    name: 'ExercicesTab',
-    component: ExercicesStack,
-    label: 'Exercices',
-    icon: 'barbell',
-    requiresPremium: false,
-  },
-  {
-    name: 'MatchingTab',
-    component: MatchingStack,
-    label: 'Matching',
-    icon: 'people',
-    requiresPremium: true, // Réservé aux premium
-  },
-  {
-    name: 'ProfileTab',
-    component: ProfileStack,
-    label: 'Profil',
-    icon: 'person',
-    requiresPremium: false,
-  },
-];
-
-// Fonction pour déterminer si la tab bar doit être cachée
-const getTabBarVisibility = (route) => {
-  const routeName = getFocusedRouteNameFromRoute(route);
-
-  // ChatDetail et AIChat sont maintenant au niveau racine, pas besoin de les cacher ici
-  const hideOnScreens = ['ProgramRunner'];
-
-  if (hideOnScreens.includes(routeName)) {
-    return { display: 'none' };
-  }
-
-  return undefined;
+const COLORS = {
+  bg: '#FFFFFF',
+  glass: 'rgba(255, 255, 255, 0.97)',
+  accent: '#E8895A',         // peach plus saturé → meilleur contraste sur blanc
+  accentLabel: '#D4754A',    // encore plus foncé pour le texte
+  activePill: 'rgba(232, 137, 90, 0.12)',
+  iconInactive: '#9A9A9A',   // gris moyen, lisible sur blanc
+  textMuted: '#888888',
+  border: 'rgba(0, 0, 0, 0.10)',
+  shadow: '#C8A090',         // shadow teintée peach, plus élégant
 };
 
-export default function MainNavigator() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const { user } = useAuth();
-  const { unreadCount } = useChat();
-  const insets = useSafeAreaInsets();
+const ICON_MAP = {
+  HomeTab:     'home',
+  ExercicesTab:'barbell',
+  MatchingTab: 'people',
+  ProfileTab:  'person',
+};
 
-  // Vérifier si l'utilisateur est premium
-  // Le backend retourne isPremium directement, ou subscriptionTier === 'premium'
-  const isPremium = user?.isPremium || user?.subscriptionTier === 'premium' || user?.role === 'admin';
+const TAB_BAR_HEIGHT = 68;
 
-  // Filtrer les tabs en fonction du statut premium
-  const TAB_CONFIG = useMemo(() => {
-    return BASE_TAB_CONFIG.filter(tab => {
-      // Si le tab requiert premium et l'utilisateur n'est pas premium, ne pas l'afficher
-      if (tab.requiresPremium && !isPremium) {
-        return false;
-      }
-      return true;
-    });
-  }, [isPremium]);
+const BASE_TAB_CONFIG = [
+  { name: 'HomeTab',      component: HomeStack,      label: 'Home',     requiresPremium: false },
+  { name: 'ExercicesTab', component: ExercicesStack, label: 'Train',    requiresPremium: false },
+  { name: 'MatchingTab',  component: MatchingStack,  label: 'Chat',     requiresPremium: true  },
+  { name: 'ProfileTab',   component: ProfileStack,   label: 'Moi',      requiresPremium: false },
+];
 
-  const defaultTabBarStyle = {
-    backgroundColor: isDark ? '#1A1A1A' : '#FFFFFF',
-    borderTopColor: isDark ? '#333333' : theme.colors.border.light,
-    borderTopWidth: 1,
-    paddingTop: 8,
-    paddingBottom: Math.max(insets.bottom, 8),
-    height: Platform.OS === 'ios' ? 88 : 64 + insets.bottom,
+const getTabBarVisibility = (route) => {
+  const routeName = getFocusedRouteNameFromRoute(route);
+  return ['ProgramRunner'].includes(routeName);
+};
+
+// ─── Tab item with spring scale animation ────────────────────────────────────
+function TabItem({ route, isFocused, onPress, onLongPress, label, unreadCount }) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const iconName = ICON_MAP[route.name];
+
+  const handlePressIn = () => {
+    Animated.spring(scale, { toValue: 0.88, useNativeDriver: true, speed: 50 }).start();
+  };
+  const handlePressOut = () => {
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 20 }).start();
   };
 
   return (
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={styles.tabButton}
+    >
+      <Animated.View
+        style={[
+          styles.tabInner,
+          isFocused && styles.tabInnerActive,
+          { transform: [{ scale }] },
+        ]}
+      >
+        <View style={styles.iconWrap}>
+          <Ionicons
+            name={isFocused ? iconName : `${iconName}-outline`}
+            size={24}
+            color={isFocused ? COLORS.accent : COLORS.iconInactive}
+          />
+          {unreadCount > 0 && <View style={styles.badge} />}
+        </View>
+
+        <Text
+          style={[
+            styles.label,
+            isFocused ? styles.labelActive : styles.labelInactive,
+          ]}
+        >
+          {label}
+        </Text>
+      </Animated.View>
+    </Pressable>
+  );
+}
+
+// ─── Floating glass tab bar ───────────────────────────────────────────────────
+function FloatingTabBar({ state, descriptors, navigation }) {
+  const insets = useSafeAreaInsets();
+  const { unreadCount } = useChat();
+
+  const bottomOffset = Math.max(insets.bottom, 16);
+
+  return (
+    <View style={[styles.floatingWrapper, { bottom: bottomOffset }]}>
+      <BlurView intensity={60} tint="light" style={styles.blurView}>
+        <View style={styles.row}>
+          {state.routes.map((route, index) => {
+            const { options } = descriptors[route.key];
+            const label = options.tabBarLabel ?? options.title ?? route.name;
+            const isFocused = state.index === index;
+
+            const onPress = () => {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name, route.params);
+              }
+            };
+
+            const onLongPress = () => {
+              navigation.emit({ type: 'tabLongPress', target: route.key });
+            };
+
+            return (
+              <TabItem
+                key={route.key}
+                route={route}
+                isFocused={isFocused}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                label={label}
+                unreadCount={route.name === 'MatchingTab' ? unreadCount : 0}
+              />
+            );
+          })}
+        </View>
+      </BlurView>
+    </View>
+  );
+}
+
+// ─── Main Navigator ───────────────────────────────────────────────────────────
+export default function MainNavigator() {
+  const { user } = useAuth();
+  const insets = useSafeAreaInsets();
+
+  const isPremium = user?.isPremium || user?.subscriptionTier === 'premium' || user?.role === 'admin';
+
+  const TAB_CONFIG = useMemo(() => {
+    return BASE_TAB_CONFIG.filter(tab => !(tab.requiresPremium && !isPremium));
+  }, [isPremium]);
+
+  const sceneBottomPadding = TAB_BAR_HEIGHT + Math.max(insets.bottom, 16) + 16;
+
+  return (
     <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: isDark ? '#888888' : theme.colors.text.tertiary,
-        tabBarStyle: defaultTabBarStyle,
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '500',
-          marginTop: 2,
-        },
-      }}
+      screenOptions={{ headerShown: false }}
+      sceneContainerStyle={{ paddingBottom: sceneBottomPadding }}
+      tabBar={(props) => <FloatingTabBar {...props} />}
     >
       {TAB_CONFIG.map((tab) => (
         <Tab.Screen
@@ -115,23 +173,7 @@ export default function MainNavigator() {
           component={tab.component}
           options={({ route }) => ({
             tabBarLabel: tab.label,
-            tabBarIcon: ({ focused, color }) => (
-              <View>
-                <Ionicons
-                  name={focused ? tab.icon : `${tab.icon}-outline`}
-                  size={24}
-                  color={color}
-                />
-                {/* Point rouge pour les messages non lus sur Matching */}
-                {tab.name === 'MatchingTab' && unreadCount > 0 && (
-                  <View style={styles.unreadBadge} />
-                )}
-              </View>
-            ),
-            // Cacher la tab bar sur certains écrans (Matching pour chat/programmes)
-            tabBarStyle: tab.name === 'MatchingTab'
-              ? getTabBarVisibility(route) ?? defaultTabBarStyle
-              : defaultTabBarStyle,
+            tabBarStyle: getTabBarVisibility(route) ? { display: 'none' } : undefined,
           })}
         />
       ))}
@@ -139,16 +181,90 @@ export default function MainNavigator() {
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  unreadBadge: {
+  // Floating wrapper positionne la bar au-dessus du safe area
+  floatingWrapper: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    height: TAB_BAR_HEIGHT,
+    borderRadius: 36,
+    overflow: 'hidden',
+    // Shadow iOS
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 16,
+    // Shadow Android
+    elevation: 12,
+  },
+
+  blurView: {
+    flex: 1,
+    backgroundColor: COLORS.glass,
+    borderRadius: 36,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    overflow: 'hidden',
+  },
+
+  row: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+  },
+
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+  },
+
+  tabInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 24,
+  },
+
+  // Pill highlight sur l'item actif
+  tabInnerActive: {
+    backgroundColor: COLORS.activePill,
+  },
+
+  iconWrap: {
+    position: 'relative',
+  },
+
+  label: {
+    fontSize: 13,
+    letterSpacing: -0.2,
+  },
+
+  labelActive: {
+    color: COLORS.accentLabel,
+    fontWeight: '700',
+  },
+
+  labelInactive: {
+    display: 'none',
+  },
+
+  badge: {
     position: 'absolute',
     top: -2,
-    right: -6,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    right: -4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: '#FF3B30',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: COLORS.bg,
   },
 });

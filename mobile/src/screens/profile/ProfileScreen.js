@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
   userInfo: { alignItems: 'center', marginBottom: 24 },
   displayName: { fontSize: 26, fontWeight: '700', color: '#1A1A1A' },
   textLight: { color: '#FFFFFF' },
-  pseudo: { fontSize: 15, color: theme.colors.primary, marginTop: 4, fontWeight: '500' },
+  pseudo: { fontSize: 15, marginTop: 4, fontWeight: '500', color: 'black' },
   levelCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFF', borderRadius: 20, padding: 16, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 },
   cardDark: { backgroundColor: '#1A1D24' },
   levelLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },

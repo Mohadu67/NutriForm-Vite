@@ -123,11 +123,11 @@ export default function RecipesPage() {
   };
 
   const handleViewRecipe = (recipe) => {
-    // Ouvrir la recette dans un nouvel onglet ou naviguer vers la page detail
+    // Naviguer vers la page detail dans le même onglet
     if (recipe.slug) {
-      window.open(`/recettes/${recipe.slug}`, '_blank');
+      window.location.href = `/recettes/${recipe.slug}`;
     } else if (recipe._id) {
-      window.open(`/recettes/${recipe._id}`, '_blank');
+      window.location.href = `/recettes/${recipe._id}`;
     }
   };
 

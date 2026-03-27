@@ -142,6 +142,7 @@ export const endpoints = {
     liked: "/recipes/liked",
     saved: "/recipes/saved",
     myRecipes: "/recipes/user/my-recipes",
+    myRecipeById: (id) => `/recipes/user/${id}`,
     create: "/recipes/user",
     update: (id) => `/recipes/user/${id}`,
     delete: (id) => `/recipes/user/${id}`,

@@ -283,12 +283,23 @@ export default function MesRecettes({ onBack, onEdit, onCreate, onView, refreshK
                   </div>
 
                   <div className={styles.actions}>
-                    {/* Bouton Voir - toujours visible pour les recettes publiques */}
+                    {/* Bouton Voir - pour les recettes publiques et privees */}
                     {recipe.status === 'public' && (
                       <button
                         onClick={() => onView && onView(recipe)}
                         className={styles.viewBtn}
                         title="Voir la recette"
+                      >
+                        <EyeIcon size={16} />
+                      </button>
+                    )}
+
+                    {/* Bouton Voir - pour les recettes privees (charge via API) */}
+                    {recipe.status === 'private' && (
+                      <button
+                        onClick={() => onView && onView(recipe)}
+                        className={styles.viewBtn}
+                        title="Consulter la recette"
                       >
                         <EyeIcon size={16} />
                       </button>

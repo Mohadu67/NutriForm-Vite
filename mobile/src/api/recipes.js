@@ -151,7 +151,7 @@ export async function getSavedRecipes() {
 }
 
 /**
- * Récupérer mes recettes (premium)
+ * Récupérer mes recettes (freemium)
  */
 export async function getMyRecipes() {
   try {
@@ -163,6 +163,22 @@ export async function getMyRecipes() {
   } catch (error) {
     logger.app.debug('[RECIPES API] Get my recipes error:', error.message);
     return { success: false, data: [], error: error.message };
+  }
+}
+
+/**
+ * Récupérer une recette personnelle par ID (avant publication)
+ */
+export async function getMyRecipeById(id) {
+  try {
+    const response = await apiClient.get(endpoints.recipes.myRecipeById(id));
+    return {
+      success: true,
+      data: response.data?.recipe || null,
+    };
+  } catch (error) {
+    logger.app.debug('[RECIPES API] Get my recipe by ID error:', error.message);
+    return { success: false, data: null, error: error.message };
   }
 }
 
@@ -303,6 +319,7 @@ export default {
   getLikedRecipes,
   getSavedRecipes,
   getMyRecipes,
+  getMyRecipeById,
   createRecipe,
   updateRecipe,
   deleteRecipe,
