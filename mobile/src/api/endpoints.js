@@ -156,6 +156,16 @@ export const endpoints = {
   upload: {
     profilePhoto: "/upload/profile-photo",
   },
+  social: {
+    feed: "/social/feed",
+    stats: "/social/stats",
+    search: "/social/search",
+    follow: (userId) => `/social/follow/${userId}`,
+    unfollow: (userId) => `/social/follow/${userId}`,
+    followers: (userId) => `/social/followers/${userId}`,
+    following: (userId) => `/social/following/${userId}`,
+    userProfile: (userId) => `/social/users/${userId}`,
+  },
   leaderboard: {
     status: "/leaderboard/status",
     list: "/leaderboard",
