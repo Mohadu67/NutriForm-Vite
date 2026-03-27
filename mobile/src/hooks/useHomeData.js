@@ -11,6 +11,75 @@ const GOAL_STORAGE_KEY = '@weekly_goal';
 const CALCULATOR_STORAGE_KEY = '@calculator_data';
 
 /**
+ * Transforme les entrées brutes de GET /history en calculatorData
+ * compatible avec le format attendu par useHomeData (imc/calories/rm/cardio)
+ */
+function buildCalculatorDataFromHistory(historyItems) {
+  const result = { imc: { history: [] }, calories: { history: [] }, rm: { history: [] }, cardio: { history: [] } };
+
+  if (!Array.isArray(historyItems)) return result;
+
+  historyItems.forEach((r) => {
+    const m = r?.meta || {};
+    const date = r?.createdAt || m?.date || new Date().toISOString();
+
+    if (r?.action === 'IMC_CALC' || m?.type === 'imc') {
+      if (m?.imc != null) {
+        result.imc.history.push({
+          imc: m.imc,
+          poids: m.poids,
+          taille: m.taille,
+          categorie: m.categorie,
+          poidsIdealMin: m.poidsIdealMin,
+          poidsIdealMax: m.poidsIdealMax,
+          date,
+        });
+      }
+    } else if (r?.action === 'CALORIE_CALC' || r?.action === 'CALORIES_CALC' || m?.type === 'calories') {
+      const calories = m?.calories ?? m?.caloriesDaily ?? m?.dailyCalories ?? m?.calorie;
+      if (calories != null) {
+        result.calories.history.push({
+          maintenance: m.maintenance,
+          objectif: m.objectif,
+          calories,
+          macros: m.macros,
+          tmb: m.tmb,
+          date,
+        });
+      }
+    } else if (r?.action === 'RM_CALC' || m?.type === 'rm') {
+      if (m?.rm != null) {
+        result.rm.history.push({
+          rm: m.rm,
+          exercice: m.exercice,
+          poidsSouleve: m.poidsSouleve ?? m.poids,
+          reps: m.reps,
+          percentages: m.percentages,
+          date,
+        });
+      }
+    } else if (r?.action === 'FC_MAX_CALC' || m?.type === 'cardio') {
+      if (m?.fcMax != null) {
+        result.cardio.history.push({
+          fcMax: m.fcMax,
+          fcMaxTanaka: m.fcMaxTanaka,
+          age: m.age,
+          zones: m.zones,
+          date,
+        });
+      }
+    }
+  });
+
+  // Tri du plus récent au plus ancien
+  ['imc', 'calories', 'rm', 'cardio'].forEach((type) => {
+    result[type].history.sort((a, b) => new Date(b.date) - new Date(a.date));
+  });
+
+  return result;
+}
+
+/**
  * Hook centralisant toute la logique de données du HomeScreen.
  * Gère le chargement API, la fusion des sessions, les calculs dérivés.
  */
@@ -287,7 +356,7 @@ export function useHomeData() {
       setLoading(true);
       setShowHeavySections(false);
 
-      // Données locales en parallèle
+      // Cache local (affichage immédiat pendant que l'API charge)
       const [storedGoal, storedCalculatorData, localHistory] = await Promise.all([
         AsyncStorage.getItem(GOAL_STORAGE_KEY),
         AsyncStorage.getItem(CALCULATOR_STORAGE_KEY),
@@ -298,23 +367,37 @@ export function useHomeData() {
         const goalValue = parseInt(storedGoal, 10);
         setWeeklyGoal(goalValue);
       }
+      // Affichage immédiat depuis le cache local en attendant l'API
       if (storedCalculatorData) {
         setCalculatorData(JSON.parse(storedCalculatorData));
       }
 
       const localSessions = localHistory ? JSON.parse(localHistory) : [];
 
-      // Appels API en parallèle
-      const [summaryRes, workoutSessionsRes, programHistoryRes, subscriptionRes, notificationsRes] = await Promise.all([
+      // Appels API en parallèle — history.list pour synchroniser calculatorData
+      const [summaryRes, historyRes, workoutSessionsRes, programHistoryRes, subscriptionRes, notificationsRes] = await Promise.all([
         apiClient.get(endpoints.history.summary).catch(e => {
           logger.app.warn('Summary error', e);
           return { data: null };
         }),
+        apiClient.get(endpoints.history.list).catch(() => ({ data: [] })),
         apiClient.get(`${endpoints.workouts.sessions}?limit=50`).catch(() => ({ data: [] })),
         apiClient.get(`${endpoints.programs.history}?limit=50`).catch(() => ({ data: { sessions: [] } })),
         apiClient.get(endpoints.subscription.status).catch(() => ({ data: { tier: 'free' } })),
         apiClient.get(endpoints.notifications.list).catch(() => ({ data: { unreadCount: 0 } })),
       ]);
+
+      // Reconstruire calculatorData depuis la DB et mettre le cache à jour
+      const historyItems = Array.isArray(historyRes.data)
+        ? historyRes.data
+        : Array.isArray(historyRes.data?.history)
+        ? historyRes.data.history
+        : [];
+      if (historyItems.length > 0) {
+        const freshCalcData = buildCalculatorDataFromHistory(historyItems);
+        setCalculatorData(freshCalcData);
+        AsyncStorage.setItem(CALCULATOR_STORAGE_KEY, JSON.stringify(freshCalcData)).catch(() => {});
+      }
 
       setUnreadNotifications(notificationsRes.data?.unreadCount || 0);
 
@@ -369,17 +452,27 @@ export function useHomeData() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Rafraîchir notifications + calculateurs au focus
+  // Rafraîchir notifications + calculateurs au focus (depuis l'API, pas le cache local)
   useFocusEffect(
     useCallback(() => {
       const refreshOnFocus = async () => {
         try {
-          const [response, storedCalc] = await Promise.all([
+          const [notifResponse, historyResponse] = await Promise.all([
             apiClient.get(endpoints.notifications.list),
-            AsyncStorage.getItem(CALCULATOR_STORAGE_KEY),
+            apiClient.get(endpoints.history.list).catch(() => ({ data: [] })),
           ]);
-          setUnreadNotifications(response.data?.unreadCount || 0);
-          if (storedCalc) setCalculatorData(JSON.parse(storedCalc));
+          setUnreadNotifications(notifResponse.data?.unreadCount || 0);
+
+          const items = Array.isArray(historyResponse.data)
+            ? historyResponse.data
+            : Array.isArray(historyResponse.data?.history)
+            ? historyResponse.data.history
+            : [];
+          if (items.length > 0) {
+            const fresh = buildCalculatorDataFromHistory(items);
+            setCalculatorData(fresh);
+            AsyncStorage.setItem(CALCULATOR_STORAGE_KEY, JSON.stringify(fresh)).catch(() => {});
+          }
         } catch {
           // Non-critique, on ignore silencieusement
         }
