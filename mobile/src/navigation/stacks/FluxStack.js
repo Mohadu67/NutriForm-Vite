@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import FluxScreen from '../../screens/social/FluxScreen';
 import UserPublicProfileScreen from '../../screens/social/UserPublicProfileScreen';
+import ChallengesScreen from '../../screens/social/ChallengesScreen';
 import MatchingScreen from '../../screens/matching/MatchingScreen';
 import MatchesListScreen from '../../screens/matching/MatchesListScreen';
 
@@ -28,6 +29,7 @@ export default function FluxStack() {
         options={{ animation: 'slide_from_bottom' }}
       />
       <Stack.Screen name="MatchesList" component={MatchesListScreen} />
+      <Stack.Screen name="Challenges" component={ChallengesScreen} />
     </Stack.Navigator>
   );
 }
