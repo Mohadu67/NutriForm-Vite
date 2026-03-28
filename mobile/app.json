@@ -19,6 +19,7 @@
       "infoPlist": {
         "NSHealthShareUsageDescription": "Harmonith utilise vos données de santé pour personnaliser vos programmes fitness et suivre vos progrès.",
         "NSHealthUpdateUsageDescription": "Harmonith enregistre vos séances d'entraînement dans l'app Santé.",
+        "NSCameraUsageDescription": "Harmonith utilise la caméra pour scanner les codes-barres des produits alimentaires.",
         "ITSAppUsesNonExemptEncryption": false
       },
       "entitlements": {
@@ -56,13 +57,15 @@
         "android.permission.health.READ_MENSTRUATION",
         "android.permission.health.WRITE_STEPS",
         "android.permission.health.WRITE_ACTIVE_CALORIES_BURNED",
-        "android.permission.health.WRITE_EXERCISE"
+        "android.permission.health.WRITE_EXERCISE",
+        "android.permission.CAMERA"
       ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "expo-camera",
       "expo-secure-store",
       [
         "expo-notifications",
