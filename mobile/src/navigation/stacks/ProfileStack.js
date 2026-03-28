@@ -11,6 +11,7 @@ import SubscriptionScreen from '../../screens/profile/SubscriptionScreen';
 import SupportScreen from '../../screens/profile/SupportScreen';
 import RewardsScreen from '../../screens/profile/RewardsScreen';
 import BadgesScreen from '../../screens/badges/BadgesScreen';
+import ChallengesScreen from '../../screens/social/ChallengesScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -92,6 +93,7 @@ export default function ProfileStack() {
       <Stack.Screen name="Support" component={SupportScreen} />
       <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
       <Stack.Screen name="ChangeEmail" component={ChangeEmailScreen} />
+      <Stack.Screen name="Challenges" component={ChallengesScreen} options={{ animation: 'slide_from_right', gestureEnabled: true }} />
     </Stack.Navigator>
   );
 }

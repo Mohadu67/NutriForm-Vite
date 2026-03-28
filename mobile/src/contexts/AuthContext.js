@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { DeviceEventEmitter } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { secureStorage, storage } from '../services/storageService';
 import authService from '../api/auth';
 import websocketService from '../services/websocket';
@@ -377,6 +378,8 @@ export function AuthProvider({ children }) {
     } finally {
       // Toujours supprimer les tokens locaux et l'utilisateur
       await clearTokens();
+      // Vider le cache local lié à l'utilisateur pour éviter une fuite entre comptes
+      await AsyncStorage.multiRemove(['@calculator_data', '@weekly_goal', '@workout_history']).catch(() => {});
       setUser(null);
       setIsLoading(false);
     }

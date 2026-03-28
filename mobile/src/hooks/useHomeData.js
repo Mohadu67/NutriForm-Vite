@@ -393,11 +393,9 @@ export function useHomeData() {
         : Array.isArray(historyRes.data?.history)
         ? historyRes.data.history
         : [];
-      if (historyItems.length > 0) {
-        const freshCalcData = buildCalculatorDataFromHistory(historyItems);
-        setCalculatorData(freshCalcData);
-        AsyncStorage.setItem(CALCULATOR_STORAGE_KEY, JSON.stringify(freshCalcData)).catch(() => {});
-      }
+      const freshCalcData = buildCalculatorDataFromHistory(historyItems);
+      setCalculatorData(freshCalcData);
+      AsyncStorage.setItem(CALCULATOR_STORAGE_KEY, JSON.stringify(freshCalcData)).catch(() => {});
 
       setUnreadNotifications(notificationsRes.data?.unreadCount || 0);
 

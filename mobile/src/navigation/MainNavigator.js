@@ -1,7 +1,7 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { View, StyleSheet, Pressable, Text, Animated } from 'react-native';
+import { View, StyleSheet, Pressable, Text, Animated, TouchableOpacity, PanResponder, Dimensions } from 'react-native';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
@@ -13,84 +13,197 @@ import ProfileStack from './stacks/ProfileStack';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useChat } from '../contexts/ChatContext';
+import { useWorkout } from '../contexts/WorkoutContext';
+import { useTheme } from '../theme';
+import WorkoutContent from '../components/workout/WorkoutContent';
 
 const Tab = createBottomTabNavigator();
+const { height: SCREEN_H } = Dimensions.get('window');
 
-const COLORS = {
+const LIGHT_COLORS = {
   bg: '#FFFFFF',
   glass: 'rgba(255, 255, 255, 0.97)',
-  accent: '#E8895A',         // peach plus saturé → meilleur contraste sur blanc
-  accentLabel: '#D4754A',    // encore plus foncé pour le texte
+  accent: '#E8895A',
+  accentLabel: '#D4754A',
   activePill: 'rgba(232, 137, 90, 0.12)',
-  iconInactive: '#9A9A9A',   // gris moyen, lisible sur blanc
+  iconInactive: '#9A9A9A',
   textMuted: '#888888',
   border: 'rgba(0, 0, 0, 0.10)',
-  shadow: '#C8A090',         // shadow teintée peach, plus élégant
+  shadow: '#C8A090',
+};
+
+const DARK_COLORS = {
+  bg: '#12151A',
+  glass: 'rgba(18, 21, 27, 0.97)',
+  accent: '#F7B186',
+  accentLabel: '#F9C4A3',
+  activePill: 'rgba(247, 177, 134, 0.15)',
+  iconInactive: '#8A8E96',
+  textMuted: '#8A8E96',
+  border: 'rgba(255, 255, 255, 0.08)',
+  shadow: '#000000',
 };
 
 const ICON_MAP = {
-  HomeTab:     'home',
-  ExercicesTab:'barbell',
-  FluxTab:     'newspaper',
-  ProfileTab:  'person',
+  HomeTab: 'home',
+  ExercicesTab: 'barbell',
+  FluxTab: 'newspaper',
+  ProfileTab: 'person',
 };
 
-const TAB_BAR_HEIGHT = 68;
+const TAB_BAR_HEIGHT = 62;
+const MINI_BAR_HEIGHT = 44;
+const COLLAPSED_H = TAB_BAR_HEIGHT + MINI_BAR_HEIGHT;
+const MID_H = SCREEN_H * 0.55;
+const FULL_H = SCREEN_H * 0.88;
+
+const SPRING = { speed: 14, bounciness: 4, useNativeDriver: false };
 
 const BASE_TAB_CONFIG = [
-  { name: 'HomeTab',      component: HomeStack,      label: 'Home',     requiresPremium: false },
-  { name: 'ExercicesTab', component: ExercicesStack, label: 'Train',    requiresPremium: false },
-  { name: 'FluxTab',      component: FluxStack,      label: 'Flux',     requiresPremium: false },
-  { name: 'ProfileTab',   component: ProfileStack,   label: 'Moi',      requiresPremium: false },
+  { name: 'HomeTab', component: HomeStack, label: 'Home', requiresPremium: false },
+  { name: 'ExercicesTab', component: ExercicesStack, label: 'Train', requiresPremium: false },
+  { name: 'FluxTab', component: FluxStack, label: 'Flux', requiresPremium: false },
+  { name: 'ProfileTab', component: ProfileStack, label: 'Moi', requiresPremium: false },
 ];
 
 const getTabBarVisibility = (route) => {
   const routeName = getFocusedRouteNameFromRoute(route);
-  return ['ProgramRunner'].includes(routeName);
+  return routeName === 'ProgramRunner';
 };
 
-// ─── Tab item with spring scale animation ────────────────────────────────────
-function TabItem({ route, isFocused, onPress, onLongPress, label, unreadCount }) {
+// ─── Live timer ──────────────────────────────────────────────────────────────
+function MiniTimer({ startTime, colors: C }) {
+  const [elapsed, setElapsed] = useState('00:00');
+  useEffect(() => {
+    const tick = () => {
+      const diff = Math.floor((Date.now() - new Date(startTime).getTime()) / 1000);
+      const m = Math.floor(diff / 60).toString().padStart(2, '0');
+      const s = (diff % 60).toString().padStart(2, '0');
+      setElapsed(`${m}:${s}`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [startTime]);
+  return <Text style={[miniStyles.timer, { color: C.accent }]}>{elapsed}</Text>;
+}
+
+// ─── Mini bar ────────────────────────────────────────────────────────────────
+function WorkoutMiniBar({ isExpanded, colors: C }) {
+  const { currentWorkout, getCompletedSetsCount, getTotalSetsCount } = useWorkout();
+  if (!currentWorkout || !currentWorkout.exercises?.length) return null;
+
+  // Pulse animation on the handle
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const bounceAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isExpanded) return;
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.15, duration: 900, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 900, useNativeDriver: true }),
+      ])
+    );
+    const bounce = Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounceAnim, { toValue: -3, duration: 700, useNativeDriver: true }),
+        Animated.timing(bounceAnim, { toValue: 0, duration: 700, useNativeDriver: true }),
+      ])
+    );
+    pulse.start();
+    bounce.start();
+    return () => { pulse.stop(); bounce.stop(); };
+  }, [isExpanded, pulseAnim, bounceAnim]);
+
+  const isActive = !!currentWorkout.startTime;
+  const count = currentWorkout.exercises.length;
+  const completed = getCompletedSetsCount();
+  const total = getTotalSetsCount();
+
+  return (
+    <View style={[miniStyles.container, { borderTopColor: C.border }]}>
+      <Animated.View
+        style={[
+          miniStyles.handleWrap,
+          !isExpanded && { transform: [{ translateY: bounceAnim }, { scaleX: pulseAnim }] },
+        ]}
+      >
+        <View style={[miniStyles.handle, { backgroundColor: C.accent }]} />
+      </Animated.View>
+      <View style={miniStyles.row}>
+        <View style={miniStyles.info}>
+          {isActive ? (
+            <>
+              <View style={miniStyles.liveDot} />
+              <MiniTimer startTime={currentWorkout.startTime} colors={C} />
+              <Text style={[miniStyles.sep, { color: C.textMuted }]}>•</Text>
+              <Text style={[miniStyles.detail, { color: C.textMuted }]}>{completed}/{total} series</Text>
+            </>
+          ) : (
+            <>
+              <Ionicons name="barbell-outline" size={20} color={C.accent} />
+              <Text style={[miniStyles.detail, { color: C.textMuted }]}>{count} exercice{count > 1 ? 's' : ''}</Text>
+            </>
+          )}
+        </View>
+        <View style={[miniStyles.chevron, { backgroundColor: C.border }]}>
+          <Ionicons name={isExpanded ? 'chevron-down' : 'chevron-up'} size={16} color={C.textMuted} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const miniStyles = StyleSheet.create({
+  container: {
+    paddingTop: 2,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  handleWrap: {
+    alignSelf: 'center',
+    paddingVertical: 0,
+    marginBottom: 0,
+    paddingTop:12,
+  },
+  handle: {
+    width: 100,
+    height: 6,
+    borderRadius: 4,
+    opacity: 0.70,
+  },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingBottom: 5 },
+  info: { flexDirection: 'row', alignItems: 'center', gap: 5, flex: 1 },
+  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#22C55E' },
+  timer: { fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] },
+  sep: { fontSize: 11 },
+  detail: { fontSize: 14, fontWeight: '500' },
+  chevron: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+});
+
+// ─── Tab item ────────────────────────────────────────────────────────────────
+function TabItem({ route, isFocused, onPress, onLongPress, label, unreadCount, colors: C }) {
   const scale = useRef(new Animated.Value(1)).current;
   const iconName = ICON_MAP[route.name];
-
-  const handlePressIn = () => {
-    Animated.spring(scale, { toValue: 0.88, useNativeDriver: true, speed: 50 }).start();
-  };
-  const handlePressOut = () => {
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 20 }).start();
-  };
 
   return (
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
+      onPressIn={() => Animated.spring(scale, { toValue: 0.9, useNativeDriver: true, speed: 50 }).start()}
+      onPressOut={() => Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 20 }).start()}
       style={styles.tabButton}
     >
-      <Animated.View
-        style={[
-          styles.tabInner,
-          isFocused && styles.tabInnerActive,
-          { transform: [{ scale }] },
-        ]}
-      >
+      <Animated.View style={[styles.tabInner, isFocused && { backgroundColor: C.activePill }, { transform: [{ scale }] }]}>
         <View style={styles.iconWrap}>
           <Ionicons
             name={isFocused ? iconName : `${iconName}-outline`}
-            size={24}
-            color={isFocused ? COLORS.accent : COLORS.iconInactive}
+            size={22}
+            color={isFocused ? C.accent : C.iconInactive}
           />
-          {unreadCount > 0 && <View style={styles.badge} />}
+          {unreadCount > 0 && <View style={[styles.badge, { borderColor: C.bg }]} />}
         </View>
-
-        <Text
-          style={[
-            styles.label,
-            isFocused ? styles.labelActive : styles.labelInactive,
-          ]}
-        >
+        <Text style={[styles.label, isFocused ? { color: C.accentLabel, fontWeight: '700' } : styles.labelInactive]}>
           {label}
         </Text>
       </Animated.View>
@@ -98,59 +211,178 @@ function TabItem({ route, isFocused, onPress, onLongPress, label, unreadCount })
   );
 }
 
-// ─── Floating glass tab bar ───────────────────────────────────────────────────
+// ─── Floating tab bar (extensible) ───────────────────────────────────────────
 function FloatingTabBar({ state, descriptors, navigation }) {
   const insets = useSafeAreaInsets();
   const { unreadCount } = useChat();
+  const { currentWorkout } = useWorkout();
+  const { isDark } = useTheme();
+  const COLORS = isDark ? DARK_COLORS : LIGHT_COLORS;
 
-  const bottomOffset = Math.max(insets.bottom, 16);
+  const hasWorkout = !!(currentWorkout && currentWorkout.exercises?.length > 0);
+  const heightAnim = useRef(new Animated.Value(TAB_BAR_HEIGHT)).current;
+  const currentHeight = useRef(TAB_BAR_HEIGHT);
+  const startDragH = useRef(TAB_BAR_HEIGHT);
+  const [expanded, setExpanded] = useState(false);
+
+  // Animate to target height
+  const animateTo = useCallback((target) => {
+    currentHeight.current = target;
+    setExpanded(target > COLLAPSED_H + 20);
+    Animated.spring(heightAnim, { toValue: target, ...SPRING }).start();
+  }, [heightAnim]);
+
+  // When workout appears/disappears, animate to collapsed/base
+  useEffect(() => {
+    if (hasWorkout) {
+      if (currentHeight.current <= TAB_BAR_HEIGHT) {
+        animateTo(COLLAPSED_H);
+      }
+    } else {
+      animateTo(TAB_BAR_HEIGHT);
+      setExpanded(false);
+    }
+  }, [hasWorkout, animateTo]);
+
+  // Pan on the mini bar area
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dy) > 5,
+      onPanResponderGrant: () => {
+        startDragH.current = currentHeight.current;
+      },
+      onPanResponderMove: (_, gs) => {
+        // Dragging up = negative dy = bigger height
+        const newH = Math.max(COLLAPSED_H, Math.min(startDragH.current - gs.dy, FULL_H));
+        heightAnim.setValue(newH);
+      },
+      onPanResponderRelease: (_, gs) => {
+        const finalH = startDragH.current - gs.dy;
+        const vy = gs.vy;
+
+        // Fast flick up → expand more
+        if (vy < -0.5) {
+          if (currentHeight.current < MID_H) animateTo(MID_H);
+          else animateTo(FULL_H);
+          return;
+        }
+        // Fast flick down → collapse
+        if (vy > 0.5) {
+          if (currentHeight.current > MID_H) animateTo(MID_H);
+          else animateTo(COLLAPSED_H);
+          return;
+        }
+
+        // Snap to nearest
+        const dC = Math.abs(finalH - COLLAPSED_H);
+        const dM = Math.abs(finalH - MID_H);
+        const dF = Math.abs(finalH - FULL_H);
+        const min = Math.min(dC, dM, dF);
+        if (min === dF) animateTo(FULL_H);
+        else if (min === dM) animateTo(MID_H);
+        else animateTo(COLLAPSED_H);
+      },
+    })
+  ).current;
+
+  // Tap on mini bar to toggle
+  const handleMiniBarTap = useCallback(() => {
+    if (currentHeight.current <= COLLAPSED_H + 10) {
+      animateTo(MID_H);
+    } else {
+      animateTo(COLLAPSED_H);
+    }
+  }, [animateTo]);
+
+  const bottomOffset = Math.max(insets.bottom, 4);
+
+  // Animated border radius
+  const borderRadius = heightAnim.interpolate({
+    inputRange: [COLLAPSED_H, MID_H, FULL_H],
+    outputRange: [24, 18, 0],
+    extrapolate: 'clamp',
+  });
+
+  // Animated horizontal margin (wider as it expands)
+  const horizontalMargin = heightAnim.interpolate({
+    inputRange: [COLLAPSED_H, MID_H, FULL_H],
+    outputRange: [12, 6, 0],
+    extrapolate: 'clamp',
+  });
+
+  // Animated bottom offset (flush at full)
+  const animatedBottom = heightAnim.interpolate({
+    inputRange: [COLLAPSED_H, MID_H, FULL_H],
+    outputRange: [bottomOffset, bottomOffset / 2, 0],
+    extrapolate: 'clamp',
+  });
+
+  const innerContent = (
+    <View style={styles.contentColumn}>
+      {/* Workout content (above mini bar, grows as navbar extends) */}
+      {hasWorkout && (
+        <View style={styles.workoutArea}>
+          <WorkoutContent onClose={() => animateTo(COLLAPSED_H)} />
+        </View>
+      )}
+
+      {/* Mini bar with pan handler */}
+      {hasWorkout && (
+        <Animated.View {...panResponder.panHandlers}>
+          <TouchableOpacity activeOpacity={1} onPress={handleMiniBarTap}>
+            <WorkoutMiniBar isExpanded={expanded} colors={COLORS} />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
+      {/* Tab row - always at bottom */}
+      <View style={styles.row}>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const label = options.tabBarLabel ?? options.title ?? route.name;
+          const isFocused = state.index === index;
+
+          return (
+            <TabItem
+              key={route.key}
+              route={route}
+              isFocused={isFocused}
+              onPress={() => {
+                const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+                if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
+              }}
+              onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
+              label={label}
+              unreadCount={route.name === 'FluxTab' ? unreadCount : 0}
+              colors={COLORS}
+            />
+          );
+        })}
+      </View>
+    </View>
+  );
 
   return (
-    <View style={[styles.floatingWrapper, { bottom: bottomOffset }]}>
-      <BlurView intensity={60} tint="light" style={styles.blurView}>
-        <View style={styles.row}>
-          {state.routes.map((route, index) => {
-            const { options } = descriptors[route.key];
-            const label = options.tabBarLabel ?? options.title ?? route.name;
-            const isFocused = state.index === index;
-
-            const onPress = () => {
-              const event = navigation.emit({
-                type: 'tabPress',
-                target: route.key,
-                canPreventDefault: true,
-              });
-              if (!isFocused && !event.defaultPrevented) {
-                navigation.navigate(route.name, route.params);
-              }
-            };
-
-            const onLongPress = () => {
-              navigation.emit({ type: 'tabLongPress', target: route.key });
-            };
-
-            return (
-              <TabItem
-                key={route.key}
-                route={route}
-                isFocused={isFocused}
-                onPress={onPress}
-                onLongPress={onLongPress}
-                label={label}
-                unreadCount={route.name === 'FluxTab' ? unreadCount : 0}
-              />
-            );
-          })}
+    <Animated.View style={[styles.floatingWrapper, { bottom: animatedBottom, height: heightAnim, borderRadius, left: horizontalMargin, right: horizontalMargin, shadowColor: COLORS.shadow }]}>
+      {isDark ? (
+        <View style={[styles.darkContainer, { borderColor: COLORS.border, backgroundColor: COLORS.glass }]}>
+          {innerContent}
         </View>
-      </BlurView>
-    </View>
+      ) : (
+        <BlurView intensity={100} tint="light" style={[styles.blurView, { borderColor: COLORS.border }]}>
+          {innerContent}
+        </BlurView>
+      )}
+    </Animated.View>
   );
 }
 
-// ─── Main Navigator ───────────────────────────────────────────────────────────
+// ─── Main Navigator ──────────────────────────────────────────────────────────
 export default function MainNavigator() {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
+  const { isDark } = useTheme();
 
   const isPremium = user?.isPremium || user?.subscriptionTier === 'premium' || user?.role === 'admin';
 
@@ -158,12 +390,13 @@ export default function MainNavigator() {
     return BASE_TAB_CONFIG.filter(tab => !(tab.requiresPremium && !isPremium));
   }, [isPremium]);
 
-  const sceneBottomPadding = TAB_BAR_HEIGHT + Math.max(insets.bottom, 16) + 16;
+  const sceneBottomPadding = TAB_BAR_HEIGHT + MINI_BAR_HEIGHT + Math.max(insets.bottom, 16) + 40;
+  const sceneBg = isDark ? DARK_COLORS.bg : LIGHT_COLORS.bg;
 
   return (
     <Tab.Navigator
       screenOptions={{ headerShown: false }}
-      sceneContainerStyle={{ paddingBottom: sceneBottomPadding }}
+      sceneContainerStyle={{ paddingBottom: sceneBottomPadding, backgroundColor: sceneBg }}
       tabBar={(props) => <FloatingTabBar {...props} />}
     >
       {TAB_CONFIG.map((tab) => (
@@ -181,90 +414,74 @@ export default function MainNavigator() {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── Styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  // Floating wrapper positionne la bar au-dessus du safe area
   floatingWrapper: {
     position: 'absolute',
-    left: 16,
-    right: 16,
-    height: TAB_BAR_HEIGHT,
-    borderRadius: 36,
     overflow: 'hidden',
-    // Shadow iOS
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 16,
-    // Shadow Android
-    elevation: 12,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
   },
-
   blurView: {
     flex: 1,
-    backgroundColor: COLORS.glass,
-    borderRadius: 36,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },
-
-  row: {
+  darkContainer: {
     flex: 1,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+  },
+  contentColumn: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  workoutArea: {
+    flex: 1,
+    overflow: 'hidden',
+  },
+  row: {
+    height: TAB_BAR_HEIGHT,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
+    paddingBottom: 4,
   },
-
   tabButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     height: '100%',
   },
-
   tabInner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 24,
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
-
-  // Pill highlight sur l'item actif
-  tabInnerActive: {
-    backgroundColor: COLORS.activePill,
-  },
-
   iconWrap: {
     position: 'relative',
   },
-
   label: {
-    fontSize: 13,
-    letterSpacing: -0.2,
+    fontSize: 12,
+    letterSpacing: -0.3,
   },
-
-  labelActive: {
-    color: COLORS.accentLabel,
-    fontWeight: '700',
-  },
-
   labelInactive: {
     display: 'none',
   },
-
   badge: {
     position: 'absolute',
     top: -2,
     right: -4,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
     backgroundColor: '#FF3B30',
     borderWidth: 1.5,
-    borderColor: COLORS.bg,
   },
 });
