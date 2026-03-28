@@ -12,46 +12,53 @@ import { ChatProvider } from './src/contexts/ChatContext';
 import { RecipeProvider } from './src/contexts/RecipeContext';
 import { ProgramProvider } from './src/contexts/ProgramContext';
 import { ToastProvider } from './src/contexts/ToastContext';
+import { ThemeProvider, useTheme } from './src/theme';
 import Navigation from './src/navigation';
 import notificationService from './src/services/notificationService';
 import HealthDisclaimerModal from './src/components/HealthDisclaimerModal';
 import HealthConnectOnboarding from './src/components/HealthConnectOnboarding';
 
-export default function App() {
-  useEffect(() => {
-    // Enregistrer pour les notifications push
-    notificationService.registerForPushNotifications();
+function AppContent() {
+  const { isDark } = useTheme();
 
-    // Configurer la couleur de la barre système Android (transparente)
+  useEffect(() => {
+    notificationService.registerForPushNotifications();
     if (Platform.OS === 'android') {
       SystemUI.setBackgroundColorAsync('transparent');
     }
-
     return () => {
       notificationService.cleanup();
     };
   }, []);
 
   return (
+    <AuthProvider>
+      <ToastProvider>
+        <WorkoutProvider>
+          <ChatProvider>
+            <RecipeProvider>
+              <ProgramProvider>
+                <StatusBar style={isDark ? 'light' : 'dark'} />
+                <Navigation />
+                <HealthDisclaimerModal />
+                <HealthConnectOnboarding />
+              </ProgramProvider>
+            </RecipeProvider>
+          </ChatProvider>
+        </WorkoutProvider>
+      </ToastProvider>
+    </AuthProvider>
+  );
+}
+
+export default function App() {
+  return (
     <ErrorBoundary>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
-          <AuthProvider>
-            <ToastProvider>
-              <WorkoutProvider>
-                <ChatProvider>
-                  <RecipeProvider>
-                    <ProgramProvider>
-                      <StatusBar style="dark" />
-                      <Navigation />
-                      <HealthDisclaimerModal />
-                      <HealthConnectOnboarding />
-                    </ProgramProvider>
-                  </RecipeProvider>
-                </ChatProvider>
-              </WorkoutProvider>
-            </ToastProvider>
-          </AuthProvider>
+          <ThemeProvider>
+            <AppContent />
+          </ThemeProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>
     </ErrorBoundary>

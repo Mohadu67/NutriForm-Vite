@@ -1004,36 +1004,6 @@ export default function ExercicesScreen() {
         </SafeAreaView>
       </Modal>
 
-      {/* Floating Workout Button - affiche si seance active OU en preparation */}
-      {currentWorkout && currentWorkout.exercises?.length > 0 && (
-        <TouchableOpacity
-          style={[
-            styles.floatingWorkoutButton,
-            !isWorkoutActive && styles.floatingWorkoutButtonPrep,
-          ]}
-          onPress={() => navigation.navigate('WorkoutSession')}
-          activeOpacity={0.9}
-        >
-          <View style={styles.floatingWorkoutContent}>
-            <View style={[
-              styles.floatingWorkoutIcon,
-              !isWorkoutActive && styles.floatingWorkoutIconPrep,
-            ]}>
-              <Ionicons name={isWorkoutActive ? 'fitness' : 'list'} size={22} color="#FFF" />
-            </View>
-            <View style={styles.floatingWorkoutInfo}>
-              <Text style={styles.floatingWorkoutTitle}>
-                {isWorkoutActive ? 'Seance en cours' : 'Preparation'}
-              </Text>
-              <Text style={styles.floatingWorkoutSubtitle}>
-                {currentWorkout.exercises.length} exercice{currentWorkout.exercises.length > 1 ? 's' : ''}
-                {isWorkoutActive && ` • ${getCompletedSetsCount()}/${getTotalSetsCount()} series`}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#FFF" />
-          </View>
-        </TouchableOpacity>
-      )}
     </SafeAreaView>
   );
 }
@@ -1062,7 +1032,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: theme.spacing.lg,
-    paddingBottom: theme.spacing.xl * 2,
+    paddingBottom: 180,
   },
   header: {
     marginBottom: theme.spacing.md,
@@ -1533,54 +1503,6 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.semibold,
   },
 
-  // Floating Workout Button
-  floatingWorkoutButton: {
-    position: 'absolute',
-    bottom: 20,
-    left: 16,
-    right: 16,
-    backgroundColor: '#22C55E',
-    borderRadius: 16,
-    shadowColor: '#22C55E',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  floatingWorkoutButtonPrep: {
-    backgroundColor: '#3B82F6',
-    shadowColor: '#3B82F6',
-  },
-  floatingWorkoutContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-  },
-  floatingWorkoutIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  floatingWorkoutIconPrep: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
-  },
-  floatingWorkoutInfo: {
-    flex: 1,
-  },
-  floatingWorkoutTitle: {
-    color: '#FFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  floatingWorkoutSubtitle: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 13,
-    marginTop: 2,
-  },
   // Compteur de séances
   sessionsCounterCard: {
     backgroundColor: '#FFFFFF',
