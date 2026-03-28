@@ -446,6 +446,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: theme.spacing.md,
+    paddingBottom: 180,
     gap: theme.spacing.md,
   },
   listContentEmpty: {

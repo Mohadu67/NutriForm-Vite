@@ -117,7 +117,7 @@ export default function ProfileScreen() {
 
   const quickActions = [
     { icon: 'trophy-outline', label: 'Badges', screen: 'Badges', gradient: ['#F7B186', '#E89A6F'] },
-    { icon: 'notifications-outline', label: 'Alertes', screen: 'Notifications', isExternal: true, gradient: ['#FF6B6B', '#F7B186'] },
+    { icon: 'flash-outline', label: 'Défis', screen: 'Challenges', gradient: ['#FBBF24', '#F59E0B'] },
     { icon: 'gift-outline', label: 'Recompenses', screen: 'Rewards', gradient: ['#F9C4A3', '#F7B186'] },
     { icon: 'calculator-outline', label: 'Calculs', screen: 'Calculators', isExternal: true, gradient: ['#B8DDD1', '#A0C9BD'] },
   ];
@@ -463,7 +463,7 @@ const styles = StyleSheet.create({
   headerSpacer: { width: 40 },
   headerBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
   headerBtnDark: { backgroundColor: '#2A2A2A' },
-  scrollContent: { paddingTop: 100, paddingHorizontal: 20, paddingBottom: 40 },
+  scrollContent: { paddingTop: 100, paddingHorizontal: 20, paddingBottom: 180 },
   avatarSection: { alignItems: 'center', marginBottom: 16 },
   avatarRing: { width: RING_SIZE, height: RING_SIZE, borderRadius: RING_SIZE / 2, padding: 4, alignItems: 'center', justifyContent: 'center' },
   avatarRingGradient: { ...StyleSheet.absoluteFillObject, borderRadius: RING_SIZE / 2 },

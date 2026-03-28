@@ -141,7 +141,7 @@ export default function SupportScreen() {
 
           <TouchableOpacity
             style={[styles.linkItem, isDark && styles.linkItemDark]}
-            onPress={() => Linking.openURL('mailto:support@nutriform.app')}
+            onPress={() => Linking.openURL('mailto:contact.harmonith@gmail.com')}
             activeOpacity={0.7}
           >
             <View style={[styles.linkIcon, { backgroundColor: '#3B82F620' }]}>
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: theme.spacing.lg,
-    paddingBottom: theme.spacing.xl * 2,
+    paddingBottom: 180,
   },
   section: {
     backgroundColor: '#FFFFFF',

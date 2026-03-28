@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
   // Content
   content: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 180,
   },
 
   // Icon
