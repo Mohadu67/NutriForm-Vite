@@ -82,12 +82,14 @@ export const endpoints = {
   challenges: {
     list: "/challenges",
     stats: "/challenges/stats",
+    leaderboard: "/challenges/leaderboard",
     byId: (id) => `/challenges/${id}`,
     create: "/challenges",
     accept: (id) => `/challenges/${id}/accept`,
     decline: (id) => `/challenges/${id}/decline`,
     cancel: (id) => `/challenges/${id}/cancel`,
     congratulate: "/challenges/congratulate",
+    submitResult: (id) => `/challenges/${id}/submit-result`,
   },
   chatUpload: "/chat-upload",
   xpRedemption: {
@@ -112,6 +114,7 @@ export const endpoints = {
     conversations: "/match-chat/conversations",
     unreadCount: "/match-chat/unread-count",
     conversation: (matchId) => `/match-chat/conversation/${matchId}`,
+    socialConversation: (userId) => `/match-chat/social/${userId}`,
     messages: (conversationId) => `/match-chat/${conversationId}/messages`,
     markAsRead: (conversationId) => `/match-chat/${conversationId}/read`,
     deleteMessage: (messageId) => `/match-chat/messages/${messageId}`,
@@ -165,10 +168,19 @@ export const endpoints = {
     followers: (userId) => `/social/followers/${userId}`,
     following: (userId) => `/social/following/${userId}`,
     userProfile: (userId) => `/social/users/${userId}`,
+    likePost: (targetId) => `/social/feed/${targetId}/like`,
+    sendMessage: (userId) => `/social/message/${userId}`,
+    getComments: (postId) => `/social/feed/${postId}/comments`,
+    addComment: (postId) => `/social/feed/${postId}/comments`,
+    deleteComment: (postId, commentId) => `/social/feed/${postId}/comments/${commentId}`,
   },
   leaderboard: {
     status: "/leaderboard/status",
     list: "/leaderboard",
+    userRank: (userId) => `/leaderboard/user/${userId}/rank`,
+    optIn: "/leaderboard/opt-in",
+    optOut: "/leaderboard/opt-out",
+    refreshProfile: "/leaderboard/refresh-profile",
   },
   programs: {
     // Public
@@ -211,6 +223,9 @@ export const endpoints = {
     weightHistory: "/body-composition/weight",
     deleteWeight: (id) => `/body-composition/weight/${id}`,
     metrics: "/body-composition/metrics",
+  },
+  barcode: {
+    lookup: (barcode) => `/barcode/${barcode}`,
   },
 };
 
