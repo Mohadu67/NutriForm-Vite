@@ -76,6 +76,10 @@ const NutritionPage = lazy(() => import("./pages/Nutrition/NutritionPage.jsx"));
 // Rewards - lazy loaded
 const RewardsPage = lazy(() => import("./pages/Rewards/RewardsPage.jsx"));
 
+// Social / Flux - lazy loaded
+const FluxPage = lazy(() => import("./pages/Flux/FluxPage.jsx"));
+const UserPublicProfilePage = lazy(() => import("./pages/Social/UserPublicProfilePage.jsx"));
+
 export default function App() {
   useEffect(() => {
     // Notifications uniquement côté client
@@ -156,6 +160,10 @@ export default function App() {
 
             {/* Rewards - lazy loaded */}
             <Route path="/rewards" element={<RewardsPage />} />
+
+            {/* Social / Flux */}
+            <Route path="/flux" element={<ProtectedRoute><FluxPage /></ProtectedRoute>} />
+            <Route path="/social/u/:userId" element={<ProtectedRoute><UserPublicProfilePage /></ProtectedRoute>} />
 
             {/* 404 */}
             <Route path="*" element={<NotFound />} />

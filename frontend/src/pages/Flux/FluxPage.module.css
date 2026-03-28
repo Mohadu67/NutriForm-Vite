@@ -1,0 +1,460 @@
+.page { min-height: 100vh; }
+
+/* ── Layout — mobile first ───────────────────────────────────────────── */
+.layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 12px 80px;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.sidebar { display: none; }
+
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr 300px;
+    gap: 24px;
+    padding: 96px 16px 80px;   /* 80px header + 16px breathing room */
+  }
+  .sidebar { display: flex; }
+}
+
+/* ── Page header ─────────────────────────────────────────────────────── */
+.pageHeader { grid-column: 1 / -1; }
+.pageTitle {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #0F1117;
+  letter-spacing: -0.8px;
+  margin: 0 0 2px;
+}
+.pageSubtitle { font-size: 13px; color: #9CA3AF; margin: 0; font-weight: 500; }
+
+@media (min-width: 900px) {
+  .pageTitle { font-size: 2rem; }
+}
+
+/* ── Inline search bar (affiché en tête du feed, masqué sur desktop car sidebar) */
+.inlineSearch {
+  background: #fff;
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 4px 20px rgba(0,0,0,.04);
+  grid-column: 1 / -1;
+}
+.inlineSearchInner {
+  display: flex; align-items: center; gap: 8px;
+  background: #F4F5F9; border-radius: 12px;
+  padding: 10px 14px; margin-bottom: 0;
+}
+.inlineSearchInner input {
+  border: none; background: transparent; flex: 1;
+  font-size: 14px; color: #111; outline: none; font-weight: 500;
+}
+.inlineSearchInner input::placeholder { color: #C0C3CC; }
+.inlineSearchResults { margin-top: 10px; }
+
+@media (min-width: 900px) {
+  .inlineSearch { display: none; } /* remplacé par la sidebar sur desktop */
+}
+
+/* ── Feed column ─────────────────────────────────────────────────────── */
+.feed { display: flex; flex-direction: column; gap: 14px; }
+
+/* ── Card base ───────────────────────────────────────────────────────── */
+.card {
+  background: #fff;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 4px 20px rgba(0,0,0,.04);
+  padding: 20px;
+  transition: transform .15s, box-shadow .15s;
+}
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,.08), 0 8px 28px rgba(0,0,0,.06);
+}
+
+/* ── Card header ─────────────────────────────────────────────────────── */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  flex: 1;
+  min-width: 0;
+}
+.userRow:hover .userName { color: #E89A6F; }
+
+.avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid #F0F1F4;
+}
+.avatarPlaceholder {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E89A6F 0%, #F9C4A3 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 800; color: #fff;
+  flex-shrink: 0;
+}
+
+.userMeta { min-width: 0; }
+.userName {
+  font-size: 14px; font-weight: 700; color: #111;
+  transition: color .15s;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.userDate {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; color: #B0B4BC; margin-top: 2px; font-weight: 500;
+}
+
+.menuBtn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: #F4F5F9;
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #9CA3AF;
+  transition: background .15s;
+  flex-shrink: 0;
+}
+.menuBtn:hover { background: #E8EAF0; color: #555; }
+
+/* ── Workout title ───────────────────────────────────────────────────── */
+.workoutName {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0F1117;
+  letter-spacing: -0.4px;
+  line-height: 1.3;
+  margin-bottom: 16px;
+}
+
+/* ── Stats row ───────────────────────────────────────────────────────── */
+.statsRow {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #EDEEF4;
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  background: #FAFBFE;
+}
+.statCell { flex: 1; text-align: center; }
+.statLabel {
+  font-size: 10px; font-weight: 700; color: #B0B4BC;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+}
+.statValue { font-size: 15px; font-weight: 800; color: #0F1117; }
+.statDivider {
+  width: 1.5px; height: 32px;
+  background: #EDEEF4; flex-shrink: 0;
+}
+
+/* ── Muscle block ────────────────────────────────────────────────────── */
+.muscleBlock {
+  background: #F7F8FC;
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.muscleLegend { flex: 1; min-width: 0; }
+.muscleSection { font-size: 11px; font-weight: 700; color: #9CA3AF; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.4px; }
+.muscleTags { display: flex; flex-wrap: wrap; gap: 5px; }
+.muscleTag {
+  font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 20px;
+  border: 1px solid transparent;
+}
+.muscleTagMore {
+  font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 20px;
+  background: #E8EAF0; color: #666;
+  border: none; cursor: pointer;
+  transition: background .15s;
+}
+.muscleTagMore:hover { background: #DDE0E8; }
+
+/* ── Body diagram ────────────────────────────────────────────────────── */
+.bodyDiagram { flex-shrink: 0; }
+.bodySvg { width: 68px; display: block; }
+.bodySvg svg { width: 100%; height: auto; display: block; }
+
+/* ── PR highlights ───────────────────────────────────────────────────── */
+.highlights { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.prRow {
+  display: flex; align-items: center; gap: 8px;
+  background: #FFFBF2; border: 1px solid #F0E4C0;
+  border-radius: 10px; padding: 7px 12px;
+}
+.prLabel { font-size: 9px; font-weight: 800; color: #C9A84C; letter-spacing: 0.7px; text-transform: uppercase; }
+.prExercise { flex: 1; font-size: 12px; font-weight: 600; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prValue { font-size: 12px; font-weight: 800; color: #C9A84C; }
+
+/* ── Like button ─────────────────────────────────────────────────────── */
+.reactionBar {
+  display: flex;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1.5px solid #F2F3F8;
+  margin-top: 4px;
+}
+
+.likeBtn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px 7px 10px;
+  border-radius: 24px;
+  border: 1.5px solid #EDEEF4;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px; font-weight: 700; color: #9CA3AF;
+  transition: all .15s;
+}
+.likeBtn:hover { background: #FFF0EA; border-color: #E89A6F; color: #E89A6F; }
+.likeBtnActive { background: #FFF0EA !important; border-color: #E89A6F !important; color: #E89A6F !important; }
+.likeBtnCount { font-size: 13px; font-weight: 700; }
+
+.commentBtn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px 7px 10px;
+  border-radius: 24px;
+  border: 1.5px solid #EDEEF4;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px; font-weight: 700; color: #9CA3AF;
+  transition: all .15s; margin-left: 8px;
+}
+.commentBtn:hover { background: #EEF2FF; border-color: #B8DDD1; color: #B8DDD1; }
+.commentBtnActive { background: #EEF2FF !important; border-color: #B8DDD1 !important; color: #B8DDD1 !important; }
+
+/* ── Comments section ────────────────────────────────────────────────── */
+.commentSection {
+  border-top: 1.5px solid #F2F3F8;
+  padding-top: 12px;
+  margin-top: 4px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.commentsLoading { font-size: 12px; color: #AAA; padding: 8px 0; }
+.commentRow {
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.commentAvatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #F0F1F6; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.commentAvatarImg { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+.commentAvatarLetter { font-size: 12px; font-weight: 800; color: #E89A6F; }
+.commentBubble {
+  flex: 1; background: #F5F6FA; border-radius: 12px;
+  padding: 7px 12px; display: flex; flex-direction: column; gap: 2px;
+}
+.commentAuthor { font-size: 12px; font-weight: 700; color: #333; }
+.commentContent { font-size: 13px; color: #555; line-height: 1.4; }
+.commentDeleteBtn {
+  background: none; border: none; cursor: pointer; padding: 4px 6px;
+  font-size: 10px; color: #CCC; flex-shrink: 0; align-self: center;
+  border-radius: 4px;
+}
+.commentDeleteBtn:hover { color: #EF4444; background: #FFF0F0; }
+.commentForm { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.commentInput {
+  flex: 1; border: 1.5px solid #EDEEF4; border-radius: 22px;
+  padding: 8px 14px; font-size: 13px; background: #FAFBFC; outline: none;
+}
+.commentInput:focus { border-color: #B8DDD1; }
+.commentSendBtn {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: #B8DDD1; border: none; cursor: pointer;
+  color: #FFF; font-size: 16px; display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.commentSendBtn:hover { background: #E89A6F; }
+.commentSendBtn:disabled { opacity: 0.4; cursor: default; }
+
+/* ── Activity banner (meal / recipe) ────────────────────────────────── */
+.activityBanner {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 16px; border-radius: 16px; margin-bottom: 14px;
+}
+.activityBanner[data-type="meal"] { background: linear-gradient(135deg, #EDFBF4, #D4F5E6); }
+.activityBanner[data-type="recipe"] { background: linear-gradient(135deg, #F0EFFF, #E4E2FF); }
+
+.activityIcon { font-size: 30px; flex-shrink: 0; line-height: 1; }
+.activityLabel { font-size: 10px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; }
+.activityTitle { font-size: 16px; font-weight: 800; color: #111; }
+.activitySub { font-size: 12px; color: #B0B4BC; margin-top: 3px; font-weight: 500; }
+
+/* ── Card notes ──────────────────────────────────────────────────────── */
+.cardNotes {
+  font-size: 13px; color: #666; font-style: italic;
+  padding: 10px 14px; background: #FAFBFE;
+  border-radius: 10px; margin-top: 8px; margin-bottom: 2px;
+  border-left: 3px solid #E0E3EA;
+}
+
+/* ── Recipe image ────────────────────────────────────────────────────── */
+.recipeImageWrap {
+  border-radius: 14px; overflow: hidden;
+  margin-bottom: 14px; max-height: 180px;
+}
+.recipeImage { width: 100%; height: 180px; object-fit: cover; display: block; }
+
+.viewRecipeBtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px; margin-bottom: 2px;
+  padding: 8px 16px;
+  background: transparent; border: 1.5px solid #E89A6F;
+  color: #E89A6F; border-radius: 12px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: all .15s;
+}
+.viewRecipeBtn:hover { background: #E89A6F; color: #fff; }
+
+/* ── Challenge card ──────────────────────────────────────────────────── */
+.challengeHeader {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+}
+.challengeBadge {
+  background: linear-gradient(135deg, #FBBF24, #F59E0B);
+  color: #fff; font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 8px;
+}
+.challengeLabel { font-size: 14px; font-weight: 700; color: #333; }
+
+.challengeVS { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
+.vsPlayer {
+  flex: 1; text-align: center; padding: 14px 8px;
+  border-radius: 16px; background: #F7F8FC;
+  border: 1.5px solid transparent;
+}
+.vsPlayer.vsWinner {
+  background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+  border-color: #F59E0B;
+}
+.vsAvatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; margin: 0 auto 8px; display: block; border: 2px solid #E8E8E8; }
+.vsAvatarPlaceholder {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, #E89A6F, #F9C4A3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700; color: #fff; margin: 0 auto 8px;
+}
+.vsName { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 6px; }
+.vsScore { font-size: 22px; font-weight: 900; color: #0F1117; }
+.vsLabel {
+  font-size: 16px; font-weight: 900; color: #CCC;
+  padding-top: 26px; flex-shrink: 0;
+}
+.winnerBadge { margin-top: 6px; font-size: 10px; font-weight: 800; color: #B45309; }
+.drawResult { text-align: center; font-size: 13px; font-weight: 700; color: #6B7280; padding: 8px 0 0; }
+.rewardInfo { text-align: center; font-size: 12px; font-weight: 600; color: #E89A6F; padding: 6px 0 0; }
+
+/* ── Sidebar ─────────────────────────────────────────────────────────── */
+.sidebar { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 80px; }
+
+.sideCard {
+  background: #fff; border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.04);
+}
+.sideTitle { font-size: 14px; font-weight: 800; color: #0F1117; margin-bottom: 14px; letter-spacing: -0.2px; }
+
+.searchBar {
+  display: flex; align-items: center; gap: 8px;
+  background: #F4F5F9; border-radius: 12px;
+  padding: 10px 14px; margin-bottom: 12px;
+}
+.searchBar input {
+  border: none; background: transparent; flex: 1;
+  font-size: 14px; color: #111; outline: none; font-weight: 500;
+}
+.searchBar input::placeholder { color: #C0C3CC; }
+
+.resultRow {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #F4F5F9;
+  cursor: pointer; text-decoration: none; color: inherit;
+  transition: opacity .15s;
+}
+.resultRow:last-child { border-bottom: none; }
+.resultRow:hover { opacity: 0.75; }
+
+.resultAvatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.resultAvatarPlaceholder {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #E89A6F, #F9C4A3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.resultMeta { flex: 1; min-width: 0; }
+.resultName { font-size: 13px; font-weight: 700; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.resultPseudo { font-size: 11px; color: #B0B4BC; font-weight: 500; }
+
+.followBtn {
+  padding: 5px 12px; border-radius: 20px; border: none;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  transition: opacity .15s; white-space: nowrap;
+}
+.followBtn:hover { opacity: 0.8; }
+.followBtnFollow { background: #E89A6F; color: #fff; }
+.followBtnFollowing { background: #F0F0F0; color: #888; }
+
+/* ── Activity legend ─────────────────────────────────────────────────── */
+.activityLegend { display: flex; flex-direction: column; gap: 10px; }
+.legendItem { display: flex; align-items: center; gap: 10px; }
+.legendDot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legendLabel { font-size: 13px; color: #666; font-weight: 500; }
+
+/* ── Empty + Loading ─────────────────────────────────────────────────── */
+.emptyState {
+  background: #fff; border-radius: 22px;
+  padding: 52px 32px; text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.04);
+}
+.emptyIcon {
+  width: 64px; height: 64px; border-radius: 22px;
+  background: linear-gradient(135deg, #E89A6F, #F9C4A3);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px; font-size: 28px;
+}
+.emptyTitle { font-size: 20px; font-weight: 800; color: #111; margin-bottom: 8px; letter-spacing: -0.3px; }
+.emptySubtitle { font-size: 14px; color: #B0B4BC; line-height: 1.7; font-weight: 500; }
+
+.loader { text-align: center; padding: 48px; }
+.loadMore { text-align: center; padding: 20px; }
+.endOfFeed { text-align: center; padding: 20px; color: #CCC; font-size: 13px; font-weight: 600; }
+
+/* ── Spinner ─────────────────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid #F0F0F0;
+  border-top-color: #E89A6F;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 0 auto;
+}

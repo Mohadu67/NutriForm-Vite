@@ -22,6 +22,14 @@ import {
   UsersIcon, HelpCircleIcon, UtensilsIcon, CalendarIcon
 } from "./NavIcons";
 
+function FluxIcon({ size = 28 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>
+    </svg>
+  );
+}
+
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -235,6 +243,7 @@ export default function Navbar() {
     const links = [];
     if (isLoggedIn) {
       links.push({ label: "Dashboard", path: "/dashboard", icon: <DashboardIcon size={28} /> });
+      links.push({ label: "Flux", path: "/flux", icon: <FluxIcon size={28} /> });
     }
     if (isLoggedIn && isPremium) {
       links.push({ label: 'GymBro', path: "/matching", icon: <UsersIcon size={28} />, isPremium: true });
