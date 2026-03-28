@@ -52,9 +52,20 @@ function getTypeLabel(type) {
     sessions: 'séances',
     streak: 'jours de streak',
     calories: 'calories',
-    duration: 'minutes'
+    duration: 'minutes',
+    max_pushups: 'max pompes',
+    max_pullups: 'max tractions',
+    max_bench: 'développé couché max',
+    max_squat: 'squat max',
+    max_deadlift: 'soulevé de terre max',
+    max_burpees: 'max burpees (60s)',
   };
   return labels[type] || type;
+}
+
+// Dériver la catégorie depuis le type
+function getChallengeCategory(type) {
+  return type.startsWith('max_') ? 'max' : 'ongoing';
 }
 
 // Calculer le score d'un utilisateur pour un type de défi
@@ -159,6 +170,7 @@ exports.createChallenge = async (req, res) => {
       challengedName: challenged.pseudo || challenged.prenom,
       challengedAvatar: challenged.photo,
       type,
+      challengeCategory: getChallengeCategory(type),
       duration,
       status: 'pending'
     });
@@ -724,6 +736,151 @@ exports.sendCongratulations = async (req, res) => {
       success: false,
       message: 'Erreur lors de l\'envoi des félicitations'
     });
+  }
+};
+
+// Soumettre un résultat pour un défi "max" (pompes, bench, etc.)
+exports.submitResult = async (req, res) => {
+  try {
+    const userId = req.userId || req.user?.id;
+    const { id } = req.params;
+    const { result } = req.body;
+
+    if (result == null || isNaN(result) || result < 0) {
+      return res.status(400).json({ success: false, message: 'Résultat invalide' });
+    }
+
+    const challenge = await Challenge.findById(id);
+    if (!challenge) return res.status(404).json({ success: false, message: 'Défi introuvable' });
+
+    if (challenge.status !== 'active') {
+      return res.status(400).json({ success: false, message: 'Ce défi n\'est pas actif' });
+    }
+
+    const isChallenger = challenge.challengerId.toString() === userId.toString();
+    const isChallenged = challenge.challengedId.toString() === userId.toString();
+
+    if (!isChallenger && !isChallenged) {
+      return res.status(403).json({ success: false, message: 'Tu ne participes pas à ce défi' });
+    }
+
+    if (isChallenger) {
+      challenge.challengerResult = result;
+      challenge.challengerSubmitted = true;
+    } else {
+      challenge.challengedResult = result;
+      challenge.challengedSubmitted = true;
+    }
+
+    // Si les deux ont soumis → déterminer le gagnant
+    if (challenge.challengerSubmitted && challenge.challengedSubmitted) {
+      challenge.status = 'completed';
+      challenge.endDate = new Date();
+
+      if (challenge.challengerResult > challenge.challengedResult) {
+        challenge.winnerId = challenge.challengerId;
+        challenge.winnerName = challenge.challengerName;
+      } else if (challenge.challengedResult > challenge.challengerResult) {
+        challenge.winnerId = challenge.challengedId;
+        challenge.winnerName = challenge.challengedName;
+      } else {
+        challenge.winnerId = null;
+        challenge.winnerName = null; // égalité
+      }
+
+      // Notifier les deux participants
+      const io = req.app.get('io');
+      const participants = [
+        { userId: challenge.challengerId, opponentName: challenge.challengedName, opponentScore: challenge.challengedResult, yourScore: challenge.challengerResult },
+        { userId: challenge.challengedId, opponentName: challenge.challengerName, opponentScore: challenge.challengerResult, yourScore: challenge.challengedResult },
+      ];
+
+      for (const p of participants) {
+        const isWinner = challenge.winnerId && p.userId.toString() === challenge.winnerId.toString();
+        const isDraw = !challenge.winnerId;
+        const templateKey = isDraw ? 'challenge_draw' : isWinner ? 'challenge_won' : 'challenge_lost';
+        const template = NOTIFICATION_TEMPLATES[templateKey];
+
+        const notifTitle = template.title;
+        const notifBody = template.getBody({
+          opponentName: p.opponentName,
+          theirScore: p.opponentScore,
+          yourScore: p.yourScore,
+          score: p.yourScore,
+          diff: Math.abs(p.yourScore - p.opponentScore),
+          metric: challenge.resultUnit || 'pts',
+        });
+
+        try {
+          const savedNotif = await Notification.create({
+            userId: p.userId,
+            type: 'activity',
+            title: notifTitle,
+            message: notifBody,
+            link: '/flux',
+            metadata: { challengeId: id, action: templateKey },
+          });
+
+          if (io && io.notifyUser) {
+            io.notifyUser(p.userId.toString(), 'new_notification', {
+              id: savedNotif._id.toString(),
+              type: 'activity',
+              title: notifTitle,
+              message: notifBody,
+              timestamp: new Date().toISOString(),
+              read: false,
+            });
+          }
+        } catch (notifErr) {
+          logger.error('Erreur notif résultat défi:', notifErr);
+        }
+      }
+    }
+
+    await challenge.save();
+
+    res.json({
+      success: true,
+      message: challenge.status === 'completed' ? 'Résultat final calculé!' : 'Résultat soumis, en attente de ton adversaire…',
+      data: challenge,
+    });
+  } catch (error) {
+    logger.error('Erreur soumission résultat défi:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+// Classement des défis — top utilisateurs par victoires
+exports.getChallengeLeaderboard = async (req, res) => {
+  try {
+    const top = await Challenge.aggregate([
+      { $match: { status: 'completed', winnerId: { $ne: null } } },
+      { $group: { _id: '$winnerId', wins: { $sum: 1 }, winnerName: { $last: '$winnerName' }, winnerAvatar: { $last: '$challengerAvatar' } } },
+      { $sort: { wins: -1 } },
+      { $limit: 20 },
+    ]);
+
+    // Récupérer les avatars depuis User si besoin
+    const userIds = top.map(e => e._id);
+    const users = await User.find({ _id: { $in: userIds } }).select('pseudo prenom photo').lean();
+    const userMap = {};
+    users.forEach(u => { userMap[u._id.toString()] = u; });
+
+    const leaderboard = top.map((entry, idx) => {
+      const u = userMap[entry._id.toString()] || {};
+      return {
+        rank: idx + 1,
+        userId: entry._id,
+        name: u.pseudo || u.prenom || entry.winnerName || 'Inconnu',
+        avatar: u.photo || null,
+        wins: entry.wins,
+      };
+    });
+
+    res.json({ success: true, data: leaderboard });
+  } catch (error) {
+    logger.error('Erreur leaderboard défis:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };
 
