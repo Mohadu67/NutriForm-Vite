@@ -323,7 +323,7 @@ function FloatingTabBar({ state, descriptors, navigation }) {
       {/* Workout content (above mini bar, grows as navbar extends) */}
       {hasWorkout && (
         <View style={styles.workoutArea}>
-          <WorkoutContent onClose={() => animateTo(COLLAPSED_H)} />
+          <WorkoutContent onClose={() => animateTo(COLLAPSED_H)} tabNavigation={navigation} />
         </View>
       )}
 
