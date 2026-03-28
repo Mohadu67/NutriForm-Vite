@@ -184,9 +184,10 @@ const ExerciseCard = ({ exerciseData, onAddSet, onRemoveSet, onUpdateSet, onTogg
 };
 
 // ─── Main Content ────────────────────────────────────────────────────────────
-export default function WorkoutContent({ onClose }) {
+export default function WorkoutContent({ onClose, tabNavigation }) {
   const { isDark } = useTheme();
-  const navigation = useNavigation();
+  const ownNavigation = useNavigation();
+  const navigation = tabNavigation || ownNavigation;
   const { isEnabled: smartEnabled, toggleSmartTracking, isLoading: smartLoading } = useSmartTracking();
 
   const {
