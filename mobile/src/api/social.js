@@ -22,6 +22,23 @@ const social = {
 
   // Recherche
   searchUsers: (q) => apiClient.get(endpoints.social.search, { params: { q } }),
+
+  // Likes
+  likePost: (targetId, targetType = 'workout') =>
+    apiClient.post(endpoints.social.likePost(targetId), { targetType }),
+  unlikePost: (targetId) =>
+    apiClient.delete(endpoints.social.likePost(targetId)),
+
+  // Message direct (suivi mutuel requis)
+  sendMessage: (userId, content) =>
+    apiClient.post(endpoints.social.sendMessage(userId), { content }),
+
+  // Commentaires
+  getComments: (postId) => apiClient.get(endpoints.social.getComments(postId)),
+  addComment: (postId, content, postType) =>
+    apiClient.post(endpoints.social.addComment(postId), { content, postType }),
+  deleteComment: (postId, commentId) =>
+    apiClient.delete(endpoints.social.deleteComment(postId, commentId)),
 };
 
 export default social;
