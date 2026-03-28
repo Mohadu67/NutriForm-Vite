@@ -482,7 +482,28 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
   padding: 1.25rem 1.5rem 0.75rem;
+}
+
+.scanBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(247, 177, 134, 0.12);
+  border: 1.5px solid var(--primary-color, #f7b186);
+  border-radius: 8px;
+  color: var(--primary-color, #f7b186);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.scanBtn:hover {
+  background: rgba(247, 177, 134, 0.22);
 }
 
 .modalHeader h3 {
