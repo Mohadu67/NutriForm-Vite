@@ -17,6 +17,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { theme } from '../../theme';
 import { addFoodLog, updateFoodLog } from '../../api/nutrition';
+import BarcodeScannerModal from '../../components/BarcodeScannerModal';
 
 const MEAL_OPTIONS = [
   { value: 'breakfast', label: 'Petit-déjeuner', icon: 'sunny-outline' },
@@ -41,6 +42,16 @@ export default function ManualFoodEntryScreen() {
   const [fiber, setFiber] = useState(editEntry?.nutrition?.fiber ? String(editEntry.nutrition.fiber) : '');
   const [notes, setNotes] = useState(editEntry?.notes || '');
   const [submitting, setSubmitting] = useState(false);
+  const [scannerVisible, setScannerVisible] = useState(false);
+
+  const handleProductFound = (product) => {
+    setName(product.name + (product.brand ? ` – ${product.brand}` : '') + ' (100g)');
+    setCalories(String(product.nutrition.calories));
+    setProteins(String(product.nutrition.proteins));
+    setCarbs(String(product.nutrition.carbs));
+    setFats(String(product.nutrition.fats));
+    setFiber(String(product.nutrition.fiber));
+  };
 
   const handleSubmit = async () => {
     if (!name.trim() || !calories) {
@@ -87,12 +98,23 @@ export default function ManualFoodEntryScreen() {
 
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
+      <BarcodeScannerModal
+        visible={scannerVisible}
+        onClose={() => setScannerVisible(false)}
+        onProductFound={handleProductFound}
+      />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="close" size={24} color={isDark ? '#FFF' : '#000'} />
         </TouchableOpacity>
         <Text style={[styles.title, isDark && styles.titleDark]}>{isEdit ? 'Modifier l\'aliment' : 'Ajouter un aliment'}</Text>
-        <View style={{ width: 32 }} />
+        {!isEdit ? (
+          <TouchableOpacity onPress={() => setScannerVisible(true)} style={styles.scanBtn}>
+            <Ionicons name="barcode-outline" size={24} color={theme.colors.primary} />
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 32 }} />
+        )}
       </View>
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
@@ -248,9 +270,10 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E5E5E5',
   },
   backBtn: { padding: 4 },
+  scanBtn: { padding: 4 },
   title: { fontSize: theme.fontSize.lg, fontWeight: theme.fontWeight.semiBold, color: '#000' },
   titleDark: { color: '#FFF' },
-  form: { padding: theme.spacing.lg, paddingBottom: theme.spacing.xl * 2 },
+  form: { padding: theme.spacing.lg, paddingBottom: 180 },
   field: { marginBottom: theme.spacing.md },
   label: { fontSize: theme.fontSize.sm, fontWeight: theme.fontWeight.medium, color: '#555', marginBottom: 6 },
   labelDark: { color: '#AAA' },

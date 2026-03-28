@@ -1527,7 +1527,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: theme.spacing.md,
-    paddingBottom: theme.spacing.xl * 2,
+    paddingBottom: 180,
   },
   calculatorContent: {
     backgroundColor: '#FFF',

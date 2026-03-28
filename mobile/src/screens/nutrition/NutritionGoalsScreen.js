@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   backBtn: { padding: 4 },
   title: { fontSize: theme.fontSize.lg, fontWeight: theme.fontWeight.semiBold, color: '#000' },
   titleDark: { color: '#FFF' },
-  form: { padding: theme.spacing.lg, paddingBottom: theme.spacing.xl * 2 },
+  form: { padding: theme.spacing.lg, paddingBottom: 180 },
   field: { marginBottom: theme.spacing.md },
   label: { fontSize: theme.fontSize.sm, fontWeight: theme.fontWeight.medium, color: '#555', marginBottom: 6 },
   labelDark: { color: '#AAA' },

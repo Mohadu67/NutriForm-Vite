@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: theme.spacing.md,
-    paddingBottom: theme.spacing.xl * 2,
+    paddingBottom: 180,
   },
   progressCard: {
     backgroundColor: '#FFFFFF',

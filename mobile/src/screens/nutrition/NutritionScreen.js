@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   settingsBtn: { padding: 4 },
   title: { fontSize: theme.fontSize.xl, fontWeight: theme.fontWeight.bold, color: theme.colors.text.primary },
   titleDark: { color: '#FFF' },
-  content: { padding: theme.spacing.lg, paddingBottom: theme.spacing.xl * 2 },
+  content: { padding: theme.spacing.lg, paddingBottom: 180 },
   dateSelector: {
     flexDirection: 'row',
     alignItems: 'center',

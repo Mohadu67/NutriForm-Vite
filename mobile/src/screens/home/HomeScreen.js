@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: theme.spacing.lg,
-    paddingBottom: theme.spacing.xl * 2,
+    paddingBottom: 180,
   },
   header: {
     flexDirection: 'row',
