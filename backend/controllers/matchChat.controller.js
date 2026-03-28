@@ -841,6 +841,7 @@ async function updateConversationSettings(req, res) {
 module.exports = {
   getConversations,
   getOrCreateConversation,
+  getOrCreateSocialConversation,
   sendMessage,
   getMessages,
   markAsRead,
@@ -850,3 +851,59 @@ module.exports = {
   getUnreadCount,
   updateConversationSettings
 };
+
+/**
+ * Récupérer ou créer une conversation sociale (sans Match requis)
+ * GET /api/match-chat/social/:userId
+ */
+async function getOrCreateSocialConversation(req, res) {
+  try {
+    const currentUserId = req.userId;
+    const targetUserId = req.params.userId;
+
+    if (currentUserId.toString() === targetUserId.toString()) {
+      return res.status(400).json({ error: 'Tu ne peux pas te parler à toi-même.' });
+    }
+
+    // Chercher une conversation existante entre ces deux utilisateurs
+    let conversation = await Conversation.findOne({
+      participants: { $all: [currentUserId, targetUserId] },
+      isActive: true,
+    });
+
+    if (!conversation) {
+      // Créer une nouvelle conversation sociale avec un matchId unique fictif
+      // pour éviter le conflit avec l'index unique non-sparse sur matchId
+      conversation = await Conversation.create({
+        matchId: new mongoose.Types.ObjectId(),
+        participants: [currentUserId, targetUserId],
+        unreadCount: new Map([
+          [currentUserId.toString(), 0],
+          [targetUserId.toString(), 0],
+        ]),
+      });
+    } else {
+      // Réafficher si cachée
+      if (conversation.isHiddenForUser(currentUserId)) {
+        conversation.hiddenBy = conversation.hiddenBy.filter(id => id.toString() !== currentUserId.toString());
+        await conversation.save();
+      }
+    }
+
+    // Populate l'autre utilisateur
+    const otherUser = await User.findById(targetUserId).select('pseudo prenom photo').lean();
+
+    res.json({
+      conversation: {
+        _id: conversation._id,
+        participants: conversation.participants,
+        otherUser,
+        unreadCount: conversation.unreadCount?.get?.(currentUserId.toString()) || 0,
+        lastMessage: conversation.lastMessage || null,
+      }
+    });
+  } catch (error) {
+    logger.error('Erreur getOrCreateSocialConversation:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération de la conversation.' });
+  }
+}

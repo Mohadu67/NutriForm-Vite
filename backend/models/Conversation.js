@@ -7,8 +7,9 @@ const conversationSchema = new mongoose.Schema(
     matchId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Match',
-      required: true,
-      unique: true
+      required: false,
+      default: null,
+      sparse: true // unique only among non-null values
     },
 
     // Les deux participants
