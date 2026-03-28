@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import style from '../NutritionPage.module.css';
+import BarcodeScanner from '../../../components/BarcodeScanner/BarcodeScanner';
 
 const MEAL_OPTIONS = [
   { value: 'breakfast', label: 'Petit-déjeuner' },
@@ -18,6 +19,7 @@ export default function ManualFoodForm({ isOpen, onClose, onSubmit, defaultMealT
   const [fats, setFats] = useState('');
   const [fiber, setFiber] = useState('');
   const [notes, setNotes] = useState('');
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   useEffect(() => {
     if (editEntry) {
@@ -41,6 +43,15 @@ export default function ManualFoodForm({ isOpen, onClose, onSubmit, defaultMealT
     }
   }, [editEntry, defaultMealType, isOpen]);
 
+  const handleProductFound = (product) => {
+    setName(product.name + (product.brand ? ` – ${product.brand}` : '') + ' (100g)');
+    setCalories(String(product.nutrition.calories));
+    setProteins(String(product.nutrition.proteins));
+    setCarbs(String(product.nutrition.carbs));
+    setFats(String(product.nutrition.fats));
+    setFiber(String(product.nutrition.fiber));
+  };
+
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
@@ -63,10 +74,24 @@ export default function ManualFoodForm({ isOpen, onClose, onSubmit, defaultMealT
   };
 
   return createPortal(
+    <>
+    <BarcodeScanner
+      isOpen={scannerOpen}
+      onClose={() => setScannerOpen(false)}
+      onProductFound={handleProductFound}
+    />
     <div className={style.modalOverlay} onClick={onClose}>
       <div className={style.modal} onClick={(e) => e.stopPropagation()}>
         <div className={style.modalHeader}>
           <h3>{editEntry ? 'Modifier l\'entrée' : 'Ajouter un aliment'}</h3>
+          {!editEntry && (
+            <button type="button" onClick={() => setScannerOpen(true)} className={style.scanBtn} title="Scanner un code-barres">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 5H1v4h2V5zm0 10H1v4h2v-4zm18-10h2v4h-2V5zm0 10h2v4h-2v-4zM7 4h1v16H7zm3 0h1v16h-1zm4 0h2v16h-2z"/>
+              </svg>
+              Scanner
+            </button>
+          )}
           <button onClick={onClose} className={style.modalClose}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
@@ -120,7 +145,8 @@ export default function ManualFoodForm({ isOpen, onClose, onSubmit, defaultMealT
           </div>
         </form>
       </div>
-    </div>,
+    </div>
+    </>,
     document.body
   );
 }
