@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const leaderboardController = require('../controllers/leaderboard.controller');
 const auth = require('../middlewares/auth.middleware');
-const { requirePremium } = require('../middlewares/subscription.middleware');
 
 /**
  * @route   GET /api/leaderboard
@@ -24,16 +23,16 @@ router.get('/user/:userId/rank', leaderboardController.getUserRank);
 /**
  * @route   POST /api/leaderboard/opt-in
  * @desc    S'inscrire au classement public
- * @access  Private (Premium requis)
+ * @access  Private
  */
-router.post('/opt-in', auth, requirePremium, leaderboardController.optIn);
+router.post('/opt-in', auth, leaderboardController.optIn);
 
 /**
  * @route   POST /api/leaderboard/opt-out
  * @desc    Se retirer du classement public
- * @access  Private (Premium requis)
+ * @access  Private
  */
-router.post('/opt-out', auth, requirePremium, leaderboardController.optOut);
+router.post('/opt-out', auth, leaderboardController.optOut);
 
 /**
  * @route   GET /api/leaderboard/status
@@ -45,8 +44,8 @@ router.get('/status', auth, leaderboardController.getOptInStatus);
 /**
  * @route   POST /api/leaderboard/refresh-profile
  * @desc    Rafraîchir immédiatement son profil dans le classement
- * @access  Private (Premium requis)
+ * @access  Private
  */
-router.post('/refresh-profile', auth, requirePremium, leaderboardController.refreshProfile);
+router.post('/refresh-profile', auth, leaderboardController.refreshProfile);
 
 module.exports = router;

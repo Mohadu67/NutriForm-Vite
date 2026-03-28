@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const Subscription = require('../models/Subscription');
+const LeaderboardEntry = require('../models/LeaderboardEntry');
 const { sendVerifyEmail } = require('../services/mailer.service');
 const { validatePassword } = require('../utils/passwordValidator');
 const logger = require('../utils/logger.js');
@@ -601,6 +602,19 @@ exports.googleAuth = async (req, res) => {
       });
       await user.save();
       logger.info(`[GOOGLE_AUTH] New user created: ${user.email}`);
+
+      // Auto-join leaderboard
+      try {
+        await LeaderboardEntry.create({
+          userId: user._id,
+          displayName: user.pseudo || user.prenom || 'Anonyme',
+          avatarUrl: user.photo || null,
+          visibility: 'public',
+        });
+        logger.info(`[GOOGLE_AUTH] Auto-joined leaderboard for user: ${user.email}`);
+      } catch (lbErr) {
+        logger.error('[GOOGLE_AUTH] Failed to auto-join leaderboard:', lbErr);
+      }
     }
 
     // Générer le token JWT
