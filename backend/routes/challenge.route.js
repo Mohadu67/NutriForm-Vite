@@ -15,6 +15,9 @@ router.get('/', challengeController.getMyChallenges);
 // Obtenir mes statistiques de défis
 router.get('/stats', challengeController.getChallengeStats);
 
+// Classement des défis
+router.get('/leaderboard', challengeController.getChallengeLeaderboard);
+
 // Obtenir un défi par ID
 router.get('/:id', challengeController.getChallengeById);
 
@@ -29,5 +32,8 @@ router.post('/:id/cancel', challengeController.cancelChallenge);
 
 // Envoyer des félicitations
 router.post('/congratulate', challengeController.sendCongratulations);
+
+// Soumettre un résultat (défis max: pompes, bench, etc.)
+router.post('/:id/submit-result', challengeController.submitResult);
 
 module.exports = router;
