@@ -304,8 +304,8 @@
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 500;
-  background: #667eea20;
-  color: #667eea;
+  background: rgba(247, 177, 134, 0.12);
+  color: #F7B186;
 }
 
 .badge.hiit {

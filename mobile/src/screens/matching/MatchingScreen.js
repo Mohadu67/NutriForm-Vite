@@ -118,14 +118,14 @@ const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRe
           activeOpacity={0.7}
         >
           <LinearGradient
-            colors={hasUnread ? THEME_COLORS.primaryGradient : (isDark ? [colors.dark.border, colors.dark.borderDark] : [colors.light.border, colors.light.borderDark])}
+            colors={hasUnread ? THEME_COLORS.primaryGradient : (isDark ? ['#22262E', '#22262E'] : ['#E8E9EE', '#E8E9EE'])}
             style={styles.avatarGradientRing}
           >
             {otherUser?.photo ? (
               <Image source={{ uri: otherUser.photo }} style={styles.conversationAvatar} />
             ) : (
               <View style={[styles.conversationAvatar, styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
-                <Ionicons name="person" size={24} color={isDark ? colors.dark.textTertiary : colors.light.textTertiary} />
+                <Ionicons name="person" size={24} color={isDark ? '#555' : '#AAA'} />
               </View>
             )}
           </LinearGradient>
@@ -156,7 +156,8 @@ const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRe
             style={[
               styles.conversationPreview,
               isDark && styles.textMuted,
-              hasUnread && styles.conversationPreviewUnread
+              hasUnread && styles.conversationPreviewUnread,
+              hasUnread && isDark && styles.conversationPreviewUnreadDark,
             ]}
             numberOfLines={1}
           >
@@ -176,7 +177,7 @@ const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRe
         <Ionicons
           name="chevron-forward"
           size={18}
-          color={isDark ? colors.dark.textTertiary : colors.light.textTertiary}
+          color={isDark ? '#555' : '#AAA'}
           style={styles.chevron}
         />
       </TouchableOpacity>
@@ -217,6 +218,10 @@ export default function MatchingScreen() {
   // Card refresh animation
   const cardRefreshAnim = useRef(new Animated.Value(1)).current;
 
+  // Flag pour éviter le double-chargement au montage initial
+  // (useFocusEffect charge déjà tout, useEffect[activeTab] ne doit pas recharger au premier render)
+  const isInitialMount = useRef(true);
+
   // Initial animations
   useEffect(() => {
     Animated.spring(headerAnim, {
@@ -235,6 +240,12 @@ export default function MatchingScreen() {
       friction: 10,
       useNativeDriver: true,
     }).start();
+
+    // Ne pas recharger au montage initial : useFocusEffect s'en charge déjà
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
 
     // Rafraichir le compteur non-lus et conversations quand on revient sur l'onglet messages
     if (activeTab === 'messages') {
@@ -487,7 +498,7 @@ export default function MatchingScreen() {
                   <Image source={{ uri: item.user.photo }} style={styles.newMatchAvatar} />
                 ) : (
                   <View style={[styles.newMatchAvatar, styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
-                    <Ionicons name="person" size={28} color={isDark ? colors.dark.textTertiary : colors.light.textTertiary} />
+                    <Ionicons name="person" size={28} color={isDark ? '#555' : '#AAA'} />
                   </View>
                 )}
               </LinearGradient>
@@ -554,7 +565,7 @@ export default function MatchingScreen() {
   const renderEmptyMessages = () => (
     <View style={styles.emptyState}>
       <LinearGradient
-        colors={isDark ? [colors.dark.backgroundSecondary, colors.dark.backgroundTertiary] : [colors.light.backgroundSecondary, colors.light.backgroundTertiary]}
+        colors={isDark ? ['#1A1D24', '#22262E'] : ['#F5F6FA', '#F0F1F5']}
         style={styles.emptyIconContainer}
       >
         <LinearGradient
@@ -617,12 +628,12 @@ export default function MatchingScreen() {
       {/* Floutage Premium pour les utilisateurs free - Messages */}
       {isUserFree && (
         <View style={styles.premiumBlurOverlay} pointerEvents="box-none">
-          <View style={styles.premiumBlurContent} pointerEvents="auto">
+          <View style={[styles.premiumBlurContent, isDark && styles.premiumBlurContentDark]} pointerEvents="auto">
             <Ionicons name="chatbubbles" size={48} color="#F7B186" />
-            <Text style={[styles.premiumBlurTitle, isDark && styles.textDark]}>
+            <Text style={[styles.premiumBlurTitle, isDark && styles.premiumBlurTitleDark]}>
               Messagez vos matchs
             </Text>
-            <Text style={[styles.premiumBlurSubtitle, isDark && styles.textMutedDark]}>
+            <Text style={[styles.premiumBlurSubtitle, isDark && styles.premiumBlurSubtitleDark]}>
               Passez Premium pour communiquer avec vos matchs
             </Text>
             <TouchableOpacity
@@ -633,8 +644,8 @@ export default function MatchingScreen() {
               <Ionicons name="star" size={20} color="#FFF" />
               <Text style={styles.premiumBlurButtonText}>Passer Premium</Text>
             </TouchableOpacity>
-            <Text style={[styles.premiumBlurSmallText, isDark && styles.textMutedDark]}>
-              💬 Besoin d'aide ? Utilisez le chatBot d'assistance
+            <Text style={[styles.premiumBlurSmallText, isDark && styles.premiumBlurSmallTextDark]}>
+              Besoin d'aide ? Utilisez le chatBot d'assistance
             </Text>
           </View>
         </View>
@@ -702,8 +713,8 @@ export default function MatchingScreen() {
               {user.photo ? (
                 <Image source={{ uri: user.photo }} style={styles.photo} />
               ) : (
-                <View style={[styles.photo, styles.photoPlaceholder]}>
-                  <Ionicons name="person" size={80} color={colors.light.textTertiary} />
+                <View style={[styles.photo, styles.photoPlaceholder, isDark && styles.photoPlaceholderDark]}>
+                  <Ionicons name="person" size={80} color={isDark ? '#555' : '#AAA'} />
                 </View>
               )}
               <LinearGradient
@@ -825,8 +836,8 @@ export default function MatchingScreen() {
             {user.photo ? (
               <Image source={{ uri: user.photo }} style={styles.photo} />
             ) : (
-              <View style={[styles.photo, styles.photoPlaceholder]}>
-                <Ionicons name="person" size={80} color={colors.light.textTertiary} />
+              <View style={[styles.photo, styles.photoPlaceholder, isDark && styles.photoPlaceholderDark]}>
+                <Ionicons name="person" size={80} color={isDark ? '#555' : '#AAA'} />
               </View>
             )}
             <LinearGradient
@@ -891,11 +902,11 @@ export default function MatchingScreen() {
       ]}
     >
       <LinearGradient
-        colors={isDark ? [colors.dark.backgroundSecondary, colors.dark.backgroundTertiary] : [colors.light.backgroundSecondary, colors.light.backgroundTertiary]}
+        colors={isDark ? ['#1A1D24', '#22262E'] : ['#F5F6FA', '#F0F1F5']}
         style={styles.emptyIconContainer}
       >
         <LinearGradient
-          colors={THEME_COLORS.secondaryGradient}
+          colors={THEME_COLORS.primaryGradient}
           style={styles.emptyIconInner}
         >
           <Ionicons name="people" size={40} color="#FFF" />
@@ -912,7 +923,7 @@ export default function MatchingScreen() {
         activeOpacity={0.8}
       >
         <LinearGradient
-          colors={THEME_COLORS.secondaryGradient}
+          colors={THEME_COLORS.primaryGradient}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[styles.ctaButton, isRefreshAnimating && styles.ctaButtonDisabled]}
@@ -958,12 +969,12 @@ export default function MatchingScreen() {
       {/* Floutage Premium pour les utilisateurs free - Discover tab */}
       {isUserFree && activeTab === 'discover' && (
         <View style={styles.premiumBlurOverlay} pointerEvents="box-none">
-          <View style={styles.premiumBlurContent} pointerEvents="auto">
+          <View style={[styles.premiumBlurContent, isDark && styles.premiumBlurContentDark]} pointerEvents="auto">
             <Ionicons name="people" size={48} color="#F7B186" />
-            <Text style={[styles.premiumBlurTitle, isDark && styles.textDark]}>
+            <Text style={[styles.premiumBlurTitle, isDark && styles.premiumBlurTitleDark]}>
               Découvrez plus de profils
             </Text>
-            <Text style={[styles.premiumBlurSubtitle, isDark && styles.textMutedDark]}>
+            <Text style={[styles.premiumBlurSubtitle, isDark && styles.premiumBlurSubtitleDark]}>
               Passez Premium pour voir tous les profils et commencer à matcher
             </Text>
             <TouchableOpacity
@@ -1003,10 +1014,11 @@ export default function MatchingScreen() {
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
-      {/* Gradient Header */}
+      {/* Header */}
       <Animated.View
         style={[
           styles.header,
+          isDark && styles.headerDark,
           {
             opacity: headerAnim,
             transform: [{
@@ -1018,29 +1030,21 @@ export default function MatchingScreen() {
           },
         ]}
       >
-        <LinearGradient
-          colors={isDark ? [colors.dark.backgroundSecondary, colors.dark.background] : [colors.light.background, colors.light.backgroundSecondary]}
-          style={styles.headerGradient}
-        >
-          <View style={styles.headerContent}>
-            <View style={styles.headerLeft}>
-              <LinearGradient
-                colors={THEME_COLORS.primaryGradient}
-                style={styles.headerIconBg}
-              >
-                <Ionicons name="people" size={20} color="#FFF" />
-              </LinearGradient>
-              <Text style={[styles.title, isDark && styles.textLight]}>Social</Text>
-            </View>
-            <TouchableOpacity
-              style={[styles.settingsButton, isDark && styles.settingsButtonDark]}
-              onPress={() => navigation.navigate('ProfileTab', { screen: 'ProfileSetup' })}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="options-outline" size={22} color={isDark ? colors.dark.text : colors.light.text} />
-            </TouchableOpacity>
+        <View style={styles.headerContent}>
+          <View style={styles.headerLeft}>
+            <Text style={[styles.title, isDark && styles.titleDark]}>Social</Text>
+            <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
+              {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+            </Text>
           </View>
-        </LinearGradient>
+          <TouchableOpacity
+            style={[styles.settingsButton, isDark && styles.settingsButtonDark]}
+            onPress={() => navigation.navigate('ProfileTab', { screen: 'ProfileSetup' })}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="options-outline" size={22} color={isDark ? '#FFFFFF' : '#111'} />
+          </TouchableOpacity>
+        </View>
       </Animated.View>
 
       {/* Modern Tabs */}
@@ -1049,6 +1053,7 @@ export default function MatchingScreen() {
           <Animated.View
             style={[
               styles.tabIndicator,
+              isDark && styles.tabIndicatorDark,
               {
                 transform: [{
                   translateX: tabIndicatorAnim.interpolate({
@@ -1058,14 +1063,7 @@ export default function MatchingScreen() {
                 }],
               },
             ]}
-          >
-            <LinearGradient
-              colors={THEME_COLORS.primaryGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.tabIndicatorGradient}
-            />
-          </Animated.View>
+          />
 
           {TABS.map((tab) => (
             <TouchableOpacity
@@ -1075,11 +1073,6 @@ export default function MatchingScreen() {
               activeOpacity={0.7}
             >
               <View style={styles.tabContent}>
-                <Ionicons
-                  name={tab.icon}
-                  size={18}
-                  color={activeTab === tab.key ? (isDark ? colors.dark.text : colors.light.text) : (isDark ? colors.dark.textTertiary : colors.light.textTertiary)}
-                />
                 <Text
                   style={[
                     styles.tabText,
@@ -1091,20 +1084,14 @@ export default function MatchingScreen() {
                   {tab.label}
                 </Text>
                 {tab.key === 'messages' && unreadCount > 0 && (
-                  <LinearGradient
-                    colors={[colors.accent, '#E55A5A']}
-                    style={styles.tabBadge}
-                  >
+                  <View style={styles.tabBadge}>
                     <Text style={styles.tabBadgeText}>{unreadCount}</Text>
-                  </LinearGradient>
+                  </View>
                 )}
                 {tab.key === 'discover' && pendingSuggestions > 0 && (
-                  <LinearGradient
-                    colors={THEME_COLORS.primaryGradient}
-                    style={styles.tabBadge}
-                  >
+                  <View style={styles.tabBadge}>
                     <Text style={styles.tabBadgeText}>{pendingSuggestions}</Text>
-                  </LinearGradient>
+                  </View>
                 )}
               </View>
             </TouchableOpacity>
@@ -1138,10 +1125,10 @@ export default function MatchingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.light.background,
+    backgroundColor: '#F2F3F7',
   },
   containerDark: {
-    backgroundColor: colors.dark.background,
+    backgroundColor: '#111318',
   },
   loadingContainer: {
     flex: 1,
@@ -1151,17 +1138,19 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: colors.light.textSecondary,
+    color: '#666',
   },
 
   // Header
   header: {
     zIndex: 10,
-  },
-  headerGradient: {
+    backgroundColor: '#F2F3F7',
     paddingTop: 8,
     paddingBottom: 12,
     paddingHorizontal: 20,
+  },
+  headerDark: {
+    backgroundColor: '#111318',
   },
   headerContent: {
     flexDirection: 'row',
@@ -1169,39 +1158,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  headerIconBg: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'column',
   },
   title: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: colors.light.text,
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#111',
     letterSpacing: -0.5,
+  },
+  titleDark: {
+    color: '#FFFFFF',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  subtitleDark: {
+    color: '#7A7D85',
   },
   settingsButton: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: colors.light.backgroundTertiary,
+    backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E8E9EE',
   },
   settingsButtonDark: {
-    backgroundColor: colors.dark.backgroundTertiary,
+    backgroundColor: '#1A1D24',
+    borderColor: '#22262E',
   },
   textLight: {
-    color: colors.dark.text,
+    color: '#FFFFFF',
   },
   textMuted: {
-    color: colors.dark.textTertiary,
+    color: '#7A7D85',
   },
   textBold: {
     fontWeight: '600',
@@ -1211,21 +1205,19 @@ const styles = StyleSheet.create({
   tabsContainer: {
     paddingHorizontal: 24,
     paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.light.border,
   },
   tabsContainerDark: {
-    borderBottomColor: colors.dark.border,
+    // no border needed
   },
   tabsWrapper: {
     flexDirection: 'row',
-    backgroundColor: colors.light.backgroundTertiary,
-    borderRadius: 12,
+    backgroundColor: '#F0F1F5',
+    borderRadius: 20,
     padding: 4,
     position: 'relative',
   },
   tabsWrapperDark: {
-    backgroundColor: colors.dark.backgroundTertiary,
+    backgroundColor: '#22262E',
   },
   tabIndicator: {
     position: 'absolute',
@@ -1234,10 +1226,17 @@ const styles = StyleSheet.create({
     width: '50%',
     height: '100%',
     paddingRight: 8,
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  tabIndicatorGradient: {
-    flex: 1,
-    borderRadius: 10,
+  tabIndicatorDark: {
+    backgroundColor: '#1A1D24',
+    shadowOpacity: 0,
   },
   tab: {
     flex: 1,
@@ -1252,20 +1251,21 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: colors.light.textTertiary,
+    fontWeight: '700',
+    color: '#888',
   },
   tabTextDark: {
-    color: colors.dark.textTertiary,
+    color: '#666',
   },
   tabTextActive: {
-    color: colors.light.text,
-    fontWeight: '600',
+    color: '#111',
+    fontWeight: '700',
   },
   tabTextActiveDark: {
-    color: colors.dark.text,
+    color: '#FFFFFF',
   },
   tabBadge: {
+    backgroundColor: `${colors.primary}30`,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -1275,7 +1275,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   tabBadgeText: {
-    color: '#FFF',
+    color: colors.primary,
     fontSize: 11,
     fontWeight: '700',
   },
@@ -1326,7 +1326,7 @@ const styles = StyleSheet.create({
   aiChatName: {
     fontSize: 17,
     fontWeight: '600',
-    color: colors.light.text,
+    color: '#111',
   },
   aiOnlineBadge: {
     flexDirection: 'row',
@@ -1351,7 +1351,7 @@ const styles = StyleSheet.create({
   aiChatDescription: {
     fontSize: 14,
     marginTop: 4,
-    color: colors.light.textSecondary,
+    color: '#666',
   },
 
   // New matches section
@@ -1359,10 +1359,10 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: colors.light.border,
+    borderBottomColor: '#E8E9EE',
   },
   newMatchesSectionDark: {
-    borderBottomColor: colors.dark.border,
+    borderBottomColor: '#22262E',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -1386,7 +1386,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.light.text,
+    color: '#111',
   },
   sectionBadge: {
     borderRadius: 10,
@@ -1418,7 +1418,7 @@ const styles = StyleSheet.create({
     width: 62,
     height: 62,
     borderRadius: 31,
-    backgroundColor: colors.light.background,
+    backgroundColor: '#FFF',
   },
   newMatchBadge: {
     position: 'absolute',
@@ -1429,7 +1429,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderWidth: 2,
-    borderColor: colors.light.background,
+    borderColor: '#FFF',
   },
   newMatchBadgeText: {
     color: '#FFF',
@@ -1440,7 +1440,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 8,
     textAlign: 'center',
-    color: colors.light.text,
+    color: '#111',
     fontWeight: '500',
   },
 
@@ -1452,17 +1452,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginHorizontal: 16,
     marginVertical: 4,
-    backgroundColor: colors.light.surface,
+    backgroundColor: 'transparent',
     borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
   },
   conversationItemDark: {
-    backgroundColor: colors.dark.surface,
-    shadowOpacity: 0,
+    backgroundColor: 'transparent',
   },
   conversationAvatarWrapper: {
     position: 'relative',
@@ -1480,15 +1474,15 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: colors.light.background,
+    backgroundColor: '#FFF',
   },
   avatarPlaceholder: {
-    backgroundColor: colors.light.backgroundTertiary,
+    backgroundColor: '#F5F6FA',
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarPlaceholderDark: {
-    backgroundColor: colors.dark.backgroundTertiary,
+    backgroundColor: '#22262E',
   },
   onlineIndicator: {
     position: 'absolute',
@@ -1497,21 +1491,21 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: colors.light.background,
+    backgroundColor: '#F2F3F7',
     alignItems: 'center',
     justifyContent: 'center',
   },
   onlineIndicatorDark: {
-    backgroundColor: colors.dark.background,
+    backgroundColor: '#111318',
   },
   onlineDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: colors.success, // Vert pour en ligne
+    backgroundColor: '#4CAF50',
   },
   offlineDot: {
-    backgroundColor: colors.light.textTertiary, // Gris pour hors ligne
+    backgroundColor: '#AAA',
   },
   conversationContent: {
     flex: 1,
@@ -1525,19 +1519,22 @@ const styles = StyleSheet.create({
   conversationName: {
     fontSize: 16,
     fontWeight: '500',
-    color: colors.light.text,
+    color: '#111',
   },
   conversationTime: {
     fontSize: 12,
-    color: colors.light.textTertiary,
+    color: '#AAA',
   },
   conversationPreview: {
     fontSize: 14,
-    color: colors.light.textSecondary,
+    color: '#666',
   },
   conversationPreviewUnread: {
-    color: colors.light.text,
+    color: '#111',
     fontWeight: '500',
+  },
+  conversationPreviewUnreadDark: {
+    color: '#FFFFFF',
   },
   unreadBadge: {
     borderRadius: 12,
@@ -1584,12 +1581,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: colors.light.text,
+    color: '#111',
     marginBottom: 12,
   },
   emptyText: {
     fontSize: 15,
-    color: colors.light.textSecondary,
+    color: '#666',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 28,
@@ -1629,17 +1626,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: SCREEN_WIDTH - 32,
     height: SCREEN_HEIGHT * 0.58,
-    backgroundColor: colors.light.surface,
+    backgroundColor: '#FFF',
     borderRadius: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.12,
     shadowRadius: 20,
     elevation: 10,
     overflow: 'hidden',
   },
   cardDark: {
-    backgroundColor: colors.dark.surface,
+    backgroundColor: '#1A1D24',
   },
   cardBehind: {
     top: 8,
@@ -1656,9 +1653,12 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   photoPlaceholder: {
-    backgroundColor: colors.light.backgroundTertiary,
+    backgroundColor: '#F5F6FA',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  photoPlaceholderDark: {
+    backgroundColor: '#22262E',
   },
   photoGradient: {
     position: 'absolute',
@@ -1749,10 +1749,10 @@ const styles = StyleSheet.create({
   },
   cardInfo: {
     padding: 16,
-    backgroundColor: colors.light.surface,
+    backgroundColor: '#FFF',
   },
   cardInfoDark: {
-    backgroundColor: colors.dark.surface,
+    backgroundColor: '#1A1D24',
   },
   cardInfoHeader: {
     flexDirection: 'row',
@@ -1774,12 +1774,12 @@ const styles = StyleSheet.create({
   },
   bio: {
     fontSize: 14,
-    color: colors.light.textSecondary,
+    color: '#666',
     lineHeight: 20,
     marginBottom: 12,
   },
   bioDark: {
-    color: colors.dark.textSecondary,
+    color: '#7A7D85',
   },
   workoutTypes: {
     flexDirection: 'row',
@@ -1789,23 +1789,23 @@ const styles = StyleSheet.create({
   workoutChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: `${colors.primary}20`,
+    backgroundColor: `${colors.primary}15`,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     gap: 6,
   },
   workoutChipDark: {
-    backgroundColor: `${colors.primary}30`,
+    backgroundColor: `${colors.primary}25`,
   },
   workoutChipText: {
     fontSize: 12,
-    color: colors.light.text,
+    color: '#111',
     textTransform: 'capitalize',
     fontWeight: '500',
   },
   workoutChipTextDark: {
-    color: colors.dark.text,
+    color: '#FFFFFF',
   },
   actionButtons: {
     flexDirection: 'row',
@@ -1819,31 +1819,29 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButton: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.12,
     shadowRadius: 12,
     elevation: 6,
   },
   rejectButton: {
-    backgroundColor: colors.light.surface,
-    borderWidth: 2,
-    borderColor: colors.error,
+    backgroundColor: '#F5F6FA',
   },
   rejectButtonDark: {
-    backgroundColor: colors.dark.surface,
+    backgroundColor: '#22262E',
   },
   likeButton: {
     // gradient applied via LinearGradient
   },
   actionButtonLabel: {
     fontSize: 12,
-    color: colors.light.textSecondary,
+    color: '#666',
     fontWeight: '500',
   },
 
@@ -1856,7 +1854,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   matchModalContent: {
-    backgroundColor: colors.light.surface,
+    backgroundColor: '#FFF',
     borderRadius: 28,
     padding: 32,
     alignItems: 'center',
@@ -1865,7 +1863,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   modalContentDark: {
-    backgroundColor: colors.dark.surface,
+    backgroundColor: '#1A1D24',
   },
   confettiContainer: {
     position: 'absolute',
@@ -1897,12 +1895,12 @@ const styles = StyleSheet.create({
   matchModalTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.light.text,
+    color: '#111',
     marginBottom: 8,
   },
   matchModalText: {
     fontSize: 15,
-    color: colors.light.textSecondary,
+    color: '#666',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -1915,7 +1913,7 @@ const styles = StyleSheet.create({
   matchAvatarWrapper: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.12,
     shadowRadius: 8,
     elevation: 4,
   },
@@ -1931,18 +1929,18 @@ const styles = StyleSheet.create({
     width: 58,
     height: 58,
     borderRadius: 29,
-    backgroundColor: colors.light.background,
+    backgroundColor: '#FFF',
   },
   matchAvatarPlaceholder: {
     width: 58,
     height: 58,
     borderRadius: 29,
-    backgroundColor: colors.light.backgroundTertiary,
+    backgroundColor: '#F5F6FA',
     alignItems: 'center',
     justifyContent: 'center',
   },
   matchAvatarPlaceholderDark: {
-    backgroundColor: colors.dark.backgroundTertiary,
+    backgroundColor: '#22262E',
   },
   matchHeartIcon: {
     width: 32,
@@ -1970,15 +1968,15 @@ const styles = StyleSheet.create({
   },
   matchModalButtonOutline: {
     borderWidth: 1.5,
-    borderColor: colors.light.border,
+    borderColor: '#E8E9EE',
   },
   matchModalButtonOutlineDark: {
-    borderColor: colors.dark.border,
+    borderColor: '#22262E',
   },
   matchModalButtonOutlineText: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.light.text,
+    color: '#111',
   },
   matchModalButtonGradientWrapper: {
     borderRadius: 14,
@@ -1996,6 +1994,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFF',
   },
+
   // Premium blur overlay
   premiumBlurOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -2006,34 +2005,40 @@ const styles = StyleSheet.create({
   },
   premiumBlurContent: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: 24,
     paddingHorizontal: 32,
     paddingVertical: 40,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.2,
     shadowRadius: 20,
     elevation: 10,
     marginHorizontal: 20,
   },
   premiumBlurContentDark: {
-    backgroundColor: '#1F2937',
+    backgroundColor: '#1A1D24',
   },
   premiumBlurTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#111827',
+    color: '#111',
     marginTop: 20,
     textAlign: 'center',
   },
+  premiumBlurTitleDark: {
+    color: '#FFFFFF',
+  },
   premiumBlurSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#666',
     marginTop: 12,
     marginBottom: 24,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  premiumBlurSubtitleDark: {
+    color: '#7A7D85',
   },
   premiumBlurButton: {
     flexDirection: 'row',
@@ -2042,7 +2047,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7B186',
     paddingHorizontal: 24,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   premiumBlurButtonText: {
     fontSize: 16,
@@ -2055,9 +2060,12 @@ const styles = StyleSheet.create({
   },
   premiumBlurSmallText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#666',
     marginTop: 16,
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  premiumBlurSmallTextDark: {
+    color: '#7A7D85',
   },
 });

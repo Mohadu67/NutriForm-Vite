@@ -67,6 +67,8 @@ const exercisesRoutes = require('./routes/exercises.route.js');
 const nutritionRoutes = require('./routes/nutrition.route.js');
 const healthRoutes = require('./routes/health.route.js');
 const bodyCompositionRoutes = require('./routes/bodyComposition.route.js');
+const followRoutes = require('./routes/follow.route.js');
+const barcodeRoutes = require('./routes/barcode.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 const { startChallengeCron } = require('./cron/challengeCron');
@@ -255,6 +257,8 @@ app.use('/api/exercises', exercisesRoutes);
 app.use('/api/nutrition', nutritionRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/body-composition', bodyCompositionRoutes);
+app.use('/api/social', followRoutes);
+app.use('/api/barcode', barcodeRoutes);
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');

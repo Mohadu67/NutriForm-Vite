@@ -53,7 +53,7 @@ function NutritionGauge({ consumed, burned, goal, macros, macroGoals, isDark }) 
   const dotY = ARC_CY + ARC_R * Math.sin(dotRad);
 
   const trackColor = isDark ? '#3a3a3a' : '#e5e7eb';
-  const accent = '#6db39b';
+  const accent = '#F7B186';
 
   return (
     <View>
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: theme.spacing.lg,
-    paddingBottom: theme.spacing.xl * 2,
+    paddingBottom: 180,
   },
   header: {
     flexDirection: 'row',
@@ -639,7 +639,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#6db39b',
+    backgroundColor: '#F7B186',
     marginLeft: -5,
   },
   nwMacroValue: {

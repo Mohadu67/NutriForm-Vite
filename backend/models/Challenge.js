@@ -29,14 +29,33 @@ const challengeSchema = new mongoose.Schema({
   // Type de défi
   type: {
     type: String,
-    enum: ['sessions', 'streak', 'calories', 'duration'],
+    enum: [
+      'sessions', 'streak', 'calories', 'duration',
+      'max_pushups', 'max_pullups', 'max_bench', 'max_squat', 'max_deadlift', 'max_burpees'
+    ],
     required: true
   },
+
+  // Catégorie: 'ongoing' = compétition sur la durée, 'max' = max one-shot
+  challengeCategory: {
+    type: String,
+    enum: ['ongoing', 'max'],
+    default: 'ongoing'
+  },
+
+  // Pour les défis max: résultats soumis
+  challengerResult: { type: Number, default: null },
+  challengedResult: { type: Number, default: null },
+  challengerSubmitted: { type: Boolean, default: false },
+  challengedSubmitted: { type: Boolean, default: false },
+  resultUnit: { type: String, enum: ['reps', 'kg', 'sec', null], default: null },
+
+  // Récompense XP
+  rewardXp: { type: Number, default: 100 },
 
   // Durée en jours
   duration: {
     type: Number,
-    enum: [3, 7, 14],
     default: 7
   },
 

@@ -75,6 +75,16 @@ export const deleteMessage = async (messageId) => {
 };
 
 /**
+ * Récupérer ou créer une conversation sociale (sans Match requis)
+ * @param {string} userId - ID de l'utilisateur cible
+ * @returns {Promise} Conversation
+ */
+export const getOrCreateSocialConversation = async (userId) => {
+  const response = await client.get(`/match-chat/social/${userId}`);
+  return response.data;
+};
+
+/**
  * Bloquer une conversation
  * @param {string} conversationId - ID de la conversation
  * @returns {Promise} Résultat

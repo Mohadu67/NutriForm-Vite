@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,10 @@ import {
   ScrollView,
   TouchableOpacity,
   useColorScheme,
-  Dimensions,
   Animated,
   Vibration,
-  Alert,
 } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,7 +18,6 @@ import theme from '../../theme';
 import { useWorkout } from '../../contexts/WorkoutContext';
 import logger from '../../services/logger';
 
-const { width } = Dimensions.get('window');
 const FAVORITES_KEY = '@exercices_favorites';
 
 // Labels pour l'affichage
@@ -132,151 +130,22 @@ const getTips = (exercice) => {
   return tipsByMuscle[muscle] || 'Concentrez-vous sur la qualite du mouvement plutot que la quantite.';
 };
 
-// Temps de repos recommande
-const getRestTime = (exercice) => {
-  const difficulty = exercice.difficulty;
-  const type = exercice.type;
-
-  if (type === 'cardio' || type === 'etirement') return 30;
-  if (difficulty === 'avance') return 120;
-  if (difficulty === 'intermediaire') return 90;
-  return 60;
-};
-
-// Timer Component
-const RestTimer = ({ initialTime, onComplete, isDark }) => {
-  const [timeLeft, setTimeLeft] = useState(initialTime);
-  const [isRunning, setIsRunning] = useState(false);
-  const [selectedTime, setSelectedTime] = useState(initialTime);
-  const progressAnim = useRef(new Animated.Value(1)).current;
-  const intervalRef = useRef(null);
-
-  const timeOptions = [30, 60, 90, 120, 180];
-
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, []);
-
-  const startTimer = () => {
-    setIsRunning(true);
-    setTimeLeft(selectedTime);
-    progressAnim.setValue(1);
-
-    Animated.timing(progressAnim, {
-      toValue: 0,
-      duration: selectedTime * 1000,
-      useNativeDriver: false,
-    }).start();
-
-    intervalRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(intervalRef.current);
-          setIsRunning(false);
-          Vibration.vibrate([0, 500, 200, 500]);
-          if (onComplete) onComplete();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  const stopTimer = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-    setIsRunning(false);
-    setTimeLeft(selectedTime);
-    progressAnim.setValue(1);
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const progressWidth = progressAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
-  });
-
-  return (
-    <View style={[styles.timerContainer, isDark && styles.timerContainerDark]}>
-      <View style={styles.timerHeader}>
-        <Ionicons name="timer-outline" size={20} color={theme.colors.primary} />
-        <Text style={[styles.timerTitle, isDark && styles.textDark]}>Temps de repos</Text>
-      </View>
-
-      {!isRunning ? (
-        <>
-          <View style={styles.timeOptionsRow}>
-            {timeOptions.map((time) => (
-              <TouchableOpacity
-                key={time}
-                style={[
-                  styles.timeOption,
-                  selectedTime === time && styles.timeOptionActive,
-                  isDark && selectedTime !== time && styles.timeOptionDark,
-                ]}
-                onPress={() => setSelectedTime(time)}
-              >
-                <Text style={[
-                  styles.timeOptionText,
-                  selectedTime === time && styles.timeOptionTextActive,
-                  isDark && selectedTime !== time && styles.timeOptionTextDark,
-                ]}>
-                  {formatTime(time)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <TouchableOpacity style={styles.startTimerButton} onPress={startTimer}>
-            <Ionicons name="play" size={20} color="#FFF" />
-            <Text style={styles.startTimerText}>Demarrer</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <>
-          <View style={styles.timerDisplay}>
-            <Text style={[styles.timerText, isDark && styles.textDark]}>{formatTime(timeLeft)}</Text>
-          </View>
-          <View style={[styles.progressBar, isDark && styles.progressBarDark]}>
-            <Animated.View style={[styles.progressFill, { width: progressWidth }]} />
-          </View>
-          <TouchableOpacity style={styles.stopTimerButton} onPress={stopTimer}>
-            <Ionicons name="stop" size={20} color="#FFF" />
-            <Text style={styles.stopTimerText}>Arreter</Text>
-          </TouchableOpacity>
-        </>
-      )}
-    </View>
-  );
-};
 
 export default function ExerciceDetailScreen({ navigation, route }) {
   const { exercice } = route.params;
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const { addExercise, isExerciseInWorkout, isWorkoutActive, currentWorkout } = useWorkout();
+  const { addExercise, isExerciseInWorkout } = useWorkout();
   const isInWorkout = isExerciseInWorkout(exercice.id);
 
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showAddedFeedback, setShowAddedFeedback] = useState(false);
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const buttonAnim = useRef(new Animated.Value(1)).current;
 
   const difficultyConfig = DIFFICULTY_CONFIG[exercice.difficulty] || DIFFICULTY_CONFIG.intermediaire;
   const typeConfig = TYPE_CONFIG[exercice.type] || TYPE_CONFIG.muscu;
   const instructions = getDefaultInstructions(exercice);
   const tip = getTips(exercice);
-  const restTime = getRestTime(exercice);
 
   // Charger l'etat favori
   useEffect(() => {
@@ -325,60 +194,10 @@ export default function ExerciceDetailScreen({ navigation, route }) {
   }, [navigation]);
 
   const handleAddToWorkout = useCallback(() => {
-    if (isInWorkout) {
-      // Aller directement a la seance
-      navigation.navigate('WorkoutSession');
-      return;
-    }
-
-    // Animation du bouton
-    Animated.sequence([
-      Animated.timing(buttonAnim, { toValue: 0.95, duration: 50, useNativeDriver: true }),
-      Animated.timing(buttonAnim, { toValue: 1, duration: 50, useNativeDriver: true }),
-    ]).start();
-
-    // Ajouter l'exercice
+    if (isInWorkout) return;
     addExercise(exercice);
     Vibration.vibrate(100);
-
-    // Feedback visuel
-    setShowAddedFeedback(true);
-    setTimeout(() => setShowAddedFeedback(false), 2000);
-
-    // Proposer d'aller a la seance
-    Alert.alert(
-      'Exercice ajoute !',
-      `${exercice.name} a ete ajoute a ta seance.`,
-      [
-        { text: 'Continuer', style: 'cancel' },
-        { text: 'Voir la seance', onPress: () => navigation.navigate('WorkoutSession') },
-      ]
-    );
-  }, [exercice, isInWorkout, addExercise, navigation, buttonAnim]);
-
-  // Variantes/exercices similaires (meme muscle, difficulte differente)
-  const variants = useMemo(() => {
-    // Liste simplifiee de variantes basees sur le muscle
-    const variantsByMuscle = {
-      'pectoraux': ['Pompes', 'Ecarte poulie', 'Developpe machine'],
-      'dos-superieur': ['Tirage vertical', 'Rowing machine', 'Pullover'],
-      'dos-inferieur': ['Hyperextensions', 'Rowing assis', 'Good morning'],
-      'epaules': ['Elevations laterales', 'Face pull', 'Shrugs'],
-      'biceps': ['Curl incline', 'Curl concentre', 'Curl poulie'],
-      'triceps': ['Pushdown', 'Dips', 'Extension nuque'],
-      'cuisses-externes': ['Presse', 'Fentes', 'Leg extension'],
-      'cuisses-internes': ['Leg curl', 'Romanian deadlift', 'Good morning'],
-      'fessiers': ['Hip thrust', 'Fentes arriere', 'Step ups'],
-      'mollets': ['Mollets debout', 'Mollets assis', 'Mollets presse'],
-      'abdos-centre': ['Crunch', 'Planche', 'Releve de jambes'],
-      'abdos-lateraux': ['Russian twist', 'Planche laterale', 'Woodchop'],
-      'cardio': ['Course', 'Velo', 'Rameur', 'Corde a sauter'],
-    };
-
-    return (variantsByMuscle[exercice.muscle] || [])
-      .filter(v => v.toLowerCase() !== exercice.name.toLowerCase())
-      .slice(0, 3);
-  }, [exercice]);
+  }, [exercice, isInWorkout, addExercise]);
 
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
@@ -390,15 +209,28 @@ export default function ExerciceDetailScreen({ navigation, route }) {
         <Text style={[styles.headerTitle, isDark && styles.textDark]} numberOfLines={1}>
           {exercice.name}
         </Text>
-        <TouchableOpacity onPress={toggleFavorite} style={styles.favoriteHeaderButton}>
-          <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+        <View style={styles.headerRight}>
+          <TouchableOpacity onPress={toggleFavorite} style={styles.headerAction}>
+            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+              <Ionicons
+                name={isFavorite ? 'heart' : 'heart-outline'}
+                size={22}
+                color={isFavorite ? '#EF4444' : (isDark ? '#888' : '#666')}
+              />
+            </Animated.View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleAddToWorkout}
+            style={[styles.headerAction, styles.addAction, isInWorkout && styles.addActionDone]}
+            disabled={isInWorkout}
+          >
             <Ionicons
-              name={isFavorite ? 'heart' : 'heart-outline'}
-              size={24}
-              color={isFavorite ? '#EF4444' : (isDark ? '#888' : '#666')}
+              name={isInWorkout ? 'checkmark' : 'add'}
+              size={22}
+              color="#FFF"
             />
-          </Animated.View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
@@ -456,16 +288,6 @@ export default function ExerciceDetailScreen({ navigation, route }) {
             </Text>
           </View>
 
-          {/* Repos */}
-          <View style={[styles.quickInfoCard, isDark && styles.cardDark]}>
-            <View style={[styles.quickInfoIcon, { backgroundColor: '#06B6D420' }]}>
-              <Ionicons name="time-outline" size={20} color="#06B6D4" />
-            </View>
-            <Text style={[styles.quickInfoLabel, isDark && styles.textMutedDark]}>Repos</Text>
-            <Text style={[styles.quickInfoValue, isDark && styles.textDark]}>
-              {restTime}s
-            </Text>
-          </View>
         </View>
 
         {/* Muscles travailles */}
@@ -514,9 +336,6 @@ export default function ExerciceDetailScreen({ navigation, route }) {
           ))}
         </View>
 
-        {/* Timer */}
-        <RestTimer initialTime={restTime} isDark={isDark} />
-
         {/* Conseil */}
         <View style={[styles.tipSection, isDark && styles.tipSectionDark]}>
           <View style={styles.tipHeader}>
@@ -526,63 +345,7 @@ export default function ExerciceDetailScreen({ navigation, route }) {
           <Text style={[styles.tipText, isDark && styles.textMutedDark]}>{tip}</Text>
         </View>
 
-        {/* Variantes */}
-        {variants.length > 0 && (
-          <View style={[styles.section, isDark && styles.cardDark]}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="shuffle" size={20} color={theme.colors.primary} />
-              <Text style={[styles.sectionTitle, isDark && styles.textDark]}>Variantes</Text>
-            </View>
-            <View style={styles.variantsContainer}>
-              {variants.map((variant, index) => (
-                <View key={index} style={[styles.variantChip, isDark && styles.variantChipDark]}>
-                  <Ionicons name="swap-horizontal" size={14} color={theme.colors.primary} />
-                  <Text style={[styles.variantText, isDark && styles.textDark]}>{variant}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Espace pour le bouton */}
-        <View style={{ height: 100 }} />
       </ScrollView>
-
-      {/* Bouton ajouter a la seance */}
-      <View style={[styles.bottomBar, isDark && styles.bottomBarDark]}>
-        {showAddedFeedback && (
-          <View style={styles.addedFeedback}>
-            <Ionicons name="checkmark-circle" size={18} color="#22C55E" />
-            <Text style={styles.addedFeedbackText}>Ajoute a ta seance !</Text>
-          </View>
-        )}
-        <Animated.View style={{ transform: [{ scale: buttonAnim }] }}>
-          <TouchableOpacity
-            style={[
-              styles.startButton,
-              isInWorkout && styles.viewSessionButton,
-            ]}
-            onPress={handleAddToWorkout}
-            activeOpacity={0.8}
-          >
-            <Ionicons
-              name={isInWorkout ? "fitness" : "add-circle"}
-              size={22}
-              color="#FFF"
-            />
-            <Text style={styles.startButtonText}>
-              {isInWorkout ? "Voir ma seance" : "Ajouter a ma seance"}
-            </Text>
-            {isInWorkout && currentWorkout && (
-              <View style={styles.exerciseCountBadge}>
-                <Text style={styles.exerciseCountText}>
-                  {currentWorkout.exercises.length}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </Animated.View>
-      </View>
     </SafeAreaView>
   );
 }
@@ -623,9 +386,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginHorizontal: 8,
   },
-  favoriteHeaderButton: {
-    padding: 8,
-    marginRight: -8,
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerAction: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addAction: {
+    backgroundColor: theme.colors.primary,
+  },
+  addActionDone: {
+    backgroundColor: '#22C55E',
   },
 
   // ScrollView
@@ -634,6 +411,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
+    paddingBottom: 180,
   },
 
   // Image
@@ -792,110 +570,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // Timer
-  timerContainer: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  timerContainerDark: {
-    backgroundColor: '#1E1E1E',
-  },
-  timerHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  timerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  timeOptionsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
-  },
-  timeOption: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#F0F0F0',
-    alignItems: 'center',
-  },
-  timeOptionActive: {
-    backgroundColor: theme.colors.primary,
-  },
-  timeOptionDark: {
-    backgroundColor: '#333',
-  },
-  timeOptionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
-  },
-  timeOptionTextActive: {
-    color: '#FFF',
-  },
-  timeOptionTextDark: {
-    color: '#888',
-  },
-  startTimerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#22C55E',
-    paddingVertical: 12,
-    borderRadius: 10,
-  },
-  startTimerText: {
-    color: '#FFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  timerDisplay: {
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  timerText: {
-    fontSize: 48,
-    fontWeight: '700',
-    color: '#333',
-    fontVariant: ['tabular-nums'],
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: '#E5E5E5',
-    borderRadius: 3,
-    marginBottom: 12,
-    overflow: 'hidden',
-  },
-  progressBarDark: {
-    backgroundColor: '#333',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: theme.colors.primary,
-    borderRadius: 3,
-  },
-  stopTimerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#EF4444',
-    paddingVertical: 12,
-    borderRadius: 10,
-  },
-  stopTimerText: {
-    color: '#FFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-
   // Tip
   tipSection: {
     backgroundColor: '#FFF8E1',
@@ -923,90 +597,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     lineHeight: 20,
-  },
-
-  // Variants
-  variantsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  variantChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    backgroundColor: `${theme.colors.primary}15`,
-  },
-  variantChipDark: {
-    backgroundColor: `${theme.colors.primary}30`,
-  },
-  variantText: {
-    fontSize: 13,
-    color: '#333',
-  },
-
-  // Bottom bar
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#FFF',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 30,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-  },
-  bottomBarDark: {
-    backgroundColor: '#1E1E1E',
-    borderTopColor: '#333',
-  },
-  startButton: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: 12,
-  },
-  viewSessionButton: {
-    backgroundColor: '#22C55E',
-  },
-  startButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  exerciseCountBadge: {
-    backgroundColor: '#FFF',
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 4,
-  },
-  exerciseCountText: {
-    color: '#22C55E',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  addedFeedback: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginBottom: 8,
-  },
-  addedFeedbackText: {
-    color: '#22C55E',
-    fontSize: 13,
-    fontWeight: '500',
   },
 
   // Text colors

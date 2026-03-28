@@ -83,7 +83,7 @@ export function confirmDialog(message, options = {}) {
                 border: 'none',
                 background: type === 'error' || type === 'warning'
                   ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)'
-                  : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  : 'linear-gradient(135deg, #F7B186 0%, #E89A6F 100%)',
                 color: 'white',
                 cursor: 'pointer',
                 fontSize: '14px',

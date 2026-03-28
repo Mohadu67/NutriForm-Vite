@@ -14,35 +14,91 @@ export const useRecipeDetail = (recipeId) => {
   const [likeError, setLikeError] = useState(null);
 
   useEffect(() => {
+    if (!recipeId) {
+      setLoading(false);
+      return;
+    }
+
+    let mounted = true;
+
     const fetchRecipeDetail = async () => {
+      setLoading(true);
+      setError(null);
+      setRecipe(null);
+
       try {
-        setLoading(true);
-        setError(null);
+        let found = false;
 
-        const response = await axios.get(`${API_URL}/recipes/${recipeId}`);
+        // D'abord essayer la route publique
+        try {
+          const response = await axios.get(`${API_URL}/recipes/${recipeId}`);
+          if (response.data.success) {
+            const recipeData = response.data.recipe;
+            if (mounted) {
+              setRecipe(recipeData);
+              setLikesCount(recipeData.likes?.length || 0);
 
-        if (response.data.success) {
-          const recipeData = response.data.recipe;
-          setRecipe(recipeData);
-          setLikesCount(recipeData.likes?.length || 0);
+              const user = storage.get('user');
+              if (user && recipeData.likes) {
+                setIsLiked(recipeData.likes.includes(user.id));
+              }
+            }
+            found = true;
+          }
+        } catch (publicErr) {
+          if (publicErr.response?.status !== 404) {
+            throw publicErr;
+          }
+          // Si 404, continuer vers la route privée
+        }
 
-          // Vérifier si l'utilisateur a déjà liké
-          const user = storage.get('user');
-          if (user && recipeData.likes) {
-            setIsLiked(recipeData.likes.includes(user.id));
+        // Essayer la route privée si pas trouvée en public
+        if (!found) {
+          try {
+            const privateResponse = await secureApiCall(`/recipes/user/${recipeId}`);
+            if (privateResponse.ok) {
+              const data = await privateResponse.json();
+              if (data.success) {
+                const recipeData = data.recipe;
+                if (mounted) {
+                  setRecipe(recipeData);
+                  setLikesCount(recipeData.likes?.length || 0);
+
+                  const user = storage.get('user');
+                  if (user && recipeData.likes) {
+                    setIsLiked(recipeData.likes.includes(user.id));
+                  }
+                }
+                found = true;
+              }
+            }
+          } catch (privateErr) {
+            console.error('Recette non trouvée:', privateErr);
           }
         }
+
+        // Si pas trouvée, afficher erreur
+        if (!found && mounted) {
+          setError('Recette introuvable');
+        }
       } catch (err) {
-        console.error('Erreur fetch recipe detail:', err);
-        setError(err.message);
+        if (mounted) {
+          console.error('Erreur fetch recipe detail:', err);
+          setError(err.message || 'Erreur lors du chargement');
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    if (recipeId) {
-      fetchRecipeDetail();
-    }
+    fetchRecipeDetail();
+
+    // Cleanup pour éviter les state updates après unmount
+    return () => {
+      mounted = false;
+    };
   }, [recipeId]);
 
   const toggleLike = async () => {

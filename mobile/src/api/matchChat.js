@@ -39,6 +39,16 @@ export const getOrCreateConversation = async (matchId) => {
 };
 
 /**
+ * Get or create a social conversation (between followers, no Match required)
+ * @param {string} userId - Target user ID
+ * @returns {Promise<object>} Conversation data
+ */
+export const getOrCreateSocialConversation = async (userId) => {
+  const response = await client.get(endpoints.matchChat.socialConversation(userId));
+  return response.data.conversation || response.data;
+};
+
+/**
  * Send a message in a conversation
  * @param {string} conversationId - Conversation ID
  * @param {object} messageData - { content, type?, metadata? }

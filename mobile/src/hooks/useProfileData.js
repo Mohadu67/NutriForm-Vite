@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../contexts/AuthContext';
 import apiClient from '../api/client';
 import { endpoints } from '../api/endpoints';
+import social from '../api/social';
 import logger from '../services/logger';
 
 /**
@@ -22,22 +23,25 @@ export function useProfileData() {
   const [leaderboardData, setLeaderboardData] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [followStats, setFollowStats] = useState({ followersCount: 0, followingCount: 0 });
 
   // --- Chargement des données ---
 
   const loadProfile = useCallback(async () => {
     try {
-      const [profileRes, summaryRes, subRes, leaderboardRes] = await Promise.all([
+      const [profileRes, summaryRes, subRes, leaderboardRes, followStatsRes] = await Promise.all([
         apiClient.get(endpoints.profile.me).catch(() => ({ data: { profile: null } })),
         apiClient.get(endpoints.history.summary).catch(() => ({ data: null })),
         apiClient.get(endpoints.subscription.status).catch(() => ({ data: { tier: 'free' } })),
         apiClient.get(endpoints.leaderboard.status).catch(() => ({ data: { data: null } })),
+        social.getStats().catch(() => ({ data: { followersCount: 0, followingCount: 0 } })),
       ]);
 
       setProfile(profileRes.data.profile);
       setStats(summaryRes.data);
       setSubscription(subRes.data);
       setLeaderboardData(leaderboardRes.data?.data);
+      setFollowStats(followStatsRes.data || { followersCount: 0, followingCount: 0 });
     } catch (error) {
       logger.app.error('[Profile] Error loading data', error);
     } finally {
@@ -206,6 +210,7 @@ export function useProfileData() {
     currentLevel,
     xpProgress,
     totalCalories,
+    followStats,
 
     // Actions
     onRefresh,

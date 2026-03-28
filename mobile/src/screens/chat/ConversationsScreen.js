@@ -8,10 +8,10 @@ import {
   ActivityIndicator,
   Animated,
   TouchableOpacity,
+  useColorScheme,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -21,12 +21,12 @@ import { useChat } from '../../contexts/ChatContext';
 import { ConversationItem } from '../../components/chat';
 import { logger } from '../../services/logger';
 import websocketService from '../../services/websocket';
-import useThemedStyles from '../../hooks/useThemedStyles';
-import { blurIntensity } from '../../theme/glassmorphism';
 
 const DEFAULT_BOT_NAME = 'Assistant Harmonith';
 
 export default function ConversationsScreen({ navigation }) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const { conversations, loadConversations, isLoading, unreadCount } = useChat();
   const [refreshing, setRefreshing] = useState(false);
   const [botName, setBotName] = useState(DEFAULT_BOT_NAME);
@@ -35,20 +35,6 @@ export default function ConversationsScreen({ navigation }) {
   const headerOpacity = useRef(new Animated.Value(0)).current;
   const listOpacity = useRef(new Animated.Value(0)).current;
   const aiCardScale = useRef(new Animated.Value(1)).current;
-
-  const themedStyles = useThemedStyles((isDark) => ({
-    gradientColors: isDark
-      ? ['#0F0F1A', '#1A1A2E', '#16213E']
-      : ['#FAFAFA', '#F5F0EB', '#FFF5EE'],
-    headerBg: isDark ? 'rgba(15, 15, 26, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-    headerBlurTint: isDark ? 'dark' : 'light',
-    textPrimary: isDark ? '#FFFFFF' : '#1A1A1A',
-    textSecondary: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)',
-    cardBg: isDark ? 'rgba(30, 30, 45, 0.6)' : 'rgba(255, 255, 255, 0.8)',
-    cardBorder: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-    aiCardBg: isDark ? 'rgba(247, 177, 134, 0.08)' : 'rgba(247, 177, 134, 0.12)',
-    aiCardBorder: isDark ? 'rgba(247, 177, 134, 0.2)' : 'rgba(247, 177, 134, 0.3)',
-  }));
 
   // Animations au mount
   useEffect(() => {
@@ -161,10 +147,7 @@ export default function ConversationsScreen({ navigation }) {
         activeOpacity={1}
         style={[
           styles.aiChatCard,
-          {
-            backgroundColor: themedStyles.aiCardBg,
-            borderColor: themedStyles.aiCardBorder,
-          },
+          isDark && styles.aiChatCardDark,
         ]}
       >
         {/* Badge épinglé */}
@@ -187,7 +170,7 @@ export default function ConversationsScreen({ navigation }) {
           {/* Infos */}
           <View style={styles.aiChatInfo}>
             <View style={styles.aiChatHeader}>
-              <Text style={[styles.aiChatName, { color: themedStyles.textPrimary }]}>
+              <Text style={[styles.aiChatName, isDark && styles.aiChatNameDark]}>
                 {botName}
               </Text>
               <View style={styles.aiLiveBadge}>
@@ -196,7 +179,7 @@ export default function ConversationsScreen({ navigation }) {
               </View>
             </View>
             <Text
-              style={[styles.aiChatDescription, { color: themedStyles.textSecondary }]}
+              style={[styles.aiChatDescription, isDark && styles.aiChatDescriptionDark]}
               numberOfLines={1}
             >
               Pose tes questions sur l'entraînement, nutrition...
@@ -211,11 +194,11 @@ export default function ConversationsScreen({ navigation }) {
       {/* Séparateur avec label */}
       {conversations.length > 0 && (
         <View style={styles.sectionDivider}>
-          <View style={[styles.sectionLine, { backgroundColor: themedStyles.cardBorder }]} />
-          <Text style={[styles.sectionLabel, { color: themedStyles.textSecondary }]}>
+          <View style={[styles.sectionLine, isDark && styles.sectionLineDark]} />
+          <Text style={[styles.sectionLabel, isDark && styles.sectionLabelDark]}>
             Conversations
           </Text>
-          <View style={[styles.sectionLine, { backgroundColor: themedStyles.cardBorder }]} />
+          <View style={[styles.sectionLine, isDark && styles.sectionLineDark]} />
         </View>
       )}
     </Animated.View>
@@ -244,26 +227,26 @@ export default function ConversationsScreen({ navigation }) {
   // Empty state (sans conversations de partenaires)
   const renderEmptyState = () => (
     <Animated.View style={[styles.emptyContainer, { opacity: listOpacity }]}>
-      <View style={[styles.emptyCard, { backgroundColor: themedStyles.cardBg, borderColor: themedStyles.cardBorder }]}>
+      <View style={[styles.emptyCard, isDark && styles.emptyCardDark]}>
         <View style={styles.emptyIconWrapper}>
           <LinearGradient
-            colors={['rgba(247, 177, 134, 0.2)', 'rgba(247, 177, 134, 0.05)']}
+            colors={[theme.colors.primary, '#F9C4A3']}
             style={styles.emptyIconGradient}
           >
-            <Ionicons name="chatbubbles" size={48} color={theme.colors.primary} />
+            <Ionicons name="chatbubbles" size={48} color="#FFFFFF" />
           </LinearGradient>
         </View>
 
-        <Text style={[styles.emptyTitle, { color: themedStyles.textPrimary }]}>
+        <Text style={[styles.emptyTitle, isDark && styles.emptyTitleDark]}>
           Pas encore de partenaires
         </Text>
-        <Text style={[styles.emptySubtitle, { color: themedStyles.textSecondary }]}>
+        <Text style={[styles.emptySubtitle, isDark && styles.emptySubtitleDark]}>
           Trouve un partenaire dans l'onglet Matching pour commencer à discuter
         </Text>
 
         <TouchableOpacity
           style={styles.emptyButton}
-          onPress={() => navigation.navigate('MatchingTab')}
+          onPress={() => navigation.navigate('Matching')}
           activeOpacity={0.8}
         >
           <LinearGradient
@@ -282,93 +265,81 @@ export default function ConversationsScreen({ navigation }) {
 
   // Séparateur entre les items
   const renderSeparator = useCallback(() => (
-    <View style={styles.separator} />
-  ), []);
+    <View style={[styles.separator, isDark && styles.separatorDark]} />
+  ), [isDark]);
 
   return (
-    <View style={styles.root}>
-      <LinearGradient
-        colors={themedStyles.gradientColors}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-      >
-        <SafeAreaView style={styles.safeArea} edges={['top']}>
-          {/* Header moderne */}
-          <Animated.View style={{ opacity: headerOpacity }}>
-            <BlurView
-              intensity={blurIntensity.medium}
-              tint={themedStyles.headerBlurTint}
-              style={[styles.header, { backgroundColor: themedStyles.headerBg }]}
-            >
-              <View style={styles.headerContent}>
-                <View style={styles.headerLeft}>
-                  <Text style={[styles.headerTitle, { color: themedStyles.textPrimary }]}>
-                    Messages
-                  </Text>
-                  <Text style={[styles.headerSubtitle, { color: themedStyles.textSecondary }]}>
-                    {conversations.length > 0
-                      ? `${conversations.length} conversation${conversations.length > 1 ? 's' : ''}`
-                      : 'Tes conversations'
-                    }
-                  </Text>
-                </View>
-
-                {unreadCount > 0 && (
-                  <View style={styles.unreadBadge}>
-                    <Text style={styles.unreadBadgeText}>
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </BlurView>
-          </Animated.View>
-
-          {/* Liste des conversations */}
-          {isLoading && conversations.length === 0 ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-              <Text style={[styles.loadingText, { color: themedStyles.textSecondary }]}>
-                Chargement...
+    <View style={[styles.root, isDark && styles.rootDark]}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        {/* Header */}
+        <Animated.View style={[styles.header, isDark && styles.headerDark, { opacity: headerOpacity }]}>
+          <View style={styles.headerContent}>
+            <View style={styles.headerLeft}>
+              <Text style={[styles.headerTitle, isDark && styles.headerTitleDark]}>
+                Messages
+              </Text>
+              <Text style={[styles.headerSubtitle, isDark && styles.headerSubtitleDark]}>
+                {conversations.length > 0
+                  ? `${conversations.length} conversation${conversations.length > 1 ? 's' : ''}`
+                  : 'Tes conversations'
+                }
               </Text>
             </View>
-          ) : (
-            <FlatList
-              data={conversations}
-              renderItem={renderConversation}
-              keyExtractor={(item) => item._id}
-              contentContainerStyle={[
-                styles.listContent,
-                conversations.length === 0 && styles.listContentEmpty,
-              ]}
-              ListHeaderComponent={renderAIChatCard}
-              ItemSeparatorComponent={renderSeparator}
-              ListEmptyComponent={renderEmptyState}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={handleRefresh}
-                  tintColor={theme.colors.primary}
-                  colors={[theme.colors.primary]}
-                />
-              }
-            />
-          )}
-        </SafeAreaView>
-      </LinearGradient>
+
+            {unreadCount > 0 && (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadBadgeText}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
+          </View>
+        </Animated.View>
+
+        {/* Liste des conversations */}
+        {isLoading && conversations.length === 0 ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+            <Text style={[styles.loadingText, isDark && styles.loadingTextDark]}>
+              Chargement...
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={conversations}
+            renderItem={renderConversation}
+            keyExtractor={(item) => item._id}
+            contentContainerStyle={[
+              styles.listContent,
+              conversations.length === 0 && styles.listContentEmpty,
+            ]}
+            ListHeaderComponent={renderAIChatCard}
+            ItemSeparatorComponent={renderSeparator}
+            ListEmptyComponent={renderEmptyState}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor={theme.colors.primary}
+                colors={[theme.colors.primary]}
+              />
+            }
+          />
+        )}
+      </SafeAreaView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // Root
   root: {
     flex: 1,
-    backgroundColor: '#0F0F1A',
+    backgroundColor: '#F2F3F7',
   },
-  gradient: {
-    flex: 1,
+  rootDark: {
+    backgroundColor: '#111318',
   },
   safeArea: {
     flex: 1,
@@ -376,9 +347,13 @@ const styles = StyleSheet.create({
 
   // Header
   header: {
+    backgroundColor: '#F2F3F7',
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 16,
+  },
+  headerDark: {
+    backgroundColor: '#111318',
   },
   headerContent: {
     flexDirection: 'row',
@@ -389,25 +364,33 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    fontSize: 32,
-    fontWeight: '700',
+    fontSize: 30,
+    fontWeight: '800',
+    color: '#111',
     letterSpacing: -0.5,
+  },
+  headerTitleDark: {
+    color: '#FFFFFF',
   },
   headerSubtitle: {
     fontSize: 15,
+    color: '#666',
     marginTop: 4,
+  },
+  headerSubtitleDark: {
+    color: '#7A7D85',
   },
   unreadBadge: {
     backgroundColor: theme.colors.primary,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
     marginTop: 4,
   },
   unreadBadgeText: {
     color: '#FFFFFF',
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 
   // Loading
@@ -419,13 +402,17 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 15,
+    color: '#666',
+  },
+  loadingTextDark: {
+    color: '#7A7D85',
   },
 
   // List
   listContent: {
     flexGrow: 1,
     paddingTop: 8,
-    paddingBottom: 20,
+    paddingBottom: 180,
   },
   listContentEmpty: {
     paddingHorizontal: 20,
@@ -433,7 +420,10 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     marginLeft: 76,
-    backgroundColor: 'rgba(128, 128, 128, 0.1)',
+    backgroundColor: '#E8E9EE',
+  },
+  separatorDark: {
+    backgroundColor: '#22262E',
   },
 
   // AI Chat Card (pinned)
@@ -444,9 +434,14 @@ const styles = StyleSheet.create({
   },
   aiChatCard: {
     borderRadius: 16,
-    borderWidth: 1.5,
+    borderWidth: 1,
+    borderColor: `${theme.colors.primary}30`,
+    backgroundColor: `${theme.colors.primary}08`,
     overflow: 'hidden',
     position: 'relative',
+  },
+  aiChatCardDark: {
+    backgroundColor: `${theme.colors.primary}12`,
   },
   pinnedBadge: {
     position: 'absolute',
@@ -499,11 +494,15 @@ const styles = StyleSheet.create({
   aiChatName: {
     fontSize: 17,
     fontWeight: '600',
+    color: '#111',
+  },
+  aiChatNameDark: {
+    color: '#FFFFFF',
   },
   aiLiveBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(76, 175, 80, 0.15)',
+    backgroundColor: 'rgba(76,175,80,0.12)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
@@ -523,6 +522,10 @@ const styles = StyleSheet.create({
   aiChatDescription: {
     fontSize: 14,
     marginTop: 4,
+    color: '#666',
+  },
+  aiChatDescriptionDark: {
+    color: '#7A7D85',
   },
 
   // Section divider
@@ -537,12 +540,20 @@ const styles = StyleSheet.create({
   sectionLine: {
     flex: 1,
     height: 1,
+    backgroundColor: '#E8E9EE',
+  },
+  sectionLineDark: {
+    backgroundColor: '#22262E',
   },
   sectionLabel: {
     fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    color: '#999',
+  },
+  sectionLabelDark: {
+    color: '#666',
   },
 
   // Empty state
@@ -555,12 +566,18 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 28,
     alignItems: 'center',
+    backgroundColor: '#FFF',
     borderWidth: 1,
+    borderColor: '#E8E9EE',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.08,
     shadowRadius: 24,
     elevation: 4,
+  },
+  emptyCardDark: {
+    backgroundColor: '#1A1D24',
+    borderColor: '#22262E',
   },
   emptyIconWrapper: {
     marginBottom: 20,
@@ -577,12 +594,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
     textAlign: 'center',
+    color: '#111',
+  },
+  emptyTitleDark: {
+    color: '#FFFFFF',
   },
   emptySubtitle: {
     fontSize: 15,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
+    color: '#666',
+  },
+  emptySubtitleDark: {
+    color: '#7A7D85',
   },
   emptyButton: {
     borderRadius: 16,

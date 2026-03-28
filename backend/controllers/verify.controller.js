@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const LeaderboardEntry = require('../models/LeaderboardEntry');
 const logger = require('../utils/logger.js');
 
 const FRONTEND_URL = process.env.FRONTEND_BASE_URL || 'https://harmonith.fr';
@@ -22,6 +23,22 @@ async function verifyEmail(req, res) {
 
     if (user) {
       logger.info(`[VERIFY] Email verified for user: ${user.email}`);
+
+      // Auto-join leaderboard
+      try {
+        const existing = await LeaderboardEntry.findOne({ userId: user._id });
+        if (!existing) {
+          await LeaderboardEntry.create({
+            userId: user._id,
+            displayName: user.pseudo || user.prenom || 'Anonyme',
+            avatarUrl: user.photo || null,
+            visibility: 'public',
+          });
+          logger.info(`[VERIFY] Auto-joined leaderboard for user: ${user.email}`);
+        }
+      } catch (lbErr) {
+        logger.error('[VERIFY] Failed to auto-join leaderboard:', lbErr);
+      }
     } else {
       // Token not matched — check why
       const expiredUser = await User.findOne({ verificationToken: token }).select('+emailVerifie');

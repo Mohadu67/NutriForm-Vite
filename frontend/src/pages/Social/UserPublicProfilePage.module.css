@@ -1,0 +1,483 @@
+.page {
+  min-height: 100vh;
+}
+
+/* ── Layout ────────────────────────────────────────────── */
+.layout {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 16px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Profile Card ──────────────────────────────────────── */
+.profileCard {
+  background: #fff;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,.07);
+  position: relative;
+}
+
+.profileBg {
+  height: 100px;
+  background: linear-gradient(135deg, #E89A6F 0%, #F9C4A3 60%, #E8895A 100%);
+}
+
+.profileContent {
+  padding: 0 32px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Avatar */
+.avatarWrap {
+  margin-top: -44px;
+  margin-bottom: 14px;
+}
+
+.avatar,
+.avatarPlaceholder {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+}
+
+.avatar { object-fit: cover; }
+
+.avatarPlaceholder {
+  background: linear-gradient(135deg, #E89A6F, #F9C4A3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+}
+
+/* Name */
+.userName {
+  font-size: 22px;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: -0.5px;
+}
+
+.userPseudo {
+  font-size: 14px;
+  color: #AAA;
+  margin-top: 2px;
+}
+
+.userBio {
+  font-size: 14px;
+  color: #666;
+  margin-top: 10px;
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+/* Stats row */
+.statsRow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 22px;
+  background: #f4f5f8;
+  border-radius: 16px;
+  padding: 14px 32px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.statItem {
+  flex: 1;
+  text-align: center;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #AAA;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.statDivider {
+  width: 1px;
+  height: 32px;
+  background: #e0e0e0;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.followBtn,
+.fluxBtn,
+.actionBtn,
+.challengeBtn {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+
+.followBtn:hover,
+.fluxBtn:hover,
+.actionBtn:hover,
+.challengeBtn:hover { opacity: 0.85; }
+
+.actionBtn {
+  background: #f0f2f7;
+  color: #555;
+}
+
+.challengeBtn {
+  background: linear-gradient(135deg, #FBBF24, #F59E0B);
+  color: #fff;
+}
+
+.followBtnFollow {
+  background: #E89A6F;
+  color: #fff;
+}
+
+.followBtnFollowing {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.fluxBtn {
+  background: #f4f5f8;
+  color: #555;
+}
+
+/* ── Sessions Section ──────────────────────────────────── */
+.sessionsSection {}
+
+.sectionTitle {
+  font-size: 17px;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 14px;
+  letter-spacing: -0.3px;
+}
+
+.sessionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.empty {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  color: #AAA;
+  font-size: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+
+/* ── Mini Card ─────────────────────────────────────────── */
+.miniCard {
+  background: #fff;
+  border-radius: 16px;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  transition: box-shadow .2s;
+}
+.miniCard:hover { box-shadow: 0 4px 18px rgba(0,0,0,.10); }
+
+.miniCardAccent {
+  width: 4px;
+  flex-shrink: 0;
+  background: linear-gradient(to bottom, #E89A6F, #F9C4A3);
+}
+
+.miniCardBody { flex: 1; padding: 14px 14px 12px; }
+
+.miniCardName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.miniCardMeta {
+  font-size: 12px;
+  color: #888;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  gap: 4px;
+}
+
+.miniCardDate {
+  font-size: 11px;
+  color: #BBB;
+  margin-bottom: 8px;
+}
+
+.miniCardMuscles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.miniMuscleTag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* ── Loading / Error ───────────────────────────────────── */
+.loaderWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px;
+}
+
+.notFound {
+  max-width: 400px;
+  margin: 60px auto;
+  text-align: center;
+  background: #fff;
+  border-radius: 20px;
+  padding: 48px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+
+.notFoundIcon { font-size: 40px; margin-bottom: 16px; }
+.notFoundTitle { font-size: 20px; font-weight: 700; color: #111; margin-bottom: 20px; }
+
+.backBtn {
+  background: #E89A6F;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.backBtn:hover { opacity: 0.85; }
+
+/* ── Spinner ───────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f0f0f0;
+  border-top-color: #E89A6F;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+/* ── Modals ─────────────────────────────────────────────── */
+.modalOverlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 24px;
+  padding: 28px;
+  width: 100%; max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,.18);
+  position: relative;
+}
+
+.modalHeader {
+  margin-bottom: 18px;
+}
+.modalTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: -0.3px;
+}
+.modalSub { font-size: 14px; color: #AAA; margin-top: 3px; }
+.modalClose {
+  position: absolute; top: 20px; right: 20px;
+  background: #f0f2f7; border: none; border-radius: 50%;
+  width: 32px; height: 32px;
+  cursor: pointer; font-size: 14px; color: #666;
+  display: flex; align-items: center; justify-content: center;
+}
+.modalClose:hover { background: #e0e3ea; }
+
+.rewardBanner {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 1.5px solid #FCD34D;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #92400E;
+  margin-bottom: 18px;
+}
+
+/* Challenge grid */
+.challengeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.challengeOption {
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1.5px solid #edeef2;
+  background: #fafbfc;
+  cursor: pointer;
+  text-align: left;
+  transition: all .15s;
+  position: relative;
+}
+.challengeOption:hover { border-color: #E89A6F; background: #fff8f4; }
+.challengeOptionActive { border-color: #E89A6F !important; background: #fff4ee !important; box-shadow: 0 0 0 2px rgba(232,154,111,.2); }
+
+.challengeOptionIcon { font-size: 22px; margin-bottom: 4px; }
+.challengeOptionLabel { font-size: 13px; font-weight: 700; color: #111; line-height: 1.2; }
+.challengeOptionDesc { font-size: 11px; color: #999; line-height: 1.3; }
+
+.maxBadge {
+  position: absolute; top: 8px; right: 10px;
+  background: linear-gradient(135deg, #FBBF24, #F59E0B);
+  color: #fff;
+  font-size: 9px; font-weight: 800;
+  padding: 2px 6px; border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+/* Duration picker */
+.durationPicker { margin-bottom: 16px; }
+.durationLabel { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 8px; }
+.durationBtns { display: flex; gap: 8px; }
+.durationBtn {
+  flex: 1; padding: 8px;
+  border-radius: 10px;
+  border: 1.5px solid #edeef2;
+  background: #fafbfc;
+  font-size: 13px; font-weight: 700; color: #666;
+  cursor: pointer; transition: all .15s;
+}
+.durationBtnActive { border-color: #E89A6F; background: #fff4ee; color: #E89A6F; }
+
+.maxInfo {
+  background: #f0f4ff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #4B5563;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+/* Modal primary button */
+.modalPrimaryBtn {
+  width: 100%;
+  padding: 13px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #E89A6F, #F9C4A3);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s;
+  margin-top: 4px;
+}
+.modalPrimaryBtn:hover { opacity: 0.88; }
+.modalPrimaryBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Success state */
+.modalSuccess { text-align: center; padding: 16px 0; }
+.successIcon { font-size: 48px; margin-bottom: 14px; }
+.successTitle { font-size: 20px; font-weight: 800; color: #111; margin-bottom: 6px; }
+.successSub { font-size: 14px; color: #999; line-height: 1.5; margin-bottom: 20px; }
+
+/* Mutual info */
+.mutualInfo {
+  background: #f4f5f8;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* Message textarea */
+.messageTextarea {
+  width: 100%; box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1.5px solid #edeef2;
+  border-radius: 14px;
+  font-size: 14px;
+  color: #111;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  transition: border-color .15s;
+  margin-bottom: 6px;
+}
+.messageTextarea:focus { border-color: #E89A6F; }
+.charCount { font-size: 11px; color: #BBB; text-align: right; margin-bottom: 12px; }
+
+/* Error */
+.errorMsg {
+  background: #fff0f0;
+  border: 1px solid #fca5a5;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #DC2626;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 600px) {
+  .statsRow { padding: 14px 16px; }
+  .sessionsGrid { grid-template-columns: 1fr; }
+  .challengeGrid { grid-template-columns: 1fr; }
+  .actions { flex-wrap: wrap; }
+}

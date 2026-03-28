@@ -6,6 +6,7 @@ const { messageLimiter } = require('../middlewares/messageRateLimit.middleware')
 const {
   getConversations,
   getOrCreateConversation,
+  getOrCreateSocialConversation,
   sendMessage,
   getMessages,
   markAsRead,
@@ -29,6 +30,9 @@ router.get('/unread-count', auth, premium, getUnreadCount);
 
 // Récupérer ou créer une conversation pour un match
 router.get('/conversation/:matchId', auth, premium, getOrCreateConversation);
+
+// Récupérer ou créer une conversation sociale (entre abonnés, sans Match)
+router.get('/social/:userId', auth, getOrCreateSocialConversation);
 
 // Envoyer un message dans une conversation (avec rate limiting strict)
 router.post('/:conversationId/messages', auth, premium, messageLimiter, sendMessage);
