@@ -82,6 +82,7 @@ export const endpoints = {
     decline: (id) => `/challenges/${id}/decline`,
     cancel: (id) => `/challenges/${id}/cancel`,
     congratulate: "/challenges/congratulate",
+    submitResult: (id) => `/challenges/${id}/submit-result`,
   },
   xpRedemption: {
     eligibility: "/xp-redemption/eligibility",
@@ -115,6 +116,21 @@ export const endpoints = {
   health: {
     sync: "/health/sync",
   },
+  social: {
+    feed: "/social/feed",
+    stats: "/social/stats",
+    search: "/social/search",
+    follow: (userId) => `/social/follow/${userId}`,
+    unfollow: (userId) => `/social/follow/${userId}`,
+    followers: (userId) => `/social/followers/${userId}`,
+    following: (userId) => `/social/following/${userId}`,
+    userProfile: (userId) => `/social/users/${userId}`,
+    likePost: (targetId) => `/social/feed/${targetId}/like`,
+    sendMessage: (userId) => `/social/message/${userId}`,
+    getComments: (postId) => `/social/feed/${postId}/comments`,
+    addComment: (postId) => `/social/feed/${postId}/comments`,
+    deleteComment: (postId, commentId) => `/social/feed/${postId}/comments/${commentId}`,
+  },
   bodyComposition: {
     summary: "/body-composition/summary",
     trend: "/body-composition/trend",
@@ -122,6 +138,9 @@ export const endpoints = {
     weightHistory: "/body-composition/weight",
     deleteWeight: (id) => `/body-composition/weight/${id}`,
     metrics: "/body-composition/metrics",
+  },
+  barcode: {
+    lookup: (barcode) => `/barcode/${barcode}`,
   },
 };
 export default endpoints;
