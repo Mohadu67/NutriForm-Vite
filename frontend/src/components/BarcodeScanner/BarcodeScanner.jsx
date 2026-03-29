@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { BrowserMultiFormatReader } from '@zxing/browser';
 import { secureApiCall } from '../../utils/authService';
 import styles from './BarcodeScanner.module.css';
 
-const hasBarcodeDetector = typeof window !== 'undefined' && 'BarcodeDetector' in window;
+// BarcodeDetector natif = Chrome/Edge · ZXing = Safari/Firefox
+const NATIVE_DETECTOR = typeof window !== 'undefined' && 'BarcodeDetector' in window;
+const BARCODE_FORMATS_NATIVE = ['ean_8', 'ean_13', 'upc_a', 'upc_e', 'code_128'];
 
 export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
-  const [step, setStep] = useState('scan'); // 'scan' | 'loading' | 'result' | 'error' | 'manual'
+  const [step, setStep] = useState('scan');
   const [product, setProduct] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [manualCode, setManualCode] = useState('');
@@ -14,10 +17,21 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const rafRef = useRef(null);
+  const zxingControlsRef = useRef(null);
   const scannedRef = useRef(false);
 
   const stopCamera = useCallback(() => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    // Stop ZXing continuous reader
+    if (zxingControlsRef.current) {
+      try { zxingControlsRef.current.stop(); } catch {}
+      zxingControlsRef.current = null;
+    }
+    // Stop requestAnimationFrame loop (native BarcodeDetector)
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    // Stop media stream
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(t => t.stop());
       streamRef.current = null;
@@ -25,6 +39,7 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
   }, []);
 
   const fetchProduct = useCallback(async (barcode) => {
+    stopCamera();
     setStep('loading');
     try {
       const res = await secureApiCall(`/barcode/${barcode}`);
@@ -40,17 +55,16 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
       setErrorMsg('Impossible de joindre le serveur. Vérifiez votre connexion.');
       setStep('error');
     }
-  }, []);
+  }, [stopCamera]);
 
+  // ── Démarrage caméra + détection ──────────────────────────────────────────
   const startCamera = useCallback(async () => {
-    if (!hasBarcodeDetector) {
-      setStep('manual');
-      return;
-    }
     setCameraError('');
     scannedRef.current = false;
+
+    let stream;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
       });
       streamRef.current = stream;
@@ -58,25 +72,6 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
-
-      const detector = new BarcodeDetector({
-        formats: ['ean_8', 'ean_13', 'upc_a', 'upc_e', 'code_128'],
-      });
-
-      const scan = async () => {
-        if (scannedRef.current || !videoRef.current) return;
-        try {
-          const barcodes = await detector.detect(videoRef.current);
-          if (barcodes.length > 0) {
-            scannedRef.current = true;
-            stopCamera();
-            fetchProduct(barcodes[0].rawValue);
-            return;
-          }
-        } catch { /* frame pas encore prête */ }
-        rafRef.current = requestAnimationFrame(scan);
-      };
-      rafRef.current = requestAnimationFrame(scan);
     } catch (err) {
       if (err.name === 'NotAllowedError') {
         setCameraError('Accès à la caméra refusé. Activez la permission caméra et réessayez.');
@@ -84,8 +79,48 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
         setCameraError('Impossible d\'accéder à la caméra.');
       }
       setStep('manual');
+      return;
     }
-  }, [fetchProduct, stopCamera]);
+
+    // ── Chrome / Edge : BarcodeDetector natif ────────────────────────────
+    if (NATIVE_DETECTOR) {
+      const detector = new BarcodeDetector({ formats: BARCODE_FORMATS_NATIVE });
+      const scan = async () => {
+        if (scannedRef.current || !videoRef.current) return;
+        try {
+          const barcodes = await detector.detect(videoRef.current);
+          if (barcodes.length > 0 && !scannedRef.current) {
+            scannedRef.current = true;
+            fetchProduct(barcodes[0].rawValue);
+            return;
+          }
+        } catch { /* frame pas encore prête */ }
+        rafRef.current = requestAnimationFrame(scan);
+      };
+      rafRef.current = requestAnimationFrame(scan);
+      return;
+    }
+
+    // ── Safari / Firefox : @zxing/browser ────────────────────────────────
+    try {
+      const codeReader = new BrowserMultiFormatReader();
+      const controls = await codeReader.decodeFromStream(
+        stream,
+        videoRef.current,
+        (result, err) => {
+          if (result && !scannedRef.current) {
+            scannedRef.current = true;
+            fetchProduct(result.getText());
+          }
+        }
+      );
+      zxingControlsRef.current = controls;
+    } catch (err) {
+      // ZXing non disponible → fallback manuel
+      setCameraError('Le scan automatique n\'est pas disponible sur ce navigateur.');
+      setStep('manual');
+    }
+  }, [fetchProduct]);
 
   useEffect(() => {
     if (isOpen) {
@@ -99,13 +134,10 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
       stopCamera();
     }
     return () => stopCamera();
-  }, [isOpen, startCamera, stopCamera]);
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUseProduct = () => {
-    if (product) {
-      onProductFound(product);
-      onClose();
-    }
+    if (product) { onProductFound(product); onClose(); }
   };
 
   const handleRescan = () => {
@@ -137,8 +169,8 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
         </div>
 
         <div className={styles.body}>
-          {/* Vue caméra */}
-          {step === 'scan' && hasBarcodeDetector && (
+          {/* Vue caméra (Chrome/Edge natif + Safari/Firefox via ZXing) */}
+          {step === 'scan' && (
             <>
               <div className={styles.cameraWrapper}>
                 <video ref={videoRef} className={styles.video} muted playsInline />
@@ -158,12 +190,9 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
           )}
 
           {/* Saisie manuelle */}
-          {(step === 'manual' || (step === 'scan' && !hasBarcodeDetector)) && (
+          {step === 'manual' && (
             <form onSubmit={handleManualSubmit} className={styles.manualForm}>
               {cameraError && <p className={styles.cameraError}>{cameraError}</p>}
-              {!hasBarcodeDetector && (
-                <p className={styles.hint}>La détection automatique n'est pas disponible sur ce navigateur.</p>
-              )}
               <label className={styles.label}>Code-barres (EAN-13 / EAN-8)</label>
               <input
                 type="text"
@@ -181,11 +210,9 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
               >
                 Rechercher
               </button>
-              {hasBarcodeDetector && (
-                <button type="button" className={styles.linkBtn} onClick={handleRescan}>
-                  ← Revenir à la caméra
-                </button>
-              )}
+              <button type="button" className={styles.linkBtn} onClick={handleRescan}>
+                ← Revenir à la caméra
+              </button>
             </form>
           )}
 
@@ -203,7 +230,9 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
               <div className={styles.errorIcon}>✕</div>
               <p className={styles.errorText}>{errorMsg}</p>
               <button className={styles.primaryBtn} onClick={handleRescan}>Réessayer</button>
-              <button className={styles.linkBtn} onClick={() => setStep('manual')}>Saisir le code manuellement</button>
+              <button className={styles.linkBtn} onClick={() => { stopCamera(); setStep('manual'); }}>
+                Saisir le code manuellement
+              </button>
             </div>
           )}
 

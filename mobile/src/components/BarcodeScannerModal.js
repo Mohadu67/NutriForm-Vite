@@ -10,6 +10,8 @@ import {
   Image,
   useColorScheme,
   Alert,
+  SafeAreaView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -20,10 +22,12 @@ export default function BarcodeScannerModal({ visible, onClose, onProductFound }
   const isDark = useColorScheme() === 'dark';
   const [permission, requestPermission] = useCameraPermissions();
 
-  const [step, setStep] = useState('scan'); // 'scan' | 'loading' | 'result' | 'error' | 'manual'
+  const [step, setStep] = useState('scan');
   const [product, setProduct] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [manualCode, setManualCode] = useState('');
+  // Délai court pour éviter le scan immédiat dès l'ouverture
+  const [cameraReady, setCameraReady] = useState(false);
   const scannedRef = useRef(false);
 
   useEffect(() => {
@@ -33,11 +37,16 @@ export default function BarcodeScannerModal({ visible, onClose, onProductFound }
       setErrorMsg('');
       setManualCode('');
       scannedRef.current = false;
+      // Laisser la modal s'animer avant d'activer le scan
+      const t = setTimeout(() => setCameraReady(true), 600);
+      return () => clearTimeout(t);
+    } else {
+      setCameraReady(false);
     }
   }, [visible]);
 
   const handleBarcodeScan = async ({ data }) => {
-    if (scannedRef.current) return;
+    if (scannedRef.current || !cameraReady) return;
     scannedRef.current = true;
     await fetchProduct(data);
   };
@@ -69,20 +78,18 @@ export default function BarcodeScannerModal({ visible, onClose, onProductFound }
     setErrorMsg('');
     setManualCode('');
     setStep('scan');
+    // Re-arm camera
+    setCameraReady(false);
+    setTimeout(() => setCameraReady(true), 300);
   };
 
   const handleUseProduct = () => {
-    if (product) {
-      onProductFound(product);
-      onClose();
-    }
+    if (product) { onProductFound(product); onClose(); }
   };
 
   const requestAndScan = async () => {
     const { granted } = await requestPermission();
-    if (!granted) {
-      setStep('manual');
-    }
+    if (!granted) setStep('manual');
   };
 
   const bg = isDark ? '#1A1A1A' : '#fff';
@@ -92,53 +99,78 @@ export default function BarcodeScannerModal({ visible, onClose, onProductFound }
   const inputBg = isDark ? '#2A2A2A' : '#f9fafb';
 
   const renderContent = () => {
+    // Permissions en cours de chargement
     if (!permission) {
-      return <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginTop: 40 }} />;
+      return (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      );
     }
 
+    // Permission non accordée
     if (!permission.granted) {
       return (
         <View style={styles.centered}>
-          <Ionicons name="camera-outline" size={48} color={muted} />
-          <Text style={[styles.errorText, { color: text }]}>
+          <Ionicons name="camera-outline" size={52} color={muted} />
+          <Text style={[styles.errorText, { color: text, marginTop: 12 }]}>
             L'accès à la caméra est nécessaire pour scanner un code-barres.
           </Text>
-          <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: theme.colors.primary }]} onPress={requestAndScan}>
+          <TouchableOpacity
+            style={[styles.primaryBtn, { backgroundColor: theme.colors.primary, marginTop: 16 }]}
+            onPress={requestAndScan}
+          >
             <Text style={styles.primaryBtnText}>Autoriser la caméra</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.linkBtn} onPress={() => setStep('manual')}>
-            <Text style={[styles.linkBtnText, { color: theme.colors.primary }]}>Entrer le code manuellement</Text>
+            <Text style={[styles.linkBtnText, { color: theme.colors.primary }]}>
+              Entrer le code manuellement
+            </Text>
           </TouchableOpacity>
         </View>
       );
     }
 
+    // Vue caméra
     if (step === 'scan') {
       return (
-        <View style={styles.cameraContainer}>
-          <CameraView
-            style={styles.camera}
-            facing="back"
-            barcodeScannerSettings={{ barcodeTypes: ['ean8', 'ean13', 'upc_a', 'upc_e', 'code128'] }}
-            onBarcodeScanned={handleBarcodeScan}
-          >
-            <View style={styles.overlay}>
-              <View style={styles.scanFrame}>
-                <View style={[styles.corner, styles.cornerTL]} />
-                <View style={[styles.corner, styles.cornerTR]} />
-                <View style={[styles.corner, styles.cornerBL]} />
-                <View style={[styles.corner, styles.cornerBR]} />
+        <View style={styles.scanContainer}>
+          {/* CameraView monté seulement quand modal visible + délai écoulé */}
+          {cameraReady && (
+            <CameraView
+              style={styles.camera}
+              facing="back"
+              barcodeScannerSettings={{
+                barcodeTypes: ['ean8', 'ean13', 'upc_a', 'upc_e', 'code128'],
+              }}
+              onBarcodeScanned={handleBarcodeScan}
+            >
+              <View style={styles.cameraOverlay} pointerEvents="none">
+                <View style={styles.scanFrame}>
+                  <View style={[styles.corner, styles.cornerTL]} />
+                  <View style={[styles.corner, styles.cornerTR]} />
+                  <View style={[styles.corner, styles.cornerBL]} />
+                  <View style={[styles.corner, styles.cornerBR]} />
+                </View>
+                <Text style={styles.scanHint}>Pointez vers le code-barres</Text>
               </View>
-              <Text style={styles.scanHint}>Pointez vers le code-barres</Text>
+            </CameraView>
+          )}
+          {!cameraReady && (
+            <View style={[styles.camera, styles.cameraPlaceholder]}>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
-          </CameraView>
+          )}
           <TouchableOpacity style={styles.manualLink} onPress={() => setStep('manual')}>
-            <Text style={[styles.linkBtnText, { color: theme.colors.primary }]}>Entrer le code manuellement</Text>
+            <Text style={[styles.linkBtnText, { color: theme.colors.primary }]}>
+              Entrer le code manuellement
+            </Text>
           </TouchableOpacity>
         </View>
       );
     }
 
+    // Saisie manuelle
     if (step === 'manual') {
       return (
         <View style={styles.manualForm}>
@@ -154,7 +186,11 @@ export default function BarcodeScannerModal({ visible, onClose, onProductFound }
             autoFocus
           />
           <TouchableOpacity
-            style={[styles.primaryBtn, { backgroundColor: theme.colors.primary, opacity: /^\d{8,14}$/.test(manualCode) ? 1 : 0.4 }]}
+            style={[
+              styles.primaryBtn,
+              { backgroundColor: theme.colors.primary },
+              !/^\d{8,14}$/.test(manualCode) && styles.btnDisabled,
+            ]}
             onPress={handleManualSubmit}
             disabled={!/^\d{8,14}$/.test(manualCode)}
           >
@@ -162,56 +198,74 @@ export default function BarcodeScannerModal({ visible, onClose, onProductFound }
           </TouchableOpacity>
           {permission?.granted && (
             <TouchableOpacity style={styles.linkBtn} onPress={handleRescan}>
-              <Text style={[styles.linkBtnText, { color: theme.colors.primary }]}>← Revenir à la caméra</Text>
+              <Text style={[styles.linkBtnText, { color: theme.colors.primary }]}>
+                ← Revenir à la caméra
+              </Text>
             </TouchableOpacity>
           )}
         </View>
       );
     }
 
+    // Chargement
     if (step === 'loading') {
       return (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={[styles.hint, { color: muted }]}>Recherche du produit…</Text>
+          <Text style={[styles.hint, { color: muted, marginTop: 12 }]}>Recherche du produit…</Text>
         </View>
       );
     }
 
+    // Erreur
     if (step === 'error') {
       return (
         <View style={styles.centered}>
           <View style={styles.errorIcon}>
-            <Ionicons name="close" size={24} color="#dc2626" />
+            <Ionicons name="close" size={26} color="#dc2626" />
           </View>
           <Text style={[styles.errorText, { color: text }]}>{errorMsg}</Text>
-          <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: theme.colors.primary }]} onPress={handleRescan}>
+          <TouchableOpacity
+            style={[styles.primaryBtn, { backgroundColor: theme.colors.primary, marginTop: 8 }]}
+            onPress={handleRescan}
+          >
             <Text style={styles.primaryBtnText}>Réessayer</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.linkBtn} onPress={() => setStep('manual')}>
-            <Text style={[styles.linkBtnText, { color: theme.colors.primary }]}>Saisir manuellement</Text>
+            <Text style={[styles.linkBtnText, { color: theme.colors.primary }]}>
+              Saisir manuellement
+            </Text>
           </TouchableOpacity>
         </View>
       );
     }
 
+    // Résultat
     if (step === 'result' && product) {
       return (
         <View style={styles.result}>
           <View style={[styles.productHeader, { backgroundColor: inputBg, borderColor: border }]}>
             {product.imageUrl ? (
-              <Image source={{ uri: product.imageUrl }} style={styles.productImg} resizeMode="contain" />
+              <Image
+                source={{ uri: product.imageUrl }}
+                style={styles.productImg}
+                resizeMode="contain"
+              />
             ) : (
               <View style={[styles.productImgPlaceholder, { borderColor: border }]}>
-                <Ionicons name="barcode-outline" size={28} color={muted} />
+                <Ionicons name="barcode-outline" size={30} color={muted} />
               </View>
             )}
             <View style={{ flex: 1 }}>
               <Text style={[styles.productName, { color: text }]} numberOfLines={2}>
                 {product.name || 'Produit sans nom'}
               </Text>
-              {product.brand ? <Text style={[styles.productMeta, { color: muted }]}>{product.brand}</Text> : null}
-              {product.quantity ? <Text style={[styles.productMeta, { color: muted }]}>{product.quantity}</Text> : null}
+              {product.brand ? (
+                <Text style={[styles.productMeta, { color: muted }]}>{product.brand}</Text>
+              ) : null}
+              {product.quantity ? (
+                <Text style={[styles.productMeta, { color: muted }]}>{product.quantity}</Text>
+              ) : null}
             </View>
           </View>
 
@@ -220,11 +274,14 @@ export default function BarcodeScannerModal({ visible, onClose, onProductFound }
           <View style={styles.macrosRow}>
             {[
               { label: 'kcal', value: product.nutrition.calories },
-              { label: 'Protéines', value: `${product.nutrition.proteins}g` },
-              { label: 'Glucides', value: `${product.nutrition.carbs}g` },
-              { label: 'Lipides', value: `${product.nutrition.fats}g` },
+              { label: 'Prot.', value: `${product.nutrition.proteins}g` },
+              { label: 'Gluc.', value: `${product.nutrition.carbs}g` },
+              { label: 'Lip.', value: `${product.nutrition.fats}g` },
             ].map((m) => (
-              <View key={m.label} style={[styles.macroItem, { backgroundColor: inputBg, borderColor: border }]}>
+              <View
+                key={m.label}
+                style={[styles.macroItem, { backgroundColor: inputBg, borderColor: border }]}
+              >
                 <Text style={[styles.macroValue, { color: theme.colors.primary }]}>{m.value}</Text>
                 <Text style={[styles.macroLabel, { color: muted }]}>{m.label}</Text>
               </View>
@@ -251,18 +308,22 @@ export default function BarcodeScannerModal({ visible, onClose, onProductFound }
   };
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <View style={[styles.container, { backgroundColor: bg }]}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      // PAS de presentationStyle — cause des bugs caméra sur iOS avec New Arch
+      transparent={false}
+      onRequestClose={onClose}
+    >
+      <SafeAreaView style={[styles.container, { backgroundColor: bg }]}>
         <View style={[styles.header, { borderBottomColor: border }]}>
           <Text style={[styles.headerTitle, { color: text }]}>Scanner un produit</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <Ionicons name="close" size={24} color={text} />
+            <Ionicons name="close" size={26} color={text} />
           </TouchableOpacity>
         </View>
-        <View style={styles.body}>
-          {renderContent()}
-        </View>
-      </View>
+        <View style={styles.body}>{renderContent()}</View>
+      </SafeAreaView>
     </Modal>
   );
 }
@@ -274,55 +335,64 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerTitle: { fontSize: 17, fontWeight: '700' },
   closeBtn: { padding: 4 },
   body: { flex: 1, padding: 20 },
 
-  // Caméra
-  cameraContainer: { flex: 1 },
-  camera: { flex: 1, borderRadius: 16, overflow: 'hidden', minHeight: 300 },
-  overlay: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  scanFrame: {
-    width: 220,
-    height: 220,
-    position: 'relative',
+  // Scanner
+  scanContainer: { flex: 1, gap: 16 },
+  camera: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+    minHeight: Platform.OS === 'ios' ? 340 : 300,
   },
-  corner: {
-    position: 'absolute',
-    width: 22,
-    height: 22,
-    borderColor: theme.colors.primary,
-    borderWidth: 3,
+  cameraPlaceholder: {
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+  cameraOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  scanFrame: { width: 200, height: 200, position: 'relative' },
+  corner: { position: 'absolute', width: 24, height: 24, borderColor: theme.colors.primary, borderWidth: 3 },
   cornerTL: { top: 0, left: 0, borderRightWidth: 0, borderBottomWidth: 0, borderTopLeftRadius: 4 },
   cornerTR: { top: 0, right: 0, borderLeftWidth: 0, borderBottomWidth: 0, borderTopRightRadius: 4 },
   cornerBL: { bottom: 0, left: 0, borderRightWidth: 0, borderTopWidth: 0, borderBottomLeftRadius: 4 },
   cornerBR: { bottom: 0, right: 0, borderLeftWidth: 0, borderTopWidth: 0, borderBottomRightRadius: 4 },
-  scanHint: { color: '#fff', fontSize: 13, marginTop: 20, backgroundColor: 'rgba(0,0,0,0.4)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  manualLink: { alignItems: 'center', marginTop: 16 },
+  scanHint: {
+    color: '#fff',
+    fontSize: 13,
+    marginTop: 24,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  manualLink: { alignItems: 'center' },
 
   // Manual
-  manualForm: { gap: 12 },
-  label: { fontSize: 14, fontWeight: '500', marginBottom: 2 },
+  manualForm: { gap: 14 },
+  label: { fontSize: 14, fontWeight: '600' },
   input: {
     borderWidth: 1.5,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    letterSpacing: 1,
+    paddingVertical: 13,
+    fontSize: 17,
+    letterSpacing: 1.5,
   },
 
-  // Centered states
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16 },
+  // States
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 },
   hint: { fontSize: 14, textAlign: 'center' },
   errorIcon: {
-    width: 48, height: 48,
+    width: 52, height: 52,
     backgroundColor: '#fee2e2',
-    borderRadius: 24,
+    borderRadius: 26,
     justifyContent: 'center', alignItems: 'center',
   },
   errorText: { fontSize: 14, textAlign: 'center', maxWidth: 280, lineHeight: 20 },
@@ -331,47 +401,35 @@ const styles = StyleSheet.create({
   result: { gap: 14 },
   productHeader: {
     flexDirection: 'row',
-    gap: 12,
-    padding: 12,
-    borderRadius: 12,
+    gap: 14,
+    padding: 14,
+    borderRadius: 14,
     borderWidth: 1,
     alignItems: 'center',
   },
-  productImg: { width: 64, height: 64, borderRadius: 8, backgroundColor: '#fff' },
+  productImg: { width: 66, height: 66, borderRadius: 10, backgroundColor: '#fff' },
   productImgPlaceholder: {
-    width: 64, height: 64,
-    borderRadius: 8,
-    borderWidth: 1,
+    width: 66, height: 66, borderRadius: 10, borderWidth: 1,
     justifyContent: 'center', alignItems: 'center',
   },
-  productName: { fontSize: 15, fontWeight: '600', lineHeight: 20 },
-  productMeta: { fontSize: 12, marginTop: 2 },
+  productName: { fontSize: 15, fontWeight: '600', lineHeight: 21 },
+  productMeta: { fontSize: 12, marginTop: 3 },
   perLabel: { fontSize: 12, textAlign: 'center' },
   macrosRow: { flexDirection: 'row', gap: 8 },
   macroItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1,
+    flex: 1, alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 12, borderWidth: 1,
   },
   macroValue: { fontSize: 15, fontWeight: '700' },
-  macroLabel: { fontSize: 10, marginTop: 2, textAlign: 'center' },
+  macroLabel: { fontSize: 10, marginTop: 3, textAlign: 'center' },
 
   // Buttons
-  primaryBtn: {
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
+  primaryBtn: { borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
   primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-  secondaryBtn: {
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderWidth: 1.5,
-  },
+  btnDisabled: { opacity: 0.4 },
+  secondaryBtn: { borderRadius: 14, paddingVertical: 13, alignItems: 'center', borderWidth: 1.5 },
   secondaryBtnText: { fontWeight: '500', fontSize: 14 },
-  linkBtn: { alignItems: 'center', paddingVertical: 6 },
+  linkBtn: { alignItems: 'center', paddingVertical: 8 },
   linkBtnText: { fontSize: 14, textDecorationLine: 'underline' },
 });

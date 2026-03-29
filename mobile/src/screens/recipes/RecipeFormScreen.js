@@ -1,1067 +1,926 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Image,
-  useColorScheme,
+  View, Text, StyleSheet, ScrollView, TextInput,
+  TouchableOpacity, Alert, ActivityIndicator,
+  KeyboardAvoidingView, Platform, Image, Animated,
+  Vibration,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
-import { Picker } from '@react-native-picker/picker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRecipe } from '../../contexts/RecipeContext';
-import { useAuth } from '../../contexts/AuthContext';
-import { theme } from '../../theme';
-import logger from '../../services/logger';
+import { useTheme } from '../../theme';
+import BarcodeScannerModal from '../../components/BarcodeScannerModal';
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const ACCENT = '#F7B186';
+const HIT    = { top: 10, bottom: 10, left: 10, right: 10 };
+
+const UNITS = ['g', 'kg', 'ml', 'cl', 'L', 'pièce', 'tranche', 'c. à café', 'c. à soupe', 'pincée', 'poignée'];
 
 const DIFFICULTY_OPTIONS = [
-  { value: '', label: 'Sélectionner la difficulté' },
-  { value: 'easy', label: 'Facile' },
-  { value: 'medium', label: 'Moyen' },
-  { value: 'hard', label: 'Difficile' },
+  { value: 'easy',   label: 'Facile',    icon: 'happy-outline' },
+  { value: 'medium', label: 'Moyen',     icon: 'flash-outline' },
+  { value: 'hard',   label: 'Difficile', icon: 'flame-outline' },
 ];
 
 const MEAL_TYPE_OPTIONS = [
-  { value: '', label: 'Sélectionner le type de repas' },
-  { value: 'breakfast', label: 'Petit-déjeuner' },
-  { value: 'lunch', label: 'Déjeuner' },
-  { value: 'dinner', label: 'Dîner' },
-  { value: 'snack', label: 'Collation' },
+  { value: 'breakfast', label: 'Petit-déj',  icon: 'sunny-outline' },
+  { value: 'lunch',     label: 'Déjeuner',   icon: 'restaurant-outline' },
+  { value: 'dinner',    label: 'Dîner',      icon: 'moon-outline' },
+  { value: 'snack',     label: 'Snack',      icon: 'nutrition-outline' },
 ];
 
 const DIETARY_OPTIONS = [
-  { value: 'vegetarian', label: 'Végétarien' },
-  { value: 'vegan', label: 'Vegan' },
-  { value: 'pescatarian', label: 'Pescatarien' },
-  { value: 'keto', label: 'Keto' },
-  { value: 'paleo', label: 'Paleo' },
-  { value: 'gluten_free', label: 'Sans gluten' },
+  { value: 'vegetarian',   label: 'Végétarien' },
+  { value: 'vegan',        label: 'Vegan' },
+  { value: 'pescatarian',  label: 'Pescatarien' },
+  { value: 'keto',         label: 'Keto' },
+  { value: 'paleo',        label: 'Paleo' },
+  { value: 'gluten_free',  label: 'Sans gluten' },
   { value: 'lactose_free', label: 'Sans lactose' },
 ];
 
+// ─── Theme tokens ─────────────────────────────────────────────────────────────
+
+const T = {
+  light: {
+    bg:          '#F2F4F8',
+    surface:     '#FFFFFF',
+    inputBg:     '#F6F7FA',
+    border:      '#E8EAF0',
+    text:        '#111318',
+    textSec:     '#868C9C',
+    placeholder: '#BEC3D0',
+    divider:     '#ECEEF4',
+  },
+  dark: {
+    bg:          '#0B0D12',
+    surface:     '#13151D',
+    inputBg:     '#1A1D28',
+    border:      '#252A38',
+    text:        '#E8EAF4',
+    textSec:     '#55607A',
+    placeholder: '#323848',
+    divider:     '#1C1F2C',
+  },
+};
+
+// ─── Nutrition helpers ────────────────────────────────────────────────────────
+
+function toGramsFactor(qty, unit) {
+  const q = parseFloat(qty);
+  if (!q || isNaN(q)) return null;
+  switch (unit) {
+    case 'g':  return q / 100;
+    case 'kg': return q * 10;
+    case 'ml': return q / 100;
+    case 'cl': return q / 10;
+    case 'L':  return q * 10;
+    default:   return null;
+  }
+}
+
+function calcNutrition(ingredients) {
+  const t = { calories: 0, proteins: 0, carbs: 0, fats: 0 };
+  let hasAny = false;
+  for (const ing of ingredients) {
+    if (!ing.nutritionPer100g) continue;
+    const f = toGramsFactor(ing.quantity, ing.unit);
+    if (f === null) continue;
+    t.calories += (ing.nutritionPer100g.calories || 0) * f;
+    t.proteins += (ing.nutritionPer100g.proteins || 0) * f;
+    t.carbs    += (ing.nutritionPer100g.carbs    || 0) * f;
+    t.fats     += (ing.nutritionPer100g.fats     || 0) * f;
+    hasAny = true;
+  }
+  if (!hasAny) return null;
+  return {
+    calories: String(Math.round(t.calories)),
+    proteins: String(Math.round(t.proteins * 10) / 10),
+    carbs:    String(Math.round(t.carbs    * 10) / 10),
+    fats:     String(Math.round(t.fats     * 10) / 10),
+  };
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function SectionHeader({ label, action }) {
+  return (
+    <View style={sh.row}>
+      <Text style={sh.label}>{label}</Text>
+      {action || null}
+    </View>
+  );
+}
+const sh = StyleSheet.create({
+  row:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 24, marginBottom: 10 },
+  label: { fontSize: 10, fontWeight: '700', color: ACCENT, letterSpacing: 1.2, textTransform: 'uppercase' },
+});
+
+function Stepper({ value, onDecrement, onIncrement, C }) {
+  return (
+    <View style={[sp.wrap, { backgroundColor: C.inputBg, borderColor: C.border }]}>
+      <TouchableOpacity style={sp.btn} onPress={onDecrement} hitSlop={HIT}>
+        <Ionicons name="remove" size={14} color={C.textSec} />
+      </TouchableOpacity>
+      <Text style={[sp.val, { color: C.text }]}>{value}</Text>
+      <TouchableOpacity style={sp.btn} onPress={onIncrement} hitSlop={HIT}>
+        <Ionicons name="add" size={14} color={C.text} />
+      </TouchableOpacity>
+    </View>
+  );
+}
+const sp = StyleSheet.create({
+  wrap: { flexDirection: 'row', alignItems: 'center', borderRadius: 8, borderWidth: 1, overflow: 'hidden' },
+  btn:  { padding: 8 },
+  val:  { minWidth: 28, textAlign: 'center', fontSize: 14, fontWeight: '700' },
+});
+
+function UnitPicker({ value, onChange, C }) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={{ marginTop: 5 }}
+      contentContainerStyle={{ gap: 5, paddingRight: 4 }}
+    >
+      {UNITS.map(u => {
+        const active = value === u;
+        return (
+          <TouchableOpacity
+            key={u}
+            onPress={() => onChange(u)}
+            style={[up.chip, {
+              backgroundColor: active ? ACCENT : C.inputBg,
+              borderColor:     active ? ACCENT : C.border,
+            }]}
+          >
+            <Text style={[up.txt, { color: active ? '#FFF' : C.textSec }]}>{u}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
+  );
+}
+const up = StyleSheet.create({
+  chip: { paddingHorizontal: 9, paddingVertical: 4, borderRadius: 6, borderWidth: 1 },
+  txt:  { fontSize: 12, fontWeight: '600' },
+});
+
+// ─── Main screen ─────────────────────────────────────────────────────────────
+
 const RecipeFormScreen = ({ route, navigation }) => {
   const { mode = 'create', recipe = null } = route.params || {};
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
+  const { isDark } = useTheme();
+  const C = isDark ? T.dark : T.light;
+  const insets = useSafeAreaInsets();
   const { isPremium, createRecipe, updateRecipe } = useRecipe();
-  const { user } = useAuth();
+  const saveBtnScale = useRef(new Animated.Value(1)).current;
 
-  const [loading, setLoading] = useState(false);
-  const [imageUri, setImageUri] = useState(recipe?.image || null);
+  const [loading,        setLoading]        = useState(false);
+  const [imageUri,       setImageUri]       = useState(recipe?.image || null);
+  const [scannerVisible, setScannerVisible] = useState(false);
+  const [scanningIndex,  setScanningIndex]  = useState(null);
+  const [autoNutrition,  setAutoNutrition]  = useState(false);
 
-  // Basic Info
-  const [title, setTitle] = useState(recipe?.title || '');
+  const [title,       setTitle]       = useState(recipe?.title       || '');
   const [description, setDescription] = useState(recipe?.description || '');
-  const [prepTime, setPrepTime] = useState(recipe?.prepTime?.toString() || '');
-  const [cookTime, setCookTime] = useState(recipe?.cookTime?.toString() || '');
-  const [servings, setServings] = useState(recipe?.servings?.toString() || '');
+  const [prepTime,    setPrepTime]    = useState(recipe?.prepTime    || 0);
+  const [cookTime,    setCookTime]    = useState(recipe?.cookTime    || 0);
+  const [servings,    setServings]    = useState(recipe?.servings    || 2);
+  const [difficulty,  setDifficulty]  = useState(recipe?.difficulty  || '');
+  const [mealType,    setMealType]    = useState(recipe?.mealType?.[0] || '');
+  const [dietary,     setDietary]     = useState(recipe?.dietType   || []);
 
-  // Selectors
-  const [difficulty, setDifficulty] = useState(recipe?.difficulty || '');
-  const [mealType, setMealType] = useState(recipe?.mealType?.[0] || '');
-  const [dietary, setDietary] = useState(recipe?.dietType || []);
+  const [calories, setCalories] = useState(recipe?.nutrition?.calories?.toString() || '');
+  const [proteins, setProteins] = useState(recipe?.nutrition?.proteins?.toString() || '');
+  const [carbs,    setCarbs]    = useState(recipe?.nutrition?.carbs?.toString()    || '');
+  const [fats,     setFats]     = useState(recipe?.nutrition?.fats?.toString()     || '');
 
-  // Nutrition
-  const [calories, setCalories] = useState(
-    recipe?.nutrition?.calories?.toString() || ''
-  );
-  const [protein, setProtein] = useState(
-    recipe?.nutrition?.proteins?.toString() || ''
-  );
-  const [carbs, setCarbs] = useState(
-    recipe?.nutrition?.carbs?.toString() || ''
-  );
-  const [fat, setFat] = useState(recipe?.nutrition?.fats?.toString() || '');
-
-  // Dynamic Arrays
-  const [ingredients, setIngredients] = useState(
-    recipe?.ingredients || [{ name: '', quantity: '', unit: '' }]
+  const [ingredients,  setIngredients]  = useState(
+    recipe?.ingredients?.length
+      ? recipe.ingredients.map(i => ({ ...i, unit: i.unit || 'g' }))
+      : [{ name: '', quantity: '', unit: 'g', optional: false, nutritionPer100g: null }]
   );
   const [instructions, setInstructions] = useState(
-    recipe?.instructions || ['']
+    recipe?.instructions?.length ? recipe.instructions : ['']
   );
 
-  useEffect(() => {
-    navigation.setOptions({
-      title: mode === 'edit' ? 'Modifier la recette' : 'Nouvelle recette',
-    });
-  }, [mode]);
+  // ── Nutrition helpers ────────────────────────────────────────────────────
+  const setMacros = useCallback((calc) => {
+    if (!calc) return;
+    setCalories(calc.calories);
+    setProteins(calc.proteins);
+    setCarbs(calc.carbs);
+    setFats(calc.fats);
+  }, []);
 
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert(
-        'Permission refusée',
-        'Nous avons besoin de votre permission pour accéder à vos photos.'
-      );
+  const handleMacroChange = (setter) => (val) => {
+    setAutoNutrition(false);
+    setter(val);
+  };
+
+  // ── Image ────────────────────────────────────────────────────────────────
+  const pickImage = async (fromCamera = false) => {
+    const perm = fromCamera
+      ? await ImagePicker.requestCameraPermissionsAsync()
+      : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (perm.status !== 'granted') {
+      Alert.alert('Permission refusée', 'Accès nécessaire pour ajouter une photo.');
       return;
     }
+    const result = fromCamera
+      ? await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [16, 9], quality: 0.85 })
+      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [16, 9], quality: 0.85 });
+    if (!result.canceled) setImageUri(result.assets[0].uri);
+  };
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
+  const showImageOptions = () => {
+    Alert.alert('Photo de la recette', 'Choisir depuis…', [
+      { text: 'Appareil photo',  onPress: () => pickImage(true) },
+      { text: 'Galerie',         onPress: () => pickImage(false) },
+      ...(imageUri ? [{ text: 'Supprimer', style: 'destructive', onPress: () => setImageUri(null) }] : []),
+      { text: 'Annuler', style: 'cancel' },
+    ]);
+  };
+
+  // ── Ingredients ──────────────────────────────────────────────────────────
+  const updateIngredient = useCallback((index, field, value) => {
+    setIngredients(prev => {
+      const next = prev.map((ing, i) => i === index ? { ...ing, [field]: value } : ing);
+      if ((field === 'quantity' || field === 'unit') && autoNutrition) {
+        const calc = calcNutrition(next);
+        if (calc) setMacros(calc);
+      }
+      return next;
     });
+  }, [autoNutrition, setMacros]);
 
-    if (!result.canceled) {
-      setImageUri(result.assets[0].uri);
-    }
-  };
+  const addIngredient = () => setIngredients(prev => [
+    ...prev,
+    { name: '', quantity: '', unit: 'g', optional: false, nutritionPer100g: null },
+  ]);
 
-  const toggleDietary = (value) => {
-    if (dietary.includes(value)) {
-      setDietary(dietary.filter(item => item !== value));
-    } else {
-      setDietary([...dietary, value]);
-    }
-  };
+  const removeIngredient = useCallback((index) => {
+    setIngredients(prev => {
+      const next = prev.filter((_, i) => i !== index);
+      if (autoNutrition) {
+        const calc = calcNutrition(next);
+        if (calc) setMacros(calc);
+      }
+      return next;
+    });
+  }, [autoNutrition, setMacros]);
 
-  const addIngredient = () => {
-    setIngredients([...ingredients, { name: '', quantity: '', unit: '' }]);
-  };
+  const handleProductFound = useCallback((product) => {
+    if (scanningIndex === null) return;
+    Vibration.vibrate(60);
+    setIngredients(prev => {
+      const next = prev.map((ing, i) => i === scanningIndex ? {
+        ...ing,
+        name: product.name + (product.brand ? ` (${product.brand})` : ''),
+        unit: 'g',
+        nutritionPer100g: product.nutrition,
+      } : ing);
+      const calc = calcNutrition(next);
+      if (calc) { setMacros(calc); setAutoNutrition(true); }
+      return next;
+    });
+    setScanningIndex(null);
+  }, [scanningIndex, setMacros]);
 
-  const removeIngredient = (index) => {
-    if (ingredients.length === 1) {
-      Alert.alert('Erreur', 'Vous devez avoir au moins un ingrédient.');
-      return;
-    }
-    setIngredients(ingredients.filter((_, i) => i !== index));
-  };
-
-  const updateIngredient = (index, field, value) => {
-    const newIngredients = [...ingredients];
-    newIngredients[index][field] = value;
-    setIngredients(newIngredients);
-  };
-
-  const addInstruction = () => {
-    setInstructions([...instructions, '']);
-  };
-
+  // ── Instructions ─────────────────────────────────────────────────────────
+  const updateInstruction = (index, value) =>
+    setInstructions(prev => prev.map((inst, i) => i === index ? value : inst));
+  const addInstruction    = () => setInstructions(prev => [...prev, '']);
   const removeInstruction = (index) => {
-    if (instructions.length === 1) {
-      Alert.alert('Erreur', 'Vous devez avoir au moins une étape.');
-      return;
-    }
-    setInstructions(instructions.filter((_, i) => i !== index));
+    if (instructions.length > 1)
+      setInstructions(prev => prev.filter((_, i) => i !== index));
   };
 
-  const updateInstruction = (index, value) => {
-    const newInstructions = [...instructions];
-    newInstructions[index] = value;
-    setInstructions(newInstructions);
-  };
-
-  const validateForm = () => {
-    if (!title.trim()) {
-      Alert.alert('Erreur', 'Le titre est obligatoire.');
-      return false;
-    }
-
-    if (title.trim().length < 3) {
-      Alert.alert('Erreur', 'Le titre doit contenir au moins 3 caractères.');
-      return false;
-    }
-
-    // Check if at least one ingredient has a name
-    const hasValidIngredient = ingredients.some(
-      ing => ing.name && ing.name.trim().length > 0
-    );
-    if (!hasValidIngredient) {
-      Alert.alert('Erreur', 'Ajoutez au moins un ingrédient.');
-      return false;
-    }
-
-    // Check if at least one instruction is filled
-    const hasValidInstruction = instructions.some(
-      inst => inst && inst.trim().length > 0
-    );
-    if (!hasValidInstruction) {
-      Alert.alert('Erreur', 'Ajoutez au moins une étape de préparation.');
-      return false;
-    }
-
-    return true;
-  };
-
+  // ── Save ─────────────────────────────────────────────────────────────────
   const handleSave = async () => {
-    if (!validateForm()) {
+    if (!title.trim()) {
+      Alert.alert('Titre requis', 'Donnez un nom à votre recette.');
+      return;
+    }
+    if (!ingredients.some(i => i.name.trim())) {
+      Alert.alert('Ingrédient requis', 'Ajoutez au moins un ingrédient.');
+      return;
+    }
+    if (!instructions.some(i => i.trim())) {
+      Alert.alert('Instructions requises', 'Ajoutez au moins une étape.');
       return;
     }
 
-    if (!isPremium) {
-      Alert.alert(
-        'Premium requis',
-        'La création et modification de recettes est une fonctionnalité premium.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
+    Animated.sequence([
+      Animated.timing(saveBtnScale, { toValue: 0.96, duration: 80, useNativeDriver: true }),
+      Animated.timing(saveBtnScale, { toValue: 1,    duration: 80, useNativeDriver: true }),
+    ]).start();
 
     setLoading(true);
-
     try {
-      // Filter out empty ingredients and instructions
-      const validIngredients = ingredients.filter(
-        ing => ing.name && ing.name.trim().length > 0
-      );
-      const validInstructions = instructions.filter(
-        inst => inst && inst.trim().length > 0
-      );
-
-      // Calculer prepTime, cookTime et totalTime avec valeurs par défaut
-      const prepTimeValue = prepTime ? parseInt(prepTime) : 0;
-      const cookTimeValue = cookTime ? parseInt(cookTime) : 0;
-      const totalTimeValue = prepTimeValue + cookTimeValue;
-
-      const recipeData = {
+      const data = {
         title: title.trim(),
         description: description.trim(),
         image: imageUri,
-        prepTime: prepTimeValue,
-        cookTime: cookTimeValue,
-        totalTime: totalTimeValue, // Ajout du champ totalTime requis
-        servings: servings ? parseInt(servings) : 1, // Valeur par défaut 1
+        prepTime, cookTime, totalTime: prepTime + cookTime,
+        servings,
         difficulty,
         mealType: mealType ? [mealType] : [],
         dietType: dietary,
         nutrition: {
           calories: calories ? parseFloat(calories) : 0,
-          proteins: protein ? parseFloat(protein) : 0,
-          carbs: carbs ? parseFloat(carbs) : 0,
-          fats: fat ? parseFloat(fat) : 0,
+          proteins: proteins ? parseFloat(proteins) : 0,
+          carbs:    carbs    ? parseFloat(carbs)    : 0,
+          fats:     fats     ? parseFloat(fats)     : 0,
         },
-        ingredients: validIngredients,
-        instructions: validInstructions,
+        ingredients: ingredients
+          .filter(i => i.name.trim())
+          .map(({ nutritionPer100g, ...rest }) => rest),
+        instructions: instructions.filter(i => i.trim()),
       };
 
-      let success;
-      if (mode === 'edit') {
-        success = await updateRecipe(recipe._id, recipeData);
-      } else {
-        success = await createRecipe(recipeData);
-      }
+      const success = mode === 'edit'
+        ? await updateRecipe(recipe._id, data)
+        : await createRecipe(data);
 
       if (success) {
+        Vibration.vibrate([0, 50, 50, 100]);
         Alert.alert(
-          'Succès',
-          mode === 'edit'
-            ? 'Recette modifiée avec succès'
-            : 'Recette créée avec succès',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.goBack(),
-            },
-          ]
+          mode === 'edit' ? 'Recette modifiée' : 'Recette créée',
+          mode === 'edit' ? 'Vos modifications ont été enregistrées.' : 'Votre recette est prête.',
+          [{ text: 'OK', onPress: () => navigation.goBack() }]
         );
       } else {
-        // En cas d'échec sans exception
-        Alert.alert(
-          'Erreur',
-          'Impossible de sauvegarder la recette. Vérifiez que tous les champs requis sont remplis.'
-        );
+        Alert.alert('Erreur', 'Impossible de sauvegarder la recette.');
       }
-    } catch (error) {
-      logger.app.error('Error saving recipe:', error);
-      // Afficher un message plus détaillé si disponible
-      const errorMsg = error?.response?.data?.message ||
-                      error?.message ||
-                      'Une erreur est survenue lors de l\'enregistrement de la recette.';
-      Alert.alert('Erreur', errorMsg);
+    } catch (err) {
+      Alert.alert('Erreur', err?.message || 'Une erreur est survenue.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Premium Gate
+  // ── Premium gate ─────────────────────────────────────────────────────────
   if (!isPremium) {
     return (
-      <View style={[styles.premiumGate, isDark && styles.premiumGateDark]}>
-        <Ionicons name="lock-closed" size={64} color={theme.colors.primary} />
-        <Text style={[styles.premiumTitle, isDark && styles.premiumTitleDark]}>
-          Fonctionnalité Premium
-        </Text>
-        <Text
-          style={[styles.premiumMessage, isDark && styles.premiumMessageDark]}
-        >
-          La création et la modification de recettes sont réservées aux membres
-          Premium. Passez à Premium pour accéder à cette fonctionnalité et bien
-          plus encore.
+      <View style={[s.gate, { backgroundColor: C.bg }]}>
+        <View style={[s.gateIconWrap, { backgroundColor: C.surface }]}>
+          <Ionicons name="lock-closed" size={28} color={ACCENT} />
+        </View>
+        <Text style={[s.gateTitle, { color: C.text }]}>Fonctionnalité Premium</Text>
+        <Text style={[s.gateMsg, { color: C.textSec }]}>
+          La création de recettes personnalisées est réservée aux membres Premium.
         </Text>
         <TouchableOpacity
-          style={styles.premiumButton}
-          onPress={() => {
-            navigation.goBack();
-            navigation.navigate('Subscription');
-          }}
+          style={s.gateBtn}
+          onPress={() => { navigation.goBack(); navigation.navigate('Subscription'); }}
         >
-          <Text style={styles.premiumButtonText}>Découvrir Premium</Text>
+          <LinearGradient colors={['#F7B186', '#E07A40']} style={s.gateBtnInner} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+            <Text style={s.gateBtnTxt}>Découvrir Premium</Text>
+          </LinearGradient>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={[styles.backButtonText, isDark && styles.backButtonTextDark]}>
-            Retour
-          </Text>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 14 }}>
+          <Text style={{ color: C.textSec, fontSize: 14 }}>Retour</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  const scanned = calcNutrition(ingredients);
+
   return (
     <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      style={[s.root, { backgroundColor: C.bg }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={90}
     >
+      <BarcodeScannerModal
+        visible={scannerVisible}
+        onClose={() => { setScannerVisible(false); setScanningIndex(null); }}
+        onProductFound={handleProductFound}
+      />
+
       <ScrollView
-        style={[styles.scrollView, isDark && styles.scrollViewDark]}
-        contentContainerStyle={styles.scrollContent}
+        style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
       >
-        {/* Image Picker */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
-            Image
-          </Text>
-          <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-            {imageUri ? (
-              <Image source={{ uri: imageUri }} style={styles.previewImage} />
-            ) : (
-              <View style={styles.imagePlaceholder}>
-                <Ionicons name="camera" size={48} color="#999" />
-                <Text style={styles.imagePlaceholderText}>
-                  Ajouter une photo
-                </Text>
+
+        {/* ── Photo hero ────────────────────────────────────────────────── */}
+        <TouchableOpacity onPress={showImageOptions} activeOpacity={0.88}>
+          {imageUri ? (
+            <View style={s.heroFull}>
+              <Image source={{ uri: imageUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+              <LinearGradient colors={['transparent', 'rgba(0,0,0,0.55)']} style={StyleSheet.absoluteFill} />
+              <View style={s.heroTag}>
+                <Ionicons name="camera" size={13} color="#FFF" />
+                <Text style={s.heroTagTxt}>Modifier</Text>
               </View>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Basic Info */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
-            Informations de base
-          </Text>
-
-          <Text style={[styles.label, isDark && styles.labelDark]}>
-            Titre <Text style={styles.required}>*</Text>
-          </Text>
-          <TextInput
-            style={[styles.input, isDark && styles.inputDark]}
-            value={title}
-            onChangeText={setTitle}
-            placeholder="Ex: Tarte aux pommes maison"
-            placeholderTextColor={isDark ? '#666' : '#999'}
-          />
-
-          <Text style={[styles.label, isDark && styles.labelDark]}>
-            Description
-          </Text>
-          <TextInput
-            style={[styles.input, styles.textArea, isDark && styles.inputDark]}
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Décrivez votre recette..."
-            placeholderTextColor={isDark ? '#666' : '#999'}
-            multiline
-            numberOfLines={4}
-          />
-
-          <View style={styles.row}>
-            <View style={styles.halfInput}>
-              <Text style={[styles.label, isDark && styles.labelDark]}>
-                Préparation (min)
-              </Text>
-              <TextInput
-                style={[styles.input, isDark && styles.inputDark]}
-                value={prepTime}
-                onChangeText={setPrepTime}
-                placeholder="15"
-                placeholderTextColor={isDark ? '#666' : '#999'}
-                keyboardType="numeric"
-              />
             </View>
-
-            <View style={styles.halfInput}>
-              <Text style={[styles.label, isDark && styles.labelDark]}>
-                Cuisson (min)
-              </Text>
-              <TextInput
-                style={[styles.input, isDark && styles.inputDark]}
-                value={cookTime}
-                onChangeText={setCookTime}
-                placeholder="30"
-                placeholderTextColor={isDark ? '#666' : '#999'}
-                keyboardType="numeric"
-              />
-            </View>
-          </View>
-
-          <Text style={[styles.label, isDark && styles.labelDark]}>
-            Portions
-          </Text>
-          <TextInput
-            style={[styles.input, isDark && styles.inputDark]}
-            value={servings}
-            onChangeText={setServings}
-            placeholder="4"
-            placeholderTextColor={isDark ? '#666' : '#999'}
-            keyboardType="numeric"
-          />
-        </View>
-
-        {/* Selectors */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
-            Catégories
-          </Text>
-
-          <Text style={[styles.label, isDark && styles.labelDark]}>
-            Difficulté
-          </Text>
-          <View style={styles.buttonGroup}>
-            {DIFFICULTY_OPTIONS.filter(o => o.value).map(option => (
-              <TouchableOpacity
-                key={option.value}
-                style={[
-                  styles.optionButton,
-                  difficulty === option.value && styles.optionButtonSelected,
-                  isDark && styles.optionButtonDark,
-                  isDark && difficulty === option.value && styles.optionButtonSelectedDark,
-                ]}
-                onPress={() => setDifficulty(option.value)}
-              >
-                <Text
-                  style={[
-                    styles.optionButtonText,
-                    difficulty === option.value && styles.optionButtonTextSelected,
-                    isDark && styles.optionButtonTextDark,
-                  ]}
-                >
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <Text style={[styles.label, isDark && styles.labelDark]}>
-            Type de repas
-          </Text>
-          <View style={styles.optionsGrid}>
-            {MEAL_TYPE_OPTIONS.filter(o => o.value).map(option => (
-              <TouchableOpacity
-                key={option.value}
-                style={[
-                  styles.gridOption,
-                  mealType === option.value && styles.optionButtonSelected,
-                  isDark && styles.gridOptionDark,
-                  isDark && mealType === option.value && styles.optionButtonSelectedDark,
-                ]}
-                onPress={() => setMealType(option.value)}
-              >
-                <Text
-                  style={[
-                    styles.optionButtonText,
-                    mealType === option.value && styles.optionButtonTextSelected,
-                    isDark && styles.optionButtonTextDark,
-                  ]}
-                >
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <Text style={[styles.label, isDark && styles.labelDark]}>
-            Régimes alimentaires
-          </Text>
-          <View style={styles.dietaryContainer}>
-            {DIETARY_OPTIONS.map(option => (
-              <TouchableOpacity
-                key={option.value}
-                style={[
-                  styles.dietaryChip,
-                  dietary.includes(option.value) && styles.dietaryChipSelected,
-                  isDark && styles.dietaryChipDark,
-                  isDark && dietary.includes(option.value) && styles.dietaryChipSelectedDark,
-                ]}
-                onPress={() => toggleDietary(option.value)}
-              >
-                <Text
-                  style={[
-                    styles.dietaryChipText,
-                    dietary.includes(option.value) && styles.dietaryChipTextSelected,
-                    isDark && styles.dietaryChipTextDark,
-                  ]}
-                >
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Nutrition */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
-            Valeurs nutritionnelles (par portion)
-          </Text>
-
-          <View style={styles.row}>
-            <View style={styles.halfInput}>
-              <Text style={[styles.label, isDark && styles.labelDark]}>
-                Calories (kcal)
-              </Text>
-              <TextInput
-                style={[styles.input, isDark && styles.inputDark]}
-                value={calories}
-                onChangeText={setCalories}
-                placeholder="250"
-                placeholderTextColor={isDark ? '#666' : '#999'}
-                keyboardType="numeric"
-              />
-            </View>
-
-            <View style={styles.halfInput}>
-              <Text style={[styles.label, isDark && styles.labelDark]}>
-                Protéines (g)
-              </Text>
-              <TextInput
-                style={[styles.input, isDark && styles.inputDark]}
-                value={protein}
-                onChangeText={setProtein}
-                placeholder="12"
-                placeholderTextColor={isDark ? '#666' : '#999'}
-                keyboardType="numeric"
-              />
-            </View>
-          </View>
-
-          <View style={styles.row}>
-            <View style={styles.halfInput}>
-              <Text style={[styles.label, isDark && styles.labelDark]}>
-                Glucides (g)
-              </Text>
-              <TextInput
-                style={[styles.input, isDark && styles.inputDark]}
-                value={carbs}
-                onChangeText={setCarbs}
-                placeholder="30"
-                placeholderTextColor={isDark ? '#666' : '#999'}
-                keyboardType="numeric"
-              />
-            </View>
-
-            <View style={styles.halfInput}>
-              <Text style={[styles.label, isDark && styles.labelDark]}>
-                Lipides (g)
-              </Text>
-              <TextInput
-                style={[styles.input, isDark && styles.inputDark]}
-                value={fat}
-                onChangeText={setFat}
-                placeholder="8"
-                placeholderTextColor={isDark ? '#666' : '#999'}
-                keyboardType="numeric"
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Ingredients */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
-              Ingrédients <Text style={styles.required}>*</Text>
-            </Text>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={addIngredient}
-            >
-              <Ionicons name="add-circle" size={28} color={theme.colors.primary} />
-            </TouchableOpacity>
-          </View>
-
-          {ingredients.map((ingredient, index) => (
-            <View key={index} style={styles.ingredientRow}>
-              <View style={styles.ingredientInputs}>
-                <TextInput
-                  style={[styles.input, styles.ingredientName, isDark && styles.inputDark]}
-                  value={ingredient.name}
-                  onChangeText={value => updateIngredient(index, 'name', value)}
-                  placeholder="Nom de l'ingrédient"
-                  placeholderTextColor={isDark ? '#666' : '#999'}
-                />
-                <TextInput
-                  style={[styles.input, styles.ingredientQuantity, isDark && styles.inputDark]}
-                  value={ingredient.quantity}
-                  onChangeText={value =>
-                    updateIngredient(index, 'quantity', value)
-                  }
-                  placeholder="Qté"
-                  placeholderTextColor={isDark ? '#666' : '#999'}
-                  keyboardType="numeric"
-                />
-                <TextInput
-                  style={[styles.input, styles.ingredientUnit, isDark && styles.inputDark]}
-                  value={ingredient.unit}
-                  onChangeText={value => updateIngredient(index, 'unit', value)}
-                  placeholder="Unité"
-                  placeholderTextColor={isDark ? '#666' : '#999'}
-                />
-              </View>
-              {ingredients.length > 1 && (
-                <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => removeIngredient(index)}
-                >
-                  <Ionicons name="close-circle" size={24} color="#EF4444" />
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
-        </View>
-
-        {/* Instructions */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
-              Étapes de préparation <Text style={styles.required}>*</Text>
-            </Text>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={addInstruction}
-            >
-              <Ionicons name="add-circle" size={28} color={theme.colors.primary} />
-            </TouchableOpacity>
-          </View>
-
-          {instructions.map((instruction, index) => (
-            <View key={index} style={styles.instructionRow}>
-              <View style={styles.stepNumber}>
-                <Text style={styles.stepNumberText}>{index + 1}</Text>
-              </View>
-              <TextInput
-                style={[
-                  styles.input,
-                  styles.instructionInput,
-                  isDark && styles.inputDark,
-                ]}
-                value={instruction}
-                onChangeText={value => updateInstruction(index, value)}
-                placeholder="Décrivez cette étape..."
-                placeholderTextColor={isDark ? '#666' : '#999'}
-                multiline
-              />
-              {instructions.length > 1 && (
-                <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => removeInstruction(index)}
-                >
-                  <Ionicons name="close-circle" size={24} color="#EF4444" />
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
-        </View>
-
-        {/* Save Button */}
-        <TouchableOpacity
-          style={[styles.saveButton, loading && styles.saveButtonDisabled]}
-          onPress={handleSave}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#FFF" />
           ) : (
-            <>
-              <Ionicons name="checkmark-circle" size={24} color="#FFF" />
-              <Text style={styles.saveButtonText}>
-                {mode === 'edit' ? 'Enregistrer les modifications' : 'Créer la recette'}
-              </Text>
-            </>
+            <View style={[s.heroEmpty, { backgroundColor: C.surface, borderBottomColor: C.border }]}>
+              <View style={[s.heroCamCircle, { borderColor: C.border }]}>
+                <Ionicons name="camera-outline" size={26} color={ACCENT} />
+              </View>
+              <Text style={[s.heroEmptyTxt, { color: C.textSec }]}>Ajouter une photo</Text>
+              <Text style={[s.heroEmptyHint, { color: C.placeholder }]}>Galerie · Appareil photo</Text>
+            </View>
           )}
         </TouchableOpacity>
+
+        <View style={s.body}>
+
+          {/* ── Informations ─────────────────────────────────────────────── */}
+          <SectionHeader label="Informations" />
+
+          <View style={[s.card, { backgroundColor: C.surface, borderColor: C.border }]}>
+            <TextInput
+              style={[s.titleIn, { color: C.text }]}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="Nom de la recette *"
+              placeholderTextColor={C.placeholder}
+            />
+            <View style={[s.cardDivider, { backgroundColor: C.divider }]} />
+            <TextInput
+              style={[s.descIn, { color: C.text }]}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Description (optionnelle)…"
+              placeholderTextColor={C.placeholder}
+              multiline
+            />
+          </View>
+
+          {/* ── Temps & Portions ─────────────────────────────────────────── */}
+          <View style={[s.metaRow, { backgroundColor: C.surface, borderColor: C.border }]}>
+            <View style={s.metaCell}>
+              <Ionicons name="time-outline" size={16} color={ACCENT} />
+              <Text style={[s.metaCellLbl, { color: C.textSec }]}>Prépa.</Text>
+              <Stepper
+                value={prepTime}
+                onDecrement={() => setPrepTime(v => Math.max(0, v - 5))}
+                onIncrement={() => setPrepTime(v => v + 5)}
+                C={C}
+              />
+              <Text style={[s.metaCellUnit, { color: C.textSec }]}>min</Text>
+            </View>
+            <View style={[s.metaSep, { backgroundColor: C.divider }]} />
+            <View style={s.metaCell}>
+              <Ionicons name="flame-outline" size={16} color={ACCENT} />
+              <Text style={[s.metaCellLbl, { color: C.textSec }]}>Cuisson</Text>
+              <Stepper
+                value={cookTime}
+                onDecrement={() => setCookTime(v => Math.max(0, v - 5))}
+                onIncrement={() => setCookTime(v => v + 5)}
+                C={C}
+              />
+              <Text style={[s.metaCellUnit, { color: C.textSec }]}>min</Text>
+            </View>
+            <View style={[s.metaSep, { backgroundColor: C.divider }]} />
+            <View style={s.metaCell}>
+              <Ionicons name="people-outline" size={16} color={ACCENT} />
+              <Text style={[s.metaCellLbl, { color: C.textSec }]}>Portions</Text>
+              <Stepper
+                value={servings}
+                onDecrement={() => setServings(v => Math.max(1, v - 1))}
+                onIncrement={() => setServings(v => v + 1)}
+                C={C}
+              />
+            </View>
+          </View>
+
+          {/* ── Ingrédients ──────────────────────────────────────────────── */}
+          <SectionHeader
+            label="Ingrédients"
+            action={
+              <TouchableOpacity onPress={addIngredient} style={s.sectionAction} hitSlop={HIT}>
+                <Ionicons name="add" size={16} color={ACCENT} />
+                <Text style={[s.sectionActionTxt, { color: ACCENT }]}>Ajouter</Text>
+              </TouchableOpacity>
+            }
+          />
+
+          {ingredients.map((ing, idx) => (
+            <View key={idx} style={[s.ingBlock, { backgroundColor: C.surface, borderColor: C.border }]}>
+              {/* row 1 — name + scan + delete */}
+              <View style={s.ingRow}>
+                <View style={[s.ingIdx, { backgroundColor: isDark ? '#1C1F2E' : '#F2F4F8' }]}>
+                  <Text style={[s.ingIdxTxt, { color: ACCENT }]}>{idx + 1}</Text>
+                </View>
+                <TextInput
+                  style={[s.ingNameIn, { color: C.text, backgroundColor: C.inputBg, borderColor: C.border }]}
+                  value={ing.name}
+                  onChangeText={v => updateIngredient(idx, 'name', v)}
+                  placeholder="Nom de l'ingrédient"
+                  placeholderTextColor={C.placeholder}
+                />
+                <TouchableOpacity
+                  style={[s.scanBtn, {
+                    backgroundColor: ing.nutritionPer100g ? ACCENT + '18' : C.inputBg,
+                    borderColor:     ing.nutritionPer100g ? ACCENT + '55' : C.border,
+                  }]}
+                  onPress={() => { setScanningIndex(idx); setScannerVisible(true); }}
+                  hitSlop={HIT}
+                >
+                  <Ionicons name="barcode-outline" size={17} color={ing.nutritionPer100g ? ACCENT : C.textSec} />
+                </TouchableOpacity>
+                {ingredients.length > 1 && (
+                  <TouchableOpacity onPress={() => removeIngredient(idx)} hitSlop={HIT}>
+                    <Ionicons name="close" size={18} color={C.textSec} />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* row 2 — qty + unit picker */}
+              <View style={[s.ingQtyRow, { paddingLeft: 36 }]}>
+                <TextInput
+                  style={[s.ingQtyIn, { color: C.text, backgroundColor: C.inputBg, borderColor: C.border }]}
+                  value={ing.quantity}
+                  onChangeText={v => updateIngredient(idx, 'quantity', v)}
+                  placeholder="Qté"
+                  placeholderTextColor={C.placeholder}
+                  keyboardType="numeric"
+                />
+                <View style={{ flex: 1 }}>
+                  <UnitPicker value={ing.unit || 'g'} onChange={v => updateIngredient(idx, 'unit', v)} C={C} />
+                </View>
+              </View>
+
+              {/* nutrition badge */}
+              {ing.nutritionPer100g && (
+                <View style={[s.nutrBadge, { backgroundColor: isDark ? '#1A1E2C' : '#FFF5EE', paddingLeft: 36 + 8 }]}>
+                  <Ionicons name="flash" size={10} color={ACCENT} />
+                  <Text style={[s.nutrBadgeTxt, { color: ACCENT }]}>
+                    {ing.nutritionPer100g.calories} kcal · {ing.nutritionPer100g.proteins}g P · {ing.nutritionPer100g.carbs}g G /100g
+                  </Text>
+                </View>
+              )}
+            </View>
+          ))}
+
+          {/* ── Instructions ─────────────────────────────────────────────── */}
+          <SectionHeader
+            label="Instructions"
+            action={
+              <TouchableOpacity onPress={addInstruction} style={s.sectionAction} hitSlop={HIT}>
+                <Ionicons name="add" size={16} color={ACCENT} />
+                <Text style={[s.sectionActionTxt, { color: ACCENT }]}>Étape</Text>
+              </TouchableOpacity>
+            }
+          />
+
+          {instructions.map((inst, idx) => (
+            <View key={idx} style={s.stepRow}>
+              {/* timeline */}
+              <View style={s.stepTimeline}>
+                <View style={s.stepBadge}>
+                  <Text style={s.stepBadgeTxt}>{idx + 1}</Text>
+                </View>
+                {idx < instructions.length - 1 && (
+                  <View style={[s.stepLine, { backgroundColor: C.border }]} />
+                )}
+              </View>
+
+              <View style={s.stepContent}>
+                <View style={[s.stepCard, { backgroundColor: C.surface, borderColor: C.border }]}>
+                  <TextInput
+                    style={[s.stepIn, { color: C.text }]}
+                    value={inst}
+                    onChangeText={v => updateInstruction(idx, v)}
+                    placeholder={`Décrivez l'étape ${idx + 1}…`}
+                    placeholderTextColor={C.placeholder}
+                    multiline
+                    textAlignVertical="top"
+                  />
+                  {instructions.length > 1 && (
+                    <TouchableOpacity onPress={() => removeInstruction(idx)} style={s.stepDel} hitSlop={HIT}>
+                      <Ionicons name="trash-outline" size={14} color={C.textSec} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            </View>
+          ))}
+
+          {/* ── Nutrition ────────────────────────────────────────────────── */}
+          <SectionHeader label="Valeurs nutritionnelles" />
+
+          {autoNutrition && (
+            <View style={[s.autoBanner, { backgroundColor: isDark ? '#0D1C12' : '#F0FDF4', borderColor: isDark ? '#1A3322' : '#BBF7D0' }]}>
+              <Ionicons name="flash" size={12} color="#22C55E" />
+              <Text style={[s.autoBannerTxt, { color: '#22C55E' }]}>Calculées depuis les ingrédients scannés</Text>
+              <TouchableOpacity onPress={() => setAutoNutrition(false)}>
+                <Text style={s.autoBannerEdit}>Modifier</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {!autoNutrition && scanned && (
+            <TouchableOpacity
+              style={[s.autoRestore, { backgroundColor: C.surface, borderColor: C.border }]}
+              onPress={() => { setMacros(scanned); setAutoNutrition(true); }}
+            >
+              <Ionicons name="flash-outline" size={13} color={ACCENT} />
+              <Text style={[s.autoRestoreTxt, { color: ACCENT }]}>Recalculer depuis les scans</Text>
+            </TouchableOpacity>
+          )}
+
+          <View style={s.macroGrid}>
+            {[
+              { key: 'calories', label: 'Calories',  unit: 'kcal', val: calories, set: setCalories },
+              { key: 'proteins', label: 'Protéines', unit: 'g',    val: proteins, set: setProteins },
+              { key: 'carbs',    label: 'Glucides',  unit: 'g',    val: carbs,    set: setCarbs    },
+              { key: 'fats',     label: 'Lipides',   unit: 'g',    val: fats,     set: setFats     },
+            ].map(({ key, label, unit, val, set }) => (
+              <View key={key} style={[s.macroCell, { backgroundColor: C.surface, borderColor: C.border }]}>
+                <TextInput
+                  style={[s.macroVal, { color: autoNutrition ? ACCENT : C.text }]}
+                  value={val}
+                  onChangeText={handleMacroChange(set)}
+                  placeholder="—"
+                  placeholderTextColor={C.placeholder}
+                  keyboardType="numeric"
+                  editable={!autoNutrition}
+                  textAlign="center"
+                />
+                <Text style={[s.macroLbl, { color: C.textSec }]}>{label}</Text>
+                <Text style={[s.macroUnit, { color: C.placeholder }]}>{unit}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* ── Classification ───────────────────────────────────────────── */}
+          <SectionHeader label="Classification" />
+
+          <Text style={[s.subLbl, { color: C.textSec }]}>Difficulté</Text>
+          <View style={s.chipRow}>
+            {DIFFICULTY_OPTIONS.map(opt => {
+              const active = difficulty === opt.value;
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[s.chip, {
+                    backgroundColor: active ? ACCENT       : C.surface,
+                    borderColor:     active ? ACCENT       : C.border,
+                  }]}
+                  onPress={() => setDifficulty(opt.value)}
+                >
+                  <Ionicons name={opt.icon} size={14} color={active ? '#FFF' : C.textSec} />
+                  <Text style={[s.chipTxt, { color: active ? '#FFF' : C.textSec }]}>{opt.label}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <Text style={[s.subLbl, { color: C.textSec, marginTop: 14 }]}>Type de repas</Text>
+          <View style={s.chipRow}>
+            {MEAL_TYPE_OPTIONS.map(opt => {
+              const active = mealType === opt.value;
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[s.chip, {
+                    backgroundColor: active ? ACCENT : C.surface,
+                    borderColor:     active ? ACCENT : C.border,
+                  }]}
+                  onPress={() => setMealType(active ? '' : opt.value)}
+                >
+                  <Ionicons name={opt.icon} size={14} color={active ? '#FFF' : C.textSec} />
+                  <Text style={[s.chipTxt, { color: active ? '#FFF' : C.textSec }]}>{opt.label}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <Text style={[s.subLbl, { color: C.textSec, marginTop: 14 }]}>Régimes alimentaires</Text>
+          <View style={[s.chipRow, s.chipWrap]}>
+            {DIETARY_OPTIONS.map(opt => {
+              const active = dietary.includes(opt.value);
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[s.chip, {
+                    backgroundColor: active ? ACCENT : C.surface,
+                    borderColor:     active ? ACCENT : C.border,
+                  }]}
+                  onPress={() => setDietary(p => active ? p.filter(v => v !== opt.value) : [...p, opt.value])}
+                >
+                  <Text style={[s.chipTxt, { color: active ? '#FFF' : C.textSec }]}>{opt.label}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+        </View>
       </ScrollView>
+
+      {/* ── Footer save ──────────────────────────────────────────────────── */}
+      <View style={[s.footer, { paddingBottom: insets.bottom + 8, backgroundColor: C.surface, borderTopColor: C.border }]}>
+        <Animated.View style={{ transform: [{ scale: saveBtnScale }] }}>
+          <TouchableOpacity
+            style={[s.saveBtn, loading && { opacity: 0.65 }]}
+            onPress={handleSave}
+            disabled={loading}
+            activeOpacity={0.85}
+          >
+            <LinearGradient
+              colors={['#F7B186', '#D96830']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={s.saveBtnInner}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <>
+                  <Ionicons name={mode === 'edit' ? 'checkmark-circle-outline' : 'add-circle-outline'} size={20} color="#FFF" />
+                  <Text style={s.saveTxt}>
+                    {mode === 'edit' ? 'Enregistrer les modifications' : 'Créer la recette'}
+                  </Text>
+                </>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
     </KeyboardAvoidingView>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollViewDark: {
-    backgroundColor: '#1A1A1A',
-  },
-  scrollContent: {
-    padding: theme.spacing.md,
-    paddingBottom: 180,
-  },
-  section: {
-    marginBottom: theme.spacing.lg,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  sectionTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
-    color: '#1a1a1a',
-    marginBottom: theme.spacing.md,
-  },
-  sectionTitleDark: {
-    color: '#FFFFFF',
-  },
-  label: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.medium,
-    color: '#1a1a1a',
-    marginBottom: 6,
-    marginTop: theme.spacing.sm,
-  },
-  labelDark: {
-    color: '#FFFFFF',
-  },
-  selectedValue: {
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.semiBold,
-  },
-  required: {
-    color: '#EF4444',
-  },
-  input: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.sm,
-    fontSize: theme.fontSize.md,
-    color: '#1a1a1a',
-  },
-  inputDark: {
-    backgroundColor: '#2A2A2A',
-    borderColor: '#3A3A3A',
-    color: '#FFFFFF',
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  row: {
-    flexDirection: 'row',
-    gap: theme.spacing.md,
-  },
-  halfInput: {
-    flex: 1,
-  },
-  pickerContainer: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: theme.borderRadius.md,
-    overflow: 'hidden',
-  },
-  pickerContainerDark: {
-    backgroundColor: '#2A2A2A',
-    borderColor: '#3A3A3A',
-  },
-  picker: {
-    color: '#000000',
-    fontSize: theme.fontSize.md,
-  },
-  pickerDark: {
-    color: '#FFFFFF',
-  },
-  buttonGroup: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: theme.spacing.md,
-  },
-  optionButton: {
-    flex: 1,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    borderWidth: 3,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 56,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  optionButtonDark: {
-    backgroundColor: '#374151',
-    borderColor: '#4B5563',
-  },
-  optionButtonSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-    shadowColor: theme.colors.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  optionButtonSelectedDark: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-    shadowColor: theme.colors.primary,
-    shadowOpacity: 0.3,
-  },
-  optionButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  optionButtonTextDark: {
-    color: '#F3F4F6',
-  },
-  optionButtonTextSelected: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
-  optionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: theme.spacing.md,
-  },
-  gridOption: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    borderWidth: 3,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 52,
-    minWidth: 120,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  gridOptionDark: {
-    backgroundColor: '#374151',
-    borderColor: '#4B5563',
-  },
-  dietaryContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginTop: 8,
-  },
-  dietaryChip: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 24,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 3,
-    borderColor: '#D1D5DB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  dietaryChipDark: {
-    backgroundColor: '#374151',
-    borderColor: '#4B5563',
-  },
-  dietaryChipSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-    shadowColor: theme.colors.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  dietaryChipSelectedDark: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  dietaryChipText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  dietaryChipTextDark: {
-    color: '#F3F4F6',
-  },
-  dietaryChipTextSelected: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
-  imagePicker: {
-    width: '100%',
-    height: 200,
-    borderRadius: theme.borderRadius.lg,
-    overflow: 'hidden',
-    backgroundColor: '#F0F0F0',
-  },
-  previewImage: {
-    width: '100%',
-    height: '100%',
-  },
-  imagePlaceholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imagePlaceholderText: {
-    marginTop: 8,
-    fontSize: theme.fontSize.md,
-    color: '#999',
-  },
-  addButton: {
-    padding: 4,
-  },
-  ingredientRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: theme.spacing.sm,
-    gap: 8,
-  },
-  ingredientInputs: {
-    flex: 1,
-    flexDirection: 'row',
-    gap: 8,
-  },
-  ingredientName: {
-    flex: 2,
-  },
-  ingredientQuantity: {
-    flex: 1,
-  },
-  ingredientUnit: {
-    flex: 1,
-  },
-  instructionRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: theme.spacing.md,
-    gap: 8,
-  },
-  stepNumber: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  stepNumberText: {
-    color: '#FFF',
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.bold,
-  },
-  instructionInput: {
-    flex: 1,
-    minHeight: 60,
-    textAlignVertical: 'top',
-  },
-  removeButton: {
-    padding: 4,
-    marginTop: 8,
-  },
-  saveButton: {
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    marginTop: theme.spacing.md,
-    gap: 8,
-  },
-  saveButtonDisabled: {
-    opacity: 0.6,
-  },
-  saveButtonText: {
-    color: '#FFF',
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
-  },
-  premiumGate: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing.xl,
-  },
-  premiumGateDark: {
-    backgroundColor: '#1A1A1A',
-  },
-  premiumTitle: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.bold,
-    color: '#1a1a1a',
-    marginTop: theme.spacing.lg,
-    marginBottom: theme.spacing.sm,
-    textAlign: 'center',
-  },
-  premiumTitleDark: {
-    color: '#FFFFFF',
-  },
-  premiumMessage: {
-    fontSize: theme.fontSize.md,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: theme.spacing.xl,
-  },
-  premiumMessageDark: {
-    color: '#999',
-  },
-  premiumButton: {
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    marginBottom: theme.spacing.md,
-  },
-  premiumButtonText: {
-    color: '#FFF',
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
-  },
-  backButton: {
-    padding: theme.spacing.sm,
-  },
-  backButtonText: {
-    color: theme.colors.primary,
-    fontSize: theme.fontSize.md,
-  },
-  backButtonTextDark: {
-    color: theme.colors.primary,
-  },
+// ─── Styles ──────────────────────────────────────────────────────────────────
+
+const s = StyleSheet.create({
+  root: { flex: 1 },
+
+  // Hero
+  heroFull: { width: '100%', height: 240 },
+  heroEmpty: {
+    height: 130, alignItems: 'center', justifyContent: 'center', gap: 6,
+    borderBottomWidth: 1,
+  },
+  heroCamCircle: {
+    width: 56, height: 56, borderRadius: 28,
+    borderWidth: 1.5, alignItems: 'center', justifyContent: 'center',
+  },
+  heroEmptyTxt:  { fontSize: 14, fontWeight: '600' },
+  heroEmptyHint: { fontSize: 12 },
+  heroTag: {
+    position: 'absolute', bottom: 14, right: 14,
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: 'rgba(0,0,0,0.48)',
+    paddingHorizontal: 11, paddingVertical: 5, borderRadius: 20,
+  },
+  heroTagTxt: { color: '#FFF', fontSize: 13, fontWeight: '600' },
+
+  // Body
+  body: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8 },
+
+  // Section action
+  sectionAction:    { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  sectionActionTxt: { fontSize: 13, fontWeight: '600' },
+
+  // Info card
+  card: {
+    borderRadius: 12, borderWidth: 1, overflow: 'hidden', marginBottom: 12,
+  },
+  cardDivider: { height: 1 },
+  titleIn: {
+    paddingHorizontal: 14, paddingVertical: 13,
+    fontSize: 17, fontWeight: '600',
+  },
+  descIn: {
+    paddingHorizontal: 14, paddingVertical: 11,
+    fontSize: 14, lineHeight: 20, minHeight: 60,
+  },
+
+  // Meta row (times + servings)
+  metaRow: {
+    flexDirection: 'row', borderRadius: 12, borderWidth: 1,
+    marginBottom: 4, overflow: 'hidden',
+  },
+  metaCell: { flex: 1, alignItems: 'center', paddingVertical: 14, gap: 5 },
+  metaCellLbl: { fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  metaCellUnit: { fontSize: 10 },
+  metaSep: { width: 1, marginVertical: 10 },
+
+  // Ingredient block
+  ingBlock: {
+    borderRadius: 12, borderWidth: 1, marginBottom: 8,
+    paddingTop: 10, paddingHorizontal: 10, paddingBottom: 10,
+  },
+  ingRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 8,
+  },
+  ingIdx: {
+    width: 24, height: 24, borderRadius: 6,
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
+  ingIdxTxt: { fontSize: 11, fontWeight: '700' },
+  ingNameIn: {
+    flex: 1, borderRadius: 8, borderWidth: 1,
+    paddingHorizontal: 10, paddingVertical: 8, fontSize: 14,
+  },
+  scanBtn: {
+    width: 36, height: 36, borderRadius: 8, borderWidth: 1,
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
+  ingQtyRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  ingQtyIn: {
+    width: 68, borderRadius: 8, borderWidth: 1,
+    paddingHorizontal: 8, paddingVertical: 7,
+    fontSize: 14, textAlign: 'center', flexShrink: 0,
+  },
+  nutrBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    marginTop: 8, paddingVertical: 5, paddingRight: 8,
+    borderRadius: 6, alignSelf: 'flex-start',
+  },
+  nutrBadgeTxt: { fontSize: 10, fontWeight: '600' },
+
+  // Instructions timeline
+  stepRow:      { flexDirection: 'row', gap: 10, marginBottom: 0 },
+  stepTimeline: { alignItems: 'center', width: 26, paddingTop: 2 },
+  stepBadge: {
+    width: 26, height: 26, borderRadius: 13,
+    backgroundColor: ACCENT,
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
+  stepBadgeTxt: { color: '#FFF', fontSize: 11, fontWeight: '800' },
+  stepLine:     { flex: 1, width: 1, marginVertical: 2 },
+  stepContent:  { flex: 1, paddingBottom: 8 },
+  stepCard: {
+    borderRadius: 12, borderWidth: 1, padding: 12,
+  },
+  stepIn: { fontSize: 14, minHeight: 54, lineHeight: 20 },
+  stepDel: { alignSelf: 'flex-end', marginTop: 6 },
+
+  // Nutrition
+  autoBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8,
+    borderWidth: 1, marginBottom: 10,
+  },
+  autoBannerTxt:  { flex: 1, fontSize: 12, fontWeight: '500' },
+  autoBannerEdit: { fontSize: 12, fontWeight: '700', color: '#22C55E', textDecorationLine: 'underline' },
+  autoRestore: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8,
+    borderWidth: 1, marginBottom: 10,
+  },
+  autoRestoreTxt: { fontSize: 13, fontWeight: '600' },
+  macroGrid: {
+    flexDirection: 'row', gap: 8, marginBottom: 4,
+  },
+  macroCell: {
+    flex: 1, borderRadius: 12, borderWidth: 1,
+    paddingVertical: 14, paddingHorizontal: 4,
+    alignItems: 'center', gap: 2,
+  },
+  macroVal:  { fontSize: 20, fontWeight: '800', minWidth: 55, textAlign: 'center' },
+  macroLbl:  { fontSize: 10, fontWeight: '600', textAlign: 'center' },
+  macroUnit: { fontSize: 10, textAlign: 'center' },
+
+  // Classification
+  subLbl: { fontSize: 11, fontWeight: '600', marginBottom: 8 },
+  chipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  chipWrap: { marginBottom: 16 },
+  chip: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 13, paddingVertical: 9,
+    borderRadius: 10, borderWidth: 1,
+  },
+  chipTxt: { fontSize: 13, fontWeight: '600' },
+
+  // Footer
+  footer: {
+    paddingTop: 10, paddingHorizontal: 16, borderTopWidth: 1,
+  },
+  saveBtn: { borderRadius: 14, overflow: 'hidden', width: '100%' },
+  saveBtnInner: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, paddingVertical: 15,
+  },
+  saveTxt: { color: '#FFF', fontSize: 16, fontWeight: '700', letterSpacing: 0.1 },
+
+  // Premium gate
+  gate:        { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
+  gateIconWrap: {
+    width: 72, height: 72, borderRadius: 36,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 20,
+  },
+  gateTitle:   { fontSize: 20, fontWeight: '800', marginBottom: 10, textAlign: 'center' },
+  gateMsg:     { fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 28 },
+  gateBtn:     { borderRadius: 12, overflow: 'hidden' },
+  gateBtnInner: { paddingHorizontal: 32, paddingVertical: 14 },
+  gateBtnTxt:  { color: '#FFF', fontSize: 15, fontWeight: '700', textAlign: 'center' },
 });
 
 export default RecipeFormScreen;
