@@ -45,7 +45,7 @@ export default function MealCard({ item }) {
       </div>
 
       {d.nutrition && (
-        <div className={styles.statsRow} style={{ marginTop: 8 }}>
+        <div className={`${styles.statsRow} ${styles.statsRowSpaced}`}>
           <div className={styles.statCell}>
             <div className={styles.statLabel}>Calories</div>
             <div className={styles.statValue}>{Math.round(d.nutrition.calories)} kcal</div>

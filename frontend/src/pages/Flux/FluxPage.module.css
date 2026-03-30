@@ -182,6 +182,7 @@
 
 .muscleLegend { flex: 1; min-width: 0; }
 .muscleSection { font-size: 11px; font-weight: 700; color: #9CA3AF; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.4px; }
+.muscleSectionSecondary { font-size: 11px; font-weight: 700; color: #9CA3AF; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 8px; }
 .muscleTags { display: flex; flex-wrap: wrap; gap: 5px; }
 .muscleTag {
   font-size: 11px; font-weight: 700;
@@ -199,7 +200,7 @@
 
 /* ── Body diagram ────────────────────────────────────────────────────── */
 .bodyDiagram { flex-shrink: 0; }
-.bodySvg { width: 68px; display: block; }
+.bodySvg { width: 180px; display: block; }
 .bodySvg svg { width: 100%; height: auto; display: block; }
 
 /* ── PR highlights ───────────────────────────────────────────────────── */
@@ -449,6 +450,14 @@
 .endOfFeed { text-align: center; padding: 20px; color: #CCC; font-size: 13px; font-weight: 600; }
 
 /* ── Spinner ─────────────────────────────────────────────────────────── */
+/* ── Utilitaires inline → module ─────────────────────────────────────── */
+.statsRowSpaced { margin-top: 8px; }
+.muscleTagsSpaced { margin-top: 8px; }
+.recipeTag { color: #E89A6F; background: #E89A6F18; border-color: #E89A6F40; }
+.spinnerWrap { text-align: center; padding: 8px 0; }
+.noResult { color: #AAA; font-size: 13px; text-align: center; padding: 12px 0; margin: 0; }
+.sideHint { color: #BBB; font-size: 13px; text-align: center; padding: 8px 0; margin: 0; }
+
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinner {
   width: 36px; height: 36px;

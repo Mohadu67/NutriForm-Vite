@@ -75,10 +75,9 @@ export default function RecipeCard({ item }) {
       )}
 
       {d.tags?.length > 0 && (
-        <div className={styles.muscleTags} style={{ marginTop: 8 }}>
+        <div className={`${styles.muscleTags} ${styles.muscleTagsSpaced}`}>
           {d.tags.slice(0, 3).map((t, i) => (
-            <span key={i} className={styles.muscleTag}
-              style={{ color: '#E89A6F', background: '#E89A6F18', borderColor: '#E89A6F40' }}>
+            <span key={i} className={`${styles.muscleTag} ${styles.recipeTag}`}>
               {RECIPE_TAGS[t] || t}
             </span>
           ))}

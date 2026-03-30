@@ -21,7 +21,7 @@ export default function Sidebar() {
         </div>
         <SearchResults results={results} searching={searching} query={query} followState={followState} handleFollow={handleFollow} />
         {query.length === 0 && (
-          <p style={{ color: '#BBB', fontSize: 13, textAlign: 'center', padding: '8px 0', margin: 0 }}>Recherchez par pseudo ou prénom</p>
+          <p className={styles.sideHint}>Recherchez par pseudo ou prénom</p>
         )}
       </div>
     </aside>
