@@ -35,7 +35,20 @@ exports.follow = async (req, res) => {
     });
 
     const io = req.app.get('io');
-    if (io) io.to(`user_${followingId}`).emit('notification', { type: 'new_follower' });
+    if (io && io.notifyUser) {
+      const savedNotif = await Notification.findOne({ userId: followingId, 'metadata.type': 'new_follower' })
+        .sort({ createdAt: -1 }).lean();
+      io.notifyUser(followingId.toString(), 'new_notification', {
+        id: savedNotif?._id?.toString() || Date.now().toString(),
+        type: 'follow',
+        title: `${follower.prenom || follower.pseudo} vous suit maintenant`,
+        message: `@${follower.pseudo || follower.prenom} a commencé à vous suivre`,
+        avatar: follower.photo || null,
+        metadata: { followerId: followerId.toString(), type: 'new_follower' },
+        timestamp: new Date().toISOString(),
+        read: false,
+      });
+    }
 
     res.json({ success: true });
   } catch (err) {
@@ -492,7 +505,7 @@ exports.likePost = async (req, res) => {
           }
         }
       } catch (notifErr) {
-        // non-bloquant
+        console.error('[likePost] Erreur notification:', notifErr);
       }
     }
 
@@ -634,7 +647,9 @@ exports.addComment = async (req, res) => {
           });
         }
       }
-    } catch {}
+    } catch (notifErr) {
+      console.error('[addComment] Erreur notification:', notifErr);
+    }
 
     const count = await FeedComment.countDocuments({ postId });
     res.status(201).json({ success: true, comment, commentsCount: count });

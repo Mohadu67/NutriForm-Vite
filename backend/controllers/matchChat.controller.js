@@ -872,10 +872,9 @@ async function getOrCreateSocialConversation(req, res) {
     });
 
     if (!conversation) {
-      // Créer une nouvelle conversation sociale avec un matchId unique fictif
-      // pour éviter le conflit avec l'index unique non-sparse sur matchId
+      // Créer une nouvelle conversation sociale sans matchId
       conversation = await Conversation.create({
-        matchId: new mongoose.Types.ObjectId(),
+        matchId: null,
         participants: [currentUserId, targetUserId],
         unreadCount: new Map([
           [currentUserId.toString(), 0],
