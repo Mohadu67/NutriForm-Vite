@@ -86,7 +86,7 @@ export default function WorkoutCard({ item }) {
             )}
             {expanded && secondary.length > 0 && (
               <>
-                <div className={styles.muscleSection} style={{ marginTop: 8 }}>Secondaire</div>
+                <div className={styles.muscleSectionSecondary}>Secondaire</div>
                 <div className={styles.muscleTags}>
                   {secondary.map((m, i) => {
                     const color = MUSCLE_COLORS[m] || '#E89A6F';

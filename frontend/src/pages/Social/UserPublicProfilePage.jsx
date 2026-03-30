@@ -243,8 +243,8 @@ export default function UserPublicProfilePage() {
     try {
       const { conversation } = await getOrCreateSocialConversation(userId);
       openMatchChat(conversation);
-    } catch {
-      // silently ignore
+    } catch (err) {
+      console.error('[handleOpenChat] Erreur:', err?.response?.data || err);
     } finally {
       setMsgLoading(false);
     }
