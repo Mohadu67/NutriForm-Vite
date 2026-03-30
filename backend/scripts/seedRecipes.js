@@ -1,7 +1,8 @@
+const path = require('path');
 const mongoose = require('mongoose');
-const Recipe = require('./models/Recipe');
-const User = require('./models/User');
-require('dotenv').config();
+const Recipe = require(path.join(__dirname, '..', 'models', 'Recipe'));
+const User = require(path.join(__dirname, '..', 'models', 'User'));
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const recipes = [
   {
