@@ -35,7 +35,10 @@ const TypeIcons = {
   activity: <ActivityIcon size={18} />,
   admin: <CrownIcon size={18} />,
   support: <MessageCircleIcon size={18} />,
-  content: <SparklesIcon size={18} />
+  content: <SparklesIcon size={18} />,
+  like: <HeartIcon size={18} filled />,
+  comment: <MessageCircleIcon size={18} />,
+  follow: <ActivityIcon size={18} />
 };
 
 export default function NotificationCenter({ className = '', mode = 'dropdown', onClose }) {
@@ -46,7 +49,6 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
   const { openMatchChatById, openAIChat } = chatContext || {};
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [isLoading] = useState(false);
   const [rejectionModal, setRejectionModal] = useState({ isOpen: false, programName: '', reason: '' });
   const [sessionModal, setSessionModal] = useState({
     isOpen: false,
@@ -421,12 +423,7 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
 
       {/* Liste des notifications */}
       <div className={`${styles.list} ${isPanel ? styles.panelList : ''}`}>
-        {isLoading ? (
-          <div className={styles.loading}>
-            <span className={styles.spinner}></span>
-            Chargement...
-          </div>
-        ) : notifications.length === 0 ? (
+        {notifications.length === 0 ? (
           <div className={styles.empty}>
             <span className={styles.emptyIcon}><BellIcon size={32} /></span>
             <p>Aucune notification</p>
