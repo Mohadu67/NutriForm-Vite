@@ -10,11 +10,12 @@ const matchMessageSchema = new mongoose.Schema(
       index: true
     },
 
-    // Match ID (pour référence rapide)
+    // Match ID (pour référence rapide, null pour conversations sociales)
     matchId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Match',
-      required: true,
+      required: false,
+      default: null,
       index: true
     },
 
