@@ -543,7 +543,9 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
             <View style={st.emptyContainer}>
               <Ionicons name="barbell-outline" size={36} color={isDark ? '#333' : '#ddd'} />
               <Text style={[st.emptyText, isDark && st.emptyTextDark]}>
-                {isGains ? 'Pas de données de croissance' : 'Aucune séance cette semaine'}
+                {isGains
+                  ? 'Les gains nécessitent des pesées avec composition corporelle. Ajoute tes mesures dans Suivi corporel.'
+                  : 'Aucune séance cette semaine'}
               </Text>
             </View>
           )}

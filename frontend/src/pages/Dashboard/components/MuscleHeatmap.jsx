@@ -535,7 +535,9 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
             </div>
           ) : (
             <p className={styles.empty}>
-              {isGains ? "Pas de données de croissance" : "Aucune séance sur cette période"}
+              {isGains
+                ? "Les gains musculaires nécessitent des pesées régulières avec composition corporelle. Ajoute tes mesures dans Suivi corporel pour voir l'évolution par zone."
+                : "Aucune séance sur cette période"}
             </p>
           )}
 
