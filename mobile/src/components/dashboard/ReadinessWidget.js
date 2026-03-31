@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, useColorScheme,
-  ActivityIndicator,
+  ActivityIndicator, Linking, Platform,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -158,8 +158,17 @@ export const ReadinessWidget = ({ onPress }) => {
     );
   }
 
-  // Pas de données OU pas de données réelles → état vide
+  // Pas de données OU pas de données réelles → état vide avec CTA
   if (!data || !hasRealData) {
+    const platformName = Platform.OS === 'ios' ? 'Apple Santé' : 'Health Connect';
+    const openHealth = () => {
+      if (Platform.OS === 'ios') {
+        Linking.openURL('x-apple-health://').catch(() => Linking.openSettings());
+      } else {
+        Linking.openSettings();
+      }
+    };
+
     return (
       <View style={[st.card, isDark && st.cardDark]}>
         <View style={st.emptyWrap}>
@@ -168,8 +177,16 @@ export const ReadinessWidget = ({ onPress }) => {
             Readiness
           </Text>
           <Text style={[st.emptyText, isDark && st.emptyTextDark]}>
-            Connecte Apple Santé ou Health Connect pour voir ton score basé sur ton sommeil, ta récupération et ton stress.
+            Connecte {platformName} pour voir ton score basé sur ton sommeil, ta récupération et ton stress.
           </Text>
+          <TouchableOpacity
+            style={[st.healthBtn, isDark && st.healthBtnDark]}
+            onPress={openHealth}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="heart-circle-outline" size={18} color={theme.colors.primary} />
+            <Text style={st.healthBtnText}>Ouvrir {platformName}</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -308,6 +325,24 @@ const st = StyleSheet.create({
   },
   emptyTextDark: {
     color: '#444',
+  },
+  healthBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: 'rgba(240,164,122,0.10)',
+  },
+  healthBtnDark: {
+    backgroundColor: 'rgba(240,164,122,0.12)',
+  },
+  healthBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
 
   // Header
