@@ -158,13 +158,17 @@ export const ReadinessWidget = ({ onPress }) => {
     );
   }
 
-  if (!data) {
+  // Pas de données OU pas de données réelles → état vide
+  if (!data || !hasRealData) {
     return (
       <View style={[st.card, isDark && st.cardDark]}>
         <View style={st.emptyWrap}>
-          <Ionicons name="pulse-outline" size={28} color={isDark ? '#333' : '#ddd'} />
+          <Ionicons name="pulse-outline" size={28} color={isDark ? '#444' : '#ccc'} />
+          <Text style={[st.emptyTitle, isDark && st.emptyTitleDark]}>
+            Readiness
+          </Text>
           <Text style={[st.emptyText, isDark && st.emptyTextDark]}>
-            Sync tes données de sommeil pour voir ton score
+            Connecte Apple Santé ou Health Connect pour voir ton score basé sur ton sommeil, ta récupération et ton stress.
           </Text>
         </View>
       </View>
@@ -286,14 +290,24 @@ const st = StyleSheet.create({
     paddingVertical: 20,
     gap: 8,
   },
+  emptyTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#999',
+    marginTop: 4,
+  },
+  emptyTitleDark: {
+    color: '#555',
+  },
   emptyText: {
     fontSize: 13,
     fontWeight: '500',
     color: '#bbb',
     textAlign: 'center',
+    lineHeight: 18,
   },
   emptyTextDark: {
-    color: '#555',
+    color: '#444',
   },
 
   // Header

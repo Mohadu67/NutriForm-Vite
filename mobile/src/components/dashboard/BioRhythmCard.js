@@ -58,7 +58,8 @@ export const BioRhythmCard = ({ gender }) => {
     );
   }
 
-  if (!data) return null;
+  // Pas de données ou données estimées (pas de vrai sommeil sync) → ne pas afficher
+  if (!data || !data.hasRealData) return null;
 
   const morningWindow = data.morningWindow || { start: '10:00', end: '12:00' };
   const afternoonWindow = data.afternoonWindow || { start: '16:00', end: '19:00' };
