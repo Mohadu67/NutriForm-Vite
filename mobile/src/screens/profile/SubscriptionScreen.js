@@ -242,7 +242,7 @@ export default function SubscriptionScreen() {
                     onPress={() => navigation.navigate('Rewards')}
                     activeOpacity={0.7}
                   >
-                    <Ionicons name="add-circle-outline" size={16} color="#8B5CF6" />
+                    <Ionicons name="add-circle-outline" size={16} color="#72baa1" />
                     <Text style={styles.renewButtonText}>Prolonger avec XP</Text>
                   </TouchableOpacity>
                 </>
@@ -403,7 +403,7 @@ export default function SubscriptionScreen() {
         {/* Info Premium XP */}
         <View style={[styles.xpInfoCard, isDark && styles.cardDark]}>
           <View style={styles.xpInfoHeader}>
-            <Ionicons name="trophy-outline" size={24} color="#8B5CF6" />
+            <Ionicons name="trophy-outline" size={24} color="#72baa1" />
             <Text style={[styles.xpInfoTitle, isDark && styles.textDark]}>
               Premium gratuit avec XP
             </Text>
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text.primary,
   },
   xpBadgeSmall: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#72baa1',
     paddingVertical: 4,
     paddingHorizontal: theme.spacing.sm,
     borderRadius: theme.borderRadius.full,
@@ -556,18 +556,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.xs,
-    backgroundColor: '#8B5CF610',
+    backgroundColor: '#72baa110',
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
     marginTop: theme.spacing.sm,
     borderWidth: 1,
-    borderColor: '#8B5CF630',
+    borderColor: '#72baa130',
   },
   renewButtonText: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.semiBold,
-    color: '#8B5CF6',
+    color: '#72baa1',
   },
   cancelledBadge: {
     flexDirection: 'row',
@@ -750,7 +750,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
     borderWidth: 2,
-    borderColor: '#8B5CF620',
+    borderColor: '#72baa120',
   },
   xpInfoHeader: {
     flexDirection: 'row',
@@ -791,7 +791,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
     borderWidth: 2,
-    borderColor: '#8B5CF630',
+    borderColor: '#72baa130',
   },
   xpPremiumHeader: {
     flexDirection: 'row',
@@ -803,7 +803,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#8B5CF615',
+    backgroundColor: '#72baa115',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -825,15 +825,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing.xs,
-    backgroundColor: '#8B5CF610',
+    backgroundColor: '#72baa110',
     borderRadius: theme.borderRadius.lg,
     paddingVertical: theme.spacing.md,
     borderWidth: 1.5,
-    borderColor: '#8B5CF630',
+    borderColor: '#72baa130',
   },
   renewXpButtonText: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.semiBold,
-    color: '#8B5CF6',
+    color: '#72baa1',
   },
 });

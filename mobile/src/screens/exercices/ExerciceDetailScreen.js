@@ -57,7 +57,7 @@ const DIFFICULTY_CONFIG = {
 };
 
 const TYPE_CONFIG = {
-  'muscu': { label: 'Musculation', color: '#8B5CF6', icon: 'barbell' },
+  'muscu': { label: 'Musculation', color: '#72baa1', icon: 'barbell' },
   'poids_du_corps': { label: 'Poids du corps', color: '#06B6D4', icon: 'body' },
   'cardio': { label: 'Cardio', color: '#EF4444', icon: 'heart' },
   'etirement': { label: 'Etirement', color: '#10B981', icon: 'flower' },
@@ -156,7 +156,8 @@ export default function ExerciceDetailScreen({ navigation, route }) {
     try {
       const stored = await AsyncStorage.getItem(FAVORITES_KEY);
       if (stored) {
-        const favorites = JSON.parse(stored);
+        const cached = JSON.parse(stored);
+        const favorites = Array.isArray(cached) ? cached : (cached.data || []);
         setIsFavorite(favorites.includes(exercice.id));
       }
     } catch (error) {
@@ -173,7 +174,8 @@ export default function ExerciceDetailScreen({ navigation, route }) {
 
     try {
       const stored = await AsyncStorage.getItem(FAVORITES_KEY);
-      let favorites = stored ? JSON.parse(stored) : [];
+      const cached = stored ? JSON.parse(stored) : { data: [], cachedAt: Date.now() };
+      let favorites = Array.isArray(cached) ? cached : (cached.data || []);
 
       if (isFavorite) {
         favorites = favorites.filter(id => id !== exercice.id);
@@ -182,7 +184,7 @@ export default function ExerciceDetailScreen({ navigation, route }) {
         Vibration.vibrate(50);
       }
 
-      await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+      await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify({ data: favorites, cachedAt: Date.now() }));
       setIsFavorite(!isFavorite);
     } catch (error) {
       logger.app.debug('Erreur toggle favori:', error);

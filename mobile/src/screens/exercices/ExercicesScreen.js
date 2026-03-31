@@ -696,8 +696,8 @@ export default function ExercicesScreen() {
         )}
       </View>
 
-      {/* Compteur de séances pour users free */}
-      {isUserFree && (
+      {/* Compteur de séances pour users free - hidden when searching */}
+      {isUserFree && !searchText && (
         <TouchableOpacity
           style={[
             styles.sessionsCounterCard,
@@ -748,128 +748,133 @@ export default function ExercicesScreen() {
         </TouchableOpacity>
       )}
 
-      {/* Type filter tabs - Multi-selection */}
-      <View style={styles.filterSectionHeader}>
-        <Text style={[styles.filterSectionTitle, isDark && styles.textMutedDark]}>Type d'exercice</Text>
-        {selectedTypes.length > 0 && (
-          <TouchableOpacity onPress={() => setSelectedTypes([])}>
-            <Text style={[styles.clearSectionText, isDark && styles.clearSectionTextDark]}>Effacer</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.typeScroll}
-        contentContainerStyle={styles.typeScrollContent}
-      >
-        {Object.entries(TYPE_CONFIG).map(([key, config]) => {
-          const isSelected = selectedTypes.includes(key);
-          return (
-            <TouchableOpacity
-              key={key}
-              style={[
-                styles.typeTab,
-                isDark && styles.typeTabDark,
-                isSelected && styles.typeTabActive,
-                isSelected && isDark && styles.typeTabActiveDark,
-              ]}
-              onPress={() => toggleType(key)}
-            >
-              {isSelected && (
-                <Ionicons name="checkmark-circle" size={16} color={isDark ? '#F7B186' : theme.colors.primary} />
-              )}
-              <Ionicons
-                name={config.icon}
-                size={18}
-                color={isSelected ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#9CA3AF' : '#6B7280')}
-              />
-              <Text style={[
-                styles.typeTabText,
-                isDark && styles.typeTabTextDark,
-                isSelected && styles.typeTabTextActive,
-                isSelected && isDark && styles.typeTabTextActiveDark,
-              ]}>
-                {config.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+      {/* Filter sections - hidden when searching */}
+      {!searchText && (
+        <>
+          {/* Type filter tabs - Multi-selection */}
+          <View style={styles.filterSectionHeader}>
+            <Text style={[styles.filterSectionTitle, isDark && styles.textMutedDark]}>Type d'exercice</Text>
+            {selectedTypes.length > 0 && (
+              <TouchableOpacity onPress={() => setSelectedTypes([])}>
+                <Text style={[styles.clearSectionText, isDark && styles.clearSectionTextDark]}>Effacer</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.typeScroll}
+            contentContainerStyle={styles.typeScrollContent}
+          >
+            {Object.entries(TYPE_CONFIG).map(([key, config]) => {
+              const isSelected = selectedTypes.includes(key);
+              return (
+                <TouchableOpacity
+                  key={key}
+                  style={[
+                    styles.typeTab,
+                    isDark && styles.typeTabDark,
+                    isSelected && styles.typeTabActive,
+                    isSelected && isDark && styles.typeTabActiveDark,
+                  ]}
+                  onPress={() => toggleType(key)}
+                >
+                  {isSelected && (
+                    <Ionicons name="checkmark-circle" size={16} color={isDark ? '#F7B186' : theme.colors.primary} />
+                  )}
+                  <Ionicons
+                    name={config.icon}
+                    size={18}
+                    color={isSelected ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#9CA3AF' : '#6B7280')}
+                  />
+                  <Text style={[
+                    styles.typeTabText,
+                    isDark && styles.typeTabTextDark,
+                    isSelected && styles.typeTabTextActive,
+                    isSelected && isDark && styles.typeTabTextActiveDark,
+                  ]}>
+                    {config.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
 
-      {/* Equipment filter - Multi-selection */}
-      <View style={styles.filterSectionHeader}>
-        <Text style={[styles.filterSectionTitle, isDark && styles.textMutedDark]}>Équipement</Text>
-        {selectedEquipments.length > 0 && (
-          <TouchableOpacity onPress={() => setSelectedEquipments([])}>
-            <Text style={[styles.clearSectionText, isDark && styles.clearSectionTextDark]}>Effacer</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.equipmentScroll}
-        contentContainerStyle={styles.equipmentScrollContent}
-      >
-        {EQUIPMENT_LIST.map((equip) => {
-          const isSelected = selectedEquipments.includes(equip);
-          return (
-            <TouchableOpacity
-              key={equip}
-              style={[
-                styles.equipmentChip,
-                isDark && styles.equipmentChipDark,
-                isSelected && styles.equipmentChipActive,
-                isSelected && isDark && styles.equipmentChipActiveDark,
-              ]}
-              onPress={() => toggleEquipment(equip)}
-            >
-              {isSelected && (
-                <Ionicons name="checkmark" size={14} color={isDark ? '#F7B186' : theme.colors.primary} style={{ marginRight: 4 }} />
-              )}
-              <Text style={[
-                styles.equipmentChipText,
-                isDark && styles.equipmentChipTextDark,
-                isSelected && styles.equipmentChipTextActive,
-                isSelected && isDark && styles.equipmentChipTextActiveDark,
-              ]}>
-                {EQUIPMENT_LABELS[equip]}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+          {/* Equipment filter - Multi-selection */}
+          <View style={styles.filterSectionHeader}>
+            <Text style={[styles.filterSectionTitle, isDark && styles.textMutedDark]}>Équipement</Text>
+            {selectedEquipments.length > 0 && (
+              <TouchableOpacity onPress={() => setSelectedEquipments([])}>
+                <Text style={[styles.clearSectionText, isDark && styles.clearSectionTextDark]}>Effacer</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.equipmentScroll}
+            contentContainerStyle={styles.equipmentScrollContent}
+          >
+            {EQUIPMENT_LIST.map((equip) => {
+              const isSelected = selectedEquipments.includes(equip);
+              return (
+                <TouchableOpacity
+                  key={equip}
+                  style={[
+                    styles.equipmentChip,
+                    isDark && styles.equipmentChipDark,
+                    isSelected && styles.equipmentChipActive,
+                    isSelected && isDark && styles.equipmentChipActiveDark,
+                  ]}
+                  onPress={() => toggleEquipment(equip)}
+                >
+                  {isSelected && (
+                    <Ionicons name="checkmark" size={14} color={isDark ? '#F7B186' : theme.colors.primary} style={{ marginRight: 4 }} />
+                  )}
+                  <Text style={[
+                    styles.equipmentChipText,
+                    isDark && styles.equipmentChipTextDark,
+                    isSelected && styles.equipmentChipTextActive,
+                    isSelected && isDark && styles.equipmentChipTextActiveDark,
+                  ]}>
+                    {EQUIPMENT_LABELS[equip]}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
 
-      {/* Filter by muscle button */}
-      <TouchableOpacity
-        style={[styles.filterButton, isDark && styles.cardDark]}
-        onPress={() => setShowBodyPicker(true)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.filterButtonContent}>
-          <View style={[styles.filterIconContainer, selectedMuscles.length > 0 && styles.filterIconContainerActive]}>
-            <Ionicons name="body" size={22} color={selectedMuscles.length > 0 ? '#FFF' : theme.colors.primary} />
-          </View>
-          <View style={styles.filterTextContainer}>
-            <Text style={[styles.filterTitle, isDark && styles.textDark]}>
-              Filtrer par muscle
-            </Text>
-            <Text style={[styles.filterSubtitle, isDark && styles.subtitleDark]} numberOfLines={1}>
-              {selectedMuscles.length > 0
-                ? selectedMuscles.map(id => ZONE_LABELS[id]).join(', ')
-                : 'Selectionne les zones a travailler'}
-            </Text>
-          </View>
-        </View>
-        {selectedMuscles.length > 0 ? (
-          <View style={styles.filterBadge}>
-            <Text style={styles.filterBadgeText}>{selectedMuscles.length}</Text>
-          </View>
-        ) : (
-          <Ionicons name="chevron-forward" size={20} color={isDark ? '#666' : theme.colors.text.tertiary} />
-        )}
-      </TouchableOpacity>
+          {/* Filter by muscle button */}
+          <TouchableOpacity
+            style={[styles.filterButton, isDark && styles.cardDark]}
+            onPress={() => setShowBodyPicker(true)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.filterButtonContent}>
+              <View style={[styles.filterIconContainer, selectedMuscles.length > 0 && styles.filterIconContainerActive]}>
+                <Ionicons name="body" size={22} color={selectedMuscles.length > 0 ? '#FFF' : theme.colors.primary} />
+              </View>
+              <View style={styles.filterTextContainer}>
+                <Text style={[styles.filterTitle, isDark && styles.textDark]}>
+                  Filtrer par muscle
+                </Text>
+                <Text style={[styles.filterSubtitle, isDark && styles.subtitleDark]} numberOfLines={1}>
+                  {selectedMuscles.length > 0
+                    ? selectedMuscles.map(id => ZONE_LABELS[id]).join(', ')
+                    : 'Selectionne les zones a travailler'}
+                </Text>
+              </View>
+            </View>
+            {selectedMuscles.length > 0 ? (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>{selectedMuscles.length}</Text>
+              </View>
+            ) : (
+              <Ionicons name="chevron-forward" size={20} color={isDark ? '#666' : theme.colors.text.tertiary} />
+            )}
+          </TouchableOpacity>
+        </>
+      )}
 
       {/* Active filters summary */}
       {activeFiltersCount > 0 && (

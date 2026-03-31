@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Svg, { Circle } from 'react-native-svg';
 
 import { theme } from '../../theme';
@@ -108,15 +108,22 @@ function NutritionGauge({ consumed, burned, goal, macros, macroGoals, isDark }) 
   );
 }
 
+const MACRO_COLORS = {
+  Glucides: '#f0a47a',
+  Protéines: '#72baa1',
+  Lipides: '#f59e0b',
+};
+
 function MacroBar({ label, current, goal, isDark }) {
   const pct = goal > 0 ? Math.min(current / goal, 1) : 0;
-  const trackColor = isDark ? '#3a3a3a' : '#e5e7eb';
+  const trackColor = isDark ? '#2a2a33' : '#e7e5e4';
+  const fillColor = MACRO_COLORS[label] || '#f0a47a';
 
   return (
     <View style={styles.nwMacro}>
-      <Text style={[styles.nwMacroLabel, isDark && { color: '#e0e0e0' }]}>{label}</Text>
+      <Text style={[styles.nwMacroLabel, isDark && { color: '#c1c1cb' }]}>{label}</Text>
       <View style={[styles.nwMacroTrack, { backgroundColor: trackColor }]}>
-        <View style={[styles.nwMacroDot, { left: `${pct * 100}%` }]} />
+        <View style={[styles.nwMacroFill, { width: `${pct * 100}%`, backgroundColor: fillColor }]} />
       </View>
       <Text style={styles.nwMacroValue}>{current} / {goal} g</Text>
     </View>
@@ -159,27 +166,29 @@ export default function HomeScreen() {
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [nutritionData, setNutritionData] = useState(null);
 
-  // Fetch nutrition data for today
-  React.useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    Promise.all([getDailySummary(today), getNutritionGoals()])
-      .then(([summaryRes, goalsRes]) => {
-        if (summaryRes.success || goalsRes.success) {
-          setNutritionData({
-            consumed: summaryRes.data?.consumed?.calories || 0,
-            burned: summaryRes.data?.burned || 0,
-            goal: goalsRes.data?.dailyCalories || 2000,
-            macros: {
-              proteins: summaryRes.data?.consumed?.proteins || 0,
-              carbs: summaryRes.data?.consumed?.carbs || 0,
-              fats: summaryRes.data?.consumed?.fats || 0,
-            },
-            macroGoals: goalsRes.data?.macros || null,
-          });
-        }
-      })
-      .catch(() => {});
-  }, []);
+  // Fetch nutrition data for today — reload each time the screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      const today = new Date().toISOString().split('T')[0];
+      Promise.all([getDailySummary(today), getNutritionGoals()])
+        .then(([summaryRes, goalsRes]) => {
+          if (summaryRes.success || goalsRes.success) {
+            setNutritionData({
+              consumed: summaryRes.data?.consumed?.calories || 0,
+              burned: summaryRes.data?.burned || 0,
+              goal: goalsRes.data?.dailyCalories || 2000,
+              macros: {
+                proteins: summaryRes.data?.consumed?.proteins || 0,
+                carbs: summaryRes.data?.consumed?.carbs || 0,
+                fats: summaryRes.data?.consumed?.fats || 0,
+              },
+              macroGoals: goalsRes.data?.macros || null,
+            });
+          }
+        })
+        .catch(() => {});
+    }, [])
+  );
 
   const handleSessionsClick = useCallback(() => navigation.navigate('History'), [navigation]);
   const handleBadgesClick = useCallback(() => navigation.navigate('Badges'), [navigation]);
@@ -276,6 +285,9 @@ export default function HomeScreen() {
           />
         )}
 
+        {/* Actions rapides */}
+        <QuickActions navigation={navigation} subscriptionTier={subscriptionTier} />
+
         {/* Objectif semaine */}
         <WeeklyGoalSection
           stats={stats}
@@ -301,20 +313,29 @@ export default function HomeScreen() {
 
         {/* Nutrition du jour */}
         {nutritionData && (
-          <TouchableOpacity
-            style={[styles.nwCard, isDark && styles.nwCardDark]}
-            onPress={() => navigation.navigate('Nutrition')}
-            activeOpacity={0.8}
-          >
-            <NutritionGauge
-              consumed={nutritionData.consumed}
-              burned={nutritionData.burned}
-              goal={nutritionData.goal}
-              macros={nutritionData.macros}
-              macroGoals={nutritionData.macroGoals}
-              isDark={isDark}
-            />
-          </TouchableOpacity>
+          <View style={[styles.nwCard, isDark && styles.nwCardDark]}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Nutrition')}
+              activeOpacity={0.8}
+            >
+              <NutritionGauge
+                consumed={nutritionData.consumed}
+                burned={nutritionData.burned}
+                goal={nutritionData.goal}
+                macros={nutritionData.macros}
+                macroGoals={nutritionData.macroGoals}
+                isDark={isDark}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.addMealBtn, isDark && styles.addMealBtnDark]}
+              onPress={() => navigation.navigate('ManualFoodEntry')}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="add" size={18} color="#fff" />
+              <Text style={styles.addMealBtnText}>Ajouter un repas</Text>
+            </TouchableOpacity>
+          </View>
         )}
 
         {/* Analyse (lazy loaded) */}
@@ -346,9 +367,6 @@ export default function HomeScreen() {
             </Text>
           </View>
         )}
-
-        {/* Actions rapides (en bas) */}
-        <QuickActions navigation={navigation} subscriptionTier={subscriptionTier} />
 
         {/* Empty State */}
         {stats.totalSessions === 0 && (
@@ -633,14 +651,27 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     position: 'relative',
   },
-  nwMacroDot: {
-    position: 'absolute',
-    top: -2,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#F7B186',
-    marginLeft: -5,
+  nwMacroFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  addMealBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 14,
+    paddingVertical: 10,
+    backgroundColor: '#f0a47a',
+    borderRadius: 12,
+  },
+  addMealBtnDark: {
+    backgroundColor: '#c67548',
+  },
+  addMealBtnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   nwMacroValue: {
     fontSize: 11,

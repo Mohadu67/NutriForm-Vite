@@ -435,20 +435,6 @@ export default function ProfileScreen() {
           <Ionicons name="log-out-outline" size={22} color="#EF4444" />
           <Text style={styles.logoutText}>Se deconnecter</Text>
         </TouchableOpacity>
-
-        {/* Footer */}
-        <View style={styles.footerGradient}>
-          <LinearGradient
-            colors={isDark ? ['#2A1810', '#1A1A1A'] : ['#E89A6F', '#F7B186', '#F9C4A3']}
-            start={{ x: 0, y: 1 }}
-            end={{ x: 1, y: 0 }}
-            style={StyleSheet.absoluteFill}
-          />
-          <View style={styles.footerContent}>
-            <Text style={styles.footerText}>Harmonith v1.0.0</Text>
-            <Text style={styles.footerSubtext}>Fait avec passion</Text>
-          </View>
-        </View>
       </Animated.ScrollView>
     </View>
   );
@@ -571,8 +557,4 @@ const styles = StyleSheet.create({
   logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: '#FEF2F2', borderRadius: 14, padding: 16, marginBottom: 20 },
   logoutBtnDark: { backgroundColor: 'rgba(239,68,68,0.15)' },
   logoutText: { fontSize: 15, fontWeight: '600', color: '#EF4444' },
-  footerGradient: { height: 120, borderTopLeftRadius: 32, borderTopRightRadius: 32, overflow: 'hidden', marginTop: 20, marginHorizontal: -20 },
-  footerContent: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  footerText: { fontSize: 14, color: '#FFF', fontWeight: '600' },
-  footerSubtext: { fontSize: 11, color: '#BBB', marginTop: 4 },
 });

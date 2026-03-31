@@ -443,8 +443,8 @@ export default function EditProfileScreen() {
               activeOpacity={0.7}
             >
               <View style={styles.accountLeft}>
-                <View style={[styles.accountIcon, { backgroundColor: '#8B5CF620' }]}>
-                  <Ionicons name="lock-closed" size={20} color="#8B5CF6" />
+                <View style={[styles.accountIcon, { backgroundColor: '#72baa120' }]}>
+                  <Ionicons name="lock-closed" size={20} color="#72baa1" />
                 </View>
                 <View>
                   <Text style={[styles.accountLabel, isDark && styles.textLight]}>Mot de passe</Text>

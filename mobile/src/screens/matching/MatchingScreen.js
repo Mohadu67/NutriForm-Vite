@@ -422,7 +422,7 @@ export default function MatchingScreen() {
 
   const handleAvatarPress = (user) => {
     if (user) {
-      navigation.navigate('UserProfile', { user });
+      navigation.navigate('UserProfile', { userId: user._id });
     }
   };
 

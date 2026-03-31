@@ -1,175 +1,115 @@
 /**
- * HarmoNith - Shadow System
- * Ombres optimisées pour iOS et Android
+ * HarmoNith - Shadow System v2.0
+ * Aligned with web design-tokens — softer, multi-layer feel
  */
 
 import { Platform } from 'react-native';
 
-/**
- * Create shadow styles for both iOS and Android
- * @param {number} elevation - Shadow elevation (0-24)
- * @param {string} color - Shadow color (default: black)
- * @param {number} opacity - Shadow opacity (0-1)
- */
-const createShadow = (elevation, color = '#000000', opacity = 0.15) => {
+const createShadow = (elevation, color = '#000000', opacity = 0.12) => {
   if (Platform.OS === 'ios') {
-    // iOS uses shadowColor, shadowOffset, shadowOpacity, shadowRadius
-    const shadowOffset = {
-      width: 0,
-      height: Math.round(elevation / 2),
-    };
-    const shadowRadius = Math.round(elevation * 0.8);
-
     return {
       shadowColor: color,
-      shadowOffset,
+      shadowOffset: { width: 0, height: Math.round(elevation / 2) },
       shadowOpacity: opacity,
-      shadowRadius,
+      shadowRadius: Math.round(elevation * 0.8),
     };
   } else if (Platform.OS === 'android') {
-    // Android uses elevation
-    return {
-      elevation,
-    };
+    return { elevation };
   }
-
   return {};
 };
 
-// Shadow Levels
+// Shadow Levels — softer default opacities
 export const shadows = {
   none: createShadow(0),
-  xs: createShadow(2, '#000000', 0.1),
-  sm: createShadow(4, '#000000', 0.12),
-  md: createShadow(8, '#000000', 0.15),
-  lg: createShadow(12, '#000000', 0.18),
-  xl: createShadow(16, '#000000', 0.2),
-  '2xl': createShadow(20, '#000000', 0.22),
-  '3xl': createShadow(24, '#000000', 0.25),
+  xs: createShadow(1, '#000000', 0.06),
+  sm: createShadow(3, '#000000', 0.08),
+  md: createShadow(6, '#000000', 0.1),
+  lg: createShadow(10, '#000000', 0.12),
+  xl: createShadow(14, '#000000', 0.15),
+  '2xl': createShadow(18, '#000000', 0.18),
+  '3xl': createShadow(24, '#000000', 0.2),
 };
 
 // Component-specific shadows
 export const componentShadows = {
-  // Cards
-  card: shadows.md,
-  cardHovered: shadows.lg,
-  cardPressed: shadows.sm,
-
-  // Buttons
-  button: shadows.sm,
-  buttonHovered: shadows.md,
-  buttonPressed: shadows.xs,
-
-  // Floating Action Button
+  card: shadows.sm,
+  cardHovered: shadows.md,
+  cardPressed: shadows.xs,
+  button: shadows.xs,
+  buttonHovered: shadows.sm,
+  buttonPressed: createShadow(0),
   fab: shadows.lg,
   fabHovered: shadows.xl,
   fabPressed: shadows.md,
-
-  // Modal & Dialogs
   modal: shadows['2xl'],
   dialog: shadows.xl,
-
-  // Bottom Sheet
   bottomSheet: shadows['3xl'],
-
-  // App Bar / Header
-  appBar: shadows.sm,
-
-  // Dropdown & Menu
+  appBar: shadows.xs,
   dropdown: shadows.lg,
   menu: shadows.xl,
-
-  // Tooltip
   tooltip: shadows.md,
-
-  // Tabs
   tabBar: shadows.sm,
-
-  // Input (focused state)
-  inputFocused: shadows.sm,
-
-  // Image
+  inputFocused: shadows.xs,
   image: shadows.xs,
 };
 
-// Colored shadows for special effects
+// Colored shadows — updated to new palette
 export const coloredShadows = {
-  primary: createShadow(8, '#F7B186', 0.3),
-  primaryStrong: createShadow(12, '#F7B186', 0.4),
-
-  secondary: createShadow(8, '#B8DDD1', 0.3),
-  secondaryStrong: createShadow(12, '#B8DDD1', 0.4),
-
-  success: createShadow(8, '#4CAF50', 0.3),
-  warning: createShadow(8, '#FFC107', 0.3),
-  error: createShadow(8, '#F44336', 0.3),
-  info: createShadow(8, '#2196F3', 0.3),
+  primary: createShadow(8, '#f0a47a', 0.25),
+  primaryStrong: createShadow(12, '#f0a47a', 0.35),
+  secondary: createShadow(8, '#72baa1', 0.25),
+  secondaryStrong: createShadow(12, '#72baa1', 0.35),
+  success: createShadow(8, '#22c55e', 0.25),
+  warning: createShadow(8, '#f59e0b', 0.25),
+  error: createShadow(8, '#ef4444', 0.25),
+  info: createShadow(8, '#0ea5e9', 0.25),
 };
 
-// Inner shadows (using border technique for React Native)
+// Inner shadows (border technique)
 export const innerShadows = {
-  sm: {
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.05)',
-  },
-  md: {
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  lg: {
-    borderWidth: 2,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-  },
+  sm: { borderWidth: 1, borderColor: 'rgba(0, 0, 0, 0.04)' },
+  md: { borderWidth: 1, borderColor: 'rgba(0, 0, 0, 0.08)' },
+  lg: { borderWidth: 1.5, borderColor: 'rgba(0, 0, 0, 0.08)' },
 };
 
-// Glow effects
+// Glow effects — updated to new palette
 export const glows = {
   primary: Platform.select({
     ios: {
-      shadowColor: '#F7B186',
+      shadowColor: '#f0a47a',
       shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.5,
-      shadowRadius: 12,
+      shadowOpacity: 0.4,
+      shadowRadius: 14,
     },
-    android: {
-      elevation: 8,
-    },
+    android: { elevation: 8 },
   }),
-
   secondary: Platform.select({
     ios: {
-      shadowColor: '#B8DDD1',
+      shadowColor: '#72baa1',
       shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.5,
-      shadowRadius: 12,
+      shadowOpacity: 0.4,
+      shadowRadius: 14,
     },
-    android: {
-      elevation: 8,
-    },
+    android: { elevation: 8 },
   }),
-
   success: Platform.select({
     ios: {
-      shadowColor: '#4CAF50',
+      shadowColor: '#22c55e',
       shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.5,
+      shadowOpacity: 0.4,
       shadowRadius: 12,
     },
-    android: {
-      elevation: 8,
-    },
+    android: { elevation: 8 },
   }),
-
   error: Platform.select({
     ios: {
-      shadowColor: '#F44336',
+      shadowColor: '#ef4444',
       shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.5,
+      shadowOpacity: 0.4,
       shadowRadius: 12,
     },
-    android: {
-      elevation: 8,
-    },
+    android: { elevation: 8 },
   }),
 };
 
