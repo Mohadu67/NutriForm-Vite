@@ -6,7 +6,8 @@ const { v4: uuidv4 } = require('uuid');
 const logger = require('../utils/logger.js');
 const { notifyAdmins: notifyAdminsService } = require('../services/adminNotification.service');
 const openaiService = require('../services/openai.service');
-const { SYSTEM_PROMPT, ESCALATE_KEYWORDS, ESCALATE_CONFIRMATION } = require('../constants/chatPrompts');
+const { ESCALATE_KEYWORDS, ESCALATE_CONFIRMATION } = require('../constants/chatPrompts');
+const { buildUserContext } = require('../services/userContext.service');
 const { findFallbackResponse, containsAny } = require('../constants/fallbackResponses');
 
 // Wrapper pour compatibilite avec l'ancienne signature
@@ -146,13 +147,16 @@ async function sendMessage(req, res) {
     }
 
     if (openaiService.isAvailable()) {
-      // Mode avec OpenAI
+      // Mode avec OpenAI — on injecte le contexte utilisateur
       try {
-        const history = await ChatMessage.find({ conversationId: convId })
-          .sort({ createdAt: 1 })
-          .limit(10);
+        const [history, userContext] = await Promise.all([
+          ChatMessage.find({ conversationId: convId })
+            .sort({ createdAt: 1 })
+            .limit(10),
+          buildUserContext(userId),
+        ]);
 
-        const result = await openaiService.generateResponse(message, history);
+        const result = await openaiService.generateResponse(message, history, userContext);
         const reply = result.content;
         confidence = result.confidence;
 
