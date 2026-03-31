@@ -29,6 +29,9 @@ const HEALTHKIT_PERMISSIONS = {
       AppleHealthKit?.Constants?.Permissions?.DistanceWalkingRunning,
       AppleHealthKit?.Constants?.Permissions?.Workout,
       AppleHealthKit?.Constants?.Permissions?.MenstrualFlow,
+      AppleHealthKit?.Constants?.Permissions?.SleepAnalysis,
+      AppleHealthKit?.Constants?.Permissions?.HeartRateVariability,
+      AppleHealthKit?.Constants?.Permissions?.RestingHeartRate,
     ].filter(Boolean),
     write: [
       AppleHealthKit?.Constants?.Permissions?.StepCount,
@@ -50,6 +53,9 @@ const HEALTH_CONNECT_PERMISSIONS = [
   { accessType: 'read', recordType: 'ExerciseSession' },
   { accessType: 'read', recordType: 'MenstruationFlow' },
   { accessType: 'read', recordType: 'MenstruationPeriod' },
+  { accessType: 'read', recordType: 'SleepSession' },
+  { accessType: 'read', recordType: 'HeartRateVariabilityRmssd' },
+  { accessType: 'read', recordType: 'RestingHeartRate' },
   { accessType: 'write', recordType: 'Steps' },
   { accessType: 'write', recordType: 'ActiveCaloriesBurned' },
   { accessType: 'write', recordType: 'ExerciseSession' },
@@ -576,17 +582,294 @@ class HealthService {
   }
 
   /**
+   * Recupere les donnees de sommeil pour une periode donnee
+   */
+  async getSleepData(startDate, endDate) {
+    try {
+      if (Platform.OS === 'android' && HealthConnect && this.isAvailable) {
+        const result = await HealthConnect.readRecords('SleepSession', {
+          timeRangeFilter: {
+            operator: 'between',
+            startTime: startDate.toISOString(),
+            endTime: endDate.toISOString(),
+          },
+        });
+
+        if (!result || result.length === 0) {
+          console.log('[HEALTH] No sleep sessions found (Android)');
+          return null;
+        }
+
+        let deepMinutes = 0;
+        let remMinutes = 0;
+        let lightMinutes = 0;
+        let awakeMinutes = 0;
+        let totalSleepMinutes = 0;
+        let earliestStart = null;
+        let latestEnd = null;
+
+        result.forEach((session) => {
+          const sessionStart = new Date(session.startTime);
+          const sessionEnd = new Date(session.endTime);
+
+          if (!earliestStart || sessionStart < earliestStart) {
+            earliestStart = sessionStart;
+          }
+          if (!latestEnd || sessionEnd > latestEnd) {
+            latestEnd = sessionEnd;
+          }
+
+          if (session.stages && session.stages.length > 0) {
+            session.stages.forEach((stage) => {
+              const stageStart = new Date(stage.startTime);
+              const stageEnd = new Date(stage.endTime);
+              const durationMinutes = (stageEnd - stageStart) / (1000 * 60);
+
+              // Stage mapping: 1=AWAKE, 2=SLEEPING, 3=OUT_OF_BED, 4=LIGHT, 5=DEEP, 6=REM
+              switch (stage.stage) {
+                case 1: // AWAKE
+                  awakeMinutes += durationMinutes;
+                  break;
+                case 2: // SLEEPING (generic)
+                  lightMinutes += durationMinutes;
+                  totalSleepMinutes += durationMinutes;
+                  break;
+                case 4: // LIGHT
+                  lightMinutes += durationMinutes;
+                  totalSleepMinutes += durationMinutes;
+                  break;
+                case 5: // DEEP
+                  deepMinutes += durationMinutes;
+                  totalSleepMinutes += durationMinutes;
+                  break;
+                case 6: // REM
+                  remMinutes += durationMinutes;
+                  totalSleepMinutes += durationMinutes;
+                  break;
+                // 3=OUT_OF_BED is not counted
+              }
+            });
+          } else {
+            // No stage data, count entire session as sleep
+            const sessionMinutes = (sessionEnd - sessionStart) / (1000 * 60);
+            totalSleepMinutes += sessionMinutes;
+          }
+        });
+
+        return {
+          sleepDuration: Math.round(totalSleepMinutes),
+          deepSleepMinutes: Math.round(deepMinutes),
+          remSleepMinutes: Math.round(remMinutes),
+          lightSleepMinutes: Math.round(lightMinutes),
+          awakeMinutes: Math.round(awakeMinutes),
+          sleepStart: earliestStart ? earliestStart.toISOString() : null,
+          sleepEnd: latestEnd ? latestEnd.toISOString() : null,
+        };
+      } else if (Platform.OS === 'ios' && AppleHealthKit) {
+        return new Promise((resolve) => {
+          AppleHealthKit.getSleepSamples(
+            {
+              startDate: startDate.toISOString(),
+              endDate: endDate.toISOString(),
+              ascending: false,
+            },
+            (err, results) => {
+              if (err || !results || results.length === 0) {
+                console.log('[HEALTH] iOS getSleepSamples error or empty:', err);
+                resolve(null);
+                return;
+              }
+
+              let deepMinutes = 0;
+              let remMinutes = 0;
+              let lightMinutes = 0;
+              let awakeMinutes = 0;
+              let totalSleepMinutes = 0;
+              let earliestStart = null;
+              let latestEnd = null;
+
+              results.forEach((sample) => {
+                const sampleStart = new Date(sample.startDate);
+                const sampleEnd = new Date(sample.endDate);
+                const durationMinutes = (sampleEnd - sampleStart) / (1000 * 60);
+
+                // Track sleep window boundaries (exclude AWAKE samples)
+                if (sample.value !== 'AWAKE') {
+                  if (!earliestStart || sampleStart < earliestStart) {
+                    earliestStart = sampleStart;
+                  }
+                  if (!latestEnd || sampleEnd > latestEnd) {
+                    latestEnd = sampleEnd;
+                  }
+                }
+
+                switch (sample.value) {
+                  case 'DEEP':
+                    deepMinutes += durationMinutes;
+                    totalSleepMinutes += durationMinutes;
+                    break;
+                  case 'REM':
+                    remMinutes += durationMinutes;
+                    totalSleepMinutes += durationMinutes;
+                    break;
+                  case 'CORE': // Light sleep in Apple's terminology
+                    lightMinutes += durationMinutes;
+                    totalSleepMinutes += durationMinutes;
+                    break;
+                  case 'ASLEEP': // Generic asleep (older data)
+                    lightMinutes += durationMinutes;
+                    totalSleepMinutes += durationMinutes;
+                    break;
+                  case 'INBED':
+                    // In bed but not necessarily asleep — track for window but don't count as sleep
+                    if (!earliestStart || sampleStart < earliestStart) {
+                      earliestStart = sampleStart;
+                    }
+                    if (!latestEnd || sampleEnd > latestEnd) {
+                      latestEnd = sampleEnd;
+                    }
+                    break;
+                  case 'AWAKE':
+                    awakeMinutes += durationMinutes;
+                    break;
+                }
+              });
+
+              resolve({
+                sleepDuration: Math.round(totalSleepMinutes),
+                deepSleepMinutes: Math.round(deepMinutes),
+                remSleepMinutes: Math.round(remMinutes),
+                lightSleepMinutes: Math.round(lightMinutes),
+                awakeMinutes: Math.round(awakeMinutes),
+                sleepStart: earliestStart ? earliestStart.toISOString() : null,
+                sleepEnd: latestEnd ? latestEnd.toISOString() : null,
+              });
+            }
+          );
+        });
+      }
+      return null;
+    } catch (error) {
+      console.error('[HEALTH] Get sleep data error:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Recupere la frequence cardiaque au repos
+   */
+  async getRestingHeartRate(startDate, endDate) {
+    try {
+      if (Platform.OS === 'android' && HealthConnect && this.isAvailable) {
+        const result = await HealthConnect.readRecords('RestingHeartRate', {
+          timeRangeFilter: {
+            operator: 'between',
+            startTime: startDate.toISOString(),
+            endTime: endDate.toISOString(),
+          },
+        });
+
+        if (!result || result.length === 0) {
+          return null;
+        }
+
+        const avgBpm = result.reduce((sum, r) => sum + r.beatsPerMinute, 0) / result.length;
+        return { value: Math.round(avgBpm), unit: 'bpm' };
+      } else if (Platform.OS === 'ios' && AppleHealthKit) {
+        return new Promise((resolve) => {
+          AppleHealthKit.getRestingHeartRate(
+            {
+              startDate: startDate.toISOString(),
+              endDate: endDate.toISOString(),
+            },
+            (err, results) => {
+              if (err || !results || results.length === 0) {
+                console.log('[HEALTH] iOS getRestingHeartRate error or empty:', err);
+                resolve(null);
+                return;
+              }
+
+              const values = Array.isArray(results) ? results : [results];
+              const avg = values.reduce((sum, r) => sum + (r.value || 0), 0) / values.length;
+              resolve({ value: Math.round(avg), unit: 'bpm' });
+            }
+          );
+        });
+      }
+      return null;
+    } catch (error) {
+      console.error('[HEALTH] Get resting heart rate error:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Recupere la variabilite de la frequence cardiaque (HRV)
+   */
+  async getHRV(startDate, endDate) {
+    try {
+      if (Platform.OS === 'android' && HealthConnect && this.isAvailable) {
+        const result = await HealthConnect.readRecords('HeartRateVariabilityRmssd', {
+          timeRangeFilter: {
+            operator: 'between',
+            startTime: startDate.toISOString(),
+            endTime: endDate.toISOString(),
+          },
+        });
+
+        if (!result || result.length === 0) {
+          return null;
+        }
+
+        const avgHrv = result.reduce((sum, r) => sum + r.heartRateVariabilityMillis, 0) / result.length;
+        return { value: Math.round(avgHrv), unit: 'ms' };
+      } else if (Platform.OS === 'ios' && AppleHealthKit) {
+        return new Promise((resolve) => {
+          AppleHealthKit.getHeartRateVariabilitySamples(
+            {
+              startDate: startDate.toISOString(),
+              endDate: endDate.toISOString(),
+            },
+            (err, results) => {
+              if (err || !results || results.length === 0) {
+                console.log('[HEALTH] iOS getHRV error or empty:', err);
+                resolve(null);
+                return;
+              }
+
+              // HealthKit returns HRV in seconds, convert to ms
+              const avg = results.reduce((sum, r) => sum + (r.value || 0), 0) / results.length;
+              resolve({ value: Math.round(avg * 1000), unit: 'ms' });
+            }
+          );
+        });
+      }
+      return null;
+    } catch (error) {
+      console.error('[HEALTH] Get HRV error:', error);
+      return null;
+    }
+  }
+
+  /**
    * Recupere un resume des donnees de sante pour aujourd'hui
    */
   async getTodaySummary() {
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    const [steps, calories, distance, heartRate] = await Promise.all([
+    // Sleep window: previous day 18:00 to today 12:00
+    const sleepWindowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 18, 0, 0);
+    const sleepWindowEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+
+    const [steps, calories, distance, heartRate, sleep, restingHR, hrv] = await Promise.all([
       this.getSteps(startOfDay, now),
       this.getCaloriesBurned(startOfDay, now),
       this.getDistance(startOfDay, now),
       this.getHeartRate(startOfDay, now),
+      this.getSleepData(sleepWindowStart, sleepWindowEnd),
+      this.getRestingHeartRate(sleepWindowStart, now),
+      this.getHRV(sleepWindowStart, now),
     ]);
 
     return {
@@ -595,6 +878,9 @@ class HealthService {
       calories: calories.active,
       distance: parseFloat(distance.kilometers),
       heartRate: heartRate?.average || null,
+      sleep: sleep || null,
+      restingHeartRate: restingHR?.value || null,
+      hrv: hrv?.value || null,
     };
   }
 
