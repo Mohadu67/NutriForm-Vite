@@ -175,6 +175,7 @@ async function getReadiness(req, res) {
       success: true,
       data: {
         date: targetDate,
+        hasRealData: !!sleepLog,
         ...readiness
       }
     });
