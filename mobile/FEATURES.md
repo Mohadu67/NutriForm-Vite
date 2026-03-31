@@ -168,16 +168,98 @@
 
 ---
 
-## P2 — Priorité basse
+## P2 — Priorité moyenne-basse
 
-### 14. Défis solo / objectifs personnalisés
+### 14. Live Activities + Dynamic Island (iOS) — Suivi de séance temps réel
+- **Statut :** À faire
+- **Prérequis :** Xcode, iPhone physique (iOS 16.1+), `npx expo prebuild --platform ios`
+- **Description :**
+  - **Dynamic Island** : pilule animée avec chrono + exercice en cours pendant la séance
+  - **Lock Screen widget** : même infos visibles sans déverrouiller l'iPhone
+  - Affiche : temps écoulé, exercice en cours, série X/Y, calories estimées
+  - Se lance auto quand une séance démarre (ProgramRunner / WorkoutContent)
+  - Se met à jour en temps réel à chaque changement d'exercice/série
+  - Se ferme quand la séance est terminée avec résumé
+  - Tap sur la Dynamic Island → retour direct dans l'app à la séance en cours
+- **Stack technique :**
+  - Widget Extension iOS (SwiftUI + ActivityKit)
+  - `ActivityAttributes` en Swift pour définir les données
+  - Bridge React Native via `react-native-live-activity` ou module natif custom
+  - Déclenchement depuis `ProgramRunnerScreen.js` et `WorkoutContent.js`
+- **Fichiers à créer :**
+  - `ios/HarmonithWidgets/` — Widget Extension target
+  - `ios/HarmonithWidgets/WorkoutLiveActivity.swift` — UI SwiftUI (Dynamic Island + Lock Screen)
+  - `ios/HarmonithWidgets/WorkoutActivityAttributes.swift` — modèle de données
+  - `mobile/src/services/liveActivityService.js` — bridge JS pour start/update/end
+  - `mobile/app.json` — ajout plugin widget + entitlements
+
+### 15. Apple Watch / Wear OS Companion
+- **Statut :** À faire
+- **Description :**
+  - Affichage du chrono de séance sur la montre
+  - Récupération HR temps réel pendant la séance (plus précis que post-hoc)
+  - Contrôle basique : pause/reprendre la séance depuis la montre
+  - Complications watchOS : readiness score du jour, prochaine fenêtre optimale
+  - Sync automatique des données santé (sommeil, HRV, FC) plus fréquente
+
+### 16. Mode Focus / Ne Pas Déranger intelligent
+- **Statut :** À faire
+- **Description :**
+  - Quand une séance est en cours, proposer d'activer le mode Focus iOS
+  - Bloquer les notifications non-urgentes pendant la séance
+  - Notification "séance terminée" qui passe à travers le mode Focus
+  - Intégration avec les Shortcuts iOS pour automatisation
+
+### 17. Widgets iOS (écran d'accueil)
+- **Statut :** À faire
+- **Description :**
+  - Widget petit (2×2) : readiness score du jour + couleur
+  - Widget moyen (4×2) : readiness + prochaine fenêtre + streak
+  - Widget grand (4×4) : résumé semaine (séances, calories, readiness graph)
+  - Refresh automatique toutes les 15min via WidgetKit Timeline
+  - Même Widget Extension que le Live Activity (#14)
+
+### 18. Défis solo / objectifs personnalisés
 - **Statut :** À faire
 - **Description :** Défis personnels (30 jours sport, 100 pompes/jour, etc.)
 
-### 15. Plan de repas intelligent (Meal Planner)
+### 19. Plan de repas intelligent (Meal Planner)
 - **Statut :** À faire
 - **Description :** Génération auto de plan repas hebdo + liste de courses (premium). Adapté à la phase BioRhythm.
 
-### 16. Mode sommeil avancé
+### 20. Mode sommeil avancé
 - **Statut :** À faire
 - **Description :** Écran détaillé sommeil avec graphes phases, régularité, score tendance. Conseils d'hygiène du sommeil personnalisés.
+
+### 21. Partage de séance (Social)
+- **Statut :** À faire
+- **Description :**
+  - Générer une story/image récap après chaque séance (durée, exos, calories, PR)
+  - Partage direct Instagram Story / Snapchat / WhatsApp
+  - Template visuel brandé Harmonith avec les stats de la séance
+  - Option "partager ma semaine" avec résumé visuel
+
+### 22. Mode hors-ligne complet
+- **Statut :** À faire
+- **Description :**
+  - Séances utilisables sans connexion internet
+  - Sync automatique quand la connexion revient
+  - Cache local des exercices, programmes, food log
+  - Indicator visuel "hors-ligne" discret dans le header
+
+### 23. Scan corporel IA (Body Scan)
+- **Statut :** À faire
+- **Description :**
+  - Photo avant/après avec overlay silhouette
+  - Estimation % masse grasse via analyse photo (modèle IA)
+  - Comparaison progression visuelle sur timeline
+  - Mesures corporelles manuelles (tour de bras, taille, hanches) avec graphe évolution
+
+### 24. Gamification avancée
+- **Statut :** À faire
+- **Description :**
+  - Système de niveaux (Débutant → Athlète → Légende)
+  - Badges débloquables (premier PR, 100 séances, 7 jours streak, etc.)
+  - Classement hebdomadaire entre amis (opt-in)
+  - Récompenses débloquées à certains paliers (thèmes, icônes profil)
+  - XP bonus pour séance dans la fenêtre optimale BioRhythm
