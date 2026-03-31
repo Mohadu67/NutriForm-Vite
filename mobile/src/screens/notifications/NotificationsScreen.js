@@ -13,6 +13,7 @@ import { theme } from '../../theme';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
 import logger from '../../services/logger';
+import websocketService from '../../services/websocket';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -205,6 +206,22 @@ export default function NotificationsScreen() {
     });
     return () => subscription.remove();
   }, [loadNotifications]);
+
+  // Écouter les notifications WebSocket en temps réel
+  useEffect(() => {
+    const handleNewNotification = (notification) => {
+      logger.app.debug('[NOTIFICATIONS] New notification via WebSocket', notification);
+      // Ajouter directement la notif en tête de liste pour affichage instantané
+      setNotifications(prev => {
+        const id = notification.id || notification._id;
+        if (prev.some(n => (n.id || n._id) === id)) return prev;
+        return [{ ...notification, createdAt: notification.timestamp || new Date().toISOString() }, ...prev];
+      });
+    };
+
+    websocketService.on('new_notification', handleNewNotification);
+    return () => websocketService.off('new_notification', handleNewNotification);
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
