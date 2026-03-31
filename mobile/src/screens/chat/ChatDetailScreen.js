@@ -30,6 +30,7 @@ import { blurIntensity } from '../../theme/glassmorphism';
 export default function ChatDetailScreen({ route, navigation }) {
   const { conversationId, matchId, otherUser: otherUserParam } = route.params;
   const { user } = useAuth();
+  const chatContext = useChat();
   const {
     messages,
     conversations,
@@ -41,7 +42,11 @@ export default function ChatDetailScreen({ route, navigation }) {
     setActiveConversation,
     uploadMedia,
     isLoading,
-  } = useChat();
+  } = chatContext;
+
+  // Ref pour conversations afin d'éviter de re-déclencher l'effet de chargement
+  const conversationsRef = useRef(conversations);
+  useEffect(() => { conversationsRef.current = conversations; }, [conversations]);
 
   const [isSending, setIsSending] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -103,8 +108,8 @@ export default function ChatDetailScreen({ route, navigation }) {
           // Si on a seulement otherUser, chercher une conversation existante
           logger.chat.debug('Loading conversation by otherUser', { otherUserId: otherUserParam._id });
 
-          // D'abord, essayer de trouver la conversation dans la liste des conversations
-          const existingConv = conversations?.find(c =>
+          // Utiliser la ref pour ne pas re-déclencher l'effet quand conversations change
+          const existingConv = conversationsRef.current?.find(c =>
             c.otherUser?._id === otherUserParam._id ||
             c.otherUser?._id?.toString() === otherUserParam._id?.toString() ||
             c.participants?.some(p =>
@@ -131,14 +136,16 @@ export default function ChatDetailScreen({ route, navigation }) {
       }
     };
     load();
-  }, [conversationId, matchId, otherUserParam?._id, conversations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId, matchId, otherUserParam?._id]);
 
-  // Marquer comme lu
+  // Marquer comme lu (utiliser l'ID uniquement pour éviter les boucles)
+  const activeConvId = activeConversation?._id;
   useEffect(() => {
-    if (activeConversation?._id) {
-      markAsRead(activeConversation._id);
+    if (activeConvId) {
+      markAsRead(activeConvId);
     }
-  }, [activeConversation, messages.length]);
+  }, [activeConvId, messages.length, markAsRead]);
 
   // WebSocket room
   useEffect(() => {
@@ -151,11 +158,11 @@ export default function ChatDetailScreen({ route, navigation }) {
   }, [activeConversation?._id]);
 
   // Suivi du statut en ligne de l'autre utilisateur
-  useEffect(() => {
-    const otherUserId = otherUserParam?._id?.toString() ||
-      activeConversation?.otherUser?._id?.toString() ||
-      activeConversation?.participants?.find((p) => p._id !== user?._id)?._id?.toString();
+  const otherUserId = otherUserParam?._id?.toString() ||
+    activeConversation?.otherUser?._id?.toString() ||
+    activeConversation?.participants?.find((p) => p._id !== user?._id)?._id?.toString();
 
+  useEffect(() => {
     if (!otherUserId) return;
 
     // Vérifier le statut initial
@@ -169,7 +176,7 @@ export default function ChatDetailScreen({ route, navigation }) {
     });
 
     return () => unsubscribe();
-  }, [otherUserParam, activeConversation, user]);
+  }, [otherUserId]);
 
   // Scroll vers le bas - CORRECTION DU BUG
   // On utilise inverted list pour un scroll plus naturel
@@ -255,7 +262,7 @@ export default function ChatDetailScreen({ route, navigation }) {
     switch (action) {
       case 'viewProfile':
         if (otherUser) {
-          navigation.navigate('UserProfile', { user: otherUser, userId: otherUser._id });
+          navigation.navigate('UserProfile', { userId: otherUser._id });
         }
         break;
       case 'mute':
@@ -392,7 +399,7 @@ export default function ChatDetailScreen({ route, navigation }) {
                 {/* Info utilisateur - cliquable pour voir le profil */}
                 <TouchableOpacity
                   style={styles.userInfo}
-                  onPress={() => navigation.navigate('UserProfile', { user: otherUser })}
+                  onPress={() => navigation.navigate('UserProfile', { userId: otherUser._id })}
                   activeOpacity={0.7}
                 >
                   <View style={styles.avatarWrapper}>
