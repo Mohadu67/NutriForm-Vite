@@ -9,20 +9,28 @@ import { getBodyCompositionSummary } from '../../api/bodyComposition';
 
 // ─── Mapping muscles → zones SVG ────────────────────────────────────
 const MUSCLE_TO_ZONE = {
-  pectoraux: 'pectoraux', chest: 'pectoraux', pecs: 'pectoraux',
-  epaules: 'epaules', shoulders: 'epaules', deltoides: 'epaules', deltoïdes: 'epaules',
-  biceps: 'biceps', triceps: 'triceps', 'avant-bras': 'avant-bras', forearms: 'avant-bras',
-  abdos: 'abdos-centre', abs: 'abdos-centre', 'abdos-centre': 'abdos-centre',
+  // Pectoraux (+ variantes typo)
+  pectoraux: 'pectoraux', pectoreaux: 'pectoraux', chest: 'pectoraux', pecs: 'pectoraux', poitrine: 'pectoraux',
+  // Épaules
+  epaules: 'epaules', épaules: 'epaules', shoulders: 'epaules', deltoides: 'epaules', deltoïdes: 'epaules', deltoid: 'epaules',
+  // Bras
+  biceps: 'biceps', triceps: 'triceps', 'avant-bras': 'avant-bras', forearms: 'avant-bras', bras: 'biceps',
+  // Abdos
+  abdos: 'abdos-centre', abs: 'abdos-centre', 'abdos-centre': 'abdos-centre', abdominaux: 'abdos-centre',
   'abdos-lateraux': 'abdos-lateraux', obliques: 'abdos-lateraux', core: 'abdos-centre',
-  dos: 'dos-inferieur', back: 'dos-inferieur', 'dos-superieur': 'dos-superieur',
-  'dos-inferieur': 'dos-inferieur', lats: 'dos-inferieur', 'dos-lats': 'dos-inferieur',
+  // Dos (+ variantes typo)
+  dos: 'dos-inferieur', dorsaux: 'dos-inferieur', dorseau: 'dos-inferieur', dorseaux: 'dos-inferieur',
+  back: 'dos-inferieur', 'dos-superieur': 'dos-superieur',
+  'dos-inferieur': 'dos-inferieur', lats: 'dos-inferieur', 'dos-lats': 'dos-inferieur', latissimus: 'dos-inferieur',
   traps: 'dos-superieur', trapeze: 'dos-superieur', trapèzes: 'dos-superieur', rhomboides: 'dos-superieur',
-  quadriceps: 'cuisses-externes', quads: 'cuisses-externes', cuisses: 'cuisses-externes',
+  // Jambes
+  quadriceps: 'cuisses-externes', quads: 'cuisses-externes', cuisses: 'cuisses-externes', jambes: 'cuisses-externes',
   'cuisses-externes': 'cuisses-externes', 'cuisses-internes': 'cuisses-internes',
-  ischio: 'cuisses-internes', ischios: 'cuisses-internes', hamstrings: 'cuisses-internes',
+  ischio: 'cuisses-internes', ischios: 'cuisses-internes', hamstrings: 'cuisses-internes', 'ischio-jambiers': 'cuisses-internes',
   adducteurs: 'cuisses-internes', adductor: 'cuisses-internes',
   abducteurs: 'cuisses-externes', abductor: 'cuisses-externes',
-  fessiers: 'fessiers', glutes: 'fessiers', gluteus: 'fessiers',
+  // Fessiers & mollets
+  fessiers: 'fessiers', glutes: 'fessiers', gluteus: 'fessiers', fesses: 'fessiers',
   mollets: 'mollets', calves: 'mollets',
 };
 
@@ -41,6 +49,15 @@ const GAINS_COLORS = [
   { fill: '#9fcfbf', stroke: '#86c1ad' },
   { fill: '#86c1ad', stroke: '#6db39b' },
   { fill: '#6db39b', stroke: '#549589' },
+];
+
+// Palette récupération : rouge (pas récupéré) → vert (prêt)
+const RECOVERY_COLORS = [
+  { fill: '#FCA5A5', stroke: '#EF4444' },  // 0-20% — rouge
+  { fill: '#FDBA74', stroke: '#F97316' },  // 20-40% — orange
+  { fill: '#FDE68A', stroke: '#EAB308' },  // 40-60% — jaune
+  { fill: '#BEF264', stroke: '#84CC16' },  // 60-80% — vert clair
+  { fill: '#86EFAC', stroke: '#22C55E' },  // 80-100% — vert
 ];
 
 const ELEM_TO_ZONE_MAP = {
@@ -138,6 +155,95 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
     return out;
   }, [muscleStats]);
 
+  // Stats récupération musculaire
+  const recoveryZones = useMemo(() => {
+    if (!sessions.length) return {};
+
+    const now = Date.now();
+    // Pour chaque zone, trouver la dernière sollicitation et calculer la récupération
+    const zoneLastWork = {}; // { zone: { hoursAgo, volumeScore } }
+
+    // Parcourir TOUTES les sessions récentes (7 derniers jours)
+    const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+    const recentSessions = sessions.filter(s => {
+      const d = new Date(s?.startedAt || s?.endedAt || s?.date || s?.createdAt || 0).getTime();
+      return d >= sevenDaysAgo;
+    });
+
+    recentSessions.forEach(session => {
+      const sessionTime = new Date(session?.startedAt || session?.endedAt || session?.date || session?.createdAt || 0).getTime();
+      const hoursAgo = (now - sessionTime) / (1000 * 60 * 60);
+
+      (session?.entries || session?.items || session?.exercises || []).forEach(e => {
+        if (!e) return;
+
+        // Calculer le volume de l'exercice (séries × reps approximatif)
+        let volumeScore = 0;
+        if (Array.isArray(e.sets)) {
+          e.sets.forEach(set => {
+            const reps = set.reps || set.timeSec / 10 || 8;
+            volumeScore += reps;
+          });
+        } else {
+          volumeScore = 12; // défaut
+        }
+
+        // Mapper les muscles vers les zones
+        const muscles = [];
+        if (e.primaryMuscle) {
+          muscles.push({ name: e.primaryMuscle, weight: 1 });
+          (e.secondaryMuscles || []).forEach(m => muscles.push({ name: m, weight: 0.4 }));
+        } else if (e.muscle) {
+          muscles.push({ name: e.muscle, weight: 1 });
+        } else if (e.muscleGroup) {
+          muscles.push({ name: e.muscleGroup, weight: 1 });
+        } else if (Array.isArray(e.muscles) && e.muscles.length) {
+          muscles.push({ name: e.muscles[0], weight: 1 });
+          e.muscles.slice(1).forEach(m => muscles.push({ name: m, weight: 0.4 }));
+        }
+
+        muscles.forEach(({ name, weight }) => {
+          const zone = MUSCLE_TO_ZONE[String(name).toLowerCase().trim()];
+          if (!zone) return;
+          const adjustedVolume = volumeScore * weight;
+
+          // Garder la sollicitation la plus récente (+ volume cumulé si même séance)
+          if (!zoneLastWork[zone] || hoursAgo < zoneLastWork[zone].hoursAgo) {
+            zoneLastWork[zone] = { hoursAgo, volumeScore: adjustedVolume };
+          } else if (Math.abs(hoursAgo - zoneLastWork[zone].hoursAgo) < 2) {
+            // Même séance (± 2h) → cumuler le volume
+            zoneLastWork[zone].volumeScore += adjustedVolume;
+          }
+        });
+      });
+    });
+
+    // Calculer le % de récupération pour chaque zone
+    const out = {};
+    Object.entries(zoneLastWork).forEach(([zone, { hoursAgo, volumeScore }]) => {
+      // Déterminer le temps de récupération nécessaire selon le volume
+      let recoveryHours;
+      if (volumeScore < 15) recoveryHours = 24;       // Léger → 24h
+      else if (volumeScore < 35) recoveryHours = 48;   // Modéré → 48h
+      else recoveryHours = 72;                          // Intense → 72h
+
+      const recoveryPct = Math.min(100, Math.round((hoursAgo / recoveryHours) * 100));
+      const level = Math.min(4, Math.floor(recoveryPct / 20));
+
+      out[zone] = {
+        count: recoveryPct,
+        level,
+        color: RECOVERY_COLORS[level],
+        hoursAgo: Math.round(hoursAgo),
+        recoveryHours,
+        volumeScore: Math.round(volumeScore),
+        isReady: recoveryPct >= 80,
+      };
+    });
+
+    return out;
+  }, [sessions]);
+
   const gainsZones = useMemo(() => {
     if (!bodyComp?.muscleGain?.byZone) return {};
     const byZone = bodyComp.muscleGain.byZone;
@@ -154,8 +260,8 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
     return out;
   }, [bodyComp]);
 
-  const zoneIntensities = mode === 'gains' ? gainsZones : effortZones;
-  const colorPalette = mode === 'gains' ? GAINS_COLORS : EFFORT_COLORS;
+  const zoneIntensities = mode === 'recovery' ? recoveryZones : mode === 'gains' ? gainsZones : effortZones;
+  const colorPalette = mode === 'recovery' ? RECOVERY_COLORS : mode === 'gains' ? GAINS_COLORS : EFFORT_COLORS;
 
   const topMuscles = useMemo(() =>
     Object.entries(zoneIntensities)
@@ -173,7 +279,17 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
 
   const weekLabel = weeksAgo === 0 ? 'Cette semaine' : weeksAgo === 1 ? 'Semaine dernière' : `Il y a ${weeksAgo} sem.`;
   const isGains = mode === 'gains';
-  const accent = isGains ? '#86c1ad' : theme.colors.primary;
+  const isRecovery = mode === 'recovery';
+  const accent = isRecovery ? '#22c55e' : isGains ? '#86c1ad' : theme.colors.primary;
+
+  // Stats résumées pour le mode récupération
+  const recoverySummary = useMemo(() => {
+    if (!isRecovery || !hasData) return null;
+    const zones = Object.values(recoveryZones);
+    const ready = zones.filter(z => z.isReady).length;
+    const recovering = zones.length - ready;
+    return { ready, recovering, total: zones.length };
+  }, [isRecovery, hasData, recoveryZones]);
 
   const renderMuscleGroup = (elemName, paths) => {
     if (elemName === 'DECORATIVE') return null;
@@ -200,9 +316,10 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
     <View style={[s.card, isDark && s.cardDark]}>
       {/* ── Mode toggle ── */}
       <View style={[s.segmented, isDark && s.segmentedDark]}>
-        {['effort', 'gains'].map(m => {
+        {['effort', 'recovery', 'gains'].map(m => {
           const active = mode === m;
-          const isG = m === 'gains';
+          const modeColor = m === 'gains' ? '#86c1ad' : m === 'recovery' ? '#22c55e' : theme.colors.primary;
+          const modeLabel = m === 'gains' ? 'Gains' : m === 'recovery' ? 'Récup' : 'Effort';
           return (
             <TouchableOpacity
               key={m}
@@ -213,29 +330,35 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
               <Text style={[
                 s.segText,
                 isDark && s.segTextDark,
-                active && { color: isG ? '#86c1ad' : theme.colors.primary },
+                active && { color: modeColor },
               ]}>
-                {isG ? 'Gains' : 'Effort'}
+                {modeLabel}
               </Text>
             </TouchableOpacity>
           );
         })}
       </View>
 
-      {/* ── Week navigation ── */}
-      <View style={s.weekNav}>
-        <TouchableOpacity onPress={() => setWeeksAgo(w => Math.min(w + 1, 4))} hitSlop={12}>
-          <Ionicons name="chevron-back" size={18} color={isDark ? '#666' : '#bbb'} />
-        </TouchableOpacity>
-        <Text style={[s.weekLabel, isDark && s.weekLabelDark]}>{weekLabel}</Text>
-        <TouchableOpacity
-          onPress={() => setWeeksAgo(w => Math.max(w - 1, 0))}
-          hitSlop={12}
-          disabled={weeksAgo === 0}
-        >
-          <Ionicons name="chevron-forward" size={18} color={weeksAgo === 0 ? 'transparent' : (isDark ? '#666' : '#bbb')} />
-        </TouchableOpacity>
-      </View>
+      {/* ── Week navigation (masqué en mode récup) ── */}
+      {isRecovery ? (
+        <View style={s.weekNav}>
+          <Text style={[s.weekLabel, isDark && s.weekLabelDark]}>7 derniers jours</Text>
+        </View>
+      ) : (
+        <View style={s.weekNav}>
+          <TouchableOpacity onPress={() => setWeeksAgo(w => Math.min(w + 1, 4))} hitSlop={12}>
+            <Ionicons name="chevron-back" size={18} color={isDark ? '#666' : '#bbb'} />
+          </TouchableOpacity>
+          <Text style={[s.weekLabel, isDark && s.weekLabelDark]}>{weekLabel}</Text>
+          <TouchableOpacity
+            onPress={() => setWeeksAgo(w => Math.max(w - 1, 0))}
+            hitSlop={12}
+            disabled={weeksAgo === 0}
+          >
+            <Ionicons name="chevron-forward" size={18} color={weeksAgo === 0 ? 'transparent' : (isDark ? '#666' : '#bbb')} />
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* ── Body SVG ── */}
       {isGains && bodyCompLoading ? (
@@ -274,6 +397,21 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
         </Text>
       </View>
 
+      {/* ── Recovery summary ── */}
+      {isRecovery && recoverySummary && (
+        <View style={[s.recoverySummary, isDark && s.recoverySummaryDark]}>
+          <View style={s.recoveryStatItem}>
+            <Text style={[s.recoveryStatValue, { color: '#22c55e' }]}>{recoverySummary.ready}</Text>
+            <Text style={[s.recoveryStatLabel, isDark && { color: '#888' }]}>Prêts</Text>
+          </View>
+          <View style={[s.recoveryDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
+          <View style={s.recoveryStatItem}>
+            <Text style={[s.recoveryStatValue, { color: '#f59e0b' }]}>{recoverySummary.recovering}</Text>
+            <Text style={[s.recoveryStatLabel, isDark && { color: '#888' }]}>En récup</Text>
+          </View>
+        </View>
+      )}
+
       {/* ── Top muscles ── */}
       {hasData ? (
         <View style={s.topList}>
@@ -284,9 +422,11 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
                 {ZONE_LABELS[muscle.zone] || muscle.zone}
               </Text>
               <Text style={[s.topValue, isDark && s.topValueDark]}>
-                {isGains
-                  ? `+${muscle.gainG || Math.round(muscle.count)}g`
-                  : (muscle.count % 1 === 0 ? muscle.count : muscle.count.toFixed(1))
+                {isRecovery
+                  ? `${muscle.count}%`
+                  : isGains
+                    ? `+${muscle.gainG || Math.round(muscle.count)}g`
+                    : (muscle.count % 1 === 0 ? muscle.count : muscle.count.toFixed(1))
                 }
               </Text>
             </View>
@@ -294,20 +434,24 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
         </View>
       ) : (
         <Text style={[s.empty, isDark && s.emptyDark]}>
-          {isGains ? 'Pas de données de croissance' : 'Aucune séance sur cette période'}
+          {isRecovery ? 'Aucune séance récente' : isGains ? 'Pas de données de croissance' : 'Aucune séance sur cette période'}
         </Text>
       )}
 
       {/* ── Scale ── */}
       {hasData && (
         <View style={s.scaleRow}>
-          <Text style={[s.scaleLabel, isDark && s.scaleLabelDark]}>Peu</Text>
+          <Text style={[s.scaleLabel, isDark && s.scaleLabelDark]}>
+            {isRecovery ? 'Épuisé' : 'Peu'}
+          </Text>
           <View style={s.scaleBar}>
             {colorPalette.map((c, i) => (
               <View key={i} style={[s.scaleStep, { backgroundColor: c.fill }]} />
             ))}
           </View>
-          <Text style={[s.scaleLabel, isDark && s.scaleLabelDark]}>Max</Text>
+          <Text style={[s.scaleLabel, isDark && s.scaleLabelDark]}>
+            {isRecovery ? 'Prêt' : 'Max'}
+          </Text>
         </View>
       )}
     </View>
@@ -513,5 +657,39 @@ const s = StyleSheet.create({
   },
   scaleStep: {
     flex: 1,
+  },
+
+  // Recovery summary
+  recoverySummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    gap: 0,
+  },
+  recoverySummaryDark: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  recoveryStatItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  recoveryStatValue: {
+    fontSize: 22,
+    fontWeight: '800',
+  },
+  recoveryStatLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#999',
+    marginTop: 2,
+  },
+  recoveryDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: 'rgba(0,0,0,0.1)',
   },
 });

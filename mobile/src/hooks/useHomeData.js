@@ -261,7 +261,10 @@ export function useHomeData() {
               primaryMuscle: e.primaryMuscle,
               secondaryMuscles: e.secondaryMuscles,
               muscles: e.muscles,
+              sets: e.sets,
+              type: e.type,
             })),
+            startedAt: s.startedAt,
             source: 'api',
           }))
       : [];
@@ -278,10 +281,14 @@ export function useHomeData() {
       entries: (s.entries || s.exercises || []).map(e => ({
         name: e.exerciseName || e.name,
         muscle: e.muscle,
+        muscleGroup: e.muscleGroup,
         primaryMuscle: e.primaryMuscle,
         secondaryMuscles: e.secondaryMuscles,
         muscles: e.muscles,
+        sets: e.sets,
+        type: e.type,
       })),
+      startedAt: s.startedAt,
       source: 'program',
       programId: s.programId || s.program?._id,
     }));
