@@ -5,6 +5,8 @@ import { secureStorage, storage } from '../services/storageService';
 import authService from '../api/auth';
 import websocketService from '../services/websocket';
 import notificationService from '../services/notificationService';
+import { getPendingOnboardingData, clearPendingOnboardingData } from './OnboardingContext';
+import { completeOnboarding as apiCompleteOnboarding } from '../api/profile';
 
 /**
  * Contexte d'authentification
@@ -136,6 +138,24 @@ export function AuthProvider({ children }) {
   }, []);
 
   /**
+   * Envoyer les données d'onboarding en attente au backend (après login)
+   */
+  const sendPendingOnboarding = async () => {
+    try {
+      const pending = await getPendingOnboardingData();
+      if (pending) {
+        console.log('[AUTH] Sending pending onboarding data to backend...');
+        await apiCompleteOnboarding(pending);
+        await clearPendingOnboardingData();
+        console.log('[AUTH] Pending onboarding data sent successfully');
+      }
+    } catch (err) {
+      console.error('[AUTH] Error sending pending onboarding data:', err);
+      // Non bloquant, on continue
+    }
+  };
+
+  /**
    * Connexion avec email et mot de passe
    */
   const login = async (email, password) => {
@@ -165,6 +185,9 @@ export function AuthProvider({ children }) {
       // Enregistrer pour les push notifications après connexion
       console.log('[AUTH] Registering for push notifications...');
       notificationService.registerForPushNotifications();
+
+      // Envoyer les données d'onboarding en attente (non bloquant)
+      sendPendingOnboarding();
 
       console.log('[AUTH] Login successful');
       return userData;
@@ -229,6 +252,8 @@ export function AuthProvider({ children }) {
       const userData = response.user || (await authService.getCurrentUser());
       setUser(userData);
       await storeUserData(userData);
+
+      sendPendingOnboarding();
 
       return userData;
     } catch (error) {
@@ -295,6 +320,8 @@ export function AuthProvider({ children }) {
       const userData = response.user || (await authService.getCurrentUser());
       setUser(userData);
       await storeUserData(userData);
+
+      sendPendingOnboarding();
 
       return userData;
     } catch (error) {
@@ -441,6 +468,9 @@ export function AuthProvider({ children }) {
           // Enregistrer pour les push notifications (utilisateur déjà authentifié)
           console.log('[AUTH] Init: registering for push notifications...');
           notificationService.registerForPushNotifications();
+
+          // Envoyer les données d'onboarding en attente si présentes
+          sendPendingOnboarding();
         } catch (error) {
           console.error('[AUTH] Init: refresh failed:', error.message);
           // Si le refresh échoue, utiliser les données en cache si disponibles

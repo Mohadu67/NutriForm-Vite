@@ -42,6 +42,13 @@ router.put('/availability', profileController.updateAvailability);
 router.put('/preferences', profileController.updateMatchPreferences);
 
 /**
+ * @route   POST /api/profile/onboarding
+ * @desc    Compléter l'onboarding nutritionnel
+ * @access  Privé
+ */
+router.post('/onboarding', profileController.completeOnboarding);
+
+/**
  * @route   GET /api/profile/:userId
  * @desc    Obtenir un profil public par ID
  * @access  Privé

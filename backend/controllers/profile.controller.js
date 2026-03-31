@@ -1,6 +1,8 @@
 const UserProfile = require('../models/UserProfile');
 const User = require('../models/User');
 const Match = require('../models/Match');
+const NutritionGoal = require('../models/NutritionGoal');
+const WeightLog = require('../models/WeightLog');
 const logger = require('../utils/logger.js');
 
 // Récupérer le profil de l'utilisateur connecté
@@ -346,6 +348,168 @@ exports.updateMatchPreferences = async (req, res) => {
     logger.error('Erreur updateMatchPreferences:', error);
     logger.error('Stack:', error.stack);
     res.status(500).json({ error: error.message || 'Erreur lors de la mise à jour des préférences.' });
+  }
+};
+
+// Compléter l'onboarding nutritionnel
+exports.completeOnboarding = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const {
+      objective, gender, birthYear, height, weight,
+      targetWeight, activityLevel, healthConcerns,
+      dietPreference, eatingWindow, weightLossPace,
+      willingnessActions
+    } = req.body;
+
+    // Validation minimale
+    if (!height || !weight) {
+      return res.status(400).json({ error: 'Taille et poids sont requis.' });
+    }
+
+    // Calcul de l'age a partir de l'annee de naissance
+    const currentYear = new Date().getFullYear();
+    const age = birthYear ? currentYear - birthYear : null;
+
+    // --- Mise a jour UserProfile ---
+    let profile = await UserProfile.findOne({ userId });
+    if (!profile) {
+      profile = new UserProfile({ userId });
+    }
+
+    if (objective) profile.objective = objective;
+    if (gender) profile.gender = gender;
+    if (birthYear) profile.birthYear = birthYear;
+    if (age) profile.age = age;
+    if (height) profile.height = height;
+    if (weight) profile.weight = weight;
+    if (targetWeight) profile.targetWeight = targetWeight;
+    if (activityLevel) profile.activityLevel = activityLevel;
+    if (healthConcerns) profile.healthConcerns = healthConcerns;
+    if (dietPreference) profile.dietPreference = dietPreference;
+    if (eatingWindow) profile.eatingWindow = eatingWindow;
+    if (weightLossPace) profile.weightLossPace = weightLossPace;
+    if (willingnessActions) profile.willingnessActions = willingnessActions;
+
+    profile.onboardingCompleted = true;
+    profile.onboardingCompletedAt = new Date();
+    profile.lastActive = new Date();
+
+    await profile.save();
+
+    // --- Calcul nutritionnel (Mifflin-St Jeor) ---
+    const genderForCalc = gender || 'male';
+    const ageForCalc = age || 25;
+    const bmr = genderForCalc === 'female'
+      ? 10 * weight + 6.25 * height - 5 * ageForCalc - 161
+      : 10 * weight + 6.25 * height - 5 * ageForCalc + 5;
+
+    const activityMultipliers = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.55,
+      active: 1.725,
+      very_active: 1.9
+    };
+    const tdee = bmr * (activityMultipliers[activityLevel] || 1.375);
+
+    // Deficit base sur le rythme de perte
+    const weeklyDeficit = (weightLossPace || 0.5) * 1100; // 1kg graisse ≈ 7700 kcal / 7 jours
+    let dailyCalories;
+    let nutritionGoalType;
+
+    if (objective === 'weight_loss') {
+      dailyCalories = Math.max(1200, Math.round(tdee - weeklyDeficit / 7));
+      nutritionGoalType = 'weight_loss';
+    } else if (objective === 'stay_fit') {
+      dailyCalories = Math.round(tdee + 200);
+      nutritionGoalType = 'muscle_gain';
+    } else {
+      dailyCalories = Math.round(tdee);
+      nutritionGoalType = 'maintenance';
+    }
+
+    // Macros
+    let proteinRatio, carbRatio, fatRatio;
+    if (nutritionGoalType === 'weight_loss') {
+      proteinRatio = 0.35; carbRatio = 0.35; fatRatio = 0.30;
+    } else if (nutritionGoalType === 'muscle_gain') {
+      proteinRatio = 0.30; carbRatio = 0.45; fatRatio = 0.25;
+    } else {
+      proteinRatio = 0.30; carbRatio = 0.40; fatRatio = 0.30;
+    }
+
+    const macros = {
+      proteins: Math.round((dailyCalories * proteinRatio) / 4),
+      carbs: Math.round((dailyCalories * carbRatio) / 4),
+      fats: Math.round((dailyCalories * fatRatio) / 9),
+    };
+
+    // --- NutritionGoal ---
+    await NutritionGoal.findOneAndUpdate(
+      { userId },
+      { dailyCalories, macros, goal: nutritionGoalType },
+      { upsert: true, new: true }
+    );
+
+    // --- IMC dans User ---
+    const bmi = weight / ((height / 100) ** 2);
+    const user = await User.findById(userId);
+    user.imc.push({ valeur: parseFloat(bmi.toFixed(1)) });
+    user.calories.push({ valeur: dailyCalories });
+    user.onboardingCompleted = true;
+    await user.save();
+
+    // --- WeightLog initial ---
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    await WeightLog.findOneAndUpdate(
+      { userId, date: today },
+      { weight, source: 'manual' },
+      { upsert: true, new: true }
+    );
+
+    // --- Calcul date cible ---
+    let targetDate = null;
+    if (objective === 'weight_loss' && targetWeight && targetWeight < weight) {
+      const weeksNeeded = (weight - targetWeight) / (weightLossPace || 0.5);
+      targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + Math.round(weeksNeeded * 7));
+    }
+
+    // --- Hydratation ---
+    const hydration = Math.round(weight * 30);
+
+    // --- Fenetre de jeune ---
+    let fastingHours = null;
+    let eatingHours = null;
+    if (eatingWindow?.start && eatingWindow?.end) {
+      const [sh, sm] = eatingWindow.start.split(':').map(Number);
+      const [eh, em] = eatingWindow.end.split(':').map(Number);
+      eatingHours = (eh + em / 60) - (sh + sm / 60);
+      if (eatingHours < 0) eatingHours += 24;
+      fastingHours = 24 - eatingHours;
+    }
+
+    res.json({
+      message: 'Onboarding complété avec succès.',
+      plan: {
+        dailyCalories,
+        macros,
+        bmi: parseFloat(bmi.toFixed(1)),
+        targetDate: targetDate ? targetDate.toISOString().split('T')[0] : null,
+        hydration,
+        fastingHours: fastingHours ? Math.round(fastingHours) : null,
+        eatingHours: eatingHours ? Math.round(eatingHours) : null,
+        weightToLose: objective === 'weight_loss' ? parseFloat((weight - (targetWeight || weight)).toFixed(1)) : 0,
+        weightLossPercent: objective === 'weight_loss' && targetWeight
+          ? parseFloat((((weight - targetWeight) / weight) * 100).toFixed(1))
+          : 0,
+      }
+    });
+  } catch (error) {
+    logger.error('Erreur completeOnboarding:', error);
+    res.status(500).json({ error: 'Erreur lors de la complétion de l\'onboarding.' });
   }
 };
 
