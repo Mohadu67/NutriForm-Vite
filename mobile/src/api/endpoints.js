@@ -32,6 +32,7 @@ export const endpoints = {
     availability: "/profile/availability",
     preferences: "/profile/preferences",
     byId: (userId) => `/profile/${userId}`,
+    onboarding: "/profile/onboarding",
   },
   matching: {
     suggestions: "/matching/suggestions",

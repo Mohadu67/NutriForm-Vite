@@ -230,6 +230,7 @@ exports.me = async (req, res) => {
       displayName,
       hasSetPassword: isOAuthUser ? (user.hasSetPassword === true) : true,
       isOAuthUser,
+      onboardingCompleted: user.onboardingCompleted === true,
     });
   } catch (e) {
     logger.error('GET /me', e);

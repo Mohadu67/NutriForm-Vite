@@ -42,6 +42,55 @@ const userProfileSchema = new mongoose.Schema({
     max: 60,
   },
 
+  // --- Onboarding nutritionnel ---
+  onboardingCompleted: { type: Boolean, default: false },
+  onboardingCompletedAt: { type: Date },
+
+  // Objectif principal
+  objective: {
+    type: String,
+    enum: ['weight_loss', 'eat_healthier', 'stay_fit', 'meal_advice', 'manage_blood_sugar']
+  },
+
+  // Annee de naissance
+  birthYear: { type: Number, min: 1920, max: 2015 },
+
+  // Poids cible
+  targetWeight: { type: Number, min: 20, max: 400 },
+
+  // Niveau d'activite physique
+  activityLevel: {
+    type: String,
+    enum: ['sedentary', 'light', 'moderate', 'active', 'very_active']
+  },
+
+  // Preoccupations de sante
+  healthConcerns: [{
+    type: String,
+    enum: ['none', 'high_cholesterol', 'hypertension', 'diabetes', 'heart_problems']
+  }],
+
+  // Preference alimentaire
+  dietPreference: {
+    type: String,
+    enum: ['balanced', 'vegetarian', 'vegan', 'keto', 'paleo', 'low_carb']
+  },
+
+  // Fenetre alimentaire (jeune intermittent)
+  eatingWindow: {
+    start: { type: String },
+    end: { type: String }
+  },
+
+  // Rythme de perte hebdo (kg)
+  weightLossPace: { type: Number, min: 0.1, max: 1.5 },
+
+  // Ce que l'utilisateur est pret a faire
+  willingnessActions: [{
+    type: String,
+    enum: ['count_calories', 'follow_plan', 'intermittent_fasting', 'exercise', 'other']
+  }],
+
   // Localisation hyper-locale
   location: {
     type: {

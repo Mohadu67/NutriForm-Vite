@@ -59,3 +59,13 @@ export async function getProfileById(userId) {
   const response = await client.get(endpoints.profile.byId(userId));
   return response.data;
 }
+
+/**
+ * Complete onboarding with all collected data
+ * @param {object} data - Onboarding data
+ * @returns {Promise<object>} Personalized plan
+ */
+export async function completeOnboarding(data) {
+  const response = await client.post(endpoints.profile.onboarding, data);
+  return response.data;
+}

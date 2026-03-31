@@ -84,6 +84,7 @@ const userSchema = new mongoose.Schema(
       default: null
     },
     hasSetPassword: { type: Boolean },
+    onboardingCompleted: { type: Boolean, default: false },
     emailVerifie: { type: Boolean, default: false },
     verificationToken: { type: String, default: null, select: false },
     verificationExpires: { type: Date, default: null, select: false },
