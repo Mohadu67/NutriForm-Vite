@@ -39,7 +39,7 @@
 }
 
 .heroTitle {
-  font-family: sans-serif;
+  font-family: var(--font-display, 'Montserrat', sans-serif);
   font-size: clamp(2.25rem, 7vw, 3.5rem);
   font-weight: 800;
   line-height: 1.1;
@@ -72,8 +72,8 @@
 .floatingOrb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.4;
+  filter: blur(80px);
+  opacity: 0.25;
   animation: float 20s ease-in-out infinite;
 }
 
@@ -338,12 +338,12 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(247, 177, 134, 0.15), rgba(247, 177, 134, 0.08));
+  background: linear-gradient(135deg, rgb(240 164 122 / 0.15), rgb(240 164 122 / 0.08));
   flex-shrink: 0;
 }
 
 .flemmeIcon {
-  color: #f7b186;
+  color: var(--couleur-bouton-action, #f7b186);
   width: 24px;
   height: 24px;
 }
@@ -374,7 +374,7 @@
   padding: 0.875rem;
   background: var(--couleur-principale, #f7f6f2);
   border-radius: 12px;
-  border-left: 3px solid #f7b186;
+  border-left: 3px solid var(--couleur-bouton-action, #f7b186);
 }
 
 .tipNumber {
@@ -384,8 +384,8 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #f7b186;
-  color: #111;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: var(--color-neutral-900, #1c1917);
   font-size: 0.75rem;
   font-weight: 700;
   flex-shrink: 0;
@@ -420,7 +420,7 @@
 }
 
 .flemmeQuote strong {
-  color: #f7b186;
+  color: var(--couleur-bouton-action, #f7b186);
   font-style: normal;
 }
 

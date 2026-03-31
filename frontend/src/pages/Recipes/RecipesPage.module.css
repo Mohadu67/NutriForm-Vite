@@ -1,10 +1,10 @@
 /* ========================================
-   HARMONITH RECIPES - Ultra Modern & Magical ✨
+   HARMONITH RECIPES — Premium, Clean
    ======================================== */
 
 @import '../../components/Navbar/design-tokens.css';
 
-/* ===== BACKGROUND MAGIQUE ===== */
+/* ===== AMBIENT BACKGROUND ===== */
 .page {
   min-height: 100vh;
   background: var(--color-bg);
@@ -21,8 +21,8 @@
   width: 200%;
   height: 200%;
   background:
-    radial-gradient(circle at 20% 50%, rgba(184, 221, 209, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(247, 177, 134, 0.15) 0%, transparent 50%);
+    radial-gradient(circle at 20% 50%, rgb(174 216 201 / 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgb(240 164 122 / 0.1) 0%, transparent 50%);
   z-index: 0;
   pointer-events: none;
 }
@@ -35,17 +35,17 @@
   z-index: 1;
 }
 
-/* ===== HERO MODERNE ===== */
+/* ===== HERO ===== */
 .hero {
   text-align: center;
-  padding: 100px 20px 60px;
-  animation: fadeInDown 0.6s ease-out;
+  padding: 100px 20px 56px;
+  animation: heroEnter 0.6s var(--ease-spring, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
-@keyframes fadeInDown {
+@keyframes heroEnter {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-16px);
   }
   to {
     opacity: 1;
@@ -54,15 +54,16 @@
 }
 
 .heroTitle {
+  font-family: var(--font-display, 'Montserrat', sans-serif);
   font-size: clamp(2.25rem, 7vw, 3.5rem);
   font-weight: 800;
-  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), var(--couleur-bouton-selection, #b8ddd1));
+  background: linear-gradient(135deg, var(--couleur-bouton-action) 0%, var(--couleur-bouton-selection) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin: 0 0 20px 0;
-  letter-spacing: -1px;
-  line-height: 1.1;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
   position: relative;
   display: inline-block;
 }
@@ -70,38 +71,38 @@
 .heroTitle::after {
   content: '';
   position: absolute;
-  bottom: -10px;
+  bottom: -8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 100px;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, var(--couleur-bouton-action, #f7b186), transparent);
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--couleur-bouton-action), transparent);
   border-radius: var(--radius-full);
 }
 
 .heroSubtitle {
-  font-size: clamp(0.95rem, 2.5vw, 1.125rem);
-  color: var(--muted, #6b7280);
-  max-width: 520px;
-  margin: 32px auto 0;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  color: var(--muted);
+  max-width: 480px;
+  margin: 28px auto 0;
   line-height: 1.7;
-  font-weight: 500;
+  font-weight: 400;
 }
 
-/* ===== SEARCH BAR FUTURISTE ===== */
+/* ===== SEARCH BAR ===== */
 .searchBar {
   display: flex;
-  gap: var(--space-lg);
+  gap: var(--space-md);
   margin-bottom: var(--space-3xl);
-  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+  animation: searchEnter 0.5s var(--ease-spring, cubic-bezier(0.22, 1, 0.36, 1)) 0.15s both;
   flex-wrap: wrap;
   position: relative;
   z-index: 200;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+@keyframes searchEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .searchContainer {
@@ -112,23 +113,20 @@
 
 .searchInput {
   width: 100%;
-  padding: var(--space-lg) var(--space-2xl) var(--space-lg) 60px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 12px 20px 12px 52px;
+  border: 1.5px solid var(--line);
   border-radius: var(--radius-full);
   font-size: var(--font-size-base);
-  background: var(--color-surface);
-  backdrop-filter: blur(20px) saturate(120%);
-  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  background: var(--paper);
   color: var(--color-text);
-  transition: all 0.3s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   font-weight: var(--font-weight-medium);
 }
 
 .searchInput:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 1px 3px rgba(247, 177, 134, 0.1);
+  box-shadow: var(--shadow-ring, 0 0 0 3px rgb(240 164 122 / 0.15));
 }
 
 .searchInput::placeholder {
@@ -137,7 +135,7 @@
 
 .searchIcon {
   position: absolute;
-  left: var(--space-xl);
+  left: 18px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--color-primary);
@@ -145,28 +143,28 @@
 }
 
 .sortSelect {
-  padding: var(--space-lg) var(--space-2xl);
-  border: 2px solid transparent;
+  padding: 12px 48px 12px 20px;
+  border: 1.5px solid var(--line);
   border-radius: var(--radius-full);
   font-size: var(--font-size-base);
-  background: var(--color-surface);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  background: var(--paper);
   color: var(--color-text);
   cursor: pointer;
-  min-width: 240px;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  font-weight: var(--font-weight-semibold);
+  min-width: 220px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  font-weight: var(--font-weight-medium);
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23f7b186' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23a8a29e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 20px center;
-  padding-right: 50px;
+  background-position: right 16px center;
+}
+
+.sortSelect:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-ring, 0 0 0 3px rgb(240 164 122 / 0.15));
 }
 
 .sortSelect option {
@@ -180,75 +178,71 @@
 .favoritesBtn {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-lg) var(--space-2xl);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  gap: 8px;
+  padding: 12px 20px;
+  border: 1.5px solid var(--line);
   border-radius: var(--radius-full);
   font-size: var(--font-size-base);
-  background: var(--color-surface);
-  backdrop-filter: blur(20px) saturate(120%);
-  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  background: var(--paper);
   color: var(--color-text);
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
   font-weight: var(--font-weight-semibold);
   white-space: nowrap;
 }
 
 .favoritesBtn svg {
   color: var(--color-primary);
-  transition: all 0.3s ease;
+  transition: color var(--transition-fast);
 }
 
 .favoritesBtn:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 1px 3px rgba(247, 177, 134, 0.1);
 }
 
 .favoritesBtn.active {
   background: var(--color-primary);
-  color: #111;
+  color: var(--color-neutral-900, #1c1917);
   border-color: var(--color-primary);
-  box-shadow: 0 1px 3px rgba(247, 177, 134, 0.12);
 }
 
 .favoritesBtn.active svg {
-  color: #111;
+  color: var(--color-neutral-900, #1c1917);
 }
 
 /* Bouton Mes Recettes (Premium) */
 .myRecipesBtn {
   display: flex;
   align-items: center;
-  gap: var(--space-md, 0.75rem);
-  padding: var(--space-lg, 1rem) var(--space-2xl, 1.5rem);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: var(--radius-full, 9999px);
-  font-size: var(--font-size-base, 1rem);
-  background: linear-gradient(135deg, var(--couleur-bouton-action, #f7b186), var(--couleur-bouton-selection, #b8ddd1));
-  backdrop-filter: blur(20px) saturate(120%);
-  -webkit-backdrop-filter: blur(20px) saturate(120%);
-  color: #111;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-base);
+  background: linear-gradient(135deg, var(--couleur-bouton-action), var(--couleur-bouton-selection));
+  color: var(--color-neutral-900, #1c1917);
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
-  font-weight: var(--font-weight-semibold, 600);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  box-shadow: var(--shadow-glow-primary, 0 8px 32px rgb(240 164 122 / 0.2));
+  font-weight: var(--font-weight-semibold);
   white-space: nowrap;
 }
 
 .myRecipesBtn svg {
-  color: #111;
-  transition: all 0.3s ease;
+  color: var(--color-neutral-900, #1c1917);
 }
 
 .myRecipesBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.4);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow-primary-lg, 0 16px 48px rgb(240 164 122 / 0.25));
 }
 
-
-/* ===== MASONRY GRID MAGIQUE ===== */
+/* ===== GRID ===== */
 .content {
   display: grid;
   grid-template-columns: 1fr;
@@ -256,7 +250,7 @@
 }
 
 .sidebar {
-  display: none; /* Masqué pour un design plus épuré */
+  display: none;
 }
 
 .main {
@@ -269,26 +263,25 @@
 }
 
 .resultsCount {
-  font-size: var(--font-size-lg);
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+  color: var(--muted);
+  font-weight: var(--font-weight-medium);
   margin: 0;
-  opacity: 0.7;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: var(--space-2xl);
-  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+  animation: gridEnter 0.6s var(--ease-spring, cubic-bezier(0.22, 1, 0.36, 1)) 0.2s both;
   position: relative;
   z-index: 1;
 }
 
-@keyframes fadeInUp {
+@keyframes gridEnter {
   from {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(24px);
   }
   to {
     opacity: 1;
@@ -296,30 +289,30 @@
   }
 }
 
-/* Effet stagger sur les cards */
+/* Stagger cards */
 .grid > * {
-  animation: cardAppear 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: cardEnter 0.5s var(--ease-spring, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
-.grid > *:nth-child(1) { animation-delay: 0.1s; }
-.grid > *:nth-child(2) { animation-delay: 0.2s; }
-.grid > *:nth-child(3) { animation-delay: 0.3s; }
-.grid > *:nth-child(4) { animation-delay: 0.4s; }
-.grid > *:nth-child(5) { animation-delay: 0.5s; }
-.grid > *:nth-child(6) { animation-delay: 0.6s; }
+.grid > *:nth-child(1) { animation-delay: 0.05s; }
+.grid > *:nth-child(2) { animation-delay: 0.1s; }
+.grid > *:nth-child(3) { animation-delay: 0.15s; }
+.grid > *:nth-child(4) { animation-delay: 0.2s; }
+.grid > *:nth-child(5) { animation-delay: 0.25s; }
+.grid > *:nth-child(6) { animation-delay: 0.3s; }
 
-@keyframes cardAppear {
+@keyframes cardEnter {
   from {
     opacity: 0;
-    transform: translateY(30px) scale(0.95);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
-/* ===== LOADING ÉLÉGANT ===== */
+/* ===== LOADING ===== */
 .loading {
   display: flex;
   flex-direction: column;
@@ -330,14 +323,12 @@
 }
 
 .spinner {
-  width: 80px;
-  height: 80px;
-  border: 5px solid var(--color-border);
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--line);
   border-top-color: var(--color-primary);
-  border-right-color: var(--color-secondary);
   border-radius: var(--radius-full);
-  animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-  filter: drop-shadow(0 0 20px rgba(247, 177, 134, 0.3));
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -345,10 +336,10 @@
 }
 
 .loading p {
-  font-size: var(--font-size-lg);
-  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  color: var(--muted);
   margin: 0;
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-medium);
 }
 
 /* ===== ERROR STATE ===== */
@@ -360,32 +351,29 @@
   padding: calc(var(--space-3xl) * 2);
   gap: var(--space-xl);
   text-align: center;
-  background: linear-gradient(135deg, rgba(255, 107, 107, 0.05), rgba(255, 68, 68, 0.02));
-  border: 2px solid rgba(255, 107, 107, 0.2);
-  border-radius: var(--radius-2xl);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: var(--color-danger-light);
+  border: 1px solid rgb(239 68 68 / 0.15);
+  border-radius: var(--radius-xl);
 }
 
 .error svg {
-  color: #ff6b6b;
-  filter: drop-shadow(0 0 20px rgba(255, 107, 107, 0.3));
+  color: var(--color-danger);
 }
 
 .error p {
   margin: 0;
-  font-size: var(--font-size-lg);
-  color: var(--color-text);
+  font-size: var(--font-size-base);
+  color: var(--ink);
   font-weight: var(--font-weight-semibold);
 }
 
 .errorMessage {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  color: var(--muted);
   font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
 }
 
-/* ===== EMPTY STATE MODERNE ===== */
+/* ===== EMPTY STATE ===== */
 .empty {
   display: flex;
   flex-direction: column;
@@ -397,80 +385,71 @@
 }
 
 .emptyIcon {
-  animation: float 4s ease-in-out infinite;
-  filter: drop-shadow(0 10px 40px rgba(247, 177, 134, 0.2));
+  animation: gentleFloat 5s ease-in-out infinite;
+  opacity: 0.7;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-20px) rotate(5deg);
-  }
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 .empty h3 {
-  font-size: var(--font-size-2xl);
-  color: var(--color-text);
+  font-family: var(--font-display, 'Montserrat', sans-serif);
+  font-size: var(--font-size-xl);
+  color: var(--ink);
   margin: 0;
   font-weight: var(--font-weight-bold);
 }
 
 .empty p {
   font-size: var(--font-size-base);
-  color: var(--color-text-secondary);
+  color: var(--muted);
   margin: 0;
 }
 
-/* ===== PAGINATION MODERNE ===== */
+/* ===== PAGINATION ===== */
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: var(--space-xl);
+  gap: var(--space-lg);
   margin-top: calc(var(--space-3xl) * 2);
   padding-top: var(--space-3xl);
 }
 
 .paginationButton {
-  padding: var(--space-lg) var(--space-2xl);
-  background: var(--color-surface);
-  backdrop-filter: blur(20px) saturate(120%);
-  -webkit-backdrop-filter: blur(20px) saturate(120%);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 11px 24px;
+  background: var(--paper);
+  border: 1.5px solid var(--line);
   border-radius: var(--radius-full);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--ink);
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  min-width: 140px;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+  min-width: 130px;
 }
 
 .paginationButton:hover:not(:disabled) {
   background: var(--color-primary);
-  color: #111;
+  color: var(--color-neutral-900, #1c1917);
   border-color: var(--color-primary);
-  box-shadow: 0 1px 3px rgba(247, 177, 134, 0.1);
 }
 
 .paginationButton:disabled {
-  opacity: 0.3;
+  opacity: 0.35;
   cursor: not-allowed;
-  transform: none;
 }
 
 .paginationInfo {
-  font-size: var(--font-size-base);
-  color: var(--color-text);
-  font-weight: var(--font-weight-semibold);
-  padding: var(--space-md) var(--space-xl);
-  background: var(--color-surface);
-  border-radius: var(--radius-full);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+  font-weight: var(--font-weight-medium);
+  padding: 8px 16px;
 }
 
 /* ===== TABLET (768px+) ===== */
@@ -496,6 +475,7 @@
 
   .searchBar {
     flex-direction: column;
+    gap: var(--space-sm);
   }
 
   .sortSelect {
@@ -504,7 +484,7 @@
 
   .grid {
     grid-template-columns: 1fr;
-    gap: var(--space-xl);
+    gap: var(--space-lg);
   }
 
   .pagination {
