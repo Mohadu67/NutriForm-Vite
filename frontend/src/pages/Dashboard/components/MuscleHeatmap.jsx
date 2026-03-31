@@ -1,7 +1,8 @@
-import { useEffect, useRef, useMemo, useState, useCallback } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import styles from "./MuscleHeatmap.module.css";
 import bodySvgMarkup from "../../../components/Exercice/DynamiChoice/BodyPicker/body.svg?raw";
 import { getBodyCompositionSummary } from "../../../shared/api/bodyComposition";
+import { getRecoveryStatus } from "../../../shared/api/recovery";
 
 // ─── Mapping muscles → zones SVG ────────────────────────────────────
 const MUSCLE_TO_ZONE = {
@@ -109,6 +110,8 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
   const [bodyComp, setBodyComp] = useState(null);
   const [bodyCompLoading, setBodyCompLoading] = useState(false);
   const [selectedMuscle, setSelectedMuscle] = useState(null);
+  const [recoveryData, setRecoveryData] = useState(null);
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
 
   // Reset selected muscle on mode change
   useEffect(() => { setSelectedMuscle(null); }, [mode]);
@@ -195,87 +198,36 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
     return out;
   }, [muscleStats]);
 
-  // Recovery zones (last 7 days)
+  // Fetch recovery data from API
+  useEffect(() => {
+    if (mode !== "recovery") return;
+    let cancelled = false;
+    setRecoveryLoading(true);
+    getRecoveryStatus()
+      .then(res => {
+        if (!cancelled && res?.success) setRecoveryData(res.data);
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setRecoveryLoading(false); });
+    return () => { cancelled = true; };
+  }, [mode]);
+
+  // Convert API recovery data to zone map for SVG coloring
   const recoveryZones = useMemo(() => {
-    if (!sessions.length) return {};
-    const now = Date.now();
-    const zoneLastWork = {};
-    const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
-    const recentSessions = sessions.filter(s => {
-      const d = new Date(s?.startedAt || s?.endedAt || s?.date || s?.createdAt || 0).getTime();
-      return d >= sevenDaysAgo;
-    });
-
-    recentSessions.forEach(session => {
-      const sessionTime = new Date(session?.startedAt || session?.endedAt || session?.date || session?.createdAt || 0).getTime();
-      const hoursAgo = (now - sessionTime) / (1000 * 60 * 60);
-
-      (session?.entries || session?.items || session?.exercises || []).forEach(e => {
-        if (!e) return;
-        let volumeScore = 0;
-        if (Array.isArray(e.sets)) {
-          e.sets.forEach(set => { volumeScore += set.reps || set.timeSec / 10 || 8; });
-        } else {
-          volumeScore = 12;
-        }
-
-        const muscles = [];
-        if (e.primaryMuscle) {
-          muscles.push({ name: e.primaryMuscle, weight: 1 });
-          (e.secondaryMuscles || []).forEach(m => muscles.push({ name: m, weight: 0.4 }));
-        } else if (e.muscle) {
-          muscles.push({ name: e.muscle, weight: 1 });
-        } else if (e.muscleGroup) {
-          muscles.push({ name: e.muscleGroup, weight: 1 });
-        } else if (Array.isArray(e.muscles) && e.muscles.length) {
-          muscles.push({ name: e.muscles[0], weight: 1 });
-          e.muscles.slice(1).forEach(m => muscles.push({ name: m, weight: 0.4 }));
-        }
-
-        muscles.forEach(({ name, weight }) => {
-          const zone = MUSCLE_TO_ZONE[String(name).toLowerCase().trim()];
-          if (!zone) return;
-          const adjustedVolume = volumeScore * weight;
-          if (!zoneLastWork[zone] || hoursAgo < zoneLastWork[zone].hoursAgo) {
-            zoneLastWork[zone] = { hoursAgo, volumeScore: adjustedVolume };
-          } else if (Math.abs(hoursAgo - zoneLastWork[zone].hoursAgo) < 2) {
-            zoneLastWork[zone].volumeScore += adjustedVolume;
-          }
-        });
-      });
-    });
-
+    if (!recoveryData?.zones) return {};
     const out = {};
-    Object.entries(zoneLastWork).forEach(([zone, { hoursAgo, volumeScore }]) => {
-      let recoveryHours;
-      if (volumeScore < 15) recoveryHours = 24;
-      else if (volumeScore < 35) recoveryHours = 48;
-      else recoveryHours = 72;
-
-      const recoveryPct = Math.min(100, Math.round((hoursAgo / recoveryHours) * 100));
-      const level = Math.min(4, Math.floor(recoveryPct / 20));
-
-      out[zone] = {
-        count: recoveryPct, level,
+    recoveryData.zones.forEach(z => {
+      const level = Math.min(4, Math.floor(z.percentage / 20));
+      out[z.id] = {
+        count: z.percentage, level,
         color: RECOVERY_COLORS[level],
-        hoursAgo: Math.round(hoursAgo), recoveryHours,
-        volumeScore: Math.round(volumeScore),
-        isReady: recoveryPct >= 80,
+        hoursAgo: z.hoursAgo, recoveryHours: z.recoveryHours,
+        fatigueScore: z.fatigueScore,
+        isReady: z.isReady,
       };
     });
-    ZONE_IDS.forEach(zone => {
-      if (!out[zone]) {
-        out[zone] = {
-          count: 100, level: 4,
-          color: RECOVERY_COLORS[4],
-          hoursAgo: null, recoveryHours: null,
-          volumeScore: 0,
-          isReady: true,
-        };
-      }
-    });
     return out;
-  }, [sessions]);
+  }, [recoveryData]);
 
   const gainsZones = useMemo(() => {
     if (!bodyComp?.muscleGain?.byZone) return {};
@@ -361,26 +313,25 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
     return () => { svgRootRef.current = null; host.innerHTML = ""; };
   }, [zoneIntensities, isDark]);
 
-  const recoveryList = useMemo(() =>
-    Object.entries(recoveryZones)
-      .map(([zoneId, data]) => ({
-        id: zoneId,
-        label: ZONE_LABELS[zoneId] || zoneId,
-        percentage: data.count,
-        hoursAgo: data.hoursAgo,
-        isReady: data.isReady,
-        volumeScore: data.volumeScore,
-        recoveryHours: data.recoveryHours,
+  const recoveryList = useMemo(() => {
+    if (!recoveryData?.zones) return [];
+    return recoveryData.zones
+      .map(z => ({
+        id: z.id,
+        label: z.label,
+        percentage: z.percentage,
+        hoursAgo: z.hoursAgo,
+        isReady: z.isReady,
+        fatigueScore: z.fatigueScore,
+        recoveryHours: z.recoveryHours,
       }))
-      .sort((a, b) => a.percentage - b.percentage),
-    [recoveryZones]);
+      .sort((a, b) => a.percentage - b.percentage);
+  }, [recoveryData]);
 
   const recoverySummary = useMemo(() => {
-    if (!isRecovery) return null;
-    const zones = Object.values(recoveryZones);
-    const ready = zones.filter(z => z.isReady).length;
-    return { ready, recovering: zones.length - ready };
-  }, [isRecovery, recoveryZones]);
+    if (!isRecovery || !recoveryData?.summary) return null;
+    return recoveryData.summary;
+  }, [isRecovery, recoveryData]);
 
   const hasData = Object.keys(zoneIntensities).length > 0;
   const weekLabel = weeksAgo === 0 ? "Cette semaine" : weeksAgo === 1 ? "Semaine dernière" : `Il y a ${weeksAgo} sem.`;
@@ -412,7 +363,9 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
             <span className={styles.weekLabel}>7 derniers jours</span>
           </div>
 
-          {hasData ? (
+          {recoveryLoading ? (
+            <div className={styles.loadingArea}>Chargement...</div>
+          ) : hasData ? (
             <>
               {/* Summary chips */}
               {recoverySummary && (
@@ -514,8 +467,8 @@ export function MuscleHeatmap({ sessions = [], muscleStats: externalStats = null
                       </div>
                       <div className={styles.detailDivider} />
                       <div className={styles.detailStat}>
-                        <span className={styles.detailStatValue}>{selectedMuscle.volumeScore || "—"}</span>
-                        <span className={styles.detailStatLabel}>Volume</span>
+                        <span className={styles.detailStatValue}>{selectedMuscle.fatigueScore || "—"}</span>
+                        <span className={styles.detailStatLabel}>Fatigue</span>
                       </div>
                       <div className={styles.detailDivider} />
                       <div className={styles.detailStat}>
