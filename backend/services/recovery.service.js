@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const WorkoutSession = require('../models/WorkoutSession');
 const SleepLog = require('../models/SleepLog');
 const UserProfile = require('../models/UserProfile');
@@ -242,11 +243,12 @@ function computeAgeModifier(age) {
 async function computeRecoveryStatus(userId) {
   const now = Date.now();
   const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+  const objectId = new mongoose.Types.ObjectId(userId);
 
   // Fetch data in parallel
   const [sessions, sleepLogs, profile] = await Promise.all([
     WorkoutSession.find({
-      userId,
+      userId: objectId,
       status: 'finished',
       $or: [
         { endedAt: { $gte: sevenDaysAgo } },
@@ -256,17 +258,18 @@ async function computeRecoveryStatus(userId) {
     }).sort({ endedAt: -1 }).lean(),
 
     SleepLog.find({
-      userId,
+      userId: objectId,
       date: { $gte: new Date(now - 3 * 24 * 60 * 60 * 1000) },
     }).lean(),
 
-    UserProfile.findOne({ userId }).lean(),
+    UserProfile.findOne({ userId: objectId }).lean(),
   ]);
 
   // Compute modifiers
   const sleepModifier = computeSleepModifier(sleepLogs);
-  const ageModifier = computeAgeModifier(profile?.age || profile?.birthYear
+  const age = profile?.age || (profile?.birthYear
     ? (new Date().getFullYear() - profile.birthYear) : null);
+  const ageModifier = computeAgeModifier(age);
 
   // Accumulate fatigue per zone
   const zoneFatigue = {}; // zone → { fatigueScore, lastWorkedAt (ms timestamp) }
