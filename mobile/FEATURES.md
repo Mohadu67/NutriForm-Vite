@@ -22,7 +22,7 @@
   - `mobile/src/components/dashboard/MuscleHeatmap.js` — refonte complète mode récup + harmonisation
 
 ### 2. BioRhythm — Sync Sommeil + Readiness Score
-- **Statut :** À faire
+- **Statut :** Fait
 - **Données utilisées :** HealthKit/Health Connect (Sleep Analysis, HRV, Resting HR), `UserProfile` (age, gender, weight, activityLevel)
 - **Description :**
   - **Sync sommeil** depuis HealthKit/Health Connect (durée, phases léger/profond/REM, régularité)
@@ -30,16 +30,18 @@
   - **Score de Readiness quotidien** (0-100) combinant : qualité sommeil + récup musculaire + HRV + stress estimé
   - Widget dashboard : jauge readiness + heure optimale d'entraînement
   - Historique readiness sur 7/30 jours
-- **Fichiers à créer/modifier :**
-  - `backend/models/SleepLog.js` — modèle sommeil (duration, phases, quality, source)
-  - `backend/models/ReadinessScore.js` — score quotidien calculé
-  - `backend/routes/health.routes.js` — nouveaux endpoints sync sleep
-  - `backend/services/biorhythm.service.js` — algorithmes readiness
-  - `mobile/src/services/healthService.js` — ajouter sync sleep + HRV + resting HR
-  - `mobile/src/components/dashboard/ReadinessWidget.js` — widget dashboard
+- **Fichiers créés/modifiés :**
+  - `backend/models/SleepLog.js` — modèle sommeil (duration, phases deep/REM/light/awake, HRV, resting HR)
+  - `backend/services/biorhythm.service.js` — algorithme readiness (sleep 40% + recovery 30% + stress 30%)
+  - `backend/controllers/biorhythm.controller.js` — endpoints sync sleep, readiness, historique
+  - `backend/routes/biorhythm.route.js` — routes /api/biorhythm/*
+  - `mobile/src/services/healthService.js` — ajout sync sleep + HRV + resting HR (HealthKit/Health Connect)
+  - `mobile/src/api/biorhythm.js` — client API biorhythm
+  - `mobile/src/api/endpoints.js` — endpoints biorhythm
+  - `mobile/src/components/dashboard/ReadinessWidget.js` — widget jauge readiness dashboard
 
 ### 3. BioRhythm Homme — Fenêtre d'entraînement optimale
-- **Statut :** À faire
+- **Statut :** Fait
 - **Données utilisées :** `SleepLog` (heure réveil, durée, qualité), `UserProfile` (age, weight, bodyFatPercent, activityLevel), `availability`, `ReadinessScore`
 - **Description :**
   - Calcul ratio testostérone/cortisol estimé selon courbe circadienne personnalisée
@@ -49,14 +51,15 @@
   - **Notification push** X heures avant la fenêtre : "Ta fenêtre optimale est à 17h — ratio hormonal au top"
   - Post-séance : feedback si l'heure était dans la fenêtre ou pas
   - Conseils nutrition contextuels : zinc, vitamine D, bons lipides
-- **Fichiers à créer/modifier :**
-  - `backend/services/biorhythm.service.js` — algo courbe T/C, fenêtre optimale
-  - `backend/services/notification.scheduler.js` — cron notification quotidienne
-  - `mobile/src/components/dashboard/BioRhythmCard.js` — carte fenêtre optimale
-  - `mobile/src/screens/biorhythm/BioRhythmScreen.js` — écran détaillé
+- **Fichiers créés/modifiés :**
+  - `backend/services/biorhythm.service.js` — algo courbe T/C circadienne, fenêtres matin/après-midi
+  - `backend/services/notification.scheduler.js` — calcul payload notification training reminder
+  - `backend/controllers/notification.biorhythm.controller.js` — endpoint POST /schedule-notification
+  - `mobile/src/components/dashboard/BioRhythmCard.js` — carte fenêtre optimale (matin vs après-midi)
+  - `mobile/src/hooks/useHomeData.js` — ajout userGender depuis profil
 
 ### 4. BioRhythm Femme — Coach adaptatif au cycle menstruel
-- **Statut :** À faire
+- **Statut :** Fait
 - **Données utilisées :** HealthKit/Health Connect (`MenstrualFlow`, `MenstruationPeriod`), `UserProfile`, `WorkoutSession`, `FoodLog`, `NutritionGoal`
 - **Description :**
   - Détection automatique de la phase actuelle via données HealthKit (déjà synchro : `healthService.getMenstrualData()`)
@@ -70,12 +73,10 @@
   - Suggestions d'exercices filtrées par phase
   - Alertes douces en phase lutéale/menstruation
   - Calendrier visuel du cycle + overlay séances passées
-- **Fichiers à créer/modifier :**
-  - `backend/models/CyclePhase.js` — historique des phases détectées
-  - `backend/services/biorhythm.service.js` — algo détection phase + recommandations
-  - `backend/services/nutrition.service.js` — macros adaptatifs par phase
-  - `mobile/src/components/dashboard/CycleCard.js` — bandeau phase + conseils
-  - `mobile/src/screens/biorhythm/CycleScreen.js` — calendrier cycle + détails
+- **Fichiers créés/modifiés :**
+  - `mobile/src/services/cycleService.js` — détection phase (menstruation/folliculaire/ovulation/lutéale) + recommandations par phase (training, nutrition, suppléments, macroAdjust)
+  - `mobile/src/components/dashboard/CycleCard.js` — carte phase cycle avec badges entraînement/nutrition/suppléments, countdown prochaines règles
+  - `mobile/src/screens/home/HomeScreen.js` — intégration BioRhythmCard + CycleCard conditionnels par gender
 
 ### 5. Suivi de poids + courbe de progression
 - **Statut :** À faire

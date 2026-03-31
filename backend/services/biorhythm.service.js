@@ -282,7 +282,10 @@ function calculateReadinessScore({ sleepLog, profile, recentWorkouts, recentSlee
     const gender = profile?.gender || 'other';
 
     // ── Fenêtre d'entraînement optimale ──
-    let optimalWindow = { start: '16:00', end: '19:00' };
+    let morningWindow = { start: '10:00', end: '12:00' };
+    let afternoonWindow = { start: '16:00', end: '19:00' };
+    let recommended = 'afternoon';
+
     if (sleepLog?.sleepEnd) {
       const wakeTime = new Date(sleepLog.sleepEnd);
       const window = getOptimalTrainingWindow(
@@ -290,11 +293,12 @@ function calculateReadinessScore({ sleepLog, profile, recentWorkouts, recentSlee
         gender,
         profile?.age || 25
       );
-      optimalWindow = {
-        start: window.recommended === 'morning' ? window.morning.start : window.afternoon.start,
-        end: window.recommended === 'morning' ? window.morning.end : window.afternoon.end
-      };
+      morningWindow = window.morning;
+      afternoonWindow = window.afternoon;
+      recommended = window.recommended;
     }
+
+    const optimalWindow = recommended === 'morning' ? morningWindow : afternoonWindow;
 
     return {
       score,
@@ -327,7 +331,9 @@ function calculateReadinessScore({ sleepLog, profile, recentWorkouts, recentSlee
         }
       },
       recommendation: getRecommendation(score, gender),
-      optimalWindow
+      optimalWindow,
+      morningWindow,
+      afternoonWindow
     };
   } catch (error) {
     logger.error('Erreur lors du calcul du score de readiness:', error);
@@ -340,7 +346,9 @@ function calculateReadinessScore({ sleepLog, profile, recentWorkouts, recentSlee
         stress: { score: 50, weight: WEIGHT_STRESS, details: {} }
       },
       recommendation: 'Données insuffisantes pour une recommandation précise',
-      optimalWindow: { start: '16:00', end: '19:00' }
+      optimalWindow: { start: '16:00', end: '19:00' },
+      morningWindow: { start: '10:00', end: '12:00' },
+      afternoonWindow: { start: '16:00', end: '19:00' }
     };
   }
 }

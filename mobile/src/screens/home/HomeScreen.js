@@ -27,6 +27,8 @@ import {
   MuscleHeatmap,
   WeeklySummary,
   ReadinessWidget,
+  BioRhythmCard,
+  CycleCard,
 } from '../../components/dashboard';
 import { GoalModal } from '../../components/dashboard/GoalModal';
 
@@ -154,6 +156,7 @@ export default function HomeScreen() {
     weeklyTrainingDays,
     weeklyGoal,
     weeklyProgress,
+    userGender,
     displayName,
     subtitle,
     onRefresh,
@@ -290,6 +293,14 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <ReadinessWidget />
         </View>
+
+        {/* BioRhythm — Fenêtre optimale (hommes) / Cycle (femmes) */}
+        {userGender && (
+          <View style={styles.section}>
+            <BioRhythmCard gender={userGender} />
+            <CycleCard gender={userGender} />
+          </View>
+        )}
 
         {/* Actions rapides */}
         <QuickActions navigation={navigation} subscriptionTier={subscriptionTier} />
