@@ -1,4 +1,4 @@
-couleur Viollette, c'est pas dans ma charte graphique.\ import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { toast } from 'sonner';
 import { deleteSession, updateSession } from "../../../components/History/SessionTracking/sessionApi.js";
 import logger from "../../../shared/utils/logger";
