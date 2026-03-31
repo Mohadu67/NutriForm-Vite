@@ -93,7 +93,8 @@ const Leaderboard = () => {
     createChallenge,
     acceptChallenge,
     declineChallenge,
-    cancelChallenge
+    cancelChallenge,
+    submitResult
   } = useChallenges();
 
   const { badges: userBadges } = useBadges();
@@ -381,6 +382,7 @@ const Leaderboard = () => {
               onAccept={acceptChallenge}
               onDecline={declineChallenge}
               onCancel={cancelChallenge}
+              onSubmitResult={submitResult}
               stats={challengeStats}
             />
           )}
