@@ -1,108 +1,128 @@
 /**
- * HarmoNith - Color Palette
- * Palette complète avec support light/dark mode
+ * HarmoNith - Color Palette v2.0
+ * Aligned with web design-tokens.css — warm stone neutrals, refined peach/teal
  */
 
 export const colors = {
-  // Primary Colors
-  primary: '#F7B186',
-  primaryDark: '#E89A6F',
-  primaryLight: '#F9C4A3',
+  // Primary Colors (warm peach — refined)
+  primary: '#f0a47a',
+  primaryDark: '#c67548',
+  primaryLight: '#f5c4a6',
+  primary50: '#fef6f0',
+  primary100: '#fdeadb',
+  primary200: '#f9d2b7',
+  primary300: '#f5b88d',
+  primary400: '#f0a47a',
+  primary500: '#f0a47a',
+  primary600: '#c67548',
+  primary700: '#a55a30',
+  primary800: '#7a3f1f',
+  primary900: '#4d2712',
 
-  // Secondary Colors
-  secondary: '#B8DDD1',
-  secondaryDark: '#A0C9BD',
-  secondaryLight: '#D0EDE4',
+  // Secondary Colors (sage teal — refined)
+  secondary: '#72baa1',
+  secondaryDark: '#478571',
+  secondaryLight: '#a8d8c8',
+  secondary50: '#f0faf6',
+  secondary100: '#d4f0e4',
+  secondary200: '#a8d8c8',
+  secondary300: '#8ecdb5',
+  secondary400: '#72baa1',
+  secondary500: '#72baa1',
+  secondary600: '#478571',
+  secondary700: '#326050',
+  secondary800: '#234638',
+  secondary900: '#152b22',
 
-  // Accent Colors
-  accent: '#FF6B6B',
-  success: '#4CAF50',
-  warning: '#FFC107',
-  error: '#F44336',
-  info: '#2196F3',
+  // Status Colors (semantic)
+  success: '#22c55e',
+  warning: '#f59e0b',
+  error: '#ef4444',
+  info: '#0ea5e9',
+  accent: '#f0a47a',
 
-  // Light Mode
+  // Light Mode — warm stone neutrals
   light: {
     // Backgrounds
-    background: '#FFFFFF',
-    backgroundSecondary: '#F8F9FA',
-    backgroundTertiary: '#F0F2F5',
+    background: '#fcfbf9',
+    backgroundSecondary: '#f7f6f3',
+    backgroundTertiary: '#efedea',
 
     // Surfaces
-    surface: '#FFFFFF',
-    surfaceElevated: '#FFFFFF',
-    surfaceOverlay: 'rgba(0, 0, 0, 0.5)',
+    surface: '#ffffff',
+    surfaceElevated: '#ffffff',
+    surfaceOverlay: 'rgba(0, 0, 0, 0.4)',
 
     // Text
-    text: '#1A1A1A',
-    textSecondary: '#4A4A4A',
-    textTertiary: '#888888',
-    textDisabled: '#CCCCCC',
-    textInverse: '#FFFFFF',
+    text: '#1c1917',
+    textSecondary: '#57534e',
+    textTertiary: '#a8a29e',
+    textDisabled: '#d6d3d1',
+    textInverse: '#ffffff',
 
     // Borders
-    border: '#E0E0E0',
-    borderLight: '#F0F0F0',
-    borderDark: '#CCCCCC',
+    border: '#e7e5e4',
+    borderLight: '#f5f5f4',
+    borderDark: '#d6d3d1',
 
     // Interactive
-    interactive: '#F7B186',
-    interactiveHover: '#E89A6F',
-    interactivePressed: '#D9865E',
-    interactiveDisabled: '#F5E6DD',
+    interactive: '#f0a47a',
+    interactiveHover: '#c67548',
+    interactivePressed: '#a55a30',
+    interactiveDisabled: '#fef6f0',
 
-    // Status
-    statusSuccess: '#E8F5E9',
-    statusWarning: '#FFF3E0',
-    statusError: '#FFEBEE',
-    statusInfo: '#E3F2FD',
+    // Status Backgrounds
+    statusSuccess: '#f0fdf4',
+    statusWarning: '#fffbeb',
+    statusError: '#fef2f2',
+    statusInfo: '#f0f9ff',
   },
 
-  // Dark Mode
+  // Dark Mode — warm dark neutrals
   dark: {
     // Backgrounds
-    background: '#12151A',
-    backgroundSecondary: '#1A1D24',
-    backgroundTertiary: '#22262E',
+    background: '#0e0e11',
+    backgroundSecondary: '#131317',
+    backgroundTertiary: '#1f1f26',
 
     // Surfaces
-    surface: '#1A1D24',
-    surfaceElevated: '#22262E',
-    surfaceOverlay: 'rgba(0, 0, 0, 0.7)',
+    surface: '#18181d',
+    surfaceElevated: '#1f1f26',
+    surfaceOverlay: 'rgba(0, 0, 0, 0.6)',
 
     // Text
-    text: '#E9ECF1',
-    textSecondary: '#C5C9D1',
-    textTertiary: '#8A8E96',
-    textDisabled: '#505460',
-    textInverse: '#1A1A1A',
+    text: '#f3f3f6',
+    textSecondary: '#c1c1cb',
+    textTertiary: '#7a7a88',
+    textDisabled: '#44444f',
+    textInverse: '#1c1917',
 
     // Borders
-    border: '#2A2E36',
-    borderLight: '#22262E',
-    borderDark: '#383C44',
+    border: '#2a2a33',
+    borderLight: '#1f1f26',
+    borderDark: '#3a3a45',
 
     // Interactive
-    interactive: '#F7B186',
-    interactiveHover: '#F9C4A3',
-    interactivePressed: '#E89A6F',
-    interactiveDisabled: '#3A3028',
+    interactive: '#f0a47a',
+    interactiveHover: '#f5c4a6',
+    interactivePressed: '#c67548',
+    interactiveDisabled: '#2a2018',
 
-    // Status
-    statusSuccess: '#1B3A1E',
-    statusWarning: '#3D3420',
-    statusError: '#3D1F1E',
-    statusInfo: '#1E2A3D',
+    // Status Backgrounds
+    statusSuccess: '#0f2a1a',
+    statusWarning: '#2a2008',
+    statusError: '#2a0f0f',
+    statusInfo: '#0a1f2e',
   },
 
   // Gradients
   gradients: {
-    primary: ['#F7B186', '#E89A6F'],
-    secondary: ['#B8DDD1', '#A0C9BD'],
-    warm: ['#F7B186', '#FF6B6B'],
-    cool: ['#B8DDD1', '#2196F3'],
-    sunset: ['#F9C4A3', '#F7B186', '#E89A6F'],
-    ocean: ['#D0EDE4', '#B8DDD1', '#A0C9BD'],
+    primary: ['#f0a47a', '#c67548'],
+    secondary: ['#a8d8c8', '#72baa1'],
+    warm: ['#f0a47a', '#ef4444'],
+    cool: ['#72baa1', '#0ea5e9'],
+    sunset: ['#f5c4a6', '#f0a47a', '#c67548'],
+    ocean: ['#a8d8c8', '#72baa1', '#478571'],
   },
 
   // Semantic Colors (mode-independent)
@@ -112,17 +132,17 @@ export const colors = {
 
   // Overlay variations
   overlay: {
-    light: 'rgba(0, 0, 0, 0.1)',
+    light: 'rgba(0, 0, 0, 0.08)',
     medium: 'rgba(0, 0, 0, 0.3)',
-    heavy: 'rgba(0, 0, 0, 0.6)',
-    dark: 'rgba(0, 0, 0, 0.8)',
+    heavy: 'rgba(0, 0, 0, 0.5)',
+    dark: 'rgba(0, 0, 0, 0.7)',
   },
 
   // Shadow colors
   shadow: {
-    light: 'rgba(0, 0, 0, 0.1)',
-    medium: 'rgba(0, 0, 0, 0.15)',
-    heavy: 'rgba(0, 0, 0, 0.25)',
+    light: 'rgba(0, 0, 0, 0.06)',
+    medium: 'rgba(0, 0, 0, 0.1)',
+    heavy: 'rgba(0, 0, 0, 0.2)',
   },
 };
 

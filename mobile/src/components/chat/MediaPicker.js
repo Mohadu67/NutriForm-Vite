@@ -3,17 +3,20 @@ import { Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, StyleShe
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { theme, useTheme } from '../../theme';
+import { theme, useTheme, colors } from '../../theme';
 
 export default function MediaPicker({ visible, onClose, onMediaSelected }) {
   const { isDark } = useTheme();
 
   const themedStyles = {
-    containerBg: isDark ? '#1C1C1E' : '#FFFFFF',
-    headerBorder: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
-    separatorBg: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
-    textPrimary: isDark ? '#FFFFFF' : '#1A1A1A',
-    handleColor: isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.2)',
+    containerBg: isDark ? colors.dark.surface : colors.light.surface,
+    headerBorder: isDark ? colors.dark.border : colors.light.border,
+    separatorBg: isDark ? colors.dark.backgroundTertiary : colors.light.backgroundSecondary,
+    textPrimary: isDark ? colors.dark.text : colors.light.text,
+    textSecondary: isDark ? colors.dark.textSecondary : colors.light.textSecondary,
+    handleColor: isDark ? '#44444f' : '#d6d3d1',
+    iconBg: isDark ? 'rgba(240, 164, 122, 0.12)' : 'rgba(240, 164, 122, 0.12)',
+    optionBg: isDark ? colors.dark.surfaceElevated : colors.light.backgroundSecondary,
   };
 
   const requestPermissions = async (type) => {
@@ -121,23 +124,45 @@ export default function MediaPicker({ visible, onClose, onMediaSelected }) {
     }
   };
 
-  const Option = ({ icon, text, onPress, cancel }) => (
+  const subtitles = {
+    camera: 'Appareil photo',
+    images: 'Galerie',
+    videocam: 'Galerie vidéo',
+    document: 'PDF, Word, texte',
+  };
+
+  const Option = ({ icon, text, subtitle, onPress, cancel }) => (
     <TouchableOpacity
-      style={[styles.option, cancel && styles.cancelOption]}
+      style={[
+        styles.option,
+        cancel && styles.cancelOption,
+        !cancel && { backgroundColor: themedStyles.optionBg },
+      ]}
       onPress={onPress}
       activeOpacity={0.6}
     >
       {icon && (
-        <View style={[styles.iconWrapper, cancel && styles.iconWrapperCancel]}>
-          <Ionicons name={icon} size={22} color={cancel ? theme.colors.error : theme.colors.primary} />
+        <View style={[
+          styles.iconWrapper,
+          { backgroundColor: themedStyles.iconBg },
+          cancel && styles.iconWrapperCancel,
+        ]}>
+          <Ionicons name={icon} size={28} color={cancel ? colors.error : colors.primary} />
         </View>
       )}
-      <Text style={[
-        styles.optionText,
-        { color: cancel ? theme.colors.error : themedStyles.textPrimary }
-      ]}>
-        {text}
-      </Text>
+      <View style={styles.optionTextContainer}>
+        <Text style={[
+          styles.optionText,
+          { color: cancel ? colors.error : themedStyles.textPrimary }
+        ]}>
+          {text}
+        </Text>
+        {subtitle && (
+          <Text style={[styles.optionSubtitle, { color: themedStyles.textSecondary }]}>
+            {subtitle}
+          </Text>
+        )}
+      </View>
     </TouchableOpacity>
   );
 
@@ -165,16 +190,22 @@ export default function MediaPicker({ visible, onClose, onMediaSelected }) {
 
           {/* Options */}
           <View style={styles.optionsContainer}>
-            <Option icon="camera" text="Prendre une photo" onPress={pickFromCamera} />
-            <Option icon="images" text="Choisir une photo" onPress={pickPhotos} />
-            <Option icon="videocam" text="Choisir une vidéo" onPress={pickVideo} />
-            <Option icon="document" text="Choisir un fichier" onPress={pickDocument} />
+            <Option icon="camera" text="Prendre une photo" subtitle={subtitles.camera} onPress={pickFromCamera} />
+            <Option icon="images" text="Choisir une photo" subtitle={subtitles.images} onPress={pickPhotos} />
+            <Option icon="videocam" text="Choisir une vidéo" subtitle={subtitles.videocam} onPress={pickVideo} />
+            <Option icon="document" text="Choisir un fichier" subtitle={subtitles.document} onPress={pickDocument} />
           </View>
 
           <View style={[styles.separator, { backgroundColor: themedStyles.separatorBg }]} />
 
           {/* Cancel */}
-          <Option text="Annuler" cancel onPress={onClose} />
+          <TouchableOpacity
+            style={[styles.cancelButton, { backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.08)' }]}
+            onPress={onClose}
+            activeOpacity={0.6}
+          >
+            <Text style={styles.cancelButtonText}>Annuler</Text>
+          </TouchableOpacity>
 
           {/* Safe area bottom */}
           <View style={styles.safeBottom} />
@@ -194,18 +225,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   bottomSheet: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 10,
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 12,
   },
   handleContainer: {
     alignItems: 'center',
     paddingTop: 12,
-    paddingBottom: 8,
+    paddingBottom: 6,
   },
   handle: {
     width: 40,
@@ -213,7 +244,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   header: {
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
   },
@@ -223,33 +254,57 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   optionsContainer: {
-    paddingTop: 8,
+    paddingTop: 10,
+    paddingHorizontal: 14,
+    gap: 6,
   },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     gap: 14,
+    borderRadius: 14,
   },
   iconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: 'rgba(247, 177, 134, 0.15)',
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconWrapperCancel: {
-    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  optionTextContainer: {
+    flex: 1,
+    gap: 2,
   },
   optionText: {
     fontSize: 16,
     fontWeight: '500',
   },
+  optionSubtitle: {
+    fontSize: 13,
+    fontWeight: '400',
+  },
   separator: {
-    height: 8,
-    marginVertical: 4,
+    height: 1,
+    marginVertical: 8,
+    marginHorizontal: 20,
+  },
+  cancelButton: {
+    marginHorizontal: 14,
+    marginBottom: 4,
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.error,
   },
   cancelOption: {
     justifyContent: 'center',

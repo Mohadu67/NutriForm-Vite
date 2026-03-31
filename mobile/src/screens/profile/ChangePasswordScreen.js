@@ -133,8 +133,8 @@ export default function ChangePasswordScreen() {
         >
           {/* Icon */}
           <View style={styles.iconContainer}>
-            <View style={[styles.iconBox, { backgroundColor: '#8B5CF620' }]}>
-              <Ionicons name="lock-closed" size={32} color="#8B5CF6" />
+            <View style={[styles.iconBox, { backgroundColor: '#72baa120' }]}>
+              <Ionicons name="lock-closed" size={32} color="#72baa1" />
             </View>
           </View>
 

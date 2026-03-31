@@ -16,7 +16,7 @@ export const navigationRef = createRef();
 // Écrans de chat au niveau racine pour couvrir la navbar
 import ChatDetailScreen from '../screens/chat/ChatDetailScreen';
 import AIChatScreen from '../screens/chat/AIChatScreen';
-import UserProfileScreen from '../screens/matching/UserProfileScreen';
+import UserPublicProfileScreen from '../screens/social/UserPublicProfileScreen';
 
 const Stack = createNativeStackNavigator();
 const MainStack = createNativeStackNavigator();
@@ -48,7 +48,7 @@ function MainWithChat() {
       />
       <MainStack.Screen
         name="UserProfile"
-        component={UserProfileScreen}
+        component={UserPublicProfileScreen}
         options={{
           animation: 'slide_from_right',
           animationDuration: 200,

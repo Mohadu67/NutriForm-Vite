@@ -161,8 +161,8 @@ export default function SupportScreen() {
             onPress={() => Linking.openURL('https://harmonith.fr/privacy-policy')}
             activeOpacity={0.7}
           >
-            <View style={[styles.linkIcon, { backgroundColor: '#8B5CF620' }]}>
-              <Ionicons name="shield-checkmark-outline" size={22} color="#8B5CF6" />
+            <View style={[styles.linkIcon, { backgroundColor: '#72baa120' }]}>
+              <Ionicons name="shield-checkmark-outline" size={22} color="#72baa1" />
             </View>
             <View style={styles.linkContent}>
               <Text style={[styles.linkLabel, isDark && styles.textDark]}>

@@ -255,15 +255,21 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
 
       {/* ── Face / Dos ── */}
       <View style={s.viewRow}>
-        {['front', 'back'].map(v => (
-          <TouchableOpacity key={v} onPress={() => setView(v)} activeOpacity={0.6}>
-            <Text style={[s.viewLabel, view === v && { color: accent, fontWeight: '600' }, isDark && view !== v && { color: '#555' }]}>
-              {v === 'front' ? 'Face' : 'Dos'}
-            </Text>
-          </TouchableOpacity>
-        ))}
-        <View style={[s.viewDot, isDark && { backgroundColor: '#444' }]} />
-        <Text style={[s.sessionCount, isDark && { color: '#555' }]}>
+        <View style={[s.viewToggleContainer, isDark && s.viewToggleContainerDark]}>
+          {['front', 'back'].map(v => (
+            <TouchableOpacity
+              key={v}
+              onPress={() => setView(v)}
+              activeOpacity={0.7}
+              style={[s.viewToggleBtn, view === v && s.viewToggleBtnActive, view === v && { backgroundColor: accent }]}
+            >
+              <Text style={[s.viewToggleText, view === v && s.viewToggleTextActive, isDark && view !== v && { color: '#888' }]}>
+                {v === 'front' ? 'Face' : 'Dos'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <Text style={[s.sessionCount, isDark && { color: '#888' }]}>
           {filteredSessions.length} séance{filteredSessions.length !== 1 ? 's' : ''}
         </Text>
       </View>
@@ -399,19 +405,34 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
-    marginTop: 4,
+    marginTop: 8,
     marginBottom: 16,
   },
-  viewLabel: {
-    fontSize: 12,
-    fontWeight: '400',
-    color: '#bbb',
+  viewToggleContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0,0,0,0.04)',
+    borderRadius: 10,
+    padding: 3,
   },
-  viewDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: '#ddd',
+  viewToggleContainerDark: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  viewToggleBtn: {
+    paddingVertical: 7,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  viewToggleBtnActive: {
+    borderRadius: 8,
+  },
+  viewToggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#999',
+  },
+  viewToggleTextActive: {
+    color: '#fff',
+    fontWeight: '700',
   },
   sessionCount: {
     fontSize: 11,
