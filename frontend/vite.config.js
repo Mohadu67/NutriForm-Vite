@@ -76,7 +76,6 @@ export default defineConfig(async ({ mode }) => {
     },
     // Aliases pour imports plus propres
     resolve: {
-      dedupe: ['react', 'react-dom'],
       alias: {
         '@': '/src',
         '@components': '/src/components',
@@ -103,8 +102,7 @@ export default defineConfig(async ({ mode }) => {
         'react-leaflet',
         'dompurify',
         '@dnd-kit/core',
-        '@dnd-kit/sortable',
-        '@zxing/browser'
+        '@dnd-kit/sortable'
       ]
     },
     server: {

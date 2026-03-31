@@ -591,11 +591,9 @@ export function ChatProvider({ children }) {
                 timestamp: message.createdAt,
                 senderId: message.senderId,
                 isOwn,
-                // Marquer comme delivered seulement si ce n'est pas notre message
-                // Car si on reçoit le message, c'est qu'on l'a vu
                 delivered: !isOwn ? true : undefined,
               },
-              lastMessageRead: false, // Nouveau message non lu
+              lastMessageRead: false,
               unreadCount: shouldIncrementUnread ? (conv.unreadCount || 0) + 1 : conv.unreadCount,
               updatedAt: message.createdAt,
             };

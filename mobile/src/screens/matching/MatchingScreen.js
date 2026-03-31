@@ -364,6 +364,72 @@ export default function MatchingScreen() {
     return () => unsubscribe();
   }, []);
 
+  // Écouter les nouveaux messages WebSocket pour mettre à jour la liste en temps réel
+  useEffect(() => {
+    const handleNewMessage = (data) => {
+      const message = data.message || data;
+      const conversationId = data.conversationId || message.conversationId;
+      logger.matching.info('🔔 WS new_message in MatchingScreen', { conversationId, content: message.content });
+
+      setConversations(prev => {
+        logger.matching.info('🔔 setConversations prev', { length: prev.length, ids: prev.map(c => c._id) });
+        const updated = prev.map(conv => {
+          if (conv._id === conversationId) {
+            return {
+              ...conv,
+              lastMessage: {
+                content: message.content,
+                senderId: message.senderId,
+                timestamp: message.createdAt,
+                type: message.type,
+              },
+              unreadCount: (conv.unreadCount || 0) + 1,
+              updatedAt: message.createdAt,
+            };
+          }
+          return conv;
+        });
+        return updated.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+      });
+
+      setUnreadCount(prev => prev + 1);
+    };
+
+    const handleConversationUpdated = (data) => {
+      if (data.lastMessage) {
+        setConversations(prev => {
+          const updated = prev.map(conv => {
+            if (conv._id === data.conversationId) {
+              return {
+                ...conv,
+                lastMessage: data.lastMessage,
+                unreadCount: data.unreadIncrement ? (conv.unreadCount || 0) + 1 : conv.unreadCount,
+                updatedAt: data.lastMessage.timestamp,
+              };
+            }
+            return conv;
+          });
+          return updated.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+        });
+      }
+
+      if (data.unreadIncrement) {
+        setUnreadCount(prev => prev + 1);
+      }
+      if (data.unreadDecrement) {
+        setUnreadCount(prev => Math.max(0, prev - data.unreadDecrement));
+      }
+    };
+
+    websocketService.on('new_message', handleNewMessage);
+    websocketService.on('conversation_updated', handleConversationUpdated);
+
+    return () => {
+      websocketService.off('new_message', handleNewMessage);
+      websocketService.off('conversation_updated', handleConversationUpdated);
+    };
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       loadData();
@@ -602,6 +668,7 @@ export default function MatchingScreen() {
     <View style={styles.messagesTabContainer}>
       <FlatList
         data={conversations}
+        extraData={conversations}
         keyExtractor={(item) => item._id}
         renderItem={renderConversationItem}
         getItemLayout={getConversationItemLayout}
