@@ -59,6 +59,20 @@
   box-shadow: none;
 }
 
+.segActiveRecovery {
+  background: #fff;
+  color: #22C55E;
+  box-shadow: 0 1px 4px rgba(34, 197, 94, 0.08);
+}
+
+:global(.dark) .segActiveRecovery,
+:global(body.dark) .segActiveRecovery,
+:global(html.dark) .segActiveRecovery {
+  background: rgba(255, 255, 255, 0.08);
+  color: #22C55E;
+  box-shadow: none;
+}
+
 .segActiveGains {
   background: #fff;
   color: #86c1ad;
@@ -275,4 +289,242 @@
 
 .scaleStep {
   flex: 1;
+}
+
+/* ─── Recovery: Summary bar ─── */
+.summaryBar {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  width: 100%;
+}
+
+.summaryChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.04);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #555;
+}
+
+:global(.dark) .summaryChip,
+:global(body.dark) .summaryChip,
+:global(html.dark) .summaryChip {
+  background: rgba(255, 255, 255, 0.06);
+  color: #aaa;
+}
+
+.summaryDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ─── Recovery: Gauge scroll ─── */
+.gaugeScroll {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  overflow-x: auto;
+  padding: 4px 0;
+  scrollbar-width: none;
+}
+
+.gaugeScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.gaugeCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 88px;
+  padding: 10px 8px 8px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: rgba(0, 0, 0, 0.02);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gaugeCard:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+:global(.dark) .gaugeCard,
+:global(body.dark) .gaugeCard,
+:global(html.dark) .gaugeCard {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+:global(.dark) .gaugeCard:hover,
+:global(body.dark) .gaugeCard:hover,
+:global(html.dark) .gaugeCard:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.gaugeCardSelected {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+:global(.dark) .gaugeCardSelected,
+:global(body.dark) .gaugeCardSelected,
+:global(html.dark) .gaugeCardSelected {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gaugeArcWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gaugePct {
+  position: absolute;
+  bottom: 2px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.gaugeLabel {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #555;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+
+:global(.dark) .gaugeLabel,
+:global(body.dark) .gaugeLabel,
+:global(html.dark) .gaugeLabel {
+  color: #bbb;
+}
+
+.gaugeStatus {
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+/* ─── Recovery: Detail card ─── */
+.detailCard {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+:global(.dark) .detailCard,
+:global(body.dark) .detailCard,
+:global(html.dark) .detailCard {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.detailTitle {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #333;
+}
+
+:global(.dark) .detailTitle,
+:global(body.dark) .detailTitle,
+:global(html.dark) .detailTitle {
+  color: #ddd;
+}
+
+.detailClose {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #ccc;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+:global(.dark) .detailClose,
+:global(body.dark) .detailClose,
+:global(html.dark) .detailClose {
+  color: #555;
+}
+
+.detailGaugeWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.detailGaugePct {
+  position: absolute;
+  bottom: 4px;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.detailStats {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.detailStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.detailStatValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+}
+
+:global(.dark) .detailStatValue,
+:global(body.dark) .detailStatValue,
+:global(html.dark) .detailStatValue {
+  color: #e0e0e0;
+}
+
+.detailStatLabel {
+  font-size: 0.68rem;
+  color: #999;
+}
+
+:global(.dark) .detailStatLabel,
+:global(body.dark) .detailStatLabel,
+:global(html.dark) .detailStatLabel {
+  color: #666;
+}
+
+.detailDivider {
+  width: 1px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+:global(.dark) .detailDivider,
+:global(body.dark) .detailDivider,
+:global(html.dark) .detailDivider {
+  background: rgba(255, 255, 255, 0.08);
 }

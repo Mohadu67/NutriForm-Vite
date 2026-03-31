@@ -23,6 +23,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { theme } from '../../theme';
 import { MessageInput } from '../../components/chat';
+import TypingIndicator from '../../components/chat/TypingIndicator';
 import useThemedStyles from '../../hooks/useThemedStyles';
 import { blurIntensity } from '../../theme/glassmorphism';
 import * as chatbotApi from '../../api/chatbot';
@@ -453,34 +454,9 @@ export default function AIChatScreen({ route, navigation }) {
   }, [isLoadingMore]);
 
   // Typing indicator
-  const renderTypingIndicator = () => {
-    if (!isSending) return null;
-
-    return (
-      <View style={[styles.messageWrapper, styles.messageWrapperBot]}>
-        <View style={styles.botAvatar}>
-          <LinearGradient
-            colors={[theme.colors.primary, theme.colors.primaryDark]}
-            style={styles.botAvatarGradient}
-          >
-            <Ionicons name="sparkles" size={16} color="#FFFFFF" />
-          </LinearGradient>
-        </View>
-        <View style={[
-          styles.messageBubble,
-          styles.messageBubbleBot,
-          styles.typingBubble,
-          { backgroundColor: themedStyles.botBubbleBg, borderColor: themedStyles.botBubbleBorder }
-        ]}>
-          <View style={styles.typingDots}>
-            <Animated.View style={[styles.typingDot, styles.typingDot1]} />
-            <Animated.View style={[styles.typingDot, styles.typingDot2]} />
-            <Animated.View style={[styles.typingDot, styles.typingDot3]} />
-          </View>
-        </View>
-      </View>
-    );
-  };
+  const renderTypingIndicator = () => (
+    <TypingIndicator visible={isSending} />
+  );
 
   // Modal de renommage
   const renderRenameModal = () => (

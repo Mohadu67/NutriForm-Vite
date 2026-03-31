@@ -33,6 +33,8 @@ const EntrySchema = new Schema({
 
   muscleGroup: { type: String },
   muscle: { type: String },
+  primaryMuscle: { type: String },
+  secondaryMuscles: { type: [String], default: [] },
   muscles: { type: [String], default: [] },
   sets: {
     type: [Schema.Types.Mixed],

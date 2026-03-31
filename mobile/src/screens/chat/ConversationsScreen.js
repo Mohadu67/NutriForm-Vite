@@ -52,21 +52,13 @@ export default function ConversationsScreen({ navigation }) {
     ]).start();
   }, []);
 
-  // Charger les conversations au montage
-  useEffect(() => {
-    const load = async () => {
-      try {
-        await loadConversations();
-      } catch (error) {
-        logger.chat.error('Failed to load conversations on mount', error);
-      }
-    };
-    load();
-  }, []);
-
-  // Charger le nom du bot à chaque focus (pour refléter les changements)
+  // Recharger les conversations et le nom du bot à chaque focus
   useFocusEffect(
     useCallback(() => {
+      loadConversations().catch(error => {
+        logger.chat.error('Failed to load conversations on focus', error);
+      });
+
       const loadBotName = async () => {
         try {
           const savedName = await AsyncStorage.getItem('@ai_chat_bot_name');
@@ -307,6 +299,7 @@ export default function ConversationsScreen({ navigation }) {
         ) : (
           <FlatList
             data={conversations}
+            extraData={conversations}
             renderItem={renderConversation}
             keyExtractor={(item) => item._id}
             contentContainerStyle={[

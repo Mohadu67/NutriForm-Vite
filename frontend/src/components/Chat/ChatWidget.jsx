@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { storage } from '../../shared/utils/storage';
 import { Button, Spinner, Alert } from 'react-bootstrap';
+import ReactMarkdown from 'react-markdown';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { isAuthenticated } from '../../shared/api/auth';
 import { useChat } from '../../contexts/ChatContext';
@@ -211,7 +212,11 @@ export default function ChatWidget() {
                 className={`${styles.message} ${styles[`message${msg.role.charAt(0).toUpperCase() + msg.role.slice(1)}`]}`}
               >
                 <div className={styles.messageContent}>
-                  {msg.content}
+                  {msg.role === 'bot' || msg.role === 'admin' ? (
+                    <ReactMarkdown className={styles.markdown}>{msg.content}</ReactMarkdown>
+                  ) : (
+                    msg.content
+                  )}
                 </div>
                 <div className={styles.messageTime}>
                   {new Date(msg.createdAt).toLocaleTimeString('fr-FR', {
@@ -224,8 +229,10 @@ export default function ChatWidget() {
 
             {loading && (
               <div className={`${styles.message} ${styles.messageBot}`}>
-                <div className={styles.messageContent}>
-                  <Spinner animation="border" size="sm" /> En train d'écrire...
+                <div className={`${styles.messageContent} ${styles.typingIndicator}`}>
+                  <span className={styles.typingDot} />
+                  <span className={styles.typingDot} />
+                  <span className={styles.typingDot} />
                 </div>
               </div>
             )}

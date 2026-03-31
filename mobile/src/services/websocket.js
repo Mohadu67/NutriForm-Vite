@@ -28,6 +28,7 @@ class WebSocketService {
     this.socket = null;
     this.isConnected = false;
     this.listeners = new Map();
+    this.pendingListeners = []; // Listeners enregistrés avant que le socket soit prêt
     this.onlineUsers = new Set(); // Track des utilisateurs en ligne
     this.onlineStatusCallbacks = []; // Callbacks pour les changements de statut
   }
@@ -63,6 +64,15 @@ class WebSocketService {
       });
 
       this.setupEventListeners();
+
+      // Appliquer les listeners mis en file d'attente avant la connexion
+      if (this.pendingListeners.length > 0) {
+        logger.websocket.info(`Applying ${this.pendingListeners.length} pending listeners`);
+        this.pendingListeners.forEach(({ event, callback }) => {
+          this.on(event, callback);
+        });
+        this.pendingListeners = [];
+      }
 
     } catch (error) {
       logger.websocket.error('Failed to connect to WebSocket', error);
@@ -224,7 +234,9 @@ class WebSocketService {
    */
   on(event, callback) {
     if (!this.socket) {
-      logger.websocket.warn('Cannot listen to event: not connected', { event });
+      // Socket pas encore prêt, mettre en file d'attente
+      logger.websocket.info('Socket not ready, queuing listener', { event });
+      this.pendingListeners.push({ event, callback });
       return;
     }
 
@@ -242,6 +254,11 @@ class WebSocketService {
    * Arrêter d'écouter un événement
    */
   off(event, callback) {
+    // Retirer aussi de la file d'attente si le socket n'est pas encore prêt
+    this.pendingListeners = this.pendingListeners.filter(
+      p => !(p.event === event && p.callback === callback)
+    );
+
     if (!this.socket) return;
 
     this.socket.off(event, callback);

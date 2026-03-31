@@ -194,15 +194,6 @@ const ConversationItem = React.memo(({ conversation, onPress }) => {
       </TouchableOpacity>
     </Animated.View>
   );
-}, (prevProps, nextProps) => {
-  return (
-    prevProps.conversation._id === nextProps.conversation._id &&
-    prevProps.conversation.unreadCount === nextProps.conversation.unreadCount &&
-    prevProps.conversation.lastMessage?.content === nextProps.conversation.lastMessage?.content &&
-    prevProps.conversation.lastMessage?.timestamp === nextProps.conversation.lastMessage?.timestamp &&
-    prevProps.conversation.lastMessageRead === nextProps.conversation.lastMessageRead &&
-    prevProps.conversation.lastMessage?.delivered === nextProps.conversation.lastMessage?.delivered
-  );
 });
 
 const styles = StyleSheet.create({

@@ -653,7 +653,7 @@
 .nwMacroFill {
   height: 100%;
   border-radius: 3px;
-  background: var(--nw-track, #e5e7eb);
+  transition: width 0.4s ease;
 }
 
 .nwMacroDot {
@@ -698,6 +698,54 @@
 :global(body.dark) .nwMacrosRow,
 :global(html.dark) .nwMacrosRow {
   border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+/* — Clickable area (gauge + macros) — */
+.nwClickable {
+  cursor: pointer;
+}
+
+/* — Add meal button — */
+.nwAddMealBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px 0;
+  border: none;
+  border-radius: 10px;
+  background: #f0a47a;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.nwAddMealBtn:hover {
+  background: #e8956a;
+}
+
+.nwAddMealBtn:active {
+  transform: scale(0.98);
+}
+
+:global(body.dark) .nwAddMealBtn,
+:global(html.dark) .nwAddMealBtn {
+  background: #c67548;
+}
+
+:global(body.dark) .nwAddMealBtn:hover,
+:global(html.dark) .nwAddMealBtn:hover {
+  background: #b5673e;
+}
+
+.nwAddMealIcon {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
 /* ========== RECENT SECTION ========== */

@@ -19,7 +19,7 @@ function initializeAI() {
 
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     logger.info('Gemini client initialized successfully');
     return true;
   } catch (error) {
@@ -66,7 +66,7 @@ async function generateResponse(userMessage, conversationHistory = [], userConte
       systemInstruction: { parts: [{ text: systemPrompt }] },
       history,
       generationConfig: {
-        maxOutputTokens: 1000,
+        maxOutputTokens: 2048,
         temperature: 0.7,
       },
     });

@@ -1,248 +1,228 @@
+/* ═══════════════════════════════════════════════════
+   ConfirmModal — Harmonith Premium Soft
+   ═══════════════════════════════════════════════════ */
+
 .overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  inset: 0;
+  background: rgba(30, 28, 26, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  animation: fadeIn 0.2s ease;
   padding: 20px;
+  animation: overlayIn 0.25s ease;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
+/* ── Modal Card ────────────────────────────────── */
 .modal {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 500px;
+  background: var(--color-neutral-0, #ffffff);
+  border-radius: 24px;
+  max-width: 420px;
   width: 100%;
-  animation: slideUp 0.3s ease;
-  overflow: hidden;
+  padding: 36px 32px 28px;
+  text-align: center;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.06),
+    0 16px 56px rgba(0, 0, 0, 0.08);
+  animation: modalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes slideUp {
+@keyframes modalIn {
   from {
-    transform: translateY(20px);
     opacity: 0;
+    transform: scale(0.92) translateY(12px);
   }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 2px solid #e9ecef;
-}
-
-.header h3 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #333;
-  margin: 0;
-}
-
-.closeBtn {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  color: #999;
-  cursor: pointer;
-  width: 32px;
-  height: 32px;
+/* ── Icon Circle ───────────────────────────────── */
+.iconCircle {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  transition: all 0.2s;
+  margin: 0 auto 20px;
 }
 
-.closeBtn:hover {
-  background: #f8f9fa;
-  color: #333;
+.icon_default {
+  background: var(--color-primary-50, #fdf8f5);
+  color: var(--color-primary-500, #f0a47a);
 }
 
-.body {
-  padding: 24px;
+.icon_danger {
+  background: #fef2f2;
+  color: #ef4444;
 }
 
-.body p {
-  font-size: 1rem;
+.icon_warning {
+  background: #fffbeb;
+  color: #f59e0b;
+}
+
+/* ── Title ─────────────────────────────────────── */
+.title {
+  font-family: 'Montserrat', 'Inter', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-neutral-800, #3d3a36);
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+
+/* ── Message ───────────────────────────────────── */
+.message {
+  font-size: 0.92rem;
   line-height: 1.6;
-  color: #555;
-  margin: 0;
+  color: var(--color-neutral-500, #8a8680);
+  margin: 0 0 28px;
+  white-space: pre-line;
 }
 
-.footer {
+/* ── Actions ───────────────────────────────────── */
+.actions {
   display: flex;
-  gap: 12px;
-  padding: 20px 24px;
-  background: #f8f9fa;
-  justify-content: flex-end;
+  gap: 10px;
 }
 
 .cancelBtn,
 .confirmBtn {
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 1rem;
+  flex: 1;
+  padding: 13px 20px;
+  border-radius: 14px;
+  font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
   border: none;
+  transition: all 0.2s ease;
 }
 
+/* Cancel */
 .cancelBtn {
-  background: white;
-  color: #666;
-  border: 2px solid #dee2e6;
+  background: var(--color-neutral-50, #f7f6f3);
+  color: var(--color-neutral-600, #6b6762);
 }
 
 .cancelBtn:hover {
-  background: #f8f9fa;
-  border-color: #adb5bd;
+  background: var(--color-neutral-100, #efedea);
 }
 
+/* Confirm — default (gradient peach → sage) */
 .confirmBtn {
-  background: #f7b186;
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary-400, #f5b998), var(--color-secondary-400, #90c9b5));
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(240, 164, 122, 0.2);
 }
 
 .confirmBtn:hover {
-  background: #e89a6f;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(240, 164, 122, 0.3);
 }
 
-.confirmBtn.danger {
-  background: #dc3545;
+.confirmBtn:active {
+  transform: translateY(0);
 }
 
-.confirmBtn.danger:hover {
-  background: #c82333;
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+/* Confirm — danger */
+.confirm_danger {
+  background: linear-gradient(135deg, #f87171, #ef4444);
+  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
 }
 
-.confirmBtn.warning {
-  background: #ffc107;
-  color: #111;
+.confirm_danger:hover {
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
 }
 
-.confirmBtn.warning:hover {
-  background: #e0a800;
-  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+/* Confirm — warning */
+.confirm_warning {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1a1a1a;
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .overlay {
-    padding: 15px;
-  }
+.confirm_warning:hover {
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+}
 
+/* ── Responsive ────────────────────────────────── */
+@media (max-width: 480px) {
   .modal {
-    max-width: 100%;
+    padding: 28px 24px 24px;
+    border-radius: 20px;
+    max-width: calc(100vw - 32px);
   }
 
-  .header {
-    padding: 16px 20px;
-  }
-
-  .header h3 {
-    font-size: 1.15rem;
-  }
-
-  .body {
-    padding: 20px;
-  }
-
-  .body p {
-    font-size: 0.95rem;
-  }
-
-  .footer {
-    padding: 16px 20px;
+  .actions {
     flex-direction: column-reverse;
   }
 
   .cancelBtn,
   .confirmBtn {
-    width: 100%;
     padding: 14px 20px;
   }
 }
 
-/* Dark mode */
+/* ── Dark Mode ─────────────────────────────────── */
 :global(.dark) .modal,
 :global(body.dark) .modal,
 :global(html.dark) .modal {
   background: #1e2028;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.2),
+    0 16px 56px rgba(0, 0, 0, 0.3);
 }
 
-:global(.dark) .header,
-:global(body.dark) .header,
-:global(html.dark) .header {
-  border-bottom-color: rgba(255, 255, 255, 0.1);
+:global(.dark) .title,
+:global(body.dark) .title,
+:global(html.dark) .title {
+  color: #f5f5f5;
 }
 
-:global(.dark) .header h3,
-:global(body.dark) .header h3,
-:global(html.dark) .header h3 {
-  color: #f5f7fa;
-}
-
-:global(.dark) .closeBtn,
-:global(body.dark) .closeBtn,
-:global(html.dark) .closeBtn {
+:global(.dark) .message,
+:global(body.dark) .message,
+:global(html.dark) .message {
   color: #9ca3af;
 }
 
-:global(.dark) .closeBtn:hover,
-:global(body.dark) .closeBtn:hover,
-:global(html.dark) .closeBtn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #f5f7fa;
+:global(.dark) .icon_default,
+:global(body.dark) .icon_default,
+:global(html.dark) .icon_default {
+  background: rgba(240, 164, 122, 0.12);
 }
 
-:global(.dark) .body p,
-:global(body.dark) .body p,
-:global(html.dark) .body p {
-  color: #d1d5db;
+:global(.dark) .icon_danger,
+:global(body.dark) .icon_danger,
+:global(html.dark) .icon_danger {
+  background: rgba(239, 68, 68, 0.12);
 }
 
-:global(.dark) .footer,
-:global(body.dark) .footer,
-:global(html.dark) .footer {
-  background: rgba(255, 255, 255, 0.05);
+:global(.dark) .icon_warning,
+:global(body.dark) .icon_warning,
+:global(html.dark) .icon_warning {
+  background: rgba(245, 158, 11, 0.12);
 }
 
 :global(.dark) .cancelBtn,
 :global(body.dark) .cancelBtn,
 :global(html.dark) .cancelBtn {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.06);
   color: #d1d5db;
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
 :global(.dark) .cancelBtn:hover,
 :global(body.dark) .cancelBtn:hover,
 :global(html.dark) .cancelBtn:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
 }
