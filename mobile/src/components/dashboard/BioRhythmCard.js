@@ -60,26 +60,23 @@ export const BioRhythmCard = ({ gender }) => {
 
   if (!data) return null;
 
-  // Parse the full training window from the backend
-  // The backend returns optimalWindow: { start, end } for the recommended window
-  // We reconstruct both windows from the readiness factors
-  const optimalWindow = data.optimalWindow;
   const morningWindow = data.morningWindow || { start: '10:00', end: '12:00' };
   const afternoonWindow = data.afternoonWindow || { start: '16:00', end: '19:00' };
+  const optimalWindow = data.optimalWindow;
 
-  // Determine which window is recommended based on matching times
-  const isAfternoonRecommended =
-    optimalWindow &&
-    optimalWindow.start === afternoonWindow.start &&
-    optimalWindow.end === afternoonWindow.end;
+  // Determine which window is recommended
+  const recommendedIsMorning =
+    optimalWindow?.start === morningWindow.start &&
+    optimalWindow?.end === morningWindow.end;
 
-  const isMorningRecommended =
-    optimalWindow &&
-    optimalWindow.start === morningWindow.start &&
-    optimalWindow.end === morningWindow.end;
-
-  // Default for male users: afternoon is recommended (best T/C ratio)
-  const recommendedIsMorning = isMorningRecommended && !isAfternoonRecommended;
+  // Check if each window is past
+  const now = new Date();
+  const currentHour = now.getHours();
+  const morningEndH = parseInt(morningWindow.end.split(':')[0], 10);
+  const afternoonEndH = parseInt(afternoonWindow.end.split(':')[0], 10);
+  const morningPast = currentHour >= morningEndH;
+  const afternoonPast = currentHour >= afternoonEndH;
+  const allPast = morningPast && afternoonPast;
 
   const tip = getTodayTip();
 
@@ -88,7 +85,9 @@ export const BioRhythmCard = ({ gender }) => {
       {/* Header */}
       <View style={st.header}>
         <Ionicons name="time-outline" size={18} color={theme.colors.primary} />
-        <Text style={[st.title, isDark && st.titleDark]}>Fenêtre optimale</Text>
+        <Text style={[st.title, isDark && st.titleDark]}>
+          {allPast ? 'Fenêtre optimale — demain' : 'Fenêtre optimale'}
+        </Text>
       </View>
 
       {/* Time blocks */}
@@ -98,34 +97,28 @@ export const BioRhythmCard = ({ gender }) => {
           style={[
             st.windowBlock,
             isDark && st.windowBlockDark,
-            recommendedIsMorning && st.windowBlockActive,
-            recommendedIsMorning && isDark && st.windowBlockActiveDark,
+            !morningPast && recommendedIsMorning && st.windowBlockActive,
+            !morningPast && recommendedIsMorning && isDark && st.windowBlockActiveDark,
+            morningPast && st.windowBlockPast,
           ]}
         >
-          {recommendedIsMorning && (
+          {!morningPast && recommendedIsMorning && (
             <View style={st.starBadge}>
               <Ionicons name="star" size={11} color={theme.colors.primary} />
             </View>
           )}
-          <Text style={[st.windowLabel, isDark && st.windowLabelDark]}>
+          {morningPast && (
+            <View style={st.starBadge}>
+              <Ionicons name="checkmark-circle" size={13} color={isDark ? '#444' : '#ccc'} />
+            </View>
+          )}
+          <Text style={[st.windowLabel, isDark && st.windowLabelDark, morningPast && st.windowLabelPast]}>
             Matin
           </Text>
-          <Text
-            style={[
-              st.windowTime,
-              isDark && st.windowTimeDark,
-              recommendedIsMorning && st.windowTimeActive,
-            ]}
-          >
+          <Text style={[st.windowTime, isDark && st.windowTimeDark, !morningPast && recommendedIsMorning && st.windowTimeActive, morningPast && st.windowTimePast]}>
             {morningWindow.start}
           </Text>
-          <Text
-            style={[
-              st.windowTime,
-              isDark && st.windowTimeDark,
-              recommendedIsMorning && st.windowTimeActive,
-            ]}
-          >
+          <Text style={[st.windowTime, isDark && st.windowTimeDark, !morningPast && recommendedIsMorning && st.windowTimeActive, morningPast && st.windowTimePast]}>
             {morningWindow.end}
           </Text>
         </View>
@@ -135,34 +128,28 @@ export const BioRhythmCard = ({ gender }) => {
           style={[
             st.windowBlock,
             isDark && st.windowBlockDark,
-            !recommendedIsMorning && st.windowBlockActive,
-            !recommendedIsMorning && isDark && st.windowBlockActiveDark,
+            !afternoonPast && !recommendedIsMorning && st.windowBlockActive,
+            !afternoonPast && !recommendedIsMorning && isDark && st.windowBlockActiveDark,
+            afternoonPast && st.windowBlockPast,
           ]}
         >
-          {!recommendedIsMorning && (
+          {!afternoonPast && !recommendedIsMorning && (
             <View style={st.starBadge}>
               <Ionicons name="star" size={11} color={theme.colors.primary} />
             </View>
           )}
-          <Text style={[st.windowLabel, isDark && st.windowLabelDark]}>
+          {afternoonPast && (
+            <View style={st.starBadge}>
+              <Ionicons name="checkmark-circle" size={13} color={isDark ? '#444' : '#ccc'} />
+            </View>
+          )}
+          <Text style={[st.windowLabel, isDark && st.windowLabelDark, afternoonPast && st.windowLabelPast]}>
             Après-midi
           </Text>
-          <Text
-            style={[
-              st.windowTime,
-              isDark && st.windowTimeDark,
-              !recommendedIsMorning && st.windowTimeActive,
-            ]}
-          >
+          <Text style={[st.windowTime, isDark && st.windowTimeDark, !afternoonPast && !recommendedIsMorning && st.windowTimeActive, afternoonPast && st.windowTimePast]}>
             {afternoonWindow.start}
           </Text>
-          <Text
-            style={[
-              st.windowTime,
-              isDark && st.windowTimeDark,
-              !recommendedIsMorning && st.windowTimeActive,
-            ]}
-          >
+          <Text style={[st.windowTime, isDark && st.windowTimeDark, !afternoonPast && !recommendedIsMorning && st.windowTimeActive, afternoonPast && st.windowTimePast]}>
             {afternoonWindow.end}
           </Text>
         </View>
@@ -270,6 +257,16 @@ const st = StyleSheet.create({
   },
   windowTimeActive: {
     color: '#f0a47a',
+  },
+  windowBlockPast: {
+    opacity: 0.45,
+  },
+  windowLabelPast: {
+    color: '#bbb',
+  },
+  windowTimePast: {
+    color: '#bbb',
+    textDecorationLine: 'line-through',
   },
 
   // Tip section

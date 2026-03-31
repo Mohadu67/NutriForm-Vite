@@ -6,7 +6,8 @@ import {
 import Svg, { Path } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../theme';
-import { getReadinessScore } from '../../api/biorhythm';
+import { getReadinessScore, syncSleepData } from '../../api/biorhythm';
+import healthService from '../../services/healthService';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 const getScoreColor = (score) => {
@@ -75,6 +76,24 @@ const FactorRow = ({ icon, label, score, isDark }) => {
   );
 };
 
+// ─── Helpers fenêtre temporelle ──────────────────────────────────────
+const formatWindowLabel = (windowObj) => {
+  if (!windowObj) return null;
+  const now = new Date();
+  const [h, m] = windowObj.start.split(':').map(Number);
+  const [hEnd] = windowObj.end.split(':').map(Number);
+
+  // Si la fenêtre end est déjà passée aujourd'hui → "Demain"
+  if (now.getHours() > hEnd || (now.getHours() === hEnd && now.getMinutes() > 0)) {
+    return { text: `Demain ${windowObj.start} — ${windowObj.end}`, isPast: true };
+  }
+  // Si on est dans la fenêtre → "Maintenant"
+  if (now.getHours() >= h && now.getHours() < hEnd) {
+    return { text: `Maintenant — jusqu'à ${windowObj.end}`, isPast: false };
+  }
+  return { text: `${windowObj.start} — ${windowObj.end}`, isPast: false };
+};
+
 // ─── Main widget ────────────────────────────────────────────────────
 export const ReadinessWidget = ({ onPress }) => {
   const colorScheme = useColorScheme();
@@ -82,14 +101,43 @@ export const ReadinessWidget = ({ onPress }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
+  const [hasRealData, setHasRealData] = useState(false);
 
   const fetchReadiness = useCallback(async () => {
     try {
       setLoading(true);
+
+      // 1. Auto-sync des données de santé du téléphone → backend
+      try {
+        if (healthService.isAvailable) {
+          const summary = await healthService.getTodaySummary();
+          if (summary?.sleep?.sleepDuration) {
+            const today = new Date().toISOString().split('T')[0];
+            await syncSleepData({
+              date: today,
+              sleepDuration: summary.sleep.sleepDuration,
+              deepSleepMinutes: summary.sleep.deepSleepMinutes || undefined,
+              remSleepMinutes: summary.sleep.remSleepMinutes || undefined,
+              lightSleepMinutes: summary.sleep.lightSleepMinutes || undefined,
+              awakeMinutes: summary.sleep.awakeMinutes || undefined,
+              sleepStart: summary.sleep.sleepStart || undefined,
+              sleepEnd: summary.sleep.sleepEnd || undefined,
+              heartRateResting: summary.restingHeartRate || undefined,
+              hrv: summary.hrv || undefined,
+              source: 'healthkit',
+            });
+          }
+        }
+      } catch (syncErr) {
+        // Health data unavailable (simulator, no permissions) — continue with backend data
+      }
+
+      // 2. Fetch le readiness score (maintenant avec données réelles si sync OK)
       const today = new Date().toISOString().split('T')[0];
       const result = await getReadinessScore(today);
       if (result.success && result.data?.data) {
         setData(result.data.data);
+        setHasRealData(!!result.data.data.hasRealData);
       }
     } catch (e) {
       // silently fail
@@ -127,7 +175,7 @@ export const ReadinessWidget = ({ onPress }) => {
   const color = getScoreColor(score);
   const gradientStyle = getScoreGradient(score);
   const factors = data.factors || {};
-  const window = data.optimalWindow;
+  const windowInfo = formatWindowLabel(data.optimalWindow);
 
   return (
     <View style={[st.card, isDark && st.cardDark]}>
@@ -137,13 +185,20 @@ export const ReadinessWidget = ({ onPress }) => {
           <Ionicons name="pulse" size={18} color={color} />
           <Text style={[st.title, isDark && st.titleDark]}>Readiness</Text>
         </View>
-        <TouchableOpacity onPress={() => setExpanded(e => !e)} hitSlop={12}>
-          <Ionicons
-            name={expanded ? 'chevron-up' : 'chevron-down'}
-            size={18}
-            color={isDark ? '#555' : '#bbb'}
-          />
-        </TouchableOpacity>
+        <View style={st.headerRight}>
+          {!hasRealData && (
+            <Text style={[st.estimatedBadge, isDark && st.estimatedBadgeDark]}>
+              estimé
+            </Text>
+          )}
+          <TouchableOpacity onPress={() => setExpanded(e => !e)} hitSlop={12}>
+            <Ionicons
+              name={expanded ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color={isDark ? '#555' : '#bbb'}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Main content row */}
@@ -165,11 +220,22 @@ export const ReadinessWidget = ({ onPress }) => {
             {data.recommendation || 'Données insuffisantes'}
           </Text>
 
-          {window && (
-            <View style={[st.windowBadge, { backgroundColor: gradientStyle.bg, borderColor: gradientStyle.border }]}>
-              <Ionicons name="time-outline" size={13} color={color} />
-              <Text style={[st.windowText, { color }]}>
-                {window.start} — {window.end}
+          {windowInfo && (
+            <View style={[
+              st.windowBadge,
+              { backgroundColor: gradientStyle.bg, borderColor: gradientStyle.border },
+              windowInfo.isPast && st.windowBadgePast,
+            ]}>
+              <Ionicons
+                name={windowInfo.isPast ? 'calendar-outline' : 'time-outline'}
+                size={13}
+                color={windowInfo.isPast ? (isDark ? '#666' : '#999') : color}
+              />
+              <Text style={[
+                st.windowText,
+                { color: windowInfo.isPast ? (isDark ? '#666' : '#999') : color },
+              ]}>
+                {windowInfo.text}
               </Text>
             </View>
           )}
@@ -242,6 +308,25 @@ const st = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  estimatedBadge: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#bbb',
+    backgroundColor: 'rgba(0,0,0,0.04)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  estimatedBadgeDark: {
+    color: '#555',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
   title: {
     fontSize: 15,
     fontWeight: '700',
@@ -310,6 +395,10 @@ const st = StyleSheet.create({
   windowText: {
     fontSize: 12,
     fontWeight: '600',
+  },
+  windowBadgePast: {
+    borderColor: 'rgba(0,0,0,0.06)',
+    backgroundColor: 'rgba(0,0,0,0.02)',
   },
 
   // Factors
