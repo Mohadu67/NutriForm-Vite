@@ -26,6 +26,7 @@ import {
   BodyMetrics,
   MuscleHeatmap,
   WeeklySummary,
+  ReadinessWidget,
 } from '../../components/dashboard';
 import { GoalModal } from '../../components/dashboard/GoalModal';
 
@@ -284,6 +285,11 @@ export default function HomeScreen() {
             weeklyTrainingDays={weeklyTrainingDays}
           />
         )}
+
+        {/* Readiness Score */}
+        <View style={styles.section}>
+          <ReadinessWidget />
+        </View>
 
         {/* Actions rapides */}
         <QuickActions navigation={navigation} subscriptionTier={subscriptionTier} />
