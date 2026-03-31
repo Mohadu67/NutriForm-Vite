@@ -70,6 +70,7 @@ const biorhythmRoutes = require('./routes/biorhythm.route.js');
 const bodyCompositionRoutes = require('./routes/bodyComposition.route.js');
 const followRoutes = require('./routes/follow.route.js');
 const barcodeRoutes = require('./routes/barcode.route.js');
+const recoveryRoutes = require('./routes/recovery.route.js');
 const { startNewsletterCron } = require('./cron/newsletterCron');
 const { startLeaderboardCron } = require('./cron/leaderboardCron');
 const { startChallengeCron } = require('./cron/challengeCron');
@@ -261,6 +262,7 @@ app.use('/api/biorhythm', biorhythmRoutes);
 app.use('/api/body-composition', bodyCompositionRoutes);
 app.use('/api/social', followRoutes);
 app.use('/api/barcode', barcodeRoutes);
+app.use('/api/recovery', recoveryRoutes);
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
