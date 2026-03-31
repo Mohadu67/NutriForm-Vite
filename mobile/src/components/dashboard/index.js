@@ -8,3 +8,5 @@ export { MuscleHeatmap } from './MuscleHeatmap';
 export { WeeklySummary } from './WeeklySummary';
 export { GoalModal } from './GoalModal';
 export { ReadinessWidget } from './ReadinessWidget';
+export { BioRhythmCard } from './BioRhythmCard';
+export { CycleCard } from './CycleCard';

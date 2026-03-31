@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const biorhythmController = require('../controllers/biorhythm.controller');
+const biorhythmNotifController = require('../controllers/notification.biorhythm.controller');
 const auth = require('../middlewares/auth.middleware');
 
 // All routes require authentication
@@ -20,5 +21,8 @@ router.get('/sleep/history', biorhythmController.getSleepHistory);
 
 // GET /api/biorhythm/sleep/:date - Get sleep data for a specific date
 router.get('/sleep/:date', biorhythmController.getSleep);
+
+// POST /api/biorhythm/schedule-notification - Schedule daily training notification
+router.post('/schedule-notification', biorhythmNotifController.scheduleNotification);
 
 module.exports = router;
