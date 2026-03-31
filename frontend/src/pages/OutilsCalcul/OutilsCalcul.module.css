@@ -39,7 +39,7 @@
 }
 
 .heroTitle {
-  font-family: sans-serif;
+  font-family: var(--font-display, 'Montserrat', sans-serif);
   font-size: clamp(2.25rem, 7vw, 3.5rem);
   font-weight: 800;
   line-height: 1.1;
@@ -72,8 +72,8 @@
 .floatingOrb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.4;
+  filter: blur(80px);
+  opacity: 0.25;
   animation: float 20s ease-in-out infinite;
 }
 

@@ -6,7 +6,7 @@
 .layout {
   max-width: 860px;
   margin: 0 auto;
-  padding: 32px 16px 60px;
+  padding: 140px 16px 60px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -280,17 +280,22 @@
 .notFoundTitle { font-size: 20px; font-weight: 700; color: #111; margin-bottom: 20px; }
 
 .backBtn {
-  background: #E89A6F;
-  color: #fff;
-  border: none;
-  border-radius: 14px;
-  padding: 10px 24px;
-  font-size: 14px;
-  font-weight: 700;
+  align-self: flex-start;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-full, 20px);
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  transition: opacity .15s;
+  transition: all var(--transition-fast, 0.15s ease);
 }
-.backBtn:hover { opacity: 0.85; }
+.backBtn:hover {
+  background: var(--couleur-bouton-action);
+  color: var(--color-neutral-900, #1c1917);
+  border-color: var(--couleur-bouton-action);
+}
 
 /* ── Spinner ───────────────────────────────────────────── */
 @keyframes spin { to { transform: rotate(360deg); } }

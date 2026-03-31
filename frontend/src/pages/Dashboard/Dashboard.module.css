@@ -9,7 +9,7 @@
 
 :global(body.dark) .dashboard,
 :global(html.dark) .dashboard {
-  background: #0c0e12;
+  background: var(--couleur-principale);
 }
 
 .container {
@@ -39,14 +39,14 @@
 }
 
 .welcomeModal {
-  background: white;
-  border-radius: 24px;
+  background: var(--paper);
+  border-radius: var(--radius-2xl, 1.5rem);
   padding: 48px 40px;
   max-width: 500px;
   width: 90%;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.4s ease;
+  box-shadow: var(--shadow-2xl, 0 20px 60px rgba(0, 0, 0, 0.3));
+  animation: slideUp 0.4s var(--ease-spring, ease);
 }
 
 @keyframes slideUp {
@@ -63,12 +63,12 @@
 .modalIcon {
   font-size: 4rem;
   margin-bottom: 16px;
-  animation: bounce 0.6s ease;
+  animation: popIn 0.5s var(--ease-spring, ease) both;
 }
 
-@keyframes bounce {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .modalTitle {
@@ -115,7 +115,7 @@
 /* Dark mode */
 :global(body.dark) .welcomeModal,
 :global(html.dark) .welcomeModal {
-  background: #1f2937;
+  background: var(--paper);
 }
 
 :global(body.dark) .modalTitle,
@@ -125,7 +125,7 @@
 
 :global(body.dark) .modalMessage,
 :global(html.dark) .modalMessage {
-  color: #d1d5db;
+  color: var(--muted);
 }
 
 :global(body.dark) .modalMessage strong,
@@ -139,16 +139,17 @@
 }
 
 .greeting {
-  font-family: sans-serif;
+  font-family: var(--font-display, 'Montserrat', sans-serif);
   font-size: 1.75rem;
   font-weight: 700;
-  color: var(--ink, #222325);
+  letter-spacing: -0.02em;
+  color: var(--ink);
   margin: 0 0 4px;
 }
 
 :global(body.dark) .greeting,
 :global(html.dark) .greeting {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .subtitle {
@@ -182,8 +183,8 @@
 
 :global(body.dark) .statCard,
 :global(html.dark) .statCard {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--paper);
+  border-color: var(--line);
 }
 
 .statCardClickable {
@@ -191,8 +192,8 @@
 }
 
 .statCardClickable:hover:not(:disabled) {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md, 0 8px 20px rgba(0, 0, 0, 0.08));
 }
 
 :global(body.dark) .statCardClickable:hover:not(:disabled),
@@ -237,7 +238,7 @@
 
 :global(body.dark) .statValue,
 :global(html.dark) .statValue {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .statLabel {
@@ -267,7 +268,7 @@
 
 :global(body.dark) .statTrend,
 :global(html.dark) .statTrend {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgb(255 255 255 / 0.06);
 }
 
 /* ========== SECTION TITLE ========== */
@@ -282,7 +283,7 @@
 
 :global(body.dark) .sectionTitle,
 :global(html.dark) .sectionTitle {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 /* ========== PROGRESS SECTION ========== */
@@ -296,8 +297,8 @@
 
 :global(body.dark) .progressSection,
 :global(html.dark) .progressSection {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--paper);
+  border-color: var(--line);
 }
 
 .progressHeader {
@@ -376,7 +377,7 @@
 
 :global(body.dark) .progressValue,
 :global(html.dark) .progressValue {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .progressGoal {
@@ -442,9 +443,9 @@
 
 :global(body.dark) .secondaryAction,
 :global(html.dark) .secondaryAction {
-  background: #1a1d24;
-  color: #f5f7fa;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--line);
 }
 
 .secondaryAction:hover {
@@ -710,8 +711,8 @@
 
 :global(body.dark) .recentSection,
 :global(html.dark) .recentSection {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--paper);
+  border-color: var(--line);
 }
 
 .recentSection .sectionTitle {
@@ -765,7 +766,7 @@
 
 :global(body.dark) .sessionName,
 :global(html.dark) .sessionName {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .sessionNameInput {
@@ -782,7 +783,7 @@
 
 :global(body.dark) .sessionNameInput,
 :global(html.dark) .sessionNameInput {
-  color: #f5f7fa;
+  color: var(--ink);
   background: rgba(255, 255, 255, 0.08);
   border-color: var(--couleur-bouton-action, #f7b186);
 }
@@ -910,7 +911,7 @@
 :global(body.dark) .exerciseDetail,
 :global(html.dark) .exerciseDetail {
   background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--line);
 }
 
 .exerciseDetailExpanded {
@@ -939,7 +940,7 @@
 
 :global(body.dark) .exerciseName,
 :global(html.dark) .exerciseName {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .exerciseType {
@@ -1047,8 +1048,8 @@
 
 :global(body.dark) .metricCard,
 :global(html.dark) .metricCard {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--paper);
+  border-color: var(--line);
 }
 
 .metricIcon {
@@ -1083,7 +1084,7 @@
 
 :global(body.dark) .metricValue,
 :global(html.dark) .metricValue {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .metricLabel {
@@ -1123,8 +1124,8 @@
 
 :global(body.dark) .performanceCard,
 :global(html.dark) .performanceCard {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--paper);
+  border-color: var(--line);
 }
 
 .performanceIcon {
@@ -1147,7 +1148,7 @@
 
 :global(body.dark) .performanceValue,
 :global(html.dark) .performanceValue {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .performanceLabel {
@@ -1166,8 +1167,8 @@
 
 :global(body.dark) .cardioSection,
 :global(html.dark) .cardioSection {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--paper);
+  border-color: var(--line);
 }
 
 .cardioSection .sectionTitle {
@@ -1221,7 +1222,7 @@
 
 :global(body.dark) .cardioValue,
 :global(html.dark) .cardioValue {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .cardioLabel {
@@ -1243,8 +1244,8 @@
 
 :global(body.dark) .rmSection,
 :global(html.dark) .rmSection {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--paper);
+  border-color: var(--line);
 }
 
 .rmSection .sectionTitle {
@@ -1279,7 +1280,7 @@
 
 :global(body.dark) .rmExerciceName,
 :global(html.dark) .rmExerciceName {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .rmExerciceCount {
@@ -1292,7 +1293,7 @@
 
 :global(body.dark) .rmExerciceCount,
 :global(html.dark) .rmExerciceCount {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgb(255 255 255 / 0.06);
 }
 
 .rmScrollContainer {
@@ -1408,7 +1409,7 @@
 
 :global(body.dark) .rmFormula,
 :global(html.dark) .rmFormula {
-  color: #f5f7fa;
+  color: var(--ink);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -1437,7 +1438,7 @@
 
 :global(body.dark) .rmFormulaValue,
 :global(html.dark) .rmFormulaValue {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 /* ========== CHART SECTION ========== */
@@ -1451,8 +1452,8 @@
 
 :global(body.dark) .chartSection,
 :global(html.dark) .chartSection {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--paper);
+  border-color: var(--line);
 }
 
 .chartSection .sectionTitle {
@@ -1490,7 +1491,7 @@
 
 :global(body.dark) .chartBarValue,
 :global(html.dark) .chartBarValue {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .chartBarFill {
@@ -1519,8 +1520,8 @@
 
 :global(body.dark) .emptyState,
 :global(html.dark) .emptyState {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--paper);
+  border-color: var(--line);
 }
 
 .emptyIcon {
@@ -1538,7 +1539,7 @@
 
 :global(body.dark) .emptyTitle,
 :global(html.dark) .emptyTitle {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .emptyText {
@@ -1613,7 +1614,7 @@
 
 :global(body.dark) .popup,
 :global(html.dark) .popup {
-  background: #1a1d24;
+  background: var(--paper);
 }
 
 @keyframes slideUp {
@@ -1643,7 +1644,7 @@
 
 :global(body.dark) .popupTitle,
 :global(html.dark) .popupTitle {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .popupClose {
@@ -1704,7 +1705,7 @@
 :global(body.dark) .badgeLocked,
 :global(html.dark) .badgeLocked {
   background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--line);
 }
 
 .badgeEmoji {
@@ -1726,7 +1727,7 @@
 
 :global(body.dark) .badgeName,
 :global(html.dark) .badgeName {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .badgeDesc {
@@ -1748,7 +1749,7 @@
 
 :global(body.dark) .popupLarge,
 :global(html.dark) .popupLarge {
-  background: #1a1d24;
+  background: var(--paper);
 }
 
 .popupSubtitle {
@@ -1795,8 +1796,8 @@
 
 :global(body.dark) .sessionPopupCard,
 :global(html.dark) .sessionPopupCard {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--paper);
+  border-color: var(--line);
 }
 
 .sessionPopupHeader {
@@ -1842,7 +1843,7 @@
 
 :global(body.dark) .sessionPopupName,
 :global(html.dark) .sessionPopupName {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .sessionPopupNameInput {
@@ -1861,7 +1862,7 @@
 
 :global(body.dark) .sessionPopupNameInput,
 :global(html.dark) .sessionPopupNameInput {
-  color: #f5f7fa;
+  color: var(--ink);
   background: rgba(255, 255, 255, 0.08);
   border-color: var(--couleur-bouton-action, #f7b186);
 }
@@ -1919,7 +1920,7 @@
 
 :global(body.dark) .sessionPopupExerciseName,
 :global(html.dark) .sessionPopupExerciseName {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .sessionPopupExerciseSets {
@@ -1996,7 +1997,7 @@
 
 :global(body.dark) .paywallContainer,
 :global(html.dark) .paywallContainer {
-  background: #0c0e12;
+  background: var(--couleur-principale);
 }
 
 .paywallContent {
@@ -2020,7 +2021,7 @@
 
 :global(body.dark) .paywallTitle,
 :global(html.dark) .paywallTitle {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .paywallSubtitle {
@@ -2041,8 +2042,8 @@
 
 :global(body.dark) .paywallCard,
 :global(html.dark) .paywallCard {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--paper);
+  border-color: var(--line);
 }
 
 .paywallCard:hover {
@@ -2065,7 +2066,7 @@
 
 :global(body.dark) .paywallCardTitle,
 :global(html.dark) .paywallCardTitle {
-  color: #f5f7fa;
+  color: var(--ink);
 }
 
 .paywallFeatures {
@@ -2391,8 +2392,8 @@
 
 :global(body.dark) .heatmapSection,
 :global(html.dark) .heatmapSection {
-  background: #1a1d24;
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--paper);
+  border-color: var(--line);
 }
 
 .heatmapSection .sectionTitle {
@@ -2578,7 +2579,7 @@
 
 :global(body.dark) .wsTag,
 :global(html.dark) .wsTag {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgb(255 255 255 / 0.06);
   color: #999;
 }
 

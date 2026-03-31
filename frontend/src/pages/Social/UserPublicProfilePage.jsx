@@ -282,6 +282,11 @@ export default function UserPublicProfilePage() {
       <Header />
       <div className={styles.layout}>
 
+        {/* Bouton Retour */}
+        <button className={styles.backBtn} onClick={() => navigate(-1)}>
+          ← Retour
+        </button>
+
         {/* Profile Card */}
         <div className={styles.profileCard}>
           <div className={styles.profileBg} />
