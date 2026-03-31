@@ -1,5 +1,6 @@
 const Follow = require('../models/Follow');
 const User = require('../models/User');
+const UserProfile = require('../models/UserProfile');
 const WorkoutSession = require('../models/WorkoutSession');
 const FoodLog = require('../models/FoodLog');
 const Recipe = require('../models/Recipe');
@@ -8,6 +9,7 @@ const FeedLike = require('../models/FeedLike');
 const FeedComment = require('../models/FeedComment');
 const Notification = require('../models/Notification');
 const mongoose = require('mongoose');
+const { sendNotificationToUser } = require('../services/pushNotification.service');
 
 // POST /api/social/follow/:userId
 exports.follow = async (req, res) => {
@@ -34,21 +36,31 @@ exports.follow = async (req, res) => {
       metadata: { followerId: followerId.toString(), type: 'new_follower' },
     });
 
+    const savedNotif = await Notification.findOne({ userId: followingId, 'metadata.type': 'new_follower' })
+      .sort({ createdAt: -1 }).lean();
+
+    const notifPayload = {
+      id: savedNotif?._id?.toString() || Date.now().toString(),
+      type: 'follow',
+      title: `${follower.prenom || follower.pseudo} vous suit maintenant`,
+      message: `@${follower.pseudo || follower.prenom} a commencé à vous suivre`,
+      avatar: follower.photo || null,
+      metadata: { followerId: followerId.toString(), type: 'new_follower' },
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
+
     const io = req.app.get('io');
     if (io && io.notifyUser) {
-      const savedNotif = await Notification.findOne({ userId: followingId, 'metadata.type': 'new_follower' })
-        .sort({ createdAt: -1 }).lean();
-      io.notifyUser(followingId.toString(), 'new_notification', {
-        id: savedNotif?._id?.toString() || Date.now().toString(),
-        type: 'follow',
-        title: `${follower.prenom || follower.pseudo} vous suit maintenant`,
-        message: `@${follower.pseudo || follower.prenom} a commencé à vous suivre`,
-        avatar: follower.photo || null,
-        metadata: { followerId: followerId.toString(), type: 'new_follower' },
-        timestamp: new Date().toISOString(),
-        read: false,
-      });
+      io.notifyUser(followingId.toString(), 'new_notification', notifPayload);
     }
+
+    // Push notification (mobile + web)
+    sendNotificationToUser(followingId, {
+      title: notifPayload.title,
+      body: notifPayload.message,
+      data: { type: 'follow', fromUserId: followerId.toString() },
+    }).catch(() => {});
 
     res.json({ success: true });
   } catch (err) {
@@ -397,9 +409,12 @@ exports.getUserPublicProfile = async (req, res) => {
       return res.status(400).json({ error: 'ID invalide' });
     }
 
-    const [user, followersCount, followingCount, isFollowing, sessionsCount, recentSessions, mutualFollow] =
+    const [user, userProfile, followersCount, followingCount, isFollowing, sessionsCount, recentSessions, mutualFollow] =
       await Promise.all([
         User.findById(targetId).select('prenom pseudo photo createdAt'),
+        UserProfile.findOne({ userId: targetId })
+          .select('bio age fitnessLevel workoutTypes location stats verified')
+          .lean(),
         Follow.countDocuments({ followingId: targetId }),
         Follow.countDocuments({ followerId: targetId }),
         Follow.exists({ followerId: myId, followingId: targetId }),
@@ -417,6 +432,7 @@ exports.getUserPublicProfile = async (req, res) => {
 
     res.json({
       user: user.toObject(),
+      profile: userProfile || null,
       followersCount,
       followingCount,
       isFollowing: !!isFollowing,
@@ -491,18 +507,27 @@ exports.likePost = async (req, res) => {
             avatar: liker?.photo || null,
             metadata: { fromUserId: userId.toString(), targetId: targetId.toString(), targetType, action: 'like' },
           });
+          const likeNotifPayload = {
+            id: savedNotif._id.toString(),
+            type: 'like',
+            title: savedNotif.title,
+            message: savedNotif.message,
+            avatar: liker?.photo || null,
+            timestamp: new Date().toISOString(),
+            read: false,
+          };
+
           const io = req.app.get('io');
           if (io && io.notifyUser) {
-            io.notifyUser(ownerId.toString(), 'new_notification', {
-              id: savedNotif._id.toString(),
-              type: 'like',
-              title: savedNotif.title,
-              message: savedNotif.message,
-              avatar: liker?.photo || null,
-              timestamp: new Date().toISOString(),
-              read: false,
-            });
+            io.notifyUser(ownerId.toString(), 'new_notification', likeNotifPayload);
           }
+
+          // Push notification (mobile + web)
+          sendNotificationToUser(ownerId, {
+            title: savedNotif.title,
+            body: savedNotif.message,
+            data: { type: 'like', fromUserId: userId.toString(), targetId: targetId.toString() },
+          }).catch(() => {});
         }
       } catch (notifErr) {
         console.error('[likePost] Erreur notification:', notifErr);
@@ -634,18 +659,27 @@ exports.addComment = async (req, res) => {
           avatar: user?.photo || null,
           metadata: { fromUserId: userId.toString(), postId: postId.toString(), postType, action: 'comment' },
         });
+        const commentNotifPayload = {
+          id: savedNotif._id.toString(),
+          type: 'comment',
+          title: savedNotif.title,
+          message: savedNotif.message,
+          avatar: user?.photo || null,
+          timestamp: new Date().toISOString(),
+          read: false,
+        };
+
         const io = req.app.get('io');
         if (io && io.notifyUser) {
-          io.notifyUser(ownerId.toString(), 'new_notification', {
-            id: savedNotif._id.toString(),
-            type: 'comment',
-            title: savedNotif.title,
-            message: savedNotif.message,
-            avatar: user?.photo || null,
-            timestamp: new Date().toISOString(),
-            read: false,
-          });
+          io.notifyUser(ownerId.toString(), 'new_notification', commentNotifPayload);
         }
+
+        // Push notification (mobile + web)
+        sendNotificationToUser(ownerId, {
+          title: savedNotif.title,
+          body: savedNotif.message,
+          data: { type: 'comment', fromUserId: userId.toString(), postId: postId.toString() },
+        }).catch(() => {});
       }
     } catch (notifErr) {
       console.error('[addComment] Erreur notification:', notifErr);
