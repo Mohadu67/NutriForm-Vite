@@ -128,10 +128,42 @@ export function useChallenges() {
     }
   }, [fetchChallenges]);
 
+  // Soumettre un résultat (défis max)
+  const submitResult = useCallback(async (challengeId, result) => {
+    try {
+      const response = await secureApiCall(`/challenges/${challengeId}/submit-result`, {
+        method: 'POST',
+        body: JSON.stringify({ result: Number(result) })
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        await fetchChallenges();
+        return { success: true, data: data.data };
+      } else {
+        return { success: false, message: data.message };
+      }
+    } catch (err) {
+      logger.error('Erreur soumission résultat:', err);
+      return { success: false, message: 'Erreur lors de la soumission' };
+    }
+  }, [fetchChallenges]);
+
   useEffect(() => {
     fetchChallenges();
     fetchStats();
   }, [fetchChallenges, fetchStats]);
+
+  // Rafraîchir quand l'utilisateur revient sur l'onglet
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchChallenges();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [fetchChallenges]);
 
   // Écouter les mises à jour via WebSocket
   useEffect(() => {
@@ -166,6 +198,7 @@ export function useChallenges() {
     acceptChallenge,
     declineChallenge,
     cancelChallenge,
+    submitResult,
     refresh: fetchChallenges
   };
 }
@@ -231,10 +264,18 @@ export function useBadges(userId = null) {
 
 // Utilitaires
 export const CHALLENGE_TYPES = {
-  sessions: { label: 'Séances', icon: '🏋️', metric: 'séances' },
-  streak: { label: 'Streak', icon: '🔥', metric: 'jours' },
-  calories: { label: 'Calories', icon: '⚡', metric: 'kcal' },
-  duration: { label: 'Durée', icon: '⏱️', metric: 'min' }
+  // Défis en durée (ongoing)
+  sessions: { label: 'Séances', icon: '🏋️', metric: 'séances', category: 'ongoing' },
+  streak: { label: 'Streak', icon: '🔥', metric: 'jours', category: 'ongoing' },
+  calories: { label: 'Calories', icon: '⚡', metric: 'kcal', category: 'ongoing' },
+  duration: { label: 'Durée', icon: '⏱️', metric: 'min', category: 'ongoing' },
+  // Défis record max (one-shot)
+  max_pushups: { label: 'Pompes', icon: '💪', metric: 'reps', category: 'max' },
+  max_pullups: { label: 'Tractions', icon: '🧗', metric: 'reps', category: 'max' },
+  max_bench: { label: 'Dev. couché', icon: '🏋️‍♂️', metric: 'kg', category: 'max' },
+  max_squat: { label: 'Squat', icon: '🦵', metric: 'kg', category: 'max' },
+  max_deadlift: { label: 'Soulevé de terre', icon: '🏗️', metric: 'kg', category: 'max' },
+  max_burpees: { label: 'Burpees 60s', icon: '🔄', metric: 'reps', category: 'max' },
 };
 
 export const CHALLENGE_DURATIONS = [

@@ -4,11 +4,16 @@ import { CHALLENGE_TYPES, CHALLENGE_DURATIONS } from '../hooks/useChallenges';
 import styles from './ChallengeModal.module.css';
 
 const CloseIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="18" y1="6" x2="6" y2="18" />
     <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
 );
+
+const CATEGORIES = [
+  { key: 'ongoing', label: 'En durée', desc: 'Compétition sur plusieurs jours' },
+  { key: 'max', label: 'Record max', desc: 'Qui fait le meilleur score' },
+];
 
 export default function ChallengeModal({
   isOpen,
@@ -17,17 +22,31 @@ export default function ChallengeModal({
   opponent,
   loading = false
 }) {
+  const [category, setCategory] = useState('ongoing');
   const [type, setType] = useState('sessions');
   const [duration, setDuration] = useState(7);
   const [error, setError] = useState(null);
 
   if (!isOpen) return null;
 
+  const isMax = category === 'max';
+
+  const filteredTypes = Object.entries(CHALLENGE_TYPES).filter(
+    ([, info]) => info.category === category
+  );
+
+  const handleCategoryChange = (cat) => {
+    setCategory(cat);
+    // Auto-select first type of new category
+    const firstType = Object.entries(CHALLENGE_TYPES).find(([, info]) => info.category === cat);
+    if (firstType) setType(firstType[0]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    const result = await onSubmit(opponent.userId, type, duration);
+    const result = await onSubmit(opponent.userId, type, isMax ? 0 : duration);
 
     if (result.success) {
       onClose();
@@ -37,28 +56,57 @@ export default function ChallengeModal({
   };
 
   const opponentName = opponent?.displayName || opponent?.pseudo || 'Adversaire';
+  const selectedType = CHALLENGE_TYPES[type];
+
+  const getSummaryText = () => {
+    if (isMax) {
+      return `Record de ${selectedType?.label?.toLowerCase()} — qui fait le meilleur score`;
+    }
+    return `Le plus de ${selectedType?.metric} en ${duration} jours`;
+  };
 
   return createPortal(
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className={styles.header}>
-          <h2 className={styles.title}>
-            <span className={styles.titleIcon}>⚔️</span>
-            Défier @{opponentName}
-          </h2>
-          <button className={styles.closeBtn} onClick={onClose}>
+          <div className={styles.headerLeft}>
+            <div className={styles.titleIcon}>⚔️</div>
+            <div>
+              <h2 className={styles.title}>Lancer un défi</h2>
+              <p className={styles.subtitle}>vs @{opponentName}</p>
+            </div>
+          </div>
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Fermer">
             <CloseIcon />
           </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
+          {/* Category Tabs */}
+          <div className={styles.section}>
+            <label className={styles.label}>Catégorie</label>
+            <div className={styles.categoryTabs}>
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.key}
+                  type="button"
+                  className={`${styles.categoryTab} ${category === cat.key ? styles.activeTab : ''}`}
+                  onClick={() => handleCategoryChange(cat.key)}
+                >
+                  <span className={styles.categoryLabel}>{cat.label}</span>
+                  <span className={styles.categoryDesc}>{cat.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Type de défi */}
           <div className={styles.section}>
             <label className={styles.label}>Type de défi</label>
             <div className={styles.typeGrid}>
-              {Object.entries(CHALLENGE_TYPES).map(([key, info]) => (
+              {filteredTypes.map(([key, info]) => (
                 <button
                   key={key}
                   type="button"
@@ -73,34 +121,34 @@ export default function ChallengeModal({
             </div>
           </div>
 
-          {/* Durée */}
-          <div className={styles.section}>
-            <label className={styles.label}>Durée du défi</label>
-            <div className={styles.durationGrid}>
-              {CHALLENGE_DURATIONS.map((d) => (
-                <button
-                  key={d.value}
-                  type="button"
-                  className={`${styles.durationBtn} ${duration === d.value ? styles.selected : ''}`}
-                  onClick={() => setDuration(d.value)}
-                >
-                  {d.label}
-                </button>
-              ))}
+          {/* Durée — only for ongoing challenges */}
+          {!isMax && (
+            <div className={styles.section}>
+              <label className={styles.label}>Durée du défi</label>
+              <div className={styles.durationGrid}>
+                {CHALLENGE_DURATIONS.map((d) => (
+                  <button
+                    key={d.value}
+                    type="button"
+                    className={`${styles.durationBtn} ${duration === d.value ? styles.selected : ''}`}
+                    onClick={() => setDuration(d.value)}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Résumé */}
           <div className={styles.summary}>
             <div className={styles.summaryIcon}>
-              {CHALLENGE_TYPES[type]?.icon}
+              {selectedType?.icon}
             </div>
             <div className={styles.summaryText}>
-              <p>
-                <strong>Défi:</strong> Plus de {CHALLENGE_TYPES[type]?.metric} en {duration} jours
-              </p>
+              <p className={styles.summaryTitle}>{getSummaryText()}</p>
               <p className={styles.summaryHint}>
-                Le gagnant remporte <strong>50 XP</strong> et un badge!
+                Le gagnant remporte <strong>50 XP</strong> et un badge
               </p>
             </div>
           </div>
@@ -130,9 +178,7 @@ export default function ChallengeModal({
               {loading ? (
                 <span className={styles.loadingSpinner} />
               ) : (
-                <>
-                  <span>⚔️</span> Envoyer le défi
-                </>
+                <>Envoyer le défi</>
               )}
             </button>
           </div>
