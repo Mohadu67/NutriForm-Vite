@@ -104,13 +104,35 @@ function ChallengeModal({ visible, targetUser, onClose, isDark }) {
 
             {sent ? (
               <View style={ms.successWrap}>
-                <Text style={ms.successEmoji}>⚡</Text>
-                <Text style={[ms.successTitle, isDark && ms.successTitleDark]}>Défi envoyé !</Text>
+                {/* Glow ring */}
+                <View style={[ms.successGlow, isDark && ms.successGlowDark]}>
+                  <View style={[ms.successIconRing, isDark && ms.successIconRingDark]}>
+                    <Text style={ms.successIconText}>⚔️</Text>
+                  </View>
+                </View>
+
+                <Text style={[ms.successTitle, isDark && ms.successTitleDark]}>Défi lancé !</Text>
+
+                {/* Recap card */}
+                <View style={[ms.successRecap, isDark && ms.successRecapDark]}>
+                  <View style={ms.successRecapRow}>
+                    <Text style={ms.successRecapIcon}>{selected?.icon || '⚡'}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[ms.successRecapLabel, isDark && ms.successRecapLabelDark]}>{selected?.label}</Text>
+                      <Text style={[ms.successRecapDesc, isDark && ms.successRecapDescDark]}>
+                        vs {targetUser?.prenom || targetUser?.pseudo}
+                        {selected?.category === 'ongoing' ? ` — ${duration} jours` : ' — Record'}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
                 <Text style={[ms.successSub, isDark && ms.successSubDark]}>
-                  {targetUser?.prenom || targetUser?.pseudo} recevra une notification pour accepter.
+                  Une notification a été envoyée.{'\n'}Prépare-toi pour le combat !
                 </Text>
-                <TouchableOpacity style={ms.primaryBtn} onPress={handleClose} activeOpacity={0.8}>
-                  <Text style={ms.primaryBtnText}>Fermer</Text>
+
+                <TouchableOpacity style={ms.successCloseBtn} onPress={handleClose} activeOpacity={0.8}>
+                  <Text style={ms.successCloseBtnText}>C'est parti</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -424,7 +446,7 @@ export default function UserPublicProfileScreen() {
 
   if (!data) return null;
 
-  const { user, followersCount, followingCount, isFollowing, isMe, isMutual, sessionsCount, recentSessions } = data;
+  const { user, profile, followersCount, followingCount, isFollowing, isMe, isMutual, sessionsCount, recentSessions } = data;
 
   return (
     <View style={[styles.container, isDark && styles.containerDark]}>
@@ -538,6 +560,99 @@ export default function UserPublicProfileScreen() {
           )}
         </View>
 
+        {/* Profile info (bio, location, level, workout types) */}
+        {profile && (profile.bio || profile.location?.city || profile.fitnessLevel || profile.workoutTypes?.length > 0) && (
+          <View style={[styles.profileInfoCard, isDark && styles.profileInfoCardDark]}>
+            {/* Location & age */}
+            {(profile.location?.city || profile.age) && (
+              <View style={styles.profileLocationRow}>
+                {profile.location?.city && (
+                  <View style={styles.profileLocationItem}>
+                    <Ionicons name="location" size={16} color={theme.colors.primary} />
+                    <Text style={[styles.profileLocationText, isDark && styles.profileLocationTextDark]}>
+                      {profile.location.city}
+                    </Text>
+                  </View>
+                )}
+                {profile.age && (
+                  <View style={styles.profileLocationItem}>
+                    <Ionicons name="calendar-outline" size={16} color={theme.colors.primary} />
+                    <Text style={[styles.profileLocationText, isDark && styles.profileLocationTextDark]}>
+                      {profile.age} ans
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Fitness level */}
+            {profile.fitnessLevel && (
+              <View style={styles.profileLevelRow}>
+                <LinearGradient
+                  colors={
+                    profile.fitnessLevel === 'beginner' ? ['#4CAF50', '#3D9140'] :
+                    profile.fitnessLevel === 'advanced' ? ['#FF6B6B', '#E55A5A'] :
+                    profile.fitnessLevel === 'expert' ? ['#9C27B0', '#7B1FA2'] :
+                    ['#FFC107', '#E0A800']
+                  }
+                  style={styles.profileLevelBadge}
+                >
+                  <Ionicons name="fitness" size={14} color="#FFF" />
+                  <Text style={styles.profileLevelText}>
+                    {profile.fitnessLevel === 'beginner' ? 'Debutant' :
+                     profile.fitnessLevel === 'intermediate' ? 'Intermediaire' :
+                     profile.fitnessLevel === 'advanced' ? 'Avance' :
+                     profile.fitnessLevel === 'expert' ? 'Expert' :
+                     profile.fitnessLevel}
+                  </Text>
+                </LinearGradient>
+              </View>
+            )}
+
+            {/* Bio */}
+            {profile.bio ? (
+              <View style={styles.profileBioSection}>
+                <Text style={[styles.profileInfoSectionTitle, isDark && styles.profileInfoSectionTitleDark]}>A propos</Text>
+                <Text style={[styles.profileBioText, isDark && styles.profileBioTextDark]}>{profile.bio}</Text>
+              </View>
+            ) : null}
+
+            {/* Workout types */}
+            {profile.workoutTypes?.length > 0 && (
+              <View style={styles.profileWorkoutSection}>
+                <Text style={[styles.profileInfoSectionTitle, isDark && styles.profileInfoSectionTitleDark]}>Sports pratiques</Text>
+                <View style={styles.profileWorkoutTypes}>
+                  {profile.workoutTypes.map((type, i) => (
+                    <View key={i} style={[styles.profileWorkoutChip, isDark && styles.profileWorkoutChipDark]}>
+                      <Ionicons
+                        name={
+                          type === 'musculation' || type === 'muscu' ? 'barbell' :
+                          type === 'cardio' ? 'heart' :
+                          type === 'crossfit' ? 'fitness' :
+                          type === 'yoga' || type === 'pilates' ? 'flower' :
+                          type === 'running' ? 'walk' :
+                          type === 'cycling' ? 'bicycle' :
+                          type === 'swimming' ? 'water' :
+                          type === 'boxing' ? 'hand-left' :
+                          type === 'dance' ? 'musical-notes' :
+                          type === 'hiit' ? 'flash' :
+                          type === 'stretching' ? 'body' :
+                          'fitness'
+                        }
+                        size={14}
+                        color={theme.colors.primary}
+                      />
+                      <Text style={[styles.profileWorkoutChipText, isDark && styles.profileWorkoutChipTextDark]}>
+                        {type}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+
         {/* Recent sessions */}
         {recentSessions?.length > 0 && (
           <>
@@ -560,7 +675,9 @@ export default function UserPublicProfileScreen() {
         {/* Défis */}
         <TouchableOpacity
           style={[styles.challengesNav, isDark && styles.challengesNavDark]}
-          onPress={() => navigation.navigate('Challenges')}
+          onPress={() => {
+            try { navigation.navigate('Challenges'); } catch {}
+          }}
           activeOpacity={0.8}
         >
           <View style={styles.challengesNavLeft}>
@@ -797,6 +914,84 @@ const styles = StyleSheet.create({
   challengesNavTitleDark: { color: '#FFFFFF' },
   challengesNavSub: { fontSize: 12, color: '#666' },
   challengesNavSubDark: { color: '#7A7D85' },
+
+  // Profile info card (bio, location, level, workout types)
+  profileInfoCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    marginHorizontal: 16,
+    marginBottom: 24,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  profileInfoCardDark: { backgroundColor: '#1A1D24' },
+
+  profileLocationRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    marginBottom: 12,
+  },
+  profileLocationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  profileLocationText: { fontSize: 14, color: '#666' },
+  profileLocationTextDark: { color: '#7A7D85' },
+
+  profileLevelRow: { marginBottom: 16 },
+  profileLevelBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    gap: 6,
+  },
+  profileLevelText: { fontSize: 13, fontWeight: '700', color: '#FFF' },
+
+  profileBioSection: { marginBottom: 16 },
+  profileInfoSectionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#111',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  profileInfoSectionTitleDark: { color: '#FFFFFF' },
+  profileBioText: { fontSize: 14, color: '#666', lineHeight: 21 },
+  profileBioTextDark: { color: '#7A7D85' },
+
+  profileWorkoutSection: {},
+  profileWorkoutTypes: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  profileWorkoutChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: `${theme.colors.primary}12`,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 14,
+    gap: 6,
+  },
+  profileWorkoutChipDark: { backgroundColor: `${theme.colors.primary}25` },
+  profileWorkoutChipText: {
+    fontSize: 13,
+    color: '#111',
+    textTransform: 'capitalize',
+    fontWeight: '500',
+  },
+  profileWorkoutChipTextDark: { color: '#FFFFFF' },
 });
 
 // ─── Styles modaux ────────────────────────────────────────────────────────────
@@ -830,12 +1025,71 @@ const ms = StyleSheet.create({
   sheetSub: { fontSize: 14, color: '#AAA', marginBottom: 20 },
   sheetSubDark: { color: '#555' },
 
-  successWrap: { alignItems: 'center', paddingVertical: 24 },
-  successEmoji: { fontSize: 56, marginBottom: 16 },
-  successTitle: { fontSize: 22, fontWeight: '800', color: '#111', marginBottom: 8 },
+  successWrap: { alignItems: 'center', paddingVertical: 28 },
+  successGlow: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: `${theme.colors.primary}15`,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  successGlowDark: {
+    backgroundColor: `${theme.colors.primary}20`,
+  },
+  successIconRing: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: '#FFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: theme.colors.primary,
+  },
+  successIconRingDark: {
+    backgroundColor: '#1A1D24',
+    borderColor: theme.colors.primary,
+  },
+  successIconText: { fontSize: 28 },
+  successTitle: { fontSize: 24, fontWeight: '900', color: '#111', marginBottom: 6, letterSpacing: -0.3 },
   successTitleDark: { color: '#FFFFFF' },
-  successSub: { fontSize: 14, color: '#666', textAlign: 'center', lineHeight: 20, marginBottom: 28 },
+  successRecap: {
+    width: '100%',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 14,
+    padding: 14,
+    marginTop: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#EDEEF2',
+  },
+  successRecapDark: {
+    backgroundColor: '#22262E',
+    borderColor: '#2A2E36',
+  },
+  successRecapRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  successRecapIcon: { fontSize: 26 },
+  successRecapLabel: { fontSize: 15, fontWeight: '700', color: '#111', marginBottom: 2 },
+  successRecapLabelDark: { color: '#FFFFFF' },
+  successRecapDesc: { fontSize: 12, color: '#888' },
+  successRecapDescDark: { color: '#7A7D85' },
+  successSub: { fontSize: 13, color: '#999', textAlign: 'center', lineHeight: 20, marginBottom: 20 },
   successSubDark: { color: '#7A7D85' },
+  successCloseBtn: {
+    width: '100%',
+    backgroundColor: theme.colors.primary,
+    borderRadius: 14,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  successCloseBtnText: { fontSize: 16, fontWeight: '800', color: '#FFF' },
+  successEmoji: { fontSize: 56, marginBottom: 16 },
 
   errorBox: { backgroundColor: '#FFF0F0', borderRadius: 14, padding: 12, marginBottom: 12 },
   errorBoxDark: { backgroundColor: 'rgba(244, 67, 54, 0.1)' },
