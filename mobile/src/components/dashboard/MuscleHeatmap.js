@@ -1,63 +1,51 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, ActivityIndicator } from 'react-native';
+import {
+  View, Text, StyleSheet, TouchableOpacity, useColorScheme,
+  ActivityIndicator, ScrollView,
+} from 'react-native';
 import Svg, { Path, G } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../theme';
 import { FRONT_PATHS, BACK_PATHS, SVG_VIEWBOX_FRONT, SVG_VIEWBOX_BACK } from '../BodyPicker/bodyPaths';
-import { ZONE_LABELS } from '../BodyPicker/muscleZones';
+import { ZONE_LABELS, ZONE_IDS } from '../BodyPicker/muscleZones';
 import { getBodyCompositionSummary } from '../../api/bodyComposition';
 
 // ─── Mapping muscles → zones SVG ────────────────────────────────────
 const MUSCLE_TO_ZONE = {
-  // Pectoraux (+ variantes typo)
   pectoraux: 'pectoraux', pectoreaux: 'pectoraux', chest: 'pectoraux', pecs: 'pectoraux', poitrine: 'pectoraux',
-  // Épaules
   epaules: 'epaules', épaules: 'epaules', shoulders: 'epaules', deltoides: 'epaules', deltoïdes: 'epaules', deltoid: 'epaules',
-  // Bras
   biceps: 'biceps', triceps: 'triceps', 'avant-bras': 'avant-bras', forearms: 'avant-bras', bras: 'biceps',
-  // Abdos
   abdos: 'abdos-centre', abs: 'abdos-centre', 'abdos-centre': 'abdos-centre', abdominaux: 'abdos-centre',
   'abdos-lateraux': 'abdos-lateraux', obliques: 'abdos-lateraux', core: 'abdos-centre',
-  // Dos (+ variantes typo)
   dos: 'dos-inferieur', dorsaux: 'dos-inferieur', dorseau: 'dos-inferieur', dorseaux: 'dos-inferieur',
   back: 'dos-inferieur', 'dos-superieur': 'dos-superieur',
   'dos-inferieur': 'dos-inferieur', lats: 'dos-inferieur', 'dos-lats': 'dos-inferieur', latissimus: 'dos-inferieur',
   traps: 'dos-superieur', trapeze: 'dos-superieur', trapèzes: 'dos-superieur', rhomboides: 'dos-superieur',
-  // Jambes
   quadriceps: 'cuisses-externes', quads: 'cuisses-externes', cuisses: 'cuisses-externes', jambes: 'cuisses-externes',
   'cuisses-externes': 'cuisses-externes', 'cuisses-internes': 'cuisses-internes',
   ischio: 'cuisses-internes', ischios: 'cuisses-internes', hamstrings: 'cuisses-internes', 'ischio-jambiers': 'cuisses-internes',
   adducteurs: 'cuisses-internes', adductor: 'cuisses-internes',
   abducteurs: 'cuisses-externes', abductor: 'cuisses-externes',
-  // Fessiers & mollets
   fessiers: 'fessiers', glutes: 'fessiers', gluteus: 'fessiers', fesses: 'fessiers',
   mollets: 'mollets', calves: 'mollets',
 };
 
 // ─── Palettes ────────────────────────────────────────────────────────
-const EFFORT_COLORS = [
-  { fill: '#94E8B4', stroke: '#5ED389' },
-  { fill: '#7DD3A8', stroke: '#4AC17A' },
-  { fill: '#F7B186', stroke: '#F59E0B' },
-  { fill: '#FB923C', stroke: '#EA580C' },
-  { fill: '#F87171', stroke: '#DC2626' },
+// Palette unifiée Effort + Gains (dégradé peach cohérent avec le thème)
+const INTENSITY_COLORS = [
+  { fill: '#F5D4BE', stroke: '#F0A47A' },
+  { fill: '#F0B896', stroke: '#E89468' },
+  { fill: '#F0A47A', stroke: '#D98B5E' },
+  { fill: '#E8895A', stroke: '#C67548' },
+  { fill: '#D4703E', stroke: '#A55A30' },
 ];
 
-const GAINS_COLORS = [
-  { fill: '#d1ebe3', stroke: '#b8ddd1' },
-  { fill: '#b8ddd1', stroke: '#9fcfbf' },
-  { fill: '#9fcfbf', stroke: '#86c1ad' },
-  { fill: '#86c1ad', stroke: '#6db39b' },
-  { fill: '#6db39b', stroke: '#549589' },
-];
-
-// Palette récupération : rouge (pas récupéré) → vert (prêt)
 const RECOVERY_COLORS = [
-  { fill: '#FCA5A5', stroke: '#EF4444' },  // 0-20% — rouge
-  { fill: '#FDBA74', stroke: '#F97316' },  // 20-40% — orange
-  { fill: '#FDE68A', stroke: '#EAB308' },  // 40-60% — jaune
-  { fill: '#BEF264', stroke: '#84CC16' },  // 60-80% — vert clair
-  { fill: '#86EFAC', stroke: '#22C55E' },  // 80-100% — vert
+  { fill: '#FCA5A5', stroke: '#EF4444' },
+  { fill: '#FDBA74', stroke: '#F97316' },
+  { fill: '#FDE68A', stroke: '#EAB308' },
+  { fill: '#BEF264', stroke: '#84CC16' },
+  { fill: '#86EFAC', stroke: '#22C55E' },
 ];
 
 const ELEM_TO_ZONE_MAP = {
@@ -68,7 +56,59 @@ const ELEM_TO_ZONE_MAP = {
   CALVES: 'mollets',
 };
 
-// ─── Composant ───────────────────────────────────────────────────────
+// ─── Recovery helpers ───────────────────────────────────────────────
+const getBarColor = (pct) => {
+  if (pct >= 80) return '#22C55E';
+  if (pct >= 60) return '#84CC16';
+  if (pct >= 40) return '#EAB308';
+  if (pct >= 20) return '#F97316';
+  return '#EF4444';
+};
+
+const getRecoveryLabel = (pct) => {
+  if (pct >= 80) return 'Prêt';
+  if (pct >= 60) return 'Bientôt';
+  if (pct >= 40) return 'Récup';
+  if (pct >= 20) return 'Fatigué';
+  return 'Épuisé';
+};
+
+// ─── Semi-circle gauge SVG ──────────────────────────────────────────
+const renderGaugeArc = (size, strokeWidth, percentage, color, isDark) => {
+  const radius = (size - strokeWidth) / 2;
+  const halfCirc = Math.PI * radius;
+  const pct = Math.min(100, Math.max(0, percentage));
+  const filled = (pct / 100) * halfCirc;
+  const svgH = radius + strokeWidth;
+  const cy = radius + strokeWidth / 2;
+  const startX = strokeWidth / 2;
+  const endX = size - strokeWidth / 2;
+
+  return (
+    <Svg width={size} height={svgH}>
+      <Path
+        d={`M ${startX},${cy} A ${radius},${radius} 0 0,1 ${endX},${cy}`}
+        fill="none"
+        stroke={isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+      />
+      {pct > 0 && (
+        <Path
+          d={`M ${startX},${cy} A ${radius},${radius} 0 0,1 ${endX},${cy}`}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={[halfCirc, halfCirc]}
+          strokeDashoffset={halfCirc - filled}
+        />
+      )}
+    </Svg>
+  );
+};
+
+// ─── Composant principal ────────────────────────────────────────────
 export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
@@ -77,8 +117,10 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
   const [mode, setMode] = useState('effort');
   const [bodyComp, setBodyComp] = useState(null);
   const [bodyCompLoading, setBodyCompLoading] = useState(false);
+  const [selectedMuscle, setSelectedMuscle] = useState(null);
 
-  // Fetch body composition en mode gains
+  useEffect(() => { setSelectedMuscle(null); }, [mode]);
+
   useEffect(() => {
     if (mode !== 'gains') return;
     let cancelled = false;
@@ -113,7 +155,6 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
     });
   }, [sessions, weeksAgo, getWeekBounds]);
 
-  // Stats musculaires (effort)
   const muscleStats = useMemo(() => {
     if (externalStats && !sessions.length) return externalStats;
     if (!filteredSessions.length) return {};
@@ -139,7 +180,6 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
     return counts;
   }, [filteredSessions, externalStats, sessions.length]);
 
-  // Zone intensities
   const effortZones = useMemo(() => {
     const zones = {};
     let max = 0;
@@ -150,20 +190,15 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
     const out = {};
     Object.entries(zones).forEach(([zone, count]) => {
       const level = Math.min(4, Math.floor((max > 0 ? count / max : 0) * 5));
-      out[zone] = { count, level, color: EFFORT_COLORS[level] };
+      out[zone] = { count, level, color: INTENSITY_COLORS[level] };
     });
     return out;
   }, [muscleStats]);
 
-  // Stats récupération musculaire
   const recoveryZones = useMemo(() => {
     if (!sessions.length) return {};
-
     const now = Date.now();
-    // Pour chaque zone, trouver la dernière sollicitation et calculer la récupération
-    const zoneLastWork = {}; // { zone: { hoursAgo, volumeScore } }
-
-    // Parcourir TOUTES les sessions récentes (7 derniers jours)
+    const zoneLastWork = {};
     const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
     const recentSessions = sessions.filter(s => {
       const d = new Date(s?.startedAt || s?.endedAt || s?.date || s?.createdAt || 0).getTime();
@@ -176,19 +211,13 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
 
       (session?.entries || session?.items || session?.exercises || []).forEach(e => {
         if (!e) return;
-
-        // Calculer le volume de l'exercice (séries × reps approximatif)
         let volumeScore = 0;
         if (Array.isArray(e.sets)) {
-          e.sets.forEach(set => {
-            const reps = set.reps || set.timeSec / 10 || 8;
-            volumeScore += reps;
-          });
+          e.sets.forEach(set => { volumeScore += set.reps || set.timeSec / 10 || 8; });
         } else {
-          volumeScore = 12; // défaut
+          volumeScore = 12;
         }
 
-        // Mapper les muscles vers les zones
         const muscles = [];
         if (e.primaryMuscle) {
           muscles.push({ name: e.primaryMuscle, weight: 1 });
@@ -206,41 +235,46 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
           const zone = MUSCLE_TO_ZONE[String(name).toLowerCase().trim()];
           if (!zone) return;
           const adjustedVolume = volumeScore * weight;
-
-          // Garder la sollicitation la plus récente (+ volume cumulé si même séance)
           if (!zoneLastWork[zone] || hoursAgo < zoneLastWork[zone].hoursAgo) {
             zoneLastWork[zone] = { hoursAgo, volumeScore: adjustedVolume };
           } else if (Math.abs(hoursAgo - zoneLastWork[zone].hoursAgo) < 2) {
-            // Même séance (± 2h) → cumuler le volume
             zoneLastWork[zone].volumeScore += adjustedVolume;
           }
         });
       });
     });
 
-    // Calculer le % de récupération pour chaque zone
     const out = {};
+    // Muscles travaillés récemment — calcul de récupération
     Object.entries(zoneLastWork).forEach(([zone, { hoursAgo, volumeScore }]) => {
-      // Déterminer le temps de récupération nécessaire selon le volume
       let recoveryHours;
-      if (volumeScore < 15) recoveryHours = 24;       // Léger → 24h
-      else if (volumeScore < 35) recoveryHours = 48;   // Modéré → 48h
-      else recoveryHours = 72;                          // Intense → 72h
+      if (volumeScore < 15) recoveryHours = 24;
+      else if (volumeScore < 35) recoveryHours = 48;
+      else recoveryHours = 72;
 
       const recoveryPct = Math.min(100, Math.round((hoursAgo / recoveryHours) * 100));
       const level = Math.min(4, Math.floor(recoveryPct / 20));
 
       out[zone] = {
-        count: recoveryPct,
-        level,
+        count: recoveryPct, level,
         color: RECOVERY_COLORS[level],
-        hoursAgo: Math.round(hoursAgo),
-        recoveryHours,
+        hoursAgo: Math.round(hoursAgo), recoveryHours,
         volumeScore: Math.round(volumeScore),
         isReady: recoveryPct >= 80,
       };
     });
-
+    // Muscles non travaillés → 100% prêts
+    ZONE_IDS.forEach(zone => {
+      if (!out[zone]) {
+        out[zone] = {
+          count: 100, level: 4,
+          color: RECOVERY_COLORS[4],
+          hoursAgo: null, recoveryHours: null,
+          volumeScore: 0,
+          isReady: true,
+        };
+      }
+    });
     return out;
   }, [sessions]);
 
@@ -255,13 +289,16 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
     const out = {};
     Object.entries(zones).forEach(([zone, data]) => {
       const level = Math.min(4, Math.floor((max > 0 ? data.gainG / max : 0) * 5));
-      out[zone] = { count: data.gainG, level, color: GAINS_COLORS[level], gainG: data.gainG };
+      out[zone] = { count: data.gainG, level, color: INTENSITY_COLORS[level], gainG: data.gainG };
     });
     return out;
   }, [bodyComp]);
 
-  const zoneIntensities = mode === 'recovery' ? recoveryZones : mode === 'gains' ? gainsZones : effortZones;
-  const colorPalette = mode === 'recovery' ? RECOVERY_COLORS : mode === 'gains' ? GAINS_COLORS : EFFORT_COLORS;
+  const isRecovery = mode === 'recovery';
+  const isGains = mode === 'gains';
+  const zoneIntensities = isRecovery ? recoveryZones : isGains ? gainsZones : effortZones;
+  const colorPalette = isRecovery ? RECOVERY_COLORS : INTENSITY_COLORS;
+  const accent = theme.colors.primary;
 
   const topMuscles = useMemo(() =>
     Object.entries(zoneIntensities)
@@ -271,24 +308,33 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
     [zoneIntensities]
   );
 
+  const recoveryList = useMemo(() =>
+    Object.entries(recoveryZones)
+      .map(([zoneId, data]) => ({
+        id: zoneId,
+        label: ZONE_LABELS[zoneId] || zoneId,
+        percentage: data.count,
+        hoursAgo: data.hoursAgo,
+        isReady: data.isReady,
+        volumeScore: data.volumeScore,
+        recoveryHours: data.recoveryHours,
+      }))
+      .sort((a, b) => a.percentage - b.percentage),
+    [recoveryZones]
+  );
+
   const hasData = Object.keys(zoneIntensities).length > 0;
   const currentPaths = view === 'front' ? FRONT_PATHS : BACK_PATHS;
   const currentViewBox = view === 'front' ? SVG_VIEWBOX_FRONT : SVG_VIEWBOX_BACK;
   const inactiveFill = isDark ? 'rgba(80, 80, 80, 0.25)' : 'rgba(52, 72, 94, 0.08)';
   const inactiveStroke = isDark ? 'rgba(100, 100, 100, 0.4)' : 'rgba(38, 48, 68, 0.2)';
-
   const weekLabel = weeksAgo === 0 ? 'Cette semaine' : weeksAgo === 1 ? 'Semaine dernière' : `Il y a ${weeksAgo} sem.`;
-  const isGains = mode === 'gains';
-  const isRecovery = mode === 'recovery';
-  const accent = isRecovery ? '#22c55e' : isGains ? '#86c1ad' : theme.colors.primary;
 
-  // Stats résumées pour le mode récupération
   const recoverySummary = useMemo(() => {
     if (!isRecovery || !hasData) return null;
     const zones = Object.values(recoveryZones);
     const ready = zones.filter(z => z.isReady).length;
-    const recovering = zones.length - ready;
-    return { ready, recovering, total: zones.length };
+    return { ready, recovering: zones.length - ready, total: zones.length };
   }, [isRecovery, hasData, recoveryZones]);
 
   const renderMuscleGroup = (elemName, paths) => {
@@ -312,154 +358,266 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
     );
   };
 
+  const handleGaugePress = useCallback((item) => {
+    setSelectedMuscle(prev => prev?.id === item.id ? null : item);
+  }, []);
+
   return (
-    <View style={[s.card, isDark && s.cardDark]}>
+    <View style={[st.card, isDark && st.cardDark]}>
+
       {/* ── Mode toggle ── */}
-      <View style={[s.segmented, isDark && s.segmentedDark]}>
+      <View style={[st.modeToggle, isDark && st.modeToggleDark]}>
         {['effort', 'recovery', 'gains'].map(m => {
           const active = mode === m;
-          const modeColor = m === 'gains' ? '#86c1ad' : m === 'recovery' ? '#22c55e' : theme.colors.primary;
-          const modeLabel = m === 'gains' ? 'Gains' : m === 'recovery' ? 'Récup' : 'Effort';
+          const label = m === 'gains' ? 'Gains' : m === 'recovery' ? 'Récup' : 'Effort';
           return (
             <TouchableOpacity
               key={m}
-              style={[s.seg, active && s.segActive, active && isDark && s.segActiveDark]}
+              style={[st.modeBtn, active && st.modeBtnActive, active && isDark && st.modeBtnActiveDark]}
               onPress={() => setMode(m)}
               activeOpacity={0.7}
             >
-              <Text style={[
-                s.segText,
-                isDark && s.segTextDark,
-                active && { color: modeColor },
-              ]}>
-                {modeLabel}
+              <Text style={[st.modeBtnText, isDark && st.modeBtnTextDark, active && { color: accent }]}>
+                {label}
               </Text>
             </TouchableOpacity>
           );
         })}
       </View>
 
-      {/* ── Week navigation (masqué en mode récup) ── */}
+      {/* ═══════════════ RECOVERY MODE ═══════════════ */}
       {isRecovery ? (
-        <View style={s.weekNav}>
-          <Text style={[s.weekLabel, isDark && s.weekLabelDark]}>7 derniers jours</Text>
-        </View>
-      ) : (
-        <View style={s.weekNav}>
-          <TouchableOpacity onPress={() => setWeeksAgo(w => Math.min(w + 1, 4))} hitSlop={12}>
-            <Ionicons name="chevron-back" size={18} color={isDark ? '#666' : '#bbb'} />
-          </TouchableOpacity>
-          <Text style={[s.weekLabel, isDark && s.weekLabelDark]}>{weekLabel}</Text>
-          <TouchableOpacity
-            onPress={() => setWeeksAgo(w => Math.max(w - 1, 0))}
-            hitSlop={12}
-            disabled={weeksAgo === 0}
-          >
-            <Ionicons name="chevron-forward" size={18} color={weeksAgo === 0 ? 'transparent' : (isDark ? '#666' : '#bbb')} />
-          </TouchableOpacity>
-        </View>
-      )}
+        <>
+          <View style={st.weekNav}>
+            <Text style={[st.weekLabel, isDark && st.weekLabelDark]}>7 derniers jours</Text>
+          </View>
 
-      {/* ── Body SVG ── */}
-      {isGains && bodyCompLoading ? (
-        <View style={s.loadingArea}>
-          <ActivityIndicator size="small" color={accent} />
-        </View>
-      ) : (
-        <View style={s.bodyArea}>
-          <Svg width="100%" height={280} viewBox={currentViewBox} preserveAspectRatio="xMidYMid meet">
-            {currentPaths.DECORATIVE?.map((p, i) => (
-              <Path key={`d-${i}`} d={p.d} fill={isDark ? '#2a2a2a' : '#ddd'} stroke={isDark ? '#333' : '#bbb'} strokeWidth={0.5} strokeLinejoin="round" />
-            ))}
-            {Object.entries(currentPaths).map(([name, paths]) => renderMuscleGroup(name, paths))}
-          </Svg>
-        </View>
-      )}
+          {hasData ? (
+            <>
+              {/* Summary chips */}
+              {recoverySummary && (
+                <View style={st.summaryBar}>
+                  <View style={[st.summaryChip, isDark && st.summaryChipDark]}>
+                    <View style={[st.summaryChipDot, { backgroundColor: '#22C55E' }]} />
+                    <Text style={[st.summaryChipText, isDark && st.summaryChipTextDark]}>
+                      {recoverySummary.ready} prêt{recoverySummary.ready !== 1 ? 's' : ''}
+                    </Text>
+                  </View>
+                  <View style={[st.summaryChip, isDark && st.summaryChipDark]}>
+                    <View style={[st.summaryChipDot, { backgroundColor: '#F59E0B' }]} />
+                    <Text style={[st.summaryChipText, isDark && st.summaryChipTextDark]}>
+                      {recoverySummary.recovering} en récup
+                    </Text>
+                  </View>
+                </View>
+              )}
 
-      {/* ── Face / Dos ── */}
-      <View style={s.viewRow}>
-        <View style={[s.viewToggleContainer, isDark && s.viewToggleContainerDark]}>
-          {['front', 'back'].map(v => (
-            <TouchableOpacity
-              key={v}
-              onPress={() => setView(v)}
-              activeOpacity={0.7}
-              style={[s.viewToggleBtn, view === v && s.viewToggleBtnActive, view === v && { backgroundColor: accent }]}
-            >
-              <Text style={[s.viewToggleText, view === v && s.viewToggleTextActive, isDark && view !== v && { color: '#888' }]}>
-                {v === 'front' ? 'Face' : 'Dos'}
-              </Text>
+              {/* Semi-circle gauges — swipeable */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={st.gaugeScroll}
+              >
+                {recoveryList.map(item => {
+                  const color = getBarColor(item.percentage);
+                  const isSelected = selectedMuscle?.id === item.id;
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      onPress={() => handleGaugePress(item)}
+                      activeOpacity={0.7}
+                      style={[
+                        st.gaugeCard,
+                        isDark && st.gaugeCardDark,
+                        isSelected && [st.gaugeCardSelected, { borderColor: color }],
+                      ]}
+                    >
+                      <View style={st.gaugeArcWrap}>
+                        {renderGaugeArc(76, 7, item.percentage, color, isDark)}
+                        <Text style={[st.gaugePct, { color }]}>{item.percentage}%</Text>
+                      </View>
+                      <Text style={[st.gaugeLabel, isDark && st.gaugeLabelDark]} numberOfLines={1}>
+                        {item.label}
+                      </Text>
+                      <Text style={[st.gaugeStatus, { color }]}>
+                        {getRecoveryLabel(item.percentage)}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+
+              {/* Detail card — visible quand on tap un muscle */}
+              {selectedMuscle && (() => {
+                const detailColor = getBarColor(selectedMuscle.percentage);
+                return (
+                  <View style={[st.detailCard, isDark && st.detailCardDark]}>
+                    <View style={st.detailHeader}>
+                      <Text style={[st.detailTitle, isDark && st.detailTitleDark]}>
+                        {selectedMuscle.label}
+                      </Text>
+                      <TouchableOpacity onPress={() => setSelectedMuscle(null)} hitSlop={12}>
+                        <Ionicons name="close-circle" size={22} color={isDark ? '#555' : '#ccc'} />
+                      </TouchableOpacity>
+                    </View>
+
+                    <View style={st.detailGaugeWrap}>
+                      {renderGaugeArc(140, 10, selectedMuscle.percentage, detailColor, isDark)}
+                      <Text style={[st.detailGaugePct, { color: detailColor }]}>
+                        {selectedMuscle.percentage}%
+                      </Text>
+                    </View>
+
+                    <View style={st.detailStatsRow}>
+                      <View style={st.detailStatItem}>
+                        <Text style={[st.detailStatValue, isDark && st.detailStatValueDark]}>
+                          {selectedMuscle.hoursAgo != null
+                            ? (selectedMuscle.hoursAgo < 24
+                              ? `${selectedMuscle.hoursAgo}h`
+                              : `${Math.round(selectedMuscle.hoursAgo / 24)}j`)
+                            : '—'}
+                        </Text>
+                        <Text style={[st.detailStatLabel, isDark && st.detailStatLabelDark]}>
+                          Dernière séance
+                        </Text>
+                      </View>
+                      <View style={[st.detailStatDivider, isDark && st.detailStatDividerDark]} />
+                      <View style={st.detailStatItem}>
+                        <Text style={[st.detailStatValue, isDark && st.detailStatValueDark]}>
+                          {selectedMuscle.volumeScore || '—'}
+                        </Text>
+                        <Text style={[st.detailStatLabel, isDark && st.detailStatLabelDark]}>
+                          Volume
+                        </Text>
+                      </View>
+                      <View style={[st.detailStatDivider, isDark && st.detailStatDividerDark]} />
+                      <View style={st.detailStatItem}>
+                        <Text style={[st.detailStatValue, isDark && st.detailStatValueDark]}>
+                          {selectedMuscle.recoveryHours || '—'}h
+                        </Text>
+                        <Text style={[st.detailStatLabel, isDark && st.detailStatLabelDark]}>
+                          Temps récup
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={[st.detailStatusBadge, { backgroundColor: `${detailColor}18` }]}>
+                      <View style={[st.detailStatusDot, { backgroundColor: detailColor }]} />
+                      <Text style={[st.detailStatusText, { color: detailColor }]}>
+                        {getRecoveryLabel(selectedMuscle.percentage)}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })()}
+            </>
+          ) : (
+            <View style={st.emptyContainer}>
+              <Ionicons name="fitness-outline" size={36} color={isDark ? '#333' : '#ddd'} />
+              <Text style={[st.emptyText, isDark && st.emptyTextDark]}>Aucune séance récente</Text>
+            </View>
+          )}
+        </>
+
+      ) : (
+        /* ═══════════════ EFFORT / GAINS MODE ═══════════════ */
+        <>
+          <View style={st.weekNav}>
+            <TouchableOpacity onPress={() => setWeeksAgo(w => Math.min(w + 1, 4))} hitSlop={12}>
+              <Ionicons name="chevron-back" size={18} color={isDark ? '#555' : '#bbb'} />
             </TouchableOpacity>
-          ))}
-        </View>
-        <Text style={[s.sessionCount, isDark && { color: '#888' }]}>
-          {filteredSessions.length} séance{filteredSessions.length !== 1 ? 's' : ''}
-        </Text>
-      </View>
-
-      {/* ── Recovery summary ── */}
-      {isRecovery && recoverySummary && (
-        <View style={[s.recoverySummary, isDark && s.recoverySummaryDark]}>
-          <View style={s.recoveryStatItem}>
-            <Text style={[s.recoveryStatValue, { color: '#22c55e' }]}>{recoverySummary.ready}</Text>
-            <Text style={[s.recoveryStatLabel, isDark && { color: '#888' }]}>Prêts</Text>
+            <Text style={[st.weekLabel, isDark && st.weekLabelDark]}>{weekLabel}</Text>
+            <TouchableOpacity
+              onPress={() => setWeeksAgo(w => Math.max(w - 1, 0))}
+              hitSlop={12}
+              disabled={weeksAgo === 0}
+            >
+              <Ionicons name="chevron-forward" size={18} color={weeksAgo === 0 ? 'transparent' : (isDark ? '#555' : '#bbb')} />
+            </TouchableOpacity>
           </View>
-          <View style={[s.recoveryDivider, isDark && { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
-          <View style={s.recoveryStatItem}>
-            <Text style={[s.recoveryStatValue, { color: '#f59e0b' }]}>{recoverySummary.recovering}</Text>
-            <Text style={[s.recoveryStatLabel, isDark && { color: '#888' }]}>En récup</Text>
-          </View>
-        </View>
-      )}
 
-      {/* ── Top muscles ── */}
-      {hasData ? (
-        <View style={s.topList}>
-          {topMuscles.map((muscle, i) => (
-            <View key={muscle.zone} style={[s.topRow, i < topMuscles.length - 1 && s.topRowBorder, isDark && i < topMuscles.length - 1 && s.topRowBorderDark]}>
-              <View style={[s.topDot, { backgroundColor: muscle.color.fill }]} />
-              <Text style={[s.topName, isDark && s.topNameDark]}>
-                {ZONE_LABELS[muscle.zone] || muscle.zone}
-              </Text>
-              <Text style={[s.topValue, isDark && s.topValueDark]}>
-                {isRecovery
-                  ? `${muscle.count}%`
-                  : isGains
-                    ? `+${muscle.gainG || Math.round(muscle.count)}g`
-                    : (muscle.count % 1 === 0 ? muscle.count : muscle.count.toFixed(1))
-                }
+          {isGains && bodyCompLoading ? (
+            <View style={st.loadingArea}>
+              <ActivityIndicator size="small" color={accent} />
+            </View>
+          ) : (
+            <View style={st.bodyArea}>
+              <Svg width="100%" height={280} viewBox={currentViewBox} preserveAspectRatio="xMidYMid meet">
+                {currentPaths.DECORATIVE?.map((p, i) => (
+                  <Path key={`d-${i}`} d={p.d} fill={isDark ? '#222' : '#ddd'} stroke={isDark ? '#333' : '#bbb'} strokeWidth={0.5} strokeLinejoin="round" />
+                ))}
+                {Object.entries(currentPaths).map(([name, paths]) => renderMuscleGroup(name, paths))}
+              </Svg>
+            </View>
+          )}
+
+          <View style={st.viewRow}>
+            <View style={[st.viewToggleContainer, isDark && st.viewToggleContainerDark]}>
+              {['front', 'back'].map(v => (
+                <TouchableOpacity
+                  key={v}
+                  onPress={() => setView(v)}
+                  activeOpacity={0.7}
+                  style={[st.viewToggleBtn, view === v && [st.viewToggleBtnActive, { backgroundColor: accent }]]}
+                >
+                  <Text style={[st.viewToggleText, view === v && st.viewToggleTextActive, isDark && view !== v && { color: '#555' }]}>
+                    {v === 'front' ? 'Face' : 'Dos'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <Text style={[st.sessionCount, isDark && { color: '#555' }]}>
+              {filteredSessions.length} séance{filteredSessions.length !== 1 ? 's' : ''}
+            </Text>
+          </View>
+
+          {hasData && (
+            <View style={st.topList}>
+              {topMuscles.map((muscle, i) => (
+                <View key={muscle.zone} style={[st.topRow, i < topMuscles.length - 1 && st.topRowBorder, isDark && i < topMuscles.length - 1 && st.topRowBorderDark]}>
+                  <View style={[st.topDot, { backgroundColor: muscle.color.fill }]} />
+                  <Text style={[st.topName, isDark && st.topNameDark]}>
+                    {ZONE_LABELS[muscle.zone] || muscle.zone}
+                  </Text>
+                  <Text style={[st.topValue, isDark && st.topValueDark]}>
+                    {isGains
+                      ? `+${muscle.gainG || Math.round(muscle.count)}g`
+                      : (muscle.count % 1 === 0 ? muscle.count : muscle.count.toFixed(1))
+                    }
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {!hasData && (
+            <View style={st.emptyContainer}>
+              <Ionicons name="barbell-outline" size={36} color={isDark ? '#333' : '#ddd'} />
+              <Text style={[st.emptyText, isDark && st.emptyTextDark]}>
+                {isGains ? 'Pas de données de croissance' : 'Aucune séance cette semaine'}
               </Text>
             </View>
-          ))}
-        </View>
-      ) : (
-        <Text style={[s.empty, isDark && s.emptyDark]}>
-          {isRecovery ? 'Aucune séance récente' : isGains ? 'Pas de données de croissance' : 'Aucune séance sur cette période'}
-        </Text>
-      )}
+          )}
 
-      {/* ── Scale ── */}
-      {hasData && (
-        <View style={s.scaleRow}>
-          <Text style={[s.scaleLabel, isDark && s.scaleLabelDark]}>
-            {isRecovery ? 'Épuisé' : 'Peu'}
-          </Text>
-          <View style={s.scaleBar}>
-            {colorPalette.map((c, i) => (
-              <View key={i} style={[s.scaleStep, { backgroundColor: c.fill }]} />
-            ))}
-          </View>
-          <Text style={[s.scaleLabel, isDark && s.scaleLabelDark]}>
-            {isRecovery ? 'Prêt' : 'Max'}
-          </Text>
-        </View>
+          {hasData && (
+            <View style={st.scaleRow}>
+              <Text style={[st.scaleLabel, isDark && st.scaleLabelDark]}>Peu</Text>
+              <View style={st.scaleBar}>
+                {colorPalette.map((c, i) => (
+                  <View key={i} style={[st.scaleStep, { backgroundColor: c.fill }]} />
+                ))}
+              </View>
+              <Text style={[st.scaleLabel, isDark && st.scaleLabelDark]}>Max</Text>
+            </View>
+          )}
+        </>
       )}
     </View>
   );
 };
 
 // ─── Styles ──────────────────────────────────────────────────────────
-const s = StyleSheet.create({
+const st = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -471,27 +629,30 @@ const s = StyleSheet.create({
     elevation: 3,
   },
   cardDark: {
-    backgroundColor: '#1F1F1F',
+    backgroundColor: '#18181d',
+    shadowOpacity: 0,
   },
 
-  // Segmented toggle
-  segmented: {
+  // Mode toggle
+  modeToggle: {
     flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.04)',
-    borderRadius: 10,
+    borderRadius: 12,
     padding: 3,
     marginBottom: 16,
   },
-  segmentedDark: {
+  modeToggleDark: {
     backgroundColor: 'rgba(255,255,255,0.06)',
   },
-  seg: {
+  modeBtn: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 7,
-    borderRadius: 8,
+    justifyContent: 'center',
+    paddingVertical: 8,
+    borderRadius: 10,
   },
-  segActive: {
+  modeBtnActive: {
     backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -499,21 +660,21 @@ const s = StyleSheet.create({
     shadowRadius: 3,
     elevation: 1,
   },
-  segActiveDark: {
+  modeBtnActiveDark: {
     backgroundColor: 'rgba(255,255,255,0.08)',
     shadowOpacity: 0,
     elevation: 0,
   },
-  segText: {
+  modeBtnText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#aaa',
   },
-  segTextDark: {
+  modeBtnTextDark: {
     color: '#555',
   },
 
-  // Week navigation
+  // Week nav
   weekNav: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -529,10 +690,10 @@ const s = StyleSheet.create({
     textAlign: 'center',
   },
   weekLabelDark: {
-    color: '#777',
+    color: '#666',
   },
 
-  // Body
+  // Body SVG
   loadingArea: {
     height: 280,
     alignItems: 'center',
@@ -543,12 +704,12 @@ const s = StyleSheet.create({
     marginVertical: 4,
   },
 
-  // View toggle (Face/Dos)
+  // View toggle
   viewRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
+    position: 'relative',
     marginTop: 8,
     marginBottom: 16,
   },
@@ -559,16 +720,14 @@ const s = StyleSheet.create({
     padding: 3,
   },
   viewToggleContainerDark: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   viewToggleBtn: {
     paddingVertical: 7,
     paddingHorizontal: 20,
     borderRadius: 8,
   },
-  viewToggleBtnActive: {
-    borderRadius: 8,
-  },
+  viewToggleBtnActive: {},
   viewToggleText: {
     fontSize: 14,
     fontWeight: '600',
@@ -579,11 +738,189 @@ const s = StyleSheet.create({
     fontWeight: '700',
   },
   sessionCount: {
+    position: 'absolute',
+    right: 0,
     fontSize: 11,
     color: '#ccc',
   },
 
-  // Top muscles
+  // ── Summary chips ──
+  summaryBar: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+  },
+  summaryChip: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+  },
+  summaryChipDark: {
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+  summaryChipDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  summaryChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#666',
+  },
+  summaryChipTextDark: {
+    color: '#999',
+  },
+
+  // ── Recovery gauges ──
+  gaugeScroll: {
+    paddingHorizontal: 2,
+    paddingVertical: 8,
+    gap: 10,
+  },
+  gaugeCard: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.02)',
+    borderRadius: 14,
+    paddingTop: 12,
+    paddingBottom: 10,
+    paddingHorizontal: 10,
+    width: 100,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  gaugeCardDark: {
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+  gaugeCardSelected: {
+    backgroundColor: 'rgba(0,0,0,0.04)',
+  },
+  gaugeArcWrap: {
+    width: 76,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  gaugePct: {
+    position: 'absolute',
+    bottom: 0,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  gaugeLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#666',
+    marginTop: 6,
+    textAlign: 'center',
+  },
+  gaugeLabelDark: {
+    color: '#aaa',
+  },
+  gaugeStatus: {
+    fontSize: 10,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+
+  // ── Recovery detail card ──
+  detailCard: {
+    backgroundColor: 'rgba(0,0,0,0.02)',
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  detailCardDark: {
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+  detailHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  detailTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#333',
+  },
+  detailTitleDark: {
+    color: '#eee',
+  },
+  detailGaugeWrap: {
+    width: 140,
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  detailGaugePct: {
+    position: 'absolute',
+    bottom: 2,
+    fontSize: 28,
+    fontWeight: '700',
+  },
+  detailStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  detailStatItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+  },
+  detailStatValue: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#333',
+  },
+  detailStatValueDark: {
+    color: '#eee',
+  },
+  detailStatLabel: {
+    fontSize: 11,
+    fontWeight: '400',
+    color: '#999',
+  },
+  detailStatLabelDark: {
+    color: '#666',
+  },
+  detailStatDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+  },
+  detailStatDividerDark: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  detailStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+  },
+  detailStatusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
+  detailStatusText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+
+  // Top muscles (effort/gains)
   topList: {
     marginBottom: 12,
   },
@@ -624,13 +961,17 @@ const s = StyleSheet.create({
   },
 
   // Empty
-  empty: {
-    textAlign: 'center',
-    fontSize: 13,
-    color: '#bbb',
-    paddingVertical: 16,
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    gap: 8,
   },
-  emptyDark: {
+  emptyText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#bbb',
+  },
+  emptyTextDark: {
     color: '#555',
   },
 
@@ -639,6 +980,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginTop: 4,
   },
   scaleLabel: {
     fontSize: 10,
@@ -657,39 +999,5 @@ const s = StyleSheet.create({
   },
   scaleStep: {
     flex: 1,
-  },
-
-  // Recovery summary
-  recoverySummary: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.03)',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-    gap: 0,
-  },
-  recoverySummaryDark: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-  },
-  recoveryStatItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  recoveryStatValue: {
-    fontSize: 22,
-    fontWeight: '800',
-  },
-  recoveryStatLabel: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#999',
-    marginTop: 2,
-  },
-  recoveryDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: 'rgba(0,0,0,0.1)',
   },
 });
