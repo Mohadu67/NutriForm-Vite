@@ -21,19 +21,12 @@ const MessageInput = ({ onSend, onMediaPress, disabled = false, placeholder = 'M
     placeholder: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.35)',
   }));
 
-  const handleSend = async () => {
+  const handleSend = () => {
     const trimmedText = text.trim();
     if (!trimmedText || disabled || isSending) return;
 
-    try {
-      setIsSending(true);
-      await onSend(trimmedText);
-      setText('');
-    } catch (error) {
-      console.error('Error sending message:', error);
-    } finally {
-      setIsSending(false);
-    }
+    setText('');
+    onSend(trimmedText);
   };
 
   const handleSendPress = () => {

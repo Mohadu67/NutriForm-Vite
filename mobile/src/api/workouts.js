@@ -30,6 +30,8 @@ function transformWorkoutToBackendFormat(workout) {
       exerciseName: exercice.name || 'Exercice',
       type,
       muscleGroup: exercice.muscle || exercice.primaryMuscle || null,
+      primaryMuscle: exercice.primaryMuscle || null,
+      secondaryMuscles: exercice.secondaryMuscles || [],
       muscles: exercice.muscles || (exercice.muscle ? [exercice.muscle] : []),
       sets,
       order: index,
@@ -61,6 +63,8 @@ function transformBackendToWorkoutFormat(session) {
       name: entry.exerciseName,
       type: entry.type,
       muscle: entry.muscleGroup || (entry.muscles && entry.muscles[0]) || null,
+      primaryMuscle: entry.primaryMuscle || null,
+      secondaryMuscles: entry.secondaryMuscles || [],
       muscles: entry.muscles || [],
     },
     sets: (entry.sets || []).map(set => ({

@@ -252,6 +252,14 @@ function normalizeEntry(e = {}) {
     out.durationMin = out.sets[0].durationMin;
   }
 
+  // Préserver primaryMuscle / secondaryMuscles pour le suivi de récupération
+  if (e.primaryMuscle && typeof e.primaryMuscle === 'string') {
+    out.primaryMuscle = e.primaryMuscle.trim();
+  }
+  if (Array.isArray(e.secondaryMuscles) && e.secondaryMuscles.length) {
+    out.secondaryMuscles = e.secondaryMuscles.filter(m => typeof m === 'string' && m.trim()).map(m => m.trim());
+  }
+
   if (typeof e.notes === 'string' && e.notes.trim()) {
     out.notes = e.notes.trim();
   } else if (typeof out.notes === 'string') {

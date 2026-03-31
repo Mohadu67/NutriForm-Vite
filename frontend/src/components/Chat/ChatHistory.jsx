@@ -10,6 +10,7 @@ import { getSubscriptionStatus } from '../../shared/api/subscription';
 import { formatDisplayName } from '../../shared/utils/string';
 import Avatar from '../Shared/Avatar';
 import Alert from '../MessageAlerte/Alert/Alert';
+import ConfirmModal from '../Modal/ConfirmModal';
 import ChatSettings from './ChatSettings';
 import { BotIcon, MessageCircleIcon, OnlineIcon } from '../Icons/GlobalIcons';
 import styles from './ChatHistory.module.css';
@@ -671,26 +672,17 @@ export default function ChatHistory({ onLogin }) {
       />
 
       {/* Dialogue de confirmation de suppression */}
-      <Alert
-        show={deleteConfirm.show}
-        message="Êtes-vous sûr de vouloir supprimer cette conversation ?"
-        variant="error"
-      >
-        <button
-          onClick={confirmDelete}
-          className={styles.confirmBtn}
-          style={{ marginRight: '10px', padding: '8px 16px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-        >
-          Supprimer
-        </button>
-        <button
-          onClick={cancelDelete}
-          className={styles.cancelBtn}
-          style={{ padding: '8px 16px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-        >
-          Annuler
-        </button>
-      </Alert>
+      <ConfirmModal
+        isOpen={deleteConfirm.show}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+        title="Supprimer la conversation ?"
+        message="Cette action est irréversible. Tous les messages de cette conversation seront définitivement supprimés."
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        type="danger"
+      />
 
       {/* Modal paramètres du chat */}
       {settingsConversation && (

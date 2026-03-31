@@ -66,92 +66,106 @@ export const NutritionWidget = ({ isPremium }) => {
   const dotY = CY + R * Math.sin(dotRad);
 
   return (
-    <section
-      className={style.nutritionWidget}
-      onClick={() => navigate('/nutrition')}
-      style={{ cursor: 'pointer' }}
-    >
-      <div className={style.nwCaloriesRow}>
-        {/* Mangées */}
-        <div className={style.nwCalSide}>
-          <span className={style.nwCalValue}>{consumed}</span>
-          <span className={style.nwCalLabel}>Mangées</span>
-        </div>
+    <section className={style.nutritionWidget}>
+      <div
+        className={style.nwClickable}
+        onClick={() => navigate('/nutrition')}
+        style={{ cursor: 'pointer' }}
+      >
+        <div className={style.nwCaloriesRow}>
+          {/* Mangées */}
+          <div className={style.nwCalSide}>
+            <span className={style.nwCalValue}>{consumed}</span>
+            <span className={style.nwCalLabel}>Mangées</span>
+          </div>
 
-        {/* Center ring + remaining */}
-        <div className={style.nwCalCenter}>
-          <svg
-            className={style.nwArc}
-            viewBox="0 0 130 130"
-            width="130"
-            height="130"
-          >
-            {/* Background arc */}
-            <circle
-              cx={CX} cy={CY} r={R}
-              fill="none"
-              stroke="var(--nw-track, #e5e7eb)"
-              strokeWidth="7"
-              strokeLinecap="round"
-              strokeDasharray={`${arcLength} ${circumference}`}
-              strokeDashoffset={0}
-              transform={`rotate(${START_ANGLE} ${CX} ${CY})`}
-            />
-            {/* Filled arc */}
-            {pct > 0 && (
+          {/* Center ring + remaining */}
+          <div className={style.nwCalCenter}>
+            <svg
+              className={style.nwArc}
+              viewBox="0 0 130 130"
+              width="130"
+              height="130"
+            >
+              {/* Background arc */}
               <circle
                 cx={CX} cy={CY} r={R}
                 fill="none"
-                stroke="var(--nw-accent, #6db39b)"
+                stroke="var(--nw-track, #e5e7eb)"
                 strokeWidth="7"
                 strokeLinecap="round"
-                strokeDasharray={`${filledLength} ${circumference}`}
+                strokeDasharray={`${arcLength} ${circumference}`}
                 strokeDashoffset={0}
                 transform={`rotate(${START_ANGLE} ${CX} ${CY})`}
               />
-            )}
-            {/* Dot indicator */}
-            <circle
-              cx={dotX} cy={dotY} r="5"
-              fill="var(--nw-accent, #6db39b)"
-            />
-          </svg>
-          <div className={style.nwCenterText}>
-            <span className={style.nwRemainingValue}>{remaining}</span>
-            <span className={style.nwRemainingLabel}>Restantes</span>
+              {/* Filled arc */}
+              {pct > 0 && (
+                <circle
+                  cx={CX} cy={CY} r={R}
+                  fill="none"
+                  stroke="var(--nw-accent, #6db39b)"
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                  strokeDasharray={`${filledLength} ${circumference}`}
+                  strokeDashoffset={0}
+                  transform={`rotate(${START_ANGLE} ${CX} ${CY})`}
+                />
+              )}
+              {/* Dot indicator */}
+              <circle
+                cx={dotX} cy={dotY} r="5"
+                fill="var(--nw-accent, #6db39b)"
+              />
+            </svg>
+            <div className={style.nwCenterText}>
+              <span className={style.nwRemainingValue}>{remaining}</span>
+              <span className={style.nwRemainingLabel}>Restantes</span>
+            </div>
+          </div>
+
+          {/* Brûlées */}
+          <div className={style.nwCalSide}>
+            <span className={style.nwCalValue}>{burned}</span>
+            <span className={style.nwCalLabel}>Brûlées</span>
           </div>
         </div>
 
-        {/* Brûlées */}
-        <div className={style.nwCalSide}>
-          <span className={style.nwCalValue}>{burned}</span>
-          <span className={style.nwCalLabel}>Brûlées</span>
-        </div>
+        {/* Macros bars */}
+        {isPremium && macros && macroGoals && (
+          <div className={style.nwMacrosRow}>
+            <MacroBar label="Glucides" current={macros.carbs} goal={macroGoals.carbs} color="#f0a47a" />
+            <MacroBar label="Protéines" current={macros.proteins} goal={macroGoals.proteins} color="#72baa1" />
+            <MacroBar label="Lipides" current={macros.fats} goal={macroGoals.fats} color="#f59e0b" />
+          </div>
+        )}
       </div>
 
-      {/* Macros bars */}
-      {isPremium && macros && macroGoals && (
-        <div className={style.nwMacrosRow}>
-          <MacroBar label="Glucides" current={macros.carbs} goal={macroGoals.carbs} />
-          <MacroBar label="Protéines" current={macros.proteins} goal={macroGoals.proteins} />
-          <MacroBar label="Lipides" current={macros.fats} goal={macroGoals.fats} />
-        </div>
-      )}
+      {/* Bouton Ajouter un repas */}
+      <button
+        className={style.nwAddMealBtn}
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate('/nutrition', { state: { openAddMeal: true } });
+        }}
+      >
+        <span className={style.nwAddMealIcon}>+</span>
+        Ajouter un repas
+      </button>
     </section>
   );
 };
 
-function MacroBar({ label, current, goal }) {
+function MacroBar({ label, current, goal, color }) {
   const pct = goal > 0 ? Math.min(current / goal, 1) : 0;
 
   return (
     <div className={style.nwMacro}>
       <span className={style.nwMacroLabel}>{label}</span>
       <div className={style.nwMacroTrack}>
-        <div className={style.nwMacroFill} style={{ width: `${pct * 100}%` }} />
+        <div className={style.nwMacroFill} style={{ width: `${pct * 100}%`, background: color }} />
         <div
           className={style.nwMacroDot}
-          style={{ left: `${pct * 100}%` }}
+          style={{ left: `${pct * 100}%`, background: color }}
         />
       </div>
       <span className={style.nwMacroValue}>{current} / {goal} g</span>

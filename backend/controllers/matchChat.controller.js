@@ -369,7 +369,7 @@ async function sendMessage(req, res) {
     // 🔌 WebSocket: Émettre le nouveau message en temps réel
     const io = req.app.get('io');
     if (io && io.emitNewMessage) {
-      io.emitNewMessage(conversationId, messageObj);
+      io.emitNewMessage(conversationId, messageObj, [userId, receiverId]);
       logger.info(`📨 WebSocket: Message émis pour conversation ${conversationId}`);
 
       // Notifier les participants de la mise à jour de la conversation

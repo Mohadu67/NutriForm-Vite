@@ -169,11 +169,13 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
         if (e.primaryMuscle) {
           add(e.primaryMuscle, 1);
           (e.secondaryMuscles || []).forEach(m => add(m, 0.3));
+        } else if (Array.isArray(e.muscles) && e.muscles.length > 1) {
+          add(e.muscles[0], 1);
+          e.muscles.slice(1).forEach(m => add(m, 0.3));
         } else if (e.muscle) add(e.muscle, 1);
         else if (e.muscleGroup) add(e.muscleGroup, 1);
         else if (Array.isArray(e.muscles) && e.muscles.length) {
           add(e.muscles[0], 1);
-          e.muscles.slice(1).forEach(m => add(m, 0.3));
         }
       });
     });
@@ -221,14 +223,16 @@ export const MuscleHeatmap = ({ sessions = [], muscleStats: externalStats = null
         const muscles = [];
         if (e.primaryMuscle) {
           muscles.push({ name: e.primaryMuscle, weight: 1 });
-          (e.secondaryMuscles || []).forEach(m => muscles.push({ name: m, weight: 0.4 }));
+          (e.secondaryMuscles || []).forEach(m => muscles.push({ name: m, weight: 0.6 }));
+        } else if (Array.isArray(e.muscles) && e.muscles.length > 1) {
+          muscles.push({ name: e.muscles[0], weight: 1 });
+          e.muscles.slice(1).forEach(m => muscles.push({ name: m, weight: 0.6 }));
         } else if (e.muscle) {
           muscles.push({ name: e.muscle, weight: 1 });
         } else if (e.muscleGroup) {
           muscles.push({ name: e.muscleGroup, weight: 1 });
         } else if (Array.isArray(e.muscles) && e.muscles.length) {
           muscles.push({ name: e.muscles[0], weight: 1 });
-          e.muscles.slice(1).forEach(m => muscles.push({ name: m, weight: 0.4 }));
         }
 
         muscles.forEach(({ name, weight }) => {

@@ -579,7 +579,7 @@ export function ChatProvider({ children }) {
         });
       }
 
-      // Mettre a jour la conversation dans la liste
+      // Mettre a jour la conversation dans la liste et re-trier (plus récente en haut)
       setConversations(prev =>
         prev.map(conv => {
           if (conv._id === conversationId) {
@@ -601,7 +601,7 @@ export function ChatProvider({ children }) {
             };
           }
           return conv;
-        })
+        }).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
       );
     };
 
@@ -618,7 +618,7 @@ export function ChatProvider({ children }) {
         setUnreadCount(prev => Math.max(0, prev - data.unreadDecrement));
       }
 
-      // Mettre à jour la conversation spécifique
+      // Mettre à jour la conversation spécifique et re-trier
       setConversations(prev =>
         prev.map(conv => {
           if (conv._id === data.conversationId) {
@@ -642,7 +642,7 @@ export function ChatProvider({ children }) {
             return updates;
           }
           return conv;
-        })
+        }).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
       );
     };
 
