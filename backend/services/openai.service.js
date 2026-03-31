@@ -1,81 +1,79 @@
-const OpenAI = require('openai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const logger = require('../utils/logger');
-const { SYSTEM_PROMPT } = require('../constants/chatPrompts');
+const { buildSystemPrompt } = require('../constants/chatPrompts');
 
-// Instance OpenAI (null si pas de cle API)
-let openaiClient = null;
+// Instance Gemini (null si pas de cle API)
+let geminiModel = null;
 
 /**
- * Initialiser le client OpenAI
+ * Initialiser le client Gemini
  * @returns {boolean} - true si initialise avec succes
  */
-function initializeOpenAI() {
-  if (openaiClient) return true;
+function initializeAI() {
+  if (geminiModel) return true;
 
-  if (!process.env.OPENAI_API_KEY) {
-    logger.info('OpenAI API key not configured - using fallback responses');
+  if (!process.env.GEMINI_API_KEY) {
+    logger.info('Gemini API key not configured - using fallback responses');
     return false;
   }
 
   try {
-    openaiClient = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    });
-    logger.info('OpenAI client initialized successfully');
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    logger.info('Gemini client initialized successfully');
     return true;
   } catch (error) {
-    logger.error('Failed to initialize OpenAI client:', error.message);
+    logger.error('Failed to initialize Gemini client:', error.message);
     return false;
   }
 }
 
 /**
- * Verifier si OpenAI est disponible
+ * Verifier si l'IA est disponible
  * @returns {boolean}
  */
 function isAvailable() {
-  return !!openaiClient;
+  return !!geminiModel;
 }
 
 /**
- * Generer une reponse avec OpenAI
+ * Generer une reponse avec Gemini
  * @param {string} userMessage - Message de l'utilisateur
  * @param {Array} conversationHistory - Historique de la conversation (optionnel)
+ * @param {string} userContext - Contexte utilisateur formaté (optionnel)
  * @returns {Promise<{content: string, confidence: number}>}
  */
-async function generateResponse(userMessage, conversationHistory = []) {
-  if (!openaiClient) {
-    throw new Error('OpenAI client not initialized');
+async function generateResponse(userMessage, conversationHistory = [], userContext = '') {
+  if (!geminiModel) {
+    throw new Error('Gemini client not initialized');
   }
 
   try {
-    // Construire les messages pour l'API
-    const messages = [
-      { role: 'system', content: SYSTEM_PROMPT }
-    ];
+    const systemPrompt = buildSystemPrompt(userContext);
 
-    // Ajouter l'historique de conversation (limite aux 10 derniers messages)
+    // Construire l'historique au format Gemini
+    const history = [];
     const recentHistory = conversationHistory.slice(-10);
     for (const msg of recentHistory) {
-      messages.push({
-        role: msg.role === 'bot' ? 'assistant' : msg.role,
-        content: msg.content
+      history.push({
+        role: msg.role === 'bot' ? 'model' : 'user',
+        parts: [{ text: msg.content }]
       });
     }
 
-    // Ajouter le message actuel
-    messages.push({ role: 'user', content: userMessage });
-
-    const completion = await openaiClient.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages,
-      max_tokens: 1000,
-      temperature: 0.7
+    // Démarrer un chat avec le system instruction et l'historique
+    const chat = geminiModel.startChat({
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      history,
+      generationConfig: {
+        maxOutputTokens: 2048,
+        temperature: 0.7,
+      },
     });
 
-    const response = completion.choices[0]?.message?.content || '';
+    const result = await chat.sendMessage(userMessage);
+    const response = result.response.text();
 
-    // Calculer un score de confiance base sur la longueur et la coherence
     const confidence = calculateConfidence(response, userMessage);
 
     return {
@@ -83,7 +81,7 @@ async function generateResponse(userMessage, conversationHistory = []) {
       confidence
     };
   } catch (error) {
-    logger.error('OpenAI API error:', error.message);
+    logger.error('Gemini API error:', error.message);
     throw error;
   }
 }
@@ -99,7 +97,6 @@ function calculateConfidence(response, userMessage) {
   if (response.length < 50) return 0.5;
   if (response.length < 100) return 0.7;
 
-  // Verifier si la reponse mentionne l'escalade
   const escaladeKeywords = ['support', 'humain', 'agent', 'équipe', 'transférer'];
   const containsEscalade = escaladeKeywords.some(k =>
     response.toLowerCase().includes(k)
@@ -130,10 +127,10 @@ function shouldEscalate(response) {
 }
 
 // Initialiser au chargement du module
-initializeOpenAI();
+initializeAI();
 
 module.exports = {
-  initializeOpenAI,
+  initializeAI,
   isAvailable,
   generateResponse,
   shouldEscalate

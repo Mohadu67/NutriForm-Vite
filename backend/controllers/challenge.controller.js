@@ -107,6 +107,45 @@ async function calculateScore(userId, type, startDate) {
       const entry = await LeaderboardEntry.findOne({ userId: userObjectId });
       return entry?.stats?.currentStreak || 0;
 
+    // Défis max — total des reps ou meilleur poids depuis les séances
+    case 'max_pushups':
+    case 'max_pullups':
+    case 'max_burpees':
+    case 'max_bench':
+    case 'max_squat':
+    case 'max_deadlift': {
+      // Regex pour matcher le nom de l'exercice dans les séances
+      const exercisePatterns = {
+        max_pushups:  /pompe|push.?up/i,
+        max_pullups:  /traction|pull.?up/i,
+        max_burpees:  /burpee/i,
+        max_bench:    /d[ée]velopp[ée].*couch[ée]|bench.*press/i,
+        max_squat:    /squat/i,
+        max_deadlift: /soulev[ée].*terre|deadlift/i,
+      };
+      const pattern = exercisePatterns[type];
+
+      // Pour reps (pompes, tractions, burpees) : total des reps
+      // Pour kg (bench, squat, deadlift) : meilleur poids soulevé
+      const isReps = ['max_pushups', 'max_pullups', 'max_burpees'].includes(type);
+
+      const result = await WorkoutSession.aggregate([
+        { $match: query },
+        { $unwind: '$entries' },
+        { $match: { 'entries.exerciseName': pattern } },
+        { $unwind: '$entries.sets' },
+        {
+          $group: {
+            _id: null,
+            total: isReps
+              ? { $sum: { $ifNull: ['$entries.sets.reps', 0] } }
+              : { $max: { $ifNull: ['$entries.sets.weightKg', 0] } },
+          }
+        }
+      ]);
+      return result[0]?.total || 0;
+    }
+
     default:
       return 0;
   }
@@ -130,6 +169,18 @@ exports.createChallenge = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Tu ne peux pas te défier toi-même!'
+      });
+    }
+
+    // Valider le type
+    const validTypes = [
+      'sessions', 'streak', 'calories', 'duration',
+      'max_pushups', 'max_pullups', 'max_bench', 'max_squat', 'max_deadlift', 'max_burpees'
+    ];
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Type de défi invalide'
       });
     }
 
@@ -161,6 +212,17 @@ exports.createChallenge = async (req, res) => {
       });
     }
 
+    // Déterminer la catégorie et adapter la durée/unité
+    const category = getChallengeCategory(type);
+    const isMax = category === 'max';
+
+    // Pour les défis max: forcer 7 jours, déterminer l'unité
+    const finalDuration = isMax ? 7 : ([3, 7, 14].includes(duration) ? duration : 7);
+    const resultUnitMap = {
+      max_pushups: 'reps', max_pullups: 'reps', max_burpees: 'reps',
+      max_bench: 'kg', max_squat: 'kg', max_deadlift: 'kg',
+    };
+
     // Créer le défi
     const challenge = await Challenge.create({
       challengerId,
@@ -170,8 +232,10 @@ exports.createChallenge = async (req, res) => {
       challengedName: challenged.pseudo || challenged.prenom,
       challengedAvatar: challenged.photo,
       type,
-      challengeCategory: getChallengeCategory(type),
-      duration,
+      challengeCategory: category,
+      duration: finalDuration,
+      resultUnit: isMax ? (resultUnitMap[type] || 'reps') : null,
+      rewardXp: 50,
       status: 'pending'
     });
 

@@ -320,7 +320,7 @@ export default function RewardsScreen() {
         {activeTab === 'premium' && (
           <View style={[styles.premiumCard, isDark && styles.cardDark]}>
             <View style={styles.premiumBadge}>
-              <Ionicons name="diamond" size={32} color="#8B5CF6" />
+              <Ionicons name="diamond" size={32} color="#72baa1" />
             </View>
             <Text style={[styles.premiumTitle, isDark && styles.textDark]}>
               1 Mois Premium
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
   premiumXp: {
     fontSize: theme.fontSize.lg,
     fontWeight: theme.fontWeight.bold,
-    color: '#8B5CF6',
+    color: '#72baa1',
   },
   progressContainer: {
     width: '100%',
@@ -726,7 +726,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#72baa1',
     borderRadius: 4,
   },
   progressText: {

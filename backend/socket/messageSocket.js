@@ -239,13 +239,26 @@ module.exports = (io) => {
 
   /**
    * Fonction utilitaire pour émettre un nouveau message à tous les participants
+   * Émet dans la room de conversation ET dans les rooms personnelles des participants
    */
-  io.emitNewMessage = (conversationId, message) => {
+  io.emitNewMessage = (conversationId, message, participantIds = []) => {
+    // Émettre dans la room de conversation (pour ceux qui sont dans ChatDetail)
     io.to(`conversation:${conversationId}`).emit('new_message', {
       conversationId,
       message
     });
-    logger.info(`📨 Nouveau message émis dans conversation ${conversationId}`);
+
+    // Émettre aussi dans les rooms personnelles des participants
+    // (pour ceux qui sont sur ConversationsScreen et ne sont pas dans la room conversation)
+    participantIds.forEach(userId => {
+      const userIdStr = userId.toString();
+      io.to(`user:${userIdStr}`).emit('new_message', {
+        conversationId,
+        message
+      });
+    });
+
+    logger.info(`📨 Nouveau message émis dans conversation ${conversationId} + ${participantIds.length} rooms utilisateur`);
   };
 
   /**

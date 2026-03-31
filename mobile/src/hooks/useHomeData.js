@@ -98,6 +98,7 @@ export function useHomeData() {
   const [weeklyGoal, setWeeklyGoal] = useState(4);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [calculatorData, setCalculatorData] = useState(null);
+  const [userGender, setUserGender] = useState(null);
 
   // --- Helpers ---
 
@@ -261,7 +262,10 @@ export function useHomeData() {
               primaryMuscle: e.primaryMuscle,
               secondaryMuscles: e.secondaryMuscles,
               muscles: e.muscles,
+              sets: e.sets,
+              type: e.type,
             })),
+            startedAt: s.startedAt,
             source: 'api',
           }))
       : [];
@@ -278,10 +282,14 @@ export function useHomeData() {
       entries: (s.entries || s.exercises || []).map(e => ({
         name: e.exerciseName || e.name,
         muscle: e.muscle,
+        muscleGroup: e.muscleGroup,
         primaryMuscle: e.primaryMuscle,
         secondaryMuscles: e.secondaryMuscles,
         muscles: e.muscles,
+        sets: e.sets,
+        type: e.type,
       })),
+      startedAt: s.startedAt,
       source: 'program',
       programId: s.programId || s.program?._id,
     }));
@@ -375,7 +383,7 @@ export function useHomeData() {
       const localSessions = localHistory ? JSON.parse(localHistory) : [];
 
       // Appels API en parallèle — history.list pour synchroniser calculatorData
-      const [summaryRes, historyRes, workoutSessionsRes, programHistoryRes, subscriptionRes, notificationsRes] = await Promise.all([
+      const [summaryRes, historyRes, workoutSessionsRes, programHistoryRes, subscriptionRes, notificationsRes, profileRes] = await Promise.all([
         apiClient.get(endpoints.history.summary).catch(e => {
           logger.app.warn('Summary error', e);
           return { data: null };
@@ -385,7 +393,13 @@ export function useHomeData() {
         apiClient.get(`${endpoints.programs.history}?limit=50`).catch(() => ({ data: { sessions: [] } })),
         apiClient.get(endpoints.subscription.status).catch(() => ({ data: { tier: 'free' } })),
         apiClient.get(endpoints.notifications.list).catch(() => ({ data: { unreadCount: 0 } })),
+        apiClient.get(endpoints.profile.me).catch(() => ({ data: null })),
       ]);
+
+      // Gender from profile (for BioRhythm cards)
+      if (profileRes.data?.gender) {
+        setUserGender(profileRes.data.gender);
+      }
 
       // Reconstruire calculatorData depuis la DB et mettre le cache à jour
       const historyItems = Array.isArray(historyRes.data)
@@ -533,6 +547,7 @@ export function useHomeData() {
     weeklyTrainingDays,
     weeklyGoal,
     weeklyProgress,
+    userGender,
 
     // UI
     displayName,

@@ -4,14 +4,14 @@
 /* Global Form Styles */
 @import './styles/forms.css';
 
-/* Reset and base */
-* {
+/* ── Reset ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Accessibility: Screen reader only content */
+/* ── Accessibility ───────────────────────────────────────────────────────── */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -35,52 +35,55 @@ a {
 button {
   cursor: pointer;
   border: none;
+  background: none;
   font-family: inherit;
 }
 
-:root {
-  --couleur-principale: #F7F6F2;
-  --couleur-bouton-action: #f7b186;
-  --couleur-bouton-selection: #b8ddd1;
-  --couleur-text-noir: #222325;
-  --couleur-text-bouton: #111111;
-  --couleur-accent-light: #fef3eb;
-  --font-titre: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  --font-p: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+img, picture, video, canvas, svg { display: block; max-width: 100%; }
 
-  --paper: #ffffff;
-  --ink: var(--couleur-text-noir);
-  --line: rgba(0,0,0,.08);
-  --shadow-sm: 0 4px 12px rgba(0,0,0,.08);
-  --shadow-md: 0 12px 30px rgba(0,0,0,.12);
-  --muted: #6b7280;
+input, textarea, select { font: inherit; }
+
+/* ── Semantic theme variables ────────────────────────────────────────────── */
+:root {
+  --couleur-principale: var(--color-neutral-50);
+  --couleur-bouton-action: var(--color-primary-500);
+  --couleur-bouton-selection: var(--color-secondary-300);
+  --couleur-text-noir: var(--color-neutral-900);
+  --couleur-text-bouton: var(--color-neutral-900);
+  --couleur-accent-light: var(--color-primary-100);
+  --font-titre: var(--font-display);
+  --font-p: var(--font-body);
+
+  --paper: var(--color-neutral-0);
+  --ink: var(--color-neutral-800);
+  --ink-secondary: var(--color-neutral-600);
+  --line: rgb(0 0 0 / 0.06);
+  --muted: var(--color-neutral-500);
 }
 
 .light {
   color-scheme: light;
-  --couleur-principale: #F7F6F2;
-  --paper: #ffffff;
-  --ink: #222325;
-  --couleur-text-noir: #222325;
-  --line: rgba(0,0,0,.08);
-  --shadow-sm: 0 4px 12px rgba(0,0,0,.08);
-  --shadow-md: 0 12px 30px rgba(0,0,0,.12);
-  --muted: #6b7280;
+  --couleur-principale: var(--color-neutral-50);
+  --paper: var(--color-neutral-0);
+  --ink: var(--color-neutral-800);
+  --ink-secondary: var(--color-neutral-600);
+  --couleur-text-noir: var(--color-neutral-800);
+  --line: rgb(0 0 0 / 0.06);
+  --muted: var(--color-neutral-500);
 }
 
-/* Dark mode manuel avec classe .dark */
 .dark {
   color-scheme: dark;
-  --couleur-principale: #0c0e12;
-  --paper: #12151b;
-  --ink: #e9ecf1;
-  --couleur-text-noir: #e9ecf1;
-  --line: rgba(255,255,255,.1);
-  --shadow-sm: 0 4px 12px rgba(0,0,0,.45);
-  --shadow-md: 0 12px 30px rgba(0,0,0,.65);
-  --muted: #a6b0bf;
+  --couleur-principale: var(--color-neutral-0);
+  --paper: var(--color-neutral-25);
+  --ink: var(--color-neutral-800);
+  --ink-secondary: var(--color-neutral-600);
+  --couleur-text-noir: var(--color-neutral-800);
+  --line: rgb(255 255 255 / 0.07);
+  --muted: var(--color-neutral-500);
 }
 
+/* ── Base styles ─────────────────────────────────────────────────────────── */
 html, body {
   min-width: 320px;
   overflow-x: hidden;
@@ -88,22 +91,24 @@ html, body {
 
 html {
   height: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
-  font-family: var(--font-p);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
   background-color: var(--couleur-principale);
-  color: var(--couleur-text-noir);
-  line-height: 1.6;
+  color: var(--ink);
+  line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-snug);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   padding-top: 0;
-  padding-bottom: 120px; /* Increased to ensure content isn't hidden behind dock */
-  transition: padding 0.3s ease;
+  padding-bottom: 120px;
+  transition: background-color var(--duration-moderate) var(--ease-out);
   min-height: 100%;
-  /* Smooth scrolling on iOS */
   -webkit-overflow-scrolling: touch;
-  /* Ensure body can scroll */
   overflow-y: auto;
 }
 
@@ -121,13 +126,65 @@ body.chat-open {
 #root {
   min-height: 100vh;
   position: relative;
-  /* Ensure root can scroll */
   overflow: visible;
 }
 
-/* Mobile specific fixes */
+/* ── Typography ──────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  color: var(--ink);
+  letter-spacing: var(--tracking-tight);
+}
+
+h1 { font-size: var(--text-4xl); font-weight: 800; }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+h5 { font-size: var(--text-lg); font-weight: 600; }
+h6 { font-size: var(--text-md); font-weight: 600; }
+
+p {
+  line-height: var(--leading-relaxed);
+  color: var(--ink-secondary);
+}
+
+/* ── Selection ───────────────────────────────────────────────────────────── */
+::selection {
+  background: rgb(240 164 122 / 0.2);
+  color: inherit;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
+}
+
+/* ── Mobile fixes ────────────────────────────────────────────────────────── */
 @media (max-width: 767px) {
-  /* Prevent scroll issues on mobile */
   html {
     overflow: visible;
     height: 100%;
@@ -138,7 +195,6 @@ body.chat-open {
     overflow-y: auto !important;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    /* Extra padding for dock */
     padding-bottom: 140px;
     min-height: 100vh;
     position: relative;
@@ -149,7 +205,6 @@ body.chat-open {
     min-height: 100vh;
   }
 
-  /* Fix for iOS scroll bounce - only on scrollable containers */
   .scrollable {
     -webkit-overflow-scrolling: touch;
   }
@@ -162,8 +217,9 @@ body.chat-open {
   }
 }
 
-img, picture, video, canvas, svg { display: block; max-width: 100%; }
-
-input, textarea, select { font: inherit; }
-
-h1,h2,h3,h4,h5,h6 { font-family: var(--font-titre); font-weight: 800; line-height: 1.25; color: var(--ink); }
+/* ── Focus visible ───────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}

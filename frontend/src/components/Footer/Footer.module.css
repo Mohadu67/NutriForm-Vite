@@ -1,10 +1,10 @@
-/* Footer - Design épuré et soft */
+/* Footer — Clean, refined design */
 
 .footer {
-  background: var(--paper, #ffffff);
-  color: var(--ink, #222325);
-  border-top: 1px solid var(--line, rgba(0,0,0,.08));
-  padding: 48px 20px 24px;
+  background: var(--paper);
+  color: var(--ink);
+  border-top: 1px solid var(--line);
+  padding: 56px 24px 28px;
   margin-top: 0;
 }
 
@@ -20,7 +20,7 @@
 .brand {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   max-width: 320px;
 }
 
@@ -31,8 +31,8 @@
 .tagline {
   margin: 0;
   line-height: 1.6;
-  color: var(--muted, #6b7280);
-  font-size: 14px;
+  color: var(--muted);
+  font-size: var(--text-sm);
 }
 
 /* Navigation */
@@ -42,18 +42,18 @@
 }
 
 .sectionTitle {
-  margin: 0 0 12px;
-  font-size: 12px;
+  margin: 0 0 14px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--muted, #6b7280);
+  color: var(--muted);
 }
 
 .linkList {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
+  gap: 8px;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -69,102 +69,108 @@
   justify-content: center;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 9px 14px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
   font-weight: 500;
-  border: 1px solid var(--line, rgba(0,0,0,.08));
-  background: var(--couleur-principale, #f7f6f2);
-  color: var(--ink, #222325);
+  border: 1px solid var(--line);
+  background: var(--couleur-principale);
+  color: var(--ink);
   text-decoration: none;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .linkList li a:hover,
 .linkList li a:focus-visible {
-  background: var(--couleur-bouton-action, #f7b186);
-  border-color: var(--couleur-bouton-action, #f7b186);
-  color: var(--couleur-text-bouton, #111111);
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-neutral-900);
   outline: none;
 }
 
 /* Auth links */
 .linkList li[class*="authLink"] a {
   background: transparent;
-  border-color: var(--couleur-bouton-action, #f7b186);
-  color: var(--ink, #222325);
+  border-color: var(--color-primary-400);
+  color: var(--ink);
 }
 
 .linkList li[class*="authLink"] a:hover,
 .linkList li[class*="authLink"] a:focus-visible {
-  background: var(--couleur-bouton-action, #f7b186);
-  color: var(--couleur-text-bouton, #111111);
+  background: var(--color-primary-500);
+  color: var(--color-neutral-900);
 }
 
 /* Social */
 .socialBlock {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .socialList {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .socialList :global(a) {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--muted, #6b7280);
-  border: 1px solid var(--line, rgba(0,0,0,.08));
-  background: var(--couleur-principale, #f7f6f2);
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  background: var(--couleur-principale);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .socialList :global(a:hover),
 .socialList :global(a:focus-visible) {
-  background: var(--couleur-bouton-action, #f7b186);
-  color: var(--couleur-text-bouton, #111111);
-  border-color: var(--couleur-bouton-action, #f7b186);
+  background: var(--color-primary-500);
+  color: var(--color-neutral-900);
+  border-color: var(--color-primary-500);
   outline: none;
 }
 
 .socialList :global(svg) {
-  font-size: 1rem;
+  font-size: 0.9375rem;
 }
 
 /* Legal */
 .legal {
-  border-top: 1px solid var(--line, rgba(0,0,0,.08));
-  margin-top: 32px;
+  border-top: 1px solid var(--line);
+  margin-top: 36px;
   padding-top: 20px;
   text-align: center;
 }
 
 .legal p {
   margin: 0;
-  font-size: 12px;
-  color: var(--muted, #6b7280);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.01em;
 }
 
 .legal p a {
-  color: var(--ink, #222325);
+  color: var(--ink);
   text-decoration: none;
+  transition: color var(--transition-fast);
 }
 
 .legal p a:hover,
 .legal p a:focus-visible {
-  color: var(--couleur-bouton-action, #f7b186);
+  color: var(--color-primary-500);
   outline: none;
 }
-
-/* Dark mode */
 
 /* Responsive */
 @media (min-width: 640px) {
@@ -203,6 +209,6 @@
 
   .linkList {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 10px;
   }
 }

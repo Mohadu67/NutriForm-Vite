@@ -262,7 +262,7 @@ function ChallengeCard({ challenge, myId, isDark, onAccept, onDecline, onCancel 
 
   // Progress for active challenges
   const totalScore = (myScore || 0) + (opponentScore || 0);
-  const myPercent = totalScore > 0 ? Math.round((myScore / totalScore) * 100) : 50;
+  const myPercent = totalScore > 0 ? Math.round((myScore / totalScore) * 100) : 0;
 
   return (
     <View style={[s.card, isDark && s.cardDark]}>
@@ -406,7 +406,6 @@ export default function ChallengesScreen() {
 
   // Challenges state
   const [challenges, setChallenges] = useState({ active: [], pending: [], completed: [] });
-  const [myId, setMyId] = useState(null);
 
   // UI state
   const [loading, setLoading] = useState(true);
@@ -454,8 +453,6 @@ export default function ChallengesScreen() {
           pending: cData?.pending || [],
           completed: cData?.completed || [],
         });
-        const first = cData?.active?.[0] || cData?.pending?.[0];
-        if (first) setMyId(first.challengerId?._id || first.challengerId);
       }
     } catch {} finally {
       setLoading(false);
@@ -751,7 +748,7 @@ export default function ChallengesScreen() {
                 <ChallengeCard
                   key={ch._id}
                   challenge={ch}
-                  myId={myId}
+                  myId={currentUserId}
                   isDark={isDark}
                   onAccept={handleAccept}
                   onDecline={handleDecline}
@@ -946,6 +943,120 @@ const s = StyleSheet.create({
   scoreDividerDark: { backgroundColor: '#2A2E36' },
   resultText: { fontSize: 14, fontWeight: '800', textAlign: 'center', marginBottom: 6 },
   xpRewardText: { fontSize: 12, fontWeight: '700', color: theme.colors.primary, textAlign: 'center', marginBottom: 4 },
+
+  // ── Max Result Submission ──
+  maxResultSection: {
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: `${theme.colors.primary}40`,
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+  },
+  maxResultSectionDark: {
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderColor: `${theme.colors.primary}30`,
+  },
+  resultSubmittedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  resultSubmittedCheck: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#10B981',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultSubmittedLabel: {
+    fontSize: 11,
+    color: '#999',
+    fontWeight: '500',
+  },
+  resultSubmittedValue: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: theme.colors.primary,
+  },
+  waitingBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  waitingBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#D97706',
+  },
+  opponentHintBanner: {
+    backgroundColor: '#FEF3C7',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  opponentHintText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#D97706',
+  },
+  resultInputRow: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'stretch',
+  },
+  resultInputWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderWidth: 1.5,
+    borderColor: '#E8E9EE',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  resultInputWrapperDark: {
+    backgroundColor: '#1A1D24',
+    borderColor: '#2A2E36',
+  },
+  resultInput: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#111',
+  },
+  resultUnitLabel: {
+    paddingHorizontal: 10,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#999',
+    backgroundColor: '#F7F7F7',
+    alignSelf: 'stretch',
+    textAlignVertical: 'center',
+    paddingVertical: 10,
+  },
+  submitResultBtn: {
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  submitResultBtnDisabled: {
+    opacity: 0.4,
+  },
+  submitResultText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1c1917',
+  },
 
   // ── Action Buttons ──
   actionRow: { flexDirection: 'row', gap: 10, marginTop: 14 },

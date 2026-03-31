@@ -17,7 +17,13 @@ const TYPE_ICONS = {
   sessions: DumbbellIcon,
   streak: FlameIcon,
   calories: FlameIcon,
-  duration: TimerIcon
+  duration: TimerIcon,
+  max_pushups: DumbbellIcon,
+  max_pullups: DumbbellIcon,
+  max_bench: DumbbellIcon,
+  max_squat: DumbbellIcon,
+  max_deadlift: DumbbellIcon,
+  max_burpees: FlameIcon,
 };
 
 export default function ChallengeCard({
@@ -26,6 +32,7 @@ export default function ChallengeCard({
   onAccept,
   onDecline,
   onCancel,
+  onSubmitResult,
   compact = false,
   onClick
 }) {
@@ -51,10 +58,12 @@ export default function ChallengeCard({
     ? { name: challenge.challengedName, avatar: challenge.challengedAvatar }
     : { name: challenge.challengerName, avatar: challenge.challengerAvatar };
 
+  const typeInfo = CHALLENGE_TYPES[challenge.type] || CHALLENGE_TYPES.sessions;
+  const isMaxChallenge = challenge.challengeCategory === 'max' || challenge.type?.startsWith('max_');
+
   const myScore = isChallenger ? challenge.challengerScore : challenge.challengedScore;
   const theirScore = isChallenger ? challenge.challengedScore : challenge.challengerScore;
 
-  const typeInfo = CHALLENGE_TYPES[challenge.type] || CHALLENGE_TYPES.sessions;
 
   // Calculer le temps restant
   const getTimeRemaining = () => {
@@ -82,6 +91,7 @@ export default function ChallengeCard({
       setLoading(false);
     }
   };
+
 
   // Déterminer le statut visuel
   const getStatusBadge = () => {
@@ -234,15 +244,21 @@ export default function ChallengeCard({
 
       {/* Progress bar pour les défis actifs */}
       {challenge.status === 'active' && (
-        <div className={styles.progressContainer}>
-          <div
-            className={styles.progressBar}
-            style={{
-              width: myScore === 0 && theirScore === 0
-                ? '50%'
-                : `${Math.min((myScore / (myScore + theirScore)) * 100, 100)}%`
-            }}
-          />
+        <div className={styles.progressWrap}>
+          <div className={styles.progressContainer}>
+            <div
+              className={styles.progressBar}
+              style={{
+                width: myScore === 0 && theirScore === 0
+                  ? '0%'
+                  : `${Math.min((myScore / (myScore + theirScore)) * 100, 100)}%`
+              }}
+            />
+          </div>
+          <div className={styles.progressLabels}>
+            <span className={styles.progressMyScore}>{myScore} {typeInfo.metric}</span>
+            <span className={styles.progressTheirScore}>{theirScore} {typeInfo.metric}</span>
+          </div>
         </div>
       )}
 
@@ -253,7 +269,10 @@ export default function ChallengeCard({
             <TargetIcon size={14} /> Objectif
           </span>
           <span className={styles.detailValue}>
-            Le plus de {typeInfo.metric} en {challenge.duration} jours
+            {challenge.type?.startsWith('max_')
+              ? `Record de ${typeInfo.label?.toLowerCase()}`
+              : `Le plus de ${typeInfo.metric} en ${challenge.duration} jours`
+            }
           </span>
         </div>
         <div className={styles.detailRow}>

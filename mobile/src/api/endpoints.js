@@ -32,6 +32,7 @@ export const endpoints = {
     availability: "/profile/availability",
     preferences: "/profile/preferences",
     byId: (userId) => `/profile/${userId}`,
+    onboarding: "/profile/onboarding",
   },
   matching: {
     suggestions: "/matching/suggestions",
@@ -226,6 +227,13 @@ export const endpoints = {
   },
   barcode: {
     lookup: (barcode) => `/barcode/${barcode}`,
+  },
+  biorhythm: {
+    syncSleep: "/biorhythm/sync-sleep",
+    readiness: "/biorhythm/readiness",
+    readinessHistory: "/biorhythm/readiness/history",
+    sleep: (date) => `/biorhythm/sleep/${date}`,
+    sleepHistory: "/biorhythm/sleep/history",
   },
 };
 

@@ -25,8 +25,8 @@ const ALL_BADGES = [
   { id: 'sessions_5', icon: 'fitness', color: '#3B82F6', name: '5 seances', description: 'Complete 5 seances', category: 'seances', requirement: 5 },
   { id: 'sessions_10', icon: 'flame', color: '#F97316', name: '10 seances', description: 'Complete 10 seances', category: 'seances', requirement: 10 },
   { id: 'sessions_25', icon: 'flash', color: '#EAB308', name: '25 seances', description: 'Complete 25 seances', category: 'seances', requirement: 25 },
-  { id: 'sessions_50', icon: 'trophy', color: '#8B5CF6', name: '50 seances', description: 'Complete 50 seances', category: 'seances', requirement: 50 },
-  { id: 'sessions_100', icon: 'ribbon', color: '#EC4899', name: 'Centurion', description: 'Complete 100 seances', category: 'seances', requirement: 100 },
+  { id: 'sessions_50', icon: 'trophy', color: '#72baa1', name: '50 seances', description: 'Complete 50 seances', category: 'seances', requirement: 50 },
+  { id: 'sessions_100', icon: 'ribbon', color: '#f0a47a', name: 'Centurion', description: 'Complete 100 seances', category: 'seances', requirement: 100 },
 
   // Streak
   { id: 'streak_3', icon: 'flame', color: '#F97316', name: 'Serie de 3', description: '3 jours consecutifs', category: 'streak', requirement: 3 },
@@ -36,7 +36,7 @@ const ALL_BADGES = [
 
   // Special
   { id: 'early_bird', icon: 'sunny', color: '#FBBF24', name: 'Leve-tot', description: 'Seance avant 7h', category: 'special' },
-  { id: 'night_owl', icon: 'moon', color: '#6366F1', name: 'Oiseau de nuit', description: 'Seance apres 22h', category: 'special' },
+  { id: 'night_owl', icon: 'moon', color: '#478571', name: 'Oiseau de nuit', description: 'Seance apres 22h', category: 'special' },
   { id: 'weekend_warrior', icon: 'shield', color: '#EF4444', name: 'Guerrier du weekend', description: 'Seance samedi et dimanche', category: 'special' },
   { id: 'variety', icon: 'color-palette', color: '#14B8A6', name: 'Variete', description: 'Travaille 6 groupes musculaires differents', category: 'special' },
 ];

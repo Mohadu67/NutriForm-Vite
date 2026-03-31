@@ -8,6 +8,50 @@ const TYPES = ['muscu', 'poids-du-corps', 'cardio', 'etirement', 'hiit', 'yoga',
 const OBJECTIVES = ['force', 'hypertrophie', 'endurance', 'souplesse', 'relaxation', 'cardio', 'equilibre'];
 const DIFFICULTIES = ['debutant', 'intermediaire', 'avance'];
 
+const MUSCLES = [
+  { value: 'pectoraux', label: 'Pectoraux' },
+  { value: 'epaules', label: 'Épaules' },
+  { value: 'biceps', label: 'Biceps' },
+  { value: 'triceps', label: 'Triceps' },
+  { value: 'avant-bras', label: 'Avant-bras' },
+  { value: 'abdos', label: 'Abdominaux' },
+  { value: 'obliques', label: 'Obliques' },
+  { value: 'dos-superieur', label: 'Dos supérieur (trapèzes)' },
+  { value: 'dos-inferieur', label: 'Dos inférieur (dorsaux)' },
+  { value: 'quadriceps', label: 'Quadriceps' },
+  { value: 'ischios', label: 'Ischio-jambiers' },
+  { value: 'fessiers', label: 'Fessiers' },
+  { value: 'adducteurs', label: 'Adducteurs' },
+  { value: 'abducteurs', label: 'Abducteurs' },
+  { value: 'mollets', label: 'Mollets' },
+  { value: 'core', label: 'Core / Gainage' },
+];
+
+const EQUIPMENTS = [
+  { value: 'aucun', label: 'Aucun (poids du corps)' },
+  { value: 'halteres', label: 'Haltères' },
+  { value: 'barre', label: 'Barre' },
+  { value: 'kettlebell', label: 'Kettlebell' },
+  { value: 'machine', label: 'Machine' },
+  { value: 'cable', label: 'Câble / Poulie' },
+  { value: 'elastique', label: 'Élastique / Bande' },
+  { value: 'banc', label: 'Banc' },
+  { value: 'barre-traction', label: 'Barre de traction' },
+  { value: 'swiss-ball', label: 'Swiss ball' },
+  { value: 'trx', label: 'TRX / Sangles' },
+  { value: 'medecine-ball', label: 'Médecine ball' },
+  { value: 'corde-sauter', label: 'Corde à sauter' },
+  { value: 'rameur', label: 'Rameur' },
+  { value: 'velo', label: 'Vélo / Spinning' },
+  { value: 'tapis', label: 'Tapis de course' },
+  { value: 'step', label: 'Step' },
+  { value: 'foam-roller', label: 'Foam roller' },
+  { value: 'anneaux', label: 'Anneaux' },
+  { value: 'parallettes', label: 'Parallettes' },
+  { value: 'disque', label: 'Disque / Poids' },
+  { value: 'gilet-leste', label: 'Gilet lesté' },
+];
+
 const INITIAL_FORM_DATA = {
   name: '',
   category: 'muscu',
@@ -335,32 +379,40 @@ export default function AdminExercises({ notify }) {
           {/* Muscles */}
           <div className={styles.formGroup}>
             <label>Muscle principal *</label>
-            <input
-              type="text"
+            <select
               name="primaryMuscle"
               value={formData.primaryMuscle}
               onChange={handleInputChange}
               required
-              placeholder="Ex: Pectoraux"
-            />
+            >
+              <option value="">-- Sélectionner --</option>
+              {MUSCLES.map(m => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
           </div>
 
           <div className={styles.formGroup}>
             <label>Muscles secondaires</label>
             <div className={styles.addItemGroup}>
-              <input
-                type="text"
+              <select
                 value={currentSecondaryMuscle}
                 onChange={(e) => setCurrentSecondaryMuscle(e.target.value)}
-                placeholder="Ajouter un muscle secondaire"
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSecondaryMuscle())}
-              />
+              >
+                <option value="">-- Ajouter un muscle --</option>
+                {MUSCLES
+                  .filter(m => m.value !== formData.primaryMuscle && !formData.secondaryMuscles.includes(m.value))
+                  .map(m => (
+                    <option key={m.value} value={m.value}>{m.label}</option>
+                  ))
+                }
+              </select>
               <button type="button" onClick={addSecondaryMuscle}>Ajouter</button>
             </div>
             <div className={styles.tagList}>
               {formData.secondaryMuscles.map((muscle, index) => (
                 <span key={index} className={styles.tag}>
-                  {muscle}
+                  {MUSCLES.find(m => m.value === muscle)?.label || muscle}
                   <button type="button" onClick={() => removeSecondaryMuscle(index)}>×</button>
                 </span>
               ))}
@@ -371,19 +423,24 @@ export default function AdminExercises({ notify }) {
           <div className={styles.formGroup}>
             <label>Équipement</label>
             <div className={styles.addItemGroup}>
-              <input
-                type="text"
+              <select
                 value={currentEquipment}
                 onChange={(e) => setCurrentEquipment(e.target.value)}
-                placeholder="Ajouter un équipement"
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addEquipment())}
-              />
+              >
+                <option value="">-- Ajouter un équipement --</option>
+                {EQUIPMENTS
+                  .filter(eq => !formData.equipment.includes(eq.value))
+                  .map(eq => (
+                    <option key={eq.value} value={eq.value}>{eq.label}</option>
+                  ))
+                }
+              </select>
               <button type="button" onClick={addEquipment}>Ajouter</button>
             </div>
             <div className={styles.tagList}>
               {formData.equipment.map((equip, index) => (
                 <span key={index} className={styles.tag}>
-                  {equip}
+                  {EQUIPMENTS.find(eq => eq.value === equip)?.label || equip}
                   <button type="button" onClick={() => removeEquipment(index)}>×</button>
                 </span>
               ))}

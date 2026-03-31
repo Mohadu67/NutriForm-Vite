@@ -54,6 +54,14 @@ export function ChatProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Refs pour éviter les boucles infinies dans les callbacks
+  const messagesRef = useRef(messages);
+  const conversationsRef = useRef(conversations);
+  const activeConversationRef = useRef(activeConversation);
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
+  useEffect(() => { conversationsRef.current = conversations; }, [conversations]);
+  useEffect(() => { activeConversationRef.current = activeConversation; }, [activeConversation]);
+
   /**
    * Charger toutes les conversations
    */
@@ -292,16 +300,16 @@ export function ChatProvider({ children }) {
     try {
       logger.chat.debug(`Marking messages as read: ${conversationId}`);
 
-      // Récupérer les IDs des messages non lus dans cette conversation
-      // Note: on filtre aussi par l'absence de conversationId car certains messages peuvent ne pas l'avoir
-      const unreadMessageIds = messages
+      // Utiliser les refs pour éviter de recréer markAsRead à chaque changement de messages/conversations
+      const currentMessages = messagesRef.current;
+      const unreadMessageIds = currentMessages
         .filter(m => !m.read && (m.conversationId === conversationId || !m.conversationId))
         .map(m => m._id);
 
       logger.chat.debug('Unread messages found', {
         count: unreadMessageIds.length,
         messageIds: unreadMessageIds,
-        totalMessages: messages.length
+        totalMessages: currentMessages.length
       });
 
       // Toujours appeler l'API même s'il n'y a pas de messages non lus localement
@@ -324,9 +332,9 @@ export function ChatProvider({ children }) {
         )
       );
 
-      // Recalculer le total
+      // Recalculer le total via functional update (pas de closure sur conversations)
       setUnreadCount(prev => {
-        const conv = conversations.find(c => c._id === conversationId);
+        const conv = conversationsRef.current.find(c => c._id === conversationId);
         return Math.max(0, prev - (conv?.unreadCount || 0));
       });
 
@@ -335,7 +343,7 @@ export function ChatProvider({ children }) {
       logger.chat.error('Failed to mark as read', err);
       // Ne pas throw, c'est pas critique
     }
-  }, [conversations, messages]);
+  }, []);
 
   /**
    * Supprimer un message
@@ -504,17 +512,18 @@ export function ChatProvider({ children }) {
       // Le backend envoie { conversationId, message }
       const message = data.message || data;
       const conversationId = data.conversationId || message.conversationId;
+      const currentActiveConv = activeConversationRef.current;
 
       logger.chat.info('📨 New message received via WebSocket', {
         messageId: message._id,
         conversationId,
-        isActiveConversation: conversationId === activeConversation?._id
+        isActiveConversation: conversationId === currentActiveConv?._id
       });
 
       // Ajouter le message à la liste si on est dans la bonne conversation
       setMessages(prev => {
         // Vérifier si le message appartient à la conversation active
-        if (conversationId === activeConversation?._id) {
+        if (conversationId === activeConversationRef.current?._id) {
           // Vérifier si le message n'est pas déjà dans la liste
           const exists = prev.some(m => m._id === message._id);
           if (!exists) {
@@ -537,7 +546,7 @@ export function ChatProvider({ children }) {
       // Incrémenter unreadCount seulement si:
       // - Ce n'est pas notre propre message
       // - La conversation n'est pas active (sinon les messages sont marqués comme lus immédiatement)
-      const shouldIncrementUnread = !isOwn && conversationId !== activeConversation?._id;
+      const shouldIncrementUnread = !isOwn && conversationId !== currentActiveConv?._id;
 
       // Mettre a jour le compteur global de non-lus
       if (shouldIncrementUnread) {
@@ -570,7 +579,7 @@ export function ChatProvider({ children }) {
         });
       }
 
-      // Mettre a jour la conversation dans la liste
+      // Mettre a jour la conversation dans la liste et re-trier (plus récente en haut)
       setConversations(prev =>
         prev.map(conv => {
           if (conv._id === conversationId) {
@@ -592,7 +601,7 @@ export function ChatProvider({ children }) {
             };
           }
           return conv;
-        })
+        }).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
       );
     };
 
@@ -609,7 +618,7 @@ export function ChatProvider({ children }) {
         setUnreadCount(prev => Math.max(0, prev - data.unreadDecrement));
       }
 
-      // Mettre à jour la conversation spécifique
+      // Mettre à jour la conversation spécifique et re-trier
       setConversations(prev =>
         prev.map(conv => {
           if (conv._id === data.conversationId) {
@@ -633,7 +642,7 @@ export function ChatProvider({ children }) {
             return updates;
           }
           return conv;
-        })
+        }).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
       );
     };
 
@@ -716,7 +725,7 @@ export function ChatProvider({ children }) {
       websocketService.off('message_delivered', handleMessageDelivered);
       websocketService.off('messages_read', handleMessagesRead);
     };
-  }, [activeConversation, user]); // Ajouter user dans les dépendances
+  }, [user]); // activeConversation via ref pour éviter de recréer les listeners
 
   /**
    * Upload un média pour le chat

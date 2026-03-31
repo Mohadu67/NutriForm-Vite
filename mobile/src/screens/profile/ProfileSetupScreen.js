@@ -356,7 +356,7 @@ export default function ProfileSetupScreen() {
             );
           }
         }} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={isDark ? '#FFF' : '#000'} />
+          <Ionicons name="arrow-back" size={24} color={isDark ? colors.dark.text : colors.light.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDark && styles.textDark]}>Configuration du profil</Text>
         <TouchableOpacity
@@ -393,12 +393,12 @@ export default function ProfileSetupScreen() {
               style={[
                 styles.textArea,
                 isDark && styles.inputDark,
-                isDark && { color: '#FFF' }
+                isDark && { color: colors.dark.text }
               ]}
               value={bio}
               onChangeText={setBio}
               placeholder="Parlez de vous, vos objectifs fitness..."
-              placeholderTextColor={isDark ? '#666' : '#999'}
+              placeholderTextColor={isDark ? colors.dark.textTertiary : colors.light.textTertiary}
               multiline
               numberOfLines={4}
             />
@@ -411,12 +411,12 @@ export default function ProfileSetupScreen() {
               style={[
                 styles.input,
                 isDark && styles.inputDark,
-                isDark && { color: '#FFF' }
+                isDark && { color: colors.dark.text }
               ]}
               value={age}
               onChangeText={setAge}
               placeholder="25"
-              placeholderTextColor={isDark ? '#666' : '#999'}
+              placeholderTextColor={isDark ? colors.dark.textTertiary : colors.light.textTertiary}
               keyboardType="numeric"
             />
           </View>
@@ -468,7 +468,7 @@ export default function ProfileSetupScreen() {
                     <Ionicons
                       name={type.icon}
                       size={18}
-                      color={isSelected ? '#FFF' : (isDark ? '#888' : '#666')}
+                      color={isSelected ? colors.white : (isDark ? colors.dark.textTertiary : colors.light.textSecondary)}
                     />
                     <Text
                       style={[
@@ -499,8 +499,8 @@ export default function ProfileSetupScreen() {
               <Switch
                 value={matchingEnabled}
                 onValueChange={setMatchingEnabled}
-                trackColor={{ false: '#767577', true: theme.colors.primary }}
-                thumbColor={matchingEnabled ? '#FFF' : '#f4f3f4'}
+                trackColor={{ false: colors.light.textTertiary, true: colors.primary }}
+                thumbColor={matchingEnabled ? colors.white : colors.light.borderLight}
               />
             </View>
           </View>
@@ -539,7 +539,7 @@ export default function ProfileSetupScreen() {
 
           {latitude && longitude && (
             <View style={[styles.locationInfo, isDark && styles.locationInfoDark]}>
-              <Ionicons name="checkmark-circle" size={18} color="#22C55E" />
+              <Ionicons name="checkmark-circle" size={18} color={colors.success} />
               <Text style={[styles.locationInfoText, isDark && styles.textDark]}>
                 Position GPS enregistrée
               </Text>
@@ -552,12 +552,12 @@ export default function ProfileSetupScreen() {
               style={[
                 styles.input,
                 isDark && styles.inputDark,
-                isDark && { color: '#FFF' }
+                isDark && { color: colors.dark.text }
               ]}
               value={city}
               onChangeText={setCity}
               placeholder="Paris"
-              placeholderTextColor={isDark ? '#666' : '#999'}
+              placeholderTextColor={isDark ? colors.dark.textTertiary : colors.light.textTertiary}
             />
           </View>
 
@@ -567,12 +567,12 @@ export default function ProfileSetupScreen() {
               style={[
                 styles.input,
                 isDark && styles.inputDark,
-                isDark && { color: '#FFF' }
+                isDark && { color: colors.dark.text }
               ]}
               value={postalCode}
               onChangeText={setPostalCode}
               placeholder="75001"
-              placeholderTextColor={isDark ? '#666' : '#999'}
+              placeholderTextColor={isDark ? colors.dark.textTertiary : colors.light.textTertiary}
               keyboardType="numeric"
             />
           </View>
@@ -611,7 +611,7 @@ export default function ProfileSetupScreen() {
                       <Ionicons
                         name={slot.icon}
                         size={14}
-                        color={isSelected ? '#FFF' : (isDark ? '#888' : '#666')}
+                        color={isSelected ? colors.white : (isDark ? colors.dark.textTertiary : colors.light.textSecondary)}
                       />
                       <Text
                         style={[
@@ -648,12 +648,12 @@ export default function ProfileSetupScreen() {
               style={[
                 styles.input,
                 isDark && styles.inputDark,
-                isDark && { color: '#FFF' }
+                isDark && { color: colors.dark.text }
               ]}
               value={maxDistance}
               onChangeText={setMaxDistance}
               placeholder="10"
-              placeholderTextColor={isDark ? '#666' : '#999'}
+              placeholderTextColor={isDark ? colors.dark.textTertiary : colors.light.textTertiary}
               keyboardType="numeric"
             />
           </View>
@@ -670,12 +670,12 @@ export default function ProfileSetupScreen() {
                   style={[
                     styles.input,
                     isDark && styles.inputDark,
-                    isDark && { color: '#FFF' }
+                    isDark && { color: colors.dark.text }
                   ]}
                   value={minAge}
                   onChangeText={setMinAge}
                   placeholder="18"
-                  placeholderTextColor={isDark ? '#666' : '#999'}
+                  placeholderTextColor={isDark ? colors.dark.textTertiary : colors.light.textTertiary}
                   keyboardType="numeric"
                 />
               </View>
@@ -686,12 +686,12 @@ export default function ProfileSetupScreen() {
                   style={[
                     styles.input,
                     isDark && styles.inputDark,
-                    isDark && { color: '#FFF' }
+                    isDark && { color: colors.dark.text }
                   ]}
                   value={maxAge}
                   onChangeText={setMaxAge}
                   placeholder="99"
-                  placeholderTextColor={isDark ? '#666' : '#999'}
+                  placeholderTextColor={isDark ? colors.dark.textTertiary : colors.light.textTertiary}
                   keyboardType="numeric"
                 />
               </View>
@@ -752,7 +752,7 @@ export default function ProfileSetupScreen() {
                     <Ionicons
                       name={type.icon}
                       size={18}
-                      color={isSelected ? '#FFF' : (isDark ? '#888' : '#666')}
+                      color={isSelected ? colors.white : (isDark ? colors.dark.textTertiary : colors.light.textSecondary)}
                     />
                     <Text
                       style={[
@@ -831,14 +831,17 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    borderWidth: 1,
+    borderColor: colors.light.borderLight,
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 1,
   },
   sectionCardDark: {
     backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
     shadowOpacity: 0,
   },
   sectionHeaderRow: {
@@ -907,7 +910,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: colors.light.border,
   },
   optionButtonDark: {
@@ -924,7 +927,7 @@ const styles = StyleSheet.create({
     color: colors.light.textSecondary,
   },
   optionButtonTextActive: {
-    color: '#FFF',
+    color: colors.white,
   },
   workoutGrid: {
     flexDirection: 'row',
@@ -956,7 +959,7 @@ const styles = StyleSheet.create({
     color: colors.light.textSecondary,
   },
   workoutChipTextActive: {
-    color: '#FFF',
+    color: colors.white,
   },
   switchRow: {
     flexDirection: 'row',
@@ -984,7 +987,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.light.backgroundTertiary,
     paddingVertical: 8,
     paddingHorizontal: 8,
-    borderRadius: 10,
+    borderRadius: 12,
     gap: 4,
     borderWidth: 1,
     borderColor: colors.light.border,
@@ -1003,7 +1006,7 @@ const styles = StyleSheet.create({
     color: colors.light.textSecondary,
   },
   slotChipTextActive: {
-    color: '#FFF',
+    color: colors.white,
   },
   ageRange: {
     flexDirection: 'row',
@@ -1020,13 +1023,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.light.backgroundTertiary,
+    backgroundColor: colors.primary50,
     padding: 14,
     borderRadius: 12,
     gap: 8,
     marginBottom: 12,
-    borderWidth: 2,
-    borderColor: colors.primary,
+    borderWidth: 1.5,
+    borderColor: colors.primaryLight,
   },
   locationButtonDark: {
     backgroundColor: colors.dark.backgroundTertiary,
@@ -1040,7 +1043,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.light.statusSuccess,
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 12,
     gap: 8,
     marginBottom: 16,
   },

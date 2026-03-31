@@ -37,6 +37,7 @@ export default function ActiveChallenges({
   onAccept,
   onDecline,
   onCancel,
+  onSubmitResult,
   onCreateChallenge,
   stats
 }) {
@@ -126,6 +127,7 @@ export default function ActiveChallenges({
                   onAccept={onAccept}
                   onDecline={onDecline}
                   onCancel={onCancel}
+                  onSubmitResult={onSubmitResult}
                   compact={true}
                 />
               ))}
