@@ -95,6 +95,9 @@ module.exports = (io) => {
     // Notifier tous les utilisateurs que cet utilisateur est en ligne
     socket.broadcast.emit('user_online', { userId: userIdStr });
 
+    // Envoyer la liste des utilisateurs en ligne au nouveau connecté
+    socket.emit('online_users_list', { users: Array.from(connectedUsers.keys()) });
+
     // Rejoindre une conversation
     socket.on('join_conversation', (conversationId) => {
       socket.join(`conversation:${conversationId}`);
