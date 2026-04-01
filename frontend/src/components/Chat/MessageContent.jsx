@@ -19,6 +19,7 @@ const ROUTE_MAP = {
   Matching: '/matching',
   Rewards: '/rewards',
   CreateRecipe: '/recettes?view=create',
+  Pricing: '/pricing',
 };
 
 /**

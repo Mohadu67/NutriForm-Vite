@@ -7,6 +7,7 @@ const logger = require('../utils/logger');
 const { notifyAdmins } = require('../services/adminNotification.service');
 const { sendNotificationToUser } = require('../services/pushNotification.service');
 const Notification = require('../models/Notification');
+const { FREEMIUM_LIMITS, isUserPremium, freemiumLimitResponse } = require('../constants/freemiumLimits');
 
 // Constantes XP pour les recettes
 const XP_REWARDS = {
@@ -687,6 +688,19 @@ exports.createUserRecipe = async (req, res) => {
   try {
     const userId = req.user.id;
     const recipeData = req.body;
+
+    // Limite freemium : 3 recettes max pour les free
+    if (!isUserPremium(req.user)) {
+      const userRecipesCount = await Recipe.countDocuments({ author: userId, createdBy: 'user' });
+      if (userRecipesCount >= FREEMIUM_LIMITS.RECIPES_MAX_TOTAL) {
+        return freemiumLimitResponse(res, {
+          limit: FREEMIUM_LIMITS.RECIPES_MAX_TOTAL,
+          current: userRecipesCount,
+          feature: 'recipes',
+          message: `Limite de ${FREEMIUM_LIMITS.RECIPES_MAX_TOTAL} recettes atteinte. Passe Premium pour en créer sans limite !`
+        });
+      }
+    }
 
     // Validation basique
     if (!recipeData.title) {

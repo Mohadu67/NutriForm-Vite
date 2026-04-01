@@ -10,6 +10,7 @@ const { sendNotificationToUser } = require("../services/pushNotification.service
 const Notification = require("../models/Notification");
 const User = require("../models/User");
 const UserProfile = require("../models/UserProfile");
+const { FREEMIUM_LIMITS, isUserPremium, freemiumLimitResponse } = require("../constants/freemiumLimits");
 const WeightLog = require("../models/WeightLog");
 const Exercise = require("../models/Exercise");
 let HistoryModel = null;
@@ -442,6 +443,29 @@ async function createSession(req, res) {
   try {
     const userId = getUserId(req);
     if (!userId) return res.status(401).json({ error: "unauthorized" });
+
+    // Limite freemium : 3 seances/semaine pour les free
+    if (!isUserPremium(req.user)) {
+      const now = new Date();
+      const dayOfWeek = now.getUTCDay();
+      const weekStart = new Date(now);
+      weekStart.setUTCDate(now.getUTCDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      weekStart.setUTCHours(0, 0, 0, 0);
+
+      const sessionsThisWeek = await WorkoutSession.countDocuments({
+        userId,
+        startedAt: { $gte: weekStart }
+      });
+
+      if (sessionsThisWeek >= FREEMIUM_LIMITS.WORKOUT_SESSIONS_PER_WEEK) {
+        return freemiumLimitResponse(res, {
+          limit: FREEMIUM_LIMITS.WORKOUT_SESSIONS_PER_WEEK,
+          current: sessionsThisWeek,
+          feature: 'workout_sessions',
+          message: `Limite de ${FREEMIUM_LIMITS.WORKOUT_SESSIONS_PER_WEEK} séances/semaine atteinte. Passe Premium pour t'entraîner sans limite !`
+        });
+      }
+    }
 
     const {
       name = "",
