@@ -8,6 +8,7 @@ const SleepLog = require('../models/SleepLog');
 const DailyHealthData = require('../models/DailyHealthData');
 const Challenge = require('../models/Challenge');
 const Partner = require('../models/Partner');
+const Recipe = require('../models/Recipe');
 const User = require('../models/User');
 const logger = require('../utils/logger');
 
@@ -134,6 +135,7 @@ async function buildUserContext(userId) {
       weekHealth,
       activeChallenges,
       activePartners,
+      availableRecipes,
     ] = await Promise.all([
       User.findById(userId).select('prenom pseudo').lean(),
       UserProfile.findOne({ userId }).lean(),
@@ -157,6 +159,7 @@ async function buildUserContext(userId) {
         status: 'active',
       }).lean(),
       Partner.find({ isActive: true }).select('name category offerTitle offerDescription offerType offerValue description').lean(),
+      Recipe.find({ isPublished: true }).select('title slug category mealType goal tags nutrition.calories nutrition.proteins dietType description').sort({ views: -1 }).limit(30).lean(),
     ]);
 
     const sections = [];
@@ -348,6 +351,23 @@ async function buildUserContext(userId) {
           `  - ${p.name} [${CATEGORY_LABELS[p.category] || p.category}] : ${p.offerTitle} (${offerLabel})` +
           (p.offerDescription ? ` — ${p.offerDescription}` : '') +
           (p.description ? ` | ${p.description}` : '')
+        );
+      }
+    }
+
+    // --- Recettes disponibles (pour recommandations quand l'user a faim) ---
+    if (availableRecipes.length > 0) {
+      const MEAL_LABELS = { breakfast: 'Petit-déj', lunch: 'Déjeuner', dinner: 'Dîner', snack: 'Snack' };
+      const GOAL_LABELS_R = { weight_loss: 'Perte poids', muscle_gain: 'Prise muscle', maintenance: 'Maintien', performance: 'Performance', health: 'Santé' };
+      sections.push(`Recettes disponibles sur Harmonith (${availableRecipes.length}) :`);
+      for (const r of availableRecipes) {
+        const meals = r.mealType?.map(m => MEAL_LABELS[m] || m).join('/') || '';
+        const goals = r.goal?.map(g => GOAL_LABELS_R[g] || g).join('/') || '';
+        sections.push(
+          `  - "${r.title}" (slug: ${r.slug}) : ${r.nutrition?.calories || '?'} kcal, ${r.nutrition?.proteins || '?'}g prot` +
+          (meals ? ` | ${meals}` : '') +
+          (goals ? ` | ${goals}` : '') +
+          (r.tags?.length ? ` | Tags: ${r.tags.join(', ')}` : '')
         );
       }
     }

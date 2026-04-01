@@ -18,6 +18,7 @@ const ROUTE_MAP = {
   Recipes: '/recettes',
   Matching: '/matching',
   Rewards: '/rewards',
+  CreateRecipe: '/recettes?view=create',
 };
 
 /**
@@ -124,6 +125,12 @@ const MessageContent = memo(function MessageContent({ content, showPreview = tru
               key={i}
               className={styles.actionBtn}
               onClick={() => {
+                // Gerer les routes dynamiques (ex: Recipe:slug-de-la-recette)
+                if (btn.route.startsWith('Recipe:')) {
+                  const slug = btn.route.split(':')[1];
+                  if (slug) window.location.href = `/recettes/${slug}`;
+                  return;
+                }
                 const path = ROUTE_MAP[btn.route];
                 if (path) window.location.href = path;
               }}

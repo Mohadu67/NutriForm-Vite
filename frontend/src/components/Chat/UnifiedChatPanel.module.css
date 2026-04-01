@@ -713,7 +713,7 @@
   padding: 8px 16px;
   background: var(--color-bg-alt);
   border-radius: 16px;
-  margin: 0 var(--space-xl) var(--space-sm);
+  margin: 0 var(--space-xl) 4px;
   width: fit-content;
   animation: fadeIn 0.2s ease;
 }
