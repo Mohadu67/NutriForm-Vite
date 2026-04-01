@@ -410,6 +410,7 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
           createdAt: new Date()
         };
         setMessages(prev => [...prev, userMessage]);
+        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
 
         const response = await sendChatMessage(content, conversationId);
 
@@ -618,18 +619,28 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
             })}
           </>
         )}
+        {/* Indicateur de typing — match chat */}
+        {isMatchChat && isOtherTyping && (
+          <div className={styles.typingIndicator}>
+            <span className={styles.typingDot}></span>
+            <span className={styles.typingDot}></span>
+            <span className={styles.typingDot}></span>
+            <span className={styles.typingText}>écrit...</span>
+          </div>
+        )}
+
+        {/* Indicateur de typing — IA coach */}
+        {!isMatchChat && sending && (
+          <div className={styles.typingIndicator}>
+            <span className={styles.typingDot}></span>
+            <span className={styles.typingDot}></span>
+            <span className={styles.typingDot}></span>
+            <span className={styles.typingText}>réfléchit...</span>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
-
-      {/* Indicateur de typing */}
-      {isMatchChat && isOtherTyping && (
-        <div className={styles.typingIndicator}>
-          <span className={styles.typingDot}></span>
-          <span className={styles.typingDot}></span>
-          <span className={styles.typingDot}></span>
-          <span className={styles.typingText}>écrit...</span>
-        </div>
-      )}
 
       {/* Input */}
       <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className={styles.chatInputContainer}>
