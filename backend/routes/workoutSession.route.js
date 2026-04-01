@@ -25,9 +25,9 @@ router.get("/sessions/:id", getSessionById);
 router.get("/summary/daily", getDailySummary);
 router.get("/last-week-session", getLastWeekSession);
 
-// Premium requis pour créer/modifier/supprimer des séances
-router.post("/sessions", requirePremium, enrichMuscles, createSession);
-router.patch("/sessions/:id", requirePremium, enrichMuscles, updateSession);
-router.delete("/sessions/:id", requirePremium, deleteSession);
+// Créer/modifier/supprimer des séances (free = 3/semaine, premium = illimité)
+router.post("/sessions", enrichMuscles, createSession);
+router.patch("/sessions/:id", enrichMuscles, updateSession);
+router.delete("/sessions/:id", deleteSession);
 
 module.exports = router;

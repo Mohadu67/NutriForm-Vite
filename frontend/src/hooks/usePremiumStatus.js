@@ -97,24 +97,30 @@ export function usePremiumStatus() {
   const limits = useMemo(() => {
     if (isPremium || isAdmin || isCoach) {
       return {
-        programs: Infinity,
-        messages: Infinity,
-        matches: Infinity,
+        workoutSessionsPerWeek: Infinity,
+        foodLogsPerDay: Infinity,
         recipes: Infinity,
-        aiChat: true,
-        exportData: true,
-        advancedStats: true
+        programs: Infinity,
+        aiChatMessagesPerDay: Infinity,
+        matching: true,
+        chatP2P: true,
+        weeklyNutrition: true,
+        advancedStats: true,
+        exportData: true
       };
     }
 
     return {
-      programs: 3,
-      messages: 50,
-      matches: 10,
-      recipes: 10,
-      aiChat: false,
-      exportData: false,
-      advancedStats: false
+      workoutSessionsPerWeek: 3,
+      foodLogsPerDay: 5,
+      recipes: 3,
+      programs: 2,
+      aiChatMessagesPerDay: 10,
+      matching: false,
+      chatP2P: false,
+      weeklyNutrition: false,
+      advancedStats: false,
+      exportData: false
     };
   }, [isPremium, isAdmin, isCoach]);
 
@@ -122,24 +128,19 @@ export function usePremiumStatus() {
    * Vérifie si une feature est accessible
    */
   const canAccess = useCallback((feature) => {
-    const premiumFeatures = [
-      'matching',
-      'chat',
-      'aiChat',
-      'advancedStats',
-      'exportData',
-      'unlimitedPrograms',
-      'unlimitedRecipes'
-    ];
-
-    // Staff a accès à tout
+    // Staff a acces a tout
     if (isAdmin || isCoach) return true;
 
-    // Premium a accès aux features premium
-    if (isPremium && premiumFeatures.includes(feature)) return true;
+    // Features 100% premium (bloquees pour free)
+    const premiumOnlyFeatures = ['matching', 'chatP2P', 'weeklyNutrition', 'advancedStats', 'exportData'];
+    if (premiumOnlyFeatures.includes(feature)) return isPremium;
 
-    // Features gratuites
-    const freeFeatures = ['dashboard', 'calculators', 'profile', 'programs', 'recipes'];
+    // Features avec limites (accessibles free avec limites, illimite premium)
+    const limitedFeatures = ['workoutSessions', 'recipes', 'programs', 'aiChat', 'foodLogs'];
+    if (limitedFeatures.includes(feature)) return true;
+
+    // Features gratuites sans limite
+    const freeFeatures = ['dashboard', 'calculators', 'profile', 'browse'];
     return freeFeatures.includes(feature);
   }, [isPremium, isAdmin, isCoach]);
 

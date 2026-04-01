@@ -137,7 +137,7 @@ async function buildUserContext(userId) {
       activePartners,
       availableRecipes,
     ] = await Promise.all([
-      User.findById(userId).select('prenom pseudo').lean(),
+      User.findById(userId).select('prenom pseudo subscriptionTier role').lean(),
       UserProfile.findOne({ userId }).lean(),
       NutritionGoal.findOne({ userId }).lean(),
       WorkoutSession.find({ userId, status: 'finished' })
@@ -167,6 +167,10 @@ async function buildUserContext(userId) {
     // --- Identité ---
     const prenom = user?.prenom || user?.pseudo || 'Utilisateur';
     sections.push(`Prénom : ${prenom}`);
+
+    // --- Statut abonnement ---
+    const isPremium = user?.subscriptionTier === 'premium' || user?.role === 'admin';
+    sections.push(`Abonnement : ${isPremium ? 'Premium' : 'Gratuit (free)'}`);
 
     // --- Profil physique ---
     if (profile) {

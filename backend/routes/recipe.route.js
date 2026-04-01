@@ -156,9 +156,9 @@ router.post('/:id/save', auth, requirePremium, recipeController.saveRecipe);
 /**
  * @route   POST /api/recipes/:id/rate
  * @desc    Noter une recette
- * @access  Private (Premium requis)
+ * @access  Private
  */
-router.post('/:id/rate', auth, requirePremium, recipeController.rateRecipe);
+router.post('/:id/rate', auth, recipeController.rateRecipe);
 
 // =====================================================
 // ROUTES ADMIN - CRUD Recettes officielles

@@ -10,6 +10,7 @@ const { ESCALATE_KEYWORDS, ESCALATE_CONFIRMATION } = require('../constants/chatP
 const { buildUserContext } = require('../services/userContext.service');
 const { findFallbackResponse, containsAny } = require('../constants/fallbackResponses');
 const PartnerRequest = require('../models/PartnerRequest');
+const { FREEMIUM_LIMITS, isUserPremium, freemiumLimitResponse } = require('../constants/freemiumLimits');
 
 // Wrapper pour compatibilite avec l'ancienne signature
 async function notifyAdmins(title, message, link, metadata = {}, io = null) {
@@ -53,6 +54,28 @@ async function sendMessage(req, res) {
 
     if (message.length > 2000) {
       return res.status(400).json({ error: 'Message trop long (max 2000 caractères).' });
+    }
+
+    // Limite freemium : 10 messages/jour pour les free
+    const user = await User.findById(userId);
+    if (!isUserPremium(user)) {
+      const todayStart = new Date();
+      todayStart.setUTCHours(0, 0, 0, 0);
+
+      const messagesToday = await ChatMessage.countDocuments({
+        userId,
+        role: 'user',
+        createdAt: { $gte: todayStart }
+      });
+
+      if (messagesToday >= FREEMIUM_LIMITS.AI_CHAT_MESSAGES_PER_DAY) {
+        return freemiumLimitResponse(res, {
+          limit: FREEMIUM_LIMITS.AI_CHAT_MESSAGES_PER_DAY,
+          current: messagesToday,
+          feature: 'ai_chat',
+          message: `Limite de ${FREEMIUM_LIMITS.AI_CHAT_MESSAGES_PER_DAY} messages/jour atteinte. Passe Premium pour discuter sans limite avec ton coach !`
+        });
+      }
     }
 
     // Générer un conversationId si c'est un nouveau chat

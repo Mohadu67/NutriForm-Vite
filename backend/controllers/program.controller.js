@@ -8,6 +8,7 @@ const logger = require("../utils/logger");
 const { sanitizeProgram } = require("../utils/sanitizer");
 const { sendNotificationToUser } = require('../services/pushNotification.service');
 const { notifyAdmins } = require('../services/adminNotification.service');
+const { FREEMIUM_LIMITS, isUserPremium, freemiumLimitResponse } = require('../constants/freemiumLimits');
 const {
   validatePagination,
   validateType,
@@ -247,6 +248,19 @@ async function getUserPrograms(req, res) {
  */
 async function createProgram(req, res) {
   try {
+    // Limite freemium : 2 programmes max pour les free
+    if (!isUserPremium(req.user)) {
+      const userProgramsCount = await WorkoutProgram.countDocuments({ userId: req.user.id || req.user._id });
+      if (userProgramsCount >= FREEMIUM_LIMITS.PROGRAMS_MAX_TOTAL) {
+        return freemiumLimitResponse(res, {
+          limit: FREEMIUM_LIMITS.PROGRAMS_MAX_TOTAL,
+          current: userProgramsCount,
+          feature: 'programs',
+          message: `Limite de ${FREEMIUM_LIMITS.PROGRAMS_MAX_TOTAL} programmes atteinte. Passe Premium pour en créer sans limite !`
+        });
+      }
+    }
+
     const sanitized = sanitizeProgram(req.body);
     const { name, description, type, difficulty, estimatedDuration, tags,
             muscleGroups, equipment, cycles, coverImage, instructions,
