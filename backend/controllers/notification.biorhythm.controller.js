@@ -30,6 +30,11 @@ async function sendExpoPush(expoPushToken, title, body) {
     }),
   });
 
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Unknown error');
+    throw new Error(`Expo Push API error ${response.status}: ${errorText}`);
+  }
+
   return response.json();
 }
 

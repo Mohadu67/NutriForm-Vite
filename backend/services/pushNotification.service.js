@@ -1,7 +1,58 @@
 const webPush = require('web-push');
 const { Expo } = require('expo-server-sdk');
 const PushSubscription = require('../models/PushSubscription');
+const User = require('../models/User');
 const logger = require('../utils/logger.js');
+
+/**
+ * Mapping type de notification → clé de préférence utilisateur
+ * Les types absents de ce mapping sont TOUJOURS envoyés (admin, system, etc.)
+ */
+const NOTIFICATION_TYPE_TO_PREF = {
+  // Social — matches & interactions
+  new_match: 'matches',
+  match: 'matches',
+  new_message: 'messages',
+  message: 'messages',
+  follow: 'matches',
+  like: 'matches',
+  comment: 'matches',
+  // Contenu
+  new_program: 'newPrograms',
+  program: 'newPrograms',
+  content: 'newPrograms',
+  new_recipe: 'newRecipes',
+  recipe: 'newRecipes',
+  promo: 'promoCodes',
+  partner: 'promoCodes',
+  partner_redemption: 'promoCodes',
+  // Gamification — défis
+  challenge_received: 'challengeUpdates',
+  challenge_accepted: 'challengeUpdates',
+  challenge_declined: 'challengeUpdates',
+  challenge_update: 'challengeUpdates',
+  challenge_ending: 'challengeUpdates',
+  challenge_session: 'challengeUpdates',
+  challenge_won: 'challengeUpdates',
+  challenge_lost: 'challengeUpdates',
+  challenge_draw: 'challengeUpdates',
+  congratulations: 'challengeUpdates',
+  // Gamification — badges & XP
+  badge_unlocked: 'badgeUnlocked',
+  xp_update: 'xpUpdates',
+  xp_premium_expired: 'xpUpdates',
+  xp_redemption: 'xpUpdates',
+  leaderboard_update: 'leaderboardUpdates',
+  // Rappels
+  daily_reminder: 'dailyReminder',
+  streak_danger: 'streakReminders',
+  streak_congrats: 'streakReminders',
+  inactive_reminder: 'dailyReminder',
+  weekly_recap: 'weeklyRecapPush',
+  content_creation_tip: 'contentCreationTips',
+  // Support (admin/support notifs ne sont pas filtrées — pas dans ce mapping)
+  support_reply: 'supportReplies',
+};
 
 // Configuration VAPID (skip en mode test)
 if (process.env.NODE_ENV !== 'test' && process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
@@ -112,6 +163,18 @@ async function sendWebPushNotifications(subscriptions, payload) {
  */
 async function sendNotificationToUser(userId, payload) {
   try {
+    // Vérifier les préférences utilisateur avant d'envoyer
+    const notifType = payload.type || payload.data?.type;
+    const prefKey = NOTIFICATION_TYPE_TO_PREF[notifType];
+
+    if (prefKey) {
+      const user = await User.findById(userId).select('notificationPreferences').lean();
+      if (user?.notificationPreferences?.[prefKey] === false) {
+        logger.info(`🔕 Notification ${notifType} bloquée par préférence "${prefKey}" pour userId: ${userId}`);
+        return { success: false, message: 'Blocked by user preference', prefKey };
+      }
+    }
+
     const subscriptions = await PushSubscription.find({ userId, active: true });
 
     if (subscriptions.length === 0) {

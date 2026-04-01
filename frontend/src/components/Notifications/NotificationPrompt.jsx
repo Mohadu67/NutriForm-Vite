@@ -81,7 +81,6 @@ const NotificationPrompt = () => {
         // Gérer l'erreur de session expirée
         if (result.error?.message === 'SESSION_EXPIRED') {
           setError('Votre session a expiré. Veuillez vous reconnecter.');
-          setIsAuth(false);
           // Fermer le prompt après 2 secondes
           setTimeout(() => setShowPrompt(false), 2000);
         } else {

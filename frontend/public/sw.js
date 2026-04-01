@@ -168,9 +168,15 @@ self.addEventListener('push', (event) => {
       ...data
     },
     actions: [],
-    tag: type,
-    // Notifications qui restent visibles jusqu'à interaction
-    requireInteraction: type === 'new_match' || type === 'new_message'
+    // Tag identique = la notif remplace la précédente au lieu de s'empiler
+    // Pour les messages, on tag par conversation pour grouper
+    tag: type === 'new_message' && data.conversationId
+      ? `message-${data.conversationId}`
+      : type === 'challenge_update' && data.challengeId
+        ? `challenge-${data.challengeId}`
+        : type,
+    // Seuls les matchs et défis reçus restent visibles jusqu'à interaction
+    requireInteraction: type === 'new_match' || type === 'challenge_received'
   };
 
   // Ajouter des actions selon le type
@@ -207,7 +213,6 @@ self.addEventListener('push', (event) => {
     options.actions = [
       { action: 'view', title: 'Revenir sur le site', icon: '/favicon.png' }
     ];
-    options.requireInteraction = true;
   }
 
   event.waitUntil(
