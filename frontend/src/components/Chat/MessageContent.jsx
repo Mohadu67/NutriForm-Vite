@@ -124,15 +124,17 @@ const MessageContent = memo(function MessageContent({ content, showPreview = tru
             <button
               key={i}
               className={styles.actionBtn}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
+                let path;
                 // Gerer les routes dynamiques (ex: Recipe:slug-de-la-recette)
                 if (btn.route.startsWith('Recipe:')) {
                   const slug = btn.route.split(':')[1];
-                  if (slug) window.location.href = `/recettes/${slug}`;
-                  return;
+                  if (slug) path = `/recettes/${slug}`;
+                } else {
+                  path = ROUTE_MAP[btn.route];
                 }
-                const path = ROUTE_MAP[btn.route];
-                if (path) window.location.href = path;
+                if (path) window.location.assign(path);
               }}
             >
               ➜ {btn.label}
