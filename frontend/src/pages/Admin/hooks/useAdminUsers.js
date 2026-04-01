@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import {
   getUsers,
   getUserStats,
@@ -11,6 +11,9 @@ import {
 } from '../../../shared/api/adminUsers';
 
 export function useAdminUsers(notify) {
+  const notifyRef = useRef(notify);
+  notifyRef.current = notify;
+
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(false);
@@ -30,11 +33,11 @@ export function useAdminUsers(notify) {
         setTotalPages(data.totalPages || 1);
       }
     } catch (err) {
-      notify.error('Erreur lors du chargement des utilisateurs');
+      notifyRef.current.error('Erreur lors du chargement des utilisateurs');
     } finally {
       setLoading(false);
     }
-  }, [notify]);
+  }, []);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -43,9 +46,9 @@ export function useAdminUsers(notify) {
         setStats(data.stats || {});
       }
     } catch (err) {
-      notify.error('Erreur lors du chargement des statistiques');
+      notifyRef.current.error('Erreur lors du chargement des statistiques');
     }
-  }, [notify]);
+  }, []);
 
   const refresh = useCallback((params = {}) => {
     fetchUsers(params);
@@ -56,91 +59,91 @@ export function useAdminUsers(notify) {
     try {
       const data = await banUser(userId, reason);
       if (data.success) {
-        notify.success('Utilisateur banni');
+        notifyRef.current.success('Utilisateur banni');
         return true;
       } else {
-        notify.error(data.message || 'Erreur lors du bannissement');
+        notifyRef.current.error(data.message || 'Erreur lors du bannissement');
       }
     } catch {
-      notify.error('Erreur lors du bannissement');
+      notifyRef.current.error('Erreur lors du bannissement');
     }
     return false;
-  }, [notify]);
+  }, []);
 
   const handleUnban = useCallback(async (userId) => {
     try {
       const data = await unbanUser(userId);
       if (data.success) {
-        notify.success('Utilisateur debanni');
+        notifyRef.current.success('Utilisateur debanni');
         return true;
       } else {
-        notify.error(data.message || 'Erreur lors du debannissement');
+        notifyRef.current.error(data.message || 'Erreur lors du debannissement');
       }
     } catch {
-      notify.error('Erreur lors du debannissement');
+      notifyRef.current.error('Erreur lors du debannissement');
     }
     return false;
-  }, [notify]);
+  }, []);
 
   const handleDelete = useCallback(async (userId) => {
     try {
       const data = await deleteUser(userId);
       if (data.success) {
-        notify.success('Utilisateur supprime');
+        notifyRef.current.success('Utilisateur supprime');
         return true;
       } else {
-        notify.error(data.message || 'Erreur lors de la suppression');
+        notifyRef.current.error(data.message || 'Erreur lors de la suppression');
       }
     } catch {
-      notify.error('Erreur lors de la suppression');
+      notifyRef.current.error('Erreur lors de la suppression');
     }
     return false;
-  }, [notify]);
+  }, []);
 
   const handleChangeRole = useCallback(async (userId, role) => {
     try {
       const data = await changeUserRole(userId, role);
       if (data.success) {
-        notify.success('Role mis a jour');
+        notifyRef.current.success('Role mis a jour');
         return true;
       } else {
-        notify.error(data.message || 'Erreur lors du changement de role');
+        notifyRef.current.error(data.message || 'Erreur lors du changement de role');
       }
     } catch {
-      notify.error('Erreur lors du changement de role');
+      notifyRef.current.error('Erreur lors du changement de role');
     }
     return false;
-  }, [notify]);
+  }, []);
 
   const handleChangeTier = useCallback(async (userId, tier) => {
     try {
       const data = await changeUserTier(userId, tier);
       if (data.success) {
-        notify.success('Tier mis a jour');
+        notifyRef.current.success('Tier mis a jour');
         return true;
       } else {
-        notify.error(data.message || 'Erreur lors du changement de tier');
+        notifyRef.current.error(data.message || 'Erreur lors du changement de tier');
       }
     } catch {
-      notify.error('Erreur lors du changement de tier');
+      notifyRef.current.error('Erreur lors du changement de tier');
     }
     return false;
-  }, [notify]);
+  }, []);
 
   const handleGiveXp = useCallback(async (userId, amount) => {
     try {
       const data = await giveXp(userId, amount);
       if (data.success) {
-        notify.success(`${amount} XP attribues`);
+        notifyRef.current.success(`${amount} XP attribues`);
         return true;
       } else {
-        notify.error(data.message || "Erreur lors de l'attribution d'XP");
+        notifyRef.current.error(data.message || "Erreur lors de l'attribution d'XP");
       }
     } catch {
-      notify.error("Erreur lors de l'attribution d'XP");
+      notifyRef.current.error("Erreur lors de l'attribution d'XP");
     }
     return false;
-  }, [notify]);
+  }, []);
 
   return {
     users,

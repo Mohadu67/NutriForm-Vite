@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { getAllProposals, reviewProposal } from '../../../shared/api/partnershipProposals';
 
 export function useAdminProposals(notify) {
@@ -8,6 +8,10 @@ export function useAdminProposals(notify) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+
+  // Stable ref pour notify (évite les boucles infinies useEffect)
+  const notifyRef = useRef(notify);
+  notifyRef.current = notify;
 
   const fetchProposals = useCallback(async (params = {}) => {
     setLoading(true);
@@ -19,27 +23,27 @@ export function useAdminProposals(notify) {
         setTotal(data.total || 0);
       }
     } catch {
-      notify.error('Erreur lors du chargement des propositions');
+      notifyRef.current.error('Erreur lors du chargement des propositions');
     } finally {
       setLoading(false);
     }
-  }, [notify]);
+  }, []);
 
   const handleReview = useCallback(async (proposalId, status, adminNotes = '') => {
     try {
       const data = await reviewProposal(proposalId, { status, adminNotes });
       if (data.success) {
         const labels = { approved: 'approuvee', rejected: 'refusee', under_review: 'en cours d\'examen' };
-        notify.success(`Proposition ${labels[status] || status}`);
+        notifyRef.current.success(`Proposition ${labels[status] || status}`);
         return true;
       } else {
-        notify.error(data.message || 'Erreur');
+        notifyRef.current.error(data.message || 'Erreur');
       }
     } catch {
-      notify.error('Erreur lors de la mise a jour');
+      notifyRef.current.error('Erreur lors de la mise a jour');
     }
     return false;
-  }, [notify]);
+  }, []);
 
   const pendingCount = proposals.filter(p => p.status === 'pending').length;
 
