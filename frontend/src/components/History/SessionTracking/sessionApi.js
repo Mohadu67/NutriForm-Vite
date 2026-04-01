@@ -80,6 +80,12 @@ function mapItemsToEntries(items = []) {
       const swim = (d && typeof d.swim === 'object') ? d.swim : null;
       const yoga = (d && typeof d.yoga === 'object') ? d.yoga : null;
       const stretch = (d && typeof d.stretch === 'object') ? d.stretch : null;
+
+      // Muscle data — pass through to backend
+      const muscleFields = {};
+      if (it.primaryMuscle) muscleFields.primaryMuscle = it.primaryMuscle;
+      if (Array.isArray(it.secondaryMuscles) && it.secondaryMuscles.length) muscleFields.secondaryMuscles = it.secondaryMuscles;
+      if (Array.isArray(it.muscles) && it.muscles.length) muscleFields.muscles = it.muscles;
       const walkRun = (d && typeof d.walkRun === 'object') ? d.walkRun : null;
 
       const actualMode = d?.mode ?? it?.mode ?? it?.type ?? '';
@@ -162,6 +168,7 @@ function mapItemsToEntries(items = []) {
           subType,
           notes: typeof d?.notes === 'string' && d.notes.trim() ? d.notes.trim() : undefined,
           sets,
+          ...muscleFields,
         };
         return entry;
       }
@@ -189,6 +196,7 @@ function mapItemsToEntries(items = []) {
         type: 'muscu',
         notes: typeof d?.notes === 'string' && d.notes.trim() ? d.notes.trim() : undefined,
         sets: msets,
+        ...muscleFields,
       };
     })
     .filter(Boolean);

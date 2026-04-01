@@ -11,6 +11,7 @@ const Notification = require("../models/Notification");
 const User = require("../models/User");
 const UserProfile = require("../models/UserProfile");
 const WeightLog = require("../models/WeightLog");
+const Exercise = require("../models/Exercise");
 let HistoryModel = null;
 try { HistoryModel = require("../models/History"); } catch (_) { HistoryModel = null; }
 
@@ -273,6 +274,44 @@ function normalizeEntry(e = {}) {
 }
 
 /**
+ * Enrichit les entries avec primaryMuscle/secondaryMuscles depuis la collection Exercise.
+ * Safety net : si le frontend n'envoie pas les muscles, le backend les récupère.
+ */
+async function enrichEntriesWithMuscleData(entries) {
+  // Collecter les exerciseId qui manquent de données muscles
+  const toEnrich = entries.filter(e =>
+    e && e.exerciseId && !e.primaryMuscle
+  );
+  if (toEnrich.length === 0) return;
+
+  const ids = [...new Set(toEnrich.map(e => e.exerciseId))];
+
+  // Lookup par exoId, slug, ou name
+  const exercises = await Exercise.find({
+    $or: [
+      { exoId: { $in: ids } },
+      { slug: { $in: ids } },
+    ]
+  }).lean();
+
+  const byId = new Map();
+  for (const exo of exercises) {
+    if (exo.exoId) byId.set(exo.exoId, exo);
+    if (exo.slug) byId.set(exo.slug, exo);
+  }
+
+  for (const entry of toEnrich) {
+    const exo = byId.get(entry.exerciseId);
+    if (!exo) continue;
+    entry.primaryMuscle = exo.primaryMuscle;
+    entry.secondaryMuscles = exo.secondaryMuscles || [];
+    if (!entry.muscles || entry.muscles.length <= 1) {
+      entry.muscles = exo.muscles || [exo.primaryMuscle, ...(exo.secondaryMuscles || [])];
+    }
+  }
+}
+
+/**
  * Récupère les métriques complètes de l'utilisateur pour le calcul de calories.
  * Priorité : WeightLog récent > UserProfile > History (legacy)
  * Retourne { weight, height, age, gender, bodyFatPercent }
@@ -431,6 +470,9 @@ async function createSession(req, res) {
         return res.status(400).json({ error: 'invalid_sets' });
       }
     }
+
+    // Enrichir les entries sans données muscles depuis la collection Exercise
+    await enrichEntriesWithMuscleData(normalized);
 
     try {
       const totalMin = Number(durationMinutesFromBody ?? 0) || 0;

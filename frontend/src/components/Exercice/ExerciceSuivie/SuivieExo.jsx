@@ -205,6 +205,9 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onFinis
                   name: it?.name ?? it?.label ?? it?.exoName ?? undefined,
                   mode: finalMode,
                   data: it?.data,
+                  primaryMuscle: it?.primaryMuscle || null,
+                  secondaryMuscles: it?.secondaryMuscles || [],
+                  muscles: it?.muscles || [],
                 };
               })
               : [];
