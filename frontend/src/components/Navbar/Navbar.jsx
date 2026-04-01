@@ -19,7 +19,8 @@ import DesktopChatOverlay from "./DesktopChatOverlay.jsx";
 import {
   ToolsIcon, DumbbellIcon, MessageIcon, HomeIcon, InfoIcon,
   DashboardIcon, SunIcon, MoonIcon, TrophyIcon, UserIcon,
-  UsersIcon, HelpCircleIcon, UtensilsIcon, CalendarIcon
+  UsersIcon, HelpCircleIcon, UtensilsIcon, CalendarIcon,
+  HandshakeIcon
 } from "./NavIcons";
 
 function FluxIcon({ size = 28 }) {
@@ -37,7 +38,7 @@ export default function Navbar() {
   const { on, isConnected } = useWebSocket() || {};
   const { isPremium } = usePremiumStatus();
   const { unreadCount: notificationUnreadCount } = useNotificationCount();
-  const { user: authUser, isLoggedIn: authLoggedIn, refresh: refreshAuth } = useAuth();
+  const { user: authUser, isLoggedIn: authLoggedIn, isPartner: authIsPartner, refresh: refreshAuth } = useAuth();
 
   // State
   const [open, setOpen] = useState(false);
@@ -248,6 +249,9 @@ export default function Navbar() {
     if (isLoggedIn && isPremium) {
       links.push({ label: 'GymBro', path: "/matching", icon: <UsersIcon size={28} />, isPremium: true });
     }
+    if (isLoggedIn && authIsPartner) {
+      links.push({ label: 'Partenaire', path: "/partner", icon: <HandshakeIcon size={28} />, isPartnerLink: true });
+    }
     links.push(
       { label: 'Recettes', path: "/recettes", icon: <UtensilsIcon size={28} /> },
       { label: "Outils", path: "/outils", icon: <ToolsIcon size={28} /> },
@@ -255,7 +259,7 @@ export default function Navbar() {
       { label: 'FAQ', path: "/contact", icon: <HelpCircleIcon size={28} /> }
     );
     return links;
-  }, [isLoggedIn, isPremium]);
+  }, [isLoggedIn, isPremium, authIsPartner]);
 
   // Handlers
   const closeMenu = useCallback(() => {
@@ -341,7 +345,7 @@ export default function Navbar() {
                 <a
                   key={link.path || `action-${index}`}
                   href={link.path}
-                  className={`${styles.dockItem} ${path === link.path ? styles.dockItemActive : ''}`}
+                  className={`${styles.dockItem} ${path === link.path ? styles.dockItemActive : ''} ${link.isPartnerLink ? styles.partnerLink : ''}`}
                   onClick={(e) => { e.preventDefault(); navigateAndClose(link.path); }}
                   title={link.label}
                 >

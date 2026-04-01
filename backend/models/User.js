@@ -63,9 +63,12 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['user', 'admin'],
+      enum: ['user', 'admin', 'partner'],
       default: 'user'
     },
+    isBanned: { type: Boolean, default: false },
+    bannedAt: { type: Date, default: null },
+    bannedReason: { type: String, default: null },
     subscriptionTier: {
       type: String,
       enum: ['free', 'premium'],

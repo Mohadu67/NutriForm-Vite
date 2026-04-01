@@ -10,7 +10,7 @@ import { storage } from '../../shared/utils/storage';
  * et n'est PAS accessible depuis JavaScript. Le backend vérifie automatiquement le cookie.
  * On vérifie seulement le 'user' en localStorage pour l'UI, pas le token.
  */
-function ProtectedRoute({ children, requireAdmin = false, requirePremium = false }) {
+function ProtectedRoute({ children, requireAdmin = false, requirePremium = false, requirePartner = false }) {
   const user = storage.get('user');
   const subscriptionStatus = storage.get('subscriptionStatus');
 
@@ -22,6 +22,11 @@ function ProtectedRoute({ children, requireAdmin = false, requirePremium = false
 
   // Vérifier si l'accès admin est requis
   if (requireAdmin && user.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Vérifier si l'accès partenaire est requis (admin y a accès aussi)
+  if (requirePartner && user.role !== 'partner' && user.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }
 

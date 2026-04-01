@@ -245,6 +245,7 @@ exports.me = async (req, res) => {
       role: user.role,
       subscriptionTier: expectedTier,
       isPremium,
+      isPartner: user.role === 'partner',
       displayName,
       hasSetPassword: isOAuthUser ? (user.hasSetPassword === true) : true,
       isOAuthUser,

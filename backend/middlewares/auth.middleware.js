@@ -47,6 +47,9 @@ async function authMiddleware(req, res, next) {
     if (!user || user.isDisabled || user.deletedAt) {
       return res.status(401).json({ message: 'Utilisateur introuvable ou désactivé.' });
     }
+    if (user.isBanned) {
+      return res.status(403).json({ message: 'Votre compte a été suspendu.' });
+    }
 
     req.userId = user.id;
     req.user = user; 
@@ -87,7 +90,7 @@ async function optionalAuthMiddleware(req, res, next) {
 
     if (userId) {
       const user = await User.findById(userId).select('-motdepasse');
-      if (user && !user.isDisabled && !user.deletedAt) {
+      if (user && !user.isDisabled && !user.deletedAt && !user.isBanned) {
         req.userId = user.id;
         req.user = user;
       }
