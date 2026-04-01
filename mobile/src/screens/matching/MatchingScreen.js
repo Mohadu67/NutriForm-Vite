@@ -24,7 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { theme, colors } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
-import { getConversations, getUnreadCount } from '../../api/matchChat';
+import { useChat } from '../../contexts/ChatContext';
 import { getMutualMatches, getMatchSuggestions, likeProfile, rejectProfile } from '../../api/matching';
 import ProfileModal from '../../components/matching/ProfileModal';
 import { MatchModal } from '../../components/matching/MatchModal';
@@ -149,7 +149,7 @@ const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRe
               {otherUser?.pseudo || otherUser?.prenom || 'Utilisateur'}
             </Text>
             <Text style={[styles.conversationTime, isDark && styles.textMuted]}>
-              {formatRelativeTime(item.lastMessage?.createdAt)}
+              {formatRelativeTime(item.lastMessage?.createdAt || item.lastMessage?.timestamp)}
             </Text>
           </View>
           <Text
@@ -190,6 +190,7 @@ export default function MatchingScreen() {
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation();
   const { user } = useAuth();
+  const { conversations, loadConversations, unreadCount } = useChat();
 
   // Vérifier si l'utilisateur est premium
   const isUserFree = user?.subscriptionTier === 'free';
@@ -199,13 +200,11 @@ export default function MatchingScreen() {
   const tabIndicatorAnim = useRef(new Animated.Value(0)).current;
 
   const [activeTab, setActiveTab] = useState('messages');
-  const [conversations, setConversations] = useState([]);
   const [mutualMatches, setMutualMatches] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [pendingSuggestions, setPendingSuggestions] = useState(0);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const [showMatchModal, setShowMatchModal] = useState(false);
@@ -232,7 +231,7 @@ export default function MatchingScreen() {
     }).start();
   }, []);
 
-  // Tab indicator animation + refresh unread count on messages tab
+  // Tab indicator animation + refresh conversations on messages tab
   useEffect(() => {
     Animated.spring(tabIndicatorAnim, {
       toValue: activeTab === 'messages' ? 0 : 1,
@@ -247,16 +246,11 @@ export default function MatchingScreen() {
       return;
     }
 
-    // Rafraichir le compteur non-lus et conversations quand on revient sur l'onglet messages
+    // Rafraichir les conversations quand on revient sur l'onglet messages
     if (activeTab === 'messages') {
-      getUnreadCount().then(res => {
-        if (res?.success) setUnreadCount(res.count || 0);
-      }).catch(() => {});
-      getConversations().then(res => {
-        if (res?.success && res.conversations) setConversations(res.conversations);
-      }).catch(() => {});
+      loadConversations().catch(() => {});
     }
-  }, [activeTab]);
+  }, [activeTab, loadConversations]);
 
   // Swipe gesture hook
   const {
@@ -301,17 +295,15 @@ export default function MatchingScreen() {
       setLoading(true);
 
       const results = await Promise.allSettled([
-        getConversations(),
+        loadConversations(),
         getMutualMatches(),
         getMatchSuggestions({ limit: 20 }),
-        getUnreadCount(),
       ]);
 
-      const [convRes, matchesRes, suggestionsRes, unreadRes] = results;
+      const [convRes, matchesRes, suggestionsRes] = results;
 
-      if (convRes.status === 'fulfilled' && convRes.value?.success && convRes.value.conversations) {
-        setConversations(convRes.value.conversations);
-        logger.matching.info('Conversations chargées:', convRes.value.conversations.length);
+      if (convRes.status === 'fulfilled') {
+        logger.matching.info('Conversations chargées via ChatContext');
       } else if (convRes.status === 'rejected') {
         logger.matching.warn('Conversations non chargées:', convRes.reason?.message);
       }
@@ -331,17 +323,13 @@ export default function MatchingScreen() {
       } else if (suggestionsRes.status === 'rejected') {
         logger.matching.warn('Suggestions non chargées:', suggestionsRes.reason?.message);
       }
-
-      if (unreadRes.status === 'fulfilled' && unreadRes.value?.success) {
-        setUnreadCount(unreadRes.value.count || 0);
-      }
     } catch (err) {
       logger.matching.error('Error loading data', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [loadConversations]);
 
   useEffect(() => {
     loadData();
