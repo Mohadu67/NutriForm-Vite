@@ -15,6 +15,7 @@ import {
   StatusBar,
   Alert,
 } from 'react-native';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -73,12 +74,12 @@ const THEME_COLORS = {
 };
 
 // Separate component for conversation item to use hooks properly
-const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRelativeTime, onlineUsers, onAvatarPress }) => {
+const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRelativeTime, onlineUsers, onAvatarPress, onDelete, openSwipeRef }) => {
   const otherUser = item.otherUser;
   const hasUnread = item.unreadCount > 0;
   const itemAnim = useRef(new Animated.Value(0)).current;
+  const swipeRef = useRef(null);
 
-  // Vérifier si l'utilisateur est en ligne (API ou WebSocket temps réel)
   const otherUserId = otherUser?._id?.toString();
   const isOnline = item.otherUserOnline || onlineUsers?.has(otherUserId);
 
@@ -90,6 +91,34 @@ const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRe
       useNativeDriver: true,
     }).start();
   }, []);
+
+  const renderRightActions = () => (
+    <TouchableOpacity
+      style={[styles.swipeDeleteBg, isDark && styles.swipeDeleteBgDark]}
+      onPress={() => {
+        Alert.alert(
+          'Supprimer la conversation',
+          `Supprimer la conversation avec ${otherUser?.pseudo || otherUser?.prenom || 'cet utilisateur'} ?`,
+          [
+            { text: 'Annuler', style: 'cancel', onPress: () => swipeRef.current?.close() },
+            { text: 'Supprimer', style: 'destructive', onPress: () => onDelete?.(item._id) },
+          ]
+        );
+      }}
+      activeOpacity={0.7}
+    >
+      <Ionicons name="trash-outline" size={22} color="#FFF" />
+      <Text style={styles.swipeDeleteText}>Supprimer</Text>
+    </TouchableOpacity>
+  );
+
+  const handleSwipeOpen = () => {
+    // Fermer le swipe précédemment ouvert
+    if (openSwipeRef?.current && openSwipeRef.current !== swipeRef.current) {
+      openSwipeRef.current.close();
+    }
+    if (openSwipeRef) openSwipeRef.current = swipeRef.current;
+  };
 
   return (
     <Animated.View
@@ -103,15 +132,27 @@ const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRe
         }],
       }}
     >
-      <TouchableOpacity
-        style={[styles.conversationItem, isDark && styles.conversationItemDark]}
-        onPress={() => navigation.navigate('ChatDetail', {
-          conversationId: item._id,
-          matchId: item.matchId,
-          otherUser
-        })}
-        activeOpacity={0.7}
+      <Swipeable
+        ref={swipeRef}
+        renderRightActions={renderRightActions}
+        rightThreshold={40}
+        overshootRight={false}
+        onSwipeableOpen={handleSwipeOpen}
+        friction={2}
       >
+        <TouchableOpacity
+          style={[styles.conversationItem, isDark && styles.conversationItemDark]}
+          onPress={() => {
+            // Fermer tout swipe ouvert
+            if (openSwipeRef?.current) { openSwipeRef.current.close(); openSwipeRef.current = null; }
+            navigation.navigate('ChatDetail', {
+              conversationId: item._id,
+              matchId: item.matchId,
+              otherUser
+            });
+          }}
+          activeOpacity={0.7}
+        >
         <TouchableOpacity
           style={styles.conversationAvatarWrapper}
           onPress={() => onAvatarPress?.(otherUser)}
@@ -181,6 +222,7 @@ const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRe
           style={styles.chevron}
         />
       </TouchableOpacity>
+      </Swipeable>
     </Animated.View>
   );
 });
@@ -190,7 +232,7 @@ export default function MatchingScreen() {
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation();
   const { user } = useAuth();
-  const { conversations, loadConversations, unreadCount } = useChat();
+  const { conversations, loadConversations, unreadCount, deleteConversation } = useChat();
 
   // Vérifier si l'utilisateur est premium
   const isUserFree = user?.subscriptionTier === 'free';
@@ -430,6 +472,17 @@ export default function MatchingScreen() {
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   };
 
+  const handleDeleteConversation = useCallback(async (conversationId) => {
+    try {
+      await deleteConversation(conversationId);
+    } catch (err) {
+      logger.matching.error('Failed to delete conversation', err);
+    }
+  }, [deleteConversation]);
+
+  // Ref du swipe actuellement ouvert (pour fermer quand on en ouvre un autre)
+  const openSwipeRef = useRef(null);
+
   // Render conversation item wrapper
   const renderConversationItem = useCallback(({ item, index }) => (
     <ConversationItem
@@ -440,8 +493,10 @@ export default function MatchingScreen() {
       formatRelativeTime={formatRelativeTime}
       onlineUsers={onlineUsers}
       onAvatarPress={handleAvatarPress}
+      onDelete={handleDeleteConversation}
+      openSwipeRef={openSwipeRef}
     />
-  ), [isDark, navigation, onlineUsers]);
+  ), [isDark, navigation, onlineUsers, handleDeleteConversation]);
 
   // Render new matches (conversations non commencées)
   const renderNewMatches = () => {
@@ -1433,6 +1488,25 @@ const styles = StyleSheet.create({
   },
 
   // Conversations
+  swipeDeleteBg: {
+    width: 80,
+    backgroundColor: '#FF3B30',
+    borderRadius: 12,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 4,
+    marginRight: 16,
+    gap: 2,
+  },
+  swipeDeleteBgDark: {
+    backgroundColor: '#CC2D26',
+  },
+  swipeDeleteText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontWeight: '600',
+  },
   conversationItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1440,11 +1514,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginHorizontal: 16,
     marginVertical: 4,
-    backgroundColor: 'transparent',
+    backgroundColor: '#F2F3F7',
     borderRadius: 16,
   },
   conversationItemDark: {
-    backgroundColor: 'transparent',
+    backgroundColor: '#1A1D24',
   },
   conversationAvatarWrapper: {
     position: 'relative',

@@ -13,7 +13,9 @@ import {
   TextInput,
   Modal,
   TouchableWithoutFeedback,
+  ActionSheetIOS,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -413,6 +415,20 @@ export default function AIChatScreen({ route, navigation }) {
       cleanContent = cleanContent.replace(/\[ACTION:[^\]]+\]/g, '').trim();
     }
 
+    const handleCopyMessage = () => {
+      const text = cleanContent || item.content;
+      if (!text) return;
+      if (Platform.OS === 'ios') {
+        ActionSheetIOS.showActionSheetWithOptions(
+          { options: ['Copier', 'Annuler'], cancelButtonIndex: 1 },
+          (i) => { if (i === 0) Clipboard.setStringAsync(text); }
+        );
+      } else {
+        Clipboard.setStringAsync(text);
+        Alert.alert('', 'Message copié');
+      }
+    };
+
     return (
       <View style={[styles.messageWrapper, isUser ? styles.messageWrapperUser : styles.messageWrapperBot]}>
         {!isUser && (
@@ -435,6 +451,7 @@ export default function AIChatScreen({ route, navigation }) {
           isSystem && styles.messageBubbleSystem,
           isSupport && styles.messageBubbleSupport,
         ]}>
+          <TouchableOpacity onLongPress={handleCopyMessage} activeOpacity={0.9} delayLongPress={300}>
           {isUser ? (
             <LinearGradient
               colors={[theme.colors.primary, theme.colors.primaryDark]}
@@ -480,6 +497,7 @@ export default function AIChatScreen({ route, navigation }) {
               </Text>
             </>
           )}
+          </TouchableOpacity>
         </View>
       </View>
     );
