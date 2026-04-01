@@ -147,8 +147,8 @@ function WorkoutMiniBar({ isExpanded, colors: C }) {
             </>
           )}
         </View>
-        <View style={[miniStyles.chevron, { backgroundColor: C.border }]}>
-          <Ionicons name={isExpanded ? 'chevron-down' : 'chevron-up'} size={16} color={C.textMuted} />
+        <View style={[miniStyles.chevron, { backgroundColor: `${C.accent}20` }]}>
+          <Ionicons name={isExpanded ? 'chevron-down' : 'chevron-up'} size={16} color={C.accent} />
         </View>
       </View>
     </View>
@@ -225,12 +225,17 @@ function FloatingTabBar({ state, descriptors, navigation }) {
   const startDragH = useRef(TAB_BAR_HEIGHT);
   const [expanded, setExpanded] = useState(false);
 
+  // Ref pour que le PanResponder ait toujours accès à la dernière version
+  const animateToRef = useRef(null);
+
   // Animate to target height
   const animateTo = useCallback((target) => {
     currentHeight.current = target;
     setExpanded(target > COLLAPSED_H + 20);
     Animated.spring(heightAnim, { toValue: target, ...SPRING }).start();
   }, [heightAnim]);
+
+  animateToRef.current = animateTo;
 
   // When workout appears/disappears, animate to collapsed/base
   useEffect(() => {
@@ -253,43 +258,28 @@ function FloatingTabBar({ state, descriptors, navigation }) {
         startDragH.current = currentHeight.current;
       },
       onPanResponderMove: (_, gs) => {
-        // Dragging up = negative dy = bigger height
         const newH = Math.max(COLLAPSED_H, Math.min(startDragH.current - gs.dy, FULL_H));
         heightAnim.setValue(newH);
       },
       onPanResponderRelease: (_, gs) => {
-        const finalH = startDragH.current - gs.dy;
         const vy = gs.vy;
+        const draggedUp = gs.dy < 0;
+        const go = animateToRef.current;
 
-        // Fast flick up → expand more
-        if (vy < -0.5) {
-          if (currentHeight.current < MID_H) animateTo(MID_H);
-          else animateTo(FULL_H);
-          return;
+        // Flick ou drag → 2 niveaux seulement : collapsed ↔ full
+        if (draggedUp || vy < -0.2) {
+          go(FULL_H);
+        } else {
+          go(COLLAPSED_H);
         }
-        // Fast flick down → collapse
-        if (vy > 0.5) {
-          if (currentHeight.current > MID_H) animateTo(MID_H);
-          else animateTo(COLLAPSED_H);
-          return;
-        }
-
-        // Snap to nearest
-        const dC = Math.abs(finalH - COLLAPSED_H);
-        const dM = Math.abs(finalH - MID_H);
-        const dF = Math.abs(finalH - FULL_H);
-        const min = Math.min(dC, dM, dF);
-        if (min === dF) animateTo(FULL_H);
-        else if (min === dM) animateTo(MID_H);
-        else animateTo(COLLAPSED_H);
       },
     })
   ).current;
 
-  // Tap on mini bar to toggle
+  // Tap on mini bar to toggle collapsed ↔ full
   const handleMiniBarTap = useCallback(() => {
-    if (currentHeight.current <= COLLAPSED_H + 10) {
-      animateTo(MID_H);
+    if (currentHeight.current < FULL_H - 10) {
+      animateTo(FULL_H);
     } else {
       animateTo(COLLAPSED_H);
     }

@@ -5,6 +5,21 @@ import styles from './MessageContent.module.css';
 // Regex pour détecter les URLs
 const URL_REGEX = /(https?:\/\/[^\s<]+[^\s<.,;:!?)\]"'])/gi;
 
+// Regex pour détecter les boutons d'action [ACTION:label:route]
+const ACTION_REGEX = /\[ACTION:([^:]+):([^\]]+)\]/g;
+const ACTION_CLEAN_REGEX = /\[ACTION:[^\]]+\]/g;
+const ROUTE_MAP = {
+  HealthSettings: '/settings',
+  StartWorkout: '/exercices',
+  LogMeal: '/dashboard',
+  EditProfile: '/profile/edit',
+  NutritionGoals: '/dashboard',
+  Stats: '/dashboard',
+  Recipes: '/recettes',
+  Matching: '/matching',
+  Rewards: '/rewards',
+};
+
 /**
  * Parse le contenu d'un message et détecte les liens
  */
@@ -61,7 +76,20 @@ function parseMessageContent(content) {
  * Composant pour afficher le contenu d'un message avec liens cliquables
  */
 const MessageContent = memo(function MessageContent({ content, showPreview = true }) {
-  const { parts, urls } = useMemo(() => parseMessageContent(content), [content]);
+  // Extraire les boutons d'action et nettoyer le texte
+  const { cleanText, actionButtons } = useMemo(() => {
+    if (!content) return { cleanText: '', actionButtons: [] };
+    const btns = [];
+    let m;
+    const regex = new RegExp(ACTION_REGEX.source, 'g');
+    while ((m = regex.exec(content)) !== null) {
+      btns.push({ label: m[1].trim(), route: m[2].trim() });
+    }
+    const cleaned = content.replace(ACTION_CLEAN_REGEX, '').trim();
+    return { cleanText: cleaned, actionButtons: btns };
+  }, [content]);
+
+  const { parts, urls } = useMemo(() => parseMessageContent(cleanText), [cleanText]);
 
   // Prendre seulement le premier lien pour le preview
   const firstUrl = urls[0];
@@ -87,6 +115,24 @@ const MessageContent = memo(function MessageContent({ content, showPreview = tru
           return <span key={index}>{part.content}</span>;
         })}
       </p>
+
+      {/* Boutons d'action */}
+      {actionButtons.length > 0 && (
+        <div className={styles.actionButtons}>
+          {actionButtons.map((btn, i) => (
+            <button
+              key={i}
+              className={styles.actionBtn}
+              onClick={() => {
+                const path = ROUTE_MAP[btn.route];
+                if (path) window.location.href = path;
+              }}
+            >
+              ➜ {btn.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Aperçu du premier lien */}
       {showPreview && firstUrl && (

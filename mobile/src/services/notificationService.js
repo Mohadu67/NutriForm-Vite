@@ -12,8 +12,8 @@ import client from '../api/client';
 try {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
+      shouldShowAlert: false,
+      shouldPlaySound: false,
       shouldSetBadge: true,
     }),
   });

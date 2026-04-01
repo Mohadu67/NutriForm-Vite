@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../contexts/AuthContext';
 import apiClient from '../api/client';
 import { endpoints } from '../api/endpoints';
+import { deleteSession as deleteSessionApi } from '../api/workouts';
 import logger from '../services/logger';
 
 const GOAL_STORAGE_KEY = '@weekly_goal';
@@ -503,8 +504,12 @@ export function useHomeData() {
 
   // --- Actions sur les sessions ---
 
-  const deleteSession = useCallback((sessionId) => {
+  const deleteSession = useCallback(async (sessionId) => {
     setSessions(prev => prev.filter(s => s.id !== sessionId));
+    const result = await deleteSessionApi(sessionId);
+    if (!result.success) {
+      logger.app.error('Failed to delete session from backend:', result.error);
+    }
   }, []);
 
   const saveSessionName = useCallback((sessionId, newName) => {

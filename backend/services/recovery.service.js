@@ -127,6 +127,12 @@ function resolveZone(muscleName) {
 /**
  * Extract muscles from an entry with their contribution weight.
  * Primary muscle = 1.0, secondary muscles = 0.4
+ *
+ * Priority order:
+ * 1. primaryMuscle + secondaryMuscles (most explicit)
+ * 2. muscles array with >1 element (contains primary + secondary)
+ * 3. muscle / muscleGroup (single muscle fallback)
+ * 4. muscles array with 1 element
  */
 function extractMuscles(entry) {
   const muscles = [];
@@ -136,15 +142,18 @@ function extractMuscles(entry) {
     (entry.secondaryMuscles || []).forEach(m => {
       muscles.push({ name: m, weight: 0.4 });
     });
-  } else if (entry.muscle) {
-    muscles.push({ name: entry.muscle, weight: 1.0 });
-  } else if (entry.muscleGroup) {
-    muscles.push({ name: entry.muscleGroup, weight: 1.0 });
-  } else if (Array.isArray(entry.muscles) && entry.muscles.length) {
+  } else if (Array.isArray(entry.muscles) && entry.muscles.length > 1) {
+    // muscles array with multiple entries → first is primary, rest are secondary
     muscles.push({ name: entry.muscles[0], weight: 1.0 });
     entry.muscles.slice(1).forEach(m => {
       muscles.push({ name: m, weight: 0.4 });
     });
+  } else if (entry.muscle) {
+    muscles.push({ name: entry.muscle, weight: 1.0 });
+  } else if (entry.muscleGroup) {
+    muscles.push({ name: entry.muscleGroup, weight: 1.0 });
+  } else if (Array.isArray(entry.muscles) && entry.muscles.length === 1) {
+    muscles.push({ name: entry.muscles[0], weight: 1.0 });
   }
 
   return muscles;
@@ -272,7 +281,8 @@ async function computeRecoveryStatus(userId) {
   const ageModifier = computeAgeModifier(age);
 
   // Accumulate fatigue per zone
-  const zoneFatigue = {}; // zone → { fatigueScore, lastWorkedAt (ms timestamp) }
+  // Track whether each zone was directly targeted (primary) or only as secondary
+  const zoneFatigue = {}; // zone → { fatigueScore, lastWorkedAt, wasPrimary }
 
   sessions.forEach(session => {
     const sessionTime = new Date(
@@ -292,11 +302,14 @@ async function computeRecoveryStatus(userId) {
         const fatigue = baseFatigue * weight;
 
         if (!zoneFatigue[zone]) {
-          zoneFatigue[zone] = { fatigueScore: 0, lastWorkedAt: sessionTime };
+          zoneFatigue[zone] = { fatigueScore: 0, lastWorkedAt: sessionTime, wasPrimary: false };
         }
 
-        // Accumulate fatigue from same session window (within 2h)
         const existing = zoneFatigue[zone];
+
+        if (weight >= 1.0) existing.wasPrimary = true;
+
+        // Accumulate fatigue from same session window (within 2h)
         const hoursDiff = Math.abs(sessionTime - existing.lastWorkedAt) / (1000 * 60 * 60);
 
         if (hoursDiff < 2) {
@@ -306,11 +319,21 @@ async function computeRecoveryStatus(userId) {
           // More recent session — replace (most recent determines recovery clock)
           existing.fatigueScore = fatigue;
           existing.lastWorkedAt = sessionTime;
+          existing.wasPrimary = weight >= 1.0;
         }
         // Older session — skip (we only care about the most recent for recovery clock)
       });
     });
   });
+
+  // Secondary-only zones: reduce fatigue score (shorter recovery time)
+  // and give a recovery head start — indirect stress doesn't deplete a muscle to 0%
+  for (const zone of Object.keys(zoneFatigue)) {
+    const data = zoneFatigue[zone];
+    if (!data.wasPrimary) {
+      data.fatigueScore *= 0.5;
+    }
+  }
 
   // Calculate recovery per zone
   const zones = ZONE_IDS.map(zoneId => {
@@ -336,7 +359,14 @@ async function computeRecoveryStatus(userId) {
     // Apply modifiers
     const adjustedRecoveryHours = Math.round(baseRecoveryHours * sleepModifier * ageModifier);
 
-    const percentage = Math.min(100, Math.round((hoursAgo / adjustedRecoveryHours) * 100));
+    let percentage = Math.min(100, Math.round((hoursAgo / adjustedRecoveryHours) * 100));
+
+    // Secondary-only muscles weren't directly trained — they start partially recovered
+    // e.g. shoulders after a chest session start at ~35% instead of 0%
+    if (!data.wasPrimary) {
+      const secondaryFloor = 35;
+      percentage = Math.min(100, Math.max(percentage, secondaryFloor + Math.round((hoursAgo / adjustedRecoveryHours) * (100 - secondaryFloor))));
+    }
 
     let status;
     if (percentage >= 80) status = 'ready';

@@ -15,6 +15,7 @@ import {
   StatusBar,
   Alert,
 } from 'react-native';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -24,7 +25,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { theme, colors } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
-import { getConversations, getUnreadCount } from '../../api/matchChat';
+import { useChat } from '../../contexts/ChatContext';
 import { getMutualMatches, getMatchSuggestions, likeProfile, rejectProfile } from '../../api/matching';
 import ProfileModal from '../../components/matching/ProfileModal';
 import { MatchModal } from '../../components/matching/MatchModal';
@@ -73,12 +74,12 @@ const THEME_COLORS = {
 };
 
 // Separate component for conversation item to use hooks properly
-const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRelativeTime, onlineUsers, onAvatarPress }) => {
+const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRelativeTime, onlineUsers, onAvatarPress, onDelete, openSwipeRef }) => {
   const otherUser = item.otherUser;
   const hasUnread = item.unreadCount > 0;
   const itemAnim = useRef(new Animated.Value(0)).current;
+  const swipeRef = useRef(null);
 
-  // Vérifier si l'utilisateur est en ligne (API ou WebSocket temps réel)
   const otherUserId = otherUser?._id?.toString();
   const isOnline = item.otherUserOnline || onlineUsers?.has(otherUserId);
 
@@ -90,6 +91,34 @@ const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRe
       useNativeDriver: true,
     }).start();
   }, []);
+
+  const renderRightActions = () => (
+    <TouchableOpacity
+      style={[styles.swipeDeleteBg, isDark && styles.swipeDeleteBgDark]}
+      onPress={() => {
+        Alert.alert(
+          'Supprimer la conversation',
+          `Supprimer la conversation avec ${otherUser?.pseudo || otherUser?.prenom || 'cet utilisateur'} ?`,
+          [
+            { text: 'Annuler', style: 'cancel', onPress: () => swipeRef.current?.close() },
+            { text: 'Supprimer', style: 'destructive', onPress: () => onDelete?.(item._id) },
+          ]
+        );
+      }}
+      activeOpacity={0.7}
+    >
+      <Ionicons name="trash-outline" size={22} color="#FFF" />
+      <Text style={styles.swipeDeleteText}>Supprimer</Text>
+    </TouchableOpacity>
+  );
+
+  const handleSwipeOpen = () => {
+    // Fermer le swipe précédemment ouvert
+    if (openSwipeRef?.current && openSwipeRef.current !== swipeRef.current) {
+      openSwipeRef.current.close();
+    }
+    if (openSwipeRef) openSwipeRef.current = swipeRef.current;
+  };
 
   return (
     <Animated.View
@@ -103,15 +132,27 @@ const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRe
         }],
       }}
     >
-      <TouchableOpacity
-        style={[styles.conversationItem, isDark && styles.conversationItemDark]}
-        onPress={() => navigation.navigate('ChatDetail', {
-          conversationId: item._id,
-          matchId: item.matchId,
-          otherUser
-        })}
-        activeOpacity={0.7}
+      <Swipeable
+        ref={swipeRef}
+        renderRightActions={renderRightActions}
+        rightThreshold={40}
+        overshootRight={false}
+        onSwipeableOpen={handleSwipeOpen}
+        friction={2}
       >
+        <TouchableOpacity
+          style={[styles.conversationItem, isDark && styles.conversationItemDark]}
+          onPress={() => {
+            // Fermer tout swipe ouvert
+            if (openSwipeRef?.current) { openSwipeRef.current.close(); openSwipeRef.current = null; }
+            navigation.navigate('ChatDetail', {
+              conversationId: item._id,
+              matchId: item.matchId,
+              otherUser
+            });
+          }}
+          activeOpacity={0.7}
+        >
         <TouchableOpacity
           style={styles.conversationAvatarWrapper}
           onPress={() => onAvatarPress?.(otherUser)}
@@ -149,7 +190,7 @@ const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRe
               {otherUser?.pseudo || otherUser?.prenom || 'Utilisateur'}
             </Text>
             <Text style={[styles.conversationTime, isDark && styles.textMuted]}>
-              {formatRelativeTime(item.lastMessage?.createdAt)}
+              {formatRelativeTime(item.lastMessage?.createdAt || item.lastMessage?.timestamp)}
             </Text>
           </View>
           <Text
@@ -181,6 +222,7 @@ const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRe
           style={styles.chevron}
         />
       </TouchableOpacity>
+      </Swipeable>
     </Animated.View>
   );
 });
@@ -190,6 +232,7 @@ export default function MatchingScreen() {
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation();
   const { user } = useAuth();
+  const { conversations, loadConversations, unreadCount, deleteConversation } = useChat();
 
   // Vérifier si l'utilisateur est premium
   const isUserFree = user?.subscriptionTier === 'free';
@@ -199,13 +242,11 @@ export default function MatchingScreen() {
   const tabIndicatorAnim = useRef(new Animated.Value(0)).current;
 
   const [activeTab, setActiveTab] = useState('messages');
-  const [conversations, setConversations] = useState([]);
   const [mutualMatches, setMutualMatches] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [pendingSuggestions, setPendingSuggestions] = useState(0);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const [showMatchModal, setShowMatchModal] = useState(false);
@@ -232,7 +273,7 @@ export default function MatchingScreen() {
     }).start();
   }, []);
 
-  // Tab indicator animation + refresh unread count on messages tab
+  // Tab indicator animation + refresh conversations on messages tab
   useEffect(() => {
     Animated.spring(tabIndicatorAnim, {
       toValue: activeTab === 'messages' ? 0 : 1,
@@ -247,16 +288,11 @@ export default function MatchingScreen() {
       return;
     }
 
-    // Rafraichir le compteur non-lus et conversations quand on revient sur l'onglet messages
+    // Rafraichir les conversations quand on revient sur l'onglet messages
     if (activeTab === 'messages') {
-      getUnreadCount().then(res => {
-        if (res?.success) setUnreadCount(res.count || 0);
-      }).catch(() => {});
-      getConversations().then(res => {
-        if (res?.success && res.conversations) setConversations(res.conversations);
-      }).catch(() => {});
+      loadConversations().catch(() => {});
     }
-  }, [activeTab]);
+  }, [activeTab, loadConversations]);
 
   // Swipe gesture hook
   const {
@@ -301,17 +337,15 @@ export default function MatchingScreen() {
       setLoading(true);
 
       const results = await Promise.allSettled([
-        getConversations(),
+        loadConversations(),
         getMutualMatches(),
         getMatchSuggestions({ limit: 20 }),
-        getUnreadCount(),
       ]);
 
-      const [convRes, matchesRes, suggestionsRes, unreadRes] = results;
+      const [convRes, matchesRes, suggestionsRes] = results;
 
-      if (convRes.status === 'fulfilled' && convRes.value?.success && convRes.value.conversations) {
-        setConversations(convRes.value.conversations);
-        logger.matching.info('Conversations chargées:', convRes.value.conversations.length);
+      if (convRes.status === 'fulfilled') {
+        logger.matching.info('Conversations chargées via ChatContext');
       } else if (convRes.status === 'rejected') {
         logger.matching.warn('Conversations non chargées:', convRes.reason?.message);
       }
@@ -331,17 +365,13 @@ export default function MatchingScreen() {
       } else if (suggestionsRes.status === 'rejected') {
         logger.matching.warn('Suggestions non chargées:', suggestionsRes.reason?.message);
       }
-
-      if (unreadRes.status === 'fulfilled' && unreadRes.value?.success) {
-        setUnreadCount(unreadRes.value.count || 0);
-      }
     } catch (err) {
       logger.matching.error('Error loading data', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [loadConversations]);
 
   useEffect(() => {
     loadData();
@@ -508,6 +538,17 @@ export default function MatchingScreen() {
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   };
 
+  const handleDeleteConversation = useCallback(async (conversationId) => {
+    try {
+      await deleteConversation(conversationId);
+    } catch (err) {
+      logger.matching.error('Failed to delete conversation', err);
+    }
+  }, [deleteConversation]);
+
+  // Ref du swipe actuellement ouvert (pour fermer quand on en ouvre un autre)
+  const openSwipeRef = useRef(null);
+
   // Render conversation item wrapper
   const renderConversationItem = useCallback(({ item, index }) => (
     <ConversationItem
@@ -518,8 +559,10 @@ export default function MatchingScreen() {
       formatRelativeTime={formatRelativeTime}
       onlineUsers={onlineUsers}
       onAvatarPress={handleAvatarPress}
+      onDelete={handleDeleteConversation}
+      openSwipeRef={openSwipeRef}
     />
-  ), [isDark, navigation, onlineUsers]);
+  ), [isDark, navigation, onlineUsers, handleDeleteConversation]);
 
   // Render new matches (conversations non commencées)
   const renderNewMatches = () => {
@@ -1512,6 +1555,25 @@ const styles = StyleSheet.create({
   },
 
   // Conversations
+  swipeDeleteBg: {
+    width: 80,
+    backgroundColor: '#FF3B30',
+    borderRadius: 12,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 4,
+    marginRight: 16,
+    gap: 2,
+  },
+  swipeDeleteBgDark: {
+    backgroundColor: '#CC2D26',
+  },
+  swipeDeleteText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontWeight: '600',
+  },
   conversationItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1519,11 +1581,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginHorizontal: 16,
     marginVertical: 4,
-    backgroundColor: 'transparent',
+    backgroundColor: '#F2F3F7',
     borderRadius: 16,
   },
   conversationItemDark: {
-    backgroundColor: 'transparent',
+    backgroundColor: '#1A1D24',
   },
   conversationAvatarWrapper: {
     position: 'relative',

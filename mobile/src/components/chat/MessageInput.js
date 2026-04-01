@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical: 10,
     paddingHorizontal: 12,
-    paddingBottom: Platform.OS === 'ios' ? 6 : 10,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
   },
   inputRow: {
     flexDirection: 'row',

@@ -4,6 +4,10 @@ const FoodLog = require('../models/FoodLog');
 const NutritionGoal = require('../models/NutritionGoal');
 const WeightLog = require('../models/WeightLog');
 const LeaderboardEntry = require('../models/LeaderboardEntry');
+const SleepLog = require('../models/SleepLog');
+const DailyHealthData = require('../models/DailyHealthData');
+const Challenge = require('../models/Challenge');
+const Partner = require('../models/Partner');
 const User = require('../models/User');
 const logger = require('../utils/logger');
 
@@ -43,6 +47,19 @@ const GOAL_LABELS = {
   weight_loss: 'Perte de poids',
   maintenance: 'Maintien',
   muscle_gain: 'Prise de muscle',
+};
+
+const CHALLENGE_TYPE_LABELS = {
+  sessions: 'Nombre de séances',
+  streak: 'Série de jours',
+  calories: 'Calories brûlées',
+  duration: 'Durée d\'entraînement',
+  max_pushups: 'Max pompes',
+  max_pullups: 'Max tractions',
+  max_bench: 'Max développé couché',
+  max_squat: 'Max squat',
+  max_deadlift: 'Max soulevé de terre',
+  max_burpees: 'Max burpees',
 };
 
 /**
@@ -99,6 +116,9 @@ async function buildUserContext(userId) {
     const sevenDaysAgo = new Date(today);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
+    const threeDaysAgo = new Date(today);
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
     // Fetch toutes les données en parallèle
     const [
       user,
@@ -109,6 +129,11 @@ async function buildUserContext(userId) {
       weekFoodLogs,
       latestWeight,
       leaderboard,
+      recentSleep,
+      todayHealth,
+      weekHealth,
+      activeChallenges,
+      activePartners,
     ] = await Promise.all([
       User.findById(userId).select('prenom pseudo').lean(),
       UserProfile.findOne({ userId }).lean(),
@@ -121,6 +146,17 @@ async function buildUserContext(userId) {
       FoodLog.find({ userId, date: { $gte: sevenDaysAgo } }).lean(),
       WeightLog.findOne({ userId }).sort({ date: -1 }).lean(),
       LeaderboardEntry.findOne({ userId }).lean(),
+      SleepLog.find({ userId, date: { $gte: threeDaysAgo } })
+        .sort({ date: -1 })
+        .limit(3)
+        .lean(),
+      DailyHealthData.findOne({ userId, date: today }).lean(),
+      DailyHealthData.find({ userId, date: { $gte: sevenDaysAgo } }).lean(),
+      Challenge.find({
+        $or: [{ challengerId: userId }, { challengedId: userId }],
+        status: 'active',
+      }).lean(),
+      Partner.find({ isActive: true }).select('name category offerTitle offerDescription offerType offerValue description').lean(),
     ]);
 
     const sections = [];
@@ -205,6 +241,57 @@ async function buildUserContext(userId) {
       }
     }
 
+    // --- Sommeil (3 derniers jours) ---
+    if (recentSleep.length > 0) {
+      sections.push(`Sommeil (${recentSleep.length} dernières nuits) :`);
+      for (const sleep of recentSleep) {
+        const dateStr = new Date(sleep.date).toLocaleDateString('fr-FR');
+        const parts = [];
+        if (sleep.sleepDuration) parts.push(`${sleep.sleepDuration}h`);
+        if (sleep.deepSleepMinutes) parts.push(`profond: ${sleep.deepSleepMinutes}min`);
+        if (sleep.remSleepMinutes) parts.push(`REM: ${sleep.remSleepMinutes}min`);
+        if (sleep.lightSleepMinutes) parts.push(`léger: ${sleep.lightSleepMinutes}min`);
+        if (sleep.awakeMinutes) parts.push(`éveillé: ${sleep.awakeMinutes}min`);
+        if (sleep.heartRateResting) parts.push(`FC repos: ${sleep.heartRateResting} bpm`);
+        if (sleep.hrv) parts.push(`HRV: ${sleep.hrv}ms`);
+        sections.push(`  - ${dateStr} : ${parts.join(', ')}`);
+      }
+    } else {
+      sections.push(`Sommeil : Aucune donnée (sync Apple Santé / Health Connect non activée ou pas de données récentes)`);
+    }
+
+    // --- Activité quotidienne ---
+    if (todayHealth) {
+      const parts = [];
+      if (todayHealth.steps) parts.push(`${todayHealth.steps} pas`);
+      if (todayHealth.distance) parts.push(`${(todayHealth.distance / 1000).toFixed(1)} km`);
+      if (todayHealth.caloriesBurned) parts.push(`${todayHealth.caloriesBurned} kcal brûlées`);
+      if (parts.length) sections.push(`Activité aujourd'hui : ${parts.join(' | ')}`);
+    }
+    if (weekHealth.length > 0) {
+      const daysWithData = weekHealth.length;
+      const avgSteps = Math.round(weekHealth.reduce((s, d) => s + (d.steps || 0), 0) / daysWithData);
+      const avgCalBurned = Math.round(weekHealth.reduce((s, d) => s + (d.caloriesBurned || 0), 0) / daysWithData);
+      if (avgSteps > 0) sections.push(`Moyenne activité/jour (7j) : ${avgSteps} pas, ${avgCalBurned} kcal brûlées`);
+    }
+    if (!todayHealth && weekHealth.length === 0) {
+      sections.push(`Activité quotidienne : Aucune donnée (sync Apple Santé / Health Connect non activée)`);
+    }
+
+    // --- Challenges actifs ---
+    if (activeChallenges.length > 0) {
+      sections.push(`Challenges actifs (${activeChallenges.length}) :`);
+      for (const c of activeChallenges) {
+        const isChallenger = c.challengerId.toString() === userId.toString();
+        const opponentName = isChallenger ? c.challengedName : c.challengerName;
+        const myScore = isChallenger ? c.challengerScore : c.challengedScore;
+        const theirScore = isChallenger ? c.challengedScore : c.challengerScore;
+        const typeLabel = CHALLENGE_TYPE_LABELS[c.type] || c.type;
+        const endDate = c.endDate ? new Date(c.endDate).toLocaleDateString('fr-FR') : '?';
+        sections.push(`  - ${typeLabel} vs ${opponentName} : ${myScore} vs ${theirScore} (fin : ${endDate})`);
+      }
+    }
+
     // --- Dernières séances ---
     if (recentSessions.length > 0) {
       sections.push(`Dernières séances (${recentSessions.length}) :`);
@@ -246,6 +333,23 @@ async function buildUserContext(userId) {
       if (leaderboard.league) parts.push(`Ligue : ${leaderboard.league}`);
       if (leaderboard.xp) parts.push(`${leaderboard.xp} XP`);
       if (parts.length) sections.push(`Stats globales : ${parts.join(' | ')}`);
+    }
+
+    // --- Partenaires actifs (pour recommandations contextuelles) ---
+    if (activePartners.length > 0) {
+      const OFFER_TYPE_LABELS = { percentage: '%', fixed: '€', gift: 'cadeau', freebie: 'gratuit' };
+      const CATEGORY_LABELS = { sport: 'Sport', nutrition: 'Nutrition', wellness: 'Bien-être', equipement: 'Équipement', vetements: 'Vêtements', autre: 'Autre' };
+      sections.push(`Partenaires Harmonith (${activePartners.length}) :`);
+      for (const p of activePartners) {
+        const offerLabel = p.offerType === 'percentage' ? `-${p.offerValue}%` :
+          p.offerType === 'fixed' ? `-${p.offerValue}€` :
+          OFFER_TYPE_LABELS[p.offerType] || '';
+        sections.push(
+          `  - ${p.name} [${CATEGORY_LABELS[p.category] || p.category}] : ${p.offerTitle} (${offerLabel})` +
+          (p.offerDescription ? ` — ${p.offerDescription}` : '') +
+          (p.description ? ` | ${p.description}` : '')
+        );
+      }
     }
 
     return sections.join('\n');

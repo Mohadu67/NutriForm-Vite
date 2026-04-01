@@ -372,7 +372,7 @@ export default function ChatDetailScreen({ route, navigation }) {
         start={{ x: 0, y: 0 }}
         end={{ x: 0.5, y: 1 }}
       >
-        <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
           <KeyboardAvoidingView
             style={styles.keyboardView}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -422,6 +422,13 @@ export default function ChatDetailScreen({ route, navigation }) {
 
                 {/* Actions */}
                 <View style={styles.headerActions}>
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => navigation.navigate('UserProfile', { userId: otherUser._id })}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="person-circle-outline" size={22} color={theme.colors.primary} />
+                  </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => setShowUserSettings(true)}
@@ -483,13 +490,11 @@ export default function ChatDetailScreen({ route, navigation }) {
             )}
 
             {/* Input de message */}
-            <View style={styles.inputContainer}>
-              <MessageInput
-                onSend={handleSendMessage}
-                onMediaPress={() => setShowMediaPicker(true)}
-                disabled={isSending}
-              />
-            </View>
+            <MessageInput
+              onSend={handleSendMessage}
+              onMediaPress={() => setShowMediaPicker(true)}
+              disabled={isSending}
+            />
           </KeyboardAvoidingView>
         </SafeAreaView>
       </LinearGradient>
@@ -679,7 +684,6 @@ const styles = StyleSheet.create({
 
   // Input container
   inputContainer: {
-    paddingBottom: Platform.OS === 'ios' ? 10 : 12,
-    marginBottom: 10,
+    paddingBottom: 4,
   },
 });

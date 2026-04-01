@@ -84,6 +84,30 @@ describe('extractMuscles', () => {
     expect(extractMuscles({})).toEqual([]);
     expect(extractMuscles({ exerciseName: 'test' })).toEqual([]);
   });
+
+  test('prefers muscles array over muscleGroup when it has secondary muscles', () => {
+    // This is the exact scenario that caused the bug:
+    // muscleGroup is set (from pre-save hook) but muscles array has secondary info
+    const result = extractMuscles({
+      muscleGroup: 'Pectoraux',
+      muscle: 'Pectoraux',
+      muscles: ['Pectoraux', 'Épaules', 'Triceps'],
+    });
+    expect(result).toEqual([
+      { name: 'Pectoraux', weight: 1.0 },
+      { name: 'Épaules', weight: 0.4 },
+      { name: 'Triceps', weight: 0.4 },
+    ]);
+  });
+
+  test('falls back to muscle/muscleGroup when muscles array has single entry', () => {
+    const result = extractMuscles({
+      muscleGroup: 'Biceps',
+      muscle: 'Biceps',
+      muscles: ['Biceps'],
+    });
+    expect(result).toEqual([{ name: 'Biceps', weight: 1.0 }]);
+  });
 });
 
 // ─── computeEntryFatigue ────────────────────────────────────────────

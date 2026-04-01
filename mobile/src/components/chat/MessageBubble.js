@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Animated, ActionSheetIOS, Platform, Alert } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../theme';
@@ -220,7 +221,21 @@ const MessageBubble = React.memo(({ message, isOwnMessage = false, onLongPress, 
       ]}
     >
       <TouchableOpacity
-        onLongPress={onLongPress}
+        onLongPress={() => {
+          const text = message.content;
+          if (!text) return;
+          if (Platform.OS === 'ios') {
+            ActionSheetIOS.showActionSheetWithOptions(
+              { options: ['Copier', 'Annuler'], cancelButtonIndex: 1 },
+              (index) => { if (index === 0) Clipboard.setStringAsync(text); }
+            );
+          } else {
+            Alert.alert(null, null, [
+              { text: 'Copier', onPress: () => Clipboard.setStringAsync(text) },
+              { text: 'Annuler', style: 'cancel' },
+            ]);
+          }
+        }}
         activeOpacity={0.9}
         style={[styles.touchable, isOwnMessage ? styles.touchableOwn : styles.touchableReceived]}
       >
