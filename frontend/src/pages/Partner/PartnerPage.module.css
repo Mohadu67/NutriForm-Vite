@@ -759,3 +759,275 @@
     animation: none;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   MES OFFRES
+   ═══════════════════════════════════════════════ */
+
+.offersSection {
+  margin-top: 32px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+}
+
+.offersSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.offersSectionHeader .sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0;
+}
+
+.addOfferBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.addOfferBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+}
+
+/* ── Offer Form ────────────────────────────── */
+.offerForm {
+  background: var(--paper, #fff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.formField label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+}
+
+.formField input,
+.formField select,
+.formField textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.1));
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  color: var(--ink, #222325);
+  background: var(--paper, #fff);
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.formField input:focus,
+.formField select:focus,
+.formField textarea:focus {
+  outline: none;
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+.formField textarea {
+  resize: vertical;
+}
+
+.submitOfferBtn {
+  padding: 12px;
+  background: var(--couleur-bouton-action, #f7b186);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submitOfferBtn:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+}
+
+.submitOfferBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Empty Offers ──────────────────────────── */
+.emptyOffers {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted, #6b7280);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.6;
+}
+
+.emptyOffers p {
+  font-weight: 600;
+  margin: 0;
+}
+
+.emptyOffers span {
+  font-size: 0.82rem;
+}
+
+/* ── Offers List ───────────────────────────── */
+.offersList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.offerCard {
+  background: var(--paper, #fff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 14px;
+  padding: 16px;
+  border-left: 4px solid var(--line);
+}
+
+.offer_approved { border-left-color: #22c55e; }
+.offer_pending { border-left-color: #f59e0b; }
+.offer_rejected { border-left-color: #ef4444; }
+
+.offerHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.offerTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0;
+}
+
+.offerName {
+  font-size: 0.78rem;
+  color: var(--muted, #6b7280);
+}
+
+.offerStatus {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.offerStatus_approved {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.offerStatus_pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+.offerStatus_rejected {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.offerMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--muted, #6b7280);
+  margin-bottom: 10px;
+}
+
+.offerMeta span {
+  padding: 2px 8px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 6px;
+}
+
+.offerActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.deleteOfferBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.deleteOfferBtn:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* ── Responsive offers ─────────────────────── */
+@media (min-width: 481px) {
+  .formRow {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── Dark mode offers ──────────────────────── */
+:global(body.dark) .offerCard,
+:global(html.dark) .offerCard {
+  background: var(--paper);
+  border-color: var(--line);
+}
+
+:global(body.dark) .offerForm,
+:global(html.dark) .offerForm {
+  background: var(--paper);
+  border-color: var(--line);
+}
+
+:global(body.dark) .offerMeta span,
+:global(html.dark) .offerMeta span {
+  background: rgba(255, 255, 255, 0.06);
+}

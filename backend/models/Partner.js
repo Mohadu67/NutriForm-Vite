@@ -1,6 +1,18 @@
 const mongoose = require('mongoose');
 
 const partnerSchema = new mongoose.Schema({
+  // Partenaire propriétaire (null = créé par admin)
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  // Statut de validation admin
+  approvalStatus: {
+    type: String,
+    enum: ['approved', 'pending', 'rejected'],
+    default: 'approved'
+  },
   // Informations de base
   name: {
     type: String,
@@ -102,6 +114,7 @@ const partnerSchema = new mongoose.Schema({
 // Index pour les recherches
 partnerSchema.index({ isActive: 1, startsAt: 1, expiresAt: 1 });
 partnerSchema.index({ category: 1 });
+partnerSchema.index({ userId: 1 });
 // Index sur slug géré par unique: true
 
 // Generer slug automatiquement si non fourni

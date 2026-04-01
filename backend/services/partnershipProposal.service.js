@@ -1,6 +1,7 @@
 const PartnershipProposal = require('../models/PartnershipProposal');
 const User = require('../models/User');
 const { notifyAdmins } = require('./adminNotification.service');
+const { sendMail } = require('./mailer.service');
 const logger = require('../utils/logger');
 
 /**
@@ -71,6 +72,7 @@ async function getAllProposals({ page = 1, limit = 20, status, category }) {
 
 /**
  * Examiner une proposition (admin approve/reject)
+ * Envoie un email au partenaire pour l'informer
  */
 async function reviewProposal(proposalId, adminId, { status, adminNotes }) {
   const validStatuses = ['under_review', 'approved', 'rejected'];
@@ -84,6 +86,38 @@ async function reviewProposal(proposalId, adminId, { status, adminNotes }) {
   proposal.reviewedBy = adminId;
   proposal.reviewedAt = new Date();
   await proposal.save();
+
+  // Envoyer un email au partenaire
+  if (status === 'approved' || status === 'rejected') {
+    const partner = await User.findById(proposal.userId).select('email prenom pseudo').lean();
+    if (partner?.email) {
+      const name = partner.prenom || partner.pseudo || 'Partenaire';
+      const isApproved = status === 'approved';
+      const subject = isApproved
+        ? `Votre proposition "${proposal.title}" a ete approuvee`
+        : `Mise a jour de votre proposition "${proposal.title}"`;
+
+      const html = `
+        <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px;">
+          <h2 style="color: ${isApproved ? '#16a34a' : '#dc2626'}; margin-bottom: 16px;">
+            ${isApproved ? 'Proposition approuvee' : 'Proposition refusee'}
+          </h2>
+          <p>Bonjour ${name},</p>
+          <p>${isApproved
+            ? `Votre proposition de partenariat <strong>"${proposal.title}"</strong> a ete approuvee par notre equipe. Vous pouvez maintenant creer et gerer vos offres depuis votre espace partenaire sur Harmonith.`
+            : `Votre proposition de partenariat <strong>"${proposal.title}"</strong> n'a pas ete retenue pour le moment.`
+          }</p>
+          ${adminNotes ? `<div style="background: #f9fafb; border-left: 3px solid ${isApproved ? '#16a34a' : '#dc2626'}; padding: 12px 16px; margin: 16px 0; border-radius: 4px;"><strong>Note de l'equipe :</strong> ${adminNotes}</div>` : ''}
+          ${isApproved ? '<p><a href="' + (process.env.FRONTEND_BASE_URL || 'http://localhost:5173') + '/partner" style="display: inline-block; background: #f7b186; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Acceder a mon espace partenaire</a></p>' : ''}
+          <p style="color: #6b7280; font-size: 14px; margin-top: 24px;">L'equipe Harmonith</p>
+        </div>
+      `;
+
+      sendMail({ to: partner.email, subject, html }).catch(err =>
+        logger.error('Erreur envoi email proposition review:', err)
+      );
+    }
+  }
 
   return proposal;
 }

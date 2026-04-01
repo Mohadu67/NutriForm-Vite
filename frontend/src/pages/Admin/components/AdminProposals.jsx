@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import styles from './AdminProposals.module.css';
-import { HandshakeIcon, CheckIcon, XCircleIcon, ClockIcon, SearchIcon, AlertTriangleIcon } from '../../../components/Navbar/NavIcons.jsx';
+import { HandshakeIcon, CheckIcon, XCircleIcon, ClockIcon, SearchIcon, AlertTriangleIcon, StarIcon } from '../../../components/Navbar/NavIcons.jsx';
+import { getPendingOffers, reviewOffer } from '../../../shared/api/partnerOffers';
 
 const STATUS_LABELS = {
   pending: 'En attente',
@@ -30,12 +31,21 @@ const TYPE_LABELS = {
 export default function AdminProposals({ proposals, loading, statusFilter, setStatusFilter, page, setPage, totalPages, total, fetchProposals, handleReview }) {
   const [reviewNotes, setReviewNotes] = useState({});
   const [expandedId, setExpandedId] = useState(null);
+  const [pendingOffers, setPendingOffers] = useState([]);
+
+  const fetchPending = useCallback(async () => {
+    try {
+      const data = await getPendingOffers();
+      setPendingOffers(data.offers || []);
+    } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => {
     const params = { page, limit: 20 };
     if (statusFilter !== 'all') params.status = statusFilter;
     fetchProposals(params);
-  }, [page, statusFilter, fetchProposals]);
+    fetchPending();
+  }, [page, statusFilter, fetchProposals, fetchPending]);
 
   const onReview = async (id, status) => {
     const success = await handleReview(id, status, reviewNotes[id] || '');
@@ -68,6 +78,54 @@ export default function AdminProposals({ proposals, loading, statusFilter, setSt
           </div>
         </div>
       </div>
+
+      {/* Pending Offers */}
+      {pendingOffers.length > 0 && (
+        <div className={styles.pendingOffersBlock}>
+          <h3 className={styles.pendingOffersTitle}>
+            <StarIcon size={16} /> {pendingOffers.length} offre{pendingOffers.length > 1 ? 's' : ''} a valider
+          </h3>
+          <div className={styles.list}>
+            {pendingOffers.map(offer => (
+              <div key={offer._id} className={`${styles.card} ${styles.card_pending}`}>
+                <div className={styles.cardHeader}>
+                  <div className={styles.cardInfo}>
+                    <h3 className={styles.cardTitle}>{offer.offerTitle}</h3>
+                    <div className={styles.cardMeta}>
+                      <span className={styles.company}>{offer.name}</span>
+                      <span className={styles.dot} />
+                      <span>{offer.category}</span>
+                      <span className={styles.dot} />
+                      <span>{offer.offerType === 'percentage' ? `-${offer.offerValue}%` : offer.offerType === 'fixed' ? `-${offer.offerValue}EUR` : offer.offerType}</span>
+                      <span className={styles.dot} />
+                      <span>Code: {offer.promoCode}</span>
+                    </div>
+                    {offer.userId && (
+                      <div className={styles.cardSubmitter}>
+                        <span>Par {offer.userId.prenom || offer.userId.pseudo || offer.userId.email}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.actionBtns}>
+                    <button className={styles.btnApprove} onClick={async () => {
+                      await reviewOffer(offer._id, 'approved');
+                      fetchPending();
+                    }}>
+                      <CheckIcon size={14} /> Valider
+                    </button>
+                    <button className={styles.btnReject} onClick={async () => {
+                      await reviewOffer(offer._id, 'rejected');
+                      fetchPending();
+                    }}>
+                      <XCircleIcon size={14} /> Refuser
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className={styles.filters}>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { createProposal, getMyProposals } from '../../shared/api/partnershipProposals';
+import { createOffer, getMyOffers, updateOffer, deleteOffer } from '../../shared/api/partnerOffers';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 import {
@@ -10,6 +11,9 @@ import {
   CheckIcon,
   XCircleIcon,
   AlertTriangleIcon,
+  TrashIcon,
+  PencilIcon,
+  StarIcon,
 } from '../../components/Navbar/NavIcons.jsx';
 import styles from './PartnerPage.module.css';
 
@@ -67,6 +71,51 @@ export default function PartnerPage() {
   const [notification, setNotification] = useState(null);
   const [expandedIds, setExpandedIds] = useState(new Set());
 
+  // Offres
+  const [offers, setOffers] = useState([]);
+  const [hasApproval, setHasApproval] = useState(false);
+  const [showOfferForm, setShowOfferForm] = useState(false);
+  const [offerData, setOfferData] = useState({ name: '', description: '', category: 'sport', offerTitle: '', offerDescription: '', offerType: 'percentage', offerValue: '', promoCode: '', xpCost: '', website: '' });
+  const [offerSubmitting, setOfferSubmitting] = useState(false);
+
+  const fetchOffers = useCallback(async () => {
+    try {
+      const data = await getMyOffers();
+      setOffers(data.offers || []);
+      setHasApproval(data.hasApprovedProposal || false);
+    } catch { /* ignore */ }
+  }, []);
+
+  const handleOfferField = (field, value) => setOfferData(prev => ({ ...prev, [field]: value }));
+
+  const handleOfferSubmit = async (e) => {
+    e.preventDefault();
+    if (!offerData.name || !offerData.offerTitle || !offerData.promoCode) {
+      setNotification({ type: 'error', text: 'Remplissez les champs obligatoires' });
+      return;
+    }
+    setOfferSubmitting(true);
+    try {
+      await createOffer({ ...offerData, offerValue: Number(offerData.offerValue) || 0, xpCost: Number(offerData.xpCost) || 0 });
+      setNotification({ type: 'success', text: 'Offre soumise pour validation' });
+      setShowOfferForm(false);
+      setOfferData({ name: '', description: '', category: 'sport', offerTitle: '', offerDescription: '', offerType: 'percentage', offerValue: '', promoCode: '', xpCost: '', website: '' });
+      fetchOffers();
+    } catch (err) {
+      setNotification({ type: 'error', text: err.response?.data?.message || 'Erreur' });
+    } finally {
+      setOfferSubmitting(false);
+    }
+  };
+
+  const handleDeleteOffer = async (id) => {
+    try {
+      await deleteOffer(id);
+      setNotification({ type: 'success', text: 'Offre supprimee' });
+      fetchOffers();
+    } catch { setNotification({ type: 'error', text: 'Erreur suppression' }); }
+  };
+
   const fetchProposals = useCallback(async () => {
     try {
       setLoading(true);
@@ -81,7 +130,8 @@ export default function PartnerPage() {
 
   useEffect(() => {
     fetchProposals();
-  }, [fetchProposals]);
+    fetchOffers();
+  }, [fetchProposals, fetchOffers]);
 
   useEffect(() => {
     if (notification) {
@@ -408,6 +458,114 @@ export default function PartnerPage() {
               </div>
             )}
           </div>
+
+          {/* ══════ MES OFFRES ══════ */}
+          {hasApproval && (
+            <div className={styles.offersSection}>
+              <div className={styles.offersSectionHeader}>
+                <h2 className={styles.sectionTitle}>
+                  <StarIcon size={20} /> Mes Offres
+                </h2>
+                <button className={styles.addOfferBtn} onClick={() => setShowOfferForm(!showOfferForm)}>
+                  <PlusIcon size={16} /> {showOfferForm ? 'Annuler' : 'Nouvelle offre'}
+                </button>
+              </div>
+
+              {showOfferForm && (
+                <form className={styles.offerForm} onSubmit={handleOfferSubmit}>
+                  <div className={styles.formRow}>
+                    <div className={styles.formField}>
+                      <label>Nom de l'offre *</label>
+                      <input value={offerData.name} onChange={e => handleOfferField('name', e.target.value)} placeholder="Ex: MyProtein France" required />
+                    </div>
+                    <div className={styles.formField}>
+                      <label>Categorie</label>
+                      <select value={offerData.category} onChange={e => handleOfferField('category', e.target.value)}>
+                        {CATEGORY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className={styles.formField}>
+                    <label>Titre de l'offre *</label>
+                    <input value={offerData.offerTitle} onChange={e => handleOfferField('offerTitle', e.target.value)} placeholder="Ex: -20% sur tout le site" required />
+                  </div>
+                  <div className={styles.formField}>
+                    <label>Description de l'offre</label>
+                    <textarea value={offerData.offerDescription} onChange={e => handleOfferField('offerDescription', e.target.value)} placeholder="Details de l'offre..." rows={3} />
+                  </div>
+                  <div className={styles.formRow}>
+                    <div className={styles.formField}>
+                      <label>Type de reduction</label>
+                      <select value={offerData.offerType} onChange={e => handleOfferField('offerType', e.target.value)}>
+                        <option value="percentage">Pourcentage (%)</option>
+                        <option value="fixed">Montant fixe (EUR)</option>
+                        <option value="gift">Cadeau</option>
+                        <option value="freebie">Gratuit</option>
+                      </select>
+                    </div>
+                    <div className={styles.formField}>
+                      <label>Valeur</label>
+                      <input type="number" value={offerData.offerValue} onChange={e => handleOfferField('offerValue', e.target.value)} placeholder="20" />
+                    </div>
+                  </div>
+                  <div className={styles.formRow}>
+                    <div className={styles.formField}>
+                      <label>Code promo *</label>
+                      <input value={offerData.promoCode} onChange={e => handleOfferField('promoCode', e.target.value)} placeholder="HARMONITH20" required />
+                    </div>
+                    <div className={styles.formField}>
+                      <label>Cout XP</label>
+                      <input type="number" value={offerData.xpCost} onChange={e => handleOfferField('xpCost', e.target.value)} placeholder="100" />
+                    </div>
+                  </div>
+                  <div className={styles.formField}>
+                    <label>Site web</label>
+                    <input value={offerData.website} onChange={e => handleOfferField('website', e.target.value)} placeholder="https://..." />
+                  </div>
+                  <button type="submit" className={styles.submitOfferBtn} disabled={offerSubmitting}>
+                    {offerSubmitting ? 'Envoi...' : 'Soumettre pour validation'}
+                  </button>
+                </form>
+              )}
+
+              {offers.length === 0 && !showOfferForm && (
+                <div className={styles.emptyOffers}>
+                  <StarIcon size={32} />
+                  <p>Aucune offre pour le moment</p>
+                  <span>Creez votre premiere offre pour les utilisateurs Harmonith</span>
+                </div>
+              )}
+
+              {offers.length > 0 && (
+                <div className={styles.offersList}>
+                  {offers.map(offer => (
+                    <div key={offer._id} className={`${styles.offerCard} ${styles[`offer_${offer.approvalStatus}`]}`}>
+                      <div className={styles.offerHeader}>
+                        <div>
+                          <h3 className={styles.offerTitle}>{offer.offerTitle}</h3>
+                          <span className={styles.offerName}>{offer.name}</span>
+                        </div>
+                        <span className={`${styles.offerStatus} ${styles[`offerStatus_${offer.approvalStatus}`]}`}>
+                          {offer.approvalStatus === 'approved' ? 'Active' : offer.approvalStatus === 'pending' ? 'En validation' : 'Refusee'}
+                        </span>
+                      </div>
+                      <div className={styles.offerMeta}>
+                        <span>{offer.offerType === 'percentage' ? `-${offer.offerValue}%` : offer.offerType === 'fixed' ? `-${offer.offerValue}EUR` : offer.offerType === 'gift' ? 'Cadeau' : 'Gratuit'}</span>
+                        <span>Code : {offer.promoCode}</span>
+                        {offer.xpCost > 0 && <span>{offer.xpCost} XP</span>}
+                        <span>{offer.redemptionCount || 0} utilisation{(offer.redemptionCount || 0) !== 1 ? 's' : ''}</span>
+                      </div>
+                      <div className={styles.offerActions}>
+                        <button className={styles.deleteOfferBtn} onClick={() => handleDeleteOffer(offer._id)}>
+                          <TrashIcon size={14} /> Supprimer
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
       <Footer />

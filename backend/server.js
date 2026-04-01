@@ -265,6 +265,7 @@ app.use('/api/barcode', barcodeRoutes);
 app.use('/api/recovery', recoveryRoutes);
 app.use('/api/admin/users', require('./routes/adminUser.route'));
 app.use('/api/partnership-proposals', require('./routes/partnershipProposal.route'));
+app.use('/api/partner-offers', require('./routes/partnerOffer.route'));
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
