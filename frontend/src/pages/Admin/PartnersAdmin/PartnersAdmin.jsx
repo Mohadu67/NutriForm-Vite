@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllPartners, createPartner, updatePartner, deletePartner } from '../../../shared/api/partners';
+import { getAllPartners, createPartner, updatePartner, deletePartner, getPartnerRequestsStats } from '../../../shared/api/partners';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
 import StatusBadge from '../../../components/Admin/StatusBadge/StatusBadge';
 import { useAdminNotification } from '../../../hooks/admin/useAdminNotification';
@@ -52,9 +52,11 @@ export default function PartnersAdmin() {
   const [showForm, setShowForm] = useState(false);
   const [editingPartner, setEditingPartner] = useState(null);
   const [formData, setFormData] = useState(emptyForm);
+  const [requestsCount, setRequestsCount] = useState(0);
 
   useEffect(() => {
     fetchPartners();
+    fetchRequestsStats();
   }, []);
 
   const fetchPartners = async () => {
@@ -68,6 +70,17 @@ export default function PartnersAdmin() {
       notify.error('Erreur lors du chargement des partenaires');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRequestsStats = async () => {
+    try {
+      const data = await getPartnerRequestsStats();
+      if (data.success) {
+        setRequestsCount(data.totalNew || 0);
+      }
+    } catch {
+      // silently ignore
     }
   };
 
@@ -207,9 +220,15 @@ export default function PartnersAdmin() {
 
       <div className={styles.headerBar}>
         <h1>Nos Partenaires</h1>
-        <button onClick={() => { resetForm(); setShowForm(true); }} className={styles.addButton}>
-          + Ajouter un partenaire
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button onClick={() => navigate('/admin/partners/requests')} className={styles.addButton} style={{ background: 'rgba(247, 177, 134, 0.15)', color: 'var(--couleur-bouton-action, #f7b186)', boxShadow: 'none', position: 'relative' }}>
+            Demandes utilisateurs
+            {requestsCount > 0 && <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', color: 'white', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>{requestsCount}</span>}
+          </button>
+          <button onClick={() => { resetForm(); setShowForm(true); }} className={styles.addButton}>
+            + Ajouter un partenaire
+          </button>
+        </div>
       </div>
 
       {/* Formulaire */}
