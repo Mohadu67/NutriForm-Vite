@@ -1,0 +1,443 @@
+/* AdminProposals — Mobile-first */
+
+.container {
+  margin-top: 24px;
+}
+
+/* ── Header ────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--couleur-bouton-action, #f7b186);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  color: var(--muted, #6b7280);
+}
+
+/* ── Filters ───────────────────────────────── */
+.filters {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filterBtn {
+  padding: 8px 14px;
+  background: var(--paper, #fff);
+  border: 1.5px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.filterBtn:hover {
+  border-color: var(--couleur-bouton-action, #f7b186);
+  color: var(--couleur-bouton-action, #f7b186);
+}
+
+.filterBtnActive {
+  background: var(--couleur-bouton-action, #f7b186);
+  border-color: var(--couleur-bouton-action, #f7b186);
+  color: white;
+}
+
+/* ── Loading / Empty ───────────────────────── */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted, #6b7280);
+}
+
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted, #6b7280);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  opacity: 0.6;
+}
+
+/* ── Cards List ────────────────────────────── */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  background: var(--paper, #fff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 14px;
+  overflow: hidden;
+  border-left: 4px solid var(--line, rgba(0, 0, 0, 0.06));
+  transition: box-shadow 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.card_pending { border-left-color: #f59e0b; }
+.card_under_review { border-left-color: #3b82f6; }
+.card_approved { border-left-color: #22c55e; }
+.card_rejected { border-left-color: #ef4444; }
+
+/* ── Card Header ───────────────────────────── */
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  cursor: pointer;
+}
+
+.cardInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink, #222325);
+  margin: 0 0 6px;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--muted, #6b7280);
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--muted, #6b7280);
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.company {
+  font-weight: 600;
+  color: var(--ink, #222325);
+}
+
+.cardSubmitter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--muted, #6b7280);
+}
+
+.avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(247, 177, 134, 0.15);
+  color: var(--couleur-bouton-action, #f7b186);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.cardDate {
+  margin-left: auto;
+  opacity: 0.7;
+}
+
+/* ── Status Badge ──────────────────────────── */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status_pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+.status_under_review {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+.status_approved {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.status_rejected {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+/* ── Card Body (expanded) ──────────────────── */
+.cardBody {
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
+}
+
+.section h4 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 0 0 6px;
+}
+
+.section p {
+  font-size: 0.85rem;
+  color: var(--ink, #222325);
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.contactGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.contactItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.82rem;
+  color: var(--ink, #222325);
+}
+
+.contactLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.link {
+  color: var(--couleur-bouton-action, #f7b186);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.adminNotes {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(245, 158, 11, 0.06);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: #92400e;
+}
+
+/* ── Actions ───────────────────────────────── */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notesInput {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.08));
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  resize: vertical;
+  background: var(--paper, #fff);
+  color: var(--ink, #222325);
+  box-sizing: border-box;
+}
+
+.notesInput:focus {
+  outline: none;
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+.actionBtns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btnReview,
+.btnApprove,
+.btnReject {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnReview {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+.btnReview:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.btnApprove {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.btnApprove:hover {
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.btnReject {
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+}
+
+.btnReject:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* ── Review Info ───────────────────────────── */
+.reviewInfo {
+  font-size: 0.75rem;
+  color: var(--muted, #6b7280);
+  font-style: italic;
+}
+
+/* ── Pagination ────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pageBtn {
+  padding: 8px 16px;
+  background: var(--paper, #fff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.08));
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--ink, #222325);
+  transition: all 0.2s;
+}
+
+.pageBtn:hover:not(:disabled) {
+  border-color: var(--couleur-bouton-action, #f7b186);
+}
+
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  font-size: 0.82rem;
+  color: var(--muted, #6b7280);
+}
+
+/* ── Responsive ────────────────────────────── */
+@media (min-width: 481px) {
+  .contactGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .actionBtns {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (min-width: 769px) {
+  .contactGrid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+/* ── Dark mode ─────────────────────────────── */
+:global(body.dark) .card,
+:global(html.dark) .card {
+  background: var(--paper);
+  border-color: var(--line);
+}
+
+:global(body.dark) .cardTitle,
+:global(html.dark) .cardTitle,
+:global(body.dark) .company,
+:global(html.dark) .company {
+  color: var(--ink);
+}
+
+:global(body.dark) .adminNotes,
+:global(html.dark) .adminNotes {
+  background: rgba(245, 158, 11, 0.08);
+  color: #fbbf24;
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { StarIcon, UtensilsIcon, RunningIcon, DumbbellIcon, BellIcon, HeartIcon, MessageIcon, DashboardIcon, UsersIcon } from '../../components/Navbar/NavIcons.jsx';
+import { StarIcon, UtensilsIcon, RunningIcon, DumbbellIcon, BellIcon, HeartIcon, MessageIcon, DashboardIcon, UsersIcon, HandshakeIcon } from '../../components/Navbar/NavIcons.jsx';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import ConfirmModal from '../../components/Modal/ConfirmModal.jsx';
@@ -15,6 +15,7 @@ import { useAuth } from "../../contexts/AuthContext.jsx";
 import { useAdminReviews, ITEMS_PER_PAGE } from "./hooks/useAdminReviews";
 import { useAdminNewsletters } from "./hooks/useAdminNewsletters";
 import { useAdminRecipes } from "./hooks/useAdminRecipes";
+import { useAdminProposals } from "./hooks/useAdminProposals";
 
 // Section components
 import AdminDashboard from './components/AdminDashboard.jsx';
@@ -22,8 +23,9 @@ import AdminReviews from './components/AdminReviews.jsx';
 import AdminNewsletters from './components/AdminNewsletters.jsx';
 import AdminRecipes from './components/AdminRecipes.jsx';
 import AdminExercises from './components/AdminExercises.jsx';
+import AdminProposals from './components/AdminProposals.jsx';
 
-const VALID_SECTIONS = ['dashboard', 'reviews', 'newsletters', 'recipes', 'exercises', 'programs', 'support'];
+const VALID_SECTIONS = ['dashboard', 'reviews', 'newsletters', 'recipes', 'exercises', 'programs', 'support', 'partnerships'];
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -63,6 +65,13 @@ export default function AdminPage() {
     recipesPage, setRecipesPage, fetchRecipes,
     confirmDeleteRecipe, filteredRecipes, paginatedRecipes,
   } = useAdminRecipes(notify, openModal);
+
+  const {
+    proposals, loading: proposalsLoading, statusFilter: proposalStatusFilter,
+    setStatusFilter: setProposalStatusFilter, page: proposalPage, setPage: setProposalPage,
+    totalPages: proposalTotalPages, total: proposalTotal, pendingCount: pendingProposalsCount,
+    fetchProposals, handleReview,
+  } = useAdminProposals(notify);
 
   // Computed stats
   const stats = useMemo(() => ({
@@ -149,6 +158,9 @@ export default function AdminPage() {
           <button className={`${styles.navBtn} ${activeSection === "exercises" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("exercises")}><RunningIcon size={16} /> Exercices</button>
           <button className={styles.navBtn} onClick={() => navigate("/admin/programs")}><DumbbellIcon size={16} /> Programmes {pendingProgramsCount > 0 && <span className={styles.badge}>{pendingProgramsCount}</span>}</button>
           <button className={`${styles.navBtn} ${activeSection === "newsletter" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("newsletter")}><BellIcon size={16} /> Newsletter</button>
+          <button className={`${styles.navBtn} ${activeSection === "partnerships" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("partnerships")}>
+            <HandshakeIcon size={16} /> Propositions {pendingProposalsCount > 0 && <span className={styles.badge}>{pendingProposalsCount}</span>}
+          </button>
           <button className={styles.navBtn} onClick={() => navigate("/admin/users")}><UsersIcon size={16} /> Utilisateurs</button>
           <button className={styles.navBtn} onClick={() => navigate("/admin/partners")}><HeartIcon size={16} /> Partenaires</button>
           <button className={styles.navBtn} onClick={() => navigate("/admin/support-tickets")}><MessageIcon size={16} /> Support {openTicketsCount > 0 && <span className={styles.badge}>{openTicketsCount}</span>}</button>
@@ -186,6 +198,16 @@ export default function AdminPage() {
 
         {activeSection === "exercises" && (
           <AdminExercises notify={notify} />
+        )}
+
+        {activeSection === "partnerships" && (
+          <AdminProposals
+            proposals={proposals} loading={proposalsLoading}
+            statusFilter={proposalStatusFilter} setStatusFilter={setProposalStatusFilter}
+            page={proposalPage} setPage={setProposalPage}
+            totalPages={proposalTotalPages} total={proposalTotal}
+            fetchProposals={fetchProposals} handleReview={handleReview}
+          />
         )}
       </div>
       <Footer />

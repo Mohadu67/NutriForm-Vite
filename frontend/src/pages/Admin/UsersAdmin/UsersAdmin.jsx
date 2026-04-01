@@ -338,8 +338,8 @@ export default function UsersAdmin() {
                       </span>
                     </td>
                     <td>
-                      <span className={`${styles.badge} ${getTierBadgeClass(user.tier)}`}>
-                        {user.tier || 'free'}
+                      <span className={`${styles.badge} ${getTierBadgeClass(user.subscriptionTier)}`}>
+                        {user.subscriptionTier || 'free'}
                       </span>
                     </td>
                     <td>
@@ -386,7 +386,7 @@ export default function UsersAdmin() {
                           <option value="partner">Partner</option>
                         </select>
                         <select
-                          value={user.tier || 'free'}
+                          value={user.subscriptionTier || 'free'}
                           onChange={(e) => onChangeTier(user._id, e.target.value)}
                           className={styles.actionSelect}
                           title="Changer le tier"
@@ -444,8 +444,8 @@ export default function UsersAdmin() {
                     <span className={`${styles.badge} ${getRoleBadgeClass(user.role)}`}>
                       {user.role || 'user'}
                     </span>
-                    <span className={`${styles.badge} ${getTierBadgeClass(user.tier)}`}>
-                      {user.tier || 'free'}
+                    <span className={`${styles.badge} ${getTierBadgeClass(user.subscriptionTier)}`}>
+                      {user.subscriptionTier || 'free'}
                     </span>
                   </div>
                 </div>
@@ -493,7 +493,7 @@ export default function UsersAdmin() {
                       <option value="partner">Partner</option>
                     </select>
                     <select
-                      value={user.tier || 'free'}
+                      value={user.subscriptionTier || 'free'}
                       onChange={(e) => onChangeTier(user._id, e.target.value)}
                       className={styles.actionSelect}
                     >

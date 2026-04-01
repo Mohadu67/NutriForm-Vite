@@ -169,7 +169,8 @@ async function changeUserRole(userId, newRole) {
 }
 
 /**
- * Changer le tier d'abonnement
+ * Changer le tier d'abonnement (override admin)
+ * Set xpPremiumExpiresAt loin dans le futur pour que /me respecte le changement
  */
 async function changeSubscriptionTier(userId, newTier) {
   if (!VALID_TIERS.includes(newTier)) throw new Error('Tier invalide');
@@ -178,6 +179,13 @@ async function changeSubscriptionTier(userId, newTier) {
   if (!user) throw new Error('Utilisateur introuvable');
 
   user.subscriptionTier = newTier;
+  if (newTier === 'premium') {
+    // Forcer le premium via xpPremiumExpiresAt pour que /me ne l'écrase pas
+    user.xpPremiumExpiresAt = new Date('2099-01-01');
+  } else {
+    // Retirer le override si on repasse en free
+    user.xpPremiumExpiresAt = null;
+  }
   await user.save();
   return user;
 }
