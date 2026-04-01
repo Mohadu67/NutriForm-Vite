@@ -5,6 +5,23 @@ const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const Subscription = require('../models/Subscription');
 const LeaderboardEntry = require('../models/LeaderboardEntry');
+const UserProfile = require('../models/UserProfile');
+const AIConversation = require('../models/AIConversation');
+const FoodLog = require('../models/FoodLog');
+const SleepLog = require('../models/SleepLog');
+const History = require('../models/History');
+const Review = require('../models/Review');
+const XPRedemption = require('../models/XPRedemption');
+const PartnerRedemption = require('../models/PartnerRedemption');
+const PushSubscription = require('../models/PushSubscription');
+const Notification = require('../models/Notification');
+const ChatMessage = require('../models/ChatMessage');
+const FeedComment = require('../models/FeedComment');
+const FeedLike = require('../models/FeedLike');
+const WorkoutSession = require('../models/WorkoutSession');
+const DailyHealthData = require('../models/DailyHealthData');
+const WeightLog = require('../models/WeightLog');
+const UserBadge = require('../models/UserBadge');
 const { sendVerifyEmail } = require('../services/mailer.service');
 const { validatePassword } = require('../utils/passwordValidator');
 const logger = require('../utils/logger.js');
@@ -51,6 +68,7 @@ exports.login = async (req, res) => {
     }
 
     if (!user) return res.status(401).json({ message: 'Identifiants invalides.' });
+    if (user.isDeleted) return res.status(410).json({ message: 'Ce compte a été supprimé.' });
     if (!user.emailVerifie) return res.status(403).json({ message: 'Email non vérifié. Vérifie ta boîte mail.' });
 
     const stored = user.motdepasse || '';
@@ -181,7 +199,7 @@ exports.register = async (req, res) => {
 exports.me = async (req, res) => {
   try {
     const user = await User.findById(req.userId);
-    if (!user) return res.status(404).json({ message: 'Utilisateur introuvable.' });
+    if (!user || user.isDeleted) return res.status(404).json({ message: 'Utilisateur introuvable.' });
     const displayName = user.prenom || user.pseudo || (user.email ? user.email.split('@')[0] : '');
 
     // Convertir l'URL de la photo en URL complète si elle existe
@@ -574,10 +592,52 @@ exports.googleAuth = async (req, res) => {
     });
 
     if (user) {
-      // Utilisateur existant - mettre à jour googleId si nécessaire
-      if (!user.googleId) {
+      // Compte supprimé — proposer de recréer
+      if (user.isDeleted) {
+        const { forceRecreate } = req.body;
+        if (!forceRecreate) {
+          return res.status(410).json({
+            accountDeleted: true,
+            message: 'Votre compte a été supprimé. Souhaitez-vous en créer un nouveau ?',
+          });
+        }
+        // Réactiver le compte comme un nouveau compte
+        user.isDeleted = false;
+        user.deletedAt = null;
         user.googleId = googleId;
+        user.photo = picture || null;
+        user.prenom = name?.split(' ')[0] || '';
+        user.emailVerifie = true;
+        user.onboardingCompleted = false;
+        user.subscriptionTier = 'free';
+        user.hasSetPassword = false;
+        user.motdepasse = crypto.randomBytes(32).toString('hex');
+        user.imc = [];
+        user.calories = [];
+        user.favoriteProgramIds = [];
+        user.xpPremiumExpiresAt = null;
+        user.trialEndsAt = null;
+        user.stripeCustomerId = null;
         await user.save();
+        logger.info(`[GOOGLE_AUTH] Deleted account reactivated: ${user.email}`);
+
+        // Re-créer leaderboard entry
+        try {
+          await LeaderboardEntry.create({
+            userId: user._id,
+            displayName: user.pseudo || user.prenom || 'Anonyme',
+            avatarUrl: user.photo || null,
+            visibility: 'public',
+          });
+        } catch (lbErr) {
+          logger.error('[GOOGLE_AUTH] Failed to recreate leaderboard:', lbErr);
+        }
+      } else {
+        // Utilisateur existant actif - mettre à jour googleId si nécessaire
+        if (!user.googleId) {
+          user.googleId = googleId;
+          await user.save();
+        }
       }
     } else {
       // Nouvel utilisateur - créer le compte
@@ -698,10 +758,33 @@ exports.deleteAccount = async (req, res) => {
     }
 
     // Supprimer les données associées
-    await Subscription.deleteMany({ userId: req.userId });
+    await Promise.all([
+      Subscription.deleteMany({ userId: req.userId }),
+      LeaderboardEntry.deleteMany({ userId: req.userId }),
+      UserProfile.deleteMany({ userId: req.userId }),
+      AIConversation.deleteMany({ userId: req.userId }),
+      FoodLog.deleteMany({ userId: req.userId }),
+      SleepLog.deleteMany({ userId: req.userId }),
+      History.deleteMany({ userId: req.userId }),
+      Review.deleteMany({ userId: req.userId }),
+      XPRedemption.deleteMany({ userId: req.userId }),
+      PartnerRedemption.deleteMany({ userId: req.userId }),
+      PushSubscription.deleteMany({ userId: req.userId }),
+      Notification.deleteMany({ userId: req.userId }),
+      ChatMessage.deleteMany({ userId: req.userId }),
+      FeedComment.deleteMany({ userId: req.userId }),
+      FeedLike.deleteMany({ userId: req.userId }),
+      WorkoutSession.deleteMany({ userId: req.userId }),
+      DailyHealthData.deleteMany({ userId: req.userId }),
+      WeightLog.deleteMany({ userId: req.userId }),
+      UserBadge.deleteMany({ userId: req.userId }),
+    ]);
 
-    // Supprimer l'utilisateur
-    await User.deleteOne({ _id: req.userId });
+    // Soft delete : marquer le compte comme supprimé (empêche la re-création via Google OAuth)
+    user.isDeleted = true;
+    user.deletedAt = new Date();
+    user.googleId = undefined; // Déconnecter le lien Google
+    await user.save();
 
     // Supprimer le cookie httpOnly
     const isProduction = process.env.NODE_ENV === 'production';

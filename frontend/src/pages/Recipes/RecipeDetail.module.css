@@ -249,6 +249,58 @@
   color: var(--color-primary);
 }
 
+/* ===== RATING ===== */
+.ratingSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.ratingStars {
+  display: flex;
+  gap: 2px;
+}
+
+.starButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.4rem;
+  color: var(--line, rgba(0, 0, 0, 0.15));
+  padding: 2px;
+  transition: color 0.15s ease, transform 0.15s ease;
+  line-height: 1;
+}
+
+.starButton:hover:not(:disabled) {
+  transform: scale(1.2);
+}
+
+.starButton:disabled {
+  cursor: default;
+}
+
+.starFilled {
+  color: #f59e0b;
+}
+
+:global(body.dark) .starButton,
+:global(html.dark) .starButton {
+  color: rgba(255, 255, 255, 0.15);
+}
+
+:global(body.dark) .starFilled,
+:global(html.dark) .starFilled {
+  color: #fbbf24;
+}
+
+.ratingInfo {
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: 0.8125rem;
+  color: var(--muted, #78716c);
+}
+
 /* ===== ACTIONS - LIKE BUTTON ===== */
 .actions {
   display: flex;

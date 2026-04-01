@@ -100,18 +100,20 @@ export default function MobileExpandedMenu({
                   <span>{darkMode ? 'Mode clair' : 'Mode sombre'}</span>
                 </button>
 
-                <button
-                  onClick={handleMessagesClick}
-                  className={styles.utilityBtn}
-                  aria-label="Messages"
-                  style={{ position: 'relative' }}
-                >
-                  <MessageIcon size={20} />
-                  <span>Messages</span>
-                  {unreadCount > 0 && (
-                    <span className={styles.notificationBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
-                  )}
-                </button>
+                {isLoggedIn && (
+                  <button
+                    onClick={handleMessagesClick}
+                    className={styles.utilityBtn}
+                    aria-label="Messages"
+                    style={{ position: 'relative' }}
+                  >
+                    <MessageIcon size={20} />
+                    <span>Messages</span>
+                    {unreadCount > 0 && (
+                      <span className={styles.notificationBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+                    )}
+                  </button>
+                )}
 
                 {isLoggedIn && (
                   <button

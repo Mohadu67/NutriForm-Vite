@@ -3,6 +3,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import styles from "./LoginUser.module.css";
 import logoAnimate from "../../../assets/img/logo/logoAnimate.svg";
 import useLogin from "./UseLogin.js";
+import ConfirmModal from "../../Modal/ConfirmModal.jsx";
 
 export default function LoginUser({ onSuccess, toSignup, toForgot }) {
   const [identifier, setIdentifier] = useState("");
@@ -10,7 +11,11 @@ export default function LoginUser({ onSuccess, toSignup, toForgot }) {
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { status, errorMsg, unverifiedEmail, handleSubmit, resendVerification, handleGoogleSuccess } = useLogin(onSuccess, { minDurationMs: 1500 });
+  const {
+    status, errorMsg, unverifiedEmail,
+    handleSubmit, resendVerification, handleGoogleSuccess,
+    deletedAccountModal, confirmRecreateAccount, cancelRecreateAccount,
+  } = useLogin(onSuccess, { minDurationMs: 1500 });
 
   const loading = status === "loading";
 
@@ -170,6 +175,19 @@ export default function LoginUser({ onSuccess, toSignup, toForgot }) {
           </button>
         </span>
       </div>
+
+      {/* Modal compte supprimé */}
+      <ConfirmModal
+        isOpen={deletedAccountModal.open}
+        onClose={cancelRecreateAccount}
+        onConfirm={confirmRecreateAccount}
+        onCancel={cancelRecreateAccount}
+        title="Compte supprimé"
+        message="Votre compte a été supprimé. Souhaitez-vous en créer un nouveau avec ce compte Google ?"
+        confirmText="Créer un nouveau compte"
+        cancelText="Annuler"
+        type="warning"
+      />
     </div>
   );
 }

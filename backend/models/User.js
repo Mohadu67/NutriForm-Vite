@@ -91,6 +91,10 @@ const userSchema = new mongoose.Schema(
     resetPasswordToken: { type: String, default: null, index: true, select: false },
     resetPasswordExpires: { type: Date, default: null, select: false },
 
+    // Soft delete
+    isDeleted: { type: Boolean, default: false },
+    deletedAt: { type: Date, default: null },
+
     // Changement d'email
     emailChangeToken: { type: String, default: null, select: false },
     emailChangeExpires: { type: Date, default: null, select: false },
