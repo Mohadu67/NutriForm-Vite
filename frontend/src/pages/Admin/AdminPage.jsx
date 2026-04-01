@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { MdStar, MdEmail, MdSupport, MdRestaurant, MdFitnessCenter, MdCardGiftcard, MdDirectionsRun } from 'react-icons/md';
+import { StarIcon, UtensilsIcon, RunningIcon, DumbbellIcon, BellIcon, HeartIcon, MessageIcon, DashboardIcon } from '../../components/Navbar/NavIcons.jsx';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import ConfirmModal from '../../components/Modal/ConfirmModal.jsx';
@@ -11,6 +11,11 @@ import { useAdminNotification } from "../../hooks/admin/useAdminNotification";
 import { useConfirmModal } from "../../hooks/admin/useConfirmModal";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 
+// Custom hooks
+import { useAdminReviews, ITEMS_PER_PAGE } from "./hooks/useAdminReviews";
+import { useAdminNewsletters } from "./hooks/useAdminNewsletters";
+import { useAdminRecipes } from "./hooks/useAdminRecipes";
+
 // Section components
 import AdminDashboard from './components/AdminDashboard.jsx';
 import AdminReviews from './components/AdminReviews.jsx';
@@ -18,7 +23,6 @@ import AdminNewsletters from './components/AdminNewsletters.jsx';
 import AdminRecipes from './components/AdminRecipes.jsx';
 import AdminExercises from './components/AdminExercises.jsx';
 
-const ITEMS_PER_PAGE = 20;
 const VALID_SECTIONS = ['dashboard', 'reviews', 'newsletters', 'recipes', 'exercises', 'programs', 'support'];
 
 export default function AdminPage() {
@@ -32,31 +36,33 @@ export default function AdminPage() {
   const [activeSection, setActiveSection] = useState(
     VALID_SECTIONS.includes(initialSection) ? initialSection : "dashboard"
   );
-  const [reviews, setReviews] = useState([]);
-  const [newsletters, setNewsletters] = useState([]);
-  const [recipes, setRecipes] = useState([]);
-  const [newsletterStats, setNewsletterStats] = useState({ active: 0 });
   const [loading, setLoading] = useState(false);
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [selectedReviews, setSelectedReviews] = useState([]);
-
-  // Search
-  const [searchReviews, setSearchReviews] = useState('');
-  const [searchNewsletters, setSearchNewsletters] = useState('');
-  const [searchRecipes, setSearchRecipes] = useState('');
-
-  // Sort
-  const [sortReviews, setSortReviews] = useState('date-desc');
-  const [sortRecipes, setSortRecipes] = useState('date-desc');
-
-  // Pagination
-  const [reviewsPage, setReviewsPage] = useState(1);
-  const [newslettersPage, setNewslettersPage] = useState(1);
-  const [recipesPage, setRecipesPage] = useState(1);
 
   // Badge counters
   const [pendingProgramsCount, setPendingProgramsCount] = useState(0);
   const [openTicketsCount, setOpenTicketsCount] = useState(0);
+
+  // Custom hooks
+  const {
+    reviews, filterStatus, setFilterStatus, selectedReviews,
+    searchReviews, setSearchReviews, sortReviews, setSortReviews,
+    reviewsPage, setReviewsPage, fetchReviews,
+    handleApprove, confirmDeleteReview, handleBulkApprove, confirmBulkDelete,
+    toggleSelectReview, filteredReviews, paginatedReviews,
+  } = useAdminReviews(notify, openModal);
+
+  const {
+    newsletters, newsletterStats, searchNewsletters, setSearchNewsletters,
+    newslettersPage, setNewslettersPage, fetchNewsletters, fetchNewsletterStats,
+    confirmDeleteNewsletter, confirmSendNewsletter,
+    filteredNewsletters, paginatedNewsletters,
+  } = useAdminNewsletters(notify, openModal, setLoading);
+
+  const {
+    recipes, searchRecipes, setSearchRecipes, sortRecipes, setSortRecipes,
+    recipesPage, setRecipesPage, fetchRecipes,
+    confirmDeleteRecipe, filteredRecipes, paginatedRecipes,
+  } = useAdminRecipes(notify, openModal);
 
   // Computed stats
   const stats = useMemo(() => ({
@@ -75,18 +81,9 @@ export default function AdminPage() {
     }
   }, [searchParams]);
 
-
   const { user: authUser, isLoggedIn, isAdmin: authIsAdmin } = useAuth();
 
-  // ============== FETCH FUNCTIONS ==============
-
-  const fetchNewsletterStats = useCallback(async () => {
-    try {
-      const response = await secureApiCall('/newsletter/stats');
-      const data = await response.json();
-      if (data.success) setNewsletterStats({ active: data.stats?.active || 0 });
-    } catch (err) { logger.error("Erreur stats newsletter:", err); }
-  }, []);
+  // ============== FETCH FUNCTIONS (badge counters) ==============
 
   const fetchPendingProgramsCount = useCallback(async () => {
     try {
@@ -104,36 +101,6 @@ export default function AdminPage() {
     } catch (err) { logger.error("Erreur tickets ouverts:", err); }
   }, []);
 
-  const fetchReviews = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await secureApiCall('/reviews/users/all');
-      const data = await response.json();
-      if (data.success) setReviews(data.reviews);
-    } catch (err) { logger.error("Erreur avis:", err); }
-    finally { setLoading(false); }
-  }, []);
-
-  const fetchNewsletters = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await secureApiCall('/newsletter-admin');
-      const data = await response.json();
-      if (data.success) setNewsletters(data.newsletters);
-    } catch (err) { logger.error("Erreur newsletters:", err); }
-    finally { setLoading(false); }
-  }, []);
-
-  const fetchRecipes = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await secureApiCall('/recipes');
-      const data = await response.json();
-      if (data.success) setRecipes(data.recipes);
-    } catch (err) { logger.error("Erreur recettes:", err); }
-    finally { setLoading(false); }
-  }, []);
-
   // ============== EFFECTS ==============
   useEffect(() => {
     if (!isLoggedIn || !authIsAdmin) {
@@ -144,201 +111,22 @@ export default function AdminPage() {
     fetchNewsletterStats();
     fetchPendingProgramsCount();
     fetchOpenTicketsCount();
-    if (activeSection === "reviews") fetchReviews();
+    if (activeSection === "reviews") fetchReviews(setLoading);
     if (activeSection === "newsletter") fetchNewsletters();
-    if (activeSection === "recipes") fetchRecipes();
+    if (activeSection === "recipes") fetchRecipes(setLoading);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, authIsAdmin]);
 
   useEffect(() => {
-    if (activeSection === "reviews" && reviews.length === 0) fetchReviews();
+    if (activeSection === "reviews" && reviews.length === 0) fetchReviews(setLoading);
     if (activeSection === "newsletter" && newsletters.length === 0) fetchNewsletters();
-    if (activeSection === "recipes" && recipes.length === 0) fetchRecipes();
+    if (activeSection === "recipes" && recipes.length === 0) fetchRecipes(setLoading);
   }, [activeSection, reviews.length, newsletters.length, recipes.length, fetchReviews, fetchNewsletters, fetchRecipes]);
 
   useEffect(() => { setReviewsPage(1); }, [filterStatus, searchReviews]);
   useEffect(() => { setNewslettersPage(1); }, [searchNewsletters]);
   useEffect(() => { setRecipesPage(1); }, [searchRecipes]);
   useEffect(() => { setReviewsPage(1); setNewslettersPage(1); setRecipesPage(1); }, [activeSection]);
-
-  // ============== HANDLERS ==============
-  const handleApprove = async (id) => {
-    try {
-      const response = await secureApiCall(`/reviews/users/${id}/approve`, { method: "PUT" });
-      const data = await response.json();
-      if (data.success) {
-        notify.success( "Avis approuve !");
-        setReviews((prev) => prev.map((r) => (r._id === id ? { ...r, isApproved: true } : r)));
-      } else notify.error( data.message || "Erreur");
-    } catch { notify.error( "Erreur lors de l'approbation"); }
-  };
-
-  const confirmDeleteReview = (id) => {
-    openModal({
-      title: 'Supprimer cet avis',
-      message: 'Etes-vous sur de vouloir supprimer cet avis ?',
-      confirmText: 'Supprimer',
-      type: 'danger',
-      onConfirm: () => handleDeleteReview(id)
-    });
-  };
-
-  const handleDeleteReview = async (id) => {
-    try {
-      const response = await secureApiCall(`/reviews/users/${id}`, { method: "DELETE" });
-      const data = await response.json();
-      if (data.success) { notify.success( "Avis supprime !"); fetchReviews(); }
-      else notify.error( data.message || "Erreur");
-    } catch { notify.error( "Erreur lors de la suppression"); }
-  };
-
-  const handleBulkApprove = async () => {
-    if (selectedReviews.length === 0) return;
-    try {
-      await Promise.all(selectedReviews.map((id) => secureApiCall(`/reviews/users/${id}/approve`, { method: "PUT" })));
-      notify.success( `${selectedReviews.length} avis approuves !`);
-      setSelectedReviews([]); fetchReviews();
-    } catch { notify.error( "Erreur lors de l'approbation en masse"); }
-  };
-
-  const confirmBulkDelete = () => {
-    if (selectedReviews.length === 0) return;
-    openModal({
-      title: 'Suppression en masse',
-      message: `Supprimer ${selectedReviews.length} avis ?`,
-      confirmText: 'Supprimer tout',
-      type: 'danger',
-      onConfirm: handleBulkDelete
-    });
-  };
-
-  const handleBulkDelete = async () => {
-    try {
-      await Promise.all(selectedReviews.map((id) => secureApiCall(`/reviews/users/${id}`, { method: "DELETE" })));
-      notify.success( `${selectedReviews.length} avis supprimes !`);
-      setSelectedReviews([]); fetchReviews();
-    } catch { notify.error( "Erreur lors de la suppression en masse"); }
-  };
-
-  const toggleSelectReview = (id) => {
-    setSelectedReviews((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
-  };
-
-  const confirmDeleteNewsletter = (id) => {
-    openModal({
-      title: 'Supprimer la newsletter',
-      message: 'Supprimer cette newsletter ?',
-      confirmText: 'Supprimer',
-      type: 'danger',
-      onConfirm: () => handleDeleteNewsletter(id)
-    });
-  };
-
-  const handleDeleteNewsletter = async (id) => {
-    try {
-      const response = await secureApiCall(`/newsletter-admin/${id}`, { method: "DELETE" });
-      const data = await response.json();
-      if (data.success) { notify.success( "Newsletter supprimee !"); fetchNewsletters(); }
-      else notify.error( data.message || "Erreur");
-    } catch { notify.error( "Erreur lors de la suppression"); }
-  };
-
-  const confirmSendNewsletter = (id, title) => {
-    openModal({
-      title: 'Envoyer la newsletter',
-      message: `Envoyer "${title}" a tous les abonnes ?`,
-      confirmText: 'Envoyer maintenant',
-      type: 'warning',
-      onConfirm: () => handleSendNow(id)
-    });
-  };
-
-  const handleSendNow = async (id) => {
-    try {
-      setLoading(true);
-      const response = await secureApiCall(`/newsletter-admin/${id}/send-now`, { method: "POST" });
-      const data = await response.json();
-      if (data.success) {
-        notify.success( `Newsletter envoyee a ${data.stats?.successCount || 0} abonnes !`);
-        fetchNewsletters(); fetchNewsletterStats();
-      } else notify.error( data.message || "Erreur");
-    } catch { notify.error( "Erreur lors de l'envoi"); }
-    finally { setLoading(false); }
-  };
-
-  const confirmDeleteRecipe = (id) => {
-    openModal({
-      title: 'Supprimer la recette',
-      message: 'Supprimer cette recette ?',
-      confirmText: 'Supprimer',
-      type: 'danger',
-      onConfirm: () => handleDeleteRecipe(id)
-    });
-  };
-
-  const handleDeleteRecipe = async (id) => {
-    try {
-      const response = await secureApiCall(`/recipes/${id}`, { method: "DELETE" });
-      const data = await response.json();
-      if (data.success) { notify.success( "Recette supprimee !"); fetchRecipes(); }
-      else notify.error( data.message || "Erreur");
-    } catch { notify.error( "Erreur lors de la suppression"); }
-  };
-
-  // ============== FILTERING & PAGINATION ==============
-  const filteredReviews = useMemo(() => {
-    let filtered = reviews;
-    if (filterStatus === "pending") filtered = filtered.filter((r) => !r.isApproved);
-    else if (filterStatus === "approved") filtered = filtered.filter((r) => r.isApproved);
-
-    if (searchReviews) {
-      const search = searchReviews.toLowerCase();
-      filtered = filtered.filter((r) =>
-        r.pseudo?.toLowerCase().includes(search) || r.content?.toLowerCase().includes(search) || r.userId?.pseudo?.toLowerCase().includes(search)
-      );
-    }
-
-    filtered.sort((a, b) => {
-      switch (sortReviews) {
-        case 'date-asc': return new Date(a.createdAt) - new Date(b.createdAt);
-        case 'rating-desc': return b.rating - a.rating;
-        case 'rating-asc': return a.rating - b.rating;
-        case 'name-asc': return (a.pseudo || '').localeCompare(b.pseudo || '');
-        case 'name-desc': return (b.pseudo || '').localeCompare(a.pseudo || '');
-        default: return new Date(b.createdAt) - new Date(a.createdAt);
-      }
-    });
-    return filtered;
-  }, [reviews, filterStatus, searchReviews, sortReviews]);
-
-  const filteredNewsletters = useMemo(() => {
-    if (!searchNewsletters) return newsletters;
-    const search = searchNewsletters.toLowerCase();
-    return newsletters.filter((n) => n.title?.toLowerCase().includes(search) || n.subject?.toLowerCase().includes(search));
-  }, [newsletters, searchNewsletters]);
-
-  const filteredRecipes = useMemo(() => {
-    let filtered = recipes;
-    if (searchRecipes) {
-      const search = searchRecipes.toLowerCase();
-      filtered = filtered.filter((r) => r.title?.toLowerCase().includes(search) || r.category?.toLowerCase().includes(search) || r.description?.toLowerCase().includes(search));
-    }
-    filtered = [...filtered].sort((a, b) => {
-      switch (sortRecipes) {
-        case 'date-asc': return new Date(a.createdAt) - new Date(b.createdAt);
-        case 'calories-desc': return (b.nutrition?.calories || 0) - (a.nutrition?.calories || 0);
-        case 'calories-asc': return (a.nutrition?.calories || 0) - (b.nutrition?.calories || 0);
-        case 'views-desc': return (b.views || 0) - (a.views || 0);
-        case 'views-asc': return (a.views || 0) - (b.views || 0);
-        default: return new Date(b.createdAt) - new Date(a.createdAt);
-      }
-    });
-    return filtered;
-  }, [recipes, searchRecipes, sortRecipes]);
-
-  const paginatedReviews = useMemo(() => filteredReviews.slice((reviewsPage - 1) * ITEMS_PER_PAGE, reviewsPage * ITEMS_PER_PAGE), [filteredReviews, reviewsPage]);
-  const paginatedNewsletters = useMemo(() => filteredNewsletters.slice((newslettersPage - 1) * ITEMS_PER_PAGE, newslettersPage * ITEMS_PER_PAGE), [filteredNewsletters, newslettersPage]);
-  const paginatedRecipes = useMemo(() => filteredRecipes.slice((recipesPage - 1) * ITEMS_PER_PAGE, recipesPage * ITEMS_PER_PAGE), [filteredRecipes, recipesPage]);
 
   // ============== RENDER ==============
   return (
@@ -352,18 +140,18 @@ export default function AdminPage() {
 
 
         {/* Navigation */}
-        <div className={styles.nav}>
-          <button className={`${styles.navBtn} ${activeSection === "dashboard" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("dashboard")}>Dashboard</button>
+        <nav className={styles.nav}>
+          <button className={`${styles.navBtn} ${activeSection === "dashboard" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("dashboard")}><DashboardIcon size={16} /> Dashboard</button>
           <button className={`${styles.navBtn} ${activeSection === "reviews" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("reviews")}>
-            <MdStar /> Avis {stats.pendingReviews > 0 && <span className={styles.badge}>{stats.pendingReviews}</span>}
+            <StarIcon size={16} /> Avis {stats.pendingReviews > 0 && <span className={styles.badge}>{stats.pendingReviews}</span>}
           </button>
-          <button className={`${styles.navBtn} ${activeSection === "recipes" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("recipes")}><MdRestaurant /> Recettes</button>
-          <button className={`${styles.navBtn} ${activeSection === "exercises" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("exercises")}><MdDirectionsRun /> Exercices</button>
-          <button className={styles.navBtn} onClick={() => navigate("/admin/programs")}><MdFitnessCenter /> Programmes {pendingProgramsCount > 0 && <span className={styles.badge}>{pendingProgramsCount}</span>}</button>
-          <button className={`${styles.navBtn} ${activeSection === "newsletter" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("newsletter")}><MdEmail /> Newsletter</button>
-          <button className={styles.navBtn} onClick={() => navigate("/admin/partners")}><MdCardGiftcard /> Nos Partenaires</button>
-          <button className={styles.navBtn} onClick={() => navigate("/admin/support-tickets")}><MdSupport /> Support {openTicketsCount > 0 && <span className={styles.badge}>{openTicketsCount}</span>}</button>
-        </div>
+          <button className={`${styles.navBtn} ${activeSection === "recipes" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("recipes")}><UtensilsIcon size={16} /> Recettes</button>
+          <button className={`${styles.navBtn} ${activeSection === "exercises" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("exercises")}><RunningIcon size={16} /> Exercices</button>
+          <button className={styles.navBtn} onClick={() => navigate("/admin/programs")}><DumbbellIcon size={16} /> Programmes {pendingProgramsCount > 0 && <span className={styles.badge}>{pendingProgramsCount}</span>}</button>
+          <button className={`${styles.navBtn} ${activeSection === "newsletter" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("newsletter")}><BellIcon size={16} /> Newsletter</button>
+          <button className={styles.navBtn} onClick={() => navigate("/admin/partners")}><HeartIcon size={16} /> Partenaires</button>
+          <button className={styles.navBtn} onClick={() => navigate("/admin/support-tickets")}><MessageIcon size={16} /> Support {openTicketsCount > 0 && <span className={styles.badge}>{openTicketsCount}</span>}</button>
+        </nav>
 
         {activeSection === "dashboard" && (
           <AdminDashboard stats={stats} pendingProgramsCount={pendingProgramsCount} openTicketsCount={openTicketsCount} onNavigate={navigate} onSectionChange={setActiveSection} />

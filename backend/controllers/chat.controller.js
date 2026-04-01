@@ -45,7 +45,7 @@ async function createFallbackResponse(userId, conversationId, userMessage) {
  */
 async function sendMessage(req, res) {
   try {
-    const { message, conversationId } = req.body;
+    const { message, conversationId, platform } = req.body;
     const userId = req.userId;
 
     if (!message || message.trim().length === 0) {
@@ -177,7 +177,7 @@ async function sendMessage(req, res) {
           ChatMessage.find({ conversationId: convId })
             .sort({ createdAt: 1 })
             .limit(10),
-          buildUserContext(userId),
+          buildUserContext(userId, { platform: platform || 'web' }),
         ]);
 
         const result = await openaiService.generateResponse(message, history, userContext);

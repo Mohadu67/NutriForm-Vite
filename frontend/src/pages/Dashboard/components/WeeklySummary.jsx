@@ -3,12 +3,26 @@ import style from "../Dashboard.module.css";
 import { endpoints } from "../../../shared/api/endpoints.js";
 import { secureApiCall } from "../../../utils/authService.js";
 import { getBodyCompositionSummary } from "../../../shared/api/bodyComposition";
+import { TargetIcon, TrendingUpIcon, CheckIcon, FireIcon, MuscleIcon, AlertTriangleIcon, ScaleIcon, ClockIcon, ZapIcon } from "../../../components/Navbar/NavIcons.jsx";
 
 const ZONE_LABELS = {
   pectoraux: "Pectoraux", epaules: "Épaules", biceps: "Biceps", triceps: "Triceps",
   "abdos-centre": "Abdos", "dos-superieur": "Haut du dos", "dos-inferieur": "Dos",
   fessiers: "Fessiers", "cuisses-externes": "Quadriceps", "cuisses-internes": "Ischio-jambiers",
   mollets: "Mollets",
+};
+
+// ─── Mapping icône pour les tips ─────────────────────────────────────
+const TIP_ICONS = {
+  target: (props) => <TargetIcon {...props} />,
+  trending: (props) => <TrendingUpIcon {...props} />,
+  check: (props) => <CheckIcon {...props} />,
+  fire: (props) => <FireIcon {...props} />,
+  muscle: (props) => <MuscleIcon {...props} />,
+  alert: (props) => <AlertTriangleIcon {...props} />,
+  scale: (props) => <ScaleIcon {...props} />,
+  clock: (props) => <ClockIcon {...props} />,
+  zap: (props) => <ZapIcon {...props} />,
 };
 
 // ─── Génération des conseils personnalisés ───────────────────────────
@@ -21,25 +35,25 @@ function generateTips(bc, weeklySessions) {
 
   // Fréquence
   if (weeklySessions === 0) {
-    tips.push({ emoji: "🎯", title: "Lance-toi", text: "Aucune séance cette semaine. Un seul entraînement peut relancer ta dynamique.", tint: "blue" });
+    tips.push({ icon: "target", title: "Lance-toi", text: "Aucune séance cette semaine. Un seul entraînement peut relancer ta dynamique.", tint: "blue" });
   } else if (weeklySessions < 3) {
-    tips.push({ emoji: "📈", title: "Augmente la cadence", text: `${weeklySessions} séance${weeklySessions > 1 ? "s" : ""} cette semaine. Vise 3 à 5 pour des résultats visibles.`, tint: "amber" });
+    tips.push({ icon: "trending", title: "Augmente la cadence", text: `${weeklySessions} séance${weeklySessions > 1 ? "s" : ""} cette semaine. Vise 3 à 5 pour des résultats visibles.`, tint: "amber" });
   } else if (weeklySessions <= 5) {
-    tips.push({ emoji: "✅", title: "Fréquence idéale", text: `${weeklySessions} séances — c'est le sweet spot pour progresser sans se cramer.`, tint: "green" });
+    tips.push({ icon: "check", title: "Fréquence idéale", text: `${weeklySessions} séances — c'est le sweet spot pour progresser sans se cramer.`, tint: "green" });
   } else {
-    tips.push({ emoji: "😴", title: "Pense au repos", text: `${weeklySessions} séances, c'est intense. Les muscles se construisent au repos.`, tint: "amber" });
+    tips.push({ icon: "clock", title: "Pense au repos", text: `${weeklySessions} séances, c'est intense. Les muscles se construisent au repos.`, tint: "amber" });
   }
 
   // Protéines
   if (n?.daysLogged >= 1) {
     if (n.proteinStatus === "insufficient" && n.avgDaily?.proteins > 0) {
       const target = weight ? Math.round(weight * 1.6) : null;
-      tips.push({ emoji: "🥩", title: "Plus de protéines", text: `${n.proteinPerKg}g/kg.${target ? ` Vise ${target}g/jour (1.6g/kg)` : " Vise 1.6g/kg"} pour maximiser tes gains.`, tint: "red" });
+      tips.push({ icon: "alert", title: "Plus de protéines", text: `${n.proteinPerKg}g/kg.${target ? ` Vise ${target}g/jour (1.6g/kg)` : " Vise 1.6g/kg"} pour maximiser tes gains.`, tint: "red" });
     } else if (n.proteinStatus === "adequate") {
       const gap = weight ? Math.round(weight * 1.6 - n.avgDaily.proteins) : null;
-      tips.push({ emoji: "💪", title: "Protéines correctes", text: `${n.proteinPerKg}g/kg, bien joué.${gap ? ` Encore ${gap}g pour l'optimal.` : ""}`, tint: "green" });
+      tips.push({ icon: "muscle", title: "Protéines correctes", text: `${n.proteinPerKg}g/kg, bien joué.${gap ? ` Encore ${gap}g pour l'optimal.` : ""}`, tint: "green" });
     } else if (n.proteinStatus === "optimal") {
-      tips.push({ emoji: "🏆", title: "Protéines au top", text: `${n.proteinPerKg}g/kg — synthèse musculaire maximisée.`, tint: "green" });
+      tips.push({ icon: "fire", title: "Protéines au top", text: `${n.proteinPerKg}g/kg — synthèse musculaire maximisée.`, tint: "green" });
     }
   }
 
@@ -47,13 +61,13 @@ function generateTips(bc, weeklySessions) {
   if (n?.dailyBalance !== undefined && n?.daysLogged >= 1) {
     const bal = n.dailyBalance;
     if (goal === "muscle_gain") {
-      if (bal < 0) tips.push({ emoji: "🍽️", title: "Mange plus", text: `Déficit de ${Math.abs(Math.round(bal))} kcal en prise de masse. Ajoute ${Math.abs(Math.round(bal)) + 200} kcal pour un surplus favorable.`, tint: "red" });
-      else if (bal > 500) tips.push({ emoji: "⚖️", title: "Surplus élevé", text: `+${Math.round(bal)} kcal/jour. Au-delà de 300-500 kcal, l'excès part en gras.`, tint: "amber" });
-      else if (bal >= 100) tips.push({ emoji: "✅", title: "Surplus parfait", text: `+${Math.round(bal)} kcal/jour — idéal pour du muscle propre.`, tint: "green" });
+      if (bal < 0) tips.push({ icon: "alert", title: "Mange plus", text: `Déficit de ${Math.abs(Math.round(bal))} kcal en prise de masse. Ajoute ${Math.abs(Math.round(bal)) + 200} kcal pour un surplus favorable.`, tint: "red" });
+      else if (bal > 500) tips.push({ icon: "scale", title: "Surplus élevé", text: `+${Math.round(bal)} kcal/jour. Au-delà de 300-500 kcal, l'excès part en gras.`, tint: "amber" });
+      else if (bal >= 100) tips.push({ icon: "check", title: "Surplus parfait", text: `+${Math.round(bal)} kcal/jour — idéal pour du muscle propre.`, tint: "green" });
     } else if (goal === "weight_loss") {
-      if (bal > 0) tips.push({ emoji: "⚠️", title: "Pas de déficit", text: `+${Math.round(bal)} kcal au-dessus de ta maintenance. Réduis pour relancer ta perte.`, tint: "red" });
-      else if (bal < -800) tips.push({ emoji: "⚠️", title: "Déficit agressif", text: `${Math.abs(Math.round(bal))} kcal de déficit — risque de perte musculaire. Reste autour de -500 kcal.`, tint: "amber" });
-      else if (bal < 0) tips.push({ emoji: "🔥", title: "Bon déficit", text: `${Math.abs(Math.round(bal))} kcal de déficit — ~${Math.round(Math.abs(bal) * 7 / 7700 * 1000)}g de gras/semaine.`, tint: "green" });
+      if (bal > 0) tips.push({ icon: "alert", title: "Pas de déficit", text: `+${Math.round(bal)} kcal au-dessus de ta maintenance. Réduis pour relancer ta perte.`, tint: "red" });
+      else if (bal < -800) tips.push({ icon: "alert", title: "Déficit agressif", text: `${Math.abs(Math.round(bal))} kcal de déficit — risque de perte musculaire. Reste autour de -500 kcal.`, tint: "amber" });
+      else if (bal < 0) tips.push({ icon: "fire", title: "Bon déficit", text: `${Math.abs(Math.round(bal))} kcal de déficit — ~${Math.round(Math.abs(bal) * 7 / 7700 * 1000)}g de gras/semaine.`, tint: "green" });
     }
   }
 
@@ -63,7 +77,7 @@ function generateTips(bc, weeklySessions) {
     if (zones.length > 0) {
       const topLabel = ZONE_LABELS[zones[0][0]] || zones[0][0];
       if (n?.proteinStatus === "insufficient") {
-        tips.push({ emoji: "🎯", title: `Focus ${topLabel}`, text: `Bon travail sur les ${topLabel.toLowerCase()} mais protéines insuffisantes. Plus de protéines = meilleurs résultats.`, tint: "amber" });
+        tips.push({ icon: "target", title: `Focus ${topLabel}`, text: `Bon travail sur les ${topLabel.toLowerCase()} mais protéines insuffisantes. Plus de protéines = meilleurs résultats.`, tint: "amber" });
       }
     }
 
@@ -72,25 +86,25 @@ function generateTips(bc, weeklySessions) {
     const neglected = mainZones.filter(z => !trained.has(z));
     if (neglected.length > 0 && neglected.length <= 3) {
       const labels = neglected.slice(0, 2).map(z => (ZONE_LABELS[z] || z).toLowerCase()).join(" et ");
-      tips.push({ emoji: "🔄", title: "Équilibre", text: `Pense à travailler les ${labels} pour un développement harmonieux.`, tint: "blue" });
+      tips.push({ icon: "scale", title: "Équilibre", text: `Pense à travailler les ${labels} pour un développement harmonieux.`, tint: "blue" });
     }
   }
 
   // Nutrition non renseignée
   if (!n?.daysLogged || n.daysLogged === 0) {
-    tips.push({ emoji: "📝", title: "Log ta nutrition", text: "Aucun repas enregistré. Renseigne tes repas pour des conseils précis sur tes macros.", tint: "blue" });
+    tips.push({ icon: "target", title: "Log ta nutrition", text: "Aucun repas enregistré. Renseigne tes repas pour des conseils précis sur tes macros.", tint: "blue" });
   } else if (n.daysLogged < 3) {
-    tips.push({ emoji: "📝", title: "Continue de logger", text: `${n.daysLogged} jour${n.daysLogged > 1 ? "s" : ""} enregistré${n.daysLogged > 1 ? "s" : ""}. Plus de données = meilleurs conseils.`, tint: "blue" });
+    tips.push({ icon: "trending", title: "Continue de logger", text: `${n.daysLogged} jour${n.daysLogged > 1 ? "s" : ""} enregistré${n.daysLogged > 1 ? "s" : ""}. Plus de données = meilleurs conseils.`, tint: "blue" });
   }
 
   // Surentraînement + mauvaise nutrition
   if (weeklySessions > 5 && n?.proteinStatus !== "optimal") {
-    tips.push({ emoji: "🧘", title: "Récupération", text: "Beaucoup de séances + protéines insuffisantes. Tu risques le surentraînement.", tint: "red" });
+    tips.push({ icon: "clock", title: "Récupération", text: "Beaucoup de séances + protéines insuffisantes. Tu risques le surentraînement.", tint: "red" });
   }
 
   // Timing protéines (MPS)
   if (n?.mpsScore !== undefined && n.mpsScore < 0.3 && weeklySessions > 0) {
-    tips.push({ emoji: "🧬", title: "Timing protéines", text: "Mange tes protéines le jour de l'entraînement et le lendemain. La fenêtre MPS dure 24-48h.", tint: "blue" });
+    tips.push({ icon: "zap", title: "Timing protéines", text: "Mange tes protéines le jour de l'entraînement et le lendemain. La fenêtre MPS dure 24-48h.", tint: "blue" });
   }
 
   return tips;
@@ -259,13 +273,16 @@ export const WeeklySummary = ({ weeklySessions, weeklyCalories, userName }) => {
       {/* Tips carousel */}
       {showTips && tips.length > 0 && (
         <div className={style.wsTipsRow}>
-          {tips.map((tip, i) => (
-            <div key={i} className={`${style.wsTipCard} ${style[`wsTint_${tip.tint}`] || ""}`}>
-              <span className={style.wsTipEmoji}>{tip.emoji}</span>
-              <span className={style.wsTipTitle}>{tip.title}</span>
-              <span className={style.wsTipText}>{tip.text}</span>
-            </div>
-          ))}
+          {tips.map((tip, i) => {
+            const IconComponent = TIP_ICONS[tip.icon] || TIP_ICONS.target;
+            return (
+              <div key={i} className={`${style.wsTipCard} ${style[`wsTint_${tip.tint}`] || ""}`}>
+                <span className={style.wsTipIcon}>{IconComponent({ size: 16 })}</span>
+                <span className={style.wsTipTitle}>{tip.title}</span>
+                <span className={style.wsTipText}>{tip.text}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </section>

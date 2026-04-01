@@ -11,6 +11,7 @@ const Partner = require('../models/Partner');
 const Recipe = require('../models/Recipe');
 const User = require('../models/User');
 const logger = require('../utils/logger');
+const { computeRecoveryStatus } = require('./recovery.service');
 
 const OBJECTIVE_LABELS = {
   weight_loss: 'Perte de poids',
@@ -107,9 +108,11 @@ function formatSets(type, sets) {
  * Récupère toutes les données pertinentes d'un utilisateur
  * et les formate en contexte textuel pour l'IA
  * @param {string} userId
+ * @param {object} options
+ * @param {string} options.platform - 'web' ou 'mobile'
  * @returns {Promise<string>}
  */
-async function buildUserContext(userId) {
+async function buildUserContext(userId, { platform = 'web' } = {}) {
   try {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
@@ -136,6 +139,7 @@ async function buildUserContext(userId) {
       activeChallenges,
       activePartners,
       availableRecipes,
+      recoveryData,
     ] = await Promise.all([
       User.findById(userId).select('prenom pseudo subscriptionTier role').lean(),
       UserProfile.findOne({ userId }).lean(),
@@ -160,9 +164,13 @@ async function buildUserContext(userId) {
       }).lean(),
       Partner.find({ isActive: true }).select('name category offerTitle offerDescription offerType offerValue description').lean(),
       Recipe.find({ isPublished: true }).select('title slug category mealType goal tags nutrition.calories nutrition.proteins dietType description').sort({ views: -1 }).limit(30).lean(),
+      computeRecoveryStatus(userId).catch(() => null),
     ]);
 
     const sections = [];
+
+    // --- Plateforme ---
+    sections.push(`Plateforme : ${platform === 'mobile' ? 'Application mobile' : 'Application web'}`);
 
     // --- Identité ---
     const prenom = user?.prenom || user?.pseudo || 'Utilisateur';
@@ -326,6 +334,22 @@ async function buildUserContext(userId) {
       }
     } else {
       sections.push(`Séances récentes : Aucune séance enregistrée`);
+    }
+
+    // --- Récupération musculaire (calculée par le service recovery) ---
+    if (recoveryData?.zones?.length) {
+      const { zones, summary } = recoveryData;
+      sections.push(`Récupération musculaire (${summary.ready}/${summary.total} zones prêtes) :`);
+      const activeZones = zones.filter(z => z.status !== 'ready');
+      const readyZones = zones.filter(z => z.status === 'ready');
+      if (activeZones.length) {
+        for (const z of activeZones) {
+          sections.push(`  - ${z.label} : ${z.percentage}% récupéré (${z.status}) — travaillé il y a ${z.hoursAgo}h, besoin de ${z.recoveryHours}h au total`);
+        }
+      }
+      if (readyZones.length) {
+        sections.push(`  - Zones prêtes : ${readyZones.map(z => z.label).join(', ')}`);
+      }
     }
 
     // --- Stats globales ---

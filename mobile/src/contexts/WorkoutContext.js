@@ -402,6 +402,46 @@ export function WorkoutProvider({ children }) {
     return finishedWorkout;
   }, [currentWorkout]);
 
+  // Sauvegarder une seance passee (sans passer par le flow normal)
+  const savePastSession = useCallback(async (workout) => {
+    // workout = { name, date (YYYY-MM-DD), durationMin, exercises: [...] }
+    const dateStr = workout.date;
+    const durationMin = workout.durationMin || 0;
+    const start = new Date(`${dateStr}T10:00:00`);
+    const end = new Date(start.getTime() + durationMin * 60 * 1000);
+
+    const pastWorkout = {
+      ...workout,
+      id: Date.now().toString(),
+      startTime: start.toISOString(),
+      endTime: end.toISOString(),
+      duration: durationMin,
+    };
+
+    // Sauvegarder sur le backend
+    try {
+      const result = await saveSessionToBackend(pastWorkout);
+      if (result.success) {
+        pastWorkout.backendId = result.data?._id;
+      }
+    } catch (error) {
+      console.log('[WORKOUT] Erreur sync backend (past session):', error);
+    }
+
+    // Sauvegarder dans l'historique local
+    try {
+      const historyKey = '@workout_history';
+      const existingHistory = await AsyncStorage.getItem(historyKey);
+      const history = existingHistory ? JSON.parse(existingHistory) : [];
+      history.unshift(pastWorkout);
+      await AsyncStorage.setItem(historyKey, JSON.stringify(history.slice(0, 100)));
+    } catch (error) {
+      console.log('Erreur sauvegarde historique local (past):', error);
+    }
+
+    return pastWorkout;
+  }, []);
+
   // Annuler la seance
   const cancelWorkout = useCallback(async () => {
     setCurrentWorkout(null);
@@ -551,6 +591,7 @@ export function WorkoutProvider({ children }) {
     getCompletedSetsCount,
     getTotalSetsCount,
     getWorkoutHistory,
+    savePastSession,
   };
 
   return (

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { MdNotifications, MdTouchApp, MdTrendingUp, MdCalendarToday } from 'react-icons/md';
 import { secureApiCall } from '../../../utils/authService';
 import endpoints from '../../../shared/api/endpoints';
-import styles from '../AdminPage.module.css';
+import styles from './NotificationStats.module.css';
 
 /**
  * NotificationStats - Statistiques des notifications avec graphique
@@ -162,7 +162,11 @@ export default function NotificationStats() {
           <h4>Par type de notification</h4>
           <div className={styles.typeStatsGrid}>
             {stats.typeStats.map((type) => {
-              const rate = type.total > 0 ? Math.round((type.clicked / type.total) * 100) : 0;
+              const sent = type.sent || type.total || 0;
+              const clicked = type.clicked || 0;
+              const rate = sent > 0
+                ? Math.max(clicked > 0 ? 1 : 0, Math.round((clicked / sent) * 100))
+                : 0;
               return (
                 <div key={type._id} className={styles.typeStatCard}>
                   <div className={styles.typeStatHeader}>
@@ -176,8 +180,8 @@ export default function NotificationStats() {
                     />
                   </div>
                   <div className={styles.typeStatDetails}>
-                    <span>{type.total} envoyees</span>
-                    <span>{type.clicked} cliquees</span>
+                    <span>{sent} envoyees</span>
+                    <span>{clicked} cliquees</span>
                   </div>
                 </div>
               );

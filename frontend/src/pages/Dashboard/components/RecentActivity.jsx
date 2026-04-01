@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import style from "../Dashboard.module.css";
+import { TrashIcon, ChevronDownIcon, PencilIcon, DumbbellIcon, RunningIcon, MuscleIcon } from "../../../components/Navbar/NavIcons.jsx";
 
 /**
  * RecentActivity - Composant affichant l'activité récente
@@ -83,6 +84,12 @@ export const RecentActivity = ({
     return [];
   }, []);
 
+  const EntryTypeIcon = ({ type }) => {
+    if (type === 'cardio') return <RunningIcon size={14} />;
+    if (type === 'poids_du_corps') return <MuscleIcon size={14} />;
+    return <DumbbellIcon size={14} />;
+  };
+
   if (recentSessions.length === 0) {
     return null;
   }
@@ -94,54 +101,67 @@ export const RecentActivity = ({
         {recentSessions.map((session, index) => {
           const sessionId = session.id || session._id || index;
           const isExpanded = expandedSessionId === sessionId;
+          const isEditing = editingSessionId === sessionId;
           const entries = session?.entries || session?.items || session?.exercises || [];
 
           return (
             <div key={sessionId} className={`${style.sessionItem} ${isExpanded ? style.sessionItemExpanded : ''}`}>
-              <div
-                className={style.sessionHeader}
-                onClick={() => entries.length > 0 && toggleExpand(sessionId)}
-                style={{ cursor: entries.length > 0 ? 'pointer' : 'default' }}
-              >
-                <div className={style.sessionDate}>
-                  {formatDate(session?.endedAt || session?.date || session?.createdAt)}
+              <div className={style.sessionHeader}>
+                {/* Zone cliquable pour expand/collapse */}
+                <div
+                  className={style.sessionClickArea}
+                  onClick={() => entries.length > 0 && toggleExpand(sessionId)}
+                  style={{ cursor: entries.length > 0 ? 'pointer' : 'default' }}
+                >
+                  <div className={style.sessionDate}>
+                    {formatDate(session?.endedAt || session?.date || session?.createdAt)}
+                  </div>
+                  <div className={style.sessionDetails}>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        ref={editInputRef}
+                        className={style.sessionNameInput}
+                        value={editingSessionName}
+                        onChange={(e) => onEditSessionNameChange(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') onSaveSessionName(sessionId);
+                          if (e.key === 'Escape') onCancelEdit();
+                        }}
+                      />
+                    ) : (
+                      <span className={style.sessionName}>
+                        {session?.name || "Séance"}
+                      </span>
+                    )}
+                    <span className={style.sessionMeta}>
+                      {session?.durationMinutes ? `${session.durationMinutes} min` : ""}
+                      {entries.length ? ` • ${entries.length} exo` : ""}
+                      {extractSessionCalories(session) > 0 ? ` • ${extractSessionCalories(session)} kcal` : ""}
+                    </span>
+                  </div>
+                  {entries.length > 0 && (
+                    <span className={`${style.expandIcon} ${isExpanded ? style.expandIconRotated : ''}`}>
+                      <ChevronDownIcon size={16} />
+                    </span>
+                  )}
                 </div>
-                <div className={style.sessionDetails}>
-                  {editingSessionId === sessionId ? (
-                    <input
-                      type="text"
-                      ref={editInputRef}
-                      className={style.sessionNameInput}
-                      value={editingSessionName}
-                      onChange={(e) => onEditSessionNameChange(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') onSaveSessionName(sessionId);
-                        if (e.key === 'Escape') onCancelEdit();
-                      }}
-                    />
-                  ) : (
-                    <span
-                      className={style.sessionName}
+
+                {/* Actions séparées (renommer + supprimer) */}
+                <div className={style.sessionActions}>
+                  {!isEditing && (
+                    <button
+                      className={style.editBtn}
                       onClick={(e) => {
                         e.stopPropagation();
                         onStartEdit(session, e);
                       }}
+                      title="Renommer cette séance"
+                      aria-label="Renommer cette séance"
                     >
-                      {session?.name || "Séance"}
-                    </span>
-                  )}
-                  <span className={style.sessionMeta}>
-                    {session?.durationMinutes ? `${session.durationMinutes} min` : ""}
-                    {entries.length ? ` • ${entries.length} exo` : ""}
-                    {extractSessionCalories(session) > 0 ? ` • ${extractSessionCalories(session)} kcal` : ""}
-                  </span>
-                </div>
-                <div className={style.sessionActions}>
-                  {entries.length > 0 && (
-                    <span className={`${style.expandIcon} ${isExpanded ? style.expandIconRotated : ''}`}>
-                      ▼
-                    </span>
+                      <PencilIcon size={14} />
+                    </button>
                   )}
                   <button
                     className={style.deleteBtn}
@@ -152,7 +172,7 @@ export const RecentActivity = ({
                     title="Supprimer cette séance"
                     aria-label="Supprimer cette séance"
                   >
-                    🗑️
+                    <TrashIcon size={14} />
                   </button>
                 </div>
               </div>
@@ -174,7 +194,7 @@ export const RecentActivity = ({
                         <div className={style.exerciseHeader}>
                           <span className={style.exerciseName}>{entryName}</span>
                           <span className={style.exerciseType}>
-                            {entryType === 'cardio' ? '🏃' : entryType === 'poids_du_corps' ? '🤸' : '🏋️'}
+                            <EntryTypeIcon type={entryType} />
                           </span>
                         </div>
                         <div className={style.exerciseSummary}>
@@ -193,7 +213,7 @@ export const RecentActivity = ({
       </div>
       {isFreeUser && hiddenSessions > 0 && (
         <div className={style.sessionsUpsell}>
-          <span>📊 {hiddenSessions} séance{hiddenSessions > 1 ? 's' : ''} de plus dans ton historique</span>
+          <span>{hiddenSessions} séance{hiddenSessions > 1 ? 's' : ''} de plus dans ton historique</span>
           <button onClick={() => navigate('/pricing')} className={style.sessionsUpsellLink}>
             Voir tout avec Premium
           </button>

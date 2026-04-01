@@ -31,7 +31,7 @@ function loadSaved(it) {
 }
 
 
-export default function SuivieExo({ sessionName, exercises = [], onBack, onFinish = () => {} }) {
+export default function SuivieExo({ sessionName, exercises = [], onBack, onFinish = () => {}, pastSession = null }) {
   const label = (sessionName && sessionName.trim()) ? sessionName.trim() : "ta séance";
 
   function getPersistedSelection() {
@@ -192,6 +192,7 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onFinis
           items={Array.isArray(items) ? items : []}
           startedAt={startedAt}
           resumeFromStartedAt={true}
+          pastSession={pastSession}
           onStart={(iso) => {
             setStartedAt(prev => prev || iso);
           }}

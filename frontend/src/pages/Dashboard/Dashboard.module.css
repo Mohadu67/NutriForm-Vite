@@ -61,8 +61,11 @@
 }
 
 .modalIcon {
-  font-size: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 16px;
+  color: #10b981;
   animation: popIn 0.5s var(--ease-spring, ease) both;
 }
 
@@ -841,24 +844,35 @@
   color: var(--muted, #6b7280);
 }
 
+/* Session action buttons */
+.editBtn,
 .deleteBtn {
   background: none;
   border: none;
-  font-size: 1.2rem;
   cursor: pointer;
-  padding: 4px 8px;
-  opacity: 0.6;
-  transition: opacity 0.2s, transform 0.2s;
+  padding: 6px;
+  border-radius: 6px;
+  color: var(--muted, #6b7280);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
-.deleteBtn:hover {
-  opacity: 1;
-  transform: scale(1.1);
+.editBtn:hover {
+  color: var(--couleur-bouton-action, #f7b186);
+  background: rgba(247, 177, 134, 0.1);
 }
 
+.deleteBtn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.editBtn:active,
 .deleteBtn:active {
-  transform: scale(0.95);
+  transform: scale(0.9);
 }
 
 /* Session expandable */
@@ -868,23 +882,32 @@
 
 .sessionHeader {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
   width: 100%;
+}
+
+.sessionClickArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
 }
 
 .sessionActions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   flex-shrink: 0;
 }
 
 .expandIcon {
-  font-size: 0.7rem;
   color: var(--muted, #6b7280);
-  transition: transform 0.2s ease;
-  padding: 4px;
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
 .expandIconRotated {
@@ -992,7 +1015,9 @@
 }
 
 .exerciseType {
-  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  color: var(--couleur-bouton-action, #f7b186);
 }
 
 .exerciseSummary {
@@ -1573,9 +1598,11 @@
 }
 
 .emptyIcon {
-  font-size: 3rem;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 16px;
+  color: var(--couleur-bouton-action, #f7b186);
 }
 
 .emptyTitle {
@@ -1756,14 +1783,16 @@
   border-color: var(--line);
 }
 
-.badgeEmoji {
-  font-size: 1.75rem;
-  line-height: 1;
+.badgeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 8px;
+  color: var(--couleur-bouton-action, #f7b186);
 }
 
-.badgeLocked .badgeEmoji {
-  filter: grayscale(1);
+.badgeLocked .badgeIcon {
+  opacity: 0.3;
 }
 
 .badgeName {
@@ -2303,8 +2332,10 @@
 }
 
 .upsellIcon {
-  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
+  color: var(--couleur-bouton-action, #f7b186);
 }
 
 .upsellText {
@@ -2360,7 +2391,10 @@
 }
 
 .premiumTeaserIcon {
-  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--couleur-bouton-action, #f7b186);
   opacity: 0.6;
 }
 
@@ -2701,8 +2735,12 @@
   scroll-snap-align: start;
 }
 
-.wsTipEmoji {
-  font-size: 1.3rem;
+.wsTipIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+  opacity: 0.85;
 }
 
 .wsTipTitle {
