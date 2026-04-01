@@ -31,8 +31,11 @@ export default function RecipesPage() {
     goal: [],
     mealType: [],
     tags: [],
+    dietType: [],
     difficulty: '',
     category: '',
+    maxCalories: '',
+    minProtein: '',
     page: 1,
     limit: 12,
     sort: 'newest'
