@@ -110,3 +110,28 @@ export async function getPartnerStats(id) {
   const response = await client.get(endpoints.partners.adminStats(id));
   return response.data;
 }
+
+// ============================================
+// PARTNER REQUESTS (demandes utilisateurs via IA)
+// ============================================
+
+export async function getPartnerRequests(params = {}) {
+  const query = new URLSearchParams(params).toString();
+  const response = await client.get(`/partners/admin/requests${query ? `?${query}` : ''}`);
+  return response.data;
+}
+
+export async function getPartnerRequestsStats() {
+  const response = await client.get('/partners/admin/requests/stats');
+  return response.data;
+}
+
+export async function updatePartnerRequest(id, data) {
+  const response = await client.patch(`/partners/admin/requests/${id}`, data);
+  return response.data;
+}
+
+export async function bulkUpdatePartnerRequests(keyword, category, status) {
+  const response = await client.patch('/partners/admin/requests/bulk-status', { keyword, category, status });
+  return response.data;
+}

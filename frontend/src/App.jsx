@@ -54,6 +54,7 @@ const NewsletterAdmin = lazy(() => import("./pages/Admin/NewsletterAdmin.jsx"));
 const SupportTickets = lazy(() => import("./pages/Admin/SupportTickets.jsx"));
 const ProgramsAdmin = lazy(() => import("./pages/Admin/ProgramsAdmin/ProgramsAdmin.jsx"));
 const PartnersAdmin = lazy(() => import("./pages/Admin/PartnersAdmin/PartnersAdmin.jsx"));
+const PartnerRequests = lazy(() => import("./pages/Admin/PartnersAdmin/PartnerRequests.jsx"));
 
 // Profile & Matching - loaded directly to avoid Safari lazy loading issues
 import ProfileSetup from "./pages/Profile/ProfileSetup.jsx";
@@ -141,6 +142,7 @@ export default function App() {
             <Route path="/admin/support-tickets" element={<ProtectedRoute requireAdmin><SupportTickets /></ProtectedRoute>} />
             <Route path="/admin/programs" element={<ProtectedRoute requireAdmin><ProgramsAdmin /></ProtectedRoute>} />
             <Route path="/admin/partners" element={<ProtectedRoute requireAdmin><PartnersAdmin /></ProtectedRoute>} />
+            <Route path="/admin/partners/requests" element={<ProtectedRoute requireAdmin><PartnerRequests /></ProtectedRoute>} />
             <Route path="/admin/recipes/new" element={<ProtectedRoute requireAdmin><RecipeForm /></ProtectedRoute>} />
             <Route path="/admin/recipes/:id/edit" element={<ProtectedRoute requireAdmin><RecipeForm /></ProtectedRoute>} />
 

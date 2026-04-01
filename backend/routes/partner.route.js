@@ -37,6 +37,34 @@ router.put('/admin/:id', auth, adminMiddleware, partnerController.updatePartner)
 router.delete('/admin/:id', auth, adminMiddleware, partnerController.deletePartner);
 
 /**
+ * @route   GET /api/partners/admin/requests/stats
+ * @desc    Stats rapides des demandes partenaires (dashboard)
+ * @access  Private (Admin)
+ */
+router.get('/admin/requests/stats', auth, adminMiddleware, partnerController.getPartnerRequestsStats);
+
+/**
+ * @route   GET /api/partners/admin/requests
+ * @desc    Obtenir les demandes partenaires agregees
+ * @access  Private (Admin)
+ */
+router.get('/admin/requests', auth, adminMiddleware, partnerController.getPartnerRequests);
+
+/**
+ * @route   PATCH /api/partners/admin/requests/bulk-status
+ * @desc    Mettre a jour le status en masse par keyword
+ * @access  Private (Admin)
+ */
+router.patch('/admin/requests/bulk-status', auth, adminMiddleware, partnerController.bulkUpdatePartnerRequests);
+
+/**
+ * @route   PATCH /api/partners/admin/requests/:id
+ * @desc    Mettre a jour une demande partenaire
+ * @access  Private (Admin)
+ */
+router.patch('/admin/requests/:id', auth, adminMiddleware, partnerController.updatePartnerRequest);
+
+/**
  * @route   GET /api/partners/admin/:id/stats
  * @desc    Obtenir les stats d'un partenaire (admin)
  * @access  Private (Admin)

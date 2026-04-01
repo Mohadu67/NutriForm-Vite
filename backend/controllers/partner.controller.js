@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Partner = require('../models/Partner');
 const PartnerRedemption = require('../models/PartnerRedemption');
+const PartnerRequest = require('../models/PartnerRequest');
 const User = require('../models/User');
 const LeaderboardEntry = require('../models/LeaderboardEntry');
 const Notification = require('../models/Notification');
@@ -588,5 +589,175 @@ exports.getPartnerStats = async (req, res) => {
       success: false,
       message: 'Erreur serveur'
     });
+  }
+};
+
+// ============================================
+// PARTNER REQUESTS (demandes utilisateurs via IA)
+// ============================================
+
+/**
+ * @route   GET /api/partners/admin/requests
+ * @desc    Obtenir les demandes partenaires agregees
+ * @access  Private (Admin)
+ */
+exports.getPartnerRequests = async (req, res) => {
+  try {
+    const { status, category, page = 1, limit = 50 } = req.query;
+
+    // Agregation par keyword pour voir les demandes les plus frequentes
+    const matchStage = {};
+    if (status) matchStage.status = status;
+    if (category) matchStage.category = category;
+
+    const [aggregated, allRequests, totalCount, statusCounts] = await Promise.all([
+      // Top keywords agrégés
+      PartnerRequest.aggregate([
+        { $match: matchStage },
+        {
+          $group: {
+            _id: { keyword: '$keyword', category: '$category' },
+            count: { $sum: 1 },
+            lastRequestAt: { $max: '$createdAt' },
+            uniqueUsers: { $addToSet: '$userId' },
+            latestStatus: { $last: '$status' }
+          }
+        },
+        {
+          $project: {
+            keyword: '$_id.keyword',
+            category: '$_id.category',
+            count: 1,
+            uniqueUserCount: { $size: '$uniqueUsers' },
+            lastRequestAt: 1,
+            latestStatus: 1,
+            _id: 0
+          }
+        },
+        { $sort: { count: -1 } },
+        { $limit: 50 }
+      ]),
+      // Toutes les demandes individuelles (paginées)
+      PartnerRequest.find(matchStage)
+        .sort({ createdAt: -1 })
+        .skip((parseInt(page) - 1) * parseInt(limit))
+        .limit(parseInt(limit))
+        .populate('userId', 'pseudo prenom email')
+        .lean(),
+      PartnerRequest.countDocuments(matchStage),
+      // Stats par status
+      PartnerRequest.aggregate([
+        { $group: { _id: '$status', count: { $sum: 1 } } }
+      ])
+    ]);
+
+    const stats = {
+      total: totalCount,
+      new: 0,
+      noted: 0,
+      resolved: 0
+    };
+    statusCounts.forEach(s => { stats[s._id] = s.count; });
+
+    res.json({
+      success: true,
+      aggregated,
+      requests: allRequests,
+      stats,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: totalCount,
+        pages: Math.ceil(totalCount / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    logger.error('Erreur getPartnerRequests:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+/**
+ * @route   PATCH /api/partners/admin/requests/:id
+ * @desc    Mettre a jour le status/notes d'une demande
+ * @access  Private (Admin)
+ */
+exports.updatePartnerRequest = async (req, res) => {
+  try {
+    const { status, adminNotes } = req.body;
+    const update = {};
+    if (status) update.status = status;
+    if (adminNotes !== undefined) update.adminNotes = adminNotes;
+
+    const request = await PartnerRequest.findByIdAndUpdate(
+      req.params.id,
+      update,
+      { new: true }
+    ).populate('userId', 'pseudo prenom email');
+
+    if (!request) {
+      return res.status(404).json({ success: false, message: 'Demande non trouvée' });
+    }
+
+    res.json({ success: true, request });
+  } catch (error) {
+    logger.error('Erreur updatePartnerRequest:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+/**
+ * @route   PATCH /api/partners/admin/requests/bulk-status
+ * @desc    Mettre a jour le status de toutes les demandes d'un keyword
+ * @access  Private (Admin)
+ */
+exports.bulkUpdatePartnerRequests = async (req, res) => {
+  try {
+    const { keyword, category, status } = req.body;
+
+    if (!keyword || !status) {
+      return res.status(400).json({ success: false, message: 'keyword et status requis' });
+    }
+
+    const filter = { keyword };
+    if (category) filter.category = category;
+
+    const result = await PartnerRequest.updateMany(filter, { status });
+
+    res.json({
+      success: true,
+      modifiedCount: result.modifiedCount
+    });
+  } catch (error) {
+    logger.error('Erreur bulkUpdatePartnerRequests:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+/**
+ * @route   GET /api/partners/admin/requests/stats
+ * @desc    Stats rapides pour le dashboard admin
+ * @access  Private (Admin)
+ */
+exports.getPartnerRequestsStats = async (req, res) => {
+  try {
+    const [totalNew, topRequests] = await Promise.all([
+      PartnerRequest.countDocuments({ status: 'new' }),
+      PartnerRequest.aggregate([
+        { $match: { status: 'new' } },
+        { $group: { _id: '$keyword', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 3 }
+      ])
+    ]);
+
+    res.json({
+      success: true,
+      totalNew,
+      topRequests: topRequests.map(r => ({ keyword: r._id, count: r.count }))
+    });
+  } catch (error) {
+    logger.error('Erreur getPartnerRequestsStats:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };

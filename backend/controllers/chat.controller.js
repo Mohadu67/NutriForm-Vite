@@ -9,6 +9,7 @@ const openaiService = require('../services/openai.service');
 const { ESCALATE_KEYWORDS, ESCALATE_CONFIRMATION } = require('../constants/chatPrompts');
 const { buildUserContext } = require('../services/userContext.service');
 const { findFallbackResponse, containsAny } = require('../constants/fallbackResponses');
+const PartnerRequest = require('../models/PartnerRequest');
 
 // Wrapper pour compatibilite avec l'ancienne signature
 async function notifyAdmins(title, message, link, metadata = {}, io = null) {
@@ -157,7 +158,7 @@ async function sendMessage(req, res) {
         ]);
 
         const result = await openaiService.generateResponse(message, history, userContext);
-        const reply = result.content;
+        const reply = await extractPartnerNeed(result.content, userId, convId, message);
         confidence = result.confidence;
 
         // Detecter si le bot veut escalader
@@ -354,6 +355,34 @@ async function escalateToHuman(userId, conversationId, lastMessage, reason = '',
   logger.info(`🎫 Ticket créé : ${ticket._id} pour user ${userName}`);
 
   return ticket;
+}
+
+/**
+ * Extraire et traiter le tag [PARTNER_NEED:category:keyword] de la reponse IA
+ * Retourne le contenu nettoyé et sauvegarde la demande en base
+ */
+async function extractPartnerNeed(reply, userId, conversationId, userMessage) {
+  const regex = /\[PARTNER_NEED:([^:]+):([^\]]+)\]/g;
+  const match = regex.exec(reply);
+
+  if (match) {
+    const category = match[1].trim().toLowerCase();
+    const keyword = match[2].trim().toLowerCase();
+
+    // Sauvegarder la demande en base (fire & forget)
+    PartnerRequest.create({
+      userId,
+      category,
+      keyword,
+      userMessage: userMessage.substring(0, 500),
+      conversationId
+    }).catch(err => logger.error('Erreur sauvegarde PartnerRequest:', err));
+
+    // Retirer le tag de la reponse visible
+    return reply.replace(regex, '').trim();
+  }
+
+  return reply;
 }
 
 /**
