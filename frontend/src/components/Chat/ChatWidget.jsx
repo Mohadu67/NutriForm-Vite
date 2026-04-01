@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { storage } from '../../shared/utils/storage';
 import { Button, Spinner, Alert } from 'react-bootstrap';
 import ReactMarkdown from 'react-markdown';
@@ -7,6 +7,57 @@ import { isAuthenticated } from '../../shared/api/auth';
 import { useChat } from '../../contexts/ChatContext';
 import { MessageCircleIcon, BotIcon, OnlineIcon } from '../Icons/GlobalIcons';
 import styles from './ChatWidget.module.css';
+
+const ACTION_REGEX = /\[ACTION:([^:]+):([^\]]+)\]/g;
+const ACTION_CLEAN_REGEX = /\[ACTION:[^\]]+\]/g;
+const ROUTE_MAP = {
+  HealthSettings: '/settings',
+  StartWorkout: '/exercices',
+  LogMeal: '/dashboard',
+  EditProfile: '/profile/edit',
+  NutritionGoals: '/dashboard',
+  Stats: '/dashboard',
+  Recipes: '/recettes',
+  Matching: '/matching',
+  Rewards: '/rewards',
+};
+
+function parseContent(content) {
+  if (!content) return { text: '', buttons: [] };
+  const buttons = [];
+  let m;
+  const regex = new RegExp(ACTION_REGEX.source, 'g');
+  while ((m = regex.exec(content)) !== null) {
+    buttons.push({ label: m[1].trim(), route: m[2].trim() });
+  }
+  const text = content.replace(ACTION_CLEAN_REGEX, '').trim();
+  return { text, buttons };
+}
+
+function BotMessage({ content }) {
+  const { text, buttons } = parseContent(content);
+  return (
+    <>
+      <ReactMarkdown className={styles.markdown}>{text}</ReactMarkdown>
+      {buttons.length > 0 && (
+        <div className={styles.actionButtons}>
+          {buttons.map((btn, i) => (
+            <button
+              key={i}
+              className={styles.actionBtn}
+              onClick={() => {
+                const path = ROUTE_MAP[btn.route];
+                if (path) window.location.href = path;
+              }}
+            >
+              ➜ {btn.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
 
 export default function ChatWidget() {
   const { isChatOpen: isOpen, toggleChat } = useChat() || {};
@@ -213,7 +264,7 @@ export default function ChatWidget() {
               >
                 <div className={styles.messageContent}>
                   {msg.role === 'bot' || msg.role === 'admin' ? (
-                    <ReactMarkdown className={styles.markdown}>{msg.content}</ReactMarkdown>
+                    <BotMessage content={msg.content} />
                   ) : (
                     msg.content
                   )}

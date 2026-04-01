@@ -384,10 +384,34 @@ export default function AIChatScreen({ route, navigation }) {
   };
 
   // Rendu d'un message
-  const renderMessage = useCallback(({ item }) => {
+  const ROUTE_MAP = {
+    HealthSettings: { screen: 'ProfileTab', params: { screen: 'Settings' } },
+    StartWorkout: { screen: 'ExercicesTab' },
+    LogMeal: { screen: 'HomeTab' },
+    EditProfile: { screen: 'ProfileTab', params: { screen: 'EditProfile' } },
+    NutritionGoals: { screen: 'HomeTab' },
+    Stats: { screen: 'HomeTab' },
+    Recipes: { screen: 'HomeTab' },
+    Matching: { screen: 'FluxTab', params: { screen: 'Matching' } },
+    Rewards: { screen: 'ProfileTab', params: { screen: 'Rewards' } },
+  };
+
+  const renderMessage = ({ item }) => {
     const isUser = item.role === 'user';
     const isSystem = item.isSystem || item.isError;
     const isSupport = item.isSupport || item.role === 'support';
+
+    // Parse [ACTION:label:route] dans le contenu bot
+    let cleanContent = item.content || '';
+    const actionButtons = [];
+    if (!isUser && cleanContent) {
+      const regex = /\[ACTION:([^:]+):([^\]]+)\]/g;
+      let m;
+      while ((m = regex.exec(cleanContent)) !== null) {
+        actionButtons.push({ label: m[1].trim(), route: m[2].trim() });
+      }
+      cleanContent = cleanContent.replace(/\[ACTION:[^\]]+\]/g, '').trim();
+    }
 
     return (
       <View style={[styles.messageWrapper, isUser ? styles.messageWrapperUser : styles.messageWrapperBot]}>
@@ -424,8 +448,33 @@ export default function AIChatScreen({ route, navigation }) {
           ) : (
             <>
               <Text style={[styles.messageTextBot, { color: themedStyles.textPrimary }]}>
-                {item.content}
+                {cleanContent}
               </Text>
+              {actionButtons.length > 0 && (
+                <View style={styles.actionButtonsContainer}>
+                  {actionButtons.map((btn, i) => (
+                    <TouchableOpacity
+                      key={i}
+                      style={styles.actionButton}
+                      onPress={() => {
+                        const dest = ROUTE_MAP[btn.route];
+                        if (dest) navigation.navigate('MainTabs', dest);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <LinearGradient
+                        colors={[theme.colors.primary, theme.colors.primaryDark]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.actionButtonGradient}
+                      >
+                        <Ionicons name="arrow-forward-circle" size={16} color="#FFF" />
+                        <Text style={styles.actionButtonText}>{btn.label}</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
               <Text style={[styles.messageTimeBot, { color: themedStyles.textSecondary }]}>
                 {formatTime(item.createdAt)}
               </Text>
@@ -434,7 +483,7 @@ export default function AIChatScreen({ route, navigation }) {
         </View>
       </View>
     );
-  }, [themedStyles]);
+  };
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
@@ -826,6 +875,29 @@ const styles = StyleSheet.create({
   messageTimeBot: {
     fontSize: 11,
     marginTop: 4,
+  },
+
+  // Action buttons dans les messages bot
+  actionButtonsContainer: {
+    marginTop: 10,
+    gap: 6,
+  },
+  actionButton: {
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  actionButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    gap: 6,
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
   },
 
   // Typing indicator
