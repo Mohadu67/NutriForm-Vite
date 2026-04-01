@@ -1,0 +1,225 @@
+/* ═══════════════════════════════════════════════
+   ADMIN DASHBOARD — KPIs + Quick Actions
+   Mobile-first
+   ═══════════════════════════════════════════════ */
+
+.dashSection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 8px;
+}
+
+.dashSectionTitle {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin: 0;
+}
+
+/* ── KPI Grid ──────────────────────────────────── */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.kpiCard {
+  background: var(--paper, #fff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  text-align: left;
+}
+
+.kpiCard:hover {
+  border-color: var(--couleur-bouton-action, #f7b186);
+  box-shadow: 0 8px 24px rgba(247, 177, 134, 0.12);
+  transform: translateY(-2px);
+}
+
+.kpiIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(247, 177, 134, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--couleur-bouton-action, #f7b186);
+}
+
+.kpiBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kpiValue {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--ink, #222325);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.kpiLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.kpiBadge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 8px;
+  align-self: flex-start;
+}
+
+.kpiBadge_warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+}
+
+.kpiBadge_danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.kpiArrow {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  color: var(--muted, #6b7280);
+  opacity: 0.4;
+  transform: rotate(-90deg);
+  display: flex;
+}
+
+.kpiCard:hover .kpiArrow {
+  opacity: 0.8;
+  color: var(--couleur-bouton-action, #f7b186);
+}
+
+/* ── Quick Actions Grid ────────────────────────── */
+.quickGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quickCard {
+  background: var(--paper, #fff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  position: relative;
+}
+
+.quickCard:hover {
+  border-color: var(--couleur-bouton-action, #f7b186);
+  background: rgba(247, 177, 134, 0.03);
+}
+
+.quickIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(247, 177, 134, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--couleur-bouton-action, #f7b186);
+  flex-shrink: 0;
+}
+
+.quickBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.quickTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink, #222325);
+}
+
+.quickDesc {
+  font-size: 0.75rem;
+  color: var(--muted, #6b7280);
+}
+
+.quickBadge {
+  background: #ef4444;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+
+/* ── >= 481px ──────────────────────────────────── */
+@media (min-width: 481px) {
+  .kpiGrid {
+    gap: 12px;
+  }
+
+  .quickGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
+
+/* ── >= 769px ──────────────────────────────────── */
+@media (min-width: 769px) {
+  .kpiGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  .kpiCard {
+    padding: 20px;
+  }
+
+  .quickGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+/* ── >= 1190px ─────────────────────────────────── */
+@media (min-width: 1190px) {
+  .kpiCard {
+    padding: 24px;
+  }
+
+  .kpiValue {
+    font-size: 2rem;
+  }
+}

@@ -1,4 +1,4 @@
-import styles from '../AdminPage.module.css';
+import styles from './AdminDashboard.module.css';
 import NotificationStats from './NotificationStats';
 import {
   StarIcon, CheckIcon, UsersIcon, UtensilsIcon,

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAllExercises, createExercise, updateExercise, deleteExercise } from '../../../shared/api/admin';
 import ConfirmModal from '../../../components/Modal/ConfirmModal';
-import styles from '../AdminPage.module.css';
+import styles from './AdminExercises.module.css';
 
 const CATEGORIES = ['muscu', 'cardio', 'etirement', 'hiit', 'yoga', 'meditation', 'natation'];
 const TYPES = ['muscu', 'poids-du-corps', 'cardio', 'etirement', 'hiit', 'yoga', 'meditation', 'natation'];
