@@ -131,6 +131,10 @@ export default function FormExo({ user: userProp }) {
   const [searchDraft, setSearchDraft] = useState(() => {
     try { return storage.get("dynamiSelected") || []; } catch { return []; }
   });
+  const [pastSessionMode, setPastSessionMode] = useState(false);
+  const [pastSessionDate, setPastSessionDate] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [pastSessionDuration, setPastSessionDuration] = useState('');
   const [showSummary, setShowSummary] = useState(false);
   const [lastStats, setLastStats] = useState(null);
   const [lastItems, setLastItems] = useState([]);
@@ -324,6 +328,9 @@ export default function FormExo({ user: userProp }) {
             setLastStats(null);
             setLastSummary(null);
             setHasCheckedLastWeek(false);
+            setPastSessionMode(false);
+            setPastSessionDate('');
+            setPastSessionDuration('');
             setShowWelcome(true); // Revenir à l'écran d'accueil
             try {
               const KEYS = [
@@ -558,6 +565,64 @@ export default function FormExo({ user: userProp }) {
         />
       )}
 
+      {showDatePicker && (
+        <div className={styles.datePickerOverlay}>
+          <div className={styles.datePickerModal}>
+            <h3 className={styles.datePickerTitle}>Séance passée</h3>
+            <p className={styles.datePickerSubtitle}>Choisis la date de ta séance</p>
+
+            <div className={styles.datePickerField}>
+              <label className={styles.datePickerLabel}>Date</label>
+              <input
+                type="date"
+                className={styles.datePickerInput}
+                value={pastSessionDate}
+                onChange={(e) => setPastSessionDate(e.target.value)}
+                max={new Date(Date.now() - 86400000).toISOString().split('T')[0]}
+              />
+            </div>
+
+            <div className={styles.datePickerField}>
+              <label className={styles.datePickerLabel}>Durée estimée (minutes)</label>
+              <input
+                type="number"
+                className={styles.datePickerInput}
+                value={pastSessionDuration}
+                onChange={(e) => setPastSessionDuration(e.target.value)}
+                placeholder="ex: 45"
+                min="1"
+                max="300"
+              />
+            </div>
+
+            <div className={styles.datePickerActions}>
+              <button
+                className={styles.datePickerCancel}
+                onClick={() => {
+                  setShowDatePicker(false);
+                  setPastSessionDate('');
+                  setPastSessionDuration('');
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                className={styles.datePickerConfirm}
+                onClick={() => {
+                  if (!pastSessionDate) return;
+                  setPastSessionMode(true);
+                  setShowDatePicker(false);
+                  setShowWelcome(false);
+                }}
+                disabled={!pastSessionDate}
+              >
+                Valider
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Écran d'accueil - Hero Section + Info Section */}
       {showWelcome && mode === "builder" && !showRepeatModal ? (
         <>
@@ -593,6 +658,13 @@ export default function FormExo({ user: userProp }) {
                 type="button"
               >
                 J'ai la flemme !
+              </button>
+              <button
+                className={styles.pastSessionButton}
+                onClick={() => setShowDatePicker(true)}
+                type="button"
+              >
+                Ajouter une séance passée
               </button>
             </div>
           </div>
@@ -663,6 +735,7 @@ export default function FormExo({ user: userProp }) {
             key={suiviKey}
             sessionName={sessionName}
             exercises={selectedExercises}
+            pastSession={pastSessionMode ? { date: pastSessionDate, durationMin: parseInt(pastSessionDuration, 10) || 0 } : null}
             onBack={(updated) => {
               if (Array.isArray(updated)) {
                 setSelectedExercises(updated);

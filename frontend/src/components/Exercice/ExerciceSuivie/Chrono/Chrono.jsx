@@ -12,13 +12,13 @@ import CancelSessionModal from "./CancelSessionModal";
 import logger from '../../../../shared/utils/logger.js';
 import { toast } from 'sonner';
 
-function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onStart = null, onFinish = () => {} }) {
+function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onStart = null, onFinish = () => {}, pastSession = null }) {
   const { save, saving } = useSaveSession();
 
   const { time, setTime, running, setRunning, showConfirm, setShowConfirm, startTs, setStartTs, stopAndReset, freezeClock } = useChronoCore(startedAt, { resume: resumeFromStartedAt });
 
   const hasSession = Boolean(startTs || startedAt);
-  const [showWarmup, setShowWarmup] = useState(!hasSession); // Afficher automatiquement si pas de session en cours
+  const [showWarmup, setShowWarmup] = useState(!hasSession && !pastSession); // Afficher automatiquement si pas de session en cours
   const [showShareModal, setShowShareModal] = useState(false);
   const [savedSession, setSavedSession] = useState(null);
   const [sessionStats, setSessionStats] = useState(null);
@@ -26,10 +26,21 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
 
   // Afficher le modal d'échauffement automatiquement au premier chargement
   useEffect(() => {
-    if (!hasSession && !showWarmup) {
+    if (!hasSession && !showWarmup && !pastSession) {
       setShowWarmup(true);
     }
-  }, [hasSession, showWarmup]);
+  }, [hasSession, showWarmup, pastSession]);
+
+  // Auto-start for past sessions (no need for user to press Start)
+  useEffect(() => {
+    if (pastSession && !startTs) {
+      const ts = Date.now();
+      setStartTs(ts);
+      if (typeof onStart === 'function') {
+        try { onStart(new Date(ts).toISOString()); } catch {}
+      }
+    }
+  }, [pastSession]);
 
   const muscleGroups = useMemo(() => {
     const safe = Array.isArray(items) ? items : [];
@@ -405,7 +416,18 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
     })();
 
     try {
-      const res = await save({ entries, durationSec: finalSec, label: displayLabel, summary });
+      const saveOpts = { entries, durationSec: finalSec, label: displayLabel, summary };
+      if (pastSession) {
+        const dateStr = pastSession.date; // 'YYYY-MM-DD'
+        const durationMin = pastSession.durationMin || 0;
+        const durationSec = durationMin * 60;
+        const start = new Date(`${dateStr}T10:00:00`);
+        const end = new Date(start.getTime() + durationSec * 1000);
+        saveOpts.startedAt = start.toISOString();
+        saveOpts.endedAt = end.toISOString();
+        saveOpts.durationSec = durationSec;
+      }
+      const res = await save(saveOpts);
       const savedCount = res?.ok && !res?.skipped ? 1 : 0;
 
       // Stocker la session et les stats pour le partage
@@ -509,7 +531,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
     <>
       {saving && <SaveLoadingAnimation />}
 
-      {showWarmup && createPortal(
+      {showWarmup && !pastSession && createPortal(
         <EchauffementModal
           onStart={handleStartSession}
           onSkip={handleStartSession}
@@ -520,46 +542,58 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
       <div className={styles.card}>
         <div className={styles.header}>
           <h2 className={styles.title}>
-            C'est parti pour <span className={styles.highlight}>{displayLabel}</span>
+            {pastSession ? (
+              <>Séance du <span className={styles.highlight}>{new Date(pastSession.date + 'T00:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span></>
+            ) : (
+              <>C'est parti pour <span className={styles.highlight}>{displayLabel}</span></>
+            )}
           </h2>
           <div className={styles.actions}>
-            {(!hasSession) && (
-              <button
-                className={styles.goBtn}
-                onClick={() => {
-                  setShowWarmup(true);
-                }}>
-                Commencer
-              </button>
-            )}
-            {(hasSession && !running) && (
-              <button
-                className={styles.goBtn}
-                onClick={() => {
-                  if (!startTs) {
-                    const parsed = startedAt ? new Date(startedAt).getTime() : NaN;
-                    const safeTs = Number.isNaN(parsed) ? (Date.now() - (Number(time || 0) * 1000)) : parsed;
-                    setStartTs(safeTs);
-                  }
-                  setRunning(true);
-                }}>
-                Reprendre
-              </button>
-            )}
-            {(hasSession && running) && (
-              <button
-                className={styles.goBtn}
-                onClick={() => setRunning(false)}>
-                Pause
-              </button>
+            {!pastSession && (
+              <>
+                {(!hasSession) && (
+                  <button
+                    className={styles.goBtn}
+                    onClick={() => {
+                      setShowWarmup(true);
+                    }}>
+                    Commencer
+                  </button>
+                )}
+                {(hasSession && !running) && (
+                  <button
+                    className={styles.goBtn}
+                    onClick={() => {
+                      if (!startTs) {
+                        const parsed = startedAt ? new Date(startedAt).getTime() : NaN;
+                        const safeTs = Number.isNaN(parsed) ? (Date.now() - (Number(time || 0) * 1000)) : parsed;
+                        setStartTs(safeTs);
+                      }
+                      setRunning(true);
+                    }}>
+                    Reprendre
+                  </button>
+                )}
+                {(hasSession && running) && (
+                  <button
+                    className={styles.goBtn}
+                    onClick={() => setRunning(false)}>
+                    Pause
+                  </button>
+                )}
+              </>
             )}
             <button className={styles.finishBtn} onClick={() => setShowConfirm(true)} disabled={saving} aria-busy={saving}>
-              Terminer
+              {pastSession ? 'Sauvegarder' : 'Terminer'}
             </button>
           </div>
         </div>
         <div className={styles.stats}>
-          <span>⏱ {formatTime(time)}</span>
+          {pastSession ? (
+            <span>⏱ {pastSession.durationMin || '?'} min</span>
+          ) : (
+            <span>⏱ {formatTime(time)}</span>
+          )}
           <span>🎯 {totalExercises} exercices</span>
           <span>🔥 {calories} cal</span>
         </div>

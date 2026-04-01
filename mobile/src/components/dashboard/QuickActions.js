@@ -59,6 +59,21 @@ export const QuickActions = ({ navigation, subscriptionTier = 'free' }) => {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Row 3: Séance passée */}
+      <View style={styles.row}>
+        <TouchableOpacity
+          style={[styles.secondaryActionHalf, isDark && styles.secondaryActionDark]}
+          onPress={() => navigation?.navigate('ExercicesTab', { screen: 'PastSession' })}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="time-outline" size={18} color={primaryColor} />
+          <Text style={[styles.secondaryActionText, { color: primaryColor }]}>
+            Séance passée
+          </Text>
+        </TouchableOpacity>
+        <View style={{ flex: 1 }} />
+      </View>
     </View>
   );
 };

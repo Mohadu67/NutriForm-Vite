@@ -576,3 +576,176 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Past Session Button */
+.pastSessionButton {
+  margin-top: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted);
+  background: transparent;
+  border: 1.5px dashed var(--border, rgba(0, 0, 0, 0.15));
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.8;
+}
+
+.pastSessionButton:hover {
+  opacity: 1;
+  border-color: var(--form-accent);
+  color: var(--form-accent);
+  background: rgba(247, 177, 134, 0.06);
+}
+
+:global(.dark) .pastSessionButton:hover {
+  background: rgba(247, 177, 134, 0.08);
+}
+
+.pastSessionButton:active {
+  transform: scale(0.98);
+}
+
+/* Date Picker Modal */
+.datePickerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.datePickerModal {
+  width: 90%;
+  max-width: 360px;
+  padding: 1.5rem;
+  border-radius: 20px;
+  background: var(--paper, #ffffff);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.25s ease-out;
+}
+
+:global(.dark) .datePickerModal {
+  background: var(--paper, #1a1a2e);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.datePickerTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 0.25rem;
+}
+
+.datePickerSubtitle {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0 0 1.25rem;
+}
+
+.datePickerField {
+  margin-bottom: 1rem;
+}
+
+.datePickerLabel {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.4rem;
+}
+
+.datePickerInput {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.9rem;
+  border: 1.5px solid var(--border, rgba(0, 0, 0, 0.12));
+  border-radius: 10px;
+  background: var(--canvas, #fafafa);
+  color: var(--ink);
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+:global(.dark) .datePickerInput {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.datePickerInput:focus {
+  outline: none;
+  border-color: var(--form-accent);
+}
+
+.datePickerActions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.datePickerCancel {
+  flex: 1;
+  padding: 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 10px;
+  background: var(--canvas, #f0f0f0);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+:global(.dark) .datePickerCancel {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.datePickerCancel:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+:global(.dark) .datePickerCancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.datePickerConfirm {
+  flex: 1;
+  padding: 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  background: var(--form-accent);
+  color: var(--couleur-text-bouton, #111);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.2);
+}
+
+.datePickerConfirm:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.3);
+}
+
+.datePickerConfirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

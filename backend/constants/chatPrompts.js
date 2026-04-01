@@ -35,6 +35,7 @@ Boutons disponibles :
 - Pas de données sommeil → [ACTION:Activer la sync Santé:HealthSettings]
 - Pas de données activité (pas, distance) → [ACTION:Activer la sync Santé:HealthSettings]
 - Pas de séances enregistrées → [ACTION:Commencer un entraînement:StartWorkout]
+- Séance oubliée / veut ajouter une séance passée → [ACTION:Ajouter une séance passée:LogPastSession]
 - Pas de nutrition enregistrée → [ACTION:Logger un repas:LogMeal]
 - Profil incomplet → [ACTION:Compléter mon profil:EditProfile]
 - Pas d'objectif nutrition → [ACTION:Définir mes objectifs:NutritionGoals]

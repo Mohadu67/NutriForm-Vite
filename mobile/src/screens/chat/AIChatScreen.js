@@ -396,6 +396,7 @@ export default function AIChatScreen({ route, navigation }) {
     Recipes: { screen: 'HomeTab' },
     Matching: { screen: 'FluxTab', params: { screen: 'Matching' } },
     Rewards: { screen: 'ProfileTab', params: { screen: 'Rewards' } },
+    LogPastSession: { screen: 'ExercicesTab', params: { screen: 'PastSession' } },
   };
 
   const renderMessage = ({ item }) => {
