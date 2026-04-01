@@ -263,6 +263,8 @@ app.use('/api/body-composition', bodyCompositionRoutes);
 app.use('/api/social', followRoutes);
 app.use('/api/barcode', barcodeRoutes);
 app.use('/api/recovery', recoveryRoutes);
+app.use('/api/admin/users', require('./routes/adminUser.route'));
+app.use('/api/partnership-proposals', require('./routes/partnershipProposal.route'));
 
 // Servir les fichiers statiques du frontend (en production)
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
