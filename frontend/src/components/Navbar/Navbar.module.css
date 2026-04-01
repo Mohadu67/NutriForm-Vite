@@ -436,6 +436,33 @@
   box-shadow: none;
 }
 
+/* Partner link — soft accent */
+.partnerLink {
+  position: relative;
+}
+
+.partnerLink .dockIcon {
+  color: var(--color-secondary, #72baa1);
+}
+
+.partnerLink .dockLabel {
+  color: var(--color-secondary, #72baa1);
+  font-weight: 600;
+}
+
+.partnerLink::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-secondary, #72baa1);
+  opacity: 0.7;
+}
+
 @media (hover: hover) and (pointer: fine) and (max-width: 1189px) {
   .dockItemActive:hover {
     transform: translateY(-2px);

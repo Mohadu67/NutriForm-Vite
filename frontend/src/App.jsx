@@ -55,6 +55,8 @@ const SupportTickets = lazy(() => import("./pages/Admin/SupportTickets.jsx"));
 const ProgramsAdmin = lazy(() => import("./pages/Admin/ProgramsAdmin/ProgramsAdmin.jsx"));
 const PartnersAdmin = lazy(() => import("./pages/Admin/PartnersAdmin/PartnersAdmin.jsx"));
 const PartnerRequests = lazy(() => import("./pages/Admin/PartnersAdmin/PartnerRequests.jsx"));
+const UsersAdmin = lazy(() => import("./pages/Admin/UsersAdmin/UsersAdmin.jsx"));
+const PartnerPage = lazy(() => import("./pages/Partner/PartnerPage.jsx"));
 
 // Profile & Matching - loaded directly to avoid Safari lazy loading issues
 import ProfileSetup from "./pages/Profile/ProfileSetup.jsx";
@@ -145,6 +147,8 @@ export default function App() {
             <Route path="/admin/partners/requests" element={<ProtectedRoute requireAdmin><PartnerRequests /></ProtectedRoute>} />
             <Route path="/admin/recipes/new" element={<ProtectedRoute requireAdmin><RecipeForm /></ProtectedRoute>} />
             <Route path="/admin/recipes/:id/edit" element={<ProtectedRoute requireAdmin><RecipeForm /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute requireAdmin><UsersAdmin /></ProtectedRoute>} />
+            <Route path="/partner" element={<ProtectedRoute requirePartner><PartnerPage /></ProtectedRoute>} />
 
             {/* Profile & Matching */}
             <Route path="/profile/setup" element={<ProfileSetup />} />

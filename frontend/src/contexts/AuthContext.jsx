@@ -97,6 +97,7 @@ export function AuthProvider({ children }) {
   const isLoggedIn = Boolean(user);
   const isAdmin = user?.role === 'admin';
   const isPremium = user?.isPremium === true || user?.subscriptionTier === 'premium';
+  const isPartner = user?.role === 'partner' || user?.isPartner === true;
 
   return (
     <AuthContext.Provider value={{
@@ -105,6 +106,7 @@ export function AuthProvider({ children }) {
       isLoggedIn,
       isAdmin,
       isPremium,
+      isPartner,
       refresh,
       logout,
     }}>
@@ -123,6 +125,7 @@ export function useAuth() {
       isLoggedIn: Boolean(storage.get('user')),
       isAdmin: false,
       isPremium: false,
+      isPartner: false,
       refresh: () => {},
       logout: () => {},
     };

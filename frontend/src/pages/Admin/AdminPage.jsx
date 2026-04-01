@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { StarIcon, UtensilsIcon, RunningIcon, DumbbellIcon, BellIcon, HeartIcon, MessageIcon, DashboardIcon } from '../../components/Navbar/NavIcons.jsx';
+import { StarIcon, UtensilsIcon, RunningIcon, DumbbellIcon, BellIcon, HeartIcon, MessageIcon, DashboardIcon, UsersIcon } from '../../components/Navbar/NavIcons.jsx';
 import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import ConfirmModal from '../../components/Modal/ConfirmModal.jsx';
@@ -149,6 +149,7 @@ export default function AdminPage() {
           <button className={`${styles.navBtn} ${activeSection === "exercises" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("exercises")}><RunningIcon size={16} /> Exercices</button>
           <button className={styles.navBtn} onClick={() => navigate("/admin/programs")}><DumbbellIcon size={16} /> Programmes {pendingProgramsCount > 0 && <span className={styles.badge}>{pendingProgramsCount}</span>}</button>
           <button className={`${styles.navBtn} ${activeSection === "newsletter" ? styles.navBtnActive : ""}`} onClick={() => setActiveSection("newsletter")}><BellIcon size={16} /> Newsletter</button>
+          <button className={styles.navBtn} onClick={() => navigate("/admin/users")}><UsersIcon size={16} /> Utilisateurs</button>
           <button className={styles.navBtn} onClick={() => navigate("/admin/partners")}><HeartIcon size={16} /> Partenaires</button>
           <button className={styles.navBtn} onClick={() => navigate("/admin/support-tickets")}><MessageIcon size={16} /> Support {openTicketsCount > 0 && <span className={styles.badge}>{openTicketsCount}</span>}</button>
         </nav>
