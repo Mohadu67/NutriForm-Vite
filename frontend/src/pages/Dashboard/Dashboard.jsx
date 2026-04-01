@@ -3,6 +3,21 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import usePageTitle from "../../hooks/usePageTitle.js";
 import Header from "../../components/Header/Header.jsx";
+import { DumbbellIcon, TrophyIcon, StarIcon, TrendingUpIcon, CheckIcon, TrashIcon, TargetIcon, FireIcon, MuscleIcon, ZapIcon, ClockIcon, RunningIcon, ChartIcon } from "../../components/Navbar/NavIcons.jsx";
+
+const BADGE_ICONS = {
+  target: (s) => <TargetIcon size={s} />,
+  star: (s) => <StarIcon size={s} />,
+  fire: (s) => <FireIcon size={s} />,
+  muscle: (s) => <MuscleIcon size={s} />,
+  trophy: (s) => <TrophyIcon size={s} />,
+  zap: (s) => <ZapIcon size={s} />,
+  check: (s) => <CheckIcon size={s} />,
+  trending: (s) => <TrendingUpIcon size={s} />,
+  clock: (s) => <ClockIcon size={s} />,
+  running: (s) => <RunningIcon size={s} />,
+  chart: (s) => <ChartIcon size={s} />,
+};
 import Footer from "../../components/Footer/Footer.jsx";
 import style from "./Dashboard.module.css";
 import useHistoryData from "../../components/History/HistoryUser/UseHistoryData.js";
@@ -175,7 +190,7 @@ export default function Dashboard() {
           {showSuccessMessage && (
             <div className={style.modalOverlay} onClick={() => setShowSuccessMessage(false)}>
               <div className={style.welcomeModal} onClick={(e) => e.stopPropagation()}>
-                <div className={style.modalIcon}>🎉</div>
+                <div className={style.modalIcon}><CheckIcon size={40} /></div>
                 <h2 className={style.modalTitle}>Bienvenue dans Premium !</h2>
                 <p className={style.modalMessage}>
                   Votre essai gratuit de <strong>7 jours</strong> a commencé.<br />
@@ -212,7 +227,7 @@ export default function Dashboard() {
           {isFreeUser && (
             <div className={style.upsellBanner}>
               <div className={style.upsellContent}>
-                <span className={style.upsellIcon}>⭐</span>
+                <span className={style.upsellIcon}><StarIcon size={18} /></span>
                 <div className={style.upsellText}>
                   <strong>Passez Premium</strong>
                   <span>Historique illimité, tous les badges, heatmap et plus encore</span>
@@ -249,6 +264,9 @@ export default function Dashboard() {
             weeklyCalories={weeklyCalories}
             onEditGoal={handleOpenGoalModal}
           />
+
+          {/* ── Actions rapides ── */}
+          <QuickActions navigate={navigate} subscriptionTier={subscriptionTier} />
 
           {/* ── Bloc 2 : Activité récente ── */}
           <RecentActivity
@@ -377,7 +395,7 @@ export default function Dashboard() {
           {isFreeUser && weightPoints.length >= 2 && (
             <section className={style.premiumTeaser}>
               <div className={style.premiumTeaserContent}>
-                <span className={style.premiumTeaserIcon}>📈</span>
+                <span className={style.premiumTeaserIcon}><TrendingUpIcon size={24} /></span>
                 <h3>Graphiques de progression</h3>
                 <p>Visualisez votre évolution avec des graphiques détaillés</p>
                 <Button variant="outline-primary" size="sm" onClick={() => navigate('/pricing')}>
@@ -387,13 +405,10 @@ export default function Dashboard() {
             </section>
           )}
 
-          {/* ── Actions rapides (en bas) ── */}
-          <QuickActions navigate={navigate} subscriptionTier={subscriptionTier} />
-
           {/* Empty State */}
           {stats.totalSessions === 0 && (
             <section className={style.emptyState}>
-              <div className={style.emptyIcon}>🏋️</div>
+              <div className={style.emptyIcon}><DumbbellIcon size={40} /></div>
               <h3 className={style.emptyTitle}>Prêt à commencer ?</h3>
               <p className={style.emptyText}>Lance ta première séance pour voir tes progrès</p>
               <button onClick={() => navigate('/exo')} className={style.emptyButton}>
@@ -431,7 +446,7 @@ export default function Dashboard() {
                   key={badge.id}
                   className={`${style.badgeItem} ${badge.unlocked ? style.badgeUnlocked : style.badgeLocked}`}
                 >
-                  <span className={style.badgeEmoji}>{badge.emoji}</span>
+                  <span className={style.badgeIcon}>{(BADGE_ICONS[badge.icon] || BADGE_ICONS.target)(22)}</span>
                   <span className={style.badgeName}>{badge.name}</span>
                   <span className={style.badgeDesc}>{badge.desc}</span>
                 </div>
@@ -439,7 +454,7 @@ export default function Dashboard() {
             </div>
             {isFreeUser && badges.length > limitedBadges.length && (
               <div className={style.badgesUpsell}>
-                <p>🏆 {badges.length - limitedBadges.length} badges supplémentaires avec Premium</p>
+                <p><TrophyIcon size={16} /> {badges.length - limitedBadges.length} badges supplémentaires avec Premium</p>
                 <Button variant="primary" size="sm" onClick={() => { setShowBadgesPopup(false); navigate('/pricing'); }}>
                   Débloquer tous les badges
                 </Button>

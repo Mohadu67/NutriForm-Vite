@@ -11,6 +11,7 @@ export async function sendChatMessage(message, conversationId = null) {
   const response = await client.post(endpoints.chat.send, {
     message,
     conversationId,
+    platform: 'mobile',
   });
   return response.data;
 }

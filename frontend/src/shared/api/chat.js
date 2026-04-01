@@ -10,7 +10,8 @@ import endpoints from './endpoints';
 export async function sendChatMessage(message, conversationId = null) {
   const response = await client.post(endpoints.chat.send, {
     message,
-    conversationId
+    conversationId,
+    platform: 'web'
   });
   return response.data;
 }

@@ -20,6 +20,7 @@ const ROUTE_MAP = {
   Rewards: '/rewards',
   CreateRecipe: '/recettes?view=create',
   Pricing: '/pricing',
+  MuscleHeatmap: '/dashboard',
 };
 
 /**
