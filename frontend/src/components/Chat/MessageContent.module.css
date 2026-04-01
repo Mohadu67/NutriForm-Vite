@@ -34,3 +34,28 @@
   color: #fcd34d;
   text-decoration-color: rgba(252, 211, 77, 0.6);
 }
+
+/* Action buttons */
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.actionBtn {
+  background: linear-gradient(135deg, #E8895A, #D4754A);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: opacity 0.2s;
+}
+
+.actionBtn:hover {
+  opacity: 0.85;
+}
