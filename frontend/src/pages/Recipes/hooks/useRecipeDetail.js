@@ -12,6 +12,9 @@ export const useRecipeDetail = (recipeId) => {
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [likeError, setLikeError] = useState(null);
+  const [userRating, setUserRating] = useState(null);
+  const [avgRating, setAvgRating] = useState(0);
+  const [ratingsCount, setRatingsCount] = useState(0);
 
   useEffect(() => {
     if (!recipeId) {
@@ -29,16 +32,29 @@ export const useRecipeDetail = (recipeId) => {
       try {
         let found = false;
 
-        // D'abord essayer la route publique
+        // Essayer avec auth si connecté (pour récupérer userRating), sinon route publique
+        const user = storage.get('user');
         try {
-          const response = await axios.get(`${API_URL}/recipes/${recipeId}`);
-          if (response.data.success) {
-            const recipeData = response.data.recipe;
+          let recipeData;
+          if (user) {
+            const authResponse = await secureApiCall(`/recipes/${recipeId}`);
+            if (authResponse.ok) {
+              const data = await authResponse.json();
+              if (data.success) recipeData = data.recipe;
+            }
+          }
+          if (!recipeData) {
+            const response = await axios.get(`${API_URL}/recipes/${recipeId}`);
+            if (response.data.success) recipeData = response.data.recipe;
+          }
+          if (recipeData) {
             if (mounted) {
               setRecipe(recipeData);
               setLikesCount(recipeData.likes?.length || 0);
+              setAvgRating(recipeData.avgRating || 0);
+              setRatingsCount(recipeData.ratingsCount || 0);
+              setUserRating(recipeData.userRating || null);
 
-              const user = storage.get('user');
               if (user && recipeData.likes) {
                 setIsLiked(recipeData.likes.includes(user.id));
               }
@@ -46,10 +62,9 @@ export const useRecipeDetail = (recipeId) => {
             found = true;
           }
         } catch (publicErr) {
-          if (publicErr.response?.status !== 404) {
+          if (publicErr.response?.status !== 404 && publicErr.message !== 'Not authenticated') {
             throw publicErr;
           }
-          // Si 404, continuer vers la route privée
         }
 
         // Essayer la route privée si pas trouvée en public
@@ -63,6 +78,9 @@ export const useRecipeDetail = (recipeId) => {
                 if (mounted) {
                   setRecipe(recipeData);
                   setLikesCount(recipeData.likes?.length || 0);
+                  setAvgRating(recipeData.avgRating || 0);
+                  setRatingsCount(recipeData.ratingsCount || 0);
+                  setUserRating(recipeData.userRating || null);
 
                   const user = storage.get('user');
                   if (user && recipeData.likes) {
@@ -133,6 +151,35 @@ export const useRecipeDetail = (recipeId) => {
     }
   };
 
+  const submitRating = async (rating) => {
+    try {
+      const response = await secureApiCall(`/recipes/${recipeId}/rate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setLikeError('auth_required');
+          return;
+        }
+        throw new Error('Erreur lors de la notation');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setUserRating(data.userRating);
+        setAvgRating(data.avgRating);
+        setRatingsCount(data.ratingsCount);
+      }
+    } catch (err) {
+      if (err.message === 'Not authenticated') {
+        setLikeError('auth_required');
+      }
+    }
+  };
+
   return {
     recipe,
     loading,
@@ -141,6 +188,10 @@ export const useRecipeDetail = (recipeId) => {
     likesCount,
     toggleLike,
     likeError,
-    clearLikeError: () => setLikeError(null)
+    clearLikeError: () => setLikeError(null),
+    userRating,
+    avgRating,
+    ratingsCount,
+    submitRating,
   };
 };

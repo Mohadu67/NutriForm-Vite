@@ -51,11 +51,4 @@ const app = (
 // Mode SPA uniquement (SSR désactivé)
 ReactDOM.createRoot(rootElement).render(app);
 
-// Enregistrer le service worker pour les notifications push
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {
-      // Silencieux en production
-    });
-  });
-}
+// Service worker enregistré via notificationService.js (éviter le double register)

@@ -380,7 +380,7 @@ export default function DynamiChoice({ onComplete = () => {}, onStepChange, requ
           type="button"
           className={styles.nextBtn}
           onClick={onNext}
-          disabled={step < 3 ? !canNext : false}
+          disabled={step < 3 ? !canNext : !(Array.isArray(selectedExercises) && selectedExercises.length > 0)}
         >
           {step < 3 ? "Suivant" : "C'est parti !"}
         </button>

@@ -356,10 +356,12 @@ export default function Navbar() {
                 <button onClick={toggleDarkMode} className={styles.dockIconBtn} title={darkMode ? 'Light mode' : 'Dark mode'}>
                   {darkMode ? <SunIcon size={20} /> : <MoonIcon size={20} />}
                 </button>
-                <button onClick={handleMessagesClick} className={styles.dockIconBtn} title="Messages" style={{ position: 'relative' }}>
-                  <MessageIcon size={20} />
-                  {unreadCount > 0 && <span className={styles.notificationBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>}
-                </button>
+                {isLoggedIn && (
+                  <button onClick={handleMessagesClick} className={styles.dockIconBtn} title="Messages" style={{ position: 'relative' }}>
+                    <MessageIcon size={20} />
+                    {unreadCount > 0 && <span className={styles.notificationBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>}
+                  </button>
+                )}
                 {isLoggedIn && <NotificationCenter className={styles.dockIconBtn} />}
                 <button onClick={() => navigateAndClose('/leaderboard')} className={styles.dockIconBtn} title="Classement">
                   <TrophyIcon size={20} />

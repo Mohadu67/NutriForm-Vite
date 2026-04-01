@@ -1157,12 +1157,14 @@ export default function ProfileUser({ onLogout }) {
         isOpen={showDeleteSuccess}
         onClose={() => {
           setShowDeleteSuccess(false);
+          authLogout();
           window.dispatchEvent(new Event("storage"));
           window.dispatchEvent(new Event("userLogout"));
           onLogout?.();
           navigate('/');
         }}
         onConfirm={() => {
+          authLogout();
           window.dispatchEvent(new Event("storage"));
           window.dispatchEvent(new Event("userLogout"));
           onLogout?.();

@@ -32,6 +32,7 @@ export default function useLogin(onLoginSuccess, options = {}) {
   const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [unverifiedEmail, setUnverifiedEmail] = useState(null);
+  const [deletedAccountModal, setDeletedAccountModal] = useState({ open: false, idToken: null });
 
   const handleSubmit = async ({ identifier, password, remember }) => {
     setStatus("loading");
@@ -122,7 +123,7 @@ export default function useLogin(onLoginSuccess, options = {}) {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
+  const handleGoogleSuccess = async (credentialResponse, { forceRecreate = false } = {}) => {
     setStatus("loading");
     setErrorMsg("");
     setUnverifiedEmail(null);
@@ -130,13 +131,20 @@ export default function useLogin(onLoginSuccess, options = {}) {
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
     try {
-      const { credential: idToken } = credentialResponse;
+      const idToken = credentialResponse.credential || credentialResponse;
 
       if (!idToken) {
         throw new Error("Token Google non reçu");
       }
 
-      const result = await googleAuth(idToken);
+      const result = await googleAuth(idToken, { forceRecreate });
+
+      // Compte supprimé — ouvrir la modale de confirmation
+      if (result.accountDeleted) {
+        setStatus("idle");
+        setDeletedAccountModal({ open: true, idToken });
+        return null;
+      }
 
       if (!result.success) {
         throw new Error(result.message || "Échec de connexion Google");
@@ -181,5 +189,22 @@ export default function useLogin(onLoginSuccess, options = {}) {
     }
   };
 
-  return { status, errorMsg, unverifiedEmail, handleSubmit, resendVerification, handleGoogleSuccess };
+  const confirmRecreateAccount = () => {
+    const { idToken } = deletedAccountModal;
+    setDeletedAccountModal({ open: false, idToken: null });
+    if (idToken) {
+      handleGoogleSuccess(idToken, { forceRecreate: true });
+    }
+  };
+
+  const cancelRecreateAccount = () => {
+    setDeletedAccountModal({ open: false, idToken: null });
+    toast.info("Connexion annulée.");
+  };
+
+  return {
+    status, errorMsg, unverifiedEmail,
+    handleSubmit, resendVerification, handleGoogleSuccess,
+    deletedAccountModal, confirmRecreateAccount, cancelRecreateAccount,
+  };
 }

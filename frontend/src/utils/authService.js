@@ -187,10 +187,10 @@ export function invalidateAuthCache() {
   authCheckInProgress = null;
 }
 
-export async function googleAuth(idToken) {
+export async function googleAuth(idToken, { forceRecreate = false } = {}) {
   const response = await apiCall('/auth/google', {
     method: 'POST',
-    body: JSON.stringify({ idToken }),
+    body: JSON.stringify({ idToken, forceRecreate }),
   });
 
   // Gérer les réponses vides
@@ -204,6 +204,11 @@ export async function googleAuth(idToken) {
     data = JSON.parse(text);
   } catch {
     return { success: false, message: "Réponse invalide du serveur" };
+  }
+
+  // Compte supprimé — proposer de recréer
+  if (response.status === 410 && data.accountDeleted) {
+    return { success: false, accountDeleted: true, message: data.message };
   }
 
   if (response.ok && data.user) {

@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import styles from "./Main.module.css";
-import { storage } from "../../../shared/utils/storage";
+import { useAuth } from "../../../contexts/AuthContext.jsx";
 
 // Icons pour les features
 const DumbbellIcon = () => (
@@ -127,7 +127,8 @@ const steps = [
 
 export default function Main() {
   const featuresSectionRef = useRef(null);
-  const [isLoggedIn] = useState(() => Boolean(storage.get('user')));
+  const { isLoggedIn, loading: authLoading } = useAuth();
+  const isAuth = !authLoading && isLoggedIn;
 
   const scrollToFeatures = () => {
     featuresSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -167,7 +168,7 @@ export default function Main() {
             300+ exercices, programmes personnalisés, recettes healthy et suivi de progression. Tout ce qu'il te faut pour atteindre tes objectifs.
           </p>
           <div className={styles.heroCtas}>
-            {isLoggedIn ? (
+            {isAuth ? (
               <Link to="/dashboard" className={styles.heroPrimaryCta}>
                 Accéder au dashboard
               </Link>

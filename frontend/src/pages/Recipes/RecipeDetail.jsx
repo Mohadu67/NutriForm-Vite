@@ -28,11 +28,12 @@ import style from './RecipeDetail.module.css';
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { recipe, loading, error, isLiked, likesCount, toggleLike, likeError, clearLikeError } = useRecipeDetail(id);
+  const { recipe, loading, error, isLiked, likesCount, toggleLike, likeError, clearLikeError, userRating, avgRating, ratingsCount, submitRating } = useRecipeDetail(id);
   const [servings, setServings] = useState(2);
   const [showLogModal, setShowLogModal] = useState(false);
   const [logMealType, setLogMealType] = useState('lunch');
   const [logging, setLogging] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
   const user = storage.get('user');
 
   usePageTitle(recipe?.title || 'Détail de la recette');
@@ -178,6 +179,29 @@ export default function RecipeDetail() {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Rating */}
+            <div className={style.ratingSection}>
+              <div className={style.ratingStars}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    className={`${style.starButton} ${star <= (hoverRating || userRating || 0) ? style.starFilled : ''}`}
+                    onClick={() => user && submitRating(star)}
+                    onMouseEnter={() => user && setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    disabled={!user}
+                    title={user ? `Noter ${star}/5` : 'Connectez-vous pour noter'}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+              <span className={style.ratingInfo}>
+                {avgRating > 0 ? `${avgRating.toFixed(1)}/5` : 'Pas encore noté'}
+                {ratingsCount > 0 && ` (${ratingsCount} avis)`}
+              </span>
             </div>
 
             {/* Actions */}
