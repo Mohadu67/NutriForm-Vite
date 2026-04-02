@@ -269,11 +269,11 @@ const ShareModal = ({ show, onHide, session, user }) => {
       {/* Confetti effect */}
       {showConfetti && (
         <div className={styles.confetti}>
-          {[...Array(50)].map((_, i) => (
+          {[...Array(30)].map((_, i) => (
             <div key={i} className={styles.confettiPiece} style={{
               left: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 3}s`,
-              backgroundColor: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f7b731', '#5f27cd', '#00d2d3'][Math.floor(Math.random() * 6)]
+              backgroundColor: ['#f0a47a', '#72baa1', '#8b5cf6', '#e08c5f', '#aed8c9', '#a78bfa'][Math.floor(Math.random() * 6)]
             }} />
           ))}
         </div>
@@ -284,8 +284,8 @@ const ShareModal = ({ show, onHide, session, user }) => {
         <div className={styles.modalHeader}>
           <div className={styles.headerContent}>
             <div className={styles.titleWrapper}>
-              <h2 className={styles.modalTitle}>✨ Partage ton Exploit</h2>
-              <p className={styles.subtitle}>Inspire tes amis avec ta performance !</p>
+              <h2 className={styles.modalTitle}>Partage ta séance</h2>
+              <p className={styles.subtitle}>Montre tes résultats à tes amis</p>
             </div>
             <button className={styles.closeButton} onClick={onHide} aria-label="Fermer">
               <FaTimes />

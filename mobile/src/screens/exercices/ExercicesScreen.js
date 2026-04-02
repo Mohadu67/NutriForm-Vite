@@ -14,7 +14,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { DeviceEventEmitter } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import SafeImage from '../../components/ui/SafeImage';
@@ -264,6 +265,8 @@ export default function ExercicesScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const navigation = useNavigation();
+  const route = useRoute();
+  const pastSessionMode = route.params?.pastSessionMode || false;
   const { user } = useAuth();
   const { currentWorkout, isWorkoutActive, getCompletedSetsCount, getTotalSetsCount, addExercise, isExerciseInWorkout, startWorkout } = useWorkout();
 
@@ -539,12 +542,15 @@ export default function ExercicesScreen() {
     navigation.navigate('ExerciceDetail', { exercice, favorites, onToggleFavorite: toggleFavorite });
   }, [navigation, favorites, toggleFavorite]);
 
-  // Ajout rapide d'un exercice a la seance (sans demarrer le chrono)
+  // Ajout rapide d'un exercice
   const handleQuickAddExercise = useCallback((exercice) => {
-    // Ajouter l'exercice (cree une preparation si aucune seance en cours)
-    // Le chrono ne demarre que quand l'utilisateur le decide
+    if (pastSessionMode) {
+      // Envoyer l'exercice au PastSessionScreen via event
+      DeviceEventEmitter.emit('pastSession:addExercise', exercice);
+      return;
+    }
     addExercise(exercice);
-  }, [addExercise]);
+  }, [addExercise, pastSessionMode]);
 
   const handleApplyFilter = useCallback(() => {
     setShowBodyPicker(false);

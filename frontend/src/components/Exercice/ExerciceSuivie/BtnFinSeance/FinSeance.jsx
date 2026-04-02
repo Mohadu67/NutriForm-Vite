@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { storage } from '../../../../shared/utils/storage';
-import { FaShare } from "react-icons/fa";
+import { FaShare, FaCheck } from "react-icons/fa";
 import styles from "./FinSeance.module.css";
 import useSaveSession from "../ExerciceCard/hooks/useSaveSession";
 import ShareModal from "../../../Share/ShareModal";
@@ -60,7 +60,12 @@ export default function FinSeance({ items = [], onFinish, sessionData }) {
   if (done) {
     return (
       <div className={styles.container}>
-        <h2 className={styles.title}>Félicitations !</h2>
+        <div className={styles.successIcon}>
+          <FaCheck />
+        </div>
+        <h2 className={styles.title}>
+          {errors.length === 0 ? "Séance terminée" : "Erreur"}
+        </h2>
         <p className={styles.text}>
           {errors.length === 0
             ? "Ta séance a été sauvegardée avec succès."
@@ -73,7 +78,7 @@ export default function FinSeance({ items = [], onFinish, sessionData }) {
             onClick={() => setShowShareModal(true)}
           >
             <FaShare className={styles.shareIcon} />
-            Partager ma séance
+            Partager
           </button>
         )}
 

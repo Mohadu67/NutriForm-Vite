@@ -2,10 +2,15 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { secureApiCall } from '../../utils/authService';
 import styles from './BarcodeScanner.module.css';
 
-const hasBarcodeDetector = typeof window !== 'undefined' && 'BarcodeDetector' in window;
+// Charge le polyfill dynamiquement uniquement quand nécessaire (évite de casser le bundle Safari)
+let Detector = typeof window !== 'undefined' && 'BarcodeDetector' in window
+  ? window.BarcodeDetector
+  : null;
+
+const hasCamera = typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia;
 
 export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
-  const [step, setStep] = useState('scan'); // 'scan' | 'loading' | 'result' | 'error' | 'manual'
+  const [step, setStep] = useState('scan');
   const [product, setProduct] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [manualCode, setManualCode] = useState('');
@@ -43,13 +48,25 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
   }, []);
 
   const startCamera = useCallback(async () => {
-    if (!hasBarcodeDetector) {
+    if (!hasCamera) {
       setStep('manual');
       return;
     }
     setCameraError('');
     scannedRef.current = false;
     try {
+      // Charger le polyfill si le natif n'est pas dispo
+      if (!Detector) {
+        try {
+          const mod = await import('barcode-detector');
+          Detector = mod.BarcodeDetector || mod.default;
+        } catch {
+          setCameraError('Impossible de charger le scanner.');
+          setStep('manual');
+          return;
+        }
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
       });
@@ -59,7 +76,7 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
         await videoRef.current.play();
       }
 
-      const detector = new BarcodeDetector({
+      const detector = new Detector({
         formats: ['ean_8', 'ean_13', 'upc_a', 'upc_e', 'code_128'],
       });
 
@@ -81,7 +98,7 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
       if (err.name === 'NotAllowedError') {
         setCameraError('Accès à la caméra refusé. Activez la permission caméra et réessayez.');
       } else {
-        setCameraError('Impossible d\'accéder à la caméra.');
+        setCameraError("Impossible d'accéder à la caméra.");
       }
       setStep('manual');
     }
@@ -138,7 +155,7 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
 
         <div className={styles.body}>
           {/* Vue caméra */}
-          {step === 'scan' && hasBarcodeDetector && (
+          {step === 'scan' && hasCamera && (
             <>
               <div className={styles.cameraWrapper}>
                 <video ref={videoRef} className={styles.video} muted playsInline />
@@ -158,11 +175,11 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
           )}
 
           {/* Saisie manuelle */}
-          {(step === 'manual' || (step === 'scan' && !hasBarcodeDetector)) && (
+          {(step === 'manual' || (step === 'scan' && !hasCamera)) && (
             <form onSubmit={handleManualSubmit} className={styles.manualForm}>
               {cameraError && <p className={styles.cameraError}>{cameraError}</p>}
-              {!hasBarcodeDetector && (
-                <p className={styles.hint}>La détection automatique n'est pas disponible sur ce navigateur.</p>
+              {!hasCamera && (
+                <p className={styles.hint}>La caméra n'est pas disponible sur ce navigateur.</p>
               )}
               <label className={styles.label}>Code-barres (EAN-13 / EAN-8)</label>
               <input
@@ -181,7 +198,7 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
               >
                 Rechercher
               </button>
-              {hasBarcodeDetector && (
+              {hasCamera && (
                 <button type="button" className={styles.linkBtn} onClick={handleRescan}>
                   ← Revenir à la caméra
                 </button>

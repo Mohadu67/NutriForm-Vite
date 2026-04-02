@@ -143,20 +143,23 @@ describe('SharedSession Model', () => {
       const found = await SharedSession.findById(session._id);
       expect(found.exercises).toHaveLength(1);
       expect(found.exercises[0].exerciseName).toBe('Bench Press');
-      expect(found.exercises[0].type).toBe('muscu');
+      expect(found.exercises[0].type).toEqual(['muscu']);
       expect(found.exercises[0].addedAt).toBeInstanceOf(Date);
       expect(found.exercises[0].addedBy.toString()).toBe(userId.toString());
     });
 
-    it('should reject exercise with invalid type', async () => {
-      const session = await createSession();
+    it('should accept type as array of strings', async () => {
+      const userId = createObjectId();
+      const session = await createSession({ initiatorId: userId });
       session.exercises.push({
-        exerciseName: 'Bad Exercise',
-        type: 'invalid_type',
-        addedBy: createObjectId()
+        exerciseName: 'Multi-type Exercise',
+        type: ['muscu', 'poids_du_corps'],
+        addedBy: userId,
+        order: 0
       });
-
-      await expect(session.save()).rejects.toThrow();
+      await session.save();
+      const found = await SharedSession.findById(session._id);
+      expect(found.exercises[0].type).toEqual(['muscu', 'poids_du_corps']);
     });
 
     it('should require exerciseName', async () => {
@@ -169,14 +172,17 @@ describe('SharedSession Model', () => {
       await expect(session.save()).rejects.toThrow();
     });
 
-    it('should require type', async () => {
-      const session = await createSession();
+    it('should default type to [muscu] when not specified', async () => {
+      const userId = createObjectId();
+      const session = await createSession({ initiatorId: userId });
       session.exercises.push({
         exerciseName: 'Squat',
-        addedBy: createObjectId()
+        addedBy: userId,
+        order: 0
       });
-
-      await expect(session.save()).rejects.toThrow();
+      await session.save();
+      const found = await SharedSession.findById(session._id);
+      expect(found.exercises[0].type).toEqual(['muscu']);
     });
 
     it('should require addedBy', async () => {
@@ -1014,21 +1020,42 @@ describe('SharedSession Controller', () => {
     });
   });
 
-  describe('updateProgress — rate limiting', () => {
-    it('should allow first update', async () => {
+  describe('updateExerciseData', () => {
+    it('should persist exercise data and return ok', async () => {
       const userId = createObjectId();
       const session = await createSession({ initiatorId: userId, status: 'active' });
 
       const req = createMockReq({
         userId,
         params: { id: session._id.toString() },
-        body: { currentExerciseIndex: 0, completedExercises: 0, totalSets: 3 }
+        body: { exerciseOrder: 0, exerciseName: 'Bench Press', mode: 'muscu', sets: [{ reps: 10, weight: 80 }], done: false }
       });
       const res = createMockRes();
 
-      await controller.updateProgress(req, res);
-
+      await controller.updateExerciseData(req, res);
       expect(res.json).toHaveBeenCalledWith({ ok: true });
+
+      // Verify persisted in DB
+      const updated = await SharedSession.findById(session._id);
+      const entry = updated.progress.get(`${userId}:0`);
+      expect(entry).toBeDefined();
+      expect(entry.exerciseName).toBe('Bench Press');
+      expect(entry.sets).toHaveLength(1);
+    });
+
+    it('should reject missing exerciseOrder', async () => {
+      const userId = createObjectId();
+      const session = await createSession({ initiatorId: userId, status: 'active' });
+
+      const req = createMockReq({
+        userId,
+        params: { id: session._id.toString() },
+        body: { exerciseName: 'Bench Press' }
+      });
+      const res = createMockRes();
+
+      await controller.updateExerciseData(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
     });
 
     it('should rate-limit rapid consecutive updates', async () => {
@@ -1038,18 +1065,157 @@ describe('SharedSession Controller', () => {
       const makeReq = () => createMockReq({
         userId,
         params: { id: session._id.toString() },
-        body: { currentExerciseIndex: 0 }
+        body: { exerciseOrder: 0, exerciseName: 'Squat', sets: [], done: false }
       });
 
-      // First call succeeds
       const res1 = createMockRes();
-      await controller.updateProgress(makeReq(), res1);
+      await controller.updateExerciseData(makeReq(), res1);
       expect(res1.json).toHaveBeenCalledWith({ ok: true });
 
-      // Immediate second call should be rate-limited
       const res2 = createMockRes();
-      await controller.updateProgress(makeReq(), res2);
+      await controller.updateExerciseData(makeReq(), res2);
       expect(res2.status).toHaveBeenCalledWith(429);
+    });
+
+    it('should reject non-participant', async () => {
+      const session = await createSession({ status: 'active' });
+      const outsider = createObjectId();
+
+      const req = createMockReq({
+        userId: outsider,
+        params: { id: session._id.toString() },
+        body: { exerciseOrder: 0, sets: [] }
+      });
+      const res = createMockRes();
+
+      await controller.updateExerciseData(req, res);
+      expect(res.status).toHaveBeenCalledWith(403);
+    });
+  });
+
+  describe('getProgress', () => {
+    it('should return progress entries for both participants', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const session = await createSession({ initiatorId: userId, partnerId, status: 'active' });
+
+      // Persist some progress
+      await SharedSession.updateOne({ _id: session._id }, {
+        $set: {
+          [`progress.${userId}:0`]: { exerciseOrder: 0, userId, exerciseName: 'Bench', done: true },
+          [`progress.${partnerId}:0`]: { exerciseOrder: 0, userId: partnerId, exerciseName: 'Bench', done: false },
+        }
+      });
+
+      const req = createMockReq({ userId, params: { id: session._id.toString() } });
+      const res = createMockRes();
+
+      await controller.getProgress(req, res);
+      expect(res.json).toHaveBeenCalled();
+      const result = res.json.mock.calls[0][0];
+      expect(result.progress).toBeDefined();
+      expect(Object.keys(result.progress)).toHaveLength(2);
+    });
+
+    it('should reject non-participant', async () => {
+      const session = await createSession({ status: 'active' });
+      const outsider = createObjectId();
+
+      const req = createMockReq({ userId: outsider, params: { id: session._id.toString() } });
+      const res = createMockRes();
+
+      await controller.getProgress(req, res);
+      expect(res.status).toHaveBeenCalledWith(403);
+    });
+  });
+
+  describe('getByMatch', () => {
+    it('should return active session for a matchId', async () => {
+      const userId = createObjectId();
+      const matchId = createObjectId();
+      await createSession({ initiatorId: userId, matchId, status: 'active' });
+
+      const req = createMockReq({ userId, params: { matchId: matchId.toString() } });
+      const res = createMockRes();
+
+      await controller.getByMatch(req, res);
+      expect(res.json).toHaveBeenCalled();
+      const result = res.json.mock.calls[0][0];
+      expect(result.sharedSession).not.toBeNull();
+      expect(result.sharedSession.matchId.toString()).toBe(matchId.toString());
+    });
+
+    it('should return null when no active session exists', async () => {
+      const userId = createObjectId();
+      const matchId = createObjectId();
+
+      const req = createMockReq({ userId, params: { matchId: matchId.toString() } });
+      const res = createMockRes();
+
+      await controller.getByMatch(req, res);
+      const result = res.json.mock.calls[0][0];
+      expect(result.sharedSession).toBeNull();
+    });
+
+    it('should reject invalid matchId', async () => {
+      const req = createMockReq({ params: { matchId: 'not-valid' } });
+      const res = createMockRes();
+
+      await controller.getByMatch(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+    });
+  });
+
+  describe('respond — notifications', () => {
+    it('should create persistent notification on accept', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const match = await createMatch(userId, partnerId);
+      const session = await createSession({ initiatorId: userId, partnerId, matchId: match._id, status: 'pending' });
+
+      // Create a mock user for the responder
+      const User = require('../../models/User');
+      await User.create({ _id: partnerId, email: 'partner@test.com', password: 'test123', pseudo: 'PartnerTest' });
+
+      const req = createMockReq({
+        userId: partnerId,
+        params: { id: session._id.toString() },
+        body: { accept: true }
+      });
+      const res = createMockRes();
+
+      await controller.respond(req, res);
+      expect(res.json).toHaveBeenCalled();
+
+      // Verify notification was created
+      const Notification = require('../../models/Notification');
+      const notifs = await Notification.find({ userId: userId, type: 'shared_session' });
+      expect(notifs.length).toBeGreaterThanOrEqual(1);
+      expect(notifs[0].title).toBe('Invitation acceptée');
+    });
+
+    it('should create persistent notification on decline', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const match = await createMatch(userId, partnerId);
+      const session = await createSession({ initiatorId: userId, partnerId, matchId: match._id, status: 'pending' });
+
+      const User = require('../../models/User');
+      await User.create({ _id: partnerId, email: 'partner2@test.com', password: 'test123', pseudo: 'PartnerDecline' });
+
+      const req = createMockReq({
+        userId: partnerId,
+        params: { id: session._id.toString() },
+        body: { accept: false }
+      });
+      const res = createMockRes();
+
+      await controller.respond(req, res);
+
+      const Notification = require('../../models/Notification');
+      const notifs = await Notification.find({ userId: userId, type: 'shared_session' });
+      expect(notifs.length).toBeGreaterThanOrEqual(1);
+      expect(notifs.some(n => n.title === 'Invitation refusée')).toBe(true);
     });
   });
 });

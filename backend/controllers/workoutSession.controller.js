@@ -524,9 +524,12 @@ async function createSession(req, res) {
     const userMetrics = await getUserMetrics(userId);
     const derived = computeSessionFromEntries(normalized, userMetrics);
 
-    const durationSec = (derived && Number.isFinite(Number(derived.durationMinutes)))
-      ? Math.round(Number(derived.durationMinutes) * 60)
-      : undefined;
+    // Prioriser la durée passée par le client (séances passées), sinon calculer
+    const durationSec = (durationMinutesFromBody && Number.isFinite(Number(durationMinutesFromBody)) && Number(durationMinutesFromBody) > 0)
+      ? Math.round(Number(durationMinutesFromBody) * 60)
+      : (derived && Number.isFinite(Number(derived.durationMinutes)))
+        ? Math.round(Number(derived.durationMinutes) * 60)
+        : undefined;
     const calories = (derived && Number.isFinite(Number(derived.caloriesBurned)))
       ? Math.round(Number(derived.caloriesBurned))
       : undefined;

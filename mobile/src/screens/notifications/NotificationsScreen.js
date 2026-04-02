@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   View, Text, StyleSheet, SectionList, TouchableOpacity,
   useColorScheme, RefreshControl, ActivityIndicator,
@@ -229,14 +229,20 @@ export default function NotificationsScreen() {
     setRefreshing(false);
   }, [loadNotifications]);
 
+  const pendingReadRef = useRef(new Set());
   const markAsRead = useCallback(async (notificationId) => {
+    if (pendingReadRef.current.has(notificationId)) return;
+    pendingReadRef.current.add(notificationId);
+    // Optimistic update immédiat
+    setNotifications(prev =>
+      prev.map(n => (n.id || n._id) === notificationId ? { ...n, read: true } : n)
+    );
     try {
       await apiClient.put(endpoints.notifications.markAsRead(notificationId));
-      setNotifications(prev =>
-        prev.map(n => (n.id || n._id) === notificationId ? { ...n, read: true } : n)
-      );
     } catch (error) {
       logger.app.error('[NOTIFICATIONS] Error marking as read:', error);
+    } finally {
+      pendingReadRef.current.delete(notificationId);
     }
   }, []);
 
@@ -249,12 +255,17 @@ export default function NotificationsScreen() {
     }
   }, []);
 
+  const pendingDeleteRef = useRef(new Set());
   const deleteNotification = useCallback(async (notificationId) => {
+    if (pendingDeleteRef.current.has(notificationId)) return;
+    pendingDeleteRef.current.add(notificationId);
+    setNotifications(prev => prev.filter(n => (n.id || n._id) !== notificationId));
     try {
       await apiClient.delete(endpoints.notifications.delete(notificationId));
-      setNotifications(prev => prev.filter(n => (n.id || n._id) !== notificationId));
     } catch (error) {
       logger.app.error('[NOTIFICATIONS] Error deleting:', error);
+    } finally {
+      pendingDeleteRef.current.delete(notificationId);
     }
   }, []);
 
