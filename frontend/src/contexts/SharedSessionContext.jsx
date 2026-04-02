@@ -64,6 +64,19 @@ export function SharedSessionProvider({ children }) {
         setSession(null);
       } else {
         setSession(fetched);
+        // Si pending et que je suis le destinataire, restaurer l'invite
+        if (fetched?.status === 'pending') {
+          const myId = String(user?.id || user?._id || '');
+          const isRecipient = String(fetched.partnerId?._id || fetched.partnerId || '') === myId;
+          if (isRecipient) {
+            setPendingInvite({
+              sharedSessionId: fetched._id,
+              initiator: fetched.initiatorId || {},
+              sessionName: fetched.sessionName || '',
+              gymName: fetched.gymName || '',
+            });
+          }
+        }
       }
     } catch {
       // Pas de session active, c'est normal

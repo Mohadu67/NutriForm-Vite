@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -26,7 +26,9 @@ import social from '../../api/social';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
 import { getOrCreateSocialConversation } from '../../api/matchChat';
+import { getMutualMatches } from '../../api/matching';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSharedSession } from '../../contexts/SharedSessionContext';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -327,6 +329,7 @@ function MessageModal({ visible, targetUser, onClose, isDark }) {
 // ─── Mini workout card ────────────────────────────────────────────────────────
 
 function MiniWorkoutCard({ session, isDark }) {
+  if (!session) return null;
   const muscles = session.entries
     ?.flatMap(e => e.muscles?.length ? e.muscles : e.muscle ? [e.muscle] : [])
     .filter((v, i, a) => a.indexOf(v) === i)
@@ -379,6 +382,32 @@ export default function UserPublicProfileScreen() {
   const [followLoading, setFollowLoading] = useState(false);
   const [showChallenge, setShowChallenge] = useState(false);
   const [msgLoading, setMsgLoading] = useState(false);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [matchIdForUser, setMatchIdForUser] = useState(null);
+  const shared = useSharedSession();
+
+  useEffect(() => {
+    if (!userId || userId === me?._id) return;
+    getMutualMatches()
+      .then(res => {
+        const match = (res?.matches || []).find(m => String(m.user?._id || '') === String(userId));
+        if (match) setMatchIdForUser(String(match._id));
+      })
+      .catch(() => {});
+  }, [userId]);
+
+  const handleInviteSession = async () => {
+    if (inviteLoading || !matchIdForUser || !shared?.invite) return;
+    setInviteLoading(true);
+    try {
+      await shared.invite(matchIdForUser);
+      Alert.alert('Invitation envoyée !', `${data?.user?.pseudo || 'Ton partenaire'} a été invité.`);
+    } catch (err) {
+      Alert.alert('Erreur', err?.response?.data?.message || err?.response?.data?.error || "Impossible d'envoyer l'invitation");
+    } finally {
+      setInviteLoading(false);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -553,6 +582,19 @@ export default function UserPublicProfileScreen() {
                   {msgLoading
                     ? <ActivityIndicator size="small" color={theme.colors.primary} />
                     : <Ionicons name="chatbubble-outline" size={20} color={theme.colors.primary} />
+                  }
+                </TouchableOpacity>
+              )}
+              {matchIdForUser && (
+                <TouchableOpacity
+                  style={[styles.iconBtn, isDark && styles.iconBtnDark, { borderColor: '#72baa1' }]}
+                  onPress={handleInviteSession}
+                  disabled={inviteLoading}
+                  activeOpacity={0.8}
+                >
+                  {inviteLoading
+                    ? <ActivityIndicator size="small" color="#72baa1" />
+                    : <Ionicons name="barbell-outline" size={20} color="#72baa1" />
                   }
                 </TouchableOpacity>
               )}
