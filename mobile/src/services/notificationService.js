@@ -181,11 +181,21 @@ class NotificationService {
    * Nettoyer les listeners
    */
   cleanup() {
-    if (this.notificationListener) {
-      Notifications.removeNotificationSubscription(this.notificationListener);
+    try {
+      if (this.notificationListener) {
+        Notifications.removeNotificationSubscription(this.notificationListener);
+        this.notificationListener = null;
+      }
+    } catch {
+      this.notificationListener = null;
     }
-    if (this.responseListener) {
-      Notifications.removeNotificationSubscription(this.responseListener);
+    try {
+      if (this.responseListener) {
+        Notifications.removeNotificationSubscription(this.responseListener);
+        this.responseListener = null;
+      }
+    } catch {
+      this.responseListener = null;
     }
   }
 }
