@@ -48,6 +48,7 @@ cookies.txt
 !docs/README.md
 !docs/STRIPE_SETUP.md
 !docs/ROADMAP.md
+!backend/__tests__/recapIaTestUni.md
 docs/archives/
 
 *node_modules_old
