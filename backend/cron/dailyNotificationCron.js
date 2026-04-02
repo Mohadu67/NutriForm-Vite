@@ -1,10 +1,32 @@
 const cron = require('node-cron');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const LeaderboardEntry = require('../models/LeaderboardEntry');
 const WorkoutSession = require('../models/WorkoutSession');
 const logger = require('../utils/logger');
 const { sendNotificationToUser } = require('../services/pushNotification.service');
 const bodyCompositionService = require('../services/bodyComposition.service');
+
+/**
+ * Helper: envoyer push + sauvegarder en base pour le dedup/cooldown
+ */
+async function sendAndTrackNotification(userId, payload) {
+  const result = await sendNotificationToUser(userId, payload);
+
+  // Sauvegarder en base pour le dedup (même si le push a échoué, on track l'intention)
+  if (result.message !== 'Blocked by user preference') {
+    await Notification.create({
+      userId,
+      type: 'activity',
+      title: payload.title,
+      message: payload.body,
+      link: payload.data?.url,
+      metadata: { pushType: payload.type || payload.data?.type }
+    }).catch(err => logger.error('Erreur sauvegarde notification cron:', err));
+  }
+
+  return result;
+}
 
 // Templates de notifications quotidiennes
 const DAILY_TEMPLATES = {
@@ -42,7 +64,12 @@ const DAILY_TEMPLATES = {
   }
 };
 
-// Notifications quotidiennes de motivation (18h00 en semaine, 9h00 le weekend)
+/**
+ * Notification quotidienne unique (18h semaine, 9h weekend)
+ * Fusionne motivation + streak en UNE seule notification par jour
+ * Le rappel streak de 20h n'est envoyé QUE si l'utilisateur n'a pas
+ * déjà reçu le rappel streak via cette fonction
+ */
 async function sendDailyMotivation() {
   logger.info('📬 CRON: Envoi des notifications de motivation quotidiennes...');
 
@@ -55,7 +82,6 @@ async function sendDailyMotivation() {
     const today = new Date(now);
     today.setHours(0, 0, 0, 0);
 
-    // Récupérer tous les users avec notifications activées et dans le leaderboard
     const leaderboardEntries = await LeaderboardEntry.find({
       visibility: 'public'
     }).populate('userId');
@@ -67,41 +93,33 @@ async function sendDailyMotivation() {
         const user = entry.userId;
         if (!user) continue;
 
-        // Vérifier les préférences de notification
-        const prefs = user.notificationPreferences || {};
-        if (prefs.dailyReminder === false) continue;
+        // Les préférences sont vérifiées centralement dans sendNotificationToUser
 
-        // Vérifier si l'utilisateur a fait une séance hier
         const sessionYesterday = await WorkoutSession.findOne({
           userId: user._id,
-          createdAt: {
-            $gte: yesterday,
-            $lt: today
-          }
+          createdAt: { $gte: yesterday, $lt: today }
         });
 
-        // Vérifier si l'utilisateur a fait une séance aujourd'hui
         const sessionToday = await WorkoutSession.findOne({
           userId: user._id,
           createdAt: { $gte: today }
         });
 
-        // Logique de notification
         if (!sessionYesterday && !sessionToday) {
-          // Pas de séance hier ni aujourd'hui
           const streak = entry.stats?.currentStreak || 0;
 
           if (streak > 0) {
-            // Streak en danger!
-            await sendNotificationToUser(user._id, {
+            // Streak en danger — notification unique (remplace aussi le rappel de 20h)
+            await sendAndTrackNotification(user._id, {
+              type: 'streak_danger',
               title: DAILY_TEMPLATES.streak_reminder.title,
               body: DAILY_TEMPLATES.streak_reminder.getBody(streak),
               icon: '/assets/icons/notif-streak.svg',
-              data: { type: 'daily_reminder', url: '/dashboard' }
+              data: { type: 'streak_danger', url: '/dashboard' }
             });
           } else {
-            // Simple rappel
-            await sendNotificationToUser(user._id, {
+            await sendAndTrackNotification(user._id, {
+              type: 'daily_reminder',
               title: DAILY_TEMPLATES.no_session_yesterday.title,
               body: DAILY_TEMPLATES.no_session_yesterday.body,
               icon: '/assets/icons/notif-workout.svg',
@@ -111,12 +129,11 @@ async function sendDailyMotivation() {
           notificationsSent++;
 
         } else if (sessionYesterday && !sessionToday) {
-          // A fait une séance hier mais pas aujourd'hui
           const streak = entry.stats?.currentStreak || 0;
 
           if (streak >= 7) {
-            // Féliciter pour la streak
-            await sendNotificationToUser(user._id, {
+            await sendAndTrackNotification(user._id, {
+              type: 'streak_congrats',
               title: DAILY_TEMPLATES.streak_congrats.title,
               body: DAILY_TEMPLATES.streak_congrats.getBody(streak),
               icon: '/assets/icons/notif-streak.svg',
@@ -138,7 +155,10 @@ async function sendDailyMotivation() {
   }
 }
 
-// Rappel streak en danger (20h00)
+/**
+ * Rappel streak en danger (20h00) — SEULEMENT pour ceux qui n'ont pas
+ * déjà reçu la notification streak à 18h via sendDailyMotivation
+ */
 async function sendStreakReminders() {
   logger.info('🔥 CRON: Envoi des rappels streak en danger...');
 
@@ -147,22 +167,20 @@ async function sendStreakReminders() {
     const today = new Date(now);
     today.setHours(0, 0, 0, 0);
 
-    // Trouver les users avec une streak > 0 qui n'ont pas fait de séance aujourd'hui
     const entriesWithStreak = await LeaderboardEntry.find({
       visibility: 'public',
       'stats.currentStreak': { $gt: 0 }
     }).populate('userId');
 
     let notificationsSent = 0;
+    let skippedAlreadyNotified = 0;
 
     for (const entry of entriesWithStreak) {
       try {
         const user = entry.userId;
         if (!user) continue;
 
-        // Vérifier les préférences
-        const prefs = user.notificationPreferences || {};
-        if (prefs.streakReminders === false) continue;
+        // Les préférences sont vérifiées centralement dans sendNotificationToUser
 
         // Vérifier si séance aujourd'hui
         const sessionToday = await WorkoutSession.findOne({
@@ -170,30 +188,45 @@ async function sendStreakReminders() {
           createdAt: { $gte: today }
         });
 
-        if (!sessionToday) {
-          // Envoyer rappel urgent
-          await sendNotificationToUser(user._id, {
-            title: "Streak en danger!",
-            body: `Plus que quelques heures pour garder ta streak de ${entry.stats.currentStreak} jours!`,
-            icon: '/assets/icons/notif-streak.svg',
-            data: { type: 'streak_danger', url: '/dashboard' }
-          });
-          notificationsSent++;
+        if (sessionToday) continue;
+
+        // Vérifier si déjà notifié streak aujourd'hui (via 18h motivation)
+        const alreadyNotified = await Notification.findOne({
+          userId: user._id,
+          'metadata.pushType': { $in: ['streak_danger', 'streak_congrats'] },
+          createdAt: { $gte: today }
+        });
+
+        if (alreadyNotified) {
+          skippedAlreadyNotified++;
+          continue;
         }
+
+        await sendAndTrackNotification(user._id, {
+          type: 'streak_danger',
+          title: "Streak en danger!",
+          body: `Plus que quelques heures pour garder ta streak de ${entry.stats.currentStreak} jours!`,
+          icon: '/assets/icons/notif-streak.svg',
+          data: { type: 'streak_danger', url: '/dashboard' }
+        });
+        notificationsSent++;
 
       } catch (err) {
         logger.error(`Erreur rappel streak:`, err);
       }
     }
 
-    logger.info(`🔥 CRON: ${notificationsSent} rappels streak envoyés`);
+    logger.info(`🔥 CRON: ${notificationsSent} rappels streak envoyés (${skippedAlreadyNotified} déjà notifiés)`);
 
   } catch (error) {
     logger.error('🔥 CRON Erreur sendStreakReminders:', error);
   }
 }
 
-// Notification aux inactifs (11h00)
+/**
+ * Notification aux inactifs (11h00)
+ * Cooldown: max 1 notification inactive par 3 jours (3-6j) ou par 7 jours (7j+)
+ */
 async function notifyInactiveUsers() {
   logger.info('😴 CRON: Notification aux utilisateurs inactifs...');
 
@@ -202,26 +235,21 @@ async function notifyInactiveUsers() {
     const threeDaysAgo = new Date(now);
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
-    const sevenDaysAgo = new Date(now);
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-    // Trouver les users inactifs depuis 3-7 jours
     const entries = await LeaderboardEntry.find({
       visibility: 'public',
       lastUpdated: { $lt: threeDaysAgo }
     }).populate('userId');
 
     let notificationsSent = 0;
+    let skippedCooldown = 0;
 
     for (const entry of entries) {
       try {
         const user = entry.userId;
         if (!user) continue;
 
-        const prefs = user.notificationPreferences || {};
-        if (prefs.dailyReminder === false) continue;
+        // Les préférences sont vérifiées centralement dans sendNotificationToUser
 
-        // Dernière séance
         const lastSession = await WorkoutSession.findOne({ userId: user._id })
           .sort({ createdAt: -1 });
 
@@ -231,16 +259,36 @@ async function notifyInactiveUsers() {
           (now - lastSession.createdAt) / (1000 * 60 * 60 * 24)
         );
 
+        if (daysSinceLastSession < 3) continue;
+
+        // Cooldown: vérifier la dernière notification inactive envoyée
+        const cooldownDays = daysSinceLastSession >= 7 ? 7 : 3;
+        const cooldownDate = new Date(now);
+        cooldownDate.setDate(cooldownDate.getDate() - cooldownDays);
+
+        const recentInactiveNotif = await Notification.findOne({
+          userId: user._id,
+          'metadata.pushType': 'inactive_reminder',
+          createdAt: { $gte: cooldownDate }
+        });
+
+        if (recentInactiveNotif) {
+          skippedCooldown++;
+          continue;
+        }
+
         if (daysSinceLastSession >= 7) {
-          await sendNotificationToUser(user._id, {
+          await sendAndTrackNotification(user._id, {
+            type: 'inactive_reminder',
             title: DAILY_TEMPLATES.inactive_7_days.title,
             body: DAILY_TEMPLATES.inactive_7_days.body,
             icon: '/assets/icons/notif-workout.svg',
             data: { type: 'inactive_reminder', url: '/dashboard' }
           });
           notificationsSent++;
-        } else if (daysSinceLastSession >= 3) {
-          await sendNotificationToUser(user._id, {
+        } else {
+          await sendAndTrackNotification(user._id, {
+            type: 'inactive_reminder',
             title: DAILY_TEMPLATES.inactive_3_days.title,
             body: DAILY_TEMPLATES.inactive_3_days.body,
             icon: '/assets/icons/notif-workout.svg',
@@ -254,7 +302,7 @@ async function notifyInactiveUsers() {
       }
     }
 
-    logger.info(`😴 CRON: ${notificationsSent} notifications inactifs envoyées`);
+    logger.info(`😴 CRON: ${notificationsSent} notifications inactifs envoyées (${skippedCooldown} en cooldown)`);
 
   } catch (error) {
     logger.error('😴 CRON Erreur notifyInactiveUsers:', error);
@@ -342,7 +390,8 @@ async function sendWeeklyRecap() {
           body = `${weeklySessions} seances, ${calories} kcal!${bodyCompLine}`;
         }
 
-        await sendNotificationToUser(user._id, {
+        await sendAndTrackNotification(user._id, {
+          type: 'weekly_recap',
           title,
           body,
           icon: '/assets/icons/notif-recap.svg',

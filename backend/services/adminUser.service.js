@@ -117,6 +117,7 @@ async function getUserStats() {
 async function banUser(userId, reason = '') {
   const user = await User.findById(userId);
   if (!user) throw new Error('Utilisateur introuvable');
+  if (user.isSuperAdmin) throw new Error('Impossible de modifier un super admin');
   if (user.role === 'admin') throw new Error('Impossible de bannir un admin');
 
   user.isBanned = true;
@@ -146,6 +147,7 @@ async function unbanUser(userId) {
 async function deleteUser(userId) {
   const user = await User.findById(userId);
   if (!user) throw new Error('Utilisateur introuvable');
+  if (user.isSuperAdmin) throw new Error('Impossible de modifier un super admin');
   if (user.role === 'admin') throw new Error('Impossible de supprimer un admin');
 
   user.isDeleted = true;
@@ -162,6 +164,7 @@ async function changeUserRole(userId, newRole) {
 
   const user = await User.findById(userId);
   if (!user) throw new Error('Utilisateur introuvable');
+  if (user.isSuperAdmin) throw new Error('Impossible de modifier un super admin');
 
   user.role = newRole;
   await user.save();

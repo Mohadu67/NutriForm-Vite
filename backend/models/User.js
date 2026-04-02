@@ -66,6 +66,7 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'admin', 'partner'],
       default: 'user'
     },
+    isSuperAdmin: { type: Boolean, default: false },
     isBanned: { type: Boolean, default: false },
     bannedAt: { type: Date, default: null },
     bannedReason: { type: String, default: null },
