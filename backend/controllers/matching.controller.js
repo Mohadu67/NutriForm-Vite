@@ -146,7 +146,7 @@ exports.getMatchSuggestions = async (req, res) => {
           scoreBreakdown: score.breakdown,
           distance: distance, // [BUG FIX #3] null au lieu de 0 si pas de coords
           status: existingMatch?.status || 'new',
-          hasLiked: existingMatch?.likedBy?.includes(userId) || false,
+          hasLiked: existingMatch?.likedBy?.some(id => id.equals(userId)) || false,
           isMutual: existingMatch?.isMutual() || false
         });
       }
