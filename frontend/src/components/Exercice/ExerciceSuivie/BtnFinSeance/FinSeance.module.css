@@ -1,62 +1,92 @@
+/* ==================== FIN SEANCE — Harmonith v2.0 ==================== */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ringGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(240, 164, 122, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(240, 164, 122, 0);
+  }
+}
+
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 2rem 1.5rem;
   text-align: center;
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---- Success state ---- */
+
+.successIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(240, 164, 122, 0.12), rgba(114, 186, 161, 0.1));
+  border: 2px solid var(--couleur-bouton-action, #f0a47a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  animation: ringGlow 2.5s ease-in-out infinite;
+}
+
+.successIcon svg {
+  color: var(--couleur-bouton-action, #f0a47a);
+  font-size: 1.2rem;
 }
 
 .title {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  color: var(--accent, #ff914d);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 0.35rem 0;
+  color: var(--ink, #292524);
+  letter-spacing: -0.3px;
 }
 
 .text {
-  font-size: 1.2rem;
-  color: var(--muted, #555);
-  max-width: 500px;
-  line-height: 1.6;
-}
-
-.finishBtn {
-  padding: 10px 20px;
-  margin-top: 1rem;
-  border-radius: 12px;
-  background: var(--accent, #ff914d);
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  font-size: 1.1rem;
-  transition: transform 0.2s ease, filter 0.2s ease;
-}
-
-.finishBtn:hover {
-  filter: brightness(0.9);
-  transform: translateY(-2px);
+  font-size: 0.88rem;
+  color: var(--ink-secondary, #57534e);
+  max-width: 280px;
+  line-height: 1.5;
+  margin: 0 0 1.25rem 0;
 }
 
 .shareBtn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 12px 24px;
-  margin-top: 1.5rem;
+  padding: 10px 22px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #f7b186 0%, #b8ddd1 100%);
+  background: linear-gradient(135deg, #f0a47a 0%, #e08c5f 100%);
   color: #fff;
   border: none;
   cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: 600;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 12px rgba(255, 179, 133, 0.3);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(240, 164, 122, 0.25);
 }
 
 .shareBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 179, 133, 0.4);
+  box-shadow: 0 6px 24px rgba(240, 164, 122, 0.35);
 }
 
 .shareBtn:active {
@@ -64,5 +94,35 @@
 }
 
 .shareIcon {
-  font-size: 1.2rem;
+  font-size: 0.9rem;
+}
+
+/* ---- Finish button ---- */
+
+.finishBtn {
+  padding: 12px 28px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f0a47a 0%, #e08c5f 100%);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(240, 164, 122, 0.25);
+}
+
+.finishBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(240, 164, 122, 0.35);
+}
+
+.finishBtn:active {
+  transform: translateY(0);
+}
+
+.finishBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }

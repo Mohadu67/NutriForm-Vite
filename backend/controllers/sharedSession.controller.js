@@ -116,17 +116,29 @@ exports.respond = async (req, res) => {
       return res.status(400).json({ error: 'Cette invitation n\'est plus en attente.' });
     }
 
+    const User = require('../models/User');
+    const responder = await User.findById(userId).select('pseudo photo');
+    const responderName = responder?.pseudo || 'Ton partenaire';
+
     if (accept) {
       session.status = 'building';
       await session.save();
 
-      // Notifier l'initiateur
       const io = req.app.get('io');
       if (io?.notifyUser) {
         io.notifyUser(session.initiatorId.toString(), 'shared_session:accepted', {
           sharedSessionId: session._id
         });
       }
+
+      await createNotificationInternal(session.initiatorId, {
+        type: 'shared_session',
+        title: 'Invitation acceptée',
+        message: `${responderName} a accepté ta séance partagée !`,
+        avatar: responder?.photo || null,
+        link: `/shared-session/${session._id}`,
+        metadata: { sharedSessionId: session._id, action: 'accepted' }
+      });
 
       return res.json({ sharedSession: session });
     } else {
@@ -139,6 +151,14 @@ exports.respond = async (req, res) => {
           sharedSessionId: session._id
         });
       }
+
+      await createNotificationInternal(session.initiatorId, {
+        type: 'shared_session',
+        title: 'Invitation refusée',
+        message: `${responderName} a refusé ta séance partagée.`,
+        avatar: responder?.photo || null,
+        metadata: { sharedSessionId: session._id, action: 'declined' }
+      });
 
       return res.json({ message: 'Invitation refusée.' });
     }

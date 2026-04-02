@@ -299,11 +299,11 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
               const distanceKm = cs.distanceKm != null ? Number(cs.distanceKm) : undefined;
               const calories = cs.calories != null ? Number(cs.calories) : undefined;
               return {
-                durationSec: durationSec || undefined,
-                distanceKm: distanceKm || undefined,
-                calories: calories || undefined,
+                durationSec: durationSec > 0 ? durationSec : undefined,
+                distanceKm: distanceKm > 0 ? distanceKm : undefined,
+                calories: calories > 0 ? calories : undefined,
               };
-            }).filter(s => s.durationSec || s.distanceKm || s.calories);
+            }).filter(s => s.durationSec != null || s.distanceKm != null || s.calories != null);
             if (sets.length) {
               return { exerciseId: id, name, type: 'cardio', sets, notes: baseNotes || undefined };
             }
@@ -433,7 +433,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
       // Stocker la session et les stats pour le partage
       if (res?.ok && !res?.skipped && res?.data) {
         setSavedSession(res.data);
-        setSessionStats({ calories, doneExercises, totalExercises, durationSec: finalSec });
+        setSessionStats({ calories, doneExercises, totalExercises, durationSec: saveOpts.durationSec || finalSec });
         setShowConfirm(false);
         // Ouvrir directement le modal de partage
         setShowShareModal(true);
@@ -441,12 +441,12 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
         // Free user trying to save
         toast.error("Passe Premium pour sauvegarder tes séances ✨");
         if (typeof onFinish === 'function') {
-          onFinish({ durationSec: finalSec, savedCount: 0, calories, doneExercises, totalExercises, summary });
+          onFinish({ durationSec: saveOpts.durationSec || finalSec, savedCount: 0, calories, doneExercises, totalExercises, summary });
         }
         stopAndReset();
       } else {
         if (typeof onFinish === 'function') {
-          onFinish({ durationSec: finalSec, savedCount, calories, doneExercises, totalExercises, summary });
+          onFinish({ durationSec: saveOpts.durationSec || finalSec, savedCount, calories, doneExercises, totalExercises, summary });
         }
         stopAndReset();
       }
@@ -456,7 +456,7 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
         toast.error("Passe Premium pour sauvegarder tes séances ✨");
       }
       if (typeof onFinish === 'function') {
-        onFinish({ durationSec: finalSec, savedCount: 0, calories, doneExercises, totalExercises, summary });
+        onFinish({ durationSec: saveOpts.durationSec || finalSec, savedCount: 0, calories, doneExercises, totalExercises, summary });
       }
       stopAndReset();
     }
@@ -497,15 +497,20 @@ function Chrono({ label, items = [], startedAt, resumeFromStartedAt = true, onSt
 
     const names = muscleGroups.map(g => muscleNames[g] || g).filter(Boolean);
 
+    // Full Body = haut ET bas du corps
+    const hasUpper = muscleGroups.some(g => ['pectoraux', 'epaules', 'bras', 'dos'].includes(g));
+    const hasLower = muscleGroups.some(g => g === 'jambes');
+    const isFullBody = hasUpper && hasLower;
+
     let generatedName;
     if (names.length === 0) {
       generatedName = "Séance d'entraînement";
-    } else if (names.length === 1) {
-      generatedName = `Séance ${names[0]}`;
-    } else if (names.length === 2) {
-      generatedName = `Séance ${names[0]} + ${names[1]}`;
+    } else if (isFullBody) {
+      generatedName = 'Séance Full Body';
+    } else if (names.length <= 3) {
+      generatedName = `Séance ${names.join(' + ')}`;
     } else {
-      generatedName = `Séance Full Body`;
+      generatedName = `Séance ${names.slice(0, 2).join(' + ')} +${names.length - 2}`;
     }
 
     return generatedName;
