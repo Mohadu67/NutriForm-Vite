@@ -1,5 +1,6 @@
 import Avatar from '../../../components/Shared/Avatar';
 import { XIcon, MailIcon, TrashIcon, GlobeIcon } from '../../../components/Icons/GlobalIcons';
+import GymBroInviteButton from '../../../components/SharedSession/GymBroInviteButton';
 import styles from './MatchesList.module.css';
 
 const FITNESS_LEVEL_LABELS = {
@@ -60,6 +61,10 @@ export default function MatchesList({
                   </div>
 
                   <div className={styles.itemActions}>
+                    <GymBroInviteButton
+                      matchId={match._id}
+                      username={match.user?.username}
+                    />
                     <button
                       className={styles.chatBtn}
                       onClick={(e) => {

@@ -10,6 +10,7 @@ import LoadingSpinner from "./components/Shared/LoadingSpinner.jsx";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
 import { ChatProvider } from "./contexts/ChatContext.jsx";
 import { WebSocketProvider } from "./contexts/WebSocketContext.jsx";
+import { SharedSessionProvider } from "./contexts/SharedSessionContext.jsx";
 import { initializeNotifications } from "./services/notificationService.js";
 import MessageNotificationManager from "./components/Chat/MessageNotificationManager.jsx";
 import CookieConsent from "./components/CookieConsent";
@@ -62,6 +63,10 @@ const PartnerPage = lazy(() => import("./pages/Partner/PartnerPage.jsx"));
 import ProfileSetup from "./pages/Profile/ProfileSetup.jsx";
 import MatchingPage from "./pages/Matching/MatchingPage.jsx";
 
+// SharedSession
+import SharedSessionBuilder from "./components/SharedSession/SharedSessionBuilder.jsx";
+import GymBroInviteModal from "./components/SharedSession/GymBroInviteModal.jsx";
+
 // Protected Route
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute.jsx";
 
@@ -97,6 +102,7 @@ export default function App() {
       <Toaster richColors closeButton />
       <AuthProvider>
       <WebSocketProvider>
+        <SharedSessionProvider>
         <ChatProvider>
           <UpdatePrompt />
           <UpdateBanner />
@@ -104,6 +110,7 @@ export default function App() {
           <NotificationPrompt />
           <MessageNotificationManager />
           <CookieConsent />
+          <GymBroInviteModal />
           <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             {/* Pages principales - chargées immédiatement */}
@@ -153,6 +160,7 @@ export default function App() {
             {/* Profile & Matching */}
             <Route path="/profile/setup" element={<ProfileSetup />} />
             <Route path="/matching" element={<ProtectedRoute requirePremium><MatchingPage /></ProtectedRoute>} />
+            <Route path="/shared-session/:id" element={<ProtectedRoute requirePremium><SharedSessionBuilder /></ProtectedRoute>} />
 
             {/* Chat - lazy loaded (Premium only) */}
             <Route path="/chat/:matchId" element={<ProtectedRoute requirePremium><Chat /></ProtectedRoute>} />
@@ -176,6 +184,7 @@ export default function App() {
           </Routes>
         </Suspense>
         </ChatProvider>
+        </SharedSessionProvider>
       </WebSocketProvider>
       </AuthProvider>
     </ErrorBoundary>

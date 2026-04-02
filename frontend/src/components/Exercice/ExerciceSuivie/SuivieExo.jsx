@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { storage } from '../../../shared/utils/storage';
 import styles from "./SuivieExo.module.css";
 import SuivieCard from "./ExerciceCard/SuivieCard.jsx";
 import Chrono from "./Chrono/Chrono.jsx";
 import { idOf } from "../Shared/idOf.js";
 import logger from '../../../shared/utils/logger.js';
+import PartnerProgressPanel from "../../SharedSession/PartnerProgressPanel.jsx";
 
 
 const STARTED_KEY = "suivieStartedAt";
@@ -32,6 +34,9 @@ function loadSaved(it) {
 
 
 export default function SuivieExo({ sessionName, exercises = [], onBack, onFinish = () => {}, pastSession = null }) {
+  const location = useLocation();
+  const isSharedSession = location.state?.fromSharedSession || false;
+  const progressTimerRef = React.useRef(null);
   const label = (sessionName && sessionName.trim()) ? sessionName.trim() : "ta séance";
 
   function getPersistedSelection() {
@@ -72,6 +77,11 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onFinis
       logger.error("Failed to save startedAt:", e);
     }
   }, [startedAt]);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => clearTimeout(progressTimerRef.current);
+  }, []);
 
   useEffect(() => {
     const hasProps = Array.isArray(exercises) && exercises.length > 0;
@@ -177,6 +187,30 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onFinis
       } catch (e) {
         logger.error("Failed to save updated exercise:", e);
       }
+
+      // Envoyer la progression au partenaire (séance partagée) — debounced
+      if (isSharedSession && location.state?.sharedSessionId) {
+        clearTimeout(progressTimerRef.current);
+        progressTimerRef.current = setTimeout(() => {
+          const completedCount = copy.filter(x => x.done).length;
+          const totalSets = copy.reduce((acc, x) => {
+            const sets = x?.data?.sets || x?.data?.cardioSets || [];
+            return acc + (Array.isArray(sets) ? sets.filter(s => {
+              const r = Number(s?.reps ?? 0);
+              const t = Number(s?.durationSec ?? s?.timeSec ?? 0);
+              return r > 0 || t > 0;
+            }).length : 0);
+          }, 0);
+          import('../../../shared/api/sharedSession').then(({ updateSharedProgress }) => {
+            updateSharedProgress(location.state.sharedSessionId, {
+              currentExerciseIndex: idx,
+              completedExercises: completedCount,
+              totalSets
+            }).catch(() => {});
+          }).catch(() => {});
+        }, 800);
+      }
+
       return copy;
     });
   }
@@ -223,6 +257,11 @@ export default function SuivieExo({ sessionName, exercises = [], onBack, onFinis
           }}
         />
       </div>
+
+      {/* Panel partenaire (séance partagée uniquement) */}
+      {isSharedSession && (
+        <PartnerProgressPanel totalExercises={Array.isArray(items) ? items.length : 0} />
+      )}
 
       {Array.isArray(items) && items.length > 0 && (
         <div className={styles.cards}>

@@ -22,6 +22,7 @@ import {
   UsersIcon, HelpCircleIcon, UtensilsIcon, CalendarIcon,
   HandshakeIcon
 } from "./NavIcons";
+import { useSharedSession } from "../../contexts/SharedSessionContext";
 
 function FluxIcon({ size = 28 }) {
   return (
@@ -37,6 +38,7 @@ export default function Navbar() {
   const { isChatOpen, chatView, activeConversation, openChat, closeChat, backToHistory } = useChat() || {};
   const { on, isConnected } = useWebSocket() || {};
   const { isPremium } = usePremiumStatus();
+  const { session: sharedSession } = useSharedSession() || {};
   const { unreadCount: notificationUnreadCount } = useNotificationCount();
   const { user: authUser, isLoggedIn: authLoggedIn, isPartner: authIsPartner, refresh: refreshAuth } = useAuth();
 
@@ -394,6 +396,29 @@ export default function Navbar() {
               {link.label && <span className={styles.dockLabel}>{link.label}</span>}
             </a>
           ))}
+
+          {/* Shared Session active indicator */}
+          {sharedSession && ['building', 'active'].includes(sharedSession.status) && (
+            <a
+              href={`/shared-session/${sharedSession._id}`}
+              className={`${styles.dockItem} ${styles.sharedSessionIndicator}`}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(`/shared-session/${sharedSession._id}`);
+              }}
+              title="Séance partagée en cours"
+            >
+              <span className={styles.dockIcon}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </span>
+              <span className={styles.sharedSessionPulse} />
+            </a>
+          )}
 
           {/* Mobile expand button */}
           {!isDesktop && (

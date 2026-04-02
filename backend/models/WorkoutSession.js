@@ -69,6 +69,10 @@ const WorkoutSessionSchema = new Schema({
   notes: { type: String },
   entries: [EntrySchema],
 
+  // Séance partagée (gym bro)
+  sharedSessionId: { type: Schema.Types.ObjectId, ref: "SharedSession", default: null },
+  sharedWith: { type: Schema.Types.ObjectId, ref: "User", default: null },
+
   // Champs pour les programmes d'exercices
   programId: { type: Schema.Types.ObjectId, ref: "WorkoutProgram" },
   programName: { type: String },
