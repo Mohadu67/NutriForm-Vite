@@ -64,7 +64,7 @@ import ProfileSetup from "./pages/Profile/ProfileSetup.jsx";
 import MatchingPage from "./pages/Matching/MatchingPage.jsx";
 
 // SharedSession
-import SharedSessionBuilder from "./components/SharedSession/SharedSessionBuilder.jsx";
+import SharedSessionPage from "./components/SharedSession/SharedSessionPage.jsx";
 import GymBroInviteModal from "./components/SharedSession/GymBroInviteModal.jsx";
 
 // Protected Route
@@ -160,7 +160,7 @@ export default function App() {
             {/* Profile & Matching */}
             <Route path="/profile/setup" element={<ProfileSetup />} />
             <Route path="/matching" element={<ProtectedRoute requirePremium><MatchingPage /></ProtectedRoute>} />
-            <Route path="/shared-session/:id" element={<ProtectedRoute requirePremium><SharedSessionBuilder /></ProtectedRoute>} />
+            <Route path="/shared-session/:id" element={<ProtectedRoute requirePremium><SharedSessionPage /></ProtectedRoute>} />
 
             {/* Chat - lazy loaded (Premium only) */}
             <Route path="/chat/:matchId" element={<ProtectedRoute requirePremium><Chat /></ProtectedRoute>} />

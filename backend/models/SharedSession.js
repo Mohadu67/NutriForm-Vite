@@ -4,11 +4,31 @@ const { Schema } = mongoose;
 const SharedExerciseSchema = new Schema({
   exerciseId: { type: String },
   exerciseName: { type: String, required: true },
-  type: { type: String, enum: ['muscu', 'cardio', 'poids_du_corps'], required: true },
+  type: { type: [String], default: ['muscu'] },
   muscles: { type: [String], default: [] },
+  equipment: { type: [String], default: [] },
+  primaryMuscle: { type: String, default: null },
+  secondaryMuscles: { type: [String], default: [] },
+  category: { type: String, default: null },
   order: { type: Number, default: 0 },
   addedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   addedAt: { type: Date, default: Date.now }
+}, { _id: false });
+
+const ProgressEntrySchema = new Schema({
+  exerciseOrder: Number,
+  userId: { type: Schema.Types.ObjectId, ref: 'User' },
+  exerciseName: String,
+  mode: String,
+  sets: [Schema.Types.Mixed],
+  cardioSets: [Schema.Types.Mixed],
+  swim: Schema.Types.Mixed,
+  yoga: Schema.Types.Mixed,
+  stretch: Schema.Types.Mixed,
+  walkRun: Schema.Types.Mixed,
+  done: Boolean,
+  notes: String,
+  updatedAt: { type: Date, default: Date.now }
 }, { _id: false });
 
 const sharedSessionSchema = new Schema({
@@ -64,6 +84,9 @@ const sharedSessionSchema = new Schema({
 
   // Durée totale en secondes (calculée quand les deux ont terminé)
   durationSec: { type: Number, default: null },
+
+  // Saisies persistées des participants (clé = "userId:exerciseOrder")
+  progress: { type: Map, of: ProgressEntrySchema, default: new Map() },
 
   // Notes post-séance (feedback)
   notes: { type: String, default: '' }

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Avatar from '../Shared/Avatar';
+import GymBroInviteButton from '../SharedSession/GymBroInviteButton';
 import styles from './ProfileDetailModal.module.css';
 import {
   GlobeIcon,
@@ -170,11 +171,14 @@ const ProfileDetailModal = ({ user, matchId, matchScore, onClose, onStartChat })
           </div>
         )}
 
-        {onStartChat && matchId && (
+        {matchId && (
           <div className={styles.actions}>
-            <button className={styles.chatBtn} onClick={() => onStartChat(matchId, user._id)}>
-              <MailIcon size={20} /> Envoyer un message
-            </button>
+            {onStartChat && (
+              <button className={styles.chatBtn} onClick={() => onStartChat(matchId, user._id)}>
+                <MailIcon size={20} /> Envoyer un message
+              </button>
+            )}
+            <GymBroInviteButton matchId={matchId} username={user.username} showLabel />
           </div>
         )}
       </div>

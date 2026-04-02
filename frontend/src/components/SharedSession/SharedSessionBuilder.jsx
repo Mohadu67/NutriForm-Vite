@@ -90,13 +90,18 @@ export default function SharedSessionBuilder() {
 
     for (const ex of toAdd) {
       try {
+        const typeArray = Array.isArray(ex.type) ? ex.type : [ex.type || 'muscu'];
+        const mainType = typeArray.includes('muscu') ? 'muscu' : typeArray.includes('cardio') ? 'cardio' : 'poids_du_corps';
         await addExercise({
           exerciseId: ex.id || ex.slug || ex._id || null,
           exerciseName: ex.name || ex.title,
-          type: Array.isArray(ex.type)
-            ? (ex.type.includes('muscu') ? 'muscu' : ex.type.includes('cardio') ? 'cardio' : 'poids_du_corps')
-            : (ex.type || 'muscu'),
-          muscles: ex.muscles || (ex.primaryMuscle ? [ex.primaryMuscle] : [])
+          type: mainType,
+          muscles: ex.muscles || (ex.primaryMuscle ? [ex.primaryMuscle] : []),
+          equipment: ex.equipment || [],
+          primaryMuscle: ex.primaryMuscle || null,
+          secondaryMuscles: ex.secondaryMuscles || [],
+          category: ex.category || null,
+          exerciseTypes: typeArray
         });
       } catch {
         toast.error(`Erreur ajout ${ex.name || ex.title}`);
@@ -259,9 +264,12 @@ export default function SharedSessionBuilder() {
       id: e.exerciseId || e.exerciseName,
       name: e.exerciseName,
       slug: e.exerciseId,
-      type: e.type,
+      type: e.exerciseTypes?.length > 1 ? e.exerciseTypes : e.type,
       muscles: e.muscles,
-      primaryMuscle: e.muscles?.[0] || null,
+      equipment: e.equipment || [],
+      primaryMuscle: e.primaryMuscle || e.muscles?.[0] || null,
+      secondaryMuscles: e.secondaryMuscles || [],
+      category: e.category || null,
       order: i
     }));
 
