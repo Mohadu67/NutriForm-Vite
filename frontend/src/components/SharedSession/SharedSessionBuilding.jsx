@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useChat } from '../../contexts/ChatContext';
 import { getOrCreateConversation } from '../../shared/api/matchChat';
 import { getSharedSessionHistory } from '../../shared/api/sharedSession';
+import { loadExerciseImages, getExerciseImage } from '../../utils/exerciseImages';
 import client from '../../shared/api/client';
 import { toast } from 'sonner';
 import ChercherExo from '../Exercice/ExerciceSuivie/MoteurRechercheUser/ChercherExo';
@@ -47,11 +48,19 @@ export default function SharedSessionBuilding() {
   // Partner stats from leaderboard API
   const [partnerStats, setPartnerStats] = useState(null);
   const [pastSessions, setPastSessions] = useState([]);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [selectedExo, setSelectedExo] = useState(null);
 
   const userId = user?.id || user?._id;
+  const userName = user?.pseudo || user?.username || 'Toi';
   const partnerId = partner?._id;
   const partnerName = partner?.pseudo || partner?.username || 'Partenaire';
   const exercises = session?.exercises || [];
+
+  // Load exercise images on mount
+  useEffect(() => {
+    loadExerciseImages().then(() => setImagesLoaded(true));
+  }, []);
 
   // Fetch partner stats on mount
   useEffect(() => {
@@ -198,33 +207,34 @@ export default function SharedSessionBuilding() {
         </header>
 
         <div className={styles.content}>
-          {/* Partner profile card */}
-          <div className={styles.partnerCard}>
-            <Avatar
-              src={partner?.photo}
-              name={partnerName}
-              size="lg"
-              className={styles.partnerAvatar}
-            />
-            <div className={styles.partnerInfo}>
-              <h2 className={styles.partnerName}>{partnerName}</h2>
-              <div className={styles.partnerMeta}>
-                {partnerStats?.currentStreak > 0 && (
-                  <span className={styles.partnerMetaItem}>
-                    <span className={styles.partnerMetaIcon}>&#x1F525;</span>
-                    {partnerStats.currentStreak}j streak
-                  </span>
-                )}
-                {partnerStats?.thisWeekSessions > 0 && (
-                  <span className={styles.partnerMetaItem}>
-                    <span className={styles.partnerMetaIcon}>&#x1F4AA;</span>
-                    {partnerStats.thisWeekSessions} cette sem.
-                  </span>
-                )}
-                {!partnerStats && (
-                  <span style={{ opacity: 0.5 }}>Chargement...</span>
-                )}
+          {/* Duo Hero Section */}
+          <div className={styles.duoHero}>
+            <div className={styles.duoAvatarCol}>
+              <div className={styles.duoAvatarWrap}>
+                <Avatar src={user?.photo} name={userName} size="lg" className={styles.duoAvatar} />
+                <span className={styles.duoOnlineDot} />
               </div>
+              <span className={styles.duoName}>Toi</span>
+              <span className={styles.duoStatus} data-status="ready">
+                <span className={styles.duoStatusDot} /> Prêt
+              </span>
+            </div>
+
+            <div className={styles.duoVs}>
+              <svg className={styles.duoBolt} width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+            </div>
+
+            <div className={styles.duoAvatarCol}>
+              <div className={styles.duoAvatarWrap}>
+                <Avatar src={partner?.photo} name={partnerName} size="lg" className={styles.duoAvatar} />
+                <span className={styles.duoOnlineDot} />
+              </div>
+              <span className={styles.duoName}>{partnerName.split(' ')[0]}</span>
+              <span className={styles.duoStatus} data-status="online">
+                <span className={styles.duoStatusDot} /> En ligne
+              </span>
             </div>
           </div>
 
@@ -276,15 +286,17 @@ export default function SharedSessionBuilding() {
           )}
 
           {/* Exercise section title */}
+          <div className={styles.sectionHeader}>
+            <h3 className={styles.sectionTitle}>Programme</h3>
+            {exercises.length > 0 && (
+              <span className={styles.exerciseCountBadge}>{exercises.length}</span>
+            )}
+          </div>
           {exercises.length > 0 && (
-            <>
-              <h3 className={styles.sectionTitle}>Exercices</h3>
-              <div className={styles.contributionMini}>
-                <span>Toi : {exerciseCountByUser.mine}</span>
-                <span className={styles.contributionSeparator}>\u2022</span>
-                <span>{partnerName} : {exerciseCountByUser.partner}</span>
-              </div>
-            </>
+            <div className={styles.contributionMini}>
+              <span className={styles.contributionChip} data-who="me">Toi : {exerciseCountByUser.mine}</span>
+              <span className={styles.contributionChip} data-who="partner">{partnerName} : {exerciseCountByUser.partner}</span>
+            </div>
           )}
 
           {/* Exercise list */}
@@ -299,11 +311,32 @@ export default function SharedSessionBuilding() {
                 <p className={styles.hint}>Toi ou {partnerName} pouvez ajouter des exercices</p>
               </div>
             ) : (
-              exercises.map((ex, i) => (
-                <div key={`${ex.exerciseName}-${ex.order}`} className={styles.exerciseItem} style={{ animationDelay: `${i * 50}ms` }}>
-                  <div className={styles.exerciseInfo}>
-                    <span className={styles.exerciseOrder}>{ex.order + 1}</span>
-                    <div>
+              exercises.map((ex, i) => {
+                const isMe = String(ex.addedBy?._id || ex.addedBy || '') === String(userId);
+                const exImg = getExerciseImage(ex.exerciseName);
+                const initialLetter = ex.exerciseName?.trim()?.[0]?.toUpperCase() || '?';
+                return (
+                  <div
+                    key={`${ex.exerciseName}-${ex.order}`}
+                    className={styles.exerciseItem}
+                    data-added-by={isMe ? 'me' : 'partner'}
+                    style={{ animationDelay: `${i * 50}ms` }}
+                  >
+                    {/* Thumbnail */}
+                    <button
+                      className={styles.exerciseThumb}
+                      onClick={() => setSelectedExo(selectedExo === i ? null : i)}
+                      type="button"
+                      title="Voir les détails"
+                    >
+                      {exImg ? (
+                        <img src={exImg} alt="" />
+                      ) : (
+                        <span className={styles.exerciseInitial}>{initialLetter}</span>
+                      )}
+                    </button>
+
+                    <div className={styles.exerciseInfo} style={{ flex: 1, minWidth: 0 }}>
                       <span className={styles.exerciseName}>{ex.exerciseName}</span>
                       <div className={styles.exerciseMeta}>
                         <span className={styles.typeBadge} data-type={Array.isArray(ex.type) ? ex.type[0] : ex.type}>
@@ -312,17 +345,55 @@ export default function SharedSessionBuilding() {
                         {ex.muscles?.length > 0 && (
                           <span className={styles.muscleBadge}>{ex.muscles.join(', ')}</span>
                         )}
-                        <span className={styles.addedBy}>
-                          {String(ex.addedBy?._id || ex.addedBy || '') === String(userId) ? 'Toi' : partnerName}
+                        <span className={`${styles.addedByChip} ${isMe ? styles.addedByMe : styles.addedByPartner}`}>
+                          {isMe ? 'Toi' : partnerName.split(' ')[0]}
                         </span>
                       </div>
+
+                      {/* Expanded detail */}
+                      {selectedExo === i && (
+                        <div className={styles.exerciseDetail}>
+                          {exImg && (
+                            <div className={styles.exerciseDetailImg}>
+                              <img src={exImg} alt={ex.exerciseName} />
+                            </div>
+                          )}
+                          <div className={styles.exerciseDetailInfo}>
+                            {ex.primaryMuscle && (
+                              <div className={styles.detailRow}>
+                                <span className={styles.detailLabel}>Muscle principal</span>
+                                <span className={styles.detailValue}>{ex.primaryMuscle}</span>
+                              </div>
+                            )}
+                            {ex.secondaryMuscles?.length > 0 && (
+                              <div className={styles.detailRow}>
+                                <span className={styles.detailLabel}>Secondaires</span>
+                                <span className={styles.detailValue}>{ex.secondaryMuscles.join(', ')}</span>
+                              </div>
+                            )}
+                            {ex.equipment?.length > 0 && (
+                              <div className={styles.detailRow}>
+                                <span className={styles.detailLabel}>Matériel</span>
+                                <span className={styles.detailValue}>{ex.equipment.join(', ')}</span>
+                              </div>
+                            )}
+                            {ex.category && (
+                              <div className={styles.detailRow}>
+                                <span className={styles.detailLabel}>Catégorie</span>
+                                <span className={styles.detailValue}>{ex.category}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
+
+                    <button className={styles.removeBtn} onClick={() => handleRemove(ex.order)} title="Supprimer">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
                   </div>
-                  <button className={styles.removeBtn} onClick={() => handleRemove(ex.order)} title="Supprimer">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                  </button>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
@@ -346,12 +417,33 @@ export default function SharedSessionBuilding() {
           )}
         </div>
 
-        {/* Sticky footer */}
-        {!showSearch && exercises.length > 0 && (
+        {/* Sticky footer — always visible */}
+        {!showSearch && (
           <div className={styles.footer}>
-            <button className={styles.startBtn} onClick={handleStart} disabled={starting}>
-              {starting ? 'Démarrage...' : 'Démarrer la séance'}
-            </button>
+            {exercises.length > 0 ? (
+              <button className={styles.startBtn} onClick={handleStart} disabled={starting}>
+                {starting ? (
+                  <span className={styles.startBtnLoading}>
+                    <span className={styles.loadingSpinnerSmall} />
+                    Démarrage...
+                  </span>
+                ) : (
+                  <span className={styles.startBtnContent}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                    Démarrer la séance
+                  </span>
+                )}
+              </button>
+            ) : (
+              <div className={styles.startBtnDisabled}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+                Ajoute un exercice pour commencer
+              </div>
+            )}
           </div>
         )}
       </div>

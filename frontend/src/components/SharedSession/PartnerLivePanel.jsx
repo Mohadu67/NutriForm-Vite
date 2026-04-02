@@ -103,22 +103,36 @@ export default function PartnerLivePanel({ totalExercises }) {
             const status = isDone ? 'done' : isCurrent ? 'current' : 'pending';
 
             return (
-              <button
-                key={i}
-                className={`${styles.exItem} ${styles[`exItem_${status}`]}`}
-                onClick={() => entry ? setSelectedExercise(i) : null}
-                disabled={!entry}
-              >
-                <span className={styles.exStatus}>
-                  {isDone ? '\u2705' : isCurrent ? '\uD83D\uDD35' : '\u2B1C'}
-                </span>
-                <span className={styles.exName}>{ex.exerciseName}</span>
-                {isDone && entry && (
-                  <span className={styles.exSummary}>
-                    {summarizeEntry(entry)}
+              <div key={i} className={styles.timelineItem}>
+                {/* Timeline connector */}
+                <div className={styles.timelineLeft}>
+                  <span className={`${styles.timelineDot} ${styles[`timelineDot_${status}`]}`}>
+                    {isDone && (
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    )}
+                    {isCurrent && <span className={styles.timelineDotPulse} />}
                   </span>
-                )}
-              </button>
+                  {i < exercises.length - 1 && (
+                    <span className={`${styles.timelineLine} ${isDone ? styles.timelineLine_done : ''}`} />
+                  )}
+                </div>
+
+                <button
+                  className={`${styles.exItem} ${styles[`exItem_${status}`]}`}
+                  onClick={() => entry ? setSelectedExercise(i) : null}
+                  disabled={!entry}
+                >
+                  <span className={styles.exName}>{ex.exerciseName}</span>
+                  {isDone && entry && (
+                    <span className={styles.exSummary}>
+                      {summarizeEntry(entry)}
+                    </span>
+                  )}
+                  {isCurrent && (
+                    <span className={styles.exInProgress}>En cours</span>
+                  )}
+                </button>
+              </div>
             );
           })}
         </div>
