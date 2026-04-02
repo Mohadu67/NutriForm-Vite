@@ -75,9 +75,8 @@ export default function MatchesListScreen() {
     // Empêcher la propagation pour ne pas ouvrir le modal
     event?.stopPropagation();
 
-    navigation.navigate('ChatTab', {
-      screen: 'ChatDetail',
-      params: { matchId: match._id }
+    navigation.navigate('ChatDetail', {
+      matchId: match._id
     });
   };
 

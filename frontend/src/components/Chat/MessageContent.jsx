@@ -10,17 +10,22 @@ const ACTION_REGEX = /\[ACTION:([^:]+):([^\]]+)\]/g;
 const ACTION_CLEAN_REGEX = /\[ACTION:[^\]]+\]/g;
 const ROUTE_MAP = {
   HealthSettings: '/settings',
-  StartWorkout: '/exercices',
+  StartWorkout: '/exo',
+  Exercises: '/exo',
   LogMeal: '/dashboard',
+  LogPastSession: '/dashboard',
   EditProfile: '/profile/edit',
-  NutritionGoals: '/dashboard',
+  NutritionGoals: '/nutrition',
   Stats: '/dashboard',
   Recipes: '/recettes',
+  Programs: '/programs',
   Matching: '/matching',
   Rewards: '/rewards',
   CreateRecipe: '/recettes?view=create',
   Pricing: '/pricing',
   MuscleHeatmap: '/dashboard',
+  Flux: '/flux',
+  Tools: '/outils',
 };
 
 /**
