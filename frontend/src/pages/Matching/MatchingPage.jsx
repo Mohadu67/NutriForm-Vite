@@ -113,7 +113,7 @@ export default function MatchingPage() {
       const response = await likeProfile(currentMatch.user._id);
 
       setTimeout(() => {
-        if (response.match) {
+        if (response.match?.isMutual) {
           const newMatch = { _id: response.match._id, user: currentMatch.user, matchScore: currentMatch.matchScore };
           setMutualMatchData({ matchId: response.match._id, user: currentMatch.user, matchScore: currentMatch.matchScore });
           setMutualMatches(prev => [...prev, newMatch]);
