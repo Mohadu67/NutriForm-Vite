@@ -389,15 +389,20 @@ export default function AIChatScreen({ route, navigation }) {
   const ROUTE_MAP = {
     HealthSettings: { screen: 'ProfileTab', params: { screen: 'Settings' } },
     StartWorkout: { screen: 'ExercicesTab' },
-    LogMeal: { screen: 'HomeTab' },
+    Exercises: { screen: 'ExercicesTab', params: { screen: 'Exercices' } },
+    LogMeal: { screen: 'HomeTab', params: { screen: 'Nutrition' } },
+    LogPastSession: { screen: 'ExercicesTab', params: { screen: 'PastSession' } },
     EditProfile: { screen: 'ProfileTab', params: { screen: 'EditProfile' } },
-    NutritionGoals: { screen: 'HomeTab' },
+    NutritionGoals: { screen: 'HomeTab', params: { screen: 'NutritionGoals' } },
     Stats: { screen: 'HomeTab' },
-    Recipes: { screen: 'HomeTab' },
+    Recipes: { screen: 'HomeTab', params: { screen: 'Recipes' } },
+    Programs: { screen: 'HomeTab', params: { screen: 'Programs' } },
     Matching: { screen: 'FluxTab', params: { screen: 'Matching' } },
     Rewards: { screen: 'ProfileTab', params: { screen: 'Rewards' } },
-    LogPastSession: { screen: 'ExercicesTab', params: { screen: 'PastSession' } },
+    Pricing: { screen: 'ProfileTab', params: { screen: 'Subscription' } },
     MuscleHeatmap: { screen: 'HomeTab' },
+    Flux: { screen: 'FluxTab' },
+    Tools: { screen: 'HomeTab', params: { screen: 'Calculators' } },
   };
 
   const renderMessage = ({ item }) => {

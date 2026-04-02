@@ -18,6 +18,8 @@ import YogaForm from './forms/YogaForm';
 import StretchForm from './forms/StretchForm';
 import WalkRunForm from './forms/WalkRunForm';
 import PdcSetRow from './forms/PdcSetRow';
+import PartnerView from './PartnerView';
+import { useSharedSession } from '../../contexts/SharedSessionContext';
 import theme, { useTheme } from '../../theme';
 
 const TYPE_CONFIG = {
@@ -198,6 +200,40 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
     finishWorkout, cancelWorkout, getCompletedSetsCount, getTotalSetsCount,
   } = useWorkout();
 
+  // Shared session
+  const shared = useSharedSession();
+  const isShared = !!(shared?.session && (shared.session.status === 'active' || shared.session.status === 'building'));
+  const [activeTab, setActiveTab] = useState('me');
+
+  // Sync saisies au partenaire (debounced)
+  const syncRef = useRef(null);
+  useEffect(() => {
+    if (!isShared || !currentWorkout?.exercises) return;
+    if (syncRef.current) clearTimeout(syncRef.current);
+    syncRef.current = setTimeout(() => {
+      currentWorkout.exercises.forEach((ex, i) => {
+        const hasSets = ex.sets && ex.sets.some(s => s.reps > 0 || s.weight > 0 || s.completed);
+        const hasCardio = ex.cardioSets && ex.cardioSets.some(s => s.durationSec > 0 || s.durationMin > 0);
+        if (!hasSets && !hasCardio && !ex.swim && !ex.yoga && !ex.stretch && !ex.walkRun) return;
+        shared.sendExerciseData({
+          exerciseOrder: i,
+          exerciseName: ex.exercice?.name || '',
+          mode: ex.mode || 'muscu',
+          sets: ex.sets || [],
+          cardioSets: ex.cardioSets || [],
+          swim: ex.swim || null, yoga: ex.yoga || null,
+          stretch: ex.stretch || null, walkRun: ex.walkRun || null,
+          done: ex.sets ? ex.sets.every(s => s.completed) : false,
+        });
+      });
+    }, 800);
+    return () => clearTimeout(syncRef.current);
+  }, [isShared, currentWorkout?.exercises]);
+
+  useEffect(() => {
+    if (isShared && shared?.loadProgress) shared.loadProgress();
+  }, [isShared]);
+
   const handleSmartSet = useCallback((id, vals) => {
     addSet(id);
     setTimeout(() => {
@@ -257,46 +293,73 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
         <TouchableOpacity onPress={handleCancel} style={st.cancelBtn}><Ionicons name="close" size={20} color="#EF4444" /></TouchableOpacity>
       </View>
 
-      {/* Progress + Smart */}
-      <View style={[st.progWrap, isDark && st.progWrapDk]}>
-        <View style={st.progRow}>
-          <View style={{ flex: 1 }}><Text style={[st.progLbl, isDark && st.textMuted]}>Progression</Text><Text style={[st.progVal, isDark && st.textDark]}>{completed}/{total} series</Text></View>
-          <TouchableOpacity style={[st.smartTgl, smartEnabled && st.smartTglOn, isDark && st.smartTglDk]} onPress={toggleSmartTracking} disabled={smartLoading}>
-            <Ionicons name={smartEnabled ? 'sparkles' : 'sparkles-outline'} size={14} color={smartEnabled ? '#F59E0B' : (isDark ? '#666' : '#999')} />
-            <Text style={[st.smartTglTxt, smartEnabled && st.smartTglTxtOn, isDark && st.smartTglTxtDk]}>{smartEnabled ? 'Smart ON' : 'Smart'}</Text>
+      {/* Onglet Ma séance / Partenaire */}
+      {isShared && (
+        <View style={[st.tabRow, isDark && st.tabRowDk]}>
+          <TouchableOpacity style={[st.tab, activeTab === 'me' && st.tabOn]} onPress={() => setActiveTab('me')}>
+            <Ionicons name="person" size={14} color={activeTab === 'me' ? theme.colors.primary : '#888'} />
+            <Text style={[st.tabTxt, activeTab === 'me' && st.tabTxtOn]}>Ma séance</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[st.tab, activeTab === 'partner' && st.tabOnPartner]} onPress={() => setActiveTab('partner')}>
+            <Ionicons name="people" size={14} color={activeTab === 'partner' ? '#72baa1' : '#888'} />
+            <Text style={[st.tabTxt, activeTab === 'partner' && st.tabTxtOnPartner]}>
+              {shared?.partner?.pseudo || 'Partenaire'}
+            </Text>
           </TouchableOpacity>
         </View>
-        <View style={[st.progBar, isDark && st.progBarDk]}><View style={[st.progFill, { width: `${progress}%` }]} /></View>
-      </View>
+      )}
 
-      {/* Exercises */}
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={st.scrollPad} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
-        {currentWorkout.exercises.map((ex, i) => (
-          <ExerciseCard key={ex.exercice.id} exerciseData={ex}
-            onAddSet={addSet} onAddCardioSet={addCardioSet} onRemoveSet={removeSet} onRemoveCardioSet={removeCardioSet}
-            onUpdateSet={updateSet} onUpdateCardioSet={updateCardioSet} onUpdateExerciseData={updateExerciseData}
-            onToggleSet={toggleSetComplete} onRemoveExercise={handleRmEx} onMoveUp={moveExerciseUp} onMoveDown={moveExerciseDown}
-            isFirst={i === 0} isLast={i === currentWorkout.exercises.length - 1}
-            isDark={isDark} smartEnabled={smartEnabled} onAddSmartSet={handleSmartSet} onChangeMode={changeExerciseMode} />
-        ))}
-        <TouchableOpacity style={[st.addExBtn, isDark && st.addExBtnDk]} onPress={handleAddEx}>
-          <Ionicons name="add-circle-outline" size={22} color={theme.colors.primary} /><Text style={st.addExTxt}>Ajouter un exercice</Text>
-        </TouchableOpacity>
-        <View style={{ height: 16 }} />
-      </ScrollView>
+      {(!isShared || activeTab === 'me') ? (
+        <>
+          {/* Progress + Smart */}
+          <View style={[st.progWrap, isDark && st.progWrapDk]}>
+            <View style={st.progRow}>
+              <View style={{ flex: 1 }}><Text style={[st.progLbl, isDark && st.textMuted]}>Progression</Text><Text style={[st.progVal, isDark && st.textDark]}>{completed}/{total} series</Text></View>
+              <TouchableOpacity style={[st.smartTgl, smartEnabled && st.smartTglOn, isDark && st.smartTglDk]} onPress={toggleSmartTracking} disabled={smartLoading}>
+                <Ionicons name={smartEnabled ? 'sparkles' : 'sparkles-outline'} size={14} color={smartEnabled ? '#F59E0B' : (isDark ? '#666' : '#999')} />
+                <Text style={[st.smartTglTxt, smartEnabled && st.smartTglTxtOn, isDark && st.smartTglTxtDk]}>{smartEnabled ? 'Smart ON' : 'Smart'}</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={[st.progBar, isDark && st.progBarDk]}><View style={[st.progFill, { width: `${progress}%` }]} /></View>
+          </View>
 
-      {/* Action */}
-      <View style={[st.actionBar, isDark && st.actionBarDk]}>
-        {isPrep ? (
-          <TouchableOpacity style={[st.actBtn, st.startBtn]} onPress={() => { startWorkout(); Vibration.vibrate(100); }} activeOpacity={0.8}>
-            <Ionicons name="play-circle" size={20} color="#FFF" /><Text style={st.actBtnTxt}>Demarrer</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={[st.actBtn, st.finishBtn, completed === 0 && st.actBtnOff]} onPress={handleFinish} activeOpacity={0.8}>
-            <Ionicons name="checkmark-circle" size={20} color="#FFF" /><Text style={st.actBtnTxt}>Terminer</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+          {/* Exercises */}
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={st.scrollPad} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
+            {currentWorkout.exercises.map((ex, i) => (
+              <ExerciseCard key={ex.exercice.id} exerciseData={ex}
+                onAddSet={addSet} onAddCardioSet={addCardioSet} onRemoveSet={removeSet} onRemoveCardioSet={removeCardioSet}
+                onUpdateSet={updateSet} onUpdateCardioSet={updateCardioSet} onUpdateExerciseData={updateExerciseData}
+                onToggleSet={toggleSetComplete} onRemoveExercise={handleRmEx} onMoveUp={moveExerciseUp} onMoveDown={moveExerciseDown}
+                isFirst={i === 0} isLast={i === currentWorkout.exercises.length - 1}
+                isDark={isDark} smartEnabled={smartEnabled} onAddSmartSet={handleSmartSet} onChangeMode={changeExerciseMode} />
+            ))}
+            <TouchableOpacity style={[st.addExBtn, isDark && st.addExBtnDk]} onPress={handleAddEx}>
+              <Ionicons name="add-circle-outline" size={22} color={theme.colors.primary} /><Text style={st.addExTxt}>Ajouter un exercice</Text>
+            </TouchableOpacity>
+            <View style={{ height: 16 }} />
+          </ScrollView>
+
+          {/* Action */}
+          <View style={[st.actionBar, isDark && st.actionBarDk]}>
+            {isPrep ? (
+              <TouchableOpacity style={[st.actBtn, st.startBtn]} onPress={() => { startWorkout(); Vibration.vibrate(100); }} activeOpacity={0.8}>
+                <Ionicons name="play-circle" size={20} color="#FFF" /><Text style={st.actBtnTxt}>Demarrer</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={[st.actBtn, st.finishBtn, completed === 0 && st.actBtnOff]} onPress={handleFinish} activeOpacity={0.8}>
+                <Ionicons name="checkmark-circle" size={20} color="#FFF" /><Text style={st.actBtnTxt}>Terminer</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </>
+      ) : (
+        <PartnerView
+          exercises={shared?.session?.exercises || []}
+          partnerExerciseData={shared?.partnerExerciseData}
+          partnerName={shared?.partner?.pseudo || 'Partenaire'}
+          isDark={isDark}
+        />
+      )}
     </View>
   );
 }
@@ -386,4 +449,12 @@ const st = StyleSheet.create({
   suggIcon: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#D1FAE5', alignItems: 'center', justifyContent: 'center' },
   histLoad: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6 },
   histLoadTxt: { fontSize: 11, color: '#666' },
+  tabRow: { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 6, gap: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: 'rgba(0,0,0,0.06)' },
+  tabRowDk: { borderBottomColor: 'rgba(255,255,255,0.06)' },
+  tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: 8, borderRadius: 10, backgroundColor: 'rgba(0,0,0,0.03)' },
+  tabOn: { backgroundColor: `${theme.colors.primary}15` },
+  tabOnPartner: { backgroundColor: 'rgba(114,186,161,0.12)' },
+  tabTxt: { fontSize: 13, fontWeight: '500', color: '#888' },
+  tabTxtOn: { color: theme.colors.primary, fontWeight: '700' },
+  tabTxtOnPartner: { color: '#72baa1', fontWeight: '700' },
 });

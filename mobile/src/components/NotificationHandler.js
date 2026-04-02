@@ -36,13 +36,13 @@ export default function NotificationHandler() {
         otherUser: data.otherUser,
       });
     } else if (type === 'match' || type === 'new_match') {
-      nav.navigate('Social', { screen: 'Matching' });
+      nav.navigate('FluxTab', { screen: 'Matching' });
     } else if (type.startsWith('challenge') || type === 'activity') {
-      nav.navigate('Social', { screen: 'Challenges' });
+      nav.navigate('FluxTab', { screen: 'Challenges' });
     } else if (type === 'follow' || type === 'like' || type === 'comment') {
-      nav.navigate('Social', { screen: 'Flux' });
+      nav.navigate('FluxTab', { screen: 'Flux' });
     } else if (type === 'badge' || type === 'achievement') {
-      nav.navigate('Social', { screen: 'Leaderboard' });
+      nav.navigate('HomeTab', { screen: 'Badges' });
     }
   };
 
