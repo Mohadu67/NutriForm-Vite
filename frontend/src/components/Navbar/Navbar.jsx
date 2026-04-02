@@ -312,6 +312,29 @@ export default function Navbar() {
       {/* Overlay */}
       {open && <div className={styles.overlay} onClick={closeMenu} aria-hidden="true" />}
 
+      {/* Pending invite banner — flottant au-dessus de la navbar */}
+      {pendingInvite && (
+        <div className={styles.pendingInviteBanner}>
+          <span className={styles.pendingInviteDot} />
+          <span className={styles.pendingInviteText}>
+            <strong>{pendingInvite.initiator?.username || pendingInvite.initiator?.pseudo || 'Gym bro'}</strong> t'invite à une séance
+          </span>
+          <button className={styles.pendingInviteAccept} onClick={async () => {
+            try {
+              await respondInvite(pendingInvite.sharedSessionId, true);
+              navigate(`/shared-session/${pendingInvite.sharedSessionId}`);
+            } catch {}
+          }}>
+            Accepter
+          </button>
+          <button className={styles.pendingInviteDecline} onClick={() => {
+            respondInvite(pendingInvite.sharedSessionId, false).catch(() => {});
+          }}>
+            Refuser
+          </button>
+        </div>
+      )}
+
       {/* Main Dock Navigation */}
       <nav
         className={`${styles.dock} ${open && !isDesktop ? styles.dockExpanded : ''}`}
@@ -418,30 +441,6 @@ export default function Navbar() {
               </span>
               <span className={styles.sharedSessionPulse} />
             </a>
-          )}
-
-          {/* Pending invite indicator */}
-          {pendingInvite && (
-            <div className={styles.pendingInviteBanner}>
-              <span className={styles.pendingInviteText}>
-                {pendingInvite.initiator?.username || 'Gym bro'} t'invite
-              </span>
-              <button className={styles.pendingInviteAccept} onClick={async (e) => {
-                e.stopPropagation();
-                try {
-                  await respondInvite(pendingInvite.sharedSessionId, true);
-                  navigate(`/shared-session/${pendingInvite.sharedSessionId}`);
-                } catch {}
-              }}>
-                Accepter
-              </button>
-              <button className={styles.pendingInviteDecline} onClick={(e) => {
-                e.stopPropagation();
-                respondInvite(pendingInvite.sharedSessionId, false).catch(() => {});
-              }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-              </button>
-            </div>
           )}
 
           {/* Mobile expand button */}
