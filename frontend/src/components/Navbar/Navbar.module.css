@@ -1519,6 +1519,35 @@
 }
 
 /* ========================================
+   SHARED SESSION INDICATOR
+   ======================================== */
+
+.sharedSessionIndicator {
+  position: relative;
+  color: var(--color-secondary-600, #5aa48a) !important;
+}
+
+.sharedSessionIndicator:hover {
+  color: var(--color-secondary-700, #478571) !important;
+}
+
+.sharedSessionPulse {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-secondary-500, #72baa1);
+  animation: sharedPulse 2s ease-in-out infinite;
+}
+
+@keyframes sharedPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+
+/* ========================================
    REDUCED MOTION - Final Catch
    ======================================== */
 

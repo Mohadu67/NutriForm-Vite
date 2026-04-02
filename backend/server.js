@@ -263,6 +263,7 @@ app.use('/api/body-composition', bodyCompositionRoutes);
 app.use('/api/social', followRoutes);
 app.use('/api/barcode', barcodeRoutes);
 app.use('/api/recovery', recoveryRoutes);
+app.use('/api/shared-sessions', require('./routes/sharedSession.route'));
 app.use('/api/admin/users', require('./routes/adminUser.route'));
 app.use('/api/partnership-proposals', require('./routes/partnershipProposal.route'));
 app.use('/api/partner-offers', require('./routes/partnerOffer.route'));
