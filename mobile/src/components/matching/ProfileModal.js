@@ -14,26 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 import { theme } from '../../theme';
-
-const FITNESS_LEVELS = {
-  beginner: { label: 'Debutant', color: '#22C55E' },
-  intermediate: { label: 'Intermediaire', color: '#F59E0B' },
-  advanced: { label: 'Avance', color: '#EF4444' },
-};
-
-const WORKOUT_TYPE_ICONS = {
-  'muscu': 'barbell',
-  'musculation': 'barbell',
-  'cardio': 'heart',
-  'crossfit': 'fitness',
-  'yoga': 'flower',
-  'running': 'walk',
-  'cycling': 'bicycle',
-  'swimming': 'water',
-  'hiking': 'trail-sign',
-  'boxing': 'hand-left',
-  'dance': 'musical-notes',
-};
+import { FITNESS_LEVELS, WORKOUT_TYPE_ICONS } from '../../constants/matching';
 
 export default function ProfileModal({
   visible,

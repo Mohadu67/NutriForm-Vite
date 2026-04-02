@@ -77,9 +77,11 @@ async function run() {
         );
         console.log(`   → ${moved.modifiedCount} messages déplacés`);
 
-        // Désactiver la conversation dupliquée
-        dup.isActive = false;
-        await dup.save();
+        // Désactiver la conv dupliquée et retirer matchId (sparse unique index)
+        await Conversation.updateOne(
+          { _id: dup._id },
+          { $set: { isActive: false }, $unset: { matchId: '' } }
+        );
       }
       mergedCount++;
     }

@@ -285,5 +285,12 @@ module.exports = (io) => {
     return Array.from(connectedUsers.keys());
   };
 
+  /**
+   * Vérifier si un utilisateur est dans sa liste de conversations (ChatHistory)
+   */
+  io.isUserInChatList = (userId) => {
+    return usersInChatList.has(userId.toString());
+  };
+
   logger.info('✅ WebSocket configuré pour la messagerie temps réel');
 };

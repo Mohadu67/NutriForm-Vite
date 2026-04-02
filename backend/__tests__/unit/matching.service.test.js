@@ -531,4 +531,117 @@ describe('Matching Service', () => {
       expect(result.profiles).toHaveLength(0);
     });
   });
+
+  // ─── CASCADE DELETE (unlikeProfile) ─────────────────────
+
+  describe('unlikeProfile — cascade delete', () => {
+    it('should delete conversation and messages when match is deleted', async () => {
+      const MatchMessage = require('../../models/MatchMessage');
+      const user1 = await createUser({ pseudo: 'cascade1' });
+      const user2 = await createUser({ pseudo: 'cascade2', email: 'cascade2@test.com' });
+
+      const conv = await createConversation([user1._id, user2._id]);
+
+      await createMatch(user1._id, user2._id, {
+        likedBy: [user1._id],
+        status: 'user1_liked',
+        conversationId: conv._id
+      });
+
+      // Créer des messages dans la conv
+      await MatchMessage.create([
+        { conversationId: conv._id, senderId: user1._id, receiverId: user2._id, content: 'test1' },
+        { conversationId: conv._id, senderId: user2._id, receiverId: user1._id, content: 'test2' }
+      ]);
+
+      await matchingService.unlikeProfile(user1._id, user2._id);
+
+      // Match supprimé
+      const match = await Match.findOne({ user1Id: user1._id, user2Id: user2._id });
+      expect(match).toBeNull();
+
+      // Conversation supprimée
+      const deletedConv = await Conversation.findById(conv._id);
+      expect(deletedConv).toBeNull();
+
+      // Messages supprimés
+      const msgs = await MatchMessage.find({ conversationId: conv._id });
+      expect(msgs).toHaveLength(0);
+    });
+  });
+
+  // ─── rejectMatch — clean conversationId ─────────────────
+
+  describe('rejectMatch — clean conversationId', () => {
+    it('should nullify conversationId on reject', async () => {
+      const user1 = await createUser({ pseudo: 'reject_clean1' });
+      const user2 = await createUser({ pseudo: 'reject_clean2', email: 'rc2@test.com' });
+      await createProfile(user1._id);
+      await createProfile(user2._id);
+
+      const conv = await createConversation([user1._id, user2._id]);
+      await createMatch(user1._id, user2._id, {
+        likedBy: [user2._id],
+        status: 'user2_liked',
+        conversationId: conv._id
+      });
+
+      await matchingService.rejectMatch(user1._id, user2._id);
+
+      const match = await Match.findOne({ user1Id: user1._id, user2Id: user2._id });
+      expect(match.status).toBe('rejected');
+      expect(match.conversationId).toBeNull();
+    });
+  });
+
+  // ─── linkOrphanConversation — inactive conv ─────────────
+
+  describe('linkOrphanConversation — inactive conversations', () => {
+    it('should link and reactivate an inactive orphan conversation', async () => {
+      const user1Id = createObjectId();
+      const user2Id = createObjectId();
+
+      const inactiveConv = await createConversation([user1Id, user2Id], {
+        matchId: createObjectId(),
+        isActive: false
+      });
+
+      const match = await createMatch(user1Id, user2Id, {
+        likedBy: [user1Id, user2Id],
+        status: 'mutual',
+        conversationId: null
+      });
+
+      const result = await matchingService.linkOrphanConversation(match);
+
+      expect(result).not.toBeNull();
+      expect(result._id.toString()).toBe(inactiveConv._id.toString());
+      expect(result.isActive).toBe(true);
+
+      const updatedMatch = await Match.findById(match._id);
+      expect(updatedMatch.conversationId.toString()).toBe(inactiveConv._id.toString());
+    });
+  });
+
+  // ─── isMutual — simplified ──────────────────────────────
+
+  describe('Match.isMutual() — simplified', () => {
+    it('should return true based on status alone', async () => {
+      const match = await createMatch(createObjectId(), createObjectId(), {
+        likedBy: [createObjectId()], // seulement 1 like mais status mutual
+        status: 'mutual'
+      });
+
+      expect(match.isMutual()).toBe(true);
+    });
+
+    it('should return false for non-mutual status', async () => {
+      const match = await createMatch(createObjectId(), createObjectId(), {
+        likedBy: [createObjectId(), createObjectId()],
+        status: 'user1_liked'
+      });
+
+      expect(match.isMutual()).toBe(false);
+    });
+  });
 });
