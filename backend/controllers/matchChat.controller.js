@@ -139,15 +139,30 @@ async function getOrCreateConversation(req, res) {
     let conversation = await Conversation.findOne({ matchId });
 
     if (!conversation) {
-      // Créer une nouvelle conversation
-      conversation = await Conversation.create({
-        matchId,
-        participants: [match.user1Id, match.user2Id],
-        unreadCount: new Map([
-          [match.user1Id.toString(), 0],
-          [match.user2Id.toString(), 0]
-        ])
+      // Chercher une conversation orpheline existante entre les deux participants
+      // (cas post-migration BDD : conversation existe mais son ancien matchId a disparu)
+      const existingConv = await Conversation.findOne({
+        participants: { $all: [match.user1Id, match.user2Id], $size: 2 },
+        isActive: true
       });
+
+      if (existingConv) {
+        // Rattacher la conversation orpheline à ce match
+        logger.info(`🔗 Conversation orpheline ${existingConv._id} rattachée au match ${matchId}`);
+        existingConv.matchId = match._id;
+        await existingConv.save();
+        conversation = existingConv;
+      } else {
+        // Créer une nouvelle conversation
+        conversation = await Conversation.create({
+          matchId,
+          participants: [match.user1Id, match.user2Id],
+          unreadCount: new Map([
+            [match.user1Id.toString(), 0],
+            [match.user2Id.toString(), 0]
+          ])
+        });
+      }
 
       // Mettre à jour le Match avec le conversationId
       match.conversationId = conversation._id;
