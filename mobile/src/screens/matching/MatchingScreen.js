@@ -29,6 +29,9 @@ import { useChat } from '../../contexts/ChatContext';
 import { getMutualMatches, getMatchSuggestions, likeProfile, rejectProfile } from '../../api/matching';
 import ProfileModal from '../../components/matching/ProfileModal';
 import { MatchModal } from '../../components/matching/MatchModal';
+import PremiumBlur from '../../components/matching/PremiumBlur';
+import EmptyState from '../../components/matching/EmptyState';
+import { FITNESS_LEVELS, WORKOUT_TYPE_ICONS, THEME_COLORS } from '../../constants/matching';
 import useSwipeGesture from '../../hooks/useSwipeGesture';
 import logger from '../../services/logger';
 import websocketService from '../../services/websocket';
@@ -44,34 +47,6 @@ const TABS = [
   { key: 'messages', label: 'Messages', icon: 'chatbubbles' },
   { key: 'discover', label: 'Découvrir', icon: 'people' },
 ];
-
-// Fitness levels with theme-consistent colors
-const FITNESS_LEVELS = {
-  beginner: { label: 'Débutant', color: colors.success, gradient: [colors.success, '#3D9140'] },
-  intermediate: { label: 'Intermédiaire', color: colors.warning, gradient: [colors.warning, '#E0A800'] },
-  advanced: { label: 'Avancé', color: colors.accent, gradient: [colors.accent, '#E55A5A'] },
-};
-
-const WORKOUT_TYPE_ICONS = {
-  'muscu': 'barbell',
-  'cardio': 'heart',
-  'crossfit': 'fitness',
-  'yoga': 'flower',
-  'running': 'walk',
-  'cycling': 'bicycle',
-  'swimming': 'water',
-  'hiking': 'trail-sign',
-  'boxing': 'hand-left',
-  'dance': 'musical-notes',
-};
-
-// Theme colors helper
-const THEME_COLORS = {
-  primaryGradient: [colors.primary, colors.primaryDark],
-  secondaryGradient: [colors.secondary, colors.secondaryDark],
-  accentGradient: [colors.accent, '#E55A5A'],
-  warmGradient: colors.gradients.warm,
-};
 
 // Separate component for conversation item to use hooks properly
 const ConversationItem = React.memo(({ item, index, isDark, navigation, formatRelativeTime, onlineUsers, onAvatarPress, onDelete, openSwipeRef }) => {
@@ -606,38 +581,16 @@ export default function MatchingScreen() {
 
   // Render empty messages state
   const renderEmptyMessages = () => (
-    <View style={styles.emptyState}>
-      <LinearGradient
-        colors={isDark ? ['#1A1D24', '#22262E'] : ['#F5F6FA', '#F0F1F5']}
-        style={styles.emptyIconContainer}
-      >
-        <LinearGradient
-          colors={THEME_COLORS.primaryGradient}
-          style={styles.emptyIconInner}
-        >
-          <Ionicons name="chatbubbles" size={40} color="#FFF" />
-        </LinearGradient>
-      </LinearGradient>
-      <Text style={[styles.emptyTitle, isDark && styles.textLight]}>Pas encore de messages</Text>
-      <Text style={[styles.emptyText, isDark && styles.textMuted]}>
-        Swipez sur des profils pour trouver des partenaires de sport et commencer à discuter !
-      </Text>
-      <TouchableOpacity
-        style={styles.ctaButtonWrapper}
-        onPress={() => setActiveTab('discover')}
-        activeOpacity={0.8}
-      >
-        <LinearGradient
-          colors={THEME_COLORS.primaryGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.ctaButton}
-        >
-          <Ionicons name="people" size={20} color="#FFF" />
-          <Text style={styles.ctaButtonText}>Découvrir des profils</Text>
-        </LinearGradient>
-      </TouchableOpacity>
-    </View>
+    <EmptyState
+      icon="chatbubbles"
+      title="Pas encore de messages"
+      subtitle="Swipez sur des profils pour trouver des partenaires de sport et commencer à discuter !"
+      actionLabel="Découvrir des profils"
+      actionIcon="people"
+      onAction={() => setActiveTab('discover')}
+      isDark={isDark}
+      useGradient
+    />
   );
 
   // Render messages tab
@@ -670,28 +623,14 @@ export default function MatchingScreen() {
 
       {/* Floutage Premium pour les utilisateurs free - Messages */}
       {isUserFree && (
-        <View style={styles.premiumBlurOverlay} pointerEvents="box-none">
-          <View style={[styles.premiumBlurContent, isDark && styles.premiumBlurContentDark]} pointerEvents="auto">
-            <Ionicons name="chatbubbles" size={48} color="#F7B186" />
-            <Text style={[styles.premiumBlurTitle, isDark && styles.premiumBlurTitleDark]}>
-              Messagez vos matchs
-            </Text>
-            <Text style={[styles.premiumBlurSubtitle, isDark && styles.premiumBlurSubtitleDark]}>
-              Passez Premium pour communiquer avec vos matchs
-            </Text>
-            <TouchableOpacity
-              style={styles.premiumBlurButton}
-              onPress={() => navigation.navigate('ProfileTab', { screen: 'Subscription' })}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="star" size={20} color="#FFF" />
-              <Text style={styles.premiumBlurButtonText}>Passer Premium</Text>
-            </TouchableOpacity>
-            <Text style={[styles.premiumBlurSmallText, isDark && styles.premiumBlurSmallTextDark]}>
-              Besoin d'aide ? Utilisez le chatBot d'assistance
-            </Text>
-          </View>
-        </View>
+        <PremiumBlur
+          icon="chatbubbles"
+          title="Messagez vos matchs"
+          subtitle="Passez Premium pour communiquer avec vos matchs"
+          onPress={() => navigation.navigate('ProfileTab', { screen: 'Subscription' })}
+          isDark={isDark}
+          smallText="Besoin d'aide ? Utilisez le chatBot d'assistance"
+        />
       )}
     </View>
   );
@@ -944,43 +883,18 @@ export default function MatchingScreen() {
         },
       ]}
     >
-      <LinearGradient
-        colors={isDark ? ['#1A1D24', '#22262E'] : ['#F5F6FA', '#F0F1F5']}
-        style={styles.emptyIconContainer}
-      >
-        <LinearGradient
-          colors={THEME_COLORS.primaryGradient}
-          style={styles.emptyIconInner}
-        >
-          <Ionicons name="people" size={40} color="#FFF" />
-        </LinearGradient>
-      </LinearGradient>
-      <Text style={[styles.emptyTitle, isDark && styles.textLight]}>Plus de profils</Text>
-      <Text style={[styles.emptyText, isDark && styles.textMuted]}>
-        Tu as vu tous les profils disponibles. Reviens plus tard !
-      </Text>
-      <TouchableOpacity
-        style={styles.ctaButtonWrapper}
-        onPress={handleDiscoverRefresh}
+      <EmptyState
+        icon="people"
+        title="Plus de profils"
+        subtitle="Tu as vu tous les profils disponibles. Reviens plus tard !"
+        actionLabel="Actualiser"
+        actionIcon="refresh"
+        onAction={handleDiscoverRefresh}
+        isDark={isDark}
+        useGradient
+        isLoading={isRefreshAnimating}
         disabled={isRefreshAnimating}
-        activeOpacity={0.8}
-      >
-        <LinearGradient
-          colors={THEME_COLORS.primaryGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[styles.ctaButton, isRefreshAnimating && styles.ctaButtonDisabled]}
-        >
-          {isRefreshAnimating ? (
-            <ActivityIndicator size="small" color="#FFF" />
-          ) : (
-            <>
-              <Ionicons name="refresh" size={20} color="#FFF" />
-              <Text style={styles.ctaButtonText}>Actualiser</Text>
-            </>
-          )}
-        </LinearGradient>
-      </TouchableOpacity>
+      />
     </Animated.View>
   );
 
@@ -1011,25 +925,13 @@ export default function MatchingScreen() {
 
       {/* Floutage Premium pour les utilisateurs free - Discover tab */}
       {isUserFree && activeTab === 'discover' && (
-        <View style={styles.premiumBlurOverlay} pointerEvents="box-none">
-          <View style={[styles.premiumBlurContent, isDark && styles.premiumBlurContentDark]} pointerEvents="auto">
-            <Ionicons name="people" size={48} color="#F7B186" />
-            <Text style={[styles.premiumBlurTitle, isDark && styles.premiumBlurTitleDark]}>
-              Découvrez plus de profils
-            </Text>
-            <Text style={[styles.premiumBlurSubtitle, isDark && styles.premiumBlurSubtitleDark]}>
-              Passez Premium pour voir tous les profils et commencer à matcher
-            </Text>
-            <TouchableOpacity
-              style={styles.premiumBlurButton}
-              onPress={() => navigation.navigate('ProfileTab', { screen: 'Subscription' })}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="star" size={20} color="#FFF" />
-              <Text style={styles.premiumBlurButtonText}>Passer Premium</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <PremiumBlur
+          icon="people"
+          title="Découvrez plus de profils"
+          subtitle="Passez Premium pour voir tous les profils et commencer à matcher"
+          onPress={() => navigation.navigate('ProfileTab', { screen: 'Subscription' })}
+          isDark={isDark}
+        />
       )}
     </View>
   );
@@ -1625,55 +1527,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
   },
-  emptyIconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  emptyIconInner: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#111',
-    marginBottom: 12,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 28,
-    paddingHorizontal: 20,
-  },
-  ctaButtonWrapper: {
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  ctaButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 28,
-    paddingVertical: 16,
-    gap: 10,
-  },
-  ctaButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  ctaButtonDisabled: {
-    opacity: 0.7,
-  },
-
   // Discover
   discoverContainer: {
     flex: 1,
@@ -2057,77 +1910,8 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
 
-  // Premium blur overlay
-  premiumBlurOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 20,
-  },
-  premiumBlurContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    paddingHorizontal: 32,
-    paddingVertical: 40,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
-    elevation: 10,
-    marginHorizontal: 20,
-  },
-  premiumBlurContentDark: {
-    backgroundColor: '#1A1D24',
-  },
-  premiumBlurTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#111',
-    marginTop: 20,
-    textAlign: 'center',
-  },
-  premiumBlurTitleDark: {
-    color: '#FFFFFF',
-  },
-  premiumBlurSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 12,
-    marginBottom: 24,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  premiumBlurSubtitleDark: {
-    color: '#7A7D85',
-  },
-  premiumBlurButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#F7B186',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 16,
-  },
-  premiumBlurButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFF',
-  },
   messagesTabContainer: {
     flex: 1,
     position: 'relative',
-  },
-  premiumBlurSmallText: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 16,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-  premiumBlurSmallTextDark: {
-    color: '#7A7D85',
   },
 });

@@ -1,6 +1,7 @@
 const UserProfile = require('../models/UserProfile');
 const Match = require('../models/Match');
 const Conversation = require('../models/Conversation');
+const MatchMessage = require('../models/MatchMessage');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { notifyNewMatch } = require('./pushNotification.service');
@@ -23,15 +24,16 @@ async function linkOrphanConversation(match) {
   const user1Id = match.user1Id._id || match.user1Id;
   const user2Id = match.user2Id._id || match.user2Id;
 
+  // Chercher toute conversation entre les 2 participants (même inactive)
   const orphanConv = await Conversation.findOne({
-    participants: { $all: [user1Id, user2Id], $size: 2 },
-    isActive: true
-  });
+    participants: { $all: [user1Id, user2Id], $size: 2 }
+  }).sort({ updatedAt: -1 });
 
   if (!orphanConv) return null;
 
-  logger.info(`🔗 Conv orpheline ${orphanConv._id} rattachée au match ${match._id}`);
+  logger.info(`🔗 Conv orpheline ${orphanConv._id} rattachée au match ${match._id} (était active: ${orphanConv.isActive})`);
   orphanConv.matchId = match._id;
+  orphanConv.isActive = true;
   await orphanConv.save();
   match.conversationId = orphanConv._id;
   await match.save();
@@ -194,8 +196,15 @@ async function getSuggestions(userId, { limit = 20, minScore = 50 } = {}) {
     const candidateUserId = candidate.userId._id || candidate.userId;
     const existingMatch = matchByPartnerId[candidateUserId.toString()] || null;
 
-    if (existingMatch && ['rejected', 'blocked', 'mutual'].includes(existingMatch.status)) continue;
-    if (existingMatch && existingMatch.likedBy?.some(id => id.equals(userId))) continue;
+    if (existingMatch) {
+      // Skip profils déjà rejetés, bloqués ou mutuels
+      if (['rejected', 'blocked', 'mutual'].includes(existingMatch.status)) continue;
+      // Skip si l'utilisateur courant a déjà liké (en attente de réponse)
+      const hasLiked = existingMatch.likedBy?.some(id =>
+        id.equals ? id.equals(userId) : id.toString() === userId.toString()
+      );
+      if (hasLiked) continue;
+    }
 
     const score = calculateMatchScore(myProfile, candidate);
     if (score.total < minScore) continue;
@@ -289,7 +298,7 @@ async function likeProfile(userId, targetUserId, io) {
     user2Id: targetUserId,
     matchScore: score.total,
     scoreBreakdown: score.breakdown,
-    distance: distance !== null ? distance : 0,
+    distance: distance,
     likedBy: [userId],
     status: 'user1_liked'
   });
@@ -317,6 +326,12 @@ async function unlikeProfile(userId, targetUserId) {
   match.likedBy = match.likedBy.filter(id => !id.equals(userId));
 
   if (match.likedBy.length === 0) {
+    // Cascade delete : nettoyer la conversation et les messages associés
+    if (match.conversationId) {
+      await MatchMessage.deleteMany({ conversationId: match.conversationId });
+      await Conversation.findByIdAndDelete(match.conversationId);
+      logger.info(`🗑️ Cascade delete: conv ${match.conversationId} + messages supprimés`);
+    }
     await Match.deleteOne({ _id: match._id });
   } else {
     const remainingLikerId = match.likedBy[0];
@@ -354,7 +369,7 @@ async function rejectMatch(userId, targetUserId) {
         user2Id: targetUserId,
         matchScore: score.total,
         scoreBreakdown: score.breakdown,
-        distance: distance !== null ? distance : 0,
+        distance: distance,
         status: 'rejected',
         rejectedBy: userId
       });
@@ -370,6 +385,7 @@ async function rejectMatch(userId, targetUserId) {
 
   match.status = 'rejected';
   match.rejectedBy = userId;
+  match.conversationId = null;
   match.likedBy = match.likedBy.filter(id => !id.equals(userId));
   await match.save();
   logger.info(`[rejectMatch] Match ${match._id} rejeté par ${userId}`);

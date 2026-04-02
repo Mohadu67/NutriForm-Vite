@@ -15,27 +15,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { theme, colors } from '../../theme';
 import { getUserProfile } from '../../api/matching';
+import { FITNESS_LEVELS, WORKOUT_TYPE_ICONS } from '../../constants/matching';
 import logger from '../../services/logger';
-
-const FITNESS_LEVELS = {
-  beginner: { label: 'Debutant', color: colors.success, gradient: [colors.success, '#3D9140'] },
-  intermediate: { label: 'Intermediaire', color: colors.warning, gradient: [colors.warning, '#E0A800'] },
-  advanced: { label: 'Avance', color: colors.accent, gradient: [colors.accent, '#E55A5A'] },
-};
-
-const WORKOUT_TYPE_ICONS = {
-  'muscu': 'barbell',
-  'musculation': 'barbell',
-  'cardio': 'heart',
-  'crossfit': 'fitness',
-  'yoga': 'flower',
-  'running': 'walk',
-  'cycling': 'bicycle',
-  'swimming': 'water',
-  'hiking': 'trail-sign',
-  'boxing': 'hand-left',
-  'dance': 'musical-notes',
-};
 
 export default function UserProfileScreen({ route, navigation }) {
   const { userId, user: userParam } = route.params || {};

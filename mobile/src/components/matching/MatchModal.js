@@ -12,11 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme';
-
-const THEME_COLORS = {
-  primaryGradient: [colors.primary, colors.primaryDark],
-  warmGradient: colors.gradients.warm,
-};
+import { THEME_COLORS } from '../../constants/matching';
 
 /**
  * Modal de célébration d'un match mutuel.

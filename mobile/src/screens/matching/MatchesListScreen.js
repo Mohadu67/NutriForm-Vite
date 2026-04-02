@@ -15,18 +15,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-
 import { theme } from '../../theme';
 import { getMutualMatches } from '../../api/matching';
 import ProfileModal from '../../components/matching/ProfileModal';
+import EmptyState from '../../components/matching/EmptyState';
+import { FITNESS_LEVELS } from '../../constants/matching';
 import logger from '../../services/logger';
-
-const FITNESS_LEVELS = {
-  beginner: { label: 'Debutant', color: '#22C55E' },
-  intermediate: { label: 'Intermediaire', color: '#F59E0B' },
-  advanced: { label: 'Avance', color: '#EF4444' },
-};
 
 export default function MatchesListScreen() {
   const colorScheme = useColorScheme();
@@ -176,22 +170,17 @@ export default function MatchesListScreen() {
   };
 
   const renderEmpty = () => (
-    <View style={styles.emptyContainer}>
-      <View style={[styles.emptyIcon, isDark && styles.emptyIconDark]}>
-        <Ionicons name="heart-outline" size={64} color={isDark ? '#555' : '#CCC'} />
-      </View>
-      <Text style={[styles.emptyTitle, isDark && styles.textDark]}>Pas encore de matchs</Text>
-      <Text style={[styles.emptyText, isDark && styles.textMutedDark]}>
-        Continue a swiper pour trouver des partenaires de sport !
-      </Text>
-      <TouchableOpacity
-        style={styles.discoverButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Ionicons name="people" size={20} color="#FFF" />
-        <Text style={styles.discoverButtonText}>Decouvrir des profils</Text>
-      </TouchableOpacity>
-    </View>
+    <EmptyState
+      icon="heart-outline"
+      title="Pas encore de matchs"
+      subtitle="Continue à swiper pour trouver des partenaires de sport !"
+      actionLabel="Découvrir des profils"
+      actionIcon="people"
+      onAction={() => navigation.goBack()}
+      isDark={isDark}
+      useGradient={false}
+      style={styles.emptyContainer}
+    />
   );
 
   if (loading) {
@@ -416,46 +405,6 @@ const styles = StyleSheet.create({
     color: theme.colors.text.tertiary,
   },
   emptyContainer: {
-    alignItems: 'center',
     paddingVertical: 60,
-  },
-  emptyIcon: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  emptyIconDark: {
-    backgroundColor: '#333',
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: theme.colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: 24,
-    paddingHorizontal: 40,
-  },
-  discoverButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 24,
-    gap: 8,
-  },
-  discoverButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

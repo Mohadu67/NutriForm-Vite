@@ -29,10 +29,10 @@ const matchSchema = new mongoose.Schema({
     availabilityScore: { type: Number, default: 0 } // /15 points
   },
 
-  // Distance réelle en km
+  // Distance réelle en km (null si pas de coordonnées GPS)
   distance: {
     type: Number,
-    required: true
+    default: null
   },
 
   // Statut du match
@@ -108,8 +108,9 @@ matchSchema.index({ status: 1, matchScore: -1 });
 matchSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // Auto-suppression après expiration
 
 // Méthode pour vérifier si c'est un match mutuel
+// Le status est la source de vérité (mis à jour par addLike)
 matchSchema.methods.isMutual = function() {
-  return this.status === 'mutual' && this.likedBy.length === 2;
+  return this.status === 'mutual';
 };
 
 // Méthode pour enregistrer un like
