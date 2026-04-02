@@ -25,18 +25,30 @@ function SharedSessionSync() {
   const { addExercise, startWorkout, currentWorkout } = useWorkout();
   const injectedRef = useRef(null);
 
+  // Track combien d'exos on a déjà injecté pour cette session
+  const injectedCountRef = useRef(0);
+
   useEffect(() => {
-    if (!shared?.session) return;
-    const session = shared.session;
-    if (session.status !== 'active' && session.status !== 'building') return;
-    if (!session.exercises || session.exercises.length === 0) return;
-    if (injectedRef.current === String(session._id)) return;
-    if (currentWorkout?.exercises?.length > 0) {
-      injectedRef.current = String(session._id);
+    if (!shared?.session) {
+      injectedRef.current = null;
+      injectedCountRef.current = 0;
       return;
     }
-    injectedRef.current = String(session._id);
-    for (const ex of session.exercises) {
+    const session = shared.session;
+    if (session.status !== 'active' && session.status !== 'building') return;
+
+    const sessionId = String(session._id);
+    const sharedExercises = session.exercises || [];
+
+    // Reset si c'est une nouvelle session
+    if (injectedRef.current !== sessionId) {
+      injectedRef.current = sessionId;
+      injectedCountRef.current = 0;
+    }
+
+    // Injecter les nouveaux exercices (ceux qu'on n'a pas encore ajoutés)
+    const newExercises = sharedExercises.slice(injectedCountRef.current);
+    for (const ex of newExercises) {
       addExercise({
         id: ex.exerciseId || ('shared_' + ex.exerciseName + '_' + ex.order),
         name: ex.exerciseName,
@@ -49,8 +61,11 @@ function SharedSessionSync() {
         category: ex.category || '',
       });
     }
+    injectedCountRef.current = sharedExercises.length;
+
+    // Lancer le timer uniquement quand la séance passe en active
     if (session.status === 'active') startWorkout();
-  }, [shared?.session?._id, shared?.session?.status]);
+  }, [shared?.session?._id, shared?.session?.status, shared?.session?.exercises?.length]);
 
   return null;
 }

@@ -1218,4 +1218,212 @@ describe('SharedSession Controller', () => {
       expect(notifs.some(n => n.title === 'Invitation refusée')).toBe(true);
     });
   });
+
+  describe('Full flow — end to end', () => {
+    it('should complete full flow: invite → accept → add exercises → start → update data → end', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const match = await createMatch(userId, partnerId);
+
+      const User = require('../../models/User');
+      await User.create({ _id: userId, email: 'init@test.com', password: 'test123', pseudo: 'Initiator' });
+      await User.create({ _id: partnerId, email: 'part@test.com', password: 'test123', pseudo: 'Partner' });
+
+      // 1. Invite
+      const inviteReq = createMockReq({ userId, body: { matchId: match._id.toString() } });
+      const inviteRes = createMockRes();
+      await controller.invite(inviteReq, inviteRes);
+      expect(inviteRes.status).toHaveBeenCalledWith(201);
+      const session = inviteRes.json.mock.calls[0][0].sharedSession;
+      expect(session.status).toBe('pending');
+
+      // 2. Accept
+      const acceptReq = createMockReq({ userId: partnerId, params: { id: session._id.toString() }, body: { accept: true } });
+      const acceptRes = createMockRes();
+      await controller.respond(acceptReq, acceptRes);
+      const accepted = acceptRes.json.mock.calls[0][0].sharedSession;
+      expect(accepted.status).toBe('building');
+
+      // 3. Add exercises (both users)
+      const addReq1 = createMockReq({ userId, params: { id: session._id.toString() }, body: { exerciseName: 'Bench Press', type: ['muscu'] } });
+      await controller.addExercise(addReq1, createMockRes());
+
+      const addReq2 = createMockReq({ userId: partnerId, params: { id: session._id.toString() }, body: { exerciseName: 'Squat', type: ['muscu'] } });
+      await controller.addExercise(addReq2, createMockRes());
+
+      const afterAdd = await SharedSession.findById(session._id);
+      expect(afterAdd.exercises).toHaveLength(2);
+      expect(afterAdd.exercises[0].exerciseName).toBe('Bench Press');
+      expect(afterAdd.exercises[1].exerciseName).toBe('Squat');
+
+      // 4. Start
+      const startReq = createMockReq({ userId, params: { id: session._id.toString() } });
+      const startRes = createMockRes();
+      await controller.startSession(startReq, startRes);
+      const started = startRes.json.mock.calls[0][0].sharedSession;
+      expect(started.status).toBe('active');
+      expect(started.startedAt).toBeDefined();
+
+      // 5. Update exercise data (both users)
+      controller._progressTimestamps.clear();
+      const dataReq1 = createMockReq({ userId, params: { id: session._id.toString() }, body: {
+        exerciseOrder: 0, exerciseName: 'Bench Press', mode: 'muscu',
+        sets: [{ reps: 10, weight: 80 }, { reps: 8, weight: 85 }], done: true
+      }});
+      await controller.updateExerciseData(dataReq1, createMockRes());
+
+      controller._progressTimestamps.clear();
+      const dataReq2 = createMockReq({ userId: partnerId, params: { id: session._id.toString() }, body: {
+        exerciseOrder: 0, exerciseName: 'Bench Press', mode: 'muscu',
+        sets: [{ reps: 12, weight: 70 }], done: true
+      }});
+      await controller.updateExerciseData(dataReq2, createMockRes());
+
+      // Verify progress persisted
+      const withProgress = await SharedSession.findById(session._id);
+      expect(withProgress.progress.get(`${userId}:0`)).toBeDefined();
+      expect(withProgress.progress.get(`${userId}:0`).sets).toHaveLength(2);
+      expect(withProgress.progress.get(`${partnerId}:0`)).toBeDefined();
+
+      // 6. End (first user)
+      const endReq1 = createMockReq({ userId, params: { id: session._id.toString() }, body: {} });
+      const endRes1 = createMockRes();
+      await controller.endSession(endReq1, endRes1);
+      const afterEnd1 = endRes1.json.mock.calls[0][0].sharedSession;
+      expect(afterEnd1.status).toBe('active'); // Still active, partner hasn't ended
+      expect(afterEnd1.endedBy).toHaveLength(1);
+
+      // 7. End (second user)
+      const endReq2 = createMockReq({ userId: partnerId, params: { id: session._id.toString() }, body: {} });
+      const endRes2 = createMockRes();
+      await controller.endSession(endReq2, endRes2);
+      const afterEnd2 = endRes2.json.mock.calls[0][0].sharedSession;
+      expect(afterEnd2.status).toBe('ended');
+      expect(afterEnd2.endedBy).toHaveLength(2);
+      expect(afterEnd2.durationSec).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should handle cancel during building', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const match = await createMatch(userId, partnerId);
+      const session = await createSession({ initiatorId: userId, partnerId, matchId: match._id, status: 'building' });
+
+      const req = createMockReq({ userId, params: { id: session._id.toString() } });
+      const res = createMockRes();
+      await controller.cancelSession(req, res);
+
+      const cancelled = await SharedSession.findById(session._id);
+      expect(cancelled.status).toBe('cancelled');
+    });
+
+    it('should handle cancel during active by partner', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const session = await createSession({ initiatorId: userId, partnerId, status: 'active', startedAt: new Date() });
+
+      const req = createMockReq({ userId: partnerId, params: { id: session._id.toString() } });
+      const res = createMockRes();
+      await controller.cancelSession(req, res);
+
+      const cancelled = await SharedSession.findById(session._id);
+      expect(cancelled.status).toBe('cancelled');
+    });
+
+    it('should not allow adding exercise after session ended', async () => {
+      const userId = createObjectId();
+      const session = await createSession({ initiatorId: userId, status: 'ended' });
+
+      const req = createMockReq({ userId, params: { id: session._id.toString() }, body: { exerciseName: 'Curl', type: ['muscu'] } });
+      const res = createMockRes();
+      await controller.addExercise(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+    });
+
+    it('should handle type as array in addExercise', async () => {
+      const userId = createObjectId();
+      const session = await createSession({ initiatorId: userId, status: 'building' });
+
+      const req = createMockReq({ userId, params: { id: session._id.toString() }, body: {
+        exerciseName: 'Pompes', type: ['muscu', 'poids_du_corps']
+      }});
+      const res = createMockRes();
+      await controller.addExercise(req, res);
+
+      const result = res.json.mock.calls[0][0].sharedSession;
+      expect(result.exercises[0].type).toEqual(['muscu', 'poids_du_corps']);
+    });
+
+    it('should create notification on invite', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const match = await createMatch(userId, partnerId);
+
+      const User = require('../../models/User');
+      await User.create({ _id: userId, email: 'notif@test.com', password: 'test123', pseudo: 'NotifUser' });
+
+      const req = createMockReq({ userId, body: { matchId: match._id.toString() } });
+      const res = createMockRes();
+      await controller.invite(req, res);
+
+      const Notification = require('../../models/Notification');
+      const notifs = await Notification.find({ userId: partnerId, type: 'shared_session' });
+      expect(notifs.length).toBe(1);
+      expect(notifs[0].title).toBe('Invitation séance partagée');
+      expect(notifs[0].link).toContain('/shared-session/');
+    });
+
+    it('should relay exercise data to partner via WS', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const session = await createSession({ initiatorId: userId, partnerId, status: 'active' });
+
+      const mockNotify = jest.fn();
+      const req = createMockReq({
+        userId,
+        params: { id: session._id.toString() },
+        body: { exerciseOrder: 0, exerciseName: 'Squat', sets: [{ reps: 5, weight: 100 }], done: false }
+      });
+      req.app.get = jest.fn().mockReturnValue({ notifyUser: mockNotify });
+      const res = createMockRes();
+
+      await controller.updateExerciseData(req, res);
+      expect(mockNotify).toHaveBeenCalledWith(
+        partnerId.toString(),
+        'shared_session:partner_exercise_update',
+        expect.objectContaining({ exerciseOrder: 0, exerciseName: 'Squat' })
+      );
+    });
+
+    it('should include partnerSummary in partner_ended WS event', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const session = await createSession({ initiatorId: userId, partnerId, status: 'active', startedAt: new Date() });
+
+      // Add progress for the user who will end
+      await SharedSession.updateOne({ _id: session._id }, {
+        $set: { [`progress.${userId}:0`]: { exerciseOrder: 0, userId, exerciseName: 'Bench', sets: [{ reps: 10, weight: 80 }], done: true } }
+      });
+
+      const User = require('../../models/User');
+      await User.create({ _id: userId, email: 'ender@test.com', password: 'test123', pseudo: 'Ender' });
+
+      const mockNotify = jest.fn();
+      const req = createMockReq({ userId, params: { id: session._id.toString() }, body: {} });
+      req.app.get = jest.fn().mockReturnValue({ notifyUser: mockNotify });
+      const res = createMockRes();
+
+      await controller.endSession(req, res);
+
+      expect(mockNotify).toHaveBeenCalledWith(
+        partnerId.toString(),
+        'shared_session:partner_ended',
+        expect.objectContaining({
+          partnerSummary: expect.arrayContaining([
+            expect.objectContaining({ exerciseOrder: 0, exerciseName: 'Bench' })
+          ])
+        })
+      );
+    });
+  });
 });

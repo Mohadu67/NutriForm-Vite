@@ -3,6 +3,7 @@ const SharedSession = require('../models/SharedSession');
 const Match = require('../models/Match');
 const logger = require('../utils/logger.js');
 const { createNotificationInternal } = require('./notification.controller');
+const { sendNotificationToUser } = require('../services/pushNotification.service');
 
 // ─── RATE LIMITING (in-memory) ──────────────────────────
 const _progressTimestamps = new Map();
@@ -86,6 +87,13 @@ exports.invite = async (req, res) => {
       link: `/shared-session/${session._id}`,
       metadata: { sharedSessionId: session._id, initiatorId: userId }
     });
+
+    // Push notification (mobile + web)
+    sendNotificationToUser(partnerId, {
+      title: 'Invitation séance partagée',
+      body: `${initiatorName} t'invite à une séance !`,
+      data: { type: 'shared_session', sharedSessionId: String(session._id) },
+    }).catch(() => {});
 
     res.status(201).json({ sharedSession: session });
   } catch (error) {
@@ -646,7 +654,8 @@ exports.endSession = async (req, res) => {
     }
 
     // Si les deux ont terminé, marquer la session comme ended
-    if (session.endedBy.length >= 2) {
+    const bothEnded = session.endedBy.length >= 2;
+    if (bothEnded) {
       session.status = 'ended';
       session.endedAt = new Date();
 
@@ -657,6 +666,32 @@ exports.endSession = async (req, res) => {
     }
 
     await session.save();
+
+    // XP bonus + duo stats + badge check pour les deux participants
+    if (bothEnded) {
+      const LeaderboardEntry = require('../models/LeaderboardEntry');
+      const { checkAndAwardBadges } = require('./badge.controller');
+      const DUO_XP_BONUS = 50;
+
+      const participantIds = [session.initiatorId, session.partnerId];
+      for (const pid of participantIds) {
+        try {
+          const entry = await LeaderboardEntry.findOneAndUpdate(
+            { userId: pid },
+            { $inc: { xp: DUO_XP_BONUS, 'stats.duoSessions': 1 } },
+            { new: true }
+          );
+          if (entry) {
+            entry.updateLeague();
+            await entry.save();
+          }
+          // Check badges (duo + other badges)
+          await checkAndAwardBadges(pid);
+        } catch (e) {
+          logger.error(`Erreur XP/badges duo pour ${pid}:`, e);
+        }
+      }
+    }
 
     // Notifier le partenaire
     const partnerId = session.initiatorId.equals(userId)

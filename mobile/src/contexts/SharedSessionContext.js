@@ -94,8 +94,8 @@ export function SharedSessionProvider({ children }) {
     if (!isAuthenticated) return;
 
     const onInvite = (data) => {
+      console.log('[SharedSession] onInvite fired, setting pendingInvite');
       setPendingInvite(data);
-      console.log('[SharedSession] Invitation', `${data.initiator?.username || 'Ton gym bro'} t'invite à une séance !`);
     };
     const onAccepted = (data) => {
       console.log('[SharedSession] Accepté', 'Invitation acceptée !');
@@ -243,11 +243,6 @@ export function SharedSessionProvider({ children }) {
     String(session.initiatorId?._id || session.initiatorId || '') === myId
       ? session.partnerId : session.initiatorId
   ) : null;
-
-  // Debug log
-  if (session) {
-    console.log('[SharedSession] myId:', myId, 'status:', session.status, 'isParticipant:', isParticipant, 'initiator:', String(session.initiatorId?._id || session.initiatorId), 'partner:', String(session.partnerId?._id || session.partnerId));
-  }
 
   const value = {
     session, loading, pendingInvite, partnerExerciseData, isParticipant, partner,
