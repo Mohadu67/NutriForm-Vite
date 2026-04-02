@@ -3,7 +3,7 @@ import { useSharedSession } from '../../contexts/SharedSessionContext';
 import { toast } from 'sonner';
 import styles from './GymBroInviteButton.module.css';
 
-export default function GymBroInviteButton({ matchId, username, onInviteSent }) {
+export default function GymBroInviteButton({ matchId, username, onInviteSent, showLabel = false }) {
   const { invite, session } = useSharedSession() || {};
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +33,7 @@ export default function GymBroInviteButton({ matchId, username, onInviteSent }) 
 
   return (
     <button
-      className={styles.btn}
+      className={`${styles.btn} ${showLabel ? styles.btnWithLabel : ''}`}
       onClick={handleInvite}
       disabled={loading || hasActiveSession}
       title={hasActiveSession ? 'Tu as déjà une séance en cours' : `Inviter ${username || ''} à une séance`}
@@ -50,6 +50,7 @@ export default function GymBroInviteButton({ matchId, username, onInviteSent }) 
             <path d="M12 13v4" />
             <path d="M10 15h4" />
           </svg>
+          {showLabel && <span>Inviter à une séance</span>}
         </>
       )}
     </button>

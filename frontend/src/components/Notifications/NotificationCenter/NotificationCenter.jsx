@@ -292,6 +292,16 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
       return;
     }
 
+    // Pour les invitations séance partagée, naviguer directement
+    if (notification.type === 'shared_session' && notification.link) {
+      navigate(notification.link);
+      setIsOpen(false);
+      if (isPanel && onClose) {
+        onClose();
+      }
+      return;
+    }
+
     // Pour les autres types, navigation classique
     if (notification.link) {
       navigate(notification.link);

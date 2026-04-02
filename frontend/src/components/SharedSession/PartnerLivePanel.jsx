@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSharedSession } from '../../contexts/SharedSessionContext';
+import Avatar from '../Shared/Avatar';
 import PartnerExerciseDetail from './PartnerExerciseDetail';
 import styles from './PartnerLivePanel.module.css';
 
@@ -66,12 +67,8 @@ export default function PartnerLivePanel({ totalExercises }) {
     <div className={styles.panel}>
       {/* Compact header — always visible */}
       <button className={styles.header} onClick={() => setExpanded(!expanded)}>
-        <div className={styles.avatar}>
-          {partner?.photo ? (
-            <img src={partner.photo} alt="" />
-          ) : (
-            <span>{partnerName[0]?.toUpperCase()}</span>
-          )}
+        <div className={styles.avatarWrap}>
+          <Avatar src={partner?.photo} name={partnerName} size="sm" className={styles.avatar} />
           <span className={stale ? styles.staleDot : styles.onlineDot} />
         </div>
         <div className={styles.info}>

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const SharedSession = require('../models/SharedSession');
 const Match = require('../models/Match');
 const logger = require('../utils/logger.js');
+const { createNotificationInternal } = require('./notification.controller');
 
 // ─── RATE LIMITING (in-memory) ──────────────────────────
 const _progressTimestamps = new Map();
@@ -57,23 +58,34 @@ exports.invite = async (req, res) => {
       gymName: gymName || ''
     });
 
-    // Notifier le partenaire via WebSocket
+    // Notifier le partenaire via WebSocket + notification persistante
+    const User = require('../models/User');
+    const initiator = await User.findById(userId).select('pseudo photo');
+    const initiatorName = initiator?.pseudo || 'Un utilisateur';
+
     const io = req.app.get('io');
     if (io?.notifyUser) {
-      const User = require('../models/User');
-      const initiator = await User.findById(userId).select('pseudo photo');
-
       io.notifyUser(partnerId.toString(), 'shared_session:invite', {
         sharedSessionId: session._id,
         initiator: {
           _id: userId,
-          username: initiator?.pseudo || 'Un utilisateur',
+          username: initiatorName,
           photo: initiator?.photo || null
         },
         sessionName: session.sessionName,
         gymName: session.gymName
       });
     }
+
+    // Notification persistante (visible même si l'user est hors ligne)
+    await createNotificationInternal(partnerId, {
+      type: 'shared_session',
+      title: 'Invitation séance partagée',
+      message: `${initiatorName} t'invite à une séance${sessionName ? ` "${sessionName}"` : ''} !`,
+      avatar: initiator?.photo || null,
+      link: `/shared-session/${session._id}`,
+      metadata: { sharedSessionId: session._id, initiatorId: userId }
+    });
 
     res.status(201).json({ sharedSession: session });
   } catch (error) {

@@ -9,6 +9,7 @@ import client from '../../shared/api/client';
 import { toast } from 'sonner';
 import ChercherExo from '../Exercice/ExerciceSuivie/MoteurRechercheUser/ChercherExo';
 import ConfirmModal from '../Modal/ConfirmModal';
+import Avatar from '../Shared/Avatar';
 import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import styles from './SharedSessionBuilder.module.css';
@@ -199,13 +200,12 @@ export default function SharedSessionBuilding() {
         <div className={styles.content}>
           {/* Partner profile card */}
           <div className={styles.partnerCard}>
-            <div className={styles.partnerAvatar}>
-              {partner?.photo ? (
-                <img src={partner.photo} alt="" />
-              ) : (
-                partnerName[0]?.toUpperCase()
-              )}
-            </div>
+            <Avatar
+              src={partner?.photo}
+              name={partnerName}
+              size="lg"
+              className={styles.partnerAvatar}
+            />
             <div className={styles.partnerInfo}>
               <h2 className={styles.partnerName}>{partnerName}</h2>
               <div className={styles.partnerMeta}>

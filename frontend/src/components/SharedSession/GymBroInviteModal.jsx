@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSharedSession } from '../../contexts/SharedSessionContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import Avatar from '../Shared/Avatar';
 import styles from './GymBroInviteModal.module.css';
 
 export default function GymBroInviteModal() {
@@ -32,13 +33,12 @@ export default function GymBroInviteModal() {
     <div className={styles.overlay} onClick={dismissInvite}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.iconRow}>
-          <div className={styles.avatar}>
-            {initiator?.photo ? (
-              <img src={initiator.photo} alt="" />
-            ) : (
-              <span>{(initiator?.username || '?')[0].toUpperCase()}</span>
-            )}
-          </div>
+          <Avatar
+            src={initiator?.photo}
+            name={initiator?.username || '?'}
+            size="lg"
+            className={styles.avatar}
+          />
         </div>
 
         <h3 className={styles.title}>Invitation Gym Bro</h3>
