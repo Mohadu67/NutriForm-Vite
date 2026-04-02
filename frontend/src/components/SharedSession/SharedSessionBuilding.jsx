@@ -1,15 +1,29 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSharedSession } from '../../contexts/SharedSessionContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useChat } from '../../contexts/ChatContext';
 import { getOrCreateConversation } from '../../shared/api/matchChat';
+import { getSharedSessionHistory } from '../../shared/api/sharedSession';
+import client from '../../shared/api/client';
 import { toast } from 'sonner';
 import ChercherExo from '../Exercice/ExerciceSuivie/MoteurRechercheUser/ChercherExo';
 import ConfirmModal from '../Modal/ConfirmModal';
 import Navbar from '../Navbar/Navbar';
 import Footer from '../Footer/Footer';
 import styles from './SharedSessionBuilder.module.css';
+
+function formatDuration(sec) {
+  if (!sec || sec <= 0) return '--';
+  const m = Math.floor(sec / 60);
+  return m > 0 ? `${m}min` : `${sec}s`;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
 
 export default function SharedSessionBuilding() {
   const navigate = useNavigate();
@@ -29,9 +43,42 @@ export default function SharedSessionBuilding() {
   const [duplicateModal, setDuplicateModal] = useState({ open: false, names: [] });
   const [cancelConfirm, setCancelConfirm] = useState(false);
 
+  // Partner stats from leaderboard API
+  const [partnerStats, setPartnerStats] = useState(null);
+  const [pastSessions, setPastSessions] = useState([]);
+
   const userId = user?.id || user?._id;
+  const partnerId = partner?._id;
   const partnerName = partner?.pseudo || partner?.username || 'Partenaire';
   const exercises = session?.exercises || [];
+
+  // Fetch partner stats on mount
+  useEffect(() => {
+    if (!partnerId) return;
+    client.get(`/leaderboard/user/${partnerId}/rank?period=alltime&type=all`)
+      .then(res => {
+        if (res.data?.stats) setPartnerStats(res.data.stats);
+        else if (res.data) setPartnerStats(res.data);
+      })
+      .catch(() => {});
+  }, [partnerId]);
+
+  // Fetch shared session history
+  useEffect(() => {
+    getSharedSessionHistory()
+      .then(data => {
+        const sessions = data?.sessions || [];
+        // Filter sessions with this partner
+        const withPartner = sessions.filter(s => {
+          const initId = String(s.initiatorId?._id || s.initiatorId || '');
+          const partId = String(s.partnerId?._id || s.partnerId || '');
+          const pid = String(partnerId || '');
+          return initId === pid || partId === pid;
+        });
+        setPastSessions(withPartner.slice(0, 3));
+      })
+      .catch(() => {});
+  }, [partnerId]);
 
   const exerciseCountByUser = useMemo(() => {
     const mine = exercises.filter(e => String(e.addedBy?._id || e.addedBy || '') === String(userId)).length;
@@ -98,6 +145,15 @@ export default function SharedSessionBuilding() {
     }
   };
 
+  const handleOpenChat = async () => {
+    const matchId = session?.matchId?._id || session?.matchId;
+    if (!matchId || !openMatchChat) return;
+    try {
+      const { conversation } = await getOrCreateConversation(matchId);
+      openMatchChat(conversation);
+    } catch { /* silent */ }
+  };
+
   const confirmCancel = async () => {
     setCancelConfirm(false);
     try {
@@ -123,41 +179,115 @@ export default function SharedSessionBuilding() {
               <h1 className={styles.title}>Séance avec {partnerName}</h1>
               <p className={styles.subtitle}>
                 {exercises.length} exercice{exercises.length !== 1 ? 's' : ''}
-                {session?.gymName ? ` • ${session.gymName}` : ''}
+                {session?.gymName ? ` \u2022 ${session.gymName}` : ''}
               </p>
             </div>
           </div>
 
-          {/* Chat button — ouvre le chat existant dans la Navbar */}
-          {session?.matchId && (
-            <button
-              className={styles.partnerBadge}
-              onClick={async () => {
-                const matchId = session.matchId?._id || session.matchId;
-                if (!matchId || !openMatchChat) return;
-                try {
-                  const { conversation } = await getOrCreateConversation(matchId);
-                  openMatchChat(conversation);
-                } catch { /* silent */ }
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-              Chat
-            </button>
-          )}
+          <div className={styles.headerActions}>
+            {session?.matchId && (
+              <button className={styles.chatBtn} onClick={handleOpenChat}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                Chat
+              </button>
+            )}
+          </div>
         </header>
 
         <div className={styles.content}>
-          {exercises.length > 0 && (
-            <div className={styles.contributionMini}>
-              <span>Toi : {exerciseCountByUser.mine}</span>
-              <span className={styles.contributionSeparator}>•</span>
-              <span>{partnerName} : {exerciseCountByUser.partner}</span>
+          {/* Partner profile card */}
+          <div className={styles.partnerCard}>
+            <div className={styles.partnerAvatar}>
+              {partner?.photo ? (
+                <img src={partner.photo} alt="" />
+              ) : (
+                partnerName[0]?.toUpperCase()
+              )}
+            </div>
+            <div className={styles.partnerInfo}>
+              <h2 className={styles.partnerName}>{partnerName}</h2>
+              <div className={styles.partnerMeta}>
+                {partnerStats?.currentStreak > 0 && (
+                  <span className={styles.partnerMetaItem}>
+                    <span className={styles.partnerMetaIcon}>&#x1F525;</span>
+                    {partnerStats.currentStreak}j streak
+                  </span>
+                )}
+                {partnerStats?.thisWeekSessions > 0 && (
+                  <span className={styles.partnerMetaItem}>
+                    <span className={styles.partnerMetaIcon}>&#x1F4AA;</span>
+                    {partnerStats.thisWeekSessions} cette sem.
+                  </span>
+                )}
+                {!partnerStats && (
+                  <span style={{ opacity: 0.5 }}>Chargement...</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Partner mini stats */}
+          {partnerStats && (
+            <div className={styles.partnerStats}>
+              <div className={styles.miniStat}>
+                <span className={styles.miniStatIcon}>&#x1F3CB;&#xFE0F;</span>
+                <span className={styles.miniStatValue}>{partnerStats.totalSessions || 0}</span>
+                <span className={styles.miniStatLabel}>Séances</span>
+              </div>
+              <div className={styles.miniStat}>
+                <span className={styles.miniStatIcon}>&#x1F525;</span>
+                <span className={styles.miniStatValue}>{partnerStats.currentStreak || 0}</span>
+                <span className={styles.miniStatLabel}>Streak</span>
+              </div>
+              <div className={styles.miniStat}>
+                <span className={styles.miniStatIcon}>&#x23F1;</span>
+                <span className={styles.miniStatValue}>
+                  {partnerStats.totalDurationMin ? `${Math.round(partnerStats.totalDurationMin / 60)}h` : '0h'}
+                </span>
+                <span className={styles.miniStatLabel}>Total</span>
+              </div>
             </div>
           )}
 
+          {/* Past shared sessions */}
+          {pastSessions.length > 0 && (
+            <>
+              <h3 className={styles.sectionTitle}>Séances ensemble</h3>
+              <div className={styles.historyList}>
+                {pastSessions.map((s, i) => (
+                  <div key={s._id || i} className={styles.historyItem}>
+                    <span className={styles.historyDate}>
+                      {formatDate(s.endedAt || s.startedAt)}
+                    </span>
+                    <div className={styles.historyInfo}>
+                      <span className={styles.historyExCount}>
+                        {s.exercises?.length || 0} exos
+                      </span>
+                      <span className={styles.historyDuration}>
+                        {' \u2022 '}{formatDuration(s.durationSec)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Exercise section title */}
+          {exercises.length > 0 && (
+            <>
+              <h3 className={styles.sectionTitle}>Exercices</h3>
+              <div className={styles.contributionMini}>
+                <span>Toi : {exerciseCountByUser.mine}</span>
+                <span className={styles.contributionSeparator}>\u2022</span>
+                <span>{partnerName} : {exerciseCountByUser.partner}</span>
+              </div>
+            </>
+          )}
+
+          {/* Exercise list */}
           <div className={styles.exerciseList}>
             {exercises.length === 0 ? (
               <div className={styles.emptyList}>
@@ -169,8 +299,8 @@ export default function SharedSessionBuilding() {
                 <p className={styles.hint}>Toi ou {partnerName} pouvez ajouter des exercices</p>
               </div>
             ) : (
-              exercises.map((ex) => (
-                <div key={`${ex.exerciseName}-${ex.order}`} className={styles.exerciseItem}>
+              exercises.map((ex, i) => (
+                <div key={`${ex.exerciseName}-${ex.order}`} className={styles.exerciseItem} style={{ animationDelay: `${i * 50}ms` }}>
                   <div className={styles.exerciseInfo}>
                     <span className={styles.exerciseOrder}>{ex.order + 1}</span>
                     <div>
@@ -196,6 +326,7 @@ export default function SharedSessionBuilding() {
             )}
           </div>
 
+          {/* Add exercises button */}
           {!showSearch && (
             <button className={styles.addBtn} onClick={() => setShowSearch(true)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
@@ -203,6 +334,7 @@ export default function SharedSessionBuilding() {
             </button>
           )}
 
+          {/* Exercise search */}
           {showSearch && (
             <div className={styles.searchContainer}>
               <ChercherExo
@@ -214,6 +346,7 @@ export default function SharedSessionBuilding() {
           )}
         </div>
 
+        {/* Sticky footer */}
         {!showSearch && exercises.length > 0 && (
           <div className={styles.footer}>
             <button className={styles.startBtn} onClick={handleStart} disabled={starting}>

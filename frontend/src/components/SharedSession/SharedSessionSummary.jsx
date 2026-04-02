@@ -7,21 +7,32 @@ import Footer from '../Footer/Footer';
 import styles from './SharedSessionBuilder.module.css';
 
 function formatDuration(sec) {
-  const m = Math.floor(sec / 60);
+  if (!sec || sec <= 0) return '--';
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
   const s = sec % 60;
+  if (h > 0) return `${h}h${m > 0 ? `${m}min` : ''}`;
   return m > 0 ? `${m}min ${s > 0 ? `${s}s` : ''}`.trim() : `${s}s`;
 }
 
 function summarizeSets(entry) {
   if (!entry) return null;
   const sets = entry.sets || [];
-  if (sets.length === 0) return null;
   const filledSets = sets.filter(s => Number(s?.reps ?? 0) > 0 || Number(s?.weight ?? 0) > 0);
-  if (filledSets.length === 0) return null;
-  const maxWeight = Math.max(...filledSets.map(s => Number(s?.weight ?? 0)));
-  const avgReps = Math.round(filledSets.reduce((a, s) => a + Number(s?.reps ?? 0), 0) / filledSets.length);
-  if (maxWeight > 0) return `${filledSets.length}x${avgReps} @ ${maxWeight}kg`;
-  return `${filledSets.length}x${avgReps}`;
+  if (filledSets.length > 0) {
+    const maxWeight = Math.max(...filledSets.map(s => Number(s?.weight ?? 0)));
+    const avgReps = Math.round(filledSets.reduce((a, s) => a + Number(s?.reps ?? 0), 0) / filledSets.length);
+    if (maxWeight > 0) return `${filledSets.length}\u00D7${avgReps} @ ${maxWeight}kg`;
+    return `${filledSets.length}\u00D7${avgReps}`;
+  }
+  const cardio = entry.cardioSets || [];
+  if (cardio.length > 0) {
+    const totalDur = cardio.reduce((a, s) => a + Number(s?.durationSec ?? 0), 0);
+    return totalDur > 0 ? `${Math.round(totalDur / 60)}min` : null;
+  }
+  if (entry.swim) return `${entry.swim.lapCount || 0} longueurs`;
+  if (entry.yoga) return `${entry.yoga.durationMin || 0}min yoga`;
+  return null;
 }
 
 export default function SharedSessionSummary() {
@@ -42,7 +53,6 @@ export default function SharedSessionSummary() {
     return { mine, partner: exercises.length - mine };
   }, [exercises, userId]);
 
-  // Build my progress from session.progress
   const myProgress = useMemo(() => {
     const map = new Map();
     if (session?.progress) {
@@ -55,6 +65,21 @@ export default function SharedSessionSummary() {
     }
     return map;
   }, [session?.progress, userId]);
+
+  // Count completed exercises for each
+  const myCompleted = useMemo(() => {
+    let count = 0;
+    for (const [, entry] of myProgress) { if (entry.done) count++; }
+    return count;
+  }, [myProgress]);
+
+  const partnerCompleted = useMemo(() => {
+    let count = 0;
+    if (partnerExerciseData) {
+      for (const [, entry] of partnerExerciseData) { if (entry.done) count++; }
+    }
+    return count;
+  }, [partnerExerciseData]);
 
   return (
     <>
@@ -77,26 +102,24 @@ export default function SharedSessionSummary() {
               <span className={styles.statLabel}>Exercices</span>
             </div>
             <div className={styles.statCard}>
-              <span className={styles.statValue}>{duration > 0 ? formatDuration(duration) : '--'}</span>
+              <span className={styles.statValue}>{formatDuration(duration)}</span>
               <span className={styles.statLabel}>Durée</span>
             </div>
             <div className={styles.statCard}>
-              <span className={styles.statValue}>{session?.endedBy?.length || 0}/2</span>
-              <span className={styles.statLabel}>Terminé</span>
+              <span className={styles.statValue}>{myCompleted}/{exercises.length}</span>
+              <span className={styles.statLabel}>Mes exos faits</span>
             </div>
             <div className={styles.statCard}>
-              <span className={styles.statValue}>
-                {exercises.length > 0 ? Math.round((exerciseCountByUser.mine / exercises.length) * 100) : 0}%
-              </span>
-              <span className={styles.statLabel}>Ma contribution</span>
+              <span className={styles.statValue}>{partnerCompleted}/{exercises.length}</span>
+              <span className={styles.statLabel}>{partnerName}</span>
             </div>
           </div>
 
-          {/* Contribution */}
+          {/* Contribution bar */}
           <div className={styles.contributionBar}>
             <div className={styles.contributionLabel}>
-              <span>Toi : {exerciseCountByUser.mine}</span>
-              <span>{partnerName} : {exerciseCountByUser.partner}</span>
+              <span>Toi : {exerciseCountByUser.mine} ajoutés</span>
+              <span>{partnerName} : {exerciseCountByUser.partner} ajoutés</span>
             </div>
             <div className={styles.contributionTrack}>
               <div
@@ -107,6 +130,7 @@ export default function SharedSessionSummary() {
           </div>
 
           {/* Exercise comparison */}
+          <h3 className={styles.sectionTitle} style={{ textAlign: 'left' }}>Détail par exercice</h3>
           <div className={styles.summaryExercises}>
             {exercises.map((ex, i) => {
               const myEntry = myProgress.get(i);
@@ -120,9 +144,9 @@ export default function SharedSessionSummary() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <span className={styles.summaryExName}>{ex.exerciseName}</span>
                     {(mySummary || partnerSummary) && (
-                      <div style={{ display: 'flex', gap: 12, fontSize: '0.7rem', color: 'var(--color-ink-tertiary, #a8a29e)', marginTop: 2 }}>
-                        {mySummary && <span>Toi: {mySummary}</span>}
-                        {partnerSummary && <span>{partnerName}: {partnerSummary}</span>}
+                      <div className={styles.summaryComparison}>
+                        {mySummary && <span className={styles.summaryMyData}>Toi: {mySummary}</span>}
+                        {partnerSummary && <span className={styles.summaryPartnerData}>{partnerName}: {partnerSummary}</span>}
                       </div>
                     )}
                   </div>
@@ -135,11 +159,11 @@ export default function SharedSessionSummary() {
           </div>
 
           <div className={styles.summaryActions}>
-            <button className={styles.startBtn} onClick={() => navigate('/matching')}>
-              Retour aux matches
+            <button className={styles.startBtn} onClick={() => navigate('/dashboard')}>
+              Voir dans le dashboard
             </button>
-            <button className={styles.secondaryBtn} onClick={() => navigate('/dashboard')}>
-              Dashboard
+            <button className={styles.secondaryBtn} onClick={() => navigate('/matching')}>
+              Retour aux matches
             </button>
           </div>
         </div>
