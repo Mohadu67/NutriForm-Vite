@@ -398,7 +398,7 @@ export default function Navbar() {
           ))}
 
           {/* Shared Session active indicator */}
-          {sharedSession && ['building', 'active'].includes(sharedSession.status) && (
+          {sharedSession && ['building', 'active'].includes(sharedSession.status) && !sharedSession.endedBy?.some(id => String(id) === String(authUser?.id || authUser?._id)) && (
             <a
               href={`/shared-session/${sharedSession._id}`}
               className={`${styles.dockItem} ${styles.sharedSessionIndicator}`}

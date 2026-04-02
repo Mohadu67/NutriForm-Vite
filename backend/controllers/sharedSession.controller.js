@@ -4,9 +4,8 @@ const Match = require('../models/Match');
 const logger = require('../utils/logger.js');
 
 // ─── RATE LIMITING (in-memory) ──────────────────────────
-// Max 2 updates per second per session for updateProgress
 const _progressTimestamps = new Map();
-const RATE_LIMIT_INTERVAL_MS = 500; // 2 per second = 1 every 500ms
+const RATE_LIMIT_INTERVAL_MS = 500;
 
 // ─── INVITE ───────────────────────────────────────────────
 // POST /api/shared-sessions/invite
@@ -172,7 +171,8 @@ exports.getActive = async (req, res) => {
 
     const session = await SharedSession.findOne({
       $or: [{ initiatorId: userId }, { partnerId: userId }],
-      status: { $in: ['pending', 'building', 'active'] }
+      status: { $in: ['pending', 'building', 'active'] },
+      endedBy: { $ne: userId }
     })
       .populate('initiatorId', 'pseudo photo')
       .populate('partnerId', 'pseudo photo');
@@ -190,7 +190,7 @@ exports.addExercise = async (req, res) => {
   try {
     const userId = req.user._id;
     const { id } = req.params;
-    const { exerciseId, exerciseName, type, muscles } = req.body;
+    const { exerciseId, exerciseName, type, muscles, equipment, primaryMuscle, secondaryMuscles, category } = req.body;
 
     // Trim and validate exerciseName
     const trimmedName = (exerciseName || '').trim();
@@ -198,9 +198,10 @@ exports.addExercise = async (req, res) => {
       return res.status(400).json({ error: 'exerciseName requis (non vide).' });
     }
 
-    // Validate type is in enum
+    // Normalize type to array
+    const typeArray = Array.isArray(type) ? type : [type].filter(Boolean);
     const validTypes = ['muscu', 'cardio', 'poids_du_corps'];
-    if (!type || !validTypes.includes(type)) {
+    if (typeArray.length === 0 || typeArray.some(t => !validTypes.includes(t))) {
       return res.status(400).json({ error: `type invalide. Valeurs acceptées : ${validTypes.join(', ')}` });
     }
 
@@ -228,8 +229,12 @@ exports.addExercise = async (req, res) => {
     const exercise = {
       exerciseId: exerciseId || null,
       exerciseName: trimmedName,
-      type,
+      type: typeArray,
       muscles: muscles || [],
+      equipment: equipment || [],
+      primaryMuscle: primaryMuscle || muscles?.[0] || null,
+      secondaryMuscles: secondaryMuscles || [],
+      category: category || null,
       order: session.exercises.length,
       addedBy: userId
     };
@@ -283,21 +288,14 @@ exports.removeExercise = async (req, res) => {
     // Find the exercise name before removing (for notification)
     const removed = session.exercises.find(e => e.order === orderNum);
 
-    // Atomic $pull to prevent race conditions
-    await SharedSession.findOneAndUpdate(
+    // Atomic: pull + reindex in a single pipeline update
+    await SharedSession.updateOne(
       { _id: id },
-      { $pull: { exercises: { order: orderNum } } }
+      [
+        { $set: { exercises: { $filter: { input: '$exercises', cond: { $ne: ['$$this.order', orderNum] } } } } },
+        { $set: { exercises: { $map: { input: { $sortArray: { input: '$exercises', sortBy: { order: 1 } } }, as: 'ex', in: { $mergeObjects: ['$$ex', { order: { $indexOfArray: [{ $sortArray: { input: '$exercises', sortBy: { order: 1 } } }, '$$ex'] } }] } } } } }
+      ]
     );
-
-    // Reindex orders atomically: read fresh, update orders, save
-    const updated = await SharedSession.findById(id);
-    if (updated) {
-      const sorted = updated.exercises.sort((a, b) => a.order - b.order);
-      for (let i = 0; i < sorted.length; i++) {
-        sorted[i].order = i;
-      }
-      await updated.save();
-    }
 
     // Notifier le partenaire
     const partnerId = session.initiatorId.equals(userId)
@@ -342,13 +340,28 @@ exports.reorderExercises = async (req, res) => {
       return res.status(400).json({ error: 'La séance n\'accepte plus de modifications.' });
     }
 
-    // Appliquer le nouvel ordre
-    for (const { exerciseName, order } of exerciseOrders) {
-      const ex = session.exercises.find(e => e.exerciseName === exerciseName);
-      if (ex) ex.order = order;
+    // Validate orders: no duplicates, within bounds
+    const orders = exerciseOrders.map(e => e.order);
+    const uniqueOrders = new Set(orders);
+    if (uniqueOrders.size !== orders.length) {
+      return res.status(400).json({ error: 'Ordres dupliqués.' });
     }
-    session.exercises.sort((a, b) => a.order - b.order);
-    await session.save();
+    if (orders.some(o => o < 0 || o >= session.exercises.length)) {
+      return res.status(400).json({ error: 'Ordres hors limites.' });
+    }
+
+    // Apply new order atomically
+    const bulkOps = exerciseOrders.map(({ exerciseName, order }) => ({
+      updateOne: {
+        filter: { _id: id, 'exercises.exerciseName': exerciseName },
+        update: { $set: { 'exercises.$.order': order } }
+      }
+    }));
+    await SharedSession.bulkWrite(bulkOps);
+
+    // Read fresh for response/notification
+    const updated = await SharedSession.findById(id);
+    updated.exercises.sort((a, b) => a.order - b.order);
 
     const partnerId = session.initiatorId.equals(userId)
       ? session.partnerId.toString()
@@ -357,12 +370,12 @@ exports.reorderExercises = async (req, res) => {
     const io = req.app.get('io');
     if (io?.notifyUser) {
       io.notifyUser(partnerId, 'shared_session:exercises_reordered', {
-        sharedSessionId: session._id,
-        exercises: session.exercises
+        sharedSessionId: updated._id,
+        exercises: updated.exercises
       });
     }
 
-    res.json({ sharedSession: session });
+    res.json({ sharedSession: updated });
   } catch (error) {
     logger.error('Erreur shared-session reorderExercises:', error);
     res.status(500).json({ error: 'Erreur lors du réordonnancement.' });
@@ -420,15 +433,19 @@ exports.startSession = async (req, res) => {
   }
 };
 
-// ─── UPDATE PROGRESS (temps réel) ─────────────────────────
-// POST /api/shared-sessions/:id/progress
-exports.updateProgress = async (req, res) => {
+// ─── UPDATE EXERCISE DATA (temps réel + persisté) ────────
+// POST /api/shared-sessions/:id/exercise-data
+exports.updateExerciseData = async (req, res) => {
   try {
     const userId = req.user._id;
     const { id } = req.params;
-    const { currentExerciseIndex, completedExercises, totalSets } = req.body;
+    const { exerciseOrder, exerciseName, mode, sets, cardioSets, swim, yoga, stretch, walkRun, done, notes } = req.body;
 
-    // Rate limiting: max 2 updates per second per session
+    if (exerciseOrder == null) {
+      return res.status(400).json({ error: 'exerciseOrder requis.' });
+    }
+
+    // Rate limiting
     const rateLimitKey = `${id}:${userId}`;
     const now = Date.now();
     const lastUpdate = _progressTimestamps.get(rateLimitKey);
@@ -446,25 +463,109 @@ exports.updateProgress = async (req, res) => {
       return res.status(403).json({ error: 'Non autorisé.' });
     }
 
-    // Envoyer au partenaire via WebSocket (pas de persistence — c'est du live)
+    // Persist via atomic $set on the progress Map
+    const progressKey = `progress.${userId}:${exerciseOrder}`;
+    const entry = {
+      exerciseOrder,
+      userId,
+      exerciseName: exerciseName || '',
+      mode: mode || '',
+      sets: sets || [],
+      cardioSets: cardioSets || [],
+      swim: swim || null,
+      yoga: yoga || null,
+      stretch: stretch || null,
+      walkRun: walkRun || null,
+      done: !!done,
+      notes: notes || '',
+      updatedAt: new Date()
+    };
+
+    await SharedSession.updateOne({ _id: id }, { $set: { [progressKey]: entry } });
+
+    // Relay to partner via WebSocket
     const partnerId = session.initiatorId.equals(userId)
       ? session.partnerId.toString()
       : session.initiatorId.toString();
 
     const io = req.app.get('io');
     if (io?.notifyUser) {
-      io.notifyUser(partnerId, 'shared_session:partner_progress', {
+      io.notifyUser(partnerId, 'shared_session:partner_exercise_update', {
         sharedSessionId: session._id,
         userId: userId.toString(),
-        currentExerciseIndex,
-        completedExercises,
-        totalSets
+        exerciseOrder,
+        exerciseName: exerciseName || '',
+        mode: mode || '',
+        sets: sets || [],
+        cardioSets: cardioSets || [],
+        swim: swim || null,
+        yoga: yoga || null,
+        stretch: stretch || null,
+        walkRun: walkRun || null,
+        done: !!done
       });
     }
 
     res.json({ ok: true });
   } catch (error) {
-    logger.error('Erreur shared-session updateProgress:', error);
+    logger.error('Erreur shared-session updateExerciseData:', error);
+    res.status(500).json({ error: 'Erreur.' });
+  }
+};
+
+// ─── GET PROGRESS ────────────────────────────────────────
+// GET /api/shared-sessions/:id/progress
+exports.getProgress = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { id } = req.params;
+
+    const session = await SharedSession.findById(id);
+    if (!session) {
+      return res.status(404).json({ error: 'Session introuvable.' });
+    }
+
+    if (!session.initiatorId.equals(userId) && !session.partnerId.equals(userId)) {
+      return res.status(403).json({ error: 'Non autorisé.' });
+    }
+
+    // Convert Map to plain object grouped by userId
+    const progressObj = {};
+    if (session.progress) {
+      for (const [key, value] of session.progress.entries()) {
+        progressObj[key] = value;
+      }
+    }
+
+    res.json({ progress: progressObj });
+  } catch (error) {
+    logger.error('Erreur shared-session getProgress:', error);
+    res.status(500).json({ error: 'Erreur.' });
+  }
+};
+
+// ─── GET BY MATCH ────────────────────────────────────────
+// GET /api/shared-sessions/by-match/:matchId
+exports.getByMatch = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { matchId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(matchId)) {
+      return res.status(400).json({ error: 'matchId invalide.' });
+    }
+
+    const session = await SharedSession.findOne({
+      matchId,
+      status: { $in: ['pending', 'building', 'active'] },
+      $or: [{ initiatorId: userId }, { partnerId: userId }]
+    })
+      .populate('initiatorId', 'pseudo photo')
+      .populate('partnerId', 'pseudo photo');
+
+    res.json({ sharedSession: session || null });
+  } catch (error) {
+    logger.error('Erreur shared-session getByMatch:', error);
     res.status(500).json({ error: 'Erreur.' });
   }
 };
@@ -530,6 +631,17 @@ exports.endSession = async (req, res) => {
       ? session.partnerId.toString()
       : session.initiatorId.toString();
 
+    // Build partner summary from progress map
+    const partnerSummary = [];
+    if (session.progress) {
+      const prefix = `${userId}:`;
+      for (const [key, value] of session.progress.entries()) {
+        if (key.startsWith(prefix)) {
+          partnerSummary.push(value);
+        }
+      }
+    }
+
     const io = req.app.get('io');
     if (io?.notifyUser) {
       const User = require('../models/User');
@@ -538,7 +650,8 @@ exports.endSession = async (req, res) => {
         sharedSessionId: session._id,
         userId: userId.toString(),
         username: finisher?.pseudo,
-        sessionEnded: session.status === 'ended'
+        sessionEnded: session.status === 'ended',
+        partnerSummary
       });
     }
 

@@ -19,6 +19,9 @@ router.get('/active', ctrl.getActive);
 // Historique des sessions partagées
 router.get('/history', ctrl.getHistory);
 
+// Récupérer la séance active par matchId (pour le chat)
+router.get('/by-match/:matchId', ctrl.getByMatch);
+
 // Récupérer une session par ID
 router.get('/:id', ctrl.getSession);
 
@@ -34,8 +37,11 @@ router.patch('/:id/exercises/reorder', ctrl.reorderExercises);
 // Démarrer la séance
 router.post('/:id/start', ctrl.startSession);
 
-// Mettre à jour la progression (live)
-router.post('/:id/progress', ctrl.updateProgress);
+// Récupérer la progression des participants
+router.get('/:id/progress', ctrl.getProgress);
+
+// Mettre à jour les saisies d'un exercice (live + persisté)
+router.post('/:id/exercise-data', ctrl.updateExerciseData);
 
 // Terminer la séance (pour un participant)
 router.post('/:id/end', ctrl.endSession);

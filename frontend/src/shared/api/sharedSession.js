@@ -39,9 +39,17 @@ export const reorderSharedExercises = (sessionId, exerciseOrders) =>
 export const startSharedSession = (sessionId) =>
   client.post(e.start(sessionId)).then(r => r.data);
 
-// Mettre à jour la progression
-export const updateSharedProgress = (sessionId, progress) =>
-  client.post(e.progress(sessionId), progress).then(r => r.data);
+// Mettre à jour les saisies d'un exercice (persisté + WS)
+export const updateExerciseData = (sessionId, data) =>
+  client.post(e.exerciseData(sessionId), data).then(r => r.data);
+
+// Récupérer la progression des participants
+export const getSharedProgress = (sessionId) =>
+  client.get(e.progress(sessionId)).then(r => r.data);
+
+// Récupérer la séance active par matchId
+export const getSharedSessionByMatch = (matchId) =>
+  client.get(e.byMatch(matchId)).then(r => r.data);
 
 // Terminer la séance
 export const endSharedSession = (sessionId, workoutSessionId) =>

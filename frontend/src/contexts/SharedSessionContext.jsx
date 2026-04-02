@@ -9,7 +9,9 @@ import {
   addSharedExercise,
   removeSharedExercise,
   startSharedSession as apiStartSession,
-  updateSharedProgress as apiUpdateProgress,
+  updateExerciseData as apiUpdateExerciseData,
+  getSharedProgress,
+  getSharedSessionByMatch,
   endSharedSession as apiEndSession,
   cancelSharedSession as apiCancelSession,
   inviteSharedSession
@@ -33,7 +35,19 @@ export function SharedSessionProvider({ children }) {
   const [session, setSession] = useState(null);       // SharedSession courante
   const [loading, setLoading] = useState(false);
   const [pendingInvite, setPendingInvite] = useState(null); // invitation reçue en attente
-  const [partnerProgress, setPartnerProgress] = useState(null); // progression du partenaire
+  const [partnerExerciseData, setPartnerExerciseData] = useState(new Map()); // Map exerciseOrder → saisies partenaire
+
+  // sessionStorage pour persister le dismiss après rechargement page
+  const DISMISSED_KEY = 'dismissedSharedSessionId';
+  const getDismissedId = () => {
+    try { return sessionStorage.getItem(DISMISSED_KEY); } catch { return null; }
+  };
+  const setDismissedId = (id) => {
+    try {
+      if (id) sessionStorage.setItem(DISMISSED_KEY, String(id));
+      else sessionStorage.removeItem(DISMISSED_KEY);
+    } catch { /* silent */ }
+  };
 
   const sessionRef = useRef(session);
   sessionRef.current = session;
@@ -44,7 +58,13 @@ export function SharedSessionProvider({ children }) {
     try {
       setLoading(true);
       const data = await getActiveSharedSession();
-      setSession(data.sharedSession);
+      const fetched = data.sharedSession;
+      // Ne pas recharger une session que l'user a déjà terminée/annulée
+      if (fetched && getDismissedId() === String(fetched._id)) {
+        setSession(null);
+      } else {
+        setSession(fetched);
+      }
     } catch {
       // Pas de session active, c'est normal
     } finally {
@@ -61,8 +81,12 @@ export function SharedSessionProvider({ children }) {
     try {
       const id = sessionId || sessionRef.current?._id;
       if (!id) return;
+      // Ne pas recharger une session dismissed
+      if (getDismissedId() === String(id)) return;
       const data = await getSharedSession(id);
-      setSession(data.sharedSession);
+      const fetched = data.sharedSession;
+      if (fetched && getDismissedId() === String(fetched._id)) return;
+      setSession(fetched);
     } catch (err) {
       console.error('Erreur refresh shared session:', err);
     }
@@ -125,14 +149,28 @@ export function SharedSessionProvider({ children }) {
       refreshSession(data.sharedSessionId);
     }));
 
-    // Progression du partenaire
-    cleanups.push(ws.on('shared_session:partner_progress', (data) => {
-      setPartnerProgress(data);
+    // Saisies du partenaire (temps réel)
+    cleanups.push(ws.on('shared_session:partner_exercise_update', (data) => {
+      setPartnerExerciseData(prev => {
+        const next = new Map(prev);
+        next.set(data.exerciseOrder, data);
+        return next;
+      });
     }));
 
     // Partenaire a terminé
     cleanups.push(ws.on('shared_session:partner_ended', (data) => {
       toast.info(`${data.username || 'Ton partenaire'} a terminé sa séance`);
+      // Inject partner summary into partnerExerciseData
+      if (data.partnerSummary?.length) {
+        setPartnerExerciseData(prev => {
+          const next = new Map(prev);
+          for (const entry of data.partnerSummary) {
+            next.set(entry.exerciseOrder, entry);
+          }
+          return next;
+        });
+      }
       if (data.sessionEnded) {
         refreshSession(data.sharedSessionId);
       }
@@ -142,7 +180,7 @@ export function SharedSessionProvider({ children }) {
     cleanups.push(ws.on('shared_session:cancelled', () => {
       toast.info('Séance partagée annulée');
       setSession(null);
-      setPartnerProgress(null);
+      setPartnerExerciseData(new Map());
     }));
 
     return () => {
@@ -153,6 +191,7 @@ export function SharedSessionProvider({ children }) {
   // ─── Actions ─────────────────────────────────────────────
   const invite = useCallback(async (matchId, sessionName, gymName) => {
     const data = await inviteSharedSession(matchId, sessionName, gymName);
+    setDismissedId(null);
     setSession(data.sharedSession);
     return data.sharedSession;
   }, []);
@@ -161,6 +200,7 @@ export function SharedSessionProvider({ children }) {
     const data = await respondSharedSession(sessionId, accept);
     setPendingInvite(null);
     if (accept && data.sharedSession) {
+      setDismissedId(null);
       setSession(data.sharedSession);
     }
     return data;
@@ -187,25 +227,46 @@ export function SharedSessionProvider({ children }) {
     setSession(data.sharedSession);
   }, []);
 
-  const sendProgress = useCallback(async (progress) => {
+  const sendExerciseData = useCallback(async (data) => {
     const id = sessionRef.current?._id;
     if (!id) return;
-    await apiUpdateProgress(id, progress);
+    await apiUpdateExerciseData(id, data);
   }, []);
+
+  const loadProgress = useCallback(async () => {
+    const id = sessionRef.current?._id;
+    if (!id) return;
+    try {
+      const { progress } = await getSharedProgress(id);
+      const myId = String(user?.id || user?._id || '');
+      const partnerMap = new Map();
+      for (const [key, value] of Object.entries(progress)) {
+        // Keys are "userId:exerciseOrder" — only keep partner entries
+        if (!key.startsWith(myId + ':')) {
+          partnerMap.set(value.exerciseOrder, value);
+        }
+      }
+      setPartnerExerciseData(partnerMap);
+    } catch { /* silent */ }
+  }, [user]);
 
   const endSession = useCallback(async (workoutSessionId) => {
     const id = sessionRef.current?._id;
     if (!id) return;
-    const data = await apiEndSession(id, workoutSessionId);
-    setSession(data.sharedSession);
+    // Dismiss AVANT l'appel API pour bloquer tout refresh concurrent
+    setDismissedId(id);
+    setSession(null);
+    setPartnerExerciseData(new Map());
+    await apiEndSession(id, workoutSessionId);
   }, []);
 
   const cancelSession = useCallback(async () => {
     const id = sessionRef.current?._id;
     if (!id) return;
+    setDismissedId(id);
     await apiCancelSession(id);
     setSession(null);
-    setPartnerProgress(null);
+    setPartnerExerciseData(new Map());
   }, []);
 
   const dismissInvite = useCallback(() => {
@@ -230,7 +291,7 @@ export function SharedSessionProvider({ children }) {
     session,
     loading,
     pendingInvite,
-    partnerProgress,
+    partnerExerciseData,
     isParticipant,
     partner,
     // Actions
@@ -239,7 +300,8 @@ export function SharedSessionProvider({ children }) {
     addExercise,
     removeExercise,
     startSession,
-    sendProgress,
+    sendExerciseData,
+    loadProgress,
     endSession,
     cancelSession,
     refreshSession,
