@@ -6,11 +6,11 @@ import Avatar from '../Shared/Avatar';
 import styles from './GymBroInviteModal.module.css';
 
 export default function GymBroInviteModal() {
-  const { pendingInvite, respond, dismissInvite } = useSharedSession() || {};
+  const { pendingInvite, inviteModalDismissed, respond, dismissInvite } = useSharedSession() || {};
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  if (!pendingInvite) return null;
+  if (!pendingInvite || inviteModalDismissed) return null;
 
   const { sharedSessionId, initiator, sessionName, gymName } = pendingInvite;
 

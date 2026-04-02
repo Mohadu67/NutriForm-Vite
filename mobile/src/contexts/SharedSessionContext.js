@@ -51,6 +51,19 @@ export function SharedSessionProvider({ children }) {
         setSession(null);
       } else {
         setSession(fetched);
+        // Si la session est pending et que je suis le destinataire, restaurer l'invite
+        if (fetched?.status === 'pending') {
+          const myId = String(user?._id || user?.id || '');
+          const isRecipient = String(fetched.partnerId?._id || fetched.partnerId || '') === myId;
+          if (isRecipient) {
+            setPendingInvite({
+              sharedSessionId: fetched._id,
+              initiator: fetched.initiatorId || {},
+              sessionName: fetched.sessionName || '',
+              gymName: fetched.gymName || '',
+            });
+          }
+        }
       }
     } catch {
       // No active session

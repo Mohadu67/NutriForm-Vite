@@ -35,6 +35,7 @@ export function SharedSessionProvider({ children }) {
   const [session, setSession] = useState(null);       // SharedSession courante
   const [loading, setLoading] = useState(false);
   const [pendingInvite, setPendingInvite] = useState(null); // invitation reçue en attente
+  const [inviteModalDismissed, setInviteModalDismissed] = useState(false); // modal fermée mais invite toujours active
   const [partnerExerciseData, setPartnerExerciseData] = useState(new Map()); // Map exerciseOrder → saisies partenaire
 
   // sessionStorage pour persister le dismiss après rechargement page
@@ -64,6 +65,19 @@ export function SharedSessionProvider({ children }) {
         setSession(null);
       } else {
         setSession(fetched);
+        // Si pending et que je suis le destinataire, restaurer l'invite
+        if (fetched?.status === 'pending') {
+          const myId = String(user?.id || user?._id || '');
+          const isRecipient = String(fetched.partnerId?._id || fetched.partnerId || '') === myId;
+          if (isRecipient) {
+            setPendingInvite({
+              sharedSessionId: fetched._id,
+              initiator: fetched.initiatorId || {},
+              sessionName: fetched.sessionName || '',
+              gymName: fetched.gymName || '',
+            });
+          }
+        }
       }
     } catch {
       // Pas de session active, c'est normal
@@ -199,6 +213,7 @@ export function SharedSessionProvider({ children }) {
   const respond = useCallback(async (sessionId, accept) => {
     const data = await respondSharedSession(sessionId, accept);
     setPendingInvite(null);
+    setInviteModalDismissed(false);
     if (accept && data.sharedSession) {
       setDismissedId(null);
       setSession(data.sharedSession);
@@ -270,7 +285,7 @@ export function SharedSessionProvider({ children }) {
   }, []);
 
   const dismissInvite = useCallback(() => {
-    setPendingInvite(null);
+    setInviteModalDismissed(true);
   }, []);
 
   // ─── Helpers ─────────────────────────────────────────────
@@ -291,6 +306,7 @@ export function SharedSessionProvider({ children }) {
     session,
     loading,
     pendingInvite,
+    inviteModalDismissed,
     partnerExerciseData,
     isParticipant,
     partner,

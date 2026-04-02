@@ -38,7 +38,7 @@ export default function Navbar() {
   const { isChatOpen, chatView, activeConversation, openChat, closeChat, backToHistory } = useChat() || {};
   const { on, isConnected } = useWebSocket() || {};
   const { isPremium } = usePremiumStatus();
-  const { session: sharedSession } = useSharedSession() || {};
+  const { session: sharedSession, pendingInvite, respond: respondInvite, dismissInvite } = useSharedSession() || {};
   const { unreadCount: notificationUnreadCount } = useNotificationCount();
   const { user: authUser, isLoggedIn: authLoggedIn, isPartner: authIsPartner, refresh: refreshAuth } = useAuth();
 
@@ -311,6 +311,29 @@ export default function Navbar() {
     <>
       {/* Overlay */}
       {open && <div className={styles.overlay} onClick={closeMenu} aria-hidden="true" />}
+
+      {/* Pending invite banner — flottant au-dessus de la navbar */}
+      {pendingInvite && (
+        <div className={styles.pendingInviteBanner}>
+          <span className={styles.pendingInviteDot} />
+          <span className={styles.pendingInviteText}>
+            <strong>{pendingInvite.initiator?.username || pendingInvite.initiator?.pseudo || 'Gym bro'}</strong> t'invite à une séance
+          </span>
+          <button className={styles.pendingInviteAccept} onClick={async () => {
+            try {
+              await respondInvite(pendingInvite.sharedSessionId, true);
+              navigate(`/shared-session/${pendingInvite.sharedSessionId}`);
+            } catch {}
+          }}>
+            Accepter
+          </button>
+          <button className={styles.pendingInviteDecline} onClick={() => {
+            respondInvite(pendingInvite.sharedSessionId, false).catch(() => {});
+          }}>
+            Refuser
+          </button>
+        </div>
+      )}
 
       {/* Main Dock Navigation */}
       <nav
