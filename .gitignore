@@ -52,3 +52,4 @@ cookies.txt
 docs/archives/
 
 *node_modules_old
+.env.test
