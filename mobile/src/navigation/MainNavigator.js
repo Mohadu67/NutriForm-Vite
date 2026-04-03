@@ -14,6 +14,7 @@ import ProfileStack from './stacks/ProfileStack';
 import { useAuth } from '../contexts/AuthContext';
 import { useChat } from '../contexts/ChatContext';
 import { useWorkout } from '../contexts/WorkoutContext';
+import { useSharedSession } from '../contexts/SharedSessionContext';
 import { useTheme } from '../theme';
 import WorkoutContent from '../components/workout/WorkoutContent';
 
@@ -91,9 +92,12 @@ function MiniTimer({ startTime, colors: C }) {
 // ─── Mini bar ────────────────────────────────────────────────────────────────
 function WorkoutMiniBar({ isExpanded, colors: C }) {
   const { currentWorkout, getCompletedSetsCount, getTotalSetsCount } = useWorkout();
-  if (!currentWorkout || !currentWorkout.exercises?.length) return null;
+  const shared = useSharedSession();
+  const hasLocal = currentWorkout && currentWorkout.exercises?.length > 0;
+  const hasShared = shared?.session && (shared.session.status === 'active' || shared.session.status === 'building');
 
-  // Pulse animation on the handle
+  if (!hasLocal && !hasShared) return null;
+
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const bounceAnim = useRef(new Animated.Value(0)).current;
 
@@ -116,10 +120,11 @@ function WorkoutMiniBar({ isExpanded, colors: C }) {
     return () => { pulse.stop(); bounce.stop(); };
   }, [isExpanded, pulseAnim, bounceAnim]);
 
-  const isActive = !!currentWorkout.startTime;
-  const count = currentWorkout.exercises.length;
-  const completed = getCompletedSetsCount();
-  const total = getTotalSetsCount();
+  const isActive = hasLocal && !!currentWorkout.startTime;
+  const count = hasLocal ? currentWorkout.exercises.length : (shared?.session?.exercises?.length || 0);
+  const completed = hasLocal ? getCompletedSetsCount() : 0;
+  const total = hasLocal ? getTotalSetsCount() : 0;
+  const partnerName = shared?.partner?.pseudo || shared?.partner?.username || '';
 
   return (
     <View style={[miniStyles.container, { borderTopColor: C.border }]}>
@@ -129,7 +134,7 @@ function WorkoutMiniBar({ isExpanded, colors: C }) {
           !isExpanded && { transform: [{ translateY: bounceAnim }, { scaleX: pulseAnim }] },
         ]}
       >
-        <View style={[miniStyles.handle, { backgroundColor: C.accent }]} />
+        <View style={[miniStyles.handle, { backgroundColor: hasShared ? '#72baa1' : C.accent }]} />
       </Animated.View>
       <View style={miniStyles.row}>
         <View style={miniStyles.info}>
@@ -140,6 +145,13 @@ function WorkoutMiniBar({ isExpanded, colors: C }) {
               <Text style={[miniStyles.sep, { color: C.textMuted }]}>•</Text>
               <Text style={[miniStyles.detail, { color: C.textMuted }]}>{completed}/{total} series</Text>
             </>
+          ) : hasShared && !hasLocal ? (
+            <>
+              <Ionicons name="people" size={18} color="#72baa1" />
+              <Text style={[miniStyles.detail, { color: C.textMuted }]}>
+                Séance avec {partnerName} • {count} exo{count > 1 ? 's' : ''}
+              </Text>
+            </>
           ) : (
             <>
               <Ionicons name="barbell-outline" size={20} color={C.accent} />
@@ -147,8 +159,8 @@ function WorkoutMiniBar({ isExpanded, colors: C }) {
             </>
           )}
         </View>
-        <View style={[miniStyles.chevron, { backgroundColor: `${C.accent}20` }]}>
-          <Ionicons name={isExpanded ? 'chevron-down' : 'chevron-up'} size={16} color={C.accent} />
+        <View style={[miniStyles.chevron, { backgroundColor: hasShared && !hasLocal ? '#72baa120' : `${C.accent}20` }]}>
+          <Ionicons name={isExpanded ? 'chevron-down' : 'chevron-up'} size={16} color={hasShared && !hasLocal ? '#72baa1' : C.accent} />
         </View>
       </View>
     </View>
@@ -219,7 +231,12 @@ function FloatingTabBar({ state, descriptors, navigation }) {
   const { isDark } = useTheme();
   const COLORS = isDark ? DARK_COLORS : LIGHT_COLORS;
 
-  const hasWorkout = !!(currentWorkout && currentWorkout.exercises?.length > 0);
+  const shared = useSharedSession();
+  const hasSharedBuilding = shared?.session && shared.session.status === 'building';
+  const hasSharedActive = shared?.session && (shared.session.status === 'active' || shared.session.status === 'building');
+  const partnerName = shared?.partner?.pseudo || shared?.partner?.username || 'Partenaire';
+  const hasLocalExercises = !!(currentWorkout && currentWorkout.exercises?.length > 0);
+  const hasWorkout = hasLocalExercises || hasSharedActive;
   const heightAnim = useRef(new Animated.Value(TAB_BAR_HEIGHT)).current;
   const currentHeight = useRef(TAB_BAR_HEIGHT);
   const startDragH = useRef(TAB_BAR_HEIGHT);
@@ -237,17 +254,24 @@ function FloatingTabBar({ state, descriptors, navigation }) {
 
   animateToRef.current = animateTo;
 
-  // When workout appears/disappears, animate to collapsed/base
+  const INVITE_BAR_HEIGHT = 40;
+  const hasPendingInvite = !!shared?.pendingInvite;
+  const hasSharedBanner = !hasPendingInvite && hasSharedActive && !hasWorkout;
+  const extraHeight = (hasPendingInvite || hasSharedBanner) ? INVITE_BAR_HEIGHT : 0;
+
+  // When workout/invite appears/disappears, animate height
   useEffect(() => {
     if (hasWorkout) {
-      if (currentHeight.current <= TAB_BAR_HEIGHT) {
+      if (currentHeight.current <= TAB_BAR_HEIGHT + extraHeight) {
         animateTo(COLLAPSED_H);
       }
+    } else if (extraHeight > 0) {
+      animateTo(TAB_BAR_HEIGHT + extraHeight);
     } else {
       animateTo(TAB_BAR_HEIGHT);
       setExpanded(false);
     }
-  }, [hasWorkout, animateTo]);
+  }, [hasWorkout, animateTo, extraHeight]);
 
   // Pan on the mini bar area
   const panResponder = useRef(
@@ -325,6 +349,35 @@ function FloatingTabBar({ state, descriptors, navigation }) {
           </TouchableOpacity>
         </Animated.View>
       )}
+
+      {/* Bandeau invitation pending — Accepter / Refuser */}
+      {shared?.pendingInvite && (
+        <View style={[styles.inviteBanner, { borderTopColor: COLORS.border }]}>
+          <View style={styles.sharedBannerDot} />
+          <Ionicons name="people" size={16} color="#72baa1" />
+          <Text style={[styles.sharedBannerText, { color: isDark ? '#fff' : '#333' }]} numberOfLines={1}>
+            {shared.pendingInvite.initiator?.username || shared.pendingInvite.initiator?.pseudo || 'Gym bro'} t'invite
+          </Text>
+          <TouchableOpacity
+            style={styles.inviteAcceptBtn}
+            onPress={async () => {
+              try {
+                await shared.respond(shared.pendingInvite.sharedSessionId, true);
+              } catch {}
+            }}
+          >
+            <Text style={styles.inviteAcceptTxt}>Accepter</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.inviteDeclineBtn}
+            onPress={() => shared.respond(shared.pendingInvite.sharedSessionId, false).catch(() => {})}
+          >
+            <Ionicons name="close" size={14} color="#EF4444" />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Le WorkoutContent gère l'affichage de la vue partenaire quand hasSharedActive */}
 
       {/* Tab row - always at bottom */}
       <View style={styles.row}>
@@ -474,4 +527,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF3B30',
     borderWidth: 1.5,
   },
+  sharedBanner: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth },
+  sharedBannerDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#72baa1' },
+  sharedBannerText: { flex: 1, fontSize: 13, fontWeight: '600' },
+  sharedBannerSub: { fontSize: 11, color: '#888' },
+  inviteBanner: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth },
+  inviteAcceptBtn: { backgroundColor: '#22C55E', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8 },
+  inviteAcceptTxt: { color: '#FFF', fontSize: 12, fontWeight: '700' },
+  inviteDeclineBtn: { backgroundColor: '#FEE2E2', paddingHorizontal: 6, paddingVertical: 5, borderRadius: 8 },
 });

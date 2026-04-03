@@ -136,7 +136,13 @@ exports.checkAndAwardBadges = async (userId) => {
       { code: 'challenger_1', check: () => challengeWins >= 1 },
       { code: 'challenger_5', check: () => challengeWins >= 5 },
       { code: 'challenger_10', check: () => challengeWins >= 10 },
-      { code: 'challenger_25', check: () => challengeWins >= 25 }
+      { code: 'challenger_25', check: () => challengeWins >= 25 },
+
+      // Duo badges (séances partagées)
+      { code: 'duo_first', check: () => (stats.duoSessions || 0) >= 1 },
+      { code: 'duo_5', check: () => (stats.duoSessions || 0) >= 5 },
+      { code: 'duo_10', check: () => (stats.duoSessions || 0) >= 10 },
+      { code: 'duo_25', check: () => (stats.duoSessions || 0) >= 25 },
     ];
 
     // Vérifier chaque badge

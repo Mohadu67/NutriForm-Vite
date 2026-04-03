@@ -5,6 +5,7 @@ const WorkoutSession = require('../models/WorkoutSession');
 const FoodLog = require('../models/FoodLog');
 const Recipe = require('../models/Recipe');
 const Challenge = require('../models/Challenge');
+const SharedSession = require('../models/SharedSession');
 const FeedLike = require('../models/FeedLike');
 const FeedComment = require('../models/FeedComment');
 const Notification = require('../models/Notification');
@@ -171,7 +172,7 @@ exports.getFeed = async (req, res) => {
     const bufferLimit = Math.max(limit * 4, 80);
 
     // Requêtes parallèles sur toutes les collections
-    const [sessions, foodLogs, recipes, challenges] = await Promise.all([
+    const [sessions, foodLogs, recipes, challenges, sharedSessions] = await Promise.all([
       WorkoutSession.find({ userId: { $in: feedUserIds }, status: 'finished', endedAt: { $gte: since } })
         .sort({ endedAt: -1 }).limit(bufferLimit)
         .populate('userId', 'prenom pseudo photo').lean(),
@@ -194,6 +195,14 @@ exports.getFeed = async (req, res) => {
       }).sort({ updatedAt: -1 }).limit(Math.floor(bufferLimit / 4))
         .populate('challengerId', 'prenom pseudo photo')
         .populate('challengedId', 'prenom pseudo photo').lean(),
+
+      SharedSession.find({
+        $or: [{ initiatorId: { $in: feedUserIds } }, { partnerId: { $in: feedUserIds } }],
+        status: 'ended',
+        endedAt: { $gte: since },
+      }).sort({ endedAt: -1 }).limit(Math.floor(bufferLimit / 4))
+        .populate('initiatorId', 'prenom pseudo photo')
+        .populate('partnerId', 'prenom pseudo photo').lean(),
     ]);
 
     const feedItems = [];
@@ -321,6 +330,46 @@ exports.getFeed = async (req, res) => {
           winnerId: challenge.winnerId,
           winnerName: challenge.winnerName,
           rewardXp: challenge.rewardXp,
+        },
+      });
+    }
+
+    // ── Séances partagées terminées ──────────────────────────────────────────────
+    for (const ss of sharedSessions) {
+      const exerciseCount = ss.exercises?.length || 0;
+      const durationSec = ss.durationSec || (ss.startedAt && ss.endedAt
+        ? Math.round((new Date(ss.endedAt) - new Date(ss.startedAt)) / 1000) : 0);
+
+      // Compute total volume from progress
+      let totalVolume = 0;
+      if (ss.progress) {
+        const progressObj = ss.progress instanceof Map ? Object.fromEntries(ss.progress) : ss.progress;
+        for (const entry of Object.values(progressObj)) {
+          for (const set of entry.sets || []) {
+            const w = Number(set?.weight ?? 0);
+            const r = Number(set?.reps ?? 0);
+            if (w > 0 && r > 0) totalVolume += w * r;
+          }
+        }
+      }
+
+      feedItems.push({
+        _id: ss._id,
+        type: 'shared_session',
+        date: ss.endedAt || ss.updatedAt,
+        user: ss.initiatorId,
+        isOwn:
+          ss.initiatorId?._id?.toString() === userId.toString() ||
+          ss.partnerId?._id?.toString() === userId.toString(),
+        data: {
+          initiator: ss.initiatorId,
+          partner: ss.partnerId,
+          sessionName: ss.sessionName,
+          gymName: ss.gymName,
+          exerciseCount,
+          durationSec,
+          totalVolume: Math.round(totalVolume),
+          exercises: (ss.exercises || []).slice(0, 5).map(e => e.exerciseName),
         },
       });
     }
@@ -466,6 +515,10 @@ async function getPostOwner(targetId, targetType) {
         const c = await Challenge.findById(targetId).select('challengerId challengedId').lean();
         return c?.challengerId; // notifier le créateur du défi
       }
+      case 'shared_session': {
+        const ss = await SharedSession.findById(targetId).select('initiatorId').lean();
+        return ss?.initiatorId;
+      }
       default:
         return null;
     }
@@ -498,7 +551,7 @@ exports.likePost = async (req, res) => {
         if (ownerId && ownerId.toString() !== userId.toString()) {
           const liker = await User.findById(userId).select('prenom pseudo photo').lean();
           const likerName = liker?.prenom || liker?.pseudo || 'Quelqu\'un';
-          const typeLabels = { workout: 'ta séance', meal: 'ton repas', recipe: 'ta recette', challenge: 'ton défi' };
+          const typeLabels = { workout: 'ta séance', meal: 'ton repas', recipe: 'ta recette', challenge: 'ton défi', shared_session: 'ta séance duo' };
           const savedNotif = await Notification.create({
             userId: ownerId,
             type: 'like',

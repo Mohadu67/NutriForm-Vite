@@ -273,12 +273,14 @@ export default function SuivieExo({
 
       {Array.isArray(items) && items.length > 0 && (
         <div className={styles.cards}>
-          {items.map((exo) => (
+          {items.map((exo, idx) => (
             <SuivieCard
               key={idOf(exo)}
               exo={exo}
               value={exo?.data}
               onChange={(id, next) => updateItemById(id, next)}
+              exerciseIndex={idx}
+              totalExercises={items.length}
             />
           ))}
         </div>

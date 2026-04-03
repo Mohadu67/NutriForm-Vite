@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
 import { Toaster } from 'sonner';
+import './styles/toasts.css';
 import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary.jsx";
 import UpdatePrompt from "./components/Shared/UpdatePrompt.jsx";
 import UpdateBanner from "./components/UpdateBanner/UpdateBanner.jsx";
@@ -99,7 +100,13 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <Toaster richColors closeButton />
+      <Toaster
+        position="top-center"
+        closeButton
+        toastOptions={{ duration: 4000 }}
+        expand={false}
+        gap={8}
+      />
       <AuthProvider>
       <WebSocketProvider>
         <SharedSessionProvider>
@@ -110,7 +117,7 @@ export default function App() {
           <NotificationPrompt />
           <MessageNotificationManager />
           <CookieConsent />
-          <GymBroInviteModal />
+          {/* GymBroInviteModal retiré — remplacé par le rich toast dans SharedSessionContext */}
           <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             {/* Pages principales - chargées immédiatement */}

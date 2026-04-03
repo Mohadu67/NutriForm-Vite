@@ -27,13 +27,21 @@ export const getSharedSession = (sessionId) =>
 export const addSharedExercise = (sessionId, exercise) =>
   client.post(e.addExercise(sessionId), exercise).then(r => r.data);
 
-// Supprimer un exercice
+// Supprimer un exercice de la liste commune (building)
 export const removeSharedExercise = (sessionId, order) =>
   client.delete(e.removeExercise(sessionId, order)).then(r => r.data);
+
+// Supprimer un exercice de MA liste personnelle (active)
+export const removeMySharedExercise = (sessionId, exerciseName) =>
+  client.post(e.removeMyExercise(sessionId, exerciseName)).then(r => r.data);
 
 // Réordonner les exercices
 export const reorderSharedExercises = (sessionId, exerciseOrders) =>
   client.patch(e.reorderExercises(sessionId), { exerciseOrders }).then(r => r.data);
+
+// Cocher/décocher un exercice pour soi (building)
+export const toggleExerciseSelection = (sessionId, exerciseName) =>
+  client.post(e.toggleSelection(sessionId), { exerciseName }).then(r => r.data);
 
 // Démarrer la séance
 export const startSharedSession = (sessionId) =>

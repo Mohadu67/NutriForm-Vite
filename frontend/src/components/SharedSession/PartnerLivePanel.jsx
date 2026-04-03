@@ -28,7 +28,7 @@ export default function PartnerLivePanel({ totalExercises }) {
   if (!session || session.status !== 'active') return null;
 
   const partnerName = partner?.pseudo || partner?.username || 'Partenaire';
-  const exercises = session.exercises || [];
+  const exercises = session.partnerWorkoutData?.exercises || session.exercises || [];
   const total = totalExercises || exercises.length || 0;
 
   // Compute stats from partnerExerciseData
@@ -69,7 +69,10 @@ export default function PartnerLivePanel({ totalExercises }) {
       <button className={styles.header} onClick={() => setExpanded(!expanded)}>
         <div className={styles.avatarWrap}>
           <Avatar src={partner?.photo} name={partnerName} size="sm" className={styles.avatar} />
-          <span className={stale ? styles.staleDot : styles.onlineDot} />
+          <span
+            className={stale ? styles.staleDot : styles.onlineDot}
+            title={stale ? 'Pas de mise à jour depuis 30s+' : 'En ligne — données à jour'}
+          />
         </div>
         <div className={styles.info}>
           <span className={styles.name}>{partnerName}</span>
@@ -97,7 +100,7 @@ export default function PartnerLivePanel({ totalExercises }) {
       {expanded && (
         <div className={styles.expandedList}>
           {exercises.map((ex, i) => {
-            const entry = partnerExerciseData?.get?.(i);
+            const entry = partnerExerciseData?.get?.(ex.exerciseName);
             const isDone = entry?.done;
             const isCurrent = currentExercise === i && !isDone;
             const status = isDone ? 'done' : isCurrent ? 'current' : 'pending';

@@ -176,6 +176,55 @@
   font-size: var(--font-size-xs, 0.75rem);
 }
 
+/* Mobile: stack sets as cards instead of cramped grid */
+@media (max-width: 400px) {
+  .setsHeader {
+    display: none;
+  }
+
+  .setsRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    padding: 10px;
+    border: 1px solid var(--color-neutral-100, #efedea);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    border-bottom: none;
+  }
+
+  :global(.dark) .setsRow {
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .setsRow span {
+    font-size: 0.8rem;
+  }
+
+  .setsRow span:first-child {
+    width: 100%;
+    font-size: 0.7rem;
+    margin-bottom: 2px;
+  }
+
+  .setsRow span:first-child::before {
+    content: 'Set ';
+  }
+}
+
+.mobileLabel {
+  display: none;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-ink-tertiary, #a8a29e);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 400px) {
+  .mobileLabel { display: inline; }
+}
+
 .specialData {
   margin-top: var(--space-3, 12px);
   font-size: var(--font-size-sm, 0.8125rem);

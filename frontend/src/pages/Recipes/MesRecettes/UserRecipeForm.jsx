@@ -227,11 +227,18 @@ export default function UserRecipeForm({ recipe, onBack, onSave }) {
   const handleIngredientProductFound = (product) => {
     if (scanningIngredientIndex === null) return;
     const newIngredients = [...formData.ingredients];
+
+    // Parse product quantity to suggest a default (e.g. "300g" → 300)
+    const parsedQty = parseInt(product.quantity) || 100;
+
     newIngredients[scanningIngredientIndex] = {
       ...newIngredients[scanningIngredientIndex],
       name: product.name + (product.brand ? ` (${product.brand})` : ''),
-      unit: 'g', // on force g pour pouvoir calculer les macros
+      quantity: parsedQty,
+      unit: 'g',
       nutritionPer100g: product.nutrition,
+      scannedImage: product.imageUrl || null,
+      scannedProductQty: product.quantity || null,
     };
 
     // Active le mode auto et recalcule
@@ -245,7 +252,7 @@ export default function UserRecipeForm({ recipe, onBack, onSave }) {
 
     notify.success(
       calc
-        ? `${product.name} ajouté — macros recalculées`
+        ? `${product.name} ajouté (${parsedQty}g) — macros recalculées`
         : `${product.name} ajouté — entrez la quantité pour calculer les macros`
     );
     setScanningIngredientIndex(null);
@@ -480,69 +487,99 @@ export default function UserRecipeForm({ recipe, onBack, onSave }) {
             <h2>Ingrédients</h2>
 
             {formData.ingredients.map((ingredient, index) => (
-              <div key={index} className={styles.ingredientRow}>
-                <div className={styles.ingredientNameWrapper}>
-                  <input
-                    type="text"
-                    placeholder="Nom de l'ingrédient"
-                    value={ingredient.name}
-                    onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className={styles.scanInlineBtn}
-                    onClick={() => openScannerForIngredient(index)}
-                    title="Scanner ce produit"
-                  >
-                    <ScanIcon />
-                  </button>
-                </div>
+              <div key={index} className={`${styles.ingredientRow} ${ingredient.nutritionPer100g ? styles.ingredientScanned : ''}`}>
+                {/* Scanned product thumbnail */}
+                {ingredient.scannedImage && (
+                  <img src={ingredient.scannedImage} alt="" className={styles.ingredientThumb} />
+                )}
 
-                <input
-                  type="number"
-                  placeholder="Qté"
-                  value={ingredient.quantity}
-                  onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
-                  required
-                  min="0"
-                  step="0.1"
-                  className={styles.qtyInput}
-                />
+                <div className={styles.ingredientFields}>
+                  <div className={styles.ingredientNameWrapper}>
+                    <input
+                      type="text"
+                      placeholder="Nom de l'ingrédient"
+                      value={ingredient.name}
+                      onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className={styles.scanInlineBtn}
+                      onClick={() => openScannerForIngredient(index)}
+                      title="Scanner ce produit"
+                    >
+                      <ScanIcon />
+                    </button>
+                  </div>
 
-                <select
-                  value={ingredient.unit}
-                  onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
-                  className={styles.unitSelect}
-                  required
-                >
-                  {UNITS.map(group => (
-                    <optgroup key={group.group} label={group.group}>
-                      {group.options.map(u => (
-                        <option key={u} value={u}>{u}</option>
+                  <div className={styles.ingredientQtyRow}>
+                    <input
+                      type="number"
+                      placeholder="Qté"
+                      value={ingredient.quantity}
+                      onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
+                      required
+                      min="0"
+                      step="0.1"
+                      className={styles.qtyInput}
+                    />
+
+                    <select
+                      value={ingredient.unit}
+                      onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
+                      className={styles.unitSelect}
+                      required
+                    >
+                      {UNITS.map(group => (
+                        <optgroup key={group.group} label={group.group}>
+                          {group.options.map(u => (
+                            <option key={u} value={u}>{u}</option>
+                          ))}
+                        </optgroup>
                       ))}
-                    </optgroup>
-                  ))}
-                </select>
+                    </select>
 
-                <label className={styles.checkbox}>
-                  <input
-                    type="checkbox"
-                    checked={ingredient.optional}
-                    onChange={(e) => handleIngredientChange(index, 'optional', e.target.checked)}
-                  />
-                  Optionnel
-                </label>
+                    <label className={styles.checkbox}>
+                      <input
+                        type="checkbox"
+                        checked={ingredient.optional}
+                        onChange={(e) => handleIngredientChange(index, 'optional', e.target.checked)}
+                      />
+                      Opt.
+                    </label>
 
-                <button
-                  type="button"
-                  onClick={() => removeIngredient(index)}
-                  className={styles.removeBtn}
-                  disabled={formData.ingredients.length === 1}
-                  aria-label="Supprimer cet ingrédient"
-                >
-                  <CloseIcon />
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => removeIngredient(index)}
+                      className={styles.removeBtn}
+                      disabled={formData.ingredients.length === 1}
+                      aria-label="Supprimer cet ingrédient"
+                    >
+                      <CloseIcon />
+                    </button>
+                  </div>
+
+                  {/* Scanned product: quantity presets + per-100g info */}
+                  {ingredient.nutritionPer100g && (
+                    <div className={styles.ingredientScanInfo}>
+                      <div className={styles.ingredientPresets}>
+                        {[50, 100, 150, 200, 250].map(g => (
+                          <button
+                            key={g}
+                            type="button"
+                            className={`${styles.ingredientPreset} ${Number(ingredient.quantity) === g ? styles.ingredientPresetActive : ''}`}
+                            onClick={() => handleIngredientChange(index, 'quantity', g)}
+                          >
+                            {g}g
+                          </button>
+                        ))}
+                      </div>
+                      <span className={styles.ingredientPer100}>
+                        Pour 100g : {ingredient.nutritionPer100g.calories}kcal · {ingredient.nutritionPer100g.proteins}g prot · {ingredient.nutritionPer100g.carbs}g gluc · {ingredient.nutritionPer100g.fats}g lip
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
 

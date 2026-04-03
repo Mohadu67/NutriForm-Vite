@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  TextInput, Alert, Animated, Vibration, ActivityIndicator, ScrollView,
+  TextInput, Alert, Animated, Vibration, ActivityIndicator, ScrollView, Dimensions, PanResponder,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -204,6 +204,21 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
   const shared = useSharedSession();
   const isShared = !!(shared?.session && (shared.session.status === 'active' || shared.session.status === 'building'));
   const [activeTab, setActiveTab] = useState('me');
+  const hScrollRef = useRef(null);
+  const screenWidth = Dimensions.get('window').width;
+  const scrollAtTopRef = useRef(true);
+
+  // Swipe down pour fermer — PanResponder sur le header
+  const dismissPan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gs) => gs.dy > 15 && Math.abs(gs.dy) > Math.abs(gs.dx),
+      onPanResponderRelease: (_, gs) => {
+        if (gs.dy > 50 || gs.vy > 0.5) {
+          onClose?.();
+        }
+      },
+    })
+  ).current;
 
   // Sync saisies au partenaire (debounced)
   const syncRef = useRef(null);
@@ -211,12 +226,18 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
     if (!isShared || !currentWorkout?.exercises) return;
     if (syncRef.current) clearTimeout(syncRef.current);
     syncRef.current = setTimeout(() => {
+      // En active : chercher dans myWorkout (liste perso), sinon fallback sur la liste commune
+      const sharedExercises = shared?.session?.myWorkout?.exercises || shared?.session?.exercises || [];
       currentWorkout.exercises.forEach((ex, i) => {
         const hasSets = ex.sets && ex.sets.some(s => s.reps > 0 || s.weight > 0 || s.completed);
         const hasCardio = ex.cardioSets && ex.cardioSets.some(s => s.durationSec > 0 || s.durationMin > 0);
         if (!hasSets && !hasCardio && !ex.swim && !ex.yoga && !ex.stretch && !ex.walkRun) return;
+        // Trouver l'order backend par nom d'exercice (case insensitive)
+        const exName = (ex.exercice?.name || '').toLowerCase();
+        const backendEx = sharedExercises.find(se => (se.exerciseName || '').toLowerCase() === exName);
+        if (!backendEx) return;
         shared.sendExerciseData({
-          exerciseOrder: i,
+          exerciseOrder: backendEx.order,
           exerciseName: ex.exercice?.name || '',
           mode: ex.mode || 'muscu',
           sets: ex.sets || [],
@@ -245,25 +266,39 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
   }, [addSet, updateSet, currentWorkout]);
 
   const handleFinish = useCallback(() => {
+    const doFinish = async () => {
+      const f = await finishWorkout();
+      if (isShared && shared?.endSession) {
+        try { await shared.endSession(f?.backendId || null); } catch {}
+      }
+      if (f) Alert.alert('Bravo !', `Terminee en ${f.duration} min !`);
+      onClose?.();
+    };
     const c = getCompletedSetsCount(), t = getTotalSetsCount();
     if (c === 0) {
       Alert.alert('Seance vide', 'Aucune serie completee. Terminer ?', [
         { text: 'Continuer', style: 'cancel' },
-        { text: 'Terminer', style: 'destructive', onPress: async () => { await finishWorkout(); onClose?.(); } },
+        { text: 'Terminer', style: 'destructive', onPress: doFinish },
       ]); return;
     }
     Alert.alert('Terminer ?', `${c}/${t} series completees.`, [
       { text: 'Continuer', style: 'cancel' },
-      { text: 'Terminer', onPress: async () => { const f = await finishWorkout(); if (f) Alert.alert('Bravo !', `Terminee en ${f.duration} min !`); onClose?.(); } },
+      { text: 'Terminer', onPress: doFinish },
     ]);
-  }, [finishWorkout, getCompletedSetsCount, getTotalSetsCount, onClose]);
+  }, [finishWorkout, getCompletedSetsCount, getTotalSetsCount, onClose, isShared, shared]);
 
   const handleCancel = useCallback(() => {
     Alert.alert('Annuler ?', 'Toute la seance sera supprimee.', [
       { text: 'Non', style: 'cancel' },
-      { text: 'Oui', style: 'destructive', onPress: async () => { await cancelWorkout(); onClose?.(); } },
+      { text: 'Oui', style: 'destructive', onPress: async () => {
+        await cancelWorkout();
+        if (isShared && shared?.cancelSession) {
+          try { await shared.cancelSession(); } catch {}
+        }
+        onClose?.();
+      }},
     ]);
-  }, [cancelWorkout, onClose]);
+  }, [cancelWorkout, onClose, isShared, shared]);
 
   const handleAddEx = useCallback(() => {
     onClose?.();
@@ -271,11 +306,57 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
   }, [navigation, onClose]);
 
   const handleRmEx = useCallback((id) => {
-    Alert.alert('Supprimer ?', 'Toutes les series seront supprimees.', [
-      { text: 'Annuler', style: 'cancel' },
-      { text: 'Supprimer', style: 'destructive', onPress: () => removeExercise(id) },
-    ]);
-  }, [removeExercise]);
+    const exName = currentWorkout?.exercises?.find(e => e.exercice?.id === id)?.exercice?.name;
+    Alert.alert(
+      'Supprimer ?',
+      'L\'exercice sera retiré de ta séance uniquement.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Supprimer', style: 'destructive', onPress: () => {
+          removeExercise(id); // Local
+          if (isShared && exName) {
+            if (shared?.session?.status === 'active' && shared?.removeMyExercise) {
+              shared.removeMyExercise(exName).catch(() => {});
+            } else if (shared?.session?.status === 'building' && shared?.toggleSelection) {
+              // Building → décocher (pas supprimer de la liste commune)
+              shared.toggleSelection(exName).catch(() => {});
+            }
+          }
+        }},
+      ]
+    );
+  }, [removeExercise, isShared, shared, currentWorkout]);
+
+  // Séance terminée de mon côté OU pas de workout local mais séance partagée → montrer le panel partenaire
+  if ((!currentWorkout && isShared) || shared?.mySessionEnded) {
+    const hasMyExos = currentWorkout?.exercises?.length > 0;
+    return (
+      <View style={st.content}>
+        <View style={[st.header, isDark && st.headerDk]}>
+          <View style={{ flex: 1 }}>
+            <Text style={[st.headerTitle, isDark && st.textDark]}>
+              {shared?.mySessionEnded ? 'Séance terminée' : 'Séance'} avec {shared?.partner?.pseudo || 'Partenaire'}
+            </Text>
+            {shared?.mySessionEnded && (
+              <Text style={[st.progLbl, { marginTop: 2 }]}>En attente que {shared?.partner?.pseudo || 'ton partenaire'} termine...</Text>
+            )}
+          </View>
+        </View>
+
+        <PartnerView
+          exercises={shared?.session?.partnerWorkoutData?.exercises || shared?.session?.exercises || []}
+          partnerExerciseData={shared?.partnerExerciseData}
+          partnerName={shared?.partner?.pseudo || 'Partenaire'}
+          partnerPhoto={shared?.partner?.photo || null}
+          startedAt={shared?.session?.partnerWorkoutData?.startedAt || shared?.session?.startedAt}
+          endedAt={shared?.session?.partnerWorkoutData?.endedAt || null}
+          isDark={isDark}
+          onAddExercise={!shared?.mySessionEnded && !currentWorkout?.exercises?.length ? handleAddEx : null}
+          onClose={onClose}
+        />
+      </View>
+    );
+  }
 
   if (!currentWorkout) return null;
   const isPrep = !currentWorkout.startTime;
@@ -284,8 +365,8 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
 
   return (
     <View style={st.content}>
-      {/* Header */}
-      <View style={[st.header, isDark && st.headerDk]}>
+      {/* Header — swipe down pour fermer */}
+      <View {...dismissPan.panHandlers} style={[st.header, isDark && st.headerDk]}>
         <View style={{ flex: 1 }}>
           <Text style={[st.headerTitle, isDark && st.textDark]}>{isPrep ? 'Preparation' : 'Seance en cours'}</Text>
           {currentWorkout.startTime && <WorkoutTimer startTime={currentWorkout.startTime} isDark={isDark} />}
@@ -293,14 +374,20 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
         <TouchableOpacity onPress={handleCancel} style={st.cancelBtn}><Ionicons name="close" size={20} color="#EF4444" /></TouchableOpacity>
       </View>
 
-      {/* Onglet Ma séance / Partenaire */}
+      {/* Indicateur de page (dots) + swipe horizontal pour séance partagée */}
       {isShared && (
         <View style={[st.tabRow, isDark && st.tabRowDk]}>
-          <TouchableOpacity style={[st.tab, activeTab === 'me' && st.tabOn]} onPress={() => setActiveTab('me')}>
+          <TouchableOpacity
+            style={[st.tab, activeTab === 'me' && st.tabOn]}
+            onPress={() => { setActiveTab('me'); hScrollRef.current?.scrollTo({ x: 0, animated: true }); }}
+          >
             <Ionicons name="person" size={14} color={activeTab === 'me' ? theme.colors.primary : '#888'} />
             <Text style={[st.tabTxt, activeTab === 'me' && st.tabTxtOn]}>Ma séance</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[st.tab, activeTab === 'partner' && st.tabOnPartner]} onPress={() => setActiveTab('partner')}>
+          <TouchableOpacity
+            style={[st.tab, activeTab === 'partner' && st.tabOnPartner]}
+            onPress={() => { setActiveTab('partner'); hScrollRef.current?.scrollTo({ x: screenWidth, animated: true }); }}
+          >
             <Ionicons name="people" size={14} color={activeTab === 'partner' ? '#72baa1' : '#888'} />
             <Text style={[st.tabTxt, activeTab === 'partner' && st.tabTxtOnPartner]}>
               {shared?.partner?.pseudo || 'Partenaire'}
@@ -309,9 +396,95 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
         </View>
       )}
 
-      {(!isShared || activeTab === 'me') ? (
+      {isShared ? (
+        <ScrollView
+          ref={hScrollRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onMomentumScrollEnd={(e) => {
+            const page = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
+            setActiveTab(page === 0 ? 'me' : 'partner');
+          }}
+          style={{ flex: 1 }}
+        >
+          {/* Page 1 : Ma séance */}
+          <View style={{ width: screenWidth, flex: 1 }}>
+            {/* Progress + Smart */}
+            <View style={[st.progWrap, isDark && st.progWrapDk]}>
+              <View style={st.progRow}>
+                <View style={{ flex: 1 }}><Text style={[st.progLbl, isDark && st.textMuted]}>Progression</Text><Text style={[st.progVal, isDark && st.textDark]}>{completed}/{total} series</Text></View>
+                <TouchableOpacity style={[st.smartTgl, smartEnabled && st.smartTglOn, isDark && st.smartTglDk]} onPress={toggleSmartTracking} disabled={smartLoading}>
+                  <Ionicons name={smartEnabled ? 'sparkles' : 'sparkles-outline'} size={14} color={smartEnabled ? '#F59E0B' : (isDark ? '#666' : '#999')} />
+                  <Text style={[st.smartTglTxt, smartEnabled && st.smartTglTxtOn, isDark && st.smartTglTxtDk]}>{smartEnabled ? 'Smart ON' : 'Smart'}</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={[st.progBar, isDark && st.progBarDk]}><View style={[st.progFill, { width: `${progress}%` }]} /></View>
+            </View>
+
+            {/* Exercises */}
+            <ScrollView
+              style={{ flex: 1 }} contentContainerStyle={st.scrollPad} showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled" nestedScrollEnabled
+              onScroll={(e) => { scrollAtTopRef.current = e.nativeEvent.contentOffset.y <= 0; }}
+              scrollEventThrottle={16}
+              onScrollEndDrag={(e) => {
+                if (scrollAtTopRef.current && e.nativeEvent.velocity?.y < -0.5) onClose?.();
+              }}
+            >
+              {currentWorkout.exercises.map((ex, i) => (
+                <ExerciseCard key={ex.exercice.id} exerciseData={ex}
+                  onAddSet={addSet} onAddCardioSet={addCardioSet} onRemoveSet={removeSet} onRemoveCardioSet={removeCardioSet}
+                  onUpdateSet={updateSet} onUpdateCardioSet={updateCardioSet} onUpdateExerciseData={updateExerciseData}
+                  onToggleSet={toggleSetComplete} onRemoveExercise={handleRmEx} onMoveUp={moveExerciseUp} onMoveDown={moveExerciseDown}
+                  isFirst={i === 0} isLast={i === currentWorkout.exercises.length - 1}
+                  isDark={isDark} smartEnabled={smartEnabled} onAddSmartSet={handleSmartSet} onChangeMode={changeExerciseMode} />
+              ))}
+              <TouchableOpacity style={[st.addExBtn, isDark && st.addExBtnDk]} onPress={handleAddEx}>
+                <Ionicons name="add-circle-outline" size={22} color={theme.colors.primary} /><Text style={st.addExTxt}>Ajouter un exercice</Text>
+              </TouchableOpacity>
+              <View style={{ height: 16 }} />
+            </ScrollView>
+
+            {/* Action */}
+            <View style={[st.actionBar, isDark && st.actionBarDk]}>
+              {isPrep ? (
+                <TouchableOpacity style={[st.actBtn, st.startBtn]} onPress={() => {
+                  startWorkout();
+                  Vibration.vibrate(100);
+                  if (isShared && shared?.startSession) {
+                    shared.startSession().catch(() => {});
+                  }
+                }} activeOpacity={0.8}>
+                  <Ionicons name="play-circle" size={20} color="#FFF" /><Text style={st.actBtnTxt}>Demarrer</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={[st.actBtn, st.finishBtn, completed === 0 && st.actBtnOff]} onPress={handleFinish} activeOpacity={0.8}>
+                  <Ionicons name="checkmark-circle" size={20} color="#FFF" /><Text style={st.actBtnTxt}>Terminer</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
+          {/* Page 2 : Partenaire */}
+          <View style={{ width: screenWidth, flex: 1 }}>
+            <PartnerView
+              exercises={shared?.session?.partnerWorkoutData?.exercises || shared?.session?.exercises || []}
+              partnerExerciseData={shared?.partnerExerciseData}
+              partnerName={shared?.partner?.pseudo || 'Partenaire'}
+              partnerPhoto={shared?.partner?.photo || null}
+              startedAt={shared?.session?.partnerWorkoutData?.startedAt || shared?.session?.startedAt}
+              endedAt={shared?.session?.partnerWorkoutData?.endedAt || null}
+              isDark={isDark}
+              onAddExercise={!shared?.mySessionEnded && !currentWorkout?.exercises?.length ? handleAddEx : null}
+              onClose={onClose}
+            />
+          </View>
+        </ScrollView>
+      ) : (
         <>
-          {/* Progress + Smart */}
+          {/* Mode solo — pas de swipe */}
           <View style={[st.progWrap, isDark && st.progWrapDk]}>
             <View style={st.progRow}>
               <View style={{ flex: 1 }}><Text style={[st.progLbl, isDark && st.textMuted]}>Progression</Text><Text style={[st.progVal, isDark && st.textDark]}>{completed}/{total} series</Text></View>
@@ -322,9 +495,15 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
             </View>
             <View style={[st.progBar, isDark && st.progBarDk]}><View style={[st.progFill, { width: `${progress}%` }]} /></View>
           </View>
-
-          {/* Exercises */}
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={st.scrollPad} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
+          <ScrollView
+            style={{ flex: 1 }} contentContainerStyle={st.scrollPad} showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled" nestedScrollEnabled
+            onScroll={(e) => { scrollAtTopRef.current = e.nativeEvent.contentOffset.y <= 0; }}
+            scrollEventThrottle={16}
+            onScrollEndDrag={(e) => {
+              if (scrollAtTopRef.current && e.nativeEvent.velocity?.y < -0.5) onClose?.();
+            }}
+          >
             {currentWorkout.exercises.map((ex, i) => (
               <ExerciseCard key={ex.exercice.id} exerciseData={ex}
                 onAddSet={addSet} onAddCardioSet={addCardioSet} onRemoveSet={removeSet} onRemoveCardioSet={removeCardioSet}
@@ -338,8 +517,6 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
             </TouchableOpacity>
             <View style={{ height: 16 }} />
           </ScrollView>
-
-          {/* Action */}
           <View style={[st.actionBar, isDark && st.actionBarDk]}>
             {isPrep ? (
               <TouchableOpacity style={[st.actBtn, st.startBtn]} onPress={() => { startWorkout(); Vibration.vibrate(100); }} activeOpacity={0.8}>
@@ -352,13 +529,6 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
             )}
           </View>
         </>
-      ) : (
-        <PartnerView
-          exercises={shared?.session?.exercises || []}
-          partnerExerciseData={shared?.partnerExerciseData}
-          partnerName={shared?.partner?.pseudo || 'Partenaire'}
-          isDark={isDark}
-        />
       )}
     </View>
   );
@@ -457,4 +627,10 @@ const st = StyleSheet.create({
   tabTxt: { fontSize: 13, fontWeight: '500', color: '#888' },
   tabTxtOn: { color: theme.colors.primary, fontWeight: '700' },
   tabTxtOnPartner: { color: '#72baa1', fontWeight: '700' },
+  // ─── Empty state add button ─────
+  emptyAddCenter: { flex: 1, justifyContent: 'center', paddingHorizontal: 16 },
+  emptyAddBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, borderWidth: 1.5, borderColor: `${theme.colors.primary}30`, borderStyle: 'dashed', backgroundColor: `${theme.colors.primary}06` },
+  emptyAddIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: `${theme.colors.primary}12`, alignItems: 'center', justifyContent: 'center' },
+  emptyAddTitle: { fontSize: 14, fontWeight: '700', color: '#333' },
+  emptyAddSub: { fontSize: 12, color: '#999', marginTop: 1 },
 });

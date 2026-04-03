@@ -122,6 +122,12 @@ badgeSchema.statics.seedBadges = async function() {
     { code: 'top_3_weekly', name: 'Podium', description: 'Termine dans le top 3', icon: '🥇', category: 'special', rarity: 'rare', requirement: { type: 'top_rank', value: 3 }, xpReward: 150, sortOrder: 31 },
     { code: 'top_10_weekly', name: 'Elite', description: 'Termine dans le top 10', icon: '🌟', category: 'special', rarity: 'common', requirement: { type: 'top_rank', value: 10 }, xpReward: 75, sortOrder: 32 },
 
+    // Duo Badges (séances partagées)
+    { code: 'duo_first', name: 'Gym Bro', description: 'Complète ta première séance duo', icon: '🤝', category: 'special', rarity: 'common', requirement: { type: 'special', value: 10 }, xpReward: 75, sortOrder: 35 },
+    { code: 'duo_5', name: 'Tandem', description: 'Complète 5 séances duo', icon: '👥', category: 'special', rarity: 'rare', requirement: { type: 'special', value: 11 }, xpReward: 200, sortOrder: 36 },
+    { code: 'duo_10', name: 'Duo de choc', description: 'Complète 10 séances duo', icon: '⚡', category: 'special', rarity: 'epic', requirement: { type: 'special', value: 12 }, xpReward: 500, sortOrder: 37 },
+    { code: 'duo_25', name: 'Inséparables', description: 'Complète 25 séances duo', icon: '🏆', category: 'special', rarity: 'legendary', requirement: { type: 'special', value: 13 }, xpReward: 1000, sortOrder: 38 },
+
     // League Badges
     { code: 'league_bronze', name: 'Ligue Bronze', description: 'Atteins la ligue Bronze', icon: '🥉', category: 'league', rarity: 'common', requirement: { type: 'special', value: 1 }, xpReward: 50, sortOrder: 40 },
     { code: 'league_silver', name: 'Ligue Argent', description: 'Atteins la ligue Argent', icon: '🥈', category: 'league', rarity: 'common', requirement: { type: 'special', value: 2 }, xpReward: 100, sortOrder: 41 },

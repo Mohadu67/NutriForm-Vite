@@ -36,6 +36,7 @@ export default function SharedSessionBuilding() {
     partner,
     addExercise,
     removeExercise,
+    toggleSelection,
     startSession,
     cancelSession
   } = useSharedSession() || {};
@@ -55,7 +56,9 @@ export default function SharedSessionBuilding() {
   const userName = user?.pseudo || user?.username || 'Toi';
   const partnerId = partner?._id;
   const partnerName = partner?.pseudo || partner?.username || 'Partenaire';
-  const exercises = session?.exercises || [];
+  const allExercises = session?.exercises || [];
+  const mySelection = new Set(session?.mySelection || []);
+  const exercises = allExercises.filter(ex => mySelection.has(ex.exerciseName));
 
   // Load exercise images on mount
   useEffect(() => {
@@ -95,22 +98,25 @@ export default function SharedSessionBuilding() {
     return { mine, partner: exercises.length - mine };
   }, [exercises, userId]);
 
+  // Names already in session — used for duplicate detection in ChercherExo
+  const existingExerciseNames = useMemo(
+    () => exercises.map(e => (e.exerciseName || '').toLowerCase().trim()),
+    [exercises]
+  );
+
   const handleAddExercises = useCallback(async (selected) => {
     setShowSearch(false);
-    const duplicates = [];
-    const toAdd = [];
-
-    for (const ex of selected) {
-      const name = ex.name || ex.title;
-      if (exercises.some(e => e.exerciseName === name)) {
-        duplicates.push(name);
-      } else {
-        toAdd.push(ex);
-      }
-    }
-
-    if (duplicates.length > 0) {
-      setDuplicateModal({ open: true, names: duplicates });
+    // Auto-filter duplicates by name (ChercherExo already blocks by ID, this catches name-only matches)
+    const toAdd = selected.filter(ex => {
+      const name = (ex.name || ex.title || '').toLowerCase().trim();
+      return !existingExerciseNames.includes(name);
+    });
+    const skipped = selected.length - toAdd.length;
+    if (skipped > 0) {
+      setDuplicateModal({ open: true, names: selected.filter(ex => {
+        const name = (ex.name || ex.title || '').toLowerCase().trim();
+        return existingExerciseNames.includes(name);
+      }).map(ex => ex.name || ex.title) });
     }
 
     for (const ex of toAdd) {
@@ -124,7 +130,8 @@ export default function SharedSessionBuilding() {
           equipment: ex.equipment || [],
           primaryMuscle: ex.primaryMuscle || null,
           secondaryMuscles: ex.secondaryMuscles || [],
-          category: ex.category || null
+          category: ex.category || null,
+          image: ex.image || ex.mainImage || null
         });
       } catch {
         toast.error(`Erreur ajout ${ex.name || ex.title}`);
@@ -132,9 +139,9 @@ export default function SharedSessionBuilding() {
     }
   }, [addExercise, exercises]);
 
-  const handleRemove = async (order) => {
+  const handleRemove = async (exerciseName) => {
     try {
-      await removeExercise(order);
+      await toggleSelection(exerciseName);
     } catch {
       toast.error('Erreur suppression');
     }
@@ -313,7 +320,7 @@ export default function SharedSessionBuilding() {
             ) : (
               exercises.map((ex, i) => {
                 const isMe = String(ex.addedBy?._id || ex.addedBy || '') === String(userId);
-                const exImg = getExerciseImage(ex.exerciseName);
+                const exImg = getExerciseImage(ex.exerciseName) || ex.image || null;
                 const initialLetter = ex.exerciseName?.trim()?.[0]?.toUpperCase() || '?';
                 return (
                   <div
@@ -388,7 +395,7 @@ export default function SharedSessionBuilding() {
                       )}
                     </div>
 
-                    <button className={styles.removeBtn} onClick={() => handleRemove(ex.order)} title="Supprimer">
+                    <button className={styles.removeBtn} onClick={() => handleRemove(ex.exerciseName)} title="Supprimer">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
                     </button>
                   </div>
@@ -409,15 +416,45 @@ export default function SharedSessionBuilding() {
           {showSearch && (
             <div className={styles.searchContainer}>
               <ChercherExo
-                preselectedIds={exercises.map(e => e.exerciseId || e.exerciseName)}
+                preselectedIds={exercises.flatMap(e => [e.exerciseId, e.exerciseName].filter(Boolean))}
                 onConfirm={handleAddExercises}
                 onCancel={() => setShowSearch(false)}
               />
             </div>
           )}
+
+          {/* Mobile: inline start button (scrolls with content, no dock conflict) */}
+          {!showSearch && (
+            <div className={styles.inlineFooter}>
+              {exercises.length > 0 ? (
+                <button className={styles.startBtn} onClick={handleStart} disabled={starting}>
+                  {starting ? (
+                    <span className={styles.startBtnLoading}>
+                      <span className={styles.loadingSpinnerSmall} />
+                      Démarrage...
+                    </span>
+                  ) : (
+                    <span className={styles.startBtnContent}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                      </svg>
+                      Démarrer la séance
+                    </span>
+                  )}
+                </button>
+              ) : (
+                <div className={styles.startBtnDisabled}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                  Ajoute un exercice pour commencer
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Sticky footer — always visible */}
+        {/* Desktop: fixed footer (no dock on desktop) */}
         {!showSearch && (
           <div className={styles.footer}>
             {exercises.length > 0 ? (

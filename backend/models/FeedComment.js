@@ -8,7 +8,7 @@ const feedCommentSchema = new mongoose.Schema({
   },
   postType: {
     type: String,
-    enum: ['workout', 'meal', 'recipe', 'challenge'],
+    enum: ['workout', 'meal', 'recipe', 'challenge', 'shared_session'],
     required: true
   },
   userId: {

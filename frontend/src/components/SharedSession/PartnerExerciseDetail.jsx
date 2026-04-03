@@ -39,9 +39,9 @@ export default function PartnerExerciseDetail({ entry, exerciseName, partnerName
               {sets.map((s, i) => (
                 <div key={i} className={styles.setsRow}>
                   <span>{i + 1}</span>
-                  <span>{s.reps || '-'}</span>
-                  <span>{s.weight ? `${s.weight}kg` : '-'}</span>
-                  <span>{s.restSec ? `${s.restSec}s` : '-'}</span>
+                  <span><span className={styles.mobileLabel}>Reps: </span>{s.reps || '-'}</span>
+                  <span><span className={styles.mobileLabel}>Poids: </span>{s.weight ? `${s.weight}kg` : '-'}</span>
+                  <span><span className={styles.mobileLabel}>Repos: </span>{s.restSec ? `${s.restSec}s` : '-'}</span>
                 </div>
               ))}
             </div>
@@ -58,9 +58,9 @@ export default function PartnerExerciseDetail({ entry, exerciseName, partnerName
               {cardioSets.map((s, i) => (
                 <div key={i} className={styles.setsRow}>
                   <span>{i + 1}</span>
-                  <span>{s.durationSec ? `${Math.round(s.durationSec / 60)}min` : '-'}</span>
-                  <span>{s.distance ? `${s.distance}m` : '-'}</span>
-                  <span>{s.calories || '-'}</span>
+                  <span><span className={styles.mobileLabel}>Durée: </span>{s.durationSec ? `${Math.round(s.durationSec / 60)}min` : '-'}</span>
+                  <span><span className={styles.mobileLabel}>Dist: </span>{s.distance ? `${s.distance}m` : '-'}</span>
+                  <span><span className={styles.mobileLabel}>Cal: </span>{s.calories || '-'}</span>
                 </div>
               ))}
             </div>

@@ -1,6 +1,7 @@
 import 'react-native-gesture-handler';
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -22,35 +23,94 @@ import HealthConnectOnboarding from './src/components/HealthConnectOnboarding';
 // Sync séance partagée → WorkoutContext (doit être enfant des deux providers)
 function SharedSessionSync() {
   const shared = useSharedSession();
-  const { addExercise, startWorkout, currentWorkout } = useWorkout();
+  const { addExercise, startWorkout, cancelWorkout, currentWorkout, setWorkoutStartTime } = useWorkout();
   const injectedRef = useRef(null);
+  const injectedCountRef = useRef(0);
+  const wasSharedRef = useRef(false);
+
+  // Au montage : nettoyer le workout de séance partagée orphelin
+  const cancelWorkoutRef = useRef(cancelWorkout);
+  cancelWorkoutRef.current = cancelWorkout;
+  const cleanedOnceRef = useRef(false);
+  useEffect(() => {
+    if (cleanedOnceRef.current) return;
+    if (shared?.loading) return; // Attendre que le context charge
+    cleanedOnceRef.current = true;
+    AsyncStorage.getItem('@shared_workout_active').then(flag => {
+      if (flag === 'true') {
+        const hasSession = shared?.session && (shared.session.status === 'active' || shared.session.status === 'building');
+        if (!hasSession) {
+          cancelWorkoutRef.current();
+          AsyncStorage.removeItem('@shared_workout_active').catch(() => {});
+        }
+      }
+    }).catch(() => {});
+  }, [shared?.loading]);
+
+  // Quand la session partagée disparaît en cours de route, clear le workout local
+  useEffect(() => {
+    const hasSession = shared?.session && (shared.session.status === 'active' || shared.session.status === 'building');
+    if (hasSession) {
+      wasSharedRef.current = true;
+    } else if (wasSharedRef.current) {
+      wasSharedRef.current = false;
+      cancelWorkoutRef.current();
+      AsyncStorage.removeItem('@shared_workout_active').catch(() => {});
+    }
+  }, [shared?.session]);
 
   useEffect(() => {
-    if (!shared?.session) return;
-    const session = shared.session;
-    if (session.status !== 'active' && session.status !== 'building') return;
-    if (!session.exercises || session.exercises.length === 0) return;
-    if (injectedRef.current === String(session._id)) return;
-    if (currentWorkout?.exercises?.length > 0) {
-      injectedRef.current = String(session._id);
+    if (!shared?.session) {
+      injectedRef.current = null;
+      injectedCountRef.current = 0;
+      AsyncStorage.removeItem('@shared_workout_active').catch(() => {});
       return;
     }
-    injectedRef.current = String(session._id);
-    for (const ex of session.exercises) {
+    const session = shared.session;
+    if (session.status !== 'active' && session.status !== 'building') return;
+    AsyncStorage.setItem('@shared_workout_active', 'true').catch(() => {});
+
+    const sessionId = String(session._id);
+    const sharedExercises = session.exercises || [];
+
+    // Reset si c'est une nouvelle session
+    if (injectedRef.current !== sessionId) {
+      injectedRef.current = sessionId;
+      injectedCountRef.current = 0;
+    }
+
+    // Suppressions sont toujours personnelles (via toggleSelection en building, removeMyExercise en active)
+    // Le SharedSessionSync ne supprime jamais d'exos locaux
+
+    // Injecter les nouveaux exercices
+    const newExercises = sharedExercises.slice(injectedCountRef.current);
+    for (const ex of newExercises) {
+      const stableId = ex.exerciseId || ('shared_' + ex.exerciseName.replace(/\s+/g, '_').toLowerCase());
       addExercise({
-        id: ex.exerciseId || ('shared_' + ex.exerciseName + '_' + ex.order),
+        id: stableId,
         name: ex.exerciseName,
         type: Array.isArray(ex.type) ? ex.type[0] : (ex.type || 'muscu'),
         muscles: ex.muscles || [],
-        muscle: ex.primaryMuscle || (ex.muscles && ex.muscles[0]) || '',
-        primaryMuscle: ex.primaryMuscle || (ex.muscles && ex.muscles[0]) || '',
+        muscle: ex.primaryMuscle || (ex.muscles && ex.muscles[0]) || null,
+        primaryMuscle: ex.primaryMuscle || (ex.muscles && ex.muscles[0]) || null,
         secondaryMuscles: ex.secondaryMuscles || [],
-        equipment: Array.isArray(ex.equipment) ? ex.equipment[0] || '' : (ex.equipment || ''),
-        category: ex.category || '',
+        equipment: Array.isArray(ex.equipment) ? ex.equipment.join(', ') : (ex.equipment || ''),
+        category: ex.category || null,
+        image: ex.image || null,
       });
     }
-    if (session.status === 'active') startWorkout();
-  }, [shared?.session?._id, shared?.session?.status]);
+    injectedCountRef.current = sharedExercises.length;
+
+    // Lancer le timer avec le bon startedAt de la session partagée
+    if (session.status === 'active') {
+      if (session.startedAt && setWorkoutStartTime) {
+        // Reprendre le timestamp original (pas now())
+        setWorkoutStartTime(session.startedAt);
+      } else {
+        startWorkout();
+      }
+    }
+  }, [shared?.session]);
 
   return null;
 }

@@ -19,6 +19,7 @@ import { DeviceEventEmitter } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import SafeImage from '../../components/ui/SafeImage';
+import { useSharedSession } from '../../contexts/SharedSessionContext';
 import { theme } from '../../theme';
 import { BodyPicker, ZONE_LABELS } from '../../components/BodyPicker';
 import { useWorkout } from '../../contexts/WorkoutContext';
@@ -269,6 +270,8 @@ export default function ExercicesScreen() {
   const pastSessionMode = route.params?.pastSessionMode || false;
   const { user } = useAuth();
   const { currentWorkout, isWorkoutActive, getCompletedSetsCount, getTotalSetsCount, addExercise, isExerciseInWorkout, startWorkout } = useWorkout();
+  const shared = useSharedSession();
+  const isSharedSession = shared?.session && (shared.session.status === 'building' || shared.session.status === 'active');
 
   // Compteur de séances restantes pour les utilisateurs free
   const MAX_SESSIONS_FREE = 5;
@@ -545,12 +548,27 @@ export default function ExercicesScreen() {
   // Ajout rapide d'un exercice
   const handleQuickAddExercise = useCallback((exercice) => {
     if (pastSessionMode) {
-      // Envoyer l'exercice au PastSessionScreen via event
       DeviceEventEmitter.emit('pastSession:addExercise', exercice);
       return;
     }
+    // Si séance partagée active, ajouter localement + backend
+    if (isSharedSession && shared?.addExercise) {
+      addExercise(exercice); // Local immédiat
+      shared.addExercise({  // Backend + WS pour le partenaire
+        exerciseId: exercice.id || exercice.slug || null,
+        exerciseName: exercice.name || exercice.title,
+        type: Array.isArray(exercice.type) ? exercice.type : [exercice.type || 'muscu'],
+        muscles: exercice.muscles || (exercice.primaryMuscle ? [exercice.primaryMuscle] : []),
+        primaryMuscle: exercice.primaryMuscle || '',
+        secondaryMuscles: exercice.secondaryMuscles || [],
+        equipment: Array.isArray(exercice.equipment) ? exercice.equipment : [exercice.equipment || ''],
+        category: exercice.category || null,
+        image: exercice.image || exercice.mainImage || null,
+      }).catch(() => {});
+      return;
+    }
     addExercise(exercice);
-  }, [addExercise, pastSessionMode]);
+  }, [addExercise, pastSessionMode, isSharedSession, shared]);
 
   const handleApplyFilter = useCallback(() => {
     setShowBodyPicker(false);

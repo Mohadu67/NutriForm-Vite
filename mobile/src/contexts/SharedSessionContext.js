@@ -7,6 +7,10 @@ import {
   getSharedSession,
   respondSharedSession,
   inviteSharedSession,
+  addSharedExercise,
+  removeSharedExercise,
+  removeMySharedExercise,
+  toggleExerciseSelection as apiToggleSelection,
   startSharedSession as apiStartSession,
   updateExerciseData as apiUpdateExerciseData,
   getSharedProgress,
@@ -52,17 +56,13 @@ export function SharedSessionProvider({ children }) {
       } else {
         setSession(fetched);
         // Si la session est pending et que je suis le destinataire, restaurer l'invite
-        if (fetched?.status === 'pending') {
-          const myId = String(user?._id || user?.id || '');
-          const isRecipient = String(fetched.partnerId?._id || fetched.partnerId || '') === myId;
-          if (isRecipient) {
-            setPendingInvite({
-              sharedSessionId: fetched._id,
-              initiator: fetched.initiatorId || {},
-              sessionName: fetched.sessionName || '',
-              gymName: fetched.gymName || '',
-            });
-          }
+        if (fetched?.status === 'pending' && fetched?.myRole === 'partner') {
+          setPendingInvite({
+            sharedSessionId: fetched._id,
+            initiator: fetched.initiatorId || {},
+            sessionName: fetched.sessionName || '',
+            gymName: fetched.gymName || '',
+          });
         }
       }
     } catch {
@@ -95,18 +95,14 @@ export function SharedSessionProvider({ children }) {
 
     const onInvite = (data) => {
       setPendingInvite(data);
-      console.log('[SharedSession] Invitation', `${data.initiator?.username || 'Ton gym bro'} t'invite à une séance !`);
     };
     const onAccepted = (data) => {
-      console.log('[SharedSession] Accepté', 'Invitation acceptée !');
       refreshSession(data.sharedSessionId);
     };
     const onDeclined = () => {
-      console.log('[SharedSession] Refusé', 'Invitation refusée');
       setSession(null);
     };
     const onStarted = (data) => {
-      console.log('[SharedSession] C\'est parti !', `${data.startedBy?.username || 'Ton partenaire'} a lancé la séance !`);
       refreshSession(data.sharedSessionId);
     };
     const onExerciseAdded = (data) => { refreshSession(data.sharedSessionId); };
@@ -119,25 +115,31 @@ export function SharedSessionProvider({ children }) {
     const onPartnerUpdate = (data) => {
       setPartnerExerciseData(prev => {
         const next = new Map(prev);
-        next.set(data.exerciseOrder, data);
+        next.set(data.exerciseName || data.exerciseOrder, data);
         return next;
       });
     };
     const onPartnerEnded = (data) => {
-      console.log('[SharedSession] Terminé', `${data.username || 'Ton partenaire'} a terminé sa séance`);
       if (data.partnerSummary?.length) {
         setPartnerExerciseData(prev => {
           const next = new Map(prev);
           for (const entry of data.partnerSummary) {
-            next.set(entry.exerciseOrder, entry);
+            next.set(entry.exerciseName || entry.exerciseOrder, entry);
           }
           return next;
         });
       }
-      if (data.sessionEnded) refreshSession(data.sharedSessionId);
+      if (data.sessionEnded) {
+        setDismissedId(sessionRef.current?._id);
+        setSession(null);
+        setPartnerExerciseData(new Map());
+        setMySessionEnded(false);
+      } else {
+        // Partenaire a terminé mais pas moi → refresh pour récupérer endedAt
+        refreshSession(data.sharedSessionId);
+      }
     };
     const onCancelled = () => {
-      console.log('[SharedSession] Annulé', 'Séance partagée annulée');
       setSession(null);
       setPartnerExerciseData(new Map());
     };
@@ -184,6 +186,34 @@ export function SharedSessionProvider({ children }) {
     return data;
   }, []);
 
+  const addExercise = useCallback(async (exercise) => {
+    const id = sessionRef.current?._id;
+    if (!id) return;
+    const data = await addSharedExercise(id, exercise);
+    setSession(data.sharedSession);
+  }, []);
+
+  const removeExerciseFromSession = useCallback(async (order) => {
+    const id = sessionRef.current?._id;
+    if (!id) return;
+    const data = await removeSharedExercise(id, order);
+    setSession(data.sharedSession);
+  }, []);
+
+  const toggleSelection = useCallback(async (exerciseName) => {
+    const id = sessionRef.current?._id;
+    if (!id) return;
+    const data = await apiToggleSelection(id, exerciseName);
+    setSession(data.sharedSession);
+  }, []);
+
+  const removeMyExercise = useCallback(async (exerciseName) => {
+    const id = sessionRef.current?._id;
+    if (!id) return;
+    const data = await removeMySharedExercise(id, exerciseName);
+    setSession(data.sharedSession);
+  }, []);
+
   const startSession = useCallback(async () => {
     const id = sessionRef.current?._id;
     if (!id) return;
@@ -206,20 +236,30 @@ export function SharedSessionProvider({ children }) {
       const partnerMap = new Map();
       for (const [key, value] of Object.entries(progress)) {
         if (!key.startsWith(myId + ':')) {
-          partnerMap.set(value.exerciseOrder, value);
+          partnerMap.set(value.exerciseName || value.exerciseOrder, value);
         }
       }
       setPartnerExerciseData(partnerMap);
     } catch {}
   }, [user]);
 
+  const [mySessionEnded, setMySessionEnded] = useState(false);
+
   const endSession = useCallback(async (workoutSessionId) => {
     const id = sessionRef.current?._id;
     if (!id) return;
-    await setDismissedId(id);
-    setSession(null);
-    setPartnerExerciseData(new Map());
+    setMySessionEnded(true);
     try { await apiEndSession(id, workoutSessionId); } catch {}
+    // Refresh pour voir si les deux ont terminé
+    try {
+      const data = await getSharedSession(id);
+      if (data.sharedSession?.status === 'ended') {
+        await setDismissedId(id);
+        setSession(null);
+        setPartnerExerciseData(new Map());
+        setMySessionEnded(false);
+      }
+    } catch {}
   }, []);
 
   const cancelSession = useCallback(async () => {
@@ -233,25 +273,14 @@ export function SharedSessionProvider({ children }) {
 
   const dismissInvite = useCallback(() => { setPendingInvite(null); }, []);
 
-  // ─── Helpers ───────────────────────────────────────────
-  const myId = String(user?._id || user?.id || '');
-  const isParticipant = !!(session && myId && (
-    String(session.initiatorId?._id || session.initiatorId || '') === myId ||
-    String(session.partnerId?._id || session.partnerId || '') === myId
-  ));
-  const partner = session && myId ? (
-    String(session.initiatorId?._id || session.initiatorId || '') === myId
-      ? session.partnerId : session.initiatorId
-  ) : null;
-
-  // Debug log
-  if (session) {
-    console.log('[SharedSession] myId:', myId, 'status:', session.status, 'isParticipant:', isParticipant, 'initiator:', String(session.initiatorId?._id || session.initiatorId), 'partner:', String(session.partnerId?._id || session.partnerId));
-  }
+  // ─── Helpers (calculés par le backend via enrichSession) ─
+  const isParticipant = session?.myRole != null;
+  const partner = session?.partner || null;
 
   const value = {
-    session, loading, pendingInvite, partnerExerciseData, isParticipant, partner,
-    invite, respond, startSession, sendExerciseData, loadProgress,
+    session, loading, pendingInvite, partnerExerciseData, isParticipant, partner, mySessionEnded,
+    invite, respond, addExercise, removeExercise: removeExerciseFromSession, removeMyExercise, toggleSelection,
+    startSession, sendExerciseData, loadProgress,
     endSession, cancelSession, refreshSession, dismissInvite,
   };
 

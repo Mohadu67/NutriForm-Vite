@@ -15,11 +15,14 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [manualCode, setManualCode] = useState('');
   const [cameraError, setCameraError] = useState('');
+  const [photoPreview, setPhotoPreview] = useState(null);
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const rafRef = useRef(null);
   const scannedRef = useRef(false);
+  const fileInputRef = useRef(null);
+  const canvasRef = useRef(null);
 
   const stopCamera = useCallback(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -139,6 +142,52 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
     }
   };
 
+  // ── Photo recognition via Gemini Vision ──
+
+  const captureFromCamera = () => {
+    if (!videoRef.current) return;
+    const canvas = canvasRef.current || document.createElement('canvas');
+    canvasRef.current = canvas;
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    canvas.getContext('2d').drawImage(videoRef.current, 0, 0);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    stopCamera();
+    recognizeFromImage(dataUrl);
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => recognizeFromImage(reader.result);
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const recognizeFromImage = async (dataUrl) => {
+    setPhotoPreview(dataUrl);
+    setStep('loading');
+    setErrorMsg('');
+    try {
+      const res = await secureApiCall('/nutrition/recognize', {
+        method: 'POST',
+        body: JSON.stringify({ image: dataUrl }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProduct({ ...data.product, imageUrl: dataUrl });
+        setStep('result');
+      } else {
+        setErrorMsg(data.error || 'Aliment non reconnu');
+        setStep('error');
+      }
+    } catch {
+      setErrorMsg('Impossible de joindre le serveur.');
+      setStep('error');
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -167,44 +216,82 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
                   <div className={styles.scanLine} />
                 </div>
               </div>
-              <p className={styles.hint}>Pointez la caméra vers le code-barres du produit</p>
-              <button className={styles.linkBtn} onClick={() => { stopCamera(); setStep('manual'); }}>
-                Entrer le code manuellement
-              </button>
+              <p className={styles.hint}>Pointez vers un code-barres ou prenez une photo de l'aliment</p>
+              <div className={styles.scanActions}>
+                <button className={styles.photoBtn} onClick={captureFromCamera}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                  Prendre en photo
+                </button>
+                <button className={styles.linkBtn} onClick={() => { stopCamera(); setStep('manual'); }}>
+                  Code manuel
+                </button>
+              </div>
             </>
           )}
 
-          {/* Saisie manuelle */}
+          {/* Saisie manuelle + photo galerie */}
           {(step === 'manual' || (step === 'scan' && !hasCamera)) && (
-            <form onSubmit={handleManualSubmit} className={styles.manualForm}>
+            <div className={styles.manualForm}>
               {cameraError && <p className={styles.cameraError}>{cameraError}</p>}
               {!hasCamera && (
                 <p className={styles.hint}>La caméra n'est pas disponible sur ce navigateur.</p>
               )}
-              <label className={styles.label}>Code-barres (EAN-13 / EAN-8)</label>
-              <input
-                type="text"
-                className={styles.input}
-                value={manualCode}
-                onChange={(e) => setManualCode(e.target.value.replace(/\D/g, ''))}
-                placeholder="Ex : 3017620422003"
-                maxLength={14}
-                autoFocus
-              />
+
+              {/* Photo recognition */}
               <button
-                type="submit"
-                className={styles.primaryBtn}
-                disabled={!/^\d{8,14}$/.test(manualCode)}
+                type="button"
+                className={styles.photoUploadBtn}
+                onClick={() => fileInputRef.current?.click()}
               >
-                Rechercher
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span>Reconnaître un aliment par photo</span>
+                <span className={styles.photoUploadHint}>Tomate, poulet, riz...</span>
               </button>
+
+              <div className={styles.orDivider}><span>ou</span></div>
+
+              <form onSubmit={handleManualSubmit}>
+                <label className={styles.label}>Code-barres (EAN-13 / EAN-8)</label>
+                <input
+                  type="text"
+                  className={styles.input}
+                  value={manualCode}
+                  onChange={(e) => setManualCode(e.target.value.replace(/\D/g, ''))}
+                  placeholder="Ex : 3017620422003"
+                  maxLength={14}
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  className={styles.primaryBtn}
+                  disabled={!/^\d{8,14}$/.test(manualCode)}
+                >
+                  Rechercher
+                </button>
+              </form>
               {hasCamera && (
                 <button type="button" className={styles.linkBtn} onClick={handleRescan}>
                   ← Revenir à la caméra
                 </button>
               )}
-            </form>
+            </div>
           )}
+
+          {/* Hidden file input for photo */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            capture="environment"
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
+          />
 
           {/* Chargement */}
           {step === 'loading' && (
@@ -238,6 +325,9 @@ export default function BarcodeScanner({ isOpen, onClose, onProductFound }) {
                 </div>
               </div>
 
+              {product.source === 'gemini-vision' && (
+                <p className={styles.aiLabel}>Reconnu par IA — valeurs estimées</p>
+              )}
               <p className={styles.perLabel}>Valeurs nutritionnelles pour 100g</p>
               <div className={styles.macrosGrid}>
                 <div className={styles.macroItem}>
