@@ -314,6 +314,7 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
 
   // Séance terminée de mon côté OU pas de workout local mais séance partagée → montrer le panel partenaire
   if ((!currentWorkout && isShared) || shared?.mySessionEnded) {
+    const hasMyExos = currentWorkout?.exercises?.length > 0;
     return (
       <View style={st.content}>
         <View style={[st.header, isDark && st.headerDk]}>
@@ -326,11 +327,16 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
             )}
           </View>
         </View>
+
         <PartnerView
           exercises={shared?.session?.partnerWorkoutData?.exercises || shared?.session?.exercises || []}
           partnerExerciseData={shared?.partnerExerciseData}
           partnerName={shared?.partner?.pseudo || 'Partenaire'}
+          partnerPhoto={shared?.partner?.photo || null}
+          startedAt={shared?.session?.partnerWorkoutData?.startedAt || shared?.session?.startedAt}
+          endedAt={shared?.session?.partnerWorkoutData?.endedAt || null}
           isDark={isDark}
+          onAddExercise={!shared?.mySessionEnded && !currentWorkout?.exercises?.length ? handleAddEx : null}
         />
       </View>
     );
@@ -422,7 +428,11 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
           exercises={shared?.session?.partnerWorkoutData?.exercises || shared?.session?.exercises || []}
           partnerExerciseData={shared?.partnerExerciseData}
           partnerName={shared?.partner?.pseudo || 'Partenaire'}
+          partnerPhoto={shared?.partner?.photo || null}
+          startedAt={shared?.session?.partnerWorkoutData?.startedAt || shared?.session?.startedAt}
+          endedAt={shared?.session?.partnerWorkoutData?.endedAt || null}
           isDark={isDark}
+          onAddExercise={!shared?.mySessionEnded && !currentWorkout?.exercises?.length ? handleAddEx : null}
         />
       )}
     </View>
@@ -522,4 +532,10 @@ const st = StyleSheet.create({
   tabTxt: { fontSize: 13, fontWeight: '500', color: '#888' },
   tabTxtOn: { color: theme.colors.primary, fontWeight: '700' },
   tabTxtOnPartner: { color: '#72baa1', fontWeight: '700' },
+  // ─── Empty state add button ─────
+  emptyAddCenter: { flex: 1, justifyContent: 'center', paddingHorizontal: 16 },
+  emptyAddBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, borderWidth: 1.5, borderColor: `${theme.colors.primary}30`, borderStyle: 'dashed', backgroundColor: `${theme.colors.primary}06` },
+  emptyAddIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: `${theme.colors.primary}12`, alignItems: 'center', justifyContent: 'center' },
+  emptyAddTitle: { fontSize: 14, fontWeight: '700', color: '#333' },
+  emptyAddSub: { fontSize: 12, color: '#999', marginTop: 1 },
 });

@@ -15,6 +15,7 @@ import {
   ActivityIcon,
   SparklesIcon
 } from '../../Icons/GlobalIcons';
+import { toast } from 'sonner';
 import styles from './NotificationCenter.module.css';
 
 // Types de notifications
@@ -45,7 +46,7 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
   const navigate = useNavigate();
   const webSocketContext = useWebSocket();
   const chatContext = useChat();
-  const { on, isConnected } = webSocketContext || {};
+  const { on, isConnected, socket: wsSocket } = webSocketContext || {};
   const { openMatchChatById, openAIChat } = chatContext || {};
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -354,34 +355,44 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
     };
   }, [addNotification]);
 
-  // Écouter les notifications via WebSocket
+  // Écouter les notifications via WebSocket — ajouter au dropdown + afficher un toast
   useEffect(() => {
-    if (!isConnected || !on) return;
+    if (!wsSocket) return;
 
-    const cleanup = on('new_notification', (notification) => {
+    const handler = (notification) => {
       addNotification(notification);
-    });
 
-    return cleanup;
-  }, [on, isConnected, addNotification]);
+      // Toast visible — skip shared_session (déjà gérées par SharedSessionContext)
+      const notifType = notification.type || 'system';
+      if (notifType === 'shared_session') return;
+
+      const title = notification.title || '';
+      const message = notification.message || '';
+      toast(title, {
+        description: message || undefined,
+        duration: 4000,
+      });
+    };
+
+    wsSocket.on('new_notification', handler);
+    return () => wsSocket.off('new_notification', handler);
+  }, [wsSocket, addNotification]);
 
   // Écouter les nouveaux contenus (programmes/recettes) via WebSocket
   useEffect(() => {
-    if (!isConnected || !on) {
-      return;
-    }
+    if (!wsSocket) return;
 
-    const cleanup = on('new_content', (content) => {
-      // Ajouter comme notification temporaire (non sauvegardée en base)
-      addNotification({
-        ...content,
-        type: 'content',
-        read: false
+    const handler = (content) => {
+      addNotification({ ...content, type: 'content', read: false });
+      toast(content.title || 'Nouveau contenu', {
+        description: content.message || undefined,
+        duration: 4000,
       });
-    });
+    };
 
-    return cleanup;
-  }, [on, isConnected, addNotification]);
+    wsSocket.on('new_content', handler);
+    return () => wsSocket.off('new_content', handler);
+  }, [wsSocket, addNotification]);
 
   // Formater le timestamp
   const formatTime = (timestamp) => {

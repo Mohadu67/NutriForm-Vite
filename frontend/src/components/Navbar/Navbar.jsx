@@ -312,28 +312,7 @@ export default function Navbar() {
       {/* Overlay */}
       {open && <div className={styles.overlay} onClick={closeMenu} aria-hidden="true" />}
 
-      {/* Pending invite banner — flottant au-dessus de la navbar */}
-      {pendingInvite && (
-        <div className={styles.pendingInviteBanner}>
-          <span className={styles.pendingInviteDot} />
-          <span className={styles.pendingInviteText}>
-            <strong>{pendingInvite.initiator?.username || pendingInvite.initiator?.pseudo || 'Gym bro'}</strong> t'invite à une séance
-          </span>
-          <button className={styles.pendingInviteAccept} onClick={async () => {
-            try {
-              await respondInvite(pendingInvite.sharedSessionId, true);
-              navigate(`/shared-session/${pendingInvite.sharedSessionId}`);
-            } catch {}
-          }}>
-            Accepter
-          </button>
-          <button className={styles.pendingInviteDecline} onClick={() => {
-            respondInvite(pendingInvite.sharedSessionId, false).catch(() => {});
-          }}>
-            Refuser
-          </button>
-        </div>
-      )}
+      {/* pendingInviteBanner retiré — remplacé par le rich toast */}
 
       {/* Main Dock Navigation */}
       <nav

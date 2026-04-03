@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { io } from 'socket.io-client';
 import { storage } from '../shared/utils/storage';
 import { isAuthenticated, secureApiCall } from '../utils/authService';
@@ -191,11 +191,15 @@ export function WebSocketProvider({ children }) {
 
   /**
    * Écouter un événement spécifique
+   * Retourne une fonction de nettoyage — attache le listener même si le socket
+   * n'est pas encore prêt (il sera attaché dès la connexion)
    */
   const on = useCallback((event, callback) => {
-    if (!socketRef.current) return;
-
-    socketRef.current.on(event, callback);
+    // Attacher immédiatement si socket existe
+    if (socketRef.current) {
+      socketRef.current.off(event, callback); // éviter les doublons
+      socketRef.current.on(event, callback);
+    }
 
     // Retourner une fonction de nettoyage
     return () => {
@@ -245,7 +249,7 @@ export function WebSocketProvider({ children }) {
     };
   }, [connect, disconnect]);
 
-  const value = {
+  const value = useMemo(() => ({
     socket: socketRef.current,
     isConnected,
     activeConversationId,
@@ -258,7 +262,7 @@ export function WebSocketProvider({ children }) {
     setChatListPresence,
     on,
     off
-  };
+  }), [isConnected, activeConversationId, connect, disconnect, joinConversation, leaveConversation, setTyping, markAsRead, setChatListPresence, on, off]);
 
   return (
     <WebSocketContext.Provider value={value}>

@@ -19,6 +19,7 @@ import {
   inviteSharedSession
 } from '../shared/api/sharedSession';
 import { toast } from 'sonner';
+import { toastSessionInvite, toastPartnerAction } from '../utils/richToast';
 
 const SharedSessionContext = createContext(null);
 
@@ -112,19 +113,41 @@ export function SharedSessionProvider({ children }) {
   }, []);
 
   // ─── WebSocket listeners ─────────────────────────────────
+  // Depend on isConnected so listeners re-attach when socket reconnects
+  const wsOn = ws?.on;
+  const wsConnected = ws?.isConnected;
   useEffect(() => {
-    if (!ws?.on) return;
+    if (!wsOn || !wsConnected) return;
 
     const cleanups = [];
 
-    // Invitation reçue
-    cleanups.push(ws.on('shared_session:invite', (data) => {
+    // Invitation reçue — rich toast avec actions
+    cleanups.push(wsOn('shared_session:invite', (data) => {
       setPendingInvite(data);
-      toast.info(`${data.initiator?.username || 'Ton gym bro'} t'invite à une séance !`);
+      toastSessionInvite({
+        username: data.initiator?.pseudo || data.initiator?.username || 'Ton gym bro',
+        sessionName: data.sessionName,
+        onAccept: async () => {
+          try {
+            const res = await respondSharedSession(data.sharedSessionId, true);
+            setPendingInvite(null);
+            if (res.sharedSession) setSession(res.sharedSession);
+            if (navigateRef.current) {
+              navigateRef.current(`/shared-session/${data.sharedSessionId}`);
+            }
+          } catch { /* silent */ }
+        },
+        onDecline: async () => {
+          try {
+            await respondSharedSession(data.sharedSessionId, false);
+            setPendingInvite(null);
+          } catch { /* silent */ }
+        },
+      });
     }));
 
     // Invitation acceptée — notifier l'initiateur avec action
-    cleanups.push(ws.on('shared_session:accepted', (data) => {
+    cleanups.push(wsOn('shared_session:accepted', (data) => {
       toast.success('Invitation acceptée !', {
         action: {
           label: 'Construire la séance',
@@ -140,36 +163,40 @@ export function SharedSessionProvider({ children }) {
     }));
 
     // Invitation refusée
-    cleanups.push(ws.on('shared_session:declined', () => {
+    cleanups.push(wsOn('shared_session:declined', () => {
       toast.info('Invitation refusée');
       setSession(null);
     }));
 
     // Exercice ajouté par le partenaire
-    cleanups.push(ws.on('shared_session:exercise_added', (data) => {
+    cleanups.push(wsOn('shared_session:exercise_added', (data) => {
       refreshSession(data.sharedSessionId);
     }));
 
     // Exercice supprimé par le partenaire
-    cleanups.push(ws.on('shared_session:exercise_removed', (data) => {
+    cleanups.push(wsOn('shared_session:exercise_removed', (data) => {
       refreshSession(data.sharedSessionId);
     }));
 
     // Exercices réordonnés
-    cleanups.push(ws.on('shared_session:exercises_reordered', (data) => {
+    cleanups.push(wsOn('shared_session:exercises_reordered', (data) => {
       if (sessionRef.current?._id === data.sharedSessionId) {
         setSession(prev => prev ? { ...prev, exercises: data.exercises } : prev);
       }
     }));
 
     // Séance démarrée
-    cleanups.push(ws.on('shared_session:started', (data) => {
-      toast.success(`${data.startedBy?.username || 'Ton partenaire'} a lancé la séance !`);
+    cleanups.push(wsOn('shared_session:started', (data) => {
+      toastPartnerAction({
+        username: data.startedBy?.pseudo || data.startedBy?.username || 'Ton partenaire',
+        message: 'a lancé la séance !',
+        icon: '🚀',
+      });
       refreshSession(data.sharedSessionId);
     }));
 
     // Saisies du partenaire (temps réel)
-    cleanups.push(ws.on('shared_session:partner_exercise_update', (data) => {
+    cleanups.push(wsOn('shared_session:partner_exercise_update', (data) => {
       setPartnerExerciseData(prev => {
         const next = new Map(prev);
         next.set(data.exerciseName || data.exerciseOrder, data);
@@ -178,7 +205,7 @@ export function SharedSessionProvider({ children }) {
     }));
 
     // Partenaire a terminé
-    cleanups.push(ws.on('shared_session:partner_ended', (data) => {
+    cleanups.push(wsOn('shared_session:partner_ended', (data) => {
       if (data.partnerSummary?.length) {
         setPartnerExerciseData(prev => {
           const next = new Map(prev);
@@ -189,18 +216,29 @@ export function SharedSessionProvider({ children }) {
         });
       }
       if (data.sessionEnded) {
-        // Les deux ont terminé
-        toast.success('Séance terminée !');
+        toastPartnerAction({
+          username: '',
+          message: 'Séance duo terminée !',
+          icon: '🎉',
+        });
         refreshSession(data.sharedSessionId);
       } else {
-        // Juste le partenaire — notifier mais garder la séance
-        toast.info(`${data.username || 'Ton partenaire'} a terminé. À toi de finir !`);
+        toastPartnerAction({
+          username: data.username || 'Ton partenaire',
+          message: 'a terminé. À toi de finir !',
+          icon: '🏁',
+        });
+        refreshSession(data.sharedSessionId);
       }
     }));
 
     // Session annulée
-    cleanups.push(ws.on('shared_session:cancelled', () => {
-      toast.info('Séance partagée annulée');
+    cleanups.push(wsOn('shared_session:cancelled', () => {
+      toastPartnerAction({
+        username: '',
+        message: 'Séance partagée annulée',
+        icon: '✖',
+      });
       setSession(null);
       setPartnerExerciseData(new Map());
     }));
@@ -208,7 +246,7 @@ export function SharedSessionProvider({ children }) {
     return () => {
       cleanups.forEach(cleanup => cleanup && cleanup());
     };
-  }, [ws, refreshSession]);
+  }, [wsOn, wsConnected, refreshSession]);
 
   // ─── Actions ─────────────────────────────────────────────
   const invite = useCallback(async (matchId, sessionName, gymName) => {

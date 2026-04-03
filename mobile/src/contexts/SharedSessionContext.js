@@ -130,11 +130,13 @@ export function SharedSessionProvider({ children }) {
         });
       }
       if (data.sessionEnded) {
-        // Les deux ont terminé → clear tout
         setDismissedId(sessionRef.current?._id);
         setSession(null);
         setPartnerExerciseData(new Map());
         setMySessionEnded(false);
+      } else {
+        // Partenaire a terminé mais pas moi → refresh pour récupérer endedAt
+        refreshSession(data.sharedSessionId);
       }
     };
     const onCancelled = () => {
