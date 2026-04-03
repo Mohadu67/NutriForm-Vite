@@ -399,6 +399,35 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
     return date.toLocaleDateString('fr-FR');
   };
 
+  // Time group label for a notification
+  const getTimeGroup = (timestamp) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+    const weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7);
+
+    if (date >= today) return 'Aujourd\'hui';
+    if (date >= yesterday) return 'Hier';
+    if (date >= weekAgo) return 'Cette semaine';
+    return 'Plus ancien';
+  };
+
+  // Group notifications by time
+  const groupedNotifications = (() => {
+    const groups = [];
+    let lastGroup = null;
+    for (const notif of notifications) {
+      const group = getTimeGroup(notif.createdAt || notif.timestamp);
+      if (group !== lastGroup) {
+        groups.push({ type: 'separator', label: group });
+        lastGroup = group;
+      }
+      groups.push({ type: 'item', data: notif });
+    }
+    return groups;
+  })();
+
   // Contenu des notifications (partagé entre dropdown et panel)
   const notificationContent = (
     <>
@@ -435,40 +464,65 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
       <div className={`${styles.list} ${isPanel ? styles.panelList : ''}`}>
         {notifications.length === 0 ? (
           <div className={styles.empty}>
-            <span className={styles.emptyIcon}><BellIcon size={32} /></span>
+            <span className={styles.emptyIcon}><BellIcon size={28} /></span>
             <p>Aucune notification</p>
           </div>
         ) : (
-          notifications.map((notif) => (
-            <button
-              key={notif._id || notif.id}
-              className={`${styles.item} ${!notif.read ? styles.unread : ''}`}
-              onClick={() => handleNotificationClick({ ...notif, id: notif._id || notif.id })}
-            >
-              <div className={styles.itemIcon}>
-                {notif.avatar ? (
-                  <Avatar
-                    src={notif.avatar}
-                    name={notif.title || 'Notification'}
-                    size="sm"
-                    className={styles.avatar}
-                  />
-                ) : (
-                  <span className={styles.typeIcon}>
-                    {TypeIcons[notif.type] || TypeIcons.system}
-                  </span>
-                )}
-              </div>
-              <div className={styles.itemContent}>
-                <p className={styles.itemTitle}>{notif.title}</p>
-                {notif.message && (
-                  <p className={styles.itemMessage}>{notif.message}</p>
-                )}
-                <span className={styles.itemTime}>{formatTime(notif.createdAt || notif.timestamp)}</span>
-              </div>
-              {!notif.read && <span className={styles.unreadDot}></span>}
-            </button>
-          ))
+          groupedNotifications.map((entry, i) => {
+            if (entry.type === 'separator') {
+              return <div key={`sep-${entry.label}`} className={styles.timeGroup}>{entry.label}</div>;
+            }
+            const notif = entry.data;
+            const notifType = notif.type || 'system';
+            const isInvite = notifType === 'shared_session' || notif.metadata?.type === 'shared_session_invite';
+
+            return (
+              <button
+                key={notif._id || notif.id || i}
+                className={`${styles.item} ${!notif.read ? styles.unread : ''}`}
+                onClick={() => handleNotificationClick({ ...notif, id: notif._id || notif.id })}
+              >
+                <div className={styles.itemIcon} data-type={notifType}>
+                  {notif.avatar ? (
+                    <Avatar
+                      src={notif.avatar}
+                      name={notif.title || 'Notification'}
+                      size="sm"
+                      className={styles.avatar}
+                    />
+                  ) : (
+                    <span className={styles.typeIcon}>
+                      {TypeIcons[notifType] || TypeIcons.system}
+                    </span>
+                  )}
+                </div>
+                <div className={styles.itemContent}>
+                  <p className={styles.itemTitle}>{notif.title}</p>
+                  {notif.message && (
+                    <p className={styles.itemMessage}>{notif.message}</p>
+                  )}
+                  <span className={styles.itemTime}>{formatTime(notif.createdAt || notif.timestamp)}</span>
+                  {/* Inline actions for session invites */}
+                  {isInvite && !notif.read && notif.metadata?.sharedSessionId && (
+                    <div className={styles.itemActions} onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className={styles.acceptAction}
+                        onClick={() => {
+                          markAsRead(notif._id || notif.id);
+                          navigate(`/shared-session/${notif.metadata.sharedSessionId}`);
+                          setIsOpen(false);
+                          if (isPanel && onClose) onClose();
+                        }}
+                      >
+                        Voir la séance
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {!notif.read && <span className={styles.unreadDot} />}
+              </button>
+            );
+          })
         )}
       </div>
 
