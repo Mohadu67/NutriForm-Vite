@@ -1,9 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { toast } from 'sonner';
 import styles from "../SuivieCard.module.css";
 import { isNewRecord, calculateDifference, suggestRepsChallenge } from "../helpers/progressionHelper.js";
 
 export default function MuscuForm({ sets = [], onAdd, onRemove, onPatch, progression, lastExerciseData, exerciseName = '' }) {
   const [appliedSuggestion, setAppliedSuggestion] = useState(false);
+  const deletedSetRef = useRef(null);
+
+  const handleRemoveWithUndo = (idx) => {
+    const removed = sets[idx];
+    const hasData = removed && (Number(removed.reps || 0) > 0 || Number(removed.weight || 0) > 0);
+
+    if (!hasData) {
+      onRemove?.(idx);
+      return;
+    }
+
+    deletedSetRef.current = { idx, data: { ...removed } };
+    onRemove?.(idx);
+
+    toast('Série supprimée', {
+      action: {
+        label: 'Annuler',
+        onClick: () => {
+          if (deletedSetRef.current) {
+            onAdd?.();
+            // Re-patch the restored set on next tick
+            setTimeout(() => {
+              const restoreIdx = sets.length; // will be at end after add
+              if (deletedSetRef.current?.data) {
+                onPatch?.(restoreIdx, deletedSetRef.current.data);
+              }
+              deletedSetRef.current = null;
+            }, 50);
+          }
+        },
+      },
+      duration: 4000,
+    });
+  };
 
   // Vérifie si on a des séries remplies (avec poids ET reps)
   const hasFilledSets = sets.some(s => {
@@ -81,7 +116,7 @@ export default function MuscuForm({ sets = [], onAdd, onRemove, onPatch, progres
                 <button
                   type="button"
                   className={styles.deleteSerieBtn}
-                  onClick={() => onRemove && onRemove(idx)}
+                  onClick={() => handleRemoveWithUndo(idx)}
                   aria-label={`Supprimer la série ${idx + 1}`}
                 >
                   ×

@@ -40,8 +40,9 @@ function loadSavedDraft(exo) {
   }
 }
 
-export default function SuivieCard({ exo, value, onChange }) {
+export default function SuivieCard({ exo, value, onChange, exerciseIndex, totalExercises }) {
   const [open, setOpen] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
 
   const hydratedOnMountRef = useRef(false);
 
@@ -146,6 +147,11 @@ export default function SuivieCard({ exo, value, onChange }) {
       logger.error("Failed to emit or call onChange when closing popup:", e);
     }
     setOpen(false);
+    // Flash save indicator
+    if (isExerciseDone(next)) {
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 1500);
+    }
   }
 
   useEffect(() => {
@@ -170,6 +176,21 @@ export default function SuivieCard({ exo, value, onChange }) {
     if (open) {
       document.body.style.overflow = 'hidden';
       document.body.style.paddingRight = window.innerWidth - document.documentElement.clientWidth + 'px';
+
+      // Mobile: scroll input into view when keyboard opens
+      const handleFocusIn = (e) => {
+        if (e.target?.tagName === 'INPUT' || e.target?.tagName === 'TEXTAREA' || e.target?.tagName === 'SELECT') {
+          setTimeout(() => {
+            e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 300);
+        }
+      };
+      document.addEventListener('focusin', handleFocusIn);
+      return () => {
+        document.removeEventListener('focusin', handleFocusIn);
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+      };
     } else {
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
@@ -195,7 +216,7 @@ export default function SuivieCard({ exo, value, onChange }) {
 
   return (
     <>
-      <div className={styles.card}>
+      <div className={styles.card} data-suivie-card>
         <button type="button" className={`${styles.row} ${isStarted ? styles.isStarted : ''}`} onClick={() => setOpen(true)}>
           <div className={styles.thumb} aria-hidden>
             {imgSrc ? <img src={imgSrc} alt="" /> : <div className={styles.initial}>{initialLetter}</div>}
@@ -204,6 +225,10 @@ export default function SuivieCard({ exo, value, onChange }) {
             {isStarted && <span className={styles.statusDot} aria-label="En cours" />}
             {exo?.name || "Exercice"}
           </div>
+          {justSaved && <span className={styles.savedIndicator}>✓</span>}
+          {exerciseIndex != null && totalExercises > 1 && (
+            <span className={styles.orderBadge}>{exerciseIndex + 1}/{totalExercises}</span>
+          )}
         </button>
       </div>
 
@@ -217,7 +242,50 @@ export default function SuivieCard({ exo, value, onChange }) {
         >
           <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
             <header className={styles.popupHeader}>
-              <h3 className={styles.popupTitle}>{exo?.name}</h3>
+              {imgSrc && (
+                <div className={styles.popupThumb}>
+                  <img src={imgSrc} alt="" />
+                </div>
+              )}
+              {exerciseIndex != null && totalExercises > 1 && (
+                <button
+                  type="button"
+                  className={styles.navBtn}
+                  disabled={exerciseIndex <= 0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleClosePopup();
+                    // Navigate to previous exercise card
+                    const cards = document.querySelectorAll('[data-suivie-card]');
+                    cards[exerciseIndex - 1]?.querySelector('button')?.click();
+                  }}
+                  aria-label="Exercice précédent"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+              )}
+              <div className={styles.popupTitleWrap}>
+                <h3 className={styles.popupTitle}>{exo?.name}</h3>
+                {exerciseIndex != null && totalExercises > 1 && (
+                  <span className={styles.popupCounter}>{exerciseIndex + 1}/{totalExercises}</span>
+                )}
+              </div>
+              {exerciseIndex != null && totalExercises > 1 ? (
+                <button
+                  type="button"
+                  className={styles.navBtn}
+                  disabled={exerciseIndex >= totalExercises - 1}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleClosePopup();
+                    const cards = document.querySelectorAll('[data-suivie-card]');
+                    cards[exerciseIndex + 1]?.querySelector('button')?.click();
+                  }}
+                  aria-label="Exercice suivant"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              ) : null}
               <button type="button" className={styles.closeBtn} onClick={handleClosePopup} aria-label="Fermer">
                 ×
               </button>

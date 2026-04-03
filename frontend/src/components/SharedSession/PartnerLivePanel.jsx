@@ -69,7 +69,10 @@ export default function PartnerLivePanel({ totalExercises }) {
       <button className={styles.header} onClick={() => setExpanded(!expanded)}>
         <div className={styles.avatarWrap}>
           <Avatar src={partner?.photo} name={partnerName} size="sm" className={styles.avatar} />
-          <span className={stale ? styles.staleDot : styles.onlineDot} />
+          <span
+            className={stale ? styles.staleDot : styles.onlineDot}
+            title={stale ? 'Pas de mise à jour depuis 30s+' : 'En ligne — données à jour'}
+          />
         </div>
         <div className={styles.info}>
           <span className={styles.name}>{partnerName}</span>

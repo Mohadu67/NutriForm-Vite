@@ -36,6 +36,7 @@ export default function SharedSessionBuilding() {
     partner,
     addExercise,
     removeExercise,
+    toggleSelection,
     startSession,
     cancelSession
   } = useSharedSession() || {};
@@ -55,7 +56,9 @@ export default function SharedSessionBuilding() {
   const userName = user?.pseudo || user?.username || 'Toi';
   const partnerId = partner?._id;
   const partnerName = partner?.pseudo || partner?.username || 'Partenaire';
-  const exercises = session?.exercises || [];
+  const allExercises = session?.exercises || [];
+  const mySelection = new Set(session?.mySelection || []);
+  const exercises = allExercises.filter(ex => mySelection.has(ex.exerciseName));
 
   // Load exercise images on mount
   useEffect(() => {
@@ -95,22 +98,25 @@ export default function SharedSessionBuilding() {
     return { mine, partner: exercises.length - mine };
   }, [exercises, userId]);
 
+  // Names already in session — used for duplicate detection in ChercherExo
+  const existingExerciseNames = useMemo(
+    () => exercises.map(e => (e.exerciseName || '').toLowerCase().trim()),
+    [exercises]
+  );
+
   const handleAddExercises = useCallback(async (selected) => {
     setShowSearch(false);
-    const duplicates = [];
-    const toAdd = [];
-
-    for (const ex of selected) {
-      const name = ex.name || ex.title;
-      if (exercises.some(e => e.exerciseName === name)) {
-        duplicates.push(name);
-      } else {
-        toAdd.push(ex);
-      }
-    }
-
-    if (duplicates.length > 0) {
-      setDuplicateModal({ open: true, names: duplicates });
+    // Auto-filter duplicates by name (ChercherExo already blocks by ID, this catches name-only matches)
+    const toAdd = selected.filter(ex => {
+      const name = (ex.name || ex.title || '').toLowerCase().trim();
+      return !existingExerciseNames.includes(name);
+    });
+    const skipped = selected.length - toAdd.length;
+    if (skipped > 0) {
+      setDuplicateModal({ open: true, names: selected.filter(ex => {
+        const name = (ex.name || ex.title || '').toLowerCase().trim();
+        return existingExerciseNames.includes(name);
+      }).map(ex => ex.name || ex.title) });
     }
 
     for (const ex of toAdd) {
@@ -132,9 +138,9 @@ export default function SharedSessionBuilding() {
     }
   }, [addExercise, exercises]);
 
-  const handleRemove = async (order) => {
+  const handleRemove = async (exerciseName) => {
     try {
-      await removeExercise(order);
+      await toggleSelection(exerciseName);
     } catch {
       toast.error('Erreur suppression');
     }
@@ -388,7 +394,7 @@ export default function SharedSessionBuilding() {
                       )}
                     </div>
 
-                    <button className={styles.removeBtn} onClick={() => handleRemove(ex.order)} title="Supprimer">
+                    <button className={styles.removeBtn} onClick={() => handleRemove(ex.exerciseName)} title="Supprimer">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
                     </button>
                   </div>
@@ -409,7 +415,7 @@ export default function SharedSessionBuilding() {
           {showSearch && (
             <div className={styles.searchContainer}>
               <ChercherExo
-                preselectedIds={exercises.map(e => e.exerciseId || e.exerciseName)}
+                preselectedIds={exercises.flatMap(e => [e.exerciseId, e.exerciseName].filter(Boolean))}
                 onConfirm={handleAddExercises}
                 onCancel={() => setShowSearch(false)}
               />
