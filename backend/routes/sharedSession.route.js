@@ -34,6 +34,9 @@ router.delete('/:id/exercises/:order', ctrl.removeExercise);
 // Réordonner les exercices
 router.patch('/:id/exercises/reorder', ctrl.reorderExercises);
 
+// Cocher/décocher un exercice pour soi (building)
+router.post('/:id/toggle-selection', ctrl.toggleSelection);
+
 // Démarrer la séance
 router.post('/:id/start', ctrl.startSession);
 
@@ -42,6 +45,9 @@ router.get('/:id/progress', ctrl.getProgress);
 
 // Mettre à jour les saisies d'un exercice (live + persisté)
 router.post('/:id/exercise-data', ctrl.updateExerciseData);
+
+// Supprimer un exercice de MA liste personnelle (séance active)
+router.post('/:id/my-exercises/remove/:exerciseName', ctrl.removeMyExercise);
 
 // Terminer la séance (pour un participant)
 router.post('/:id/end', ctrl.endSession);

@@ -26,6 +26,12 @@ export const addSharedExercise = (sessionId, exercise) =>
 export const removeSharedExercise = (sessionId, order) =>
   client.delete(`${BASE}/${sessionId}/exercises/${order}`).then(r => r.data);
 
+export const removeMySharedExercise = (sessionId, exerciseName) =>
+  client.post(`${BASE}/${sessionId}/my-exercises/remove/${encodeURIComponent(exerciseName)}`).then(r => r.data);
+
+export const toggleExerciseSelection = (sessionId, exerciseName) =>
+  client.post(`${BASE}/${sessionId}/toggle-selection`, { exerciseName }).then(r => r.data);
+
 export const startSharedSession = (sessionId) =>
   client.post(`${BASE}/${sessionId}/start`).then(r => r.data);
 

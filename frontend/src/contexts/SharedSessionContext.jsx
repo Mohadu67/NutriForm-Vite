@@ -8,6 +8,8 @@ import {
   respondSharedSession,
   addSharedExercise,
   removeSharedExercise,
+  removeMySharedExercise,
+  toggleExerciseSelection as apiToggleSelection,
   startSharedSession as apiStartSession,
   updateExerciseData as apiUpdateExerciseData,
   getSharedProgress,
@@ -167,7 +169,7 @@ export function SharedSessionProvider({ children }) {
     cleanups.push(ws.on('shared_session:partner_exercise_update', (data) => {
       setPartnerExerciseData(prev => {
         const next = new Map(prev);
-        next.set(data.exerciseOrder, data);
+        next.set(data.exerciseName || data.exerciseOrder, data);
         return next;
       });
     }));
@@ -178,7 +180,7 @@ export function SharedSessionProvider({ children }) {
         setPartnerExerciseData(prev => {
           const next = new Map(prev);
           for (const entry of data.partnerSummary) {
-            next.set(entry.exerciseOrder, entry);
+            next.set(entry.exerciseName || entry.exerciseOrder, entry);
           }
           return next;
         });
@@ -238,6 +240,20 @@ export function SharedSessionProvider({ children }) {
     setSession(data.sharedSession);
   }, []);
 
+  const toggleSelection = useCallback(async (exerciseName) => {
+    const id = sessionRef.current?._id;
+    if (!id) return;
+    const data = await apiToggleSelection(id, exerciseName);
+    setSession(data.sharedSession);
+  }, []);
+
+  const removeMyExercise = useCallback(async (exerciseName) => {
+    const id = sessionRef.current?._id;
+    if (!id) return;
+    const data = await removeMySharedExercise(id, exerciseName);
+    setSession(data.sharedSession);
+  }, []);
+
   const startSession = useCallback(async () => {
     const id = sessionRef.current?._id;
     if (!id) return;
@@ -259,9 +275,9 @@ export function SharedSessionProvider({ children }) {
       const myId = String(user?.id || user?._id || '');
       const partnerMap = new Map();
       for (const [key, value] of Object.entries(progress)) {
-        // Keys are "userId:exerciseOrder" — only keep partner entries
+        // Keys are "userId:exerciseName" — only keep partner entries
         if (!key.startsWith(myId + ':')) {
-          partnerMap.set(value.exerciseOrder, value);
+          partnerMap.set(value.exerciseName || value.exerciseOrder, value);
         }
       }
       setPartnerExerciseData(partnerMap);
@@ -291,19 +307,9 @@ export function SharedSessionProvider({ children }) {
     setInviteModalDismissed(true);
   }, []);
 
-  // ─── Helpers ─────────────────────────────────────────────
-  const myId = String(user?.id || user?._id || '');
-
-  const isParticipant = session && myId && (
-    String(session.initiatorId?._id || session.initiatorId || '') === myId ||
-    String(session.partnerId?._id || session.partnerId || '') === myId
-  );
-
-  const partner = session && myId ? (
-    String(session.initiatorId?._id || session.initiatorId || '') === myId
-      ? session.partnerId
-      : session.initiatorId
-  ) : null;
+  // ─── Helpers (calculés par le backend via enrichSession) ─
+  const isParticipant = session?.myRole != null;
+  const partner = session?.partner || null;
 
   const value = {
     session,
@@ -318,6 +324,8 @@ export function SharedSessionProvider({ children }) {
     respond,
     addExercise,
     removeExercise,
+    removeMyExercise,
+    toggleSelection,
     startSession,
     sendExerciseData,
     loadProgress,

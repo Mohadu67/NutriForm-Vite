@@ -28,7 +28,8 @@ export default function SharedSessionActive() {
   const [ending, setEnding] = useState(false);
 
   const partnerName = partner?.pseudo || partner?.username || 'Partenaire';
-  const exercises = session?.exercises || [];
+  // En mode active, utiliser MA liste personnelle (copiée au démarrage)
+  const exercises = session?.myWorkout?.exercises || session?.exercises || [];
 
   // Forcer le bon startedAt AVANT le render (pas dans un useEffect qui est trop tard)
   if (session?.startedAt) {

@@ -211,16 +211,18 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
     if (!isShared || !currentWorkout?.exercises) return;
     if (syncRef.current) clearTimeout(syncRef.current);
     syncRef.current = setTimeout(() => {
-      const sharedExercises = shared?.session?.exercises || [];
+      // En active : chercher dans myWorkout (liste perso), sinon fallback sur la liste commune
+      const sharedExercises = shared?.session?.myWorkout?.exercises || shared?.session?.exercises || [];
       currentWorkout.exercises.forEach((ex, i) => {
         const hasSets = ex.sets && ex.sets.some(s => s.reps > 0 || s.weight > 0 || s.completed);
         const hasCardio = ex.cardioSets && ex.cardioSets.some(s => s.durationSec > 0 || s.durationMin > 0);
         if (!hasSets && !hasCardio && !ex.swim && !ex.yoga && !ex.stretch && !ex.walkRun) return;
-        // Trouver l'order backend par nom d'exercice (pas l'index local)
-        const backendEx = sharedExercises.find(se => se.exerciseName === ex.exercice?.name);
-        const backendOrder = backendEx != null ? backendEx.order : i;
+        // Trouver l'order backend par nom d'exercice (case insensitive)
+        const exName = (ex.exercice?.name || '').toLowerCase();
+        const backendEx = sharedExercises.find(se => (se.exerciseName || '').toLowerCase() === exName);
+        if (!backendEx) return;
         shared.sendExerciseData({
-          exerciseOrder: backendOrder,
+          exerciseOrder: backendEx.order,
           exerciseName: ex.exercice?.name || '',
           mode: ex.mode || 'muscu',
           sets: ex.sets || [],
@@ -289,11 +291,26 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
   }, [navigation, onClose]);
 
   const handleRmEx = useCallback((id) => {
-    Alert.alert('Supprimer ?', 'L\'exercice sera retiré de ta séance uniquement.', [
-      { text: 'Annuler', style: 'cancel' },
-      { text: 'Supprimer', style: 'destructive', onPress: () => removeExercise(id) },
-    ]);
-  }, [removeExercise]);
+    const exName = currentWorkout?.exercises?.find(e => e.exercice?.id === id)?.exercice?.name;
+    Alert.alert(
+      'Supprimer ?',
+      'L\'exercice sera retiré de ta séance uniquement.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Supprimer', style: 'destructive', onPress: () => {
+          removeExercise(id); // Local
+          if (isShared && exName) {
+            if (shared?.session?.status === 'active' && shared?.removeMyExercise) {
+              shared.removeMyExercise(exName).catch(() => {});
+            } else if (shared?.session?.status === 'building' && shared?.toggleSelection) {
+              // Building → décocher (pas supprimer de la liste commune)
+              shared.toggleSelection(exName).catch(() => {});
+            }
+          }
+        }},
+      ]
+    );
+  }, [removeExercise, isShared, shared, currentWorkout]);
 
   // Séance terminée de mon côté OU pas de workout local mais séance partagée → montrer le panel partenaire
   if ((!currentWorkout && isShared) || shared?.mySessionEnded) {
@@ -310,7 +327,7 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
           </View>
         </View>
         <PartnerView
-          exercises={shared?.session?.exercises || []}
+          exercises={shared?.session?.partnerWorkoutData?.exercises || shared?.session?.exercises || []}
           partnerExerciseData={shared?.partnerExerciseData}
           partnerName={shared?.partner?.pseudo || 'Partenaire'}
           isDark={isDark}
@@ -402,7 +419,7 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
         </>
       ) : (
         <PartnerView
-          exercises={shared?.session?.exercises || []}
+          exercises={shared?.session?.partnerWorkoutData?.exercises || shared?.session?.exercises || []}
           partnerExerciseData={shared?.partnerExerciseData}
           partnerName={shared?.partner?.pseudo || 'Partenaire'}
           isDark={isDark}

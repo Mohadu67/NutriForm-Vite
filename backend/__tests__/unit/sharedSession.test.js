@@ -436,9 +436,9 @@ describe('SharedSession Controller', () => {
       expect(result.sharedSession.exercises).toHaveLength(1);
     });
 
-    it('should increment order for each new exercise', async () => {
+    it('should increment order for each new exercise in building', async () => {
       const userId = createObjectId();
-      const session = await createSession({ initiatorId: userId, status: 'active' });
+      const session = await createSession({ initiatorId: userId, status: 'building' });
 
       const exercises = ['Squat', 'Bench', 'Deadlift'];
       for (const name of exercises) {
@@ -456,6 +456,29 @@ describe('SharedSession Controller', () => {
       expect(found.exercises[0].order).toBe(0);
       expect(found.exercises[1].order).toBe(1);
       expect(found.exercises[2].order).toBe(2);
+    });
+
+    it('should add to personal workout in active mode', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const session = await createSession({
+        initiatorId: userId, partnerId, status: 'active',
+        initiatorWorkout: { exercises: [], startedAt: new Date() },
+        partnerWorkout: { exercises: [], startedAt: new Date() },
+      });
+
+      const req = createMockReq({
+        userId,
+        params: { id: session._id.toString() },
+        body: { exerciseName: 'Curl', type: 'muscu' }
+      });
+      const res = createMockRes();
+      await controller.addExercise(req, res);
+
+      const found = await SharedSession.findById(session._id);
+      expect(found.initiatorWorkout.exercises).toHaveLength(1);
+      expect(found.initiatorWorkout.exercises[0].exerciseName).toBe('Curl');
+      expect(found.partnerWorkout.exercises).toHaveLength(0);
     });
   });
 
@@ -1037,7 +1060,7 @@ describe('SharedSession Controller', () => {
 
       // Verify persisted in DB
       const updated = await SharedSession.findById(session._id);
-      const entry = updated.progress.get(`${userId}:0`);
+      const entry = updated.progress.get(`${userId}:Bench Press`);
       expect(entry).toBeDefined();
       expect(entry.exerciseName).toBe('Bench Press');
       expect(entry.sets).toHaveLength(1);
@@ -1281,9 +1304,9 @@ describe('SharedSession Controller', () => {
 
       // Verify progress persisted
       const withProgress = await SharedSession.findById(session._id);
-      expect(withProgress.progress.get(`${userId}:0`)).toBeDefined();
-      expect(withProgress.progress.get(`${userId}:0`).sets).toHaveLength(2);
-      expect(withProgress.progress.get(`${partnerId}:0`)).toBeDefined();
+      expect(withProgress.progress.get(`${userId}:Bench Press`)).toBeDefined();
+      expect(withProgress.progress.get(`${userId}:Bench Press`).sets).toHaveLength(2);
+      expect(withProgress.progress.get(`${partnerId}:Bench Press`)).toBeDefined();
 
       // 6. End (first user)
       const endReq1 = createMockReq({ userId, params: { id: session._id.toString() }, body: {} });
@@ -1424,6 +1447,166 @@ describe('SharedSession Controller', () => {
           ])
         })
       );
+    });
+  });
+
+  describe('Personal workouts (refactoring)', () => {
+    it('should copy exercises to initiatorWorkout and partnerWorkout on start', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const session = await createSession({
+        initiatorId: userId, partnerId, status: 'building',
+        exercises: [
+          { exerciseName: 'Pompe', type: ['muscu'], addedBy: userId, order: 0 },
+          { exerciseName: 'Squat', type: ['muscu'], addedBy: partnerId, order: 1 },
+        ],
+        initiatorSelection: ['Pompe', 'Squat'],
+        partnerSelection: ['Pompe', 'Squat'],
+      });
+
+      const req = createMockReq({ userId, params: { id: session._id.toString() } });
+      const res = createMockRes();
+      await controller.startSession(req, res);
+
+      const started = await SharedSession.findById(session._id);
+      expect(started.initiatorWorkout).toBeDefined();
+      expect(started.partnerWorkout).toBeDefined();
+      expect(started.initiatorWorkout.exercises).toHaveLength(2);
+      expect(started.partnerWorkout.exercises).toHaveLength(2);
+      expect(started.initiatorWorkout.startedAt).toBeDefined();
+    });
+
+    it('should remove exercise from personal workout only', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const session = await createSession({
+        initiatorId: userId, partnerId, status: 'active', startedAt: new Date(),
+        exercises: [
+          { exerciseName: 'Pompe', type: ['muscu'], addedBy: userId, order: 0 },
+          { exerciseName: 'Squat', type: ['muscu'], addedBy: partnerId, order: 1 },
+        ],
+        initiatorWorkout: {
+          exercises: [
+            { exerciseName: 'Pompe', type: ['muscu'], addedBy: userId, order: 0 },
+            { exerciseName: 'Squat', type: ['muscu'], addedBy: partnerId, order: 1 },
+          ],
+          startedAt: new Date()
+        },
+        partnerWorkout: {
+          exercises: [
+            { exerciseName: 'Pompe', type: ['muscu'], addedBy: userId, order: 0 },
+            { exerciseName: 'Squat', type: ['muscu'], addedBy: partnerId, order: 1 },
+          ],
+          startedAt: new Date()
+        }
+      });
+
+      const req = createMockReq({
+        userId,
+        params: { id: session._id.toString(), exerciseName: 'Pompe' }
+      });
+      const res = createMockRes();
+      await controller.removeMyExercise(req, res);
+
+      const updated = await SharedSession.findById(session._id);
+      expect(updated.initiatorWorkout.exercises).toHaveLength(1);
+      expect(updated.initiatorWorkout.exercises[0].exerciseName).toBe('Squat');
+      expect(updated.partnerWorkout.exercises).toHaveLength(2);
+    });
+
+    it('should toggle exercise selection for a user', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const session = await createSession({
+        initiatorId: userId, partnerId, status: 'building',
+        exercises: [
+          { exerciseName: 'Pompe', type: ['muscu'], addedBy: userId, order: 0 },
+          { exerciseName: 'Squat', type: ['muscu'], addedBy: partnerId, order: 1 },
+        ],
+        initiatorSelection: ['Pompe', 'Squat'],
+        partnerSelection: ['Pompe', 'Squat'],
+      });
+
+      // Décocher Pompe pour l'initiateur
+      const req = createMockReq({
+        userId,
+        params: { id: session._id.toString() },
+        body: { exerciseName: 'Pompe' }
+      });
+      const res = createMockRes();
+      await controller.toggleSelection(req, res);
+
+      const updated = await SharedSession.findById(session._id);
+      expect(updated.initiatorSelection).not.toContain('Pompe');
+      expect(updated.initiatorSelection).toContain('Squat');
+      // Partner still has both
+      expect(updated.partnerSelection).toContain('Pompe');
+      expect(updated.partnerSelection).toContain('Squat');
+    });
+
+    it('should start with only selected exercises per user', async () => {
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      const session = await createSession({
+        initiatorId: userId, partnerId, status: 'building',
+        exercises: [
+          { exerciseName: 'Pompe', type: ['muscu'], addedBy: userId, order: 0 },
+          { exerciseName: 'Squat', type: ['muscu'], addedBy: partnerId, order: 1 },
+          { exerciseName: 'Traction', type: ['muscu'], addedBy: userId, order: 2 },
+        ],
+        initiatorSelection: ['Pompe', 'Traction'], // pas Squat
+        partnerSelection: ['Squat', 'Traction'],    // pas Pompe
+      });
+
+      const req = createMockReq({ userId, params: { id: session._id.toString() } });
+      const res = createMockRes();
+      await controller.startSession(req, res);
+
+      const started = await SharedSession.findById(session._id);
+      expect(started.initiatorWorkout.exercises).toHaveLength(2);
+      expect(started.initiatorWorkout.exercises.map(e => e.exerciseName)).toEqual(['Pompe', 'Traction']);
+      expect(started.partnerWorkout.exercises).toHaveLength(2);
+      expect(started.partnerWorkout.exercises.map(e => e.exerciseName)).toEqual(['Squat', 'Traction']);
+    });
+
+    it('should use exerciseName as progress key', async () => {
+      const userId = createObjectId();
+      const session = await createSession({ initiatorId: userId, status: 'active' });
+
+      const req = createMockReq({
+        userId,
+        params: { id: session._id.toString() },
+        body: { exerciseOrder: 0, exerciseName: 'Squat', sets: [{ reps: 5, weight: 100 }], done: true }
+      });
+      const res = createMockRes();
+      await controller.updateExerciseData(req, res);
+
+      const updated = await SharedSession.findById(session._id);
+      expect(updated.progress.get(`${userId}:Squat`)).toBeDefined();
+      expect(updated.progress.get(`${userId}:Squat`).done).toBe(true);
+    });
+
+    it('should include myWorkout in enriched response', async () => {
+      const User = require('../../models/User');
+      const userId = createObjectId();
+      const partnerId = createObjectId();
+      await User.create({ _id: userId, email: 'enrich1@test.com', password: 'test123', pseudo: 'User1' });
+      await User.create({ _id: partnerId, email: 'enrich2@test.com', password: 'test123', pseudo: 'User2' });
+      const session = await createSession({
+        initiatorId: userId, partnerId, status: 'active',
+        initiatorWorkout: { exercises: [{ exerciseName: 'Pompe', type: ['muscu'], addedBy: userId, order: 0 }], startedAt: new Date() },
+        partnerWorkout: { exercises: [{ exerciseName: 'Squat', type: ['muscu'], addedBy: partnerId, order: 0 }], startedAt: new Date() }
+      });
+
+      const req = createMockReq({ userId, params: { id: session._id.toString() } });
+      const res = createMockRes();
+
+      await controller.getSession(req, res);
+      const result = res.json.mock.calls[0][0].sharedSession;
+      expect(result.myWorkout).toBeDefined();
+      expect(result.myWorkout.exercises[0].exerciseName).toBe('Pompe');
+      expect(result.partnerWorkoutData).toBeDefined();
+      expect(result.partnerWorkoutData.exercises[0].exerciseName).toBe('Squat');
     });
   });
 });

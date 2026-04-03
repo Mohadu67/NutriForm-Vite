@@ -170,9 +170,9 @@ export default function PartnerView({ exercises, partnerExerciseData, partnerNam
       <ScrollView style={{ flex: 1 }} contentContainerStyle={s.scrollPad} showsVerticalScrollIndicator={false}>
         {(exercises || []).map((ex, i) => (
           <PartnerExerciseCard
-            key={i}
+            key={ex.exerciseName || i}
             exercise={ex}
-            entry={partnerExerciseData?.get?.(i)}
+            entry={partnerExerciseData?.get?.(ex.exerciseName)}
             index={i}
             isDark={isDark}
           />

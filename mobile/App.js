@@ -79,7 +79,10 @@ function SharedSessionSync() {
       injectedCountRef.current = 0;
     }
 
-    // Injecter les nouveaux exercices (suppressions sont personnelles, pas de sync inverse)
+    // Suppressions sont toujours personnelles (via toggleSelection en building, removeMyExercise en active)
+    // Le SharedSessionSync ne supprime jamais d'exos locaux
+
+    // Injecter les nouveaux exercices
     const newExercises = sharedExercises.slice(injectedCountRef.current);
     for (const ex of newExercises) {
       const stableId = ex.exerciseId || ('shared_' + ex.exerciseName.replace(/\s+/g, '_').toLowerCase());
@@ -106,7 +109,7 @@ function SharedSessionSync() {
         startWorkout();
       }
     }
-  }, [shared?.session?._id, shared?.session?.status, shared?.session?.exercises?.length]);
+  }, [shared?.session]);
 
   return null;
 }

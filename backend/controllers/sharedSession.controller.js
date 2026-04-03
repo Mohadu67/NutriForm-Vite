@@ -9,6 +9,49 @@ const { sendNotificationToUser } = require('../services/pushNotification.service
 const _progressTimestamps = new Map();
 const RATE_LIMIT_INTERVAL_MS = 500;
 
+// ─── HELPER : re-read populé ──────────────────────────────
+async function getPopulatedSession(id) {
+  return SharedSession.findById(id)
+    .populate('initiatorId', 'pseudo photo')
+    .populate('partnerId', 'pseudo photo');
+}
+
+// ─── HELPER : enrichir une session avec l'état calculé pour un user ──
+function enrichSession(session, userId) {
+  if (!session) return null;
+  const s = session.toObject ? session.toObject() : { ...session };
+  const uid = String(userId);
+  const initId = String(s.initiatorId?._id || s.initiatorId || '');
+  const isInitiator = initId === uid;
+
+  s.myRole = isInitiator ? 'initiator' : 'partner';
+  s.partner = isInitiator ? s.partnerId : s.initiatorId;
+  s.myEnded = Array.isArray(s.endedBy) && s.endedBy.some(id => String(id) === uid);
+  s.partnerEnded = Array.isArray(s.endedBy) && s.endedBy.some(id => String(id) !== uid);
+  s.bothEnded = s.status === 'ended';
+  s.isActive = ['building', 'active'].includes(s.status);
+
+  // Sélections en building
+  if (s.status === 'building') {
+    s.mySelection = isInitiator ? s.initiatorSelection : s.partnerSelection;
+    s.partnerSelectionData = isInitiator ? s.partnerSelection : s.initiatorSelection;
+  }
+
+  // Workouts personnels en active/ended
+  if (s.status === 'active' || s.status === 'ended') {
+    if (s.initiatorWorkout || s.partnerWorkout) {
+      s.myWorkout = isInitiator ? s.initiatorWorkout : s.partnerWorkout;
+      s.partnerWorkoutData = isInitiator ? s.partnerWorkout : s.initiatorWorkout;
+    } else {
+      // Fallback rétro-compat : sessions démarrées avant le refactoring
+      s.myWorkout = { exercises: s.exercises };
+      s.partnerWorkoutData = { exercises: s.exercises };
+    }
+  }
+
+  return s;
+}
+
 // ─── INVITE ───────────────────────────────────────────────
 // POST /api/shared-sessions/invite
 exports.invite = async (req, res) => {
@@ -148,7 +191,7 @@ exports.respond = async (req, res) => {
         metadata: { sharedSessionId: session._id, action: 'accepted' }
       });
 
-      return res.json({ sharedSession: session });
+      const _pop = await getPopulatedSession(session._id); return res.json({ sharedSession: enrichSession(_pop, userId) });
     } else {
       session.status = 'cancelled';
       await session.save();
@@ -196,7 +239,7 @@ exports.getSession = async (req, res) => {
       return res.status(403).json({ error: 'Non autorisé.' });
     }
 
-    res.json({ sharedSession: session });
+    const _pop = await getPopulatedSession(session._id); res.json({ sharedSession: enrichSession(_pop, userId) });
   } catch (error) {
     logger.error('Erreur shared-session getSession:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération.' });
@@ -217,7 +260,7 @@ exports.getActive = async (req, res) => {
       .populate('initiatorId', 'pseudo photo')
       .populate('partnerId', 'pseudo photo');
 
-    res.json({ sharedSession: session || null });
+    res.json({ sharedSession: session ? enrichSession(session, userId) : null });
   } catch (error) {
     logger.error('Erreur shared-session getActive:', error);
     res.status(500).json({ error: 'Erreur.' });
@@ -258,14 +301,6 @@ exports.addExercise = async (req, res) => {
       return res.status(400).json({ error: 'La séance n\'accepte plus de modifications.' });
     }
 
-    // Check for duplicate exerciseName
-    const duplicate = session.exercises.some(
-      e => e.exerciseName.toLowerCase() === trimmedName.toLowerCase()
-    );
-    if (duplicate) {
-      return res.status(409).json({ error: 'Cet exercice est déjà dans la séance.' });
-    }
-
     const exercise = {
       exerciseId: exerciseId || null,
       exerciseName: trimmedName,
@@ -275,12 +310,40 @@ exports.addExercise = async (req, res) => {
       primaryMuscle: primaryMuscle || muscles?.[0] || null,
       secondaryMuscles: secondaryMuscles || [],
       category: category || null,
-      order: session.exercises.length,
       addedBy: userId
     };
 
-    session.exercises.push(exercise);
-    await session.save();
+    if (session.status === 'active') {
+      // En active : ajouter à MA liste personnelle uniquement
+      const isInitiator = session.initiatorId.equals(userId);
+      const workoutField = isInitiator ? 'initiatorWorkout' : 'partnerWorkout';
+      if (!session[workoutField]) {
+        return res.status(400).json({ error: 'Workout personnel non initialisé.' });
+      }
+      const myExercises = session[workoutField].exercises;
+      const duplicate = myExercises.some(e => e.exerciseName.toLowerCase() === trimmedName.toLowerCase());
+      if (duplicate) {
+        return res.status(409).json({ error: 'Cet exercice est déjà dans ta séance.' });
+      }
+      exercise.order = myExercises.length;
+      myExercises.push(exercise);
+      await session.save();
+    } else {
+      // En building : ajouter à la liste commune + auto-cocher pour les deux
+      const duplicate = session.exercises.some(e => e.exerciseName.toLowerCase() === trimmedName.toLowerCase());
+      if (duplicate) {
+        return res.status(409).json({ error: 'Cet exercice est déjà dans la séance.' });
+      }
+      exercise.order = session.exercises.length;
+      session.exercises.push(exercise);
+      if (!session.initiatorSelection.includes(trimmedName)) {
+        session.initiatorSelection.push(trimmedName);
+      }
+      if (!session.partnerSelection.includes(trimmedName)) {
+        session.partnerSelection.push(trimmedName);
+      }
+      await session.save();
+    }
 
     // Notifier le partenaire en temps réel
     const partnerId = session.initiatorId.equals(userId)
@@ -296,7 +359,8 @@ exports.addExercise = async (req, res) => {
       });
     }
 
-    res.json({ sharedSession: session });
+    const populated = await getPopulatedSession(session._id);
+    res.json({ sharedSession: enrichSession(populated, userId) });
   } catch (error) {
     logger.error('Erreur shared-session addExercise:', error);
     res.status(500).json({ error: 'Erreur lors de l\'ajout.' });
@@ -351,8 +415,8 @@ exports.removeExercise = async (req, res) => {
       });
     }
 
-    const final = await SharedSession.findById(id);
-    res.json({ sharedSession: final });
+    const final = await getPopulatedSession(id);
+    res.json({ sharedSession: enrichSession(final, userId) });
   } catch (error) {
     logger.error('Erreur shared-session removeExercise:', error);
     res.status(500).json({ error: 'Erreur lors de la suppression.' });
@@ -448,6 +512,35 @@ exports.startSession = async (req, res) => {
 
     session.status = 'active';
     session.startedAt = new Date();
+
+    // Copier les exercices SÉLECTIONNÉS dans chaque workout personnel
+    const initSelection = new Set(session.initiatorSelection);
+    const partSelection = new Set(session.partnerSelection);
+
+    const toPersonal = (ex, i) => ({
+      exerciseId: ex.exerciseId,
+      exerciseName: ex.exerciseName,
+      type: ex.type,
+      muscles: ex.muscles,
+      equipment: ex.equipment,
+      primaryMuscle: ex.primaryMuscle,
+      secondaryMuscles: ex.secondaryMuscles,
+      category: ex.category,
+      order: i,
+      addedBy: ex.addedBy,
+      addedAt: ex.addedAt
+    });
+
+    const initExercises = session.exercises
+      .filter(ex => initSelection.has(ex.exerciseName))
+      .map((ex, i) => toPersonal(ex, i));
+    const partExercises = session.exercises
+      .filter(ex => partSelection.has(ex.exerciseName))
+      .map((ex, i) => toPersonal(ex, i));
+
+    session.initiatorWorkout = { exercises: initExercises, startedAt: session.startedAt };
+    session.partnerWorkout = { exercises: partExercises, startedAt: session.startedAt };
+
     await session.save();
 
     // Notifier le partenaire
@@ -466,7 +559,7 @@ exports.startSession = async (req, res) => {
       });
     }
 
-    res.json({ sharedSession: session });
+    const _pop = await getPopulatedSession(session._id); res.json({ sharedSession: enrichSession(_pop, userId) });
   } catch (error) {
     logger.error('Erreur shared-session startSession:', error);
     res.status(500).json({ error: 'Erreur lors du démarrage.' });
@@ -504,7 +597,8 @@ exports.updateExerciseData = async (req, res) => {
     }
 
     // Persist via atomic $set on the progress Map
-    const progressKey = `progress.${userId}:${exerciseOrder}`;
+    // Clé par exerciseName (stable même si l'order change entre les listes perso)
+    const progressKey = `progress.${userId}:${exerciseName || exerciseOrder}`;
     const entry = {
       exerciseOrder,
       userId,
@@ -603,7 +697,7 @@ exports.getByMatch = async (req, res) => {
       .populate('initiatorId', 'pseudo photo')
       .populate('partnerId', 'pseudo photo');
 
-    res.json({ sharedSession: session || null });
+    res.json({ sharedSession: session ? enrichSession(session, userId) : null });
   } catch (error) {
     logger.error('Erreur shared-session getByMatch:', error);
     res.status(500).json({ error: 'Erreur.' });
@@ -634,6 +728,13 @@ exports.endSession = async (req, res) => {
     // Enregistrer qui a terminé
     if (!session.endedBy.some(id => id.equals(userId))) {
       session.endedBy.push(userId);
+    }
+
+    // Marquer le workout personnel comme terminé
+    const isInitiator = session.initiatorId.equals(userId);
+    const myWorkoutField = isInitiator ? 'initiatorWorkout' : 'partnerWorkout';
+    if (session[myWorkoutField]) {
+      session[myWorkoutField].endedAt = new Date();
     }
 
     // Lier la WorkoutSession individuelle
@@ -722,7 +823,7 @@ exports.endSession = async (req, res) => {
       });
     }
 
-    res.json({ sharedSession: session });
+    const _pop = await getPopulatedSession(session._id); res.json({ sharedSession: enrichSession(_pop, userId) });
   } catch (error) {
     logger.error('Erreur shared-session endSession:', error);
     res.status(500).json({ error: 'Erreur lors de la fin de séance.' });
@@ -796,4 +897,109 @@ exports.getHistory = async (req, res) => {
 };
 
 // Expose rate limit map for testing
+// ─── TOGGLE EXERCISE SELECTION (building — cocher/décocher pour soi) ──
+// POST /api/shared-sessions/:id/toggle-selection
+exports.toggleSelection = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { id } = req.params;
+    const { exerciseName } = req.body;
+
+    if (!exerciseName) {
+      return res.status(400).json({ error: 'exerciseName requis.' });
+    }
+
+    const session = await SharedSession.findById(id);
+    if (!session) {
+      return res.status(404).json({ error: 'Session introuvable.' });
+    }
+
+    if (!session.initiatorId.equals(userId) && !session.partnerId.equals(userId)) {
+      return res.status(403).json({ error: 'Non autorisé.' });
+    }
+
+    if (session.status !== 'building') {
+      return res.status(400).json({ error: 'La sélection ne peut être modifiée qu\'en phase de construction.' });
+    }
+
+    const isInitiator = session.initiatorId.equals(userId);
+    const selField = isInitiator ? 'initiatorSelection' : 'partnerSelection';
+    const idx = session[selField].indexOf(exerciseName);
+
+    if (idx >= 0) {
+      // Décocher
+      session[selField].splice(idx, 1);
+    } else {
+      // Cocher
+      session[selField].push(exerciseName);
+    }
+
+    await session.save();
+
+    // Notifier le partenaire
+    const partnerId = session.initiatorId.equals(userId)
+      ? session.partnerId.toString()
+      : session.initiatorId.toString();
+    const io = req.app.get('io');
+    if (io?.notifyUser) {
+      io.notifyUser(partnerId, 'shared_session:selection_changed', {
+        sharedSessionId: session._id,
+        userId: userId.toString(),
+        exerciseName,
+        selected: idx < 0 // true si on vient de cocher
+      });
+    }
+
+    const _pop = await getPopulatedSession(session._id); res.json({ sharedSession: enrichSession(_pop, userId) });
+  } catch (error) {
+    logger.error('Erreur shared-session toggleSelection:', error);
+    res.status(500).json({ error: 'Erreur lors de la modification.' });
+  }
+};
+
+// ─── REMOVE MY EXERCISE (séance active — liste personnelle) ──
+// POST /api/shared-sessions/:id/my-exercises/remove/:exerciseName
+exports.removeMyExercise = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { id, exerciseName } = req.params;
+    const decodedName = decodeURIComponent(exerciseName);
+
+    const session = await SharedSession.findById(id);
+    if (!session) {
+      return res.status(404).json({ error: 'Session introuvable.' });
+    }
+
+    if (!session.initiatorId.equals(userId) && !session.partnerId.equals(userId)) {
+      return res.status(403).json({ error: 'Non autorisé.' });
+    }
+
+    if (session.status !== 'active') {
+      return res.status(400).json({ error: 'La séance doit être active pour modifier ta liste.' });
+    }
+
+    const isInitiator = session.initiatorId.equals(userId);
+    const workoutField = isInitiator ? 'initiatorWorkout' : 'partnerWorkout';
+
+    if (!session[workoutField]?.exercises) {
+      return res.status(400).json({ error: 'Aucun workout personnel trouvé.' });
+    }
+
+    // Supprimer l'exercice par nom
+    session[workoutField].exercises = session[workoutField].exercises.filter(
+      ex => ex.exerciseName.toLowerCase() !== decodedName.toLowerCase()
+    );
+
+    // Re-indexer les orders
+    session[workoutField].exercises.forEach((ex, i) => { ex.order = i; });
+
+    await session.save();
+
+    const _pop = await getPopulatedSession(session._id); res.json({ sharedSession: enrichSession(_pop, userId) });
+  } catch (error) {
+    logger.error('Erreur shared-session removeMyExercise:', error);
+    res.status(500).json({ error: 'Erreur lors de la suppression.' });
+  }
+};
+
 exports._progressTimestamps = _progressTimestamps;

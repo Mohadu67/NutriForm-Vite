@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+// ─── Exercice dans la liste commune (phase building) ─────
 const SharedExerciseSchema = new Schema({
   exerciseId: { type: String },
   exerciseName: { type: String, required: true },
@@ -15,10 +16,11 @@ const SharedExerciseSchema = new Schema({
   addedAt: { type: Date, default: Date.now }
 }, { _id: false });
 
+// ─── Saisie d'un exercice (progress) — clé = "userId:exerciseName" ─
 const ProgressEntrySchema = new Schema({
-  exerciseOrder: Number,
+  exerciseOrder: Number, // rétro-compatibilité, secondaire
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
-  exerciseName: String,
+  exerciseName: String,  // clé primaire de référence
   mode: String,
   sets: [Schema.Types.Mixed],
   cardioSets: [Schema.Types.Mixed],
@@ -31,6 +33,14 @@ const ProgressEntrySchema = new Schema({
   updatedAt: { type: Date, default: Date.now }
 }, { _id: false });
 
+// ─── Workout personnel (copié au démarrage, modifiable individuellement) ─
+const PersonalWorkoutSchema = new Schema({
+  exercises: [SharedExerciseSchema],
+  startedAt: { type: Date },
+  endedAt: { type: Date }
+}, { _id: false });
+
+// ─── Session partagée ────────────────────────────────────
 const sharedSessionSchema = new Schema({
   initiatorId: {
     type: Schema.Types.ObjectId,
@@ -54,8 +64,17 @@ const sharedSessionSchema = new Schema({
     default: 'pending'
   },
 
-  // Liste d'exercices commune, construite collaborativement
+  // Liste d'exercices commune (phase building — propositions visibles par les deux)
   exercises: [SharedExerciseSchema],
+
+  // Sélections personnelles en building (exerciseNames cochés par chaque user)
+  // Par défaut = tous les exos. Décocher = retirer de sa sélection.
+  initiatorSelection: { type: [String], default: [] },
+  partnerSelection: { type: [String], default: [] },
+
+  // Workouts personnels (créés au démarrage depuis exercises × selection)
+  initiatorWorkout: { type: PersonalWorkoutSchema, default: null },
+  partnerWorkout: { type: PersonalWorkoutSchema, default: null },
 
   // Nom de la séance (optionnel, modifiable par les deux)
   sessionName: { type: String, default: '' },
@@ -85,7 +104,7 @@ const sharedSessionSchema = new Schema({
   // Durée totale en secondes (calculée quand les deux ont terminé)
   durationSec: { type: Number, default: null },
 
-  // Saisies persistées des participants (clé = "userId:exerciseOrder")
+  // Saisies persistées des participants (clé = "userId:exerciseName")
   progress: { type: Map, of: ProgressEntrySchema, default: new Map() },
 
   // Notes post-séance (feedback)
