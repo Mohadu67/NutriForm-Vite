@@ -45,10 +45,10 @@ async function createFallbackResponse(userId, conversationId, userMessage) {
  */
 async function sendMessage(req, res) {
   try {
-    const { message, conversationId, platform } = req.body;
+    const { message, conversationId, platform, media } = req.body;
     const userId = req.userId;
 
-    if (!message || message.trim().length === 0) {
+    if ((!message || message.trim().length === 0) && (!media || media.length === 0)) {
       return res.status(400).json({ error: 'Message vide.' });
     }
 
@@ -81,12 +81,16 @@ async function sendMessage(req, res) {
     // Générer un conversationId si c'est un nouveau chat
     const convId = conversationId || uuidv4();
 
-    // Sauvegarder le message user
+    // Sanitize media array
+    const cleanMedia = Array.isArray(media) ? media.filter(m => m?.url && m?.type).slice(0, 3) : [];
+
+    // Sauvegarder le message user (with media if present)
     const userMessage = await ChatMessage.create({
       userId,
       conversationId: convId,
       role: 'user',
-      content: message.trim()
+      content: (message || '').trim() || (cleanMedia.length > 0 ? '📷 Photo envoyée' : ''),
+      ...(cleanMedia.length > 0 ? { media: cleanMedia } : {}),
     });
 
     // Vérifier si cette conversation a déjà été escaladée
@@ -180,8 +184,46 @@ async function sendMessage(req, res) {
           buildUserContext(userId, { platform: platform || 'web' }),
         ]);
 
-        const result = await openaiService.generateResponse(message, history, userContext);
-        const reply = await extractPartnerNeed(result.content, userId, convId, message);
+        // Extract image URLs for vision
+        const imageUrls = cleanMedia.filter(m => m.type === 'image').map(m => m.url);
+
+        const result = await openaiService.generateResponse(message || '📷 Analyse cette photo', history, userContext, imageUrls);
+        let reply = await extractPartnerNeed(result.content, userId, convId, message);
+
+        // Parse [LOG_FOOD:name:cal:prot:carbs:fats:fiber:grams:mealType:date] and auto-log
+        const logMatch = reply.match(/\[LOG_FOOD:([^:]+):(\d+):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+)(?::(\w+))?(?::(\d{4}-\d{2}-\d{2}))?\]/);
+        if (logMatch) {
+          try {
+            const FoodLog = require('../models/FoodLog');
+            const mealType = logMatch[8] || 'lunch';
+            const dateStr = logMatch[9];
+            const logDate = dateStr ? new Date(dateStr + 'T12:00:00Z') : new Date();
+
+            await FoodLog.create({
+              userId,
+              name: logMatch[1],
+              mealType: ['breakfast', 'lunch', 'dinner', 'snack'].includes(mealType) ? mealType : 'lunch',
+              date: logDate,
+              source: 'ai_vision',
+              nutrition: {
+                calories: Number(logMatch[2]),
+                proteins: Number(logMatch[3]),
+                carbs: Number(logMatch[4]),
+                fats: Number(logMatch[5]),
+                fiber: Number(logMatch[6]),
+              },
+              notes: `Ajouté via le coach IA (${logMatch[7]}g)`,
+            });
+
+            const dateLabel = dateStr && dateStr !== new Date().toISOString().slice(0, 10)
+              ? `du ${new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`
+              : 'à ta journée';
+            reply = reply.replace(logMatch[0], `✅ Repas ajouté ${dateLabel} !`);
+          } catch (logErr) {
+            logger.error('Erreur LOG_FOOD:', logErr.message);
+            reply = reply.replace(logMatch[0], '⚠️ Erreur lors de l\'ajout — tu peux le faire manuellement');
+          }
+        }
         confidence = result.confidence;
 
         // Detecter si le bot veut escalader

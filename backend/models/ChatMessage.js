@@ -22,6 +22,11 @@ const chatMessageSchema = new mongoose.Schema(
       required: true,
       maxlength: 5000
     },
+    media: [{
+      url: { type: String, required: true },
+      type: { type: String, enum: ['image', 'video'], default: 'image' },
+      mimeType: { type: String },
+    }],
     escalated: {
       type: Boolean,
       default: false

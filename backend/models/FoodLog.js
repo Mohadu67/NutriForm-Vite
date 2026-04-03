@@ -24,7 +24,7 @@ const foodLogSchema = new mongoose.Schema({
   },
   source: {
     type: String,
-    enum: ['manual', 'recipe'],
+    enum: ['manual', 'recipe', 'ai_vision'],
     default: 'manual',
   },
   recipeId: {
