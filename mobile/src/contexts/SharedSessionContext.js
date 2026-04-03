@@ -7,6 +7,8 @@ import {
   getSharedSession,
   respondSharedSession,
   inviteSharedSession,
+  addSharedExercise,
+  removeSharedExercise,
   startSharedSession as apiStartSession,
   updateExerciseData as apiUpdateExerciseData,
   getSharedProgress,
@@ -94,7 +96,6 @@ export function SharedSessionProvider({ children }) {
     if (!isAuthenticated) return;
 
     const onInvite = (data) => {
-      console.log('[SharedSession] onInvite fired, setting pendingInvite');
       setPendingInvite(data);
     };
     const onAccepted = (data) => {
@@ -135,9 +136,11 @@ export function SharedSessionProvider({ children }) {
         });
       }
       if (data.sessionEnded) {
-        // Les deux ont terminé → clear la session
+        // Les deux ont terminé → clear tout
+        setDismissedId(sessionRef.current?._id);
         setSession(null);
         setPartnerExerciseData(new Map());
+        setMySessionEnded(false);
       }
     };
     const onCancelled = () => {
@@ -188,6 +191,20 @@ export function SharedSessionProvider({ children }) {
     return data;
   }, []);
 
+  const addExercise = useCallback(async (exercise) => {
+    const id = sessionRef.current?._id;
+    if (!id) return;
+    const data = await addSharedExercise(id, exercise);
+    setSession(data.sharedSession);
+  }, []);
+
+  const removeExerciseFromSession = useCallback(async (order) => {
+    const id = sessionRef.current?._id;
+    if (!id) return;
+    const data = await removeSharedExercise(id, order);
+    setSession(data.sharedSession);
+  }, []);
+
   const startSession = useCallback(async () => {
     const id = sessionRef.current?._id;
     if (!id) return;
@@ -217,13 +234,23 @@ export function SharedSessionProvider({ children }) {
     } catch {}
   }, [user]);
 
+  const [mySessionEnded, setMySessionEnded] = useState(false);
+
   const endSession = useCallback(async (workoutSessionId) => {
     const id = sessionRef.current?._id;
     if (!id) return;
-    await setDismissedId(id);
-    setSession(null);
-    setPartnerExerciseData(new Map());
+    setMySessionEnded(true);
     try { await apiEndSession(id, workoutSessionId); } catch {}
+    // Refresh pour voir si les deux ont terminé
+    try {
+      const data = await getSharedSession(id);
+      if (data.sharedSession?.status === 'ended') {
+        await setDismissedId(id);
+        setSession(null);
+        setPartnerExerciseData(new Map());
+        setMySessionEnded(false);
+      }
+    } catch {}
   }, []);
 
   const cancelSession = useCallback(async () => {
@@ -249,8 +276,9 @@ export function SharedSessionProvider({ children }) {
   ) : null;
 
   const value = {
-    session, loading, pendingInvite, partnerExerciseData, isParticipant, partner,
-    invite, respond, startSession, sendExerciseData, loadProgress,
+    session, loading, pendingInvite, partnerExerciseData, isParticipant, partner, mySessionEnded,
+    invite, respond, addExercise, removeExercise: removeExerciseFromSession,
+    startSession, sendExerciseData, loadProgress,
     endSession, cancelSession, refreshSession, dismissInvite,
   };
 

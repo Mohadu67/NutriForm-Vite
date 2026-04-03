@@ -211,12 +211,16 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
     if (!isShared || !currentWorkout?.exercises) return;
     if (syncRef.current) clearTimeout(syncRef.current);
     syncRef.current = setTimeout(() => {
+      const sharedExercises = shared?.session?.exercises || [];
       currentWorkout.exercises.forEach((ex, i) => {
         const hasSets = ex.sets && ex.sets.some(s => s.reps > 0 || s.weight > 0 || s.completed);
         const hasCardio = ex.cardioSets && ex.cardioSets.some(s => s.durationSec > 0 || s.durationMin > 0);
         if (!hasSets && !hasCardio && !ex.swim && !ex.yoga && !ex.stretch && !ex.walkRun) return;
+        // Trouver l'order backend par nom d'exercice (pas l'index local)
+        const backendEx = sharedExercises.find(se => se.exerciseName === ex.exercice?.name);
+        const backendOrder = backendEx != null ? backendEx.order : i;
         shared.sendExerciseData({
-          exerciseOrder: i,
+          exerciseOrder: backendOrder,
           exerciseName: ex.exercice?.name || '',
           mode: ex.mode || 'muscu',
           sets: ex.sets || [],
@@ -245,25 +249,39 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
   }, [addSet, updateSet, currentWorkout]);
 
   const handleFinish = useCallback(() => {
+    const doFinish = async () => {
+      const f = await finishWorkout();
+      if (isShared && shared?.endSession) {
+        try { await shared.endSession(f?.backendId || null); } catch {}
+      }
+      if (f) Alert.alert('Bravo !', `Terminee en ${f.duration} min !`);
+      onClose?.();
+    };
     const c = getCompletedSetsCount(), t = getTotalSetsCount();
     if (c === 0) {
       Alert.alert('Seance vide', 'Aucune serie completee. Terminer ?', [
         { text: 'Continuer', style: 'cancel' },
-        { text: 'Terminer', style: 'destructive', onPress: async () => { await finishWorkout(); onClose?.(); } },
+        { text: 'Terminer', style: 'destructive', onPress: doFinish },
       ]); return;
     }
     Alert.alert('Terminer ?', `${c}/${t} series completees.`, [
       { text: 'Continuer', style: 'cancel' },
-      { text: 'Terminer', onPress: async () => { const f = await finishWorkout(); if (f) Alert.alert('Bravo !', `Terminee en ${f.duration} min !`); onClose?.(); } },
+      { text: 'Terminer', onPress: doFinish },
     ]);
-  }, [finishWorkout, getCompletedSetsCount, getTotalSetsCount, onClose]);
+  }, [finishWorkout, getCompletedSetsCount, getTotalSetsCount, onClose, isShared, shared]);
 
   const handleCancel = useCallback(() => {
     Alert.alert('Annuler ?', 'Toute la seance sera supprimee.', [
       { text: 'Non', style: 'cancel' },
-      { text: 'Oui', style: 'destructive', onPress: async () => { await cancelWorkout(); onClose?.(); } },
+      { text: 'Oui', style: 'destructive', onPress: async () => {
+        await cancelWorkout();
+        if (isShared && shared?.cancelSession) {
+          try { await shared.cancelSession(); } catch {}
+        }
+        onClose?.();
+      }},
     ]);
-  }, [cancelWorkout, onClose]);
+  }, [cancelWorkout, onClose, isShared, shared]);
 
   const handleAddEx = useCallback(() => {
     onClose?.();
@@ -271,19 +289,24 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
   }, [navigation, onClose]);
 
   const handleRmEx = useCallback((id) => {
-    Alert.alert('Supprimer ?', 'Toutes les series seront supprimees.', [
+    Alert.alert('Supprimer ?', 'L\'exercice sera retiré de ta séance uniquement.', [
       { text: 'Annuler', style: 'cancel' },
       { text: 'Supprimer', style: 'destructive', onPress: () => removeExercise(id) },
     ]);
   }, [removeExercise]);
 
-  // Pas de workout local mais séance partagée → montrer uniquement le panel partenaire
-  if (!currentWorkout && isShared) {
+  // Séance terminée de mon côté OU pas de workout local mais séance partagée → montrer le panel partenaire
+  if ((!currentWorkout && isShared) || shared?.mySessionEnded) {
     return (
       <View style={st.content}>
         <View style={[st.header, isDark && st.headerDk]}>
           <View style={{ flex: 1 }}>
-            <Text style={[st.headerTitle, isDark && st.textDark]}>Séance avec {shared?.partner?.pseudo || 'Partenaire'}</Text>
+            <Text style={[st.headerTitle, isDark && st.textDark]}>
+              {shared?.mySessionEnded ? 'Séance terminée' : 'Séance'} avec {shared?.partner?.pseudo || 'Partenaire'}
+            </Text>
+            {shared?.mySessionEnded && (
+              <Text style={[st.progLbl, { marginTop: 2 }]}>En attente que {shared?.partner?.pseudo || 'ton partenaire'} termine...</Text>
+            )}
           </View>
         </View>
         <PartnerView
@@ -361,7 +384,13 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
           {/* Action */}
           <View style={[st.actionBar, isDark && st.actionBarDk]}>
             {isPrep ? (
-              <TouchableOpacity style={[st.actBtn, st.startBtn]} onPress={() => { startWorkout(); Vibration.vibrate(100); }} activeOpacity={0.8}>
+              <TouchableOpacity style={[st.actBtn, st.startBtn]} onPress={() => {
+                startWorkout();
+                Vibration.vibrate(100);
+                if (isShared && shared?.startSession) {
+                  shared.startSession().catch(() => {});
+                }
+              }} activeOpacity={0.8}>
                 <Ionicons name="play-circle" size={20} color="#FFF" /><Text style={st.actBtnTxt}>Demarrer</Text>
               </TouchableOpacity>
             ) : (

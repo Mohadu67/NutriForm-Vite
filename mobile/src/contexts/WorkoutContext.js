@@ -7,6 +7,7 @@ const WorkoutContext = createContext();
 
 const WORKOUT_STORAGE_KEY = '@current_workout';
 
+
 export function WorkoutProvider({ children }) {
   const [currentWorkout, setCurrentWorkout] = useState(null);
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
@@ -446,6 +447,7 @@ export function WorkoutProvider({ children }) {
   const setWorkoutStartTime = useCallback((isoString) => {
     setCurrentWorkout(prev => {
       if (!prev) return prev;
+      if (prev.startTime === isoString) return prev; // Pas de changement
       const updated = { ...prev, startTime: isoString };
       setIsWorkoutActive(true);
       saveWorkout(updated);
@@ -475,6 +477,11 @@ export function WorkoutProvider({ children }) {
       const stored = await AsyncStorage.getItem(WORKOUT_STORAGE_KEY);
       if (stored) {
         const workout = JSON.parse(stored);
+        // Nettoyer les workouts vides
+        if (!workout.exercises || workout.exercises.length === 0) {
+          await AsyncStorage.removeItem(WORKOUT_STORAGE_KEY);
+          return null;
+        }
         // Migration : ajouter le mode aux exercices existants si manquant
         if (workout.exercises) {
           workout.exercises = workout.exercises.map(e => {

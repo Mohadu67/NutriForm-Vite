@@ -1,6 +1,7 @@
 import 'react-native-gesture-handler';
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -22,20 +23,52 @@ import HealthConnectOnboarding from './src/components/HealthConnectOnboarding';
 // Sync séance partagée → WorkoutContext (doit être enfant des deux providers)
 function SharedSessionSync() {
   const shared = useSharedSession();
-  const { addExercise, startWorkout, currentWorkout, setWorkoutStartTime } = useWorkout();
+  const { addExercise, startWorkout, cancelWorkout, currentWorkout, setWorkoutStartTime } = useWorkout();
   const injectedRef = useRef(null);
-
-  // Track combien d'exos on a déjà injecté pour cette session
   const injectedCountRef = useRef(0);
+  const wasSharedRef = useRef(false);
+
+  // Au montage : nettoyer le workout de séance partagée orphelin
+  const cancelWorkoutRef = useRef(cancelWorkout);
+  cancelWorkoutRef.current = cancelWorkout;
+  const cleanedOnceRef = useRef(false);
+  useEffect(() => {
+    if (cleanedOnceRef.current) return;
+    if (shared?.loading) return; // Attendre que le context charge
+    cleanedOnceRef.current = true;
+    AsyncStorage.getItem('@shared_workout_active').then(flag => {
+      if (flag === 'true') {
+        const hasSession = shared?.session && (shared.session.status === 'active' || shared.session.status === 'building');
+        if (!hasSession) {
+          cancelWorkoutRef.current();
+          AsyncStorage.removeItem('@shared_workout_active').catch(() => {});
+        }
+      }
+    }).catch(() => {});
+  }, [shared?.loading]);
+
+  // Quand la session partagée disparaît en cours de route, clear le workout local
+  useEffect(() => {
+    const hasSession = shared?.session && (shared.session.status === 'active' || shared.session.status === 'building');
+    if (hasSession) {
+      wasSharedRef.current = true;
+    } else if (wasSharedRef.current) {
+      wasSharedRef.current = false;
+      cancelWorkoutRef.current();
+      AsyncStorage.removeItem('@shared_workout_active').catch(() => {});
+    }
+  }, [shared?.session]);
 
   useEffect(() => {
     if (!shared?.session) {
       injectedRef.current = null;
       injectedCountRef.current = 0;
+      AsyncStorage.removeItem('@shared_workout_active').catch(() => {});
       return;
     }
     const session = shared.session;
     if (session.status !== 'active' && session.status !== 'building') return;
+    AsyncStorage.setItem('@shared_workout_active', 'true').catch(() => {});
 
     const sessionId = String(session._id);
     const sharedExercises = session.exercises || [];
@@ -46,10 +79,9 @@ function SharedSessionSync() {
       injectedCountRef.current = 0;
     }
 
-    // Injecter les nouveaux exercices (ceux qu'on n'a pas encore ajoutés)
+    // Injecter les nouveaux exercices (suppressions sont personnelles, pas de sync inverse)
     const newExercises = sharedExercises.slice(injectedCountRef.current);
     for (const ex of newExercises) {
-      // ID stable basé sur exerciseId ou exerciseName (pas order qui peut changer)
       const stableId = ex.exerciseId || ('shared_' + ex.exerciseName.replace(/\s+/g, '_').toLowerCase());
       addExercise({
         id: stableId,

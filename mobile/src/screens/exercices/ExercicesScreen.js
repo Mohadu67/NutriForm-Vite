@@ -547,6 +547,7 @@ export default function ExercicesScreen() {
 
   // Ajout rapide d'un exercice
   const handleQuickAddExercise = useCallback((exercice) => {
+    console.log('[QUICK_ADD]', exercice.name, 'isShared:', isSharedSession, 'status:', shared?.session?.status);
     if (pastSessionMode) {
       DeviceEventEmitter.emit('pastSession:addExercise', exercice);
       return;
@@ -562,7 +563,10 @@ export default function ExercicesScreen() {
         secondaryMuscles: exercice.secondaryMuscles || [],
         equipment: Array.isArray(exercice.equipment) ? exercice.equipment : [exercice.equipment || ''],
         category: exercice.category || null,
-      }).catch(() => {});
+      }).catch((err) => {
+        const { Alert: RNAlert } = require('react-native');
+        RNAlert.alert('Erreur ajout', err?.response?.data?.error || err?.message || 'Erreur inconnue');
+      });
       return;
     }
     addExercise(exercice);

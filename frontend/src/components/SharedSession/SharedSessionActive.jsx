@@ -4,6 +4,7 @@ import { useSharedSession } from '../../contexts/SharedSessionContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useChat } from '../../contexts/ChatContext';
 import { getOrCreateConversation } from '../../shared/api/matchChat';
+import { storage } from '../../shared/utils/storage';
 import SuivieExo from '../Exercice/ExerciceSuivie/SuivieExo';
 import PartnerLivePanel from './PartnerLivePanel';
 import Navbar from '../Navbar/Navbar';
@@ -28,6 +29,11 @@ export default function SharedSessionActive() {
 
   const partnerName = partner?.pseudo || partner?.username || 'Partenaire';
   const exercises = session?.exercises || [];
+
+  // Forcer le bon startedAt AVANT le render (pas dans un useEffect qui est trop tard)
+  if (session?.startedAt) {
+    storage.set('suivieStartedAt', session.startedAt);
+  }
 
   // Load partner progress on mount (reconnection catchup)
   useEffect(() => {
