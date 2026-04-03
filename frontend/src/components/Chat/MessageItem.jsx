@@ -55,6 +55,14 @@ const MessageItem = memo(function MessageItem({
     >
       <div className={styles.messageWrapper}>
         <div className={styles.messageContent}>
+          {/* Media images (AI chat photos) */}
+          {msg.media?.length > 0 && (
+            <div className={styles.mediaImages}>
+              {msg.media.filter(m => m.type === 'image').map((m, i) => (
+                <img key={i} src={m.url} alt="" className={styles.mediaImage} loading="lazy" />
+              ))}
+            </div>
+          )}
           {msg.type === 'session-share' && msg.metadata?.imageData ? (
             <div className={styles.sessionShare}>
               <img

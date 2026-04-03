@@ -41,9 +41,10 @@ function isAvailable() {
  * @param {string} userMessage - Message de l'utilisateur
  * @param {Array} conversationHistory - Historique de la conversation (optionnel)
  * @param {string} userContext - Contexte utilisateur formaté (optionnel)
+ * @param {Array} images - Images en base64 ou URLs (optionnel)
  * @returns {Promise<{content: string, confidence: number}>}
  */
-async function generateResponse(userMessage, conversationHistory = [], userContext = '') {
+async function generateResponse(userMessage, conversationHistory = [], userContext = '', images = []) {
   if (!geminiModel) {
     throw new Error('Gemini client not initialized');
   }
@@ -55,9 +56,19 @@ async function generateResponse(userMessage, conversationHistory = [], userConte
     const history = [];
     const recentHistory = conversationHistory.slice(-10);
     for (const msg of recentHistory) {
+      const parts = [{ text: msg.content }];
+      // Include images from history if present
+      if (msg.media?.length) {
+        for (const m of msg.media) {
+          if (m.url?.startsWith('data:')) {
+            const match = m.url.match(/^data:(image\/\w+);base64,(.+)$/);
+            if (match) parts.unshift({ inlineData: { mimeType: match[1], data: match[2] } });
+          }
+        }
+      }
       history.push({
         role: msg.role === 'bot' ? 'model' : 'user',
-        parts: [{ text: msg.content }]
+        parts
       });
     }
 
@@ -71,7 +82,33 @@ async function generateResponse(userMessage, conversationHistory = [], userConte
       },
     });
 
-    const result = await chat.sendMessage(userMessage);
+    // Build message parts — text + optional images
+    const messageParts = [];
+    if (images.length > 0) {
+      for (const img of images) {
+        // Support data URLs (base64) and remote URLs
+        if (img.startsWith('data:')) {
+          const match = img.match(/^data:(image\/\w+);base64,(.+)$/);
+          if (match) {
+            messageParts.push({ inlineData: { mimeType: match[1], data: match[2] } });
+          }
+        } else {
+          // For remote URLs, fetch and convert to base64
+          try {
+            const fetch = (await import('node-fetch')).default;
+            const resp = await fetch(img);
+            const buffer = await resp.buffer();
+            const mimeType = resp.headers.get('content-type') || 'image/jpeg';
+            messageParts.push({ inlineData: { mimeType, data: buffer.toString('base64') } });
+          } catch (e) {
+            logger.error('Failed to fetch image for vision:', e.message);
+          }
+        }
+      }
+    }
+    messageParts.push({ text: userMessage });
+
+    const result = await chat.sendMessage(messageParts);
     const response = result.response.text();
 
     const confidence = calculateConfidence(response, userMessage);

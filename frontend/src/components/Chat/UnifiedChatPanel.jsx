@@ -18,6 +18,11 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
   const [currentUserId, setCurrentUserId] = useState(null);
   const [escalated, setEscalated] = useState(false);
   const [escalating, setEscalating] = useState(false);
+  const [pendingImage, setPendingImage] = useState(null); // data URL for photo to send
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const photoInputRef = useRef(null);
+  const cameraVideoRef = useRef(null);
+  const cameraStreamRef = useRef(null);
   const [deletingMessage, setDeletingMessage] = useState(null);
   const [showMessageOptions, setShowMessageOptions] = useState(null);
   const [showEscalateButton, setShowEscalateButton] = useState(false);
@@ -366,9 +371,47 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
 
   // Les fonctions loadHistory et loadMatchMessages sont maintenant gérées par useMessageSync
 
+  // Camera functions
+  const openCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }
+      });
+      cameraStreamRef.current = stream;
+      setCameraOpen(true);
+      setTimeout(() => {
+        if (cameraVideoRef.current) {
+          cameraVideoRef.current.srcObject = stream;
+          cameraVideoRef.current.play();
+        }
+      }, 100);
+    } catch {
+      // Camera not available — fall back to file input
+      photoInputRef.current?.click();
+    }
+  };
+
+  const capturePhoto = () => {
+    if (!cameraVideoRef.current) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = cameraVideoRef.current.videoWidth;
+    canvas.height = cameraVideoRef.current.videoHeight;
+    canvas.getContext('2d').drawImage(cameraVideoRef.current, 0, 0);
+    setPendingImage(canvas.toDataURL('image/jpeg', 0.8));
+    closeCamera();
+  };
+
+  const closeCamera = () => {
+    if (cameraStreamRef.current) {
+      cameraStreamRef.current.getTracks().forEach(t => t.stop());
+      cameraStreamRef.current = null;
+    }
+    setCameraOpen(false);
+  };
+
   const handleSendMessage = async (msgContent) => {
     const content = msgContent || inputMessage.trim();
-    if (!content || sending) return;
+    if ((!content && !pendingImage) || sending) return;
 
     // Vérifier que la conversation est bien chargée avant d'envoyer
     if (isMatchChat && !matchConversation?._id) {
@@ -403,16 +446,20 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
           return [...prev, message];
         });
       } else {
-        // Envoyer message IA
+        // Envoyer message IA (with optional image)
+        const imageToSend = pendingImage;
         const userMessage = {
           role: 'user',
-          content,
+          content: content || (imageToSend ? '📷 Photo envoyée' : ''),
+          media: imageToSend ? [{ url: imageToSend, type: 'image' }] : undefined,
           createdAt: new Date()
         };
         setMessages(prev => [...prev, userMessage]);
+        setPendingImage(null);
         setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
 
-        const response = await sendChatMessage(content, conversationId);
+        const mediaPayload = imageToSend ? [{ url: imageToSend, type: 'image' }] : undefined;
+        const response = await sendChatMessage(content || '📷 Analyse cette photo', conversationId, mediaPayload);
 
         // Mettre à jour le flag showEscalateButton depuis la réponse serveur
         if (response.showEscalateButton) {
@@ -642,31 +689,99 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Camera overlay */}
+      {cameraOpen && (
+        <div className={styles.cameraOverlay}>
+          <video ref={cameraVideoRef} className={styles.cameraVideo} muted playsInline />
+          <div className={styles.cameraActions}>
+            <button type="button" className={styles.cameraCancelBtn} onClick={closeCamera}>Annuler</button>
+            <button type="button" className={styles.cameraCaptureBtn} onClick={capturePhoto}>
+              <span className={styles.cameraCaptureRing} />
+            </button>
+            <div style={{ width: 60 }} />
+          </div>
+        </div>
+      )}
+
+      {/* Pending image preview */}
+      {pendingImage && (
+        <div className={styles.imagePreview}>
+          <img src={pendingImage} alt="À envoyer" />
+          <button type="button" className={styles.imagePreviewRemove} onClick={() => setPendingImage(null)}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      )}
+
       {/* Input */}
       <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className={styles.chatInputContainer}>
+        {/* Photo buttons (AI chat only) */}
+        {!isMatchChat && (
+          <>
+            {/* Camera button */}
+            <button
+              type="button"
+              className={styles.photoInputBtn}
+              onClick={openCamera}
+              disabled={sending || !isAuth}
+              title="Prendre une photo"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </button>
+            {/* Gallery button */}
+            <button
+              type="button"
+              className={styles.galleryBtn}
+              onClick={() => photoInputRef.current?.click()}
+              disabled={sending || !isAuth}
+              title="Choisir une photo"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </button>
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) return;
+                const reader = new FileReader();
+                reader.onload = () => setPendingImage(reader.result);
+                reader.readAsDataURL(file);
+                e.target.value = '';
+              }}
+              style={{ display: 'none' }}
+            />
+          </>
+        )}
+
         <input
           type="text"
           value={inputMessage}
           onChange={(e) => {
             setInputMessage(e.target.value);
-            // Envoyer l'indicateur de typing (debounced)
             if (isMatchChat && setTyping && conversationIdToUse) {
               setTyping(conversationIdToUse, true);
-              // Reset après 2 secondes d'inactivité
               clearTimeout(typingTimeoutRef.current);
               typingTimeoutRef.current = setTimeout(() => {
                 setTyping(conversationIdToUse, false);
               }, 2000);
             }
           }}
-          placeholder="Écrivez votre message..."
+          placeholder={pendingImage ? "Ajoute un commentaire ou envoie..." : "Écrivez votre message..."}
           className={styles.chatInput}
           disabled={sending || !isAuth}
           maxLength={2000}
         />
         <button
           type="submit"
-          disabled={!inputMessage.trim() || sending || !isAuth}
+          disabled={(!inputMessage.trim() && !pendingImage) || sending || !isAuth}
           className={styles.sendBtn}
         >
           {sending ? (
