@@ -1340,7 +1340,7 @@ describe('SharedSession Controller', () => {
       expect(cancelled.status).toBe('cancelled');
     });
 
-    it('should handle cancel during active by partner', async () => {
+    it('should treat cancel during active as endSession for the user (not cancel for both)', async () => {
       const userId = createObjectId();
       const partnerId = createObjectId();
       const session = await createSession({ initiatorId: userId, partnerId, status: 'active', startedAt: new Date() });
@@ -1349,8 +1349,11 @@ describe('SharedSession Controller', () => {
       const res = createMockRes();
       await controller.cancelSession(req, res);
 
-      const cancelled = await SharedSession.findById(session._id);
-      expect(cancelled.status).toBe('cancelled');
+      const updated = await SharedSession.findById(session._id);
+      // Session should still be active (only partner "ended", not cancelled)
+      expect(updated.status).toBe('active');
+      expect(updated.endedBy).toHaveLength(1);
+      expect(updated.endedBy[0].toString()).toBe(partnerId.toString());
     });
 
     it('should not allow adding exercise after session ended', async () => {

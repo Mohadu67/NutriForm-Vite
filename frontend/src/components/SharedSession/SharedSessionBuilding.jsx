@@ -320,7 +320,7 @@ export default function SharedSessionBuilding() {
             ) : (
               exercises.map((ex, i) => {
                 const isMe = String(ex.addedBy?._id || ex.addedBy || '') === String(userId);
-                const exImg = getExerciseImage(ex.exerciseName);
+                const exImg = getExerciseImage(ex.exerciseName) || ex.image || null;
                 const initialLetter = ex.exerciseName?.trim()?.[0]?.toUpperCase() || '?';
                 return (
                   <div

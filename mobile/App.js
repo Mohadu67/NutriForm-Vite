@@ -96,6 +96,7 @@ function SharedSessionSync() {
         secondaryMuscles: ex.secondaryMuscles || [],
         equipment: Array.isArray(ex.equipment) ? ex.equipment.join(', ') : (ex.equipment || ''),
         category: ex.category || null,
+        image: ex.image || null,
       });
     }
     injectedCountRef.current = sharedExercises.length;

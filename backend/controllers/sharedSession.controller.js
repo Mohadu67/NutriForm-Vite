@@ -851,6 +851,39 @@ exports.cancelSession = async (req, res) => {
       return res.status(400).json({ error: 'Session déjà terminée.' });
     }
 
+    if (session.status === 'active') {
+      // En active : ne pas annuler pour l'autre, juste terminer pour soi
+      if (!session.endedBy.some(id => id.equals(userId))) {
+        session.endedBy.push(userId);
+      }
+      const isInitiator = session.initiatorId.equals(userId);
+      if (session[isInitiator ? 'initiatorWorkout' : 'partnerWorkout']) {
+        session[isInitiator ? 'initiatorWorkout' : 'partnerWorkout'].endedAt = new Date();
+      }
+      if (session.endedBy.length >= 2) {
+        session.status = 'ended';
+        session.endedAt = new Date();
+        if (session.startedAt) {
+          session.durationSec = Math.round((session.endedAt.getTime() - session.startedAt.getTime()) / 1000);
+        }
+      }
+      await session.save();
+
+      const partnerId = session.initiatorId.equals(userId) ? session.partnerId.toString() : session.initiatorId.toString();
+      const io = req.app.get('io');
+      if (io?.notifyUser) {
+        io.notifyUser(partnerId, 'shared_session:partner_ended', {
+          sharedSessionId: session._id,
+          userId: userId.toString(),
+          sessionEnded: session.status === 'ended'
+        });
+      }
+
+      const _pop = await getPopulatedSession(session._id);
+      return res.json({ sharedSession: enrichSession(_pop, userId) });
+    }
+
+    // Pas active (pending/building) → annuler pour les deux
     session.status = 'cancelled';
     await session.save();
 
