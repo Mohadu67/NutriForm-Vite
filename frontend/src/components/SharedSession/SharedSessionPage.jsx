@@ -39,9 +39,15 @@ export default function SharedSessionPage() {
     }
   }, [session, loading]);
 
-  // Load session from URL uniquement si on n'a PAS terminé
+  // Load session from URL uniquement si le contexte n'a rien trouvé après son propre load
+  const contextLoadedRef = useRef(false);
   useEffect(() => {
-    if (id && !session && !loading && refreshSession && !showEndedScreen && !hadActiveRef.current) {
+    if (!loading) contextLoadedRef.current = true;
+  }, [loading]);
+
+  useEffect(() => {
+    // Attendre que le contexte ait fini son loadActiveSession avant de fetch par ID
+    if (id && !session && !loading && contextLoadedRef.current && refreshSession && !showEndedScreen && !hadActiveRef.current) {
       refreshSession(id);
     }
   }, [id, session, loading, refreshSession, showEndedScreen]);

@@ -273,7 +273,7 @@ exports.addExercise = async (req, res) => {
   try {
     const userId = req.user._id;
     const { id } = req.params;
-    const { exerciseId, exerciseName, type, muscles, equipment, primaryMuscle, secondaryMuscles, category } = req.body;
+    const { exerciseId, exerciseName, type, muscles, equipment, primaryMuscle, secondaryMuscles, category, image } = req.body;
 
     // Trim and validate exerciseName
     const trimmedName = (exerciseName || '').trim();
@@ -310,6 +310,7 @@ exports.addExercise = async (req, res) => {
       primaryMuscle: primaryMuscle || muscles?.[0] || null,
       secondaryMuscles: secondaryMuscles || [],
       category: category || null,
+      image: image || null,
       addedBy: userId
     };
 

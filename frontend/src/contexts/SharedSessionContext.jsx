@@ -64,9 +64,10 @@ export function SharedSessionProvider({ children }) {
       const fetched = data.sharedSession;
       // Ne pas recharger une session que l'user a déjà terminée/annulée
       if (fetched && getDismissedId() === String(fetched._id)) {
+        // Batch: set session + loading together to avoid flash
         setSession(null);
+        setLoading(false);
       } else {
-        setSession(fetched);
         // Si pending et que je suis le destinataire, restaurer l'invite
         if (fetched?.status === 'pending') {
           const myId = String(user?.id || user?._id || '');
@@ -80,10 +81,12 @@ export function SharedSessionProvider({ children }) {
             });
           }
         }
+        // Batch: set session BEFORE loading=false to prevent intermediate null state
+        setSession(fetched);
+        setLoading(false);
       }
     } catch {
       // Pas de session active, c'est normal
-    } finally {
       setLoading(false);
     }
   }, [user]);

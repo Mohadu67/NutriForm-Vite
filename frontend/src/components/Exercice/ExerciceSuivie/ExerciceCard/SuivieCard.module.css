@@ -36,19 +36,133 @@
 .row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0;
   width: 100%;
-  padding: 12px;
+  padding: 0;
   margin: 6px 0;
   border: 1.5px solid var(--suivie-border);
   border-radius: 8px;
   background: var(--suivie-surface);
-  cursor: pointer;
   transition: border-color 0.2s ease;
 }
 
 .row:hover {
   border-color: var(--suivie-accent);
+}
+
+.thumbBtn {
+  position: relative;
+  border: none;
+  background: none;
+  padding: 12px;
+  padding-right: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.thumbInfoIcon {
+  position: absolute;
+  bottom: 8px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--suivie-accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--suivie-surface);
+  transition: transform 0.15s ease;
+}
+
+.thumbBtn:hover .thumbInfoIcon {
+  transform: scale(1.15);
+}
+
+.rowContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  padding-left: 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+}
+
+/* Inline info panel below card */
+.inlineInfo {
+  padding: 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--suivie-border);
+  margin-top: 0;
+  animation: exoInfoIn 0.2s ease;
+}
+
+.inlineInfoImage {
+  width: 100%;
+  max-height: 180px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--suivie-bg);
+  margin-top: 10px;
+}
+
+.inlineInfoImage img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+.inlineInfoText {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--suivie-ink);
+  margin: 0;
+  opacity: 0.75;
+}
+
+.inlineInfoMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.inlineInfoTag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: rgba(247, 177, 134, 0.1);
+  color: var(--suivie-accent);
+}
+
+.inlineInfoTag[data-type="equip"] {
+  background: var(--suivie-border);
+  color: var(--suivie-muted);
+}
+
+.inlineInfoTag[data-type="diff"] {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.inlineInfoTag[data-type="rec"] {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
 }
 
 /* État "en cours" */
@@ -263,6 +377,95 @@
 .navBtn:disabled {
   opacity: 0.25;
   cursor: default;
+}
+
+/* ==================== EXERCISE INFO BLOCK ==================== */
+.exoInfoBlock {
+  border: 1.5px solid var(--suivie-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.exoInfoToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  color: var(--suivie-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: color 0.15s ease;
+}
+
+.exoInfoToggle:hover {
+  color: var(--suivie-accent);
+}
+
+.exoInfoContent {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: exoInfoIn 0.25s ease;
+}
+
+@keyframes exoInfoIn {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 500px; }
+}
+
+.exoInfoImage {
+  width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--suivie-bg);
+}
+
+.exoInfoImage img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.exoInfoText {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--suivie-ink);
+  margin: 0;
+  opacity: 0.8;
+}
+
+.exoInfoMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.exoInfoTag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(247, 177, 134, 0.1);
+  color: var(--suivie-accent);
+}
+
+.exoInfoTag[data-type="equip"] {
+  background: var(--suivie-border);
+  color: var(--suivie-muted);
+}
+
+.exoInfoTag[data-type="diff"] {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
 }
 
 .orderBadge {

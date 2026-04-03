@@ -11,6 +11,7 @@ const SharedExerciseSchema = new Schema({
   primaryMuscle: { type: String, default: null },
   secondaryMuscles: { type: [String], default: [] },
   category: { type: String, default: null },
+  image: { type: String, default: null },
   order: { type: Number, default: 0 },
   addedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   addedAt: { type: Date, default: Date.now }

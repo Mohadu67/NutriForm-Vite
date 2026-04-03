@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSharedSession } from '../../contexts/SharedSessionContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useChat } from '../../contexts/ChatContext';
 import { getOrCreateConversation } from '../../shared/api/matchChat';
 import { storage } from '../../shared/utils/storage';
+import { loadExercises } from '../../utils/exercisesLoader';
 import SuivieExo from '../Exercice/ExerciceSuivie/SuivieExo';
 import PartnerLivePanel from './PartnerLivePanel';
 import Navbar from '../Navbar/Navbar';
@@ -31,6 +32,21 @@ export default function SharedSessionActive() {
   // En mode active, utiliser MA liste personnelle (copiée au démarrage)
   const exercises = session?.myWorkout?.exercises || session?.exercises || [];
 
+  // Load full exercise catalog for images + descriptions
+  const [exerciseCatalog, setExerciseCatalog] = useState(new Map());
+  useEffect(() => {
+    loadExercises('all').then(allExos => {
+      const map = new Map();
+      for (const ex of allExos) {
+        const name = (ex.name || ex.title || '').toLowerCase().trim();
+        if (name) map.set(name, ex);
+        const slug = ex.slug || ex.id || ex._id;
+        if (slug) map.set(String(slug).toLowerCase(), ex);
+      }
+      setExerciseCatalog(map);
+    });
+  }, []);
+
   // Forcer le bon startedAt AVANT le render (pas dans un useEffect qui est trop tard)
   if (session?.startedAt) {
     storage.set('suivieStartedAt', session.startedAt);
@@ -43,18 +59,33 @@ export default function SharedSessionActive() {
     }
   }, [session?._id]);
 
-  const exercisesForSuivie = exercises.map((e, i) => ({
-    id: e.exerciseId || e.exerciseName,
-    name: e.exerciseName,
-    slug: e.exerciseId,
-    type: Array.isArray(e.type) ? e.type : [e.type].filter(Boolean),
-    muscles: e.muscles,
-    equipment: e.equipment || [],
-    primaryMuscle: e.primaryMuscle || e.muscles?.[0] || null,
-    secondaryMuscles: e.secondaryMuscles || [],
-    category: e.category || null,
-    order: i
-  }));
+  const exercisesForSuivie = useMemo(() => exercises.map((e, i) => {
+    // Lookup full exercise data from catalog
+    const nameKey = (e.exerciseName || '').toLowerCase().trim();
+    const idKey = (e.exerciseId || '').toLowerCase().trim();
+    const full = exerciseCatalog.get(nameKey) || exerciseCatalog.get(idKey) || {};
+
+    return {
+      id: e.exerciseId || e.exerciseName,
+      name: e.exerciseName,
+      slug: e.exerciseId,
+      type: Array.isArray(e.type) ? e.type : [e.type].filter(Boolean),
+      muscles: e.muscles,
+      equipment: e.equipment || [],
+      primaryMuscle: e.primaryMuscle || e.muscles?.[0] || null,
+      secondaryMuscles: e.secondaryMuscles || [],
+      category: e.category || null,
+      order: i,
+      // Enriched from catalog
+      mainImage: full.mainImage || full.image || null,
+      description: full.description || null,
+      explanation: full.explanation || null,
+      videoUrl: full.videoUrl || null,
+      difficulty: full.difficulty || null,
+      recommendedSets: full.recommendedSets || null,
+      recommendedReps: full.recommendedReps || null,
+    };
+  }), [exercises, exerciseCatalog]);
 
   const handleExerciseUpdate = useCallback((data) => {
     if (sendExerciseData) {

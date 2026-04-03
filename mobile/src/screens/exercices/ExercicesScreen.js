@@ -563,6 +563,7 @@ export default function ExercicesScreen() {
         secondaryMuscles: exercice.secondaryMuscles || [],
         equipment: Array.isArray(exercice.equipment) ? exercice.equipment : [exercice.equipment || ''],
         category: exercice.category || null,
+        image: exercice.image || exercice.mainImage || null,
       }).catch(() => {});
       return;
     }

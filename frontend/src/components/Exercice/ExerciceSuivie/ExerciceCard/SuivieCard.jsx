@@ -43,6 +43,7 @@ function loadSavedDraft(exo) {
 export default function SuivieCard({ exo, value, onChange, exerciseIndex, totalExercises }) {
   const [open, setOpen] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const hydratedOnMountRef = useRef(false);
 
@@ -217,19 +218,54 @@ export default function SuivieCard({ exo, value, onChange, exerciseIndex, totalE
   return (
     <>
       <div className={styles.card} data-suivie-card>
-        <button type="button" className={`${styles.row} ${isStarted ? styles.isStarted : ''}`} onClick={() => setOpen(true)}>
-          <div className={styles.thumb} aria-hidden>
-            {imgSrc ? <img src={imgSrc} alt="" /> : <div className={styles.initial}>{initialLetter}</div>}
+        <div className={`${styles.row} ${isStarted ? styles.isStarted : ''}`}>
+          {/* Thumb — click to toggle info */}
+          <button
+            type="button"
+            className={styles.thumbBtn}
+            onClick={() => setShowInfo(!showInfo)}
+            title="Voir les infos"
+          >
+            <div className={styles.thumb}>
+              {imgSrc ? <img src={imgSrc} alt="" /> : <div className={styles.initial}>{initialLetter}</div>}
+            </div>
+            <span className={styles.thumbInfoIcon}>i</span>
+          </button>
+          {/* Rest of row — click to open tracking */}
+          <button type="button" className={styles.rowContent} onClick={() => setOpen(true)}>
+            <div className={styles.title}>
+              {isStarted && <span className={styles.statusDot} aria-label="En cours" />}
+              {exo?.name || "Exercice"}
+            </div>
+            {justSaved && <span className={styles.savedIndicator}>✓</span>}
+            {exerciseIndex != null && totalExercises > 1 && (
+              <span className={styles.orderBadge}>{exerciseIndex + 1}/{totalExercises}</span>
+            )}
+          </button>
+        </div>
+        {/* Inline info panel */}
+        {showInfo && (exo?.description || exo?.explanation || imgSrc) && (
+          <div className={styles.inlineInfo}>
+            {imgSrc && (
+              <div className={styles.inlineInfoImage}>
+                <img src={imgSrc} alt={exo?.name} />
+              </div>
+            )}
+            {(exo?.description || exo?.explanation) && (
+              <p className={styles.inlineInfoText}>{exo.description || exo.explanation}</p>
+            )}
+            <div className={styles.inlineInfoMeta}>
+              {exo?.primaryMuscle && <span className={styles.inlineInfoTag}>{exo.primaryMuscle}</span>}
+              {exo?.equipment?.map((eq, i) => (
+                <span key={i} className={styles.inlineInfoTag} data-type="equip">{eq}</span>
+              ))}
+              {exo?.difficulty && <span className={styles.inlineInfoTag} data-type="diff">{exo.difficulty}</span>}
+              {exo?.recommendedSets && exo?.recommendedReps && (
+                <span className={styles.inlineInfoTag} data-type="rec">{exo.recommendedSets}×{exo.recommendedReps}</span>
+              )}
+            </div>
           </div>
-          <div className={styles.title}>
-            {isStarted && <span className={styles.statusDot} aria-label="En cours" />}
-            {exo?.name || "Exercice"}
-          </div>
-          {justSaved && <span className={styles.savedIndicator}>✓</span>}
-          {exerciseIndex != null && totalExercises > 1 && (
-            <span className={styles.orderBadge}>{exerciseIndex + 1}/{totalExercises}</span>
-          )}
-        </button>
+        )}
       </div>
 
       {open && createPortal(
@@ -292,6 +328,55 @@ export default function SuivieCard({ exo, value, onChange, exerciseIndex, totalE
             </header>
 
             <div className={styles.popupBody}>
+              {/* Exercise info block — image, description, muscles */}
+              {(exo?.description || exo?.explanation || exo?.mainImage) && (
+                <div className={styles.exoInfoBlock}>
+                  <button
+                    type="button"
+                    className={styles.exoInfoToggle}
+                    onClick={() => setShowInfo(!showInfo)}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                    </svg>
+                    {showInfo ? 'Masquer les infos' : 'Voir les infos'}
+                    <svg
+                      width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                      strokeLinecap="round" strokeLinejoin="round"
+                      style={{ marginLeft: 'auto', transform: showInfo ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+                    >
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </button>
+                  {showInfo && (
+                    <div className={styles.exoInfoContent}>
+                      {exo.mainImage && (
+                        <div className={styles.exoInfoImage}>
+                          <img src={exo.mainImage} alt={exo.name} />
+                        </div>
+                      )}
+                      {exo.description && (
+                        <p className={styles.exoInfoText}>{exo.description}</p>
+                      )}
+                      {exo.explanation && !exo.description && (
+                        <p className={styles.exoInfoText}>{exo.explanation}</p>
+                      )}
+                      <div className={styles.exoInfoMeta}>
+                        {exo.primaryMuscle && (
+                          <span className={styles.exoInfoTag}>{exo.primaryMuscle}</span>
+                        )}
+                        {exo.equipment?.map((eq, i) => (
+                          <span key={i} className={styles.exoInfoTag} data-type="equip">{eq}</span>
+                        ))}
+                        {exo.difficulty && (
+                          <span className={styles.exoInfoTag} data-type="diff">{exo.difficulty}</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {!isSwim && !isYoga && !isStretch && !isWalkRun && availableModes.length > 1 && (
                 <ModeBar
                   mode={mode}

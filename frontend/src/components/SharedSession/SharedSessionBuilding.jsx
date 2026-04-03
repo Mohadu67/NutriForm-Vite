@@ -130,7 +130,8 @@ export default function SharedSessionBuilding() {
           equipment: ex.equipment || [],
           primaryMuscle: ex.primaryMuscle || null,
           secondaryMuscles: ex.secondaryMuscles || [],
-          category: ex.category || null
+          category: ex.category || null,
+          image: ex.image || ex.mainImage || null
         });
       } catch {
         toast.error(`Erreur ajout ${ex.name || ex.title}`);
@@ -421,9 +422,39 @@ export default function SharedSessionBuilding() {
               />
             </div>
           )}
+
+          {/* Mobile: inline start button (scrolls with content, no dock conflict) */}
+          {!showSearch && (
+            <div className={styles.inlineFooter}>
+              {exercises.length > 0 ? (
+                <button className={styles.startBtn} onClick={handleStart} disabled={starting}>
+                  {starting ? (
+                    <span className={styles.startBtnLoading}>
+                      <span className={styles.loadingSpinnerSmall} />
+                      Démarrage...
+                    </span>
+                  ) : (
+                    <span className={styles.startBtnContent}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                      </svg>
+                      Démarrer la séance
+                    </span>
+                  )}
+                </button>
+              ) : (
+                <div className={styles.startBtnDisabled}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                  Ajoute un exercice pour commencer
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Sticky footer — always visible */}
+        {/* Desktop: fixed footer (no dock on desktop) */}
         {!showSearch && (
           <div className={styles.footer}>
             {exercises.length > 0 ? (
