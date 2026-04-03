@@ -277,6 +277,25 @@ export default function WorkoutContent({ onClose, tabNavigation }) {
     ]);
   }, [removeExercise]);
 
+  // Pas de workout local mais séance partagée → montrer uniquement le panel partenaire
+  if (!currentWorkout && isShared) {
+    return (
+      <View style={st.content}>
+        <View style={[st.header, isDark && st.headerDk]}>
+          <View style={{ flex: 1 }}>
+            <Text style={[st.headerTitle, isDark && st.textDark]}>Séance avec {shared?.partner?.pseudo || 'Partenaire'}</Text>
+          </View>
+        </View>
+        <PartnerView
+          exercises={shared?.session?.exercises || []}
+          partnerExerciseData={shared?.partnerExerciseData}
+          partnerName={shared?.partner?.pseudo || 'Partenaire'}
+          isDark={isDark}
+        />
+      </View>
+    );
+  }
+
   if (!currentWorkout) return null;
   const isPrep = !currentWorkout.startTime;
   const completed = getCompletedSetsCount(), total = getTotalSetsCount();

@@ -174,8 +174,6 @@ export function SharedSessionProvider({ children }) {
 
     // Partenaire a terminé
     cleanups.push(ws.on('shared_session:partner_ended', (data) => {
-      toast.info(`${data.username || 'Ton partenaire'} a terminé sa séance`);
-      // Inject partner summary into partnerExerciseData
       if (data.partnerSummary?.length) {
         setPartnerExerciseData(prev => {
           const next = new Map(prev);
@@ -186,7 +184,12 @@ export function SharedSessionProvider({ children }) {
         });
       }
       if (data.sessionEnded) {
+        // Les deux ont terminé
+        toast.success('Séance terminée !');
         refreshSession(data.sharedSessionId);
+      } else {
+        // Juste le partenaire — notifier mais garder la séance
+        toast.info(`${data.username || 'Ton partenaire'} a terminé. À toi de finir !`);
       }
     }));
 

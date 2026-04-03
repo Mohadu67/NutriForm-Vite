@@ -328,7 +328,7 @@ describe('SharedSession Controller', () => {
       const req = createMockReq({
         userId,
         params: { id: session._id.toString() },
-        body: { exerciseName: 'Test', type: 'yoga' }
+        body: { exerciseName: 'Test', type: 'totally_invalid_type' }
       });
       const res = createMockRes();
 

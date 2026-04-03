@@ -240,7 +240,7 @@ exports.addExercise = async (req, res) => {
 
     // Normalize type to array
     const typeArray = Array.isArray(type) ? type : [type].filter(Boolean);
-    const validTypes = ['muscu', 'cardio', 'poids_du_corps'];
+    const validTypes = ['muscu', 'cardio', 'poids_du_corps', 'natation', 'etirement', 'yoga', 'meditation', 'walk_run'];
     if (typeArray.length === 0 || typeArray.some(t => !validTypes.includes(t))) {
       return res.status(400).json({ error: `type invalide. Valeurs acceptées : ${validTypes.join(', ')}` });
     }

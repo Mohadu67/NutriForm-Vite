@@ -134,7 +134,11 @@ export function SharedSessionProvider({ children }) {
           return next;
         });
       }
-      if (data.sessionEnded) refreshSession(data.sharedSessionId);
+      if (data.sessionEnded) {
+        // Les deux ont terminé → clear la session
+        setSession(null);
+        setPartnerExerciseData(new Map());
+      }
     };
     const onCancelled = () => {
       console.log('[SharedSession] Annulé', 'Séance partagée annulée');

@@ -92,9 +92,12 @@ function MiniTimer({ startTime, colors: C }) {
 // ─── Mini bar ────────────────────────────────────────────────────────────────
 function WorkoutMiniBar({ isExpanded, colors: C }) {
   const { currentWorkout, getCompletedSetsCount, getTotalSetsCount } = useWorkout();
-  if (!currentWorkout || !currentWorkout.exercises?.length) return null;
+  const shared = useSharedSession();
+  const hasLocal = currentWorkout && currentWorkout.exercises?.length > 0;
+  const hasShared = shared?.session && (shared.session.status === 'active' || shared.session.status === 'building');
 
-  // Pulse animation on the handle
+  if (!hasLocal && !hasShared) return null;
+
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const bounceAnim = useRef(new Animated.Value(0)).current;
 
@@ -117,10 +120,11 @@ function WorkoutMiniBar({ isExpanded, colors: C }) {
     return () => { pulse.stop(); bounce.stop(); };
   }, [isExpanded, pulseAnim, bounceAnim]);
 
-  const isActive = !!currentWorkout.startTime;
-  const count = currentWorkout.exercises.length;
-  const completed = getCompletedSetsCount();
-  const total = getTotalSetsCount();
+  const isActive = hasLocal && !!currentWorkout.startTime;
+  const count = hasLocal ? currentWorkout.exercises.length : (shared?.session?.exercises?.length || 0);
+  const completed = hasLocal ? getCompletedSetsCount() : 0;
+  const total = hasLocal ? getTotalSetsCount() : 0;
+  const partnerName = shared?.partner?.pseudo || shared?.partner?.username || '';
 
   return (
     <View style={[miniStyles.container, { borderTopColor: C.border }]}>
@@ -130,7 +134,7 @@ function WorkoutMiniBar({ isExpanded, colors: C }) {
           !isExpanded && { transform: [{ translateY: bounceAnim }, { scaleX: pulseAnim }] },
         ]}
       >
-        <View style={[miniStyles.handle, { backgroundColor: C.accent }]} />
+        <View style={[miniStyles.handle, { backgroundColor: hasShared ? '#72baa1' : C.accent }]} />
       </Animated.View>
       <View style={miniStyles.row}>
         <View style={miniStyles.info}>
@@ -141,6 +145,13 @@ function WorkoutMiniBar({ isExpanded, colors: C }) {
               <Text style={[miniStyles.sep, { color: C.textMuted }]}>•</Text>
               <Text style={[miniStyles.detail, { color: C.textMuted }]}>{completed}/{total} series</Text>
             </>
+          ) : hasShared && !hasLocal ? (
+            <>
+              <Ionicons name="people" size={18} color="#72baa1" />
+              <Text style={[miniStyles.detail, { color: C.textMuted }]}>
+                Séance avec {partnerName} • {count} exo{count > 1 ? 's' : ''}
+              </Text>
+            </>
           ) : (
             <>
               <Ionicons name="barbell-outline" size={20} color={C.accent} />
@@ -148,8 +159,8 @@ function WorkoutMiniBar({ isExpanded, colors: C }) {
             </>
           )}
         </View>
-        <View style={[miniStyles.chevron, { backgroundColor: `${C.accent}20` }]}>
-          <Ionicons name={isExpanded ? 'chevron-down' : 'chevron-up'} size={16} color={C.accent} />
+        <View style={[miniStyles.chevron, { backgroundColor: hasShared && !hasLocal ? '#72baa120' : `${C.accent}20` }]}>
+          <Ionicons name={isExpanded ? 'chevron-down' : 'chevron-up'} size={16} color={hasShared && !hasLocal ? '#72baa1' : C.accent} />
         </View>
       </View>
     </View>
@@ -224,7 +235,8 @@ function FloatingTabBar({ state, descriptors, navigation }) {
   const hasSharedBuilding = shared?.session && shared.session.status === 'building';
   const hasSharedActive = shared?.session && (shared.session.status === 'active' || shared.session.status === 'building');
   const partnerName = shared?.partner?.pseudo || shared?.partner?.username || 'Partenaire';
-  const hasWorkout = !!(currentWorkout && currentWorkout.exercises?.length > 0);
+  const hasLocalExercises = !!(currentWorkout && currentWorkout.exercises?.length > 0);
+  const hasWorkout = hasLocalExercises || hasSharedActive;
   const heightAnim = useRef(new Animated.Value(TAB_BAR_HEIGHT)).current;
   const currentHeight = useRef(TAB_BAR_HEIGHT);
   const startDragH = useRef(TAB_BAR_HEIGHT);
@@ -365,19 +377,7 @@ function FloatingTabBar({ state, descriptors, navigation }) {
         </View>
       )}
 
-      {/* Bandeau séance partagée en building/active (pas encore d'exos dans le workout local) */}
-      {!shared?.pendingInvite && hasSharedActive && !hasWorkout && (
-        <View style={[styles.sharedBanner, { borderTopColor: COLORS.border }]}>
-          <View style={styles.sharedBannerDot} />
-          <Ionicons name="people" size={16} color="#72baa1" />
-          <Text style={[styles.sharedBannerText, { color: isDark ? '#fff' : '#333' }]} numberOfLines={1}>
-            {hasSharedBuilding ? 'Construction' : 'Séance'} avec {partnerName}
-          </Text>
-          <Text style={styles.sharedBannerSub}>
-            {(shared?.session?.exercises?.length || 0)} exos
-          </Text>
-        </View>
-      )}
+      {/* Le WorkoutContent gère l'affichage de la vue partenaire quand hasSharedActive */}
 
       {/* Tab row - always at bottom */}
       <View style={styles.row}>

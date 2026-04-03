@@ -442,6 +442,17 @@ export function WorkoutProvider({ children }) {
     return pastWorkout;
   }, []);
 
+  // Forcer le startTime (pour reprendre une séance partagée avec le bon timestamp)
+  const setWorkoutStartTime = useCallback((isoString) => {
+    setCurrentWorkout(prev => {
+      if (!prev) return prev;
+      const updated = { ...prev, startTime: isoString };
+      setIsWorkoutActive(true);
+      saveWorkout(updated);
+      return updated;
+    });
+  }, []);
+
   // Annuler la seance
   const cancelWorkout = useCallback(async () => {
     setCurrentWorkout(null);
@@ -586,6 +597,7 @@ export function WorkoutProvider({ children }) {
     toggleSetComplete,
     finishWorkout,
     cancelWorkout,
+    setWorkoutStartTime,
     loadWorkout,
     isExerciseInWorkout,
     getCompletedSetsCount,

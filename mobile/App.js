@@ -22,7 +22,7 @@ import HealthConnectOnboarding from './src/components/HealthConnectOnboarding';
 // Sync séance partagée → WorkoutContext (doit être enfant des deux providers)
 function SharedSessionSync() {
   const shared = useSharedSession();
-  const { addExercise, startWorkout, currentWorkout } = useWorkout();
+  const { addExercise, startWorkout, currentWorkout, setWorkoutStartTime } = useWorkout();
   const injectedRef = useRef(null);
 
   // Track combien d'exos on a déjà injecté pour cette session
@@ -49,22 +49,31 @@ function SharedSessionSync() {
     // Injecter les nouveaux exercices (ceux qu'on n'a pas encore ajoutés)
     const newExercises = sharedExercises.slice(injectedCountRef.current);
     for (const ex of newExercises) {
+      // ID stable basé sur exerciseId ou exerciseName (pas order qui peut changer)
+      const stableId = ex.exerciseId || ('shared_' + ex.exerciseName.replace(/\s+/g, '_').toLowerCase());
       addExercise({
-        id: ex.exerciseId || ('shared_' + ex.exerciseName + '_' + ex.order),
+        id: stableId,
         name: ex.exerciseName,
         type: Array.isArray(ex.type) ? ex.type[0] : (ex.type || 'muscu'),
         muscles: ex.muscles || [],
-        muscle: ex.primaryMuscle || (ex.muscles && ex.muscles[0]) || '',
-        primaryMuscle: ex.primaryMuscle || (ex.muscles && ex.muscles[0]) || '',
+        muscle: ex.primaryMuscle || (ex.muscles && ex.muscles[0]) || null,
+        primaryMuscle: ex.primaryMuscle || (ex.muscles && ex.muscles[0]) || null,
         secondaryMuscles: ex.secondaryMuscles || [],
-        equipment: Array.isArray(ex.equipment) ? ex.equipment[0] || '' : (ex.equipment || ''),
-        category: ex.category || '',
+        equipment: Array.isArray(ex.equipment) ? ex.equipment.join(', ') : (ex.equipment || ''),
+        category: ex.category || null,
       });
     }
     injectedCountRef.current = sharedExercises.length;
 
-    // Lancer le timer uniquement quand la séance passe en active
-    if (session.status === 'active') startWorkout();
+    // Lancer le timer avec le bon startedAt de la session partagée
+    if (session.status === 'active') {
+      if (session.startedAt && setWorkoutStartTime) {
+        // Reprendre le timestamp original (pas now())
+        setWorkoutStartTime(session.startedAt);
+      } else {
+        startWorkout();
+      }
+    }
   }, [shared?.session?._id, shared?.session?.status, shared?.session?.exercises?.length]);
 
   return null;
