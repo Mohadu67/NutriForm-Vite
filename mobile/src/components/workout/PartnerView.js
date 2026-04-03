@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, Animated, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, Animated, TouchableOpacity, PanResponder } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import theme from '../../theme';
 
@@ -326,8 +326,17 @@ function ActiveHeader({ partnerName, partnerPhoto, startedAt, completedCount, to
 // ─── Main Component ──────────────────────────────────────
 export default function PartnerView({
   exercises, partnerExerciseData, partnerName, isDark,
-  partnerPhoto, startedAt, endedAt, onAddExercise
+  partnerPhoto, startedAt, endedAt, onAddExercise, onClose
 }) {
+  const scrollAtTopRef = useRef(true);
+  const dismissPan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gs) => gs.dy > 15 && Math.abs(gs.dy) > Math.abs(gs.dx),
+      onPanResponderRelease: (_, gs) => {
+        if (gs.dy > 50 || gs.vy > 0.5) onClose?.();
+      },
+    })
+  ).current;
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [stale, setStale] = useState(false);
 
@@ -355,6 +364,7 @@ export default function PartnerView({
 
   return (
     <View style={st.container}>
+      <View {...dismissPan.panHandlers}>
       {isFinished ? (
         <FinishedHeader
           partnerName={partnerName} partnerPhoto={partnerPhoto}
@@ -369,6 +379,7 @@ export default function PartnerView({
           total={total} pct={pct} stale={stale} isDark={isDark}
         />
       )}
+      </View>
 
       {/* Bouton centré quand pas d'exos à moi */}
       {onAddExercise ? (
@@ -386,6 +397,11 @@ export default function PartnerView({
           style={{ flex: 1 }}
           contentContainerStyle={st.scrollContent}
           showsVerticalScrollIndicator={false}
+          onScroll={(e) => { scrollAtTopRef.current = e.nativeEvent.contentOffset.y <= 0; }}
+          scrollEventThrottle={16}
+          onScrollEndDrag={(e) => {
+            if (scrollAtTopRef.current && e.nativeEvent.velocity?.y < -0.5) onClose?.();
+          }}
         >
           {isFinished && (
             <View style={st.sectionLabel}>
