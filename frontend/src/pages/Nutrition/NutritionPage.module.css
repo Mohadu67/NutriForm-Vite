@@ -754,3 +754,164 @@
 .recipeLogBtn:hover {
   opacity: 0.9;
 }
+
+/* ─── Scanned Product Card ───────────────── */
+
+.scannedProduct {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: var(--color-secondary-50, #f3f9f7);
+  border-radius: 14px;
+  margin-bottom: 8px;
+}
+
+:global(.dark) .scannedProduct {
+  background: rgba(114, 186, 161, 0.06);
+}
+
+.scannedProductImg {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  align-self: center;
+}
+
+.scannedProductInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scannedProductName {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-neutral-900, #1c1917);
+}
+
+:global(.dark) .scannedProductName {
+  color: #f3f3f6;
+}
+
+.scannedProductSize {
+  font-size: 0.72rem;
+  color: var(--color-neutral-400, #a8a29e);
+}
+
+.scannedProductPer100 {
+  display: flex;
+  gap: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-secondary-700, #478571);
+  flex-wrap: wrap;
+}
+
+:global(.dark) .scannedProductPer100 {
+  color: var(--color-secondary-400, #90c9b5);
+}
+
+.scannedProductHint {
+  font-size: 0.65rem;
+  color: var(--color-neutral-400, #a8a29e);
+  font-style: italic;
+}
+
+.quantityField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quantityField label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-neutral-700, #44403c);
+}
+
+:global(.dark) .quantityField label {
+  color: var(--color-neutral-700, #c1c1cb);
+}
+
+.quantityInput {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.quantityInput input {
+  width: 100%;
+  padding: 10px 40px 10px 14px;
+  border: 1.5px solid var(--color-neutral-200, #e2dfdb);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: var(--color-neutral-0, #fff);
+  color: var(--color-neutral-900, #1c1917);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+:global(.dark) .quantityInput input {
+  background: var(--color-neutral-50, #18181d);
+  border-color: var(--color-neutral-200, #2a2a33);
+  color: #f3f3f6;
+}
+
+.quantityInput input:focus {
+  border-color: var(--color-secondary-500, #72baa1);
+}
+
+.quantityUnit {
+  position: absolute;
+  right: 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-neutral-400, #a8a29e);
+  pointer-events: none;
+}
+
+.quantityPresets {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.quantityPreset {
+  padding: 5px 12px;
+  border: 1px solid var(--color-neutral-200, #e2dfdb);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-neutral-600, #57534e);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+:global(.dark) .quantityPreset {
+  border-color: var(--color-neutral-300, #3b3b47);
+  color: var(--color-neutral-500, #82828f);
+}
+
+.quantityPreset:hover {
+  border-color: var(--color-secondary-400, #90c9b5);
+  color: var(--color-secondary-600, #5aa48a);
+}
+
+.quantityPresetActive {
+  background: var(--color-secondary-500, #72baa1);
+  border-color: var(--color-secondary-500, #72baa1);
+  color: #fff;
+}
+
+.quantityPresetActive:hover {
+  background: var(--color-secondary-600, #5aa48a);
+  border-color: var(--color-secondary-600, #5aa48a);
+  color: #fff;
+}

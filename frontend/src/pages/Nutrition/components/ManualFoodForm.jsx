@@ -21,6 +21,10 @@ export default function ManualFoodForm({ isOpen, onClose, onSubmit, defaultMealT
   const [notes, setNotes] = useState('');
   const [scannerOpen, setScannerOpen] = useState(false);
 
+  // Scanned product data (per 100g) + user quantity
+  const [scannedProduct, setScannedProduct] = useState(null);
+  const [quantity, setQuantity] = useState('100');
+
   useEffect(() => {
     if (editEntry) {
       setName(editEntry.name || '');
@@ -40,16 +44,39 @@ export default function ManualFoodForm({ isOpen, onClose, onSubmit, defaultMealT
       setFats('');
       setFiber('');
       setNotes('');
+      setScannedProduct(null);
+      setQuantity('100');
     }
   }, [editEntry, defaultMealType, isOpen]);
 
   const handleProductFound = (product) => {
-    setName(product.name + (product.brand ? ` – ${product.brand}` : '') + ' (100g)');
-    setCalories(String(product.nutrition.calories));
-    setProteins(String(product.nutrition.proteins));
-    setCarbs(String(product.nutrition.carbs));
-    setFats(String(product.nutrition.fats));
-    setFiber(String(product.nutrition.fiber));
+    // Store raw per-100g values, let user pick quantity
+    setScannedProduct({
+      name: product.name + (product.brand ? ` – ${product.brand}` : ''),
+      imageUrl: product.imageUrl,
+      productQuantity: product.quantity, // e.g. "300g"
+      per100: { ...product.nutrition },
+    });
+    setQuantity('100');
+    applyQuantity(product.nutrition, 100, product.name + (product.brand ? ` – ${product.brand}` : ''));
+  };
+
+  const applyQuantity = (per100, grams, productName) => {
+    const ratio = grams / 100;
+    setName(`${productName || scannedProduct?.name || ''} (${grams}g)`);
+    setCalories(String(Math.round(per100.calories * ratio)));
+    setProteins(String(Math.round(per100.proteins * ratio * 10) / 10));
+    setCarbs(String(Math.round(per100.carbs * ratio * 10) / 10));
+    setFats(String(Math.round(per100.fats * ratio * 10) / 10));
+    setFiber(String(Math.round((per100.fiber || 0) * ratio * 10) / 10));
+  };
+
+  const handleQuantityChange = (val) => {
+    setQuantity(val);
+    const grams = Number(val) || 0;
+    if (scannedProduct?.per100 && grams > 0) {
+      applyQuantity(scannedProduct.per100, grams, scannedProduct.name);
+    }
   };
 
   if (!isOpen) return null;
@@ -99,6 +126,54 @@ export default function ManualFoodForm({ isOpen, onClose, onSubmit, defaultMealT
           </button>
         </div>
         <form onSubmit={handleSubmit} className={style.modalForm}>
+          {/* Scanned product — quantity selector */}
+          {scannedProduct && (
+            <div className={style.scannedProduct}>
+              {scannedProduct.imageUrl && (
+                <img src={scannedProduct.imageUrl} alt="" className={style.scannedProductImg} />
+              )}
+              <div className={style.scannedProductInfo}>
+                <span className={style.scannedProductName}>{scannedProduct.name}</span>
+                {scannedProduct.productQuantity && (
+                  <span className={style.scannedProductSize}>Conditionnement : {scannedProduct.productQuantity}</span>
+                )}
+                <div className={style.scannedProductPer100}>
+                  <span>{scannedProduct.per100.calories} kcal</span>
+                  <span>{scannedProduct.per100.proteins}g prot</span>
+                  <span>{scannedProduct.per100.carbs}g gluc</span>
+                  <span>{scannedProduct.per100.fats}g lip</span>
+                </div>
+                <span className={style.scannedProductHint}>Valeurs pour 100g</span>
+              </div>
+              <div className={style.quantityField}>
+                <label>Quantité consommée</label>
+                <div className={style.quantityInput}>
+                  <input
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => handleQuantityChange(e.target.value)}
+                    min="1"
+                    max="5000"
+                    step="1"
+                  />
+                  <span className={style.quantityUnit}>g</span>
+                </div>
+                <div className={style.quantityPresets}>
+                  {[50, 100, 150, 200, 250, 300].map(g => (
+                    <button
+                      key={g}
+                      type="button"
+                      className={`${style.quantityPreset} ${String(g) === quantity ? style.quantityPresetActive : ''}`}
+                      onClick={() => handleQuantityChange(String(g))}
+                    >
+                      {g}g
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className={style.formGroup}>
             <label>Nom de l'aliment *</label>
             <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Poulet grillé" required maxLength={200} />

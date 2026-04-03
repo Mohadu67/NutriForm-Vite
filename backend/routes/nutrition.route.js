@@ -23,4 +23,8 @@ router.get('/summary/monthly', requirePremium, nutritionController.getMonthlyTre
 router.get('/goals', nutritionController.getGoals);
 router.put('/goals', nutritionController.updateGoals);
 
+// Food recognition by photo (Gemini Vision)
+const foodRecognition = require('../controllers/foodRecognition.controller');
+router.post('/recognize', foodRecognition.recognizeFood);
+
 module.exports = router;
