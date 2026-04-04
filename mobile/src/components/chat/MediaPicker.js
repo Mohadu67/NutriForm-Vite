@@ -37,6 +37,13 @@ export default function MediaPicker({ visible, onClose, onMediaSelected }) {
       return;
     }
 
+    // Fermer le bottom sheet AVANT d'ouvrir la camera
+    // pour eviter le conflit de modals iOS qui crop les boutons
+    onClose();
+
+    // Petit delai pour laisser le modal se fermer
+    await new Promise(r => setTimeout(r, 300));
+
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ['images'],
       allowsEditing: false,
@@ -52,7 +59,6 @@ export default function MediaPicker({ visible, onClose, onMediaSelected }) {
         filename: `photo-${Date.now()}.jpg`,
         mimeType: 'image/jpeg',
       });
-      onClose();
     }
   };
 
@@ -63,9 +69,12 @@ export default function MediaPicker({ visible, onClose, onMediaSelected }) {
       return;
     }
 
+    onClose();
+    await new Promise(r => setTimeout(r, 300));
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      allowsEditing: true,
+      allowsEditing: false,
       quality: 0.8,
     });
 
@@ -77,7 +86,6 @@ export default function MediaPicker({ visible, onClose, onMediaSelected }) {
         filename: `image-${Date.now()}.${fileExtension}`,
         mimeType: `image/${fileExtension === 'jpg' ? 'jpeg' : fileExtension}`,
       });
-      onClose();
     }
   };
 
@@ -87,6 +95,9 @@ export default function MediaPicker({ visible, onClose, onMediaSelected }) {
       alert('Permission refusée', 'L\'accès à la galerie est requis');
       return;
     }
+
+    onClose();
+    await new Promise(r => setTimeout(r, 300));
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['videos'],
@@ -101,7 +112,6 @@ export default function MediaPicker({ visible, onClose, onMediaSelected }) {
         filename: `video-${Date.now()}.mp4`,
         mimeType: 'video/mp4',
       });
-      onClose();
     }
   };
 

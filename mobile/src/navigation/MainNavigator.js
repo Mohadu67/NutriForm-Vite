@@ -433,7 +433,7 @@ export default function MainNavigator() {
     return BASE_TAB_CONFIG.filter(tab => !(tab.requiresPremium && !isPremium));
   }, [isPremium]);
 
-  const sceneBottomPadding = TAB_BAR_HEIGHT + MINI_BAR_HEIGHT + Math.max(insets.bottom, 16) + 40;
+  const sceneBottomPadding = TAB_BAR_HEIGHT + MINI_BAR_HEIGHT + Math.max(insets.bottom, 16) + 60;
   const sceneBg = isDark ? DARK_COLORS.bg : LIGHT_COLORS.bg;
 
   return (
