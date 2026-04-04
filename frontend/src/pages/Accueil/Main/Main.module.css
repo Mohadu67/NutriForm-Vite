@@ -196,7 +196,7 @@
 /* Scroll indicator */
 .scrollIndicator {
   position: absolute;
-  bottom: 56px;
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;

@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 
 import { useProfileData } from '../../hooks/useProfileData';
@@ -155,8 +156,15 @@ export default function ProfileScreen() {
 
   return (
     <View style={[styles.container, isDark && styles.containerDark]}>
-      {/* Flat Header */}
-      <Animated.View style={[styles.headerFlat, isDark && styles.headerFlatDark, { height: headerHeight }]} />
+      {/* Gradient Header */}
+      <Animated.View style={[styles.headerGradient, { height: headerHeight }]}>
+        <LinearGradient
+          colors={isDark ? ['#2A1810', '#151525'] : ['#F9C4A3', '#f0a47a', '#d4895a']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
 
       {/* Settings button */}
       <SafeAreaView edges={['top']} style={styles.headerActions} pointerEvents="box-none">
@@ -186,14 +194,20 @@ export default function ProfileScreen() {
         {/* Avatar Section */}
         <Animated.View style={[styles.avatarSection, { transform: [{ scale: avatarScale }] }]}>
           <TouchableOpacity onPress={handleAvatarPress} activeOpacity={0.9} disabled={uploadingPhoto}>
-            <View style={[styles.avatarRing, isDark && styles.avatarRingDark]}>
+            <View style={styles.avatarRing}>
+              <LinearGradient
+                colors={['#f0a47a', '#d4895a', '#f0a47a']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.avatarRingGradient}
+              />
               <View style={[styles.avatarInner, isDark && styles.avatarInnerDark]}>
                 {avatarUrl ? (
                   <Image source={{ uri: avatarUrl }} style={styles.avatar} />
                 ) : (
-                  <View style={styles.avatarPlaceholder}>
+                  <LinearGradient colors={['#f0a47a', '#d4895a']} style={styles.avatarPlaceholder}>
                     <Text style={styles.avatarText}>{displayName.charAt(0).toUpperCase()}</Text>
-                  </View>
+                  </LinearGradient>
                 )}
               </View>
               {uploadingPhoto && (
@@ -431,20 +445,16 @@ const styles = StyleSheet.create({
   containerDark: { backgroundColor: '#0e0e11' },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fcfbf9' },
 
-  // Header
-  headerFlat: {
+  // Header gradient
+  headerGradient: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     zIndex: 0,
-    backgroundColor: '#fcfbf9',
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
     overflow: 'hidden',
-  },
-  headerFlatDark: {
-    backgroundColor: '#0e0e11',
   },
   headerActions: { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 8, zIndex: 10 },
   headerSpacer: { width: 40 },
@@ -458,13 +468,13 @@ const styles = StyleSheet.create({
     width: RING_SIZE,
     height: RING_SIZE,
     borderRadius: RING_SIZE / 2,
-    borderWidth: 3,
-    borderColor: '#efedea',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
-  avatarRingDark: {
-    borderColor: 'rgba(255,255,255,0.06)',
+  avatarRingGradient: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: RING_SIZE / 2,
   },
   avatarInner: { width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2, backgroundColor: '#fff', overflow: 'hidden' },
   avatarInnerDark: { backgroundColor: '#18181d' },
