@@ -155,6 +155,73 @@ export async function syncBurnedCalories(date, caloriesBurned) {
   }
 }
 
+/**
+ * Carousel data (3 slides — macros, micros, meal breakdown)
+ */
+export async function getCarouselData(date) {
+  try {
+    const response = await apiClient.get(endpoints.nutrition.carousel(date));
+    return { success: true, data: response.data || null };
+  } catch (error) {
+    logger.app.debug('[NUTRITION API] getCarouselData error:', error.message);
+    return { success: false, data: null, error: error.message };
+  }
+}
+
+/**
+ * Week bar data (progress per day, N weeks)
+ */
+export async function getWeekBarData(date) {
+  try {
+    const response = await apiClient.get(endpoints.nutrition.weekBar, {
+      params: { date },
+    });
+    return { success: true, data: response.data || null };
+  } catch (error) {
+    logger.app.debug('[NUTRITION API] getWeekBarData error:', error.message);
+    return { success: false, data: null, error: error.message };
+  }
+}
+
+/**
+ * Historique des scans — plats
+ */
+export async function getScansPlats() {
+  try {
+    const response = await apiClient.get(endpoints.nutrition.scansPlats);
+    return { success: true, data: response.data?.plats || [] };
+  } catch (error) {
+    logger.app.debug('[NUTRITION API] getScansPlats error:', error.message);
+    return { success: false, data: [], error: error.message };
+  }
+}
+
+/**
+ * Historique des scans — ingrédients
+ */
+export async function getScansIngredients() {
+  try {
+    const response = await apiClient.get(endpoints.nutrition.scansIngredients);
+    return { success: true, data: response.data?.ingredients || [] };
+  } catch (error) {
+    logger.app.debug('[NUTRITION API] getScansIngredients error:', error.message);
+    return { success: false, data: [], error: error.message };
+  }
+}
+
+/**
+ * Supprimer un scan
+ */
+export async function deleteScan(type, id) {
+  try {
+    await apiClient.delete(endpoints.nutrition.deleteScan(type, id));
+    return { success: true };
+  } catch (error) {
+    logger.app.debug('[NUTRITION API] deleteScan error:', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
 export default {
   addFoodLog,
   logRecipe,
@@ -167,4 +234,9 @@ export default {
   getNutritionGoals,
   updateNutritionGoals,
   syncBurnedCalories,
+  getCarouselData,
+  getWeekBarData,
+  getScansPlats,
+  getScansIngredients,
+  deleteScan,
 };
