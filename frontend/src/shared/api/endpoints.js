@@ -69,6 +69,9 @@ export const endpoints = {
     trackClick: (notificationId) => `/notifications/${notificationId}/click`,
     clickStats: "/notifications/stats/clicks",
   },
+  dashboard: {
+    overview: "/dashboard/overview",
+  },
   analytics: {
     weekly: "/analytics/weekly",
     adminNotifications: "/analytics/admin/notifications",

@@ -1,15 +1,46 @@
-/* Dashboard - Redesign épuré et mobile-first */
+/* Dashboard - Redesign premium (Cal AI style) */
+/* Brand: peach #f0a47a · teal #72baa1 · stone #c9a88c */
 
-/* ========== BASE ========== */
+/* ═══ Design tokens ═══ */
 .dashboard {
+  --n-bg: #fcfbf9;
+  --n-surface: #ffffff;
+  --n-surface-hover: #f7f6f3;
+  --n-border: #efedea;
+  --n-border-hover: #e2dfdb;
+  --n-text: #1c1917;
+  --n-text-secondary: #78716c;
+  --n-text-muted: #a8a29e;
+  --n-peach: #f0a47a;
+  --n-peach-dim: rgba(240, 164, 122, 0.10);
+  --n-teal: #72baa1;
+  --n-teal-dim: rgba(114, 186, 161, 0.10);
+  --n-stone: #c9a88c;
+  --n-ring-track: #efedea;
+  --n-danger: #ef4444;
+  --n-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
   min-height: 100vh;
-  background: var(--couleur-principale, #f7f6f2);
+  background: var(--n-bg);
+  color: var(--n-text);
   padding: 100px 16px 32px;
 }
 
 :global(body.dark) .dashboard,
 :global(html.dark) .dashboard {
-  background: var(--couleur-principale);
+  --n-bg: #0b0b16;
+  --n-surface: #151525;
+  --n-surface-hover: #1c1c30;
+  --n-border: rgba(255, 255, 255, 0.06);
+  --n-border-hover: rgba(255, 255, 255, 0.10);
+  --n-text: #f5f5f7;
+  --n-text-secondary: #8e8e93;
+  --n-text-muted: #4a4a5e;
+  --n-ring-track: rgba(255, 255, 255, 0.08);
+  --n-danger: #ff6b6b;
+  --n-card-shadow: none;
+  background: var(--n-bg);
+  color: var(--n-text);
 }
 
 .container {
@@ -170,98 +201,73 @@
 }
 
 .statCard {
-  background: var(--paper, #ffffff);
+  background: var(--n-surface);
   border-radius: 16px;
-  padding: 16px 12px;
+  padding: 14px 8px 12px;
   text-align: center;
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border: 1px solid var(--n-border);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-:global(body.dark) .statCard,
-:global(html.dark) .statCard {
-  background: var(--paper);
-  border-color: var(--line);
+  transition: all 0.25s ease;
+  box-shadow: var(--n-card-shadow);
 }
 
 .statCardClickable {
   cursor: pointer;
+  border: none;
+  font-family: inherit;
 }
 
 .statCardClickable:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md, 0 8px 20px rgba(0, 0, 0, 0.08));
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
-:global(body.dark) .statCardClickable:hover:not(:disabled),
-:global(html.dark) .statCardClickable:hover:not(:disabled) {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-}
+.statCardClickable:disabled { cursor: default; opacity: 0.5; }
 
-.statCardClickable:disabled {
-  cursor: default;
-  opacity: 0.6;
-}
-
-/* Icon */
-.statIcon {
+/* Ring inside stat card */
+.statRingWrap {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--couleur-bouton-action, #f7b186);
 }
 
-:global(body.dark) .statIcon,
-:global(html.dark) .statIcon {
-  color: var(--couleur-bouton-action, #f7b186);
-}
+.statRingTrack { stroke: var(--n-ring-track); }
 
-/* Content wrapper */
-.statContent {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  width: 100%;
-}
-
-.statValue {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--ink, #222325);
-  line-height: 1.2;
-}
-
-:global(body.dark) .statValue,
-:global(html.dark) .statValue {
-  color: var(--ink);
+.statRingValue {
+  position: absolute;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--n-text);
+  font-family: var(--font-display, 'Montserrat', sans-serif);
+  line-height: 1;
 }
 
 .statLabel {
   display: block;
-  font-size: 0.65rem;
-  color: var(--muted, #6b7280);
+  font-size: 0.62rem;
+  color: var(--n-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   font-weight: 600;
 }
 
-/* Trend indicator */
-.statTrend {
+.statSub {
   display: block;
-  font-size: 0.6rem;
-  color: var(--muted, #6b7280);
-  margin-top: 4px;
-  padding: 3px 8px;
-  background: var(--couleur-principale, #f7f6f2);
-  border-radius: 8px;
+  font-size: 0.55rem;
+  color: var(--n-text-muted);
+  padding: 2px 6px;
+  background: var(--n-surface-hover);
+  border-radius: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
   font-weight: 500;
   max-width: 100%;
   overflow: hidden;
@@ -276,17 +282,187 @@
 
 /* ========== SECTION TITLE ========== */
 .sectionTitle {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--ink, #222325);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--n-text);
   margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-family: var(--font-display, 'Montserrat', sans-serif);
 }
 
-:global(body.dark) .sectionTitle,
-:global(html.dark) .sectionTitle {
-  color: var(--ink);
+/* ═══ Goal Section (new) ═══ */
+.goalSection {
+  background: var(--n-surface);
+  border-radius: 20px;
+  border: 1px solid var(--n-border);
+  padding: 1.25rem;
+  margin-bottom: 16px;
+  box-shadow: var(--n-card-shadow);
+}
+
+.goalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.editButton {
+  background: none;
+  border: none;
+  color: var(--n-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.15s;
+}
+.editButton:hover { color: var(--n-peach); }
+
+.goalBody {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.goalRingWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.goalRingText {
+  position: absolute;
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.goalRingValue {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--n-text);
+  font-family: var(--font-display, 'Montserrat', sans-serif);
+}
+
+.goalRingGoal {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--n-text-muted);
+}
+
+.goalInfo { display: flex; flex-direction: column; gap: 4px; }
+
+.goalStatus {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--n-text);
+  margin: 0;
+}
+
+.goalCalories {
+  font-size: 0.75rem;
+  color: var(--n-text-muted);
+  margin: 0;
+}
+
+/* ═══ Actions Grid (new) ═══ */
+.actionsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 480px) {
+  .actionsGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.actionCard {
+  background: var(--n-surface);
+  border: 1px solid var(--n-border);
+  border-radius: 16px;
+  padding: 1rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--n-card-shadow);
+  font-family: inherit;
+}
+
+.actionCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--n-border-hover);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.actionIcon { display: flex; }
+
+.actionLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--n-text-secondary);
+}
+
+/* ═══ Nutrition Widget (new) ═══ */
+.nwRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0.5rem 0;
+}
+
+.nwStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.nwStatValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--n-text);
+}
+
+.nwStatLabel {
+  font-size: 0.6rem;
+  color: var(--n-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+}
+
+.nwRingWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nwRingText {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nwRingValue {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--n-text);
+  font-family: var(--font-display, 'Montserrat', sans-serif);
+  line-height: 1;
+}
+
+.nwRingLabel {
+  font-size: 0.55rem;
+  color: var(--n-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 /* ========== PROGRESS SECTION ========== */
@@ -545,22 +721,16 @@
 
 /* ========== NUTRITION WIDGET (calorie gauge + macros) ========== */
 .nutritionWidget {
-  background: var(--card-bg, #ffffff);
-  border-radius: 16px;
+  background: var(--n-surface);
+  border-radius: 20px;
+  border: 1px solid var(--n-border);
   padding: 1.25rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  margin-bottom: 1.5rem;
-  transition: box-shadow 0.2s;
+  box-shadow: var(--n-card-shadow);
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
 }
 .nutritionWidget:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
-
-:global(body.dark) .nutritionWidget,
-:global(html.dark) .nutritionWidget {
-  --nw-track: #3a3a3a;
-  --nw-accent: #6db39b;
-  background: var(--card-bg-dark, #2a2a2e);
+  border-color: var(--n-border-hover);
 }
 
 /* — Calories row (Mangées | Gauge | Brûlées) — */
@@ -718,32 +888,18 @@
   margin-top: 14px;
   padding: 10px 0;
   border: none;
-  border-radius: 10px;
-  background: #f0a47a;
+  border-radius: 12px;
+  background: var(--n-peach);
   color: #fff;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: opacity 0.2s, transform 0.15s;
+  font-family: inherit;
 }
 
-.nwAddMealBtn:hover {
-  background: #e8956a;
-}
-
-.nwAddMealBtn:active {
-  transform: scale(0.98);
-}
-
-:global(body.dark) .nwAddMealBtn,
-:global(html.dark) .nwAddMealBtn {
-  background: #c67548;
-}
-
-:global(body.dark) .nwAddMealBtn:hover,
-:global(html.dark) .nwAddMealBtn:hover {
-  background: #b5673e;
-}
+.nwAddMealBtn:hover { opacity: 0.88; }
+.nwAddMealBtn:active { transform: scale(0.97); }
 
 .nwAddMealIcon {
   font-size: 1.1rem;

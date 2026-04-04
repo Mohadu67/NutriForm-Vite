@@ -1,174 +1,91 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getDailySummary, getNutritionGoals } from '../../../shared/api/nutrition';
 import style from '../Dashboard.module.css';
-
-export const NutritionWidget = ({ isPremium }) => {
-  const navigate = useNavigate();
-  const [consumed, setConsumed] = useState(0);
-  const [burned, setBurned] = useState(0);
-  const [goal, setGoal] = useState(2000);
-  const [macros, setMacros] = useState(null);
-  const [macroGoals, setMacroGoals] = useState(null);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    Promise.all([
-      getDailySummary(today).catch(() => null),
-      getNutritionGoals().catch(() => null),
-    ]).then(([summary, goalsData]) => {
-      if (summary) {
-        setConsumed(summary.consumed?.calories || 0);
-        setBurned(summary.burned || 0);
-        if (isPremium) {
-          setMacros({
-            proteins: summary.consumed?.proteins || 0,
-            carbs: summary.consumed?.carbs || 0,
-            fats: summary.consumed?.fats || 0,
-          });
-        }
-      }
-      if (goalsData?.goals) {
-        setGoal(goalsData.goals.dailyCalories || 2000);
-        if (isPremium && goalsData.goals.macros) {
-          setMacroGoals({
-            proteins: goalsData.goals.macros.proteins || 0,
-            carbs: goalsData.goals.macros.carbs || 0,
-            fats: goalsData.goals.macros.fats || 0,
-          });
-        }
-      }
-      setLoaded(true);
-    });
-  }, [isPremium]);
-
-  if (!loaded) return null;
-
-  const effectiveGoal = goal + burned;
-  const remaining = Math.max(effectiveGoal - consumed, 0);
-  const pct = effectiveGoal > 0 ? Math.min(consumed / effectiveGoal, 1) : 0;
-
-  // Arc gauge constants (270° arc, open at bottom)
-  const R = 54;
-  const CX = 65;
-  const CY = 65;
-  const START_ANGLE = 135;    // degrees, bottom-left
-  const ARC_SPAN = 270;      // degrees total
-  const circumference = 2 * Math.PI * R;
-  const arcLength = (ARC_SPAN / 360) * circumference;
-  const filledLength = pct * arcLength;
-
-  // Dot position on the arc
-  const dotAngle = START_ANGLE + pct * ARC_SPAN;
-  const dotRad = (dotAngle * Math.PI) / 180;
-  const dotX = CX + R * Math.cos(dotRad);
-  const dotY = CY + R * Math.sin(dotRad);
-
-  return (
-    <section className={style.nutritionWidget}>
-      <div
-        className={style.nwClickable}
-        onClick={() => navigate('/nutrition')}
-        style={{ cursor: 'pointer' }}
-      >
-        <div className={style.nwCaloriesRow}>
-          {/* Mangées */}
-          <div className={style.nwCalSide}>
-            <span className={style.nwCalValue}>{consumed}</span>
-            <span className={style.nwCalLabel}>Mangées</span>
-          </div>
-
-          {/* Center ring + remaining */}
-          <div className={style.nwCalCenter}>
-            <svg
-              className={style.nwArc}
-              viewBox="0 0 130 130"
-              width="130"
-              height="130"
-            >
-              {/* Background arc */}
-              <circle
-                cx={CX} cy={CY} r={R}
-                fill="none"
-                stroke="var(--nw-track, #e5e7eb)"
-                strokeWidth="7"
-                strokeLinecap="round"
-                strokeDasharray={`${arcLength} ${circumference}`}
-                strokeDashoffset={0}
-                transform={`rotate(${START_ANGLE} ${CX} ${CY})`}
-              />
-              {/* Filled arc */}
-              {pct > 0 && (
-                <circle
-                  cx={CX} cy={CY} r={R}
-                  fill="none"
-                  stroke="var(--nw-accent, #6db39b)"
-                  strokeWidth="7"
-                  strokeLinecap="round"
-                  strokeDasharray={`${filledLength} ${circumference}`}
-                  strokeDashoffset={0}
-                  transform={`rotate(${START_ANGLE} ${CX} ${CY})`}
-                />
-              )}
-              {/* Dot indicator */}
-              <circle
-                cx={dotX} cy={dotY} r="5"
-                fill="var(--nw-accent, #6db39b)"
-              />
-            </svg>
-            <div className={style.nwCenterText}>
-              <span className={style.nwRemainingValue}>{remaining}</span>
-              <span className={style.nwRemainingLabel}>Restantes</span>
-            </div>
-          </div>
-
-          {/* Brûlées */}
-          <div className={style.nwCalSide}>
-            <span className={style.nwCalValue}>{burned}</span>
-            <span className={style.nwCalLabel}>Brûlées</span>
-          </div>
-        </div>
-
-        {/* Macros bars */}
-        {isPremium && macros && macroGoals && (
-          <div className={style.nwMacrosRow}>
-            <MacroBar label="Glucides" current={macros.carbs} goal={macroGoals.carbs} color="#f0a47a" />
-            <MacroBar label="Protéines" current={macros.proteins} goal={macroGoals.proteins} color="#72baa1" />
-            <MacroBar label="Lipides" current={macros.fats} goal={macroGoals.fats} color="#f59e0b" />
-          </div>
-        )}
-      </div>
-
-      {/* Bouton Ajouter un repas */}
-      <button
-        className={style.nwAddMealBtn}
-        onClick={(e) => {
-          e.stopPropagation();
-          navigate('/nutrition', { state: { openAddMeal: true } });
-        }}
-      >
-        <span className={style.nwAddMealIcon}>+</span>
-        Ajouter un repas
-      </button>
-    </section>
-  );
-};
 
 function MacroBar({ label, current, goal, color }) {
   const pct = goal > 0 ? Math.min(current / goal, 1) : 0;
-
   return (
     <div className={style.nwMacro}>
       <span className={style.nwMacroLabel}>{label}</span>
       <div className={style.nwMacroTrack}>
         <div className={style.nwMacroFill} style={{ width: `${pct * 100}%`, background: color }} />
-        <div
-          className={style.nwMacroDot}
-          style={{ left: `${pct * 100}%`, background: color }}
-        />
       </div>
-      <span className={style.nwMacroValue}>{current} / {goal} g</span>
+      <span className={style.nwMacroValue}>{current} / {goal}g</span>
     </div>
   );
 }
+
+/**
+ * NutritionWidget — receives data from parent (backend-computed).
+ * Zero internal fetch, zero business logic.
+ */
+export const NutritionWidget = ({ nutrition }) => {
+  const navigate = useNavigate();
+
+  if (!nutrition) return null;
+
+  const { consumed, goal, burned, remaining, pct } = nutrition;
+  const macros = nutrition.macros || {};
+
+  const ringSize = 76;
+  const sw = 6;
+  const r = (ringSize - sw) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (Math.min(pct, 100) / 100) * circ;
+
+  return (
+    <section className={style.nutritionWidget}>
+      <h2 className={style.sectionTitle}>Nutrition du jour</h2>
+      <div className={style.nwClickable} onClick={() => navigate('/nutrition')} style={{ cursor: 'pointer' }}>
+        <div className={style.nwRow}>
+          <div className={style.nwStat}>
+            <span className={style.nwStatValue}>{consumed}</span>
+            <span className={style.nwStatLabel}>Mangees</span>
+          </div>
+
+          <div className={style.nwRingWrap}>
+            <svg width={ringSize} height={ringSize} viewBox={`0 0 ${ringSize} ${ringSize}`}>
+              <circle cx={ringSize / 2} cy={ringSize / 2} r={r} fill="none" className={style.statRingTrack} strokeWidth={sw} />
+              <circle
+                cx={ringSize / 2} cy={ringSize / 2} r={r}
+                fill="none" stroke="#72baa1" strokeWidth={sw}
+                strokeLinecap="round"
+                strokeDasharray={circ}
+                strokeDashoffset={offset}
+                transform={`rotate(-90 ${ringSize / 2} ${ringSize / 2})`}
+                style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+              />
+            </svg>
+            <div className={style.nwRingText}>
+              <span className={style.nwRingValue}>{remaining}</span>
+              <span className={style.nwRingLabel}>Rest.</span>
+            </div>
+          </div>
+
+          <div className={style.nwStat}>
+            <span className={style.nwStatValue}>{burned}</span>
+            <span className={style.nwStatLabel}>Brulees</span>
+          </div>
+        </div>
+
+        {macros.proteins && (
+          <div className={style.nwMacrosRow}>
+            <MacroBar label="Proteines" current={macros.proteins.consumed} goal={macros.proteins.goal} color="#72baa1" />
+            <MacroBar label="Glucides" current={macros.carbs.consumed} goal={macros.carbs.goal} color="#f0a47a" />
+            <MacroBar label="Lipides" current={macros.fats.consumed} goal={macros.fats.goal} color="#c9a88c" />
+          </div>
+        )}
+      </div>
+
+      <button
+        className={style.nwAddMealBtn}
+        onClick={(e) => { e.stopPropagation(); navigate('/nutrition', { state: { openAddMeal: true } }); }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        Ajouter un repas
+      </button>
+    </section>
+  );
+};

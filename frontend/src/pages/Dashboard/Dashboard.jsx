@@ -29,6 +29,7 @@ import { storage } from "../../shared/utils/storage.js";
 import { dashboardLogger } from "../../shared/utils/logger.js";
 
 // Composants extraits
+import { StatsOverview } from "./components/StatsOverview.jsx";
 import { NutritionWidget } from "./components/NutritionWidget.jsx";
 import { WeeklyGoalSection } from "./components/WeeklyGoalSection.jsx";
 import { QuickActions } from "./components/QuickActions.jsx";
@@ -43,6 +44,7 @@ import { useDashboardData } from "./hooks/useDashboardData.js";
 import { useSessionManagement } from "./hooks/useSessionManagement.js";
 import { useBadges } from "./hooks/useBadges.js";
 import { useWeeklyGoal } from "./hooks/useWeeklyGoal.js";
+import { useDashboardOverview } from "./hooks/useDashboardOverview.js";
 
 export default function Dashboard() {
   usePageTitle("Dashboard");
@@ -123,6 +125,9 @@ export default function Dashboard() {
     showBadgesPopup,
     setShowBadgesPopup
   } = useBadges(stats, records);
+
+  // Backend-computed overview (for StatsOverview, NutritionWidget, WeeklyGoal)
+  const { overview } = useDashboardOverview();
 
   // Callbacks pour mettre à jour le state après suppression/renommage de session
   const handleSessionDeleted = useCallback((sessionId) => {
@@ -256,12 +261,21 @@ export default function Dashboard() {
             />
           )}
 
+          {/* Stats Overview — rings (backend data) */}
+          {overview?.stats && (
+            <StatsOverview
+              stats={overview.stats}
+              badges={overview.badges}
+              onSessionsClick={() => stats.totalSessions > 0 && setShowSessionsPopup(true)}
+              onBadgesClick={() => setShowBadgesPopup(true)}
+            />
+          )}
+
           {/* Objectif semaine */}
           <WeeklyGoalSection
-            stats={stats}
+            sessionsThisWeek={overview?.stats?.sessionsThisWeek ?? stats.last7Days}
             weeklyGoal={weeklyGoal}
-            weeklyProgress={weeklyProgress}
-            weeklyCalories={weeklyCalories}
+            weeklyCalories={overview?.stats?.weeklyCalories ?? weeklyCalories}
             onEditGoal={handleOpenGoalModal}
           />
 
@@ -287,8 +301,8 @@ export default function Dashboard() {
 
           {/* ── Bloc 3 : Nutrition + Analyse ── */}
 
-          {/* Nutrition du jour */}
-          <NutritionWidget isPremium={!isFreeUser} />
+          {/* Nutrition du jour (backend data) */}
+          <NutritionWidget nutrition={overview?.nutrition} />
 
           {/* Heatmap musculaire */}
           {stats.totalSessions > 0 && (

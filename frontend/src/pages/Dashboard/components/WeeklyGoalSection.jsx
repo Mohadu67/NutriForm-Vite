@@ -1,55 +1,53 @@
 import React from "react";
 import style from "../Dashboard.module.css";
 
-/**
- * WeeklyGoalSection - Composant pour l'objectif hebdomadaire
- * Affiche la progression vers l'objectif de la semaine
- */
-export const WeeklyGoalSection = ({
-  stats,
-  weeklyGoal,
-  weeklyProgress,
-  weeklyCalories,
-  onEditGoal
-}) => {
+export const WeeklyGoalSection = ({ sessionsThisWeek, weeklyGoal, weeklyCalories, onEditGoal }) => {
+  const pct = weeklyGoal > 0 ? Math.min(Math.round((sessionsThisWeek / weeklyGoal) * 100), 100) : 0;
+  const remaining = Math.max(weeklyGoal - sessionsThisWeek, 0);
+  const size = 110;
+  const sw = 8;
+  const r = (size - sw) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (pct / 100) * circ;
+
   return (
-    <section className={style.progressSection}>
-      <div className={style.progressHeader}>
+    <section className={style.goalSection}>
+      <div className={style.goalHeader}>
         <h2 className={style.sectionTitle}>Objectif semaine</h2>
         <button onClick={onEditGoal} className={style.editButton} aria-label="Modifier objectif">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
           </svg>
         </button>
       </div>
-      <div className={style.progressContent}>
-        <div className={style.progressRing}>
-          <svg viewBox="0 0 100 100" className={style.progressSvg}>
-            <circle cx="50" cy="50" r="42" className={style.progressBg} />
+      <div className={style.goalBody}>
+        <div className={style.goalRingWrap}>
+          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+            <circle cx={size / 2} cy={size / 2} r={r} fill="none" className={style.statRingTrack} strokeWidth={sw} />
             <circle
-              cx="50"
-              cy="50"
-              r="42"
-              className={style.progressFill}
-              style={{
-                strokeDasharray: `${(weeklyProgress / 100) * 264} 264`,
-              }}
+              cx={size / 2} cy={size / 2} r={r}
+              fill="none" stroke={pct >= 100 ? '#72baa1' : '#f0a47a'} strokeWidth={sw}
+              strokeLinecap="round"
+              strokeDasharray={circ}
+              strokeDashoffset={offset}
+              transform={`rotate(-90 ${size / 2} ${size / 2})`}
+              style={{ transition: 'stroke-dashoffset 0.6s ease' }}
             />
           </svg>
-          <div className={style.progressText}>
-            <span className={style.progressValue}>{stats.last7Days}</span>
-            <span className={style.progressGoal}>/{weeklyGoal}</span>
+          <div className={style.goalRingText}>
+            <span className={style.goalRingValue}>{sessionsThisWeek}</span>
+            <span className={style.goalRingGoal}>/{weeklyGoal}</span>
           </div>
         </div>
-        <div className={style.progressInfo}>
-          <p className={style.progressStatus}>
-            {weeklyProgress >= 100
-              ? "Objectif atteint !"
-              : `${weeklyGoal - stats.last7Days} séance${weeklyGoal - stats.last7Days > 1 ? 's' : ''} restante${weeklyGoal - stats.last7Days > 1 ? 's' : ''}`}
+        <div className={style.goalInfo}>
+          <p className={style.goalStatus}>
+            {pct >= 100
+              ? 'Objectif atteint !'
+              : `${remaining} seance${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}`}
           </p>
           {weeklyCalories > 0 && (
-            <p className={style.progressCalories}>{weeklyCalories} kcal brûlées cette semaine</p>
+            <p className={style.goalCalories}>{weeklyCalories} kcal brulees cette semaine</p>
           )}
         </div>
       </div>
