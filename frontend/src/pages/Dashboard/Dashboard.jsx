@@ -34,10 +34,7 @@ import { DashboardCarousel } from "./components/DashboardCarousel.jsx";
 import { WeeklyGoalSection } from "./components/WeeklyGoalSection.jsx";
 import { QuickActions } from "./components/QuickActions.jsx";
 import { RecentActivity } from "./components/RecentActivity.jsx";
-import { CardioStats } from "./components/CardioStats.jsx";
-import { BodyMetrics } from "./components/BodyMetrics.jsx";
 import { MuscleHeatmap } from "./components/MuscleHeatmap.jsx";
-import { WeeklySummary } from "./components/WeeklySummary.jsx";
 
 // Hooks personnalisés pour la logique métier
 import { useDashboardData } from "./hooks/useDashboardData.js";
@@ -250,18 +247,17 @@ export default function Dashboard() {
           {status === "loading" && <p className={style.loading}>Chargement...</p>}
           {status === "error" && <p className={style.error}>{error}</p>}
 
-          {/* ── Bloc 1 : Motivation + Objectif ── */}
+          {/* ── Haut compact : Actions + Objectif ── */}
+          <QuickActions navigate={navigate} subscriptionTier={subscriptionTier} />
 
-          {/* Recap motivant de la semaine */}
-          {stats.totalSessions > 0 && (
-            <WeeklySummary
-              weeklySessions={stats.last7Days}
-              weeklyCalories={weeklyCalories}
-              userName={capitalizedName}
-            />
-          )}
+          <WeeklyGoalSection
+            sessionsThisWeek={overview?.stats?.sessionsThisWeek ?? stats.last7Days}
+            weeklyGoal={weeklyGoal}
+            weeklyCalories={overview?.stats?.weeklyCalories ?? weeklyCalories}
+            onEditGoal={handleOpenGoalModal}
+          />
 
-          {/* Stats Overview — rings (backend data) */}
+          {/* ── Stats Overview — rings ── */}
           {overview?.stats && (
             <StatsOverview
               stats={overview.stats}
@@ -271,22 +267,11 @@ export default function Dashboard() {
             />
           )}
 
-          {/* Objectif semaine */}
-          <WeeklyGoalSection
-            sessionsThisWeek={overview?.stats?.sessionsThisWeek ?? stats.last7Days}
-            weeklyGoal={weeklyGoal}
-            weeklyCalories={overview?.stats?.weeklyCalories ?? weeklyCalories}
-            onEditGoal={handleOpenGoalModal}
-          />
-
-          {/* ── Actions rapides ── */}
-          <QuickActions navigate={navigate} subscriptionTier={subscriptionTier} />
-
-          {/* ── Carousel "Aujourd'hui" (Nutrition + Body + Cardio) ── */}
+          {/* ── Carousel "Mon resume" (2 slides) ── */}
           <DashboardCarousel
+            stats={overview?.stats}
+            weeklyCalories={weeklyCalories}
             nutrition={overview?.nutrition}
-            body={overview?.body}
-            cardio={overview?.cardio || sportStats}
           />
 
           {/* ── Activité récente ── */}
