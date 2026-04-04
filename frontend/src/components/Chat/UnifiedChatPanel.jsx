@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { sendChatMessage, getChatHistory, escalateChat } from '../../shared/api/chat';
 import { getMessages, sendMessage as sendMatchMessage, markMessagesAsRead, deleteMessage } from '../../shared/api/matchChat';
 import { isAuthenticated } from '../../shared/api/auth';
@@ -689,8 +690,8 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Camera overlay */}
-      {cameraOpen && (
+      {/* Camera overlay — portalled to body to escape parent transforms */}
+      {cameraOpen && createPortal(
         <div className={styles.cameraOverlay}>
           <video ref={cameraVideoRef} className={styles.cameraVideo} muted playsInline />
           <div className={styles.cameraActions}>
@@ -700,7 +701,8 @@ export default function UnifiedChatPanel({ conversationId, matchConversation, in
             </button>
             <div style={{ width: 60 }} />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Pending image preview */}
