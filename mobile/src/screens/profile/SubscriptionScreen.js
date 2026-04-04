@@ -15,7 +15,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
@@ -170,7 +169,7 @@ export default function SubscriptionScreen() {
     return (
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <ActivityIndicator size="large" color="#72baa1" />
         </View>
       </SafeAreaView>
     );
@@ -181,7 +180,7 @@ export default function SubscriptionScreen() {
       {/* Header */}
       <View style={[styles.header, isDark && styles.headerDark]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={isDark ? '#FFF' : '#000'} />
+          <Ionicons name="arrow-back" size={24} color={isDark ? '#f3f3f6' : '#1c1917'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDark && styles.textDark]}>Abonnement</Text>
         <View style={styles.spacer} />
@@ -194,8 +193,8 @@ export default function SubscriptionScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={theme.colors.primary}
-            colors={[theme.colors.primary]}
+            tintColor="#72baa1"
+            colors={['#72baa1']}
           />
         }
       >
@@ -205,7 +204,7 @@ export default function SubscriptionScreen() {
             <Ionicons
               name={isPremium ? 'star' : 'star-outline'}
               size={24}
-              color={isPremium ? '#F59E0B' : '#6B7280'}
+              color={isPremium ? '#f0a47a' : '#a8a29e'}
             />
           </View>
 
@@ -232,7 +231,7 @@ export default function SubscriptionScreen() {
               {hasXpPremium && subscription?.xpPremiumExpiresAt && (
                 <>
                   <View style={styles.detailRow}>
-                    <Ionicons name="calendar-outline" size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+                    <Ionicons name="calendar-outline" size={16} color={isDark ? '#7a7a88' : '#a8a29e'} />
                     <Text style={[styles.detailText, isDark && styles.textMutedDark]}>
                       Expire le {formatDate(subscription.xpPremiumExpiresAt)}
                     </Text>
@@ -249,7 +248,7 @@ export default function SubscriptionScreen() {
               )}
               {hasSubscription && subscription?.currentPeriodEnd && (
                 <View style={styles.detailRow}>
-                  <Ionicons name="calendar-outline" size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+                  <Ionicons name="calendar-outline" size={16} color={isDark ? '#7a7a88' : '#a8a29e'} />
                   <Text style={[styles.detailText, isDark && styles.textMutedDark]}>
                     {cancelAtPeriodEnd
                       ? `Expire le ${formatDate(subscription.currentPeriodEnd)}`
@@ -259,7 +258,7 @@ export default function SubscriptionScreen() {
               )}
               {isInTrial && trialEndDate && (
                 <View style={styles.detailRow}>
-                  <Ionicons name="calendar-outline" size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+                  <Ionicons name="calendar-outline" size={16} color={isDark ? '#7a7a88' : '#a8a29e'} />
                   <Text style={[styles.detailText, isDark && styles.textMutedDark]}>
                     Essai gratuit jusqu'au {formatDate(trialEndDate)}
                   </Text>
@@ -267,7 +266,7 @@ export default function SubscriptionScreen() {
               )}
               {!hasXpPremium && !hasSubscription && !isInTrial && (
                 <View style={styles.detailRow}>
-                  <Ionicons name="information-circle-outline" size={16} color={isDark ? '#9CA3AF' : '#6B7280'} />
+                  <Ionicons name="information-circle-outline" size={16} color={isDark ? '#7a7a88' : '#a8a29e'} />
                   <Text style={[styles.detailText, isDark && styles.textMutedDark]}>
                     Statut Premium actif
                   </Text>
@@ -316,11 +315,11 @@ export default function SubscriptionScreen() {
                     activeOpacity={0.7}
                   >
                     {checkoutLoading ? (
-                      <ActivityIndicator size="small" color={theme.colors.primary} />
+                      <ActivityIndicator size="small" color="#72baa1" />
                     ) : (
                       <>
-                        <Ionicons name="card-outline" size={20} color={theme.colors.primary} />
-                        <Text style={[styles.actionButtonText, { color: theme.colors.primary }]}>
+                        <Ionicons name="card-outline" size={20} color="#72baa1" />
+                        <Text style={[styles.actionButtonText, { color: '#72baa1' }]}>
                           Gerer le paiement
                         </Text>
                       </>
@@ -358,7 +357,7 @@ export default function SubscriptionScreen() {
               <Text style={[styles.priceInterval, isDark && styles.textMutedDark]}>/mois</Text>
             </View>
             <View style={styles.trialInfo}>
-              <Ionicons name="gift-outline" size={18} color="#22C55E" />
+              <Ionicons name="gift-outline" size={18} color="#72baa1" />
               <Text style={styles.trialInfoText}>7 jours d'essai gratuit</Text>
             </View>
             <Text style={[styles.pricingNote, isDark && styles.textMutedDark]}>
@@ -382,8 +381,8 @@ export default function SubscriptionScreen() {
                 isDark && styles.featureItemBorderDark,
               ]}
             >
-              <View style={[styles.featureIcon, { backgroundColor: `${theme.colors.primary}15` }]}>
-                <Ionicons name={feature.icon} size={20} color={theme.colors.primary} />
+              <View style={styles.featureIcon}>
+                <Ionicons name={feature.icon} size={20} color="#72baa1" />
               </View>
               <View style={styles.featureContent}>
                 <Text style={[styles.featureLabel, isDark && styles.textDark]}>
@@ -394,7 +393,7 @@ export default function SubscriptionScreen() {
                 </Text>
               </View>
               {isPremium && (
-                <Ionicons name="checkmark-circle" size={22} color="#22C55E" />
+                <Ionicons name="checkmark-circle" size={22} color="#72baa1" />
               )}
             </View>
           ))}
@@ -418,7 +417,7 @@ export default function SubscriptionScreen() {
             activeOpacity={0.7}
           >
             <Text style={styles.xpInfoButtonText}>Voir les recompenses</Text>
-            <Ionicons name="chevron-forward" size={18} color={theme.colors.primary} />
+            <Ionicons name="chevron-forward" size={18} color="#72baa1" />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -429,10 +428,10 @@ export default function SubscriptionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background.light,
+    backgroundColor: '#fcfbf9',
   },
   containerDark: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#0e0e11',
   },
   loadingContainer: {
     flex: 1,
@@ -443,286 +442,278 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: theme.spacing.md,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#efedea',
   },
   headerDark: {
-    borderBottomColor: '#333',
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   backBtn: {
     padding: 4,
   },
   headerTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semiBold,
-    color: theme.colors.text.primary,
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1c1917',
+    letterSpacing: -0.5,
   },
   spacer: {
     width: 32,
   },
   textDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   textMutedDark: {
-    color: '#888888',
+    color: '#7a7a88',
   },
   content: {
-    padding: theme.spacing.lg,
+    padding: 20,
     paddingBottom: 180,
   },
   statusCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.xl,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 24,
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    marginBottom: 16,
   },
   cardDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   statusBadge: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#f5f5f4',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
   },
   statusBadgePremium: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(240,164,122,0.15)',
   },
   statusTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
+    gap: 8,
+    marginBottom: 12,
   },
   statusTitle: {
-    fontSize: theme.fontSize['2xl'],
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1c1917',
+    letterSpacing: -0.5,
   },
   xpBadgeSmall: {
     backgroundColor: '#72baa1',
     paddingVertical: 4,
-    paddingHorizontal: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: 8,
+    borderRadius: 99,
   },
   xpBadgeText: {
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.bold,
+    fontSize: 11,
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   statusSubtitle: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
     textAlign: 'center',
   },
   trialBadge: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: 'rgba(114,186,161,0.12)',
     paddingVertical: 4,
-    paddingHorizontal: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
-    marginBottom: theme.spacing.sm,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginBottom: 8,
   },
   trialText: {
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.medium,
-    color: '#1D4ED8',
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#72baa1',
   },
   statusDetails: {
-    marginTop: theme.spacing.md,
-    gap: theme.spacing.sm,
+    marginTop: 12,
+    gap: 8,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
+    gap: 8,
+    paddingVertical: 4,
   },
   detailText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
     flex: 1,
   },
   renewButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.xs,
-    backgroundColor: '#72baa110',
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    marginTop: theme.spacing.sm,
+    gap: 6,
+    backgroundColor: 'rgba(114,186,161,0.08)',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    marginTop: 8,
     borderWidth: 1,
-    borderColor: '#72baa130',
+    borderColor: 'rgba(114,186,161,0.2)',
   },
   renewButtonText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semiBold,
+    fontSize: 13,
+    fontWeight: '600',
     color: '#72baa1',
   },
   cancelledBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.xs,
+    gap: 6,
     backgroundColor: '#FEF2F2',
     paddingVertical: 6,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.full,
-    marginTop: theme.spacing.sm,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    marginTop: 8,
   },
   cancelledText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 13,
+    fontWeight: '600',
     color: '#EF4444',
   },
   actionsCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 16,
+    marginBottom: 16,
   },
   upgradeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing.sm,
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.lg,
-    paddingVertical: theme.spacing.md,
+    gap: 8,
+    backgroundColor: '#72baa1',
+    borderRadius: 14,
+    paddingVertical: 14,
   },
   upgradeButtonText: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semiBold,
+    fontSize: 16,
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing.sm,
-    backgroundColor: `${theme.colors.primary}10`,
-    borderRadius: theme.borderRadius.lg,
-    paddingVertical: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
+    gap: 8,
+    backgroundColor: 'rgba(114,186,161,0.08)',
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginBottom: 8,
   },
   actionButtonDark: {
-    backgroundColor: `${theme.colors.primary}20`,
+    backgroundColor: 'rgba(114,186,161,0.12)',
   },
   actionButtonText: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 15,
+    fontWeight: '600',
   },
   cancelButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing.sm,
+    gap: 8,
     backgroundColor: '#FEF2F2',
-    borderRadius: theme.borderRadius.lg,
-    paddingVertical: theme.spacing.md,
+    borderRadius: 14,
+    paddingVertical: 14,
   },
   cancelButtonDark: {
     backgroundColor: 'rgba(239, 68, 68, 0.15)',
   },
   cancelButtonText: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 15,
+    fontWeight: '600',
     color: '#EF4444',
   },
   pricingCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.lg,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 16,
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    marginBottom: 16,
   },
   pricingHeader: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginBottom: theme.spacing.sm,
+    marginBottom: 8,
   },
   price: {
     fontSize: 36,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
+    fontWeight: '800',
+    color: '#72baa1',
   },
   priceInterval: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.secondary,
+    fontSize: 15,
+    color: '#78716c',
     marginLeft: 4,
   },
   trialInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.xs,
-    backgroundColor: '#F0FDF4',
+    gap: 6,
+    backgroundColor: 'rgba(114,186,161,0.1)',
     paddingVertical: 6,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.full,
-    marginBottom: theme.spacing.sm,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    marginBottom: 8,
   },
   trialInfoText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-    color: '#22C55E',
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#72baa1',
   },
   pricingNote: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
   },
   featuresCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 16,
+    marginBottom: 16,
   },
   featuresTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semiBold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.md,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1c1917',
+    marginBottom: 12,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: theme.spacing.md,
-    gap: theme.spacing.md,
+    paddingVertical: 12,
+    gap: 12,
   },
   featureItemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: '#efedea',
   },
   featureItemBorderDark: {
-    borderBottomColor: '#333',
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   featureIcon: {
     width: 40,
     height: 40,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: 12,
+    backgroundColor: 'rgba(114,186,161,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -730,80 +721,70 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   featureLabel: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.text.primary,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1c1917',
   },
   featureDescription: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
     marginTop: 2,
   },
   xpInfoCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
-    borderWidth: 2,
-    borderColor: '#72baa120',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 16,
+    marginBottom: 16,
   },
   xpInfoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
+    gap: 8,
+    marginBottom: 8,
   },
   xpInfoTitle: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semiBold,
-    color: theme.colors.text.primary,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1c1917',
   },
   xpInfoText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
     lineHeight: 20,
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
   },
   xpInfoButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.xs,
+    gap: 4,
   },
   xpInfoButtonText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.primary,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#72baa1',
   },
   // XP Premium Card
   xpPremiumCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
-    borderWidth: 2,
-    borderColor: '#72baa130',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 16,
+    marginBottom: 16,
   },
   xpPremiumHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    gap: 12,
+    marginBottom: 12,
   },
   xpPremiumBadge: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#72baa115',
+    backgroundColor: 'rgba(114,186,161,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -811,29 +792,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   xpPremiumLabel: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semiBold,
-    color: theme.colors.text.primary,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1c1917',
     marginBottom: 4,
   },
   xpPremiumExpiry: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
   },
   renewXpButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing.xs,
-    backgroundColor: '#72baa110',
-    borderRadius: theme.borderRadius.lg,
-    paddingVertical: theme.spacing.md,
-    borderWidth: 1.5,
-    borderColor: '#72baa130',
+    gap: 6,
+    backgroundColor: 'rgba(114,186,161,0.08)',
+    borderRadius: 14,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(114,186,161,0.2)',
   },
   renewXpButtonText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semiBold,
+    fontSize: 13,
+    fontWeight: '700',
     color: '#72baa1',
   },
 });

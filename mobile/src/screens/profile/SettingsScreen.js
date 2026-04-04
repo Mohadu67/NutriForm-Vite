@@ -16,7 +16,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import notificationService from '../../services/notificationService';
 import apiClient from '../../api/client';
@@ -183,8 +182,8 @@ export default function SettingsScreen() {
     try {
       await apiClient.delete('/auth/account', { data });
       Alert.alert(
-        'Compte supprimé',
-        'Votre compte a été supprimé avec succès. Vous allez être déconnecté.',
+        'Compte supprime',
+        'Votre compte a ete supprime avec succes. Vous allez etre deconnecte.',
         [{ text: 'OK', onPress: () => logout() }]
       );
     } catch (error) {
@@ -197,7 +196,7 @@ export default function SettingsScreen() {
   const handleDeleteAccount = useCallback(() => {
     Alert.prompt(
       'Supprimer mon compte',
-      'ATTENTION : Cette action est irréversible.\n\nEntrez votre mot de passe pour confirmer.',
+      'ATTENTION : Cette action est irreversible.\n\nEntrez votre mot de passe pour confirmer.',
       [
         { text: 'Annuler', style: 'cancel' },
         {
@@ -405,12 +404,14 @@ export default function SettingsScreen() {
       >
         <View style={[
           styles.settingIcon,
-          { backgroundColor: item.type === 'danger' ? '#FEF2F2' : `${theme.colors.primary}15` }
+          { backgroundColor: item.type === 'danger' ? '#FEF2F2' : '#72baa115' },
+          isDark && item.type !== 'danger' && { backgroundColor: 'rgba(114,186,161,0.1)' },
+          isDark && item.type === 'danger' && { backgroundColor: 'rgba(239,68,68,0.1)' },
         ]}>
           <Ionicons
             name={item.icon}
             size={20}
-            color={item.type === 'danger' ? '#EF4444' : theme.colors.primary}
+            color={item.type === 'danger' ? '#EF4444' : '#72baa1'}
           />
         </View>
         <View style={styles.settingContent}>
@@ -431,9 +432,9 @@ export default function SettingsScreen() {
           <Switch
             value={item.value}
             onValueChange={item.onValueChange}
-            trackColor={{ false: '#E5E7EB', true: `${theme.colors.primary}60` }}
-            thumbColor={item.value ? theme.colors.primary : '#F4F4F5'}
-            ios_backgroundColor="#E5E7EB"
+            trackColor={{ false: '#e8e8e8', true: '#72baa1' }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor="#e8e8e8"
             disabled={item.disabled}
           />
         )}
@@ -441,7 +442,7 @@ export default function SettingsScreen() {
           <Ionicons
             name="chevron-forward"
             size={20}
-            color={isDark ? '#555' : '#CCC'}
+            color={isDark ? '#7a7a88' : '#a8a29e'}
           />
         )}
       </TouchableOpacity>
@@ -457,7 +458,7 @@ export default function SettingsScreen() {
           onPress={() => navigation.goBack()}
           activeOpacity={0.7}
         >
-          <Ionicons name="arrow-back" size={24} color={isDark ? '#FFF' : '#000'} />
+          <Ionicons name="chevron-back" size={24} color={isDark ? '#f3f3f6' : '#1c1917'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDark && styles.headerTitleDark]}>
           Parametres
@@ -489,85 +490,84 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background.light,
+    backgroundColor: '#fcfbf9',
   },
   containerDark: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#0e0e11',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: '#efedea',
   },
   headerDark: {
-    borderBottomColor: '#333',
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   backButton: {
-    padding: theme.spacing.xs,
+    padding: 4,
   },
   headerTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1c1917',
+    letterSpacing: -0.5,
   },
   headerTitleDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   headerSpacer: {
     width: 40,
   },
   content: {
-    padding: theme.spacing.lg,
+    padding: 20,
     paddingBottom: 180,
   },
   section: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#78716c',
     textTransform: 'uppercase',
-    marginBottom: theme.spacing.sm,
-    marginLeft: theme.spacing.xs,
+    marginBottom: 8,
+    marginLeft: 4,
   },
   sectionTitleDark: {
-    color: '#888888',
+    color: '#c1c1cb',
   },
   sectionCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
   },
   sectionCardDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: theme.spacing.md,
-    gap: theme.spacing.md,
+    padding: 16,
+    gap: 14,
   },
   settingItemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: '#efedea',
   },
   settingItemBorderDark: {
-    borderBottomColor: '#333',
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   settingIcon: {
     width: 36,
     height: 36,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -575,22 +575,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingLabel: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.text.primary,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1c1917',
   },
   settingLabelDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   settingLabelDanger: {
     color: '#EF4444',
   },
   settingSubtitle: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
     marginTop: 2,
   },
   settingSubtitleDark: {
-    color: '#888888',
+    color: '#c1c1cb',
   },
 });
