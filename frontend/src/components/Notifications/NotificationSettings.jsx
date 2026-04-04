@@ -187,7 +187,7 @@ const NotificationSettings = () => {
 
   const fetchPreferences = async () => {
     try {
-      const res = await secureApiCall('/notification-preferences');
+      const res = await secureApiCall('/notifications/preferences');
       if (res.ok) {
         const data = await res.json();
         setPreferences(data.preferences || {});
@@ -202,7 +202,7 @@ const NotificationSettings = () => {
   const updatePreference = async (key, value) => {
     setSavingPref(key);
     try {
-      const res = await secureApiCall('/notification-preferences', {
+      const res = await secureApiCall('/notifications/preferences', {
         method: 'PUT',
         body: JSON.stringify({ preferences: { [key]: value } })
       });

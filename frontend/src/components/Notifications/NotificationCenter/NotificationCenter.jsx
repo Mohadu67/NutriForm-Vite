@@ -96,20 +96,22 @@ export default function NotificationCenter({ className = '', mode = 'dropdown', 
 
   // Ajouter une notification (appelable de l'extérieur via window event)
   const addNotification = useCallback((notification) => {
+    const notifId = notification._id || notification.id || Date.now().toString();
     const newNotif = {
-      id: notification.id || Date.now().toString(),
-      timestamp: new Date().toISOString(),
+      ...notification,
+      id: notifId,
+      _id: notifId,
+      timestamp: notification.timestamp || new Date().toISOString(),
       read: false,
-      ...notification
     };
 
-    // Ajouter localement d'abord pour UX réactive
+    // Ajouter localement d'abord pour UX reactive
     setNotifications(prev => {
-      // Éviter les doublons par id
-      if (prev.some(n => n.id === newNotif.id || n._id === newNotif.id)) {
+      // Dedup par _id ou id
+      if (prev.some(n => (n._id || n.id) === notifId)) {
         return prev;
       }
-      return [newNotif, ...prev].slice(0, 50);
+      return [newNotif, ...prev].slice(0, 100);
     });
 
     // Sauvegarder sur le serveur en arrière-plan

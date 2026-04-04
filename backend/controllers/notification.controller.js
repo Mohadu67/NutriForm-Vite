@@ -1,5 +1,49 @@
 const Notification = require('../models/Notification');
+const User = require('../models/User');
 const logger = require('../utils/logger.js');
+
+// Preferences
+exports.getPreferences = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('notificationPreferences').lean();
+    res.json({ success: true, preferences: user?.notificationPreferences || {} });
+  } catch (error) {
+    logger.error('Erreur getPreferences:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+exports.updatePreferences = async (req, res) => {
+  try {
+    const { preferences } = req.body;
+    if (!preferences || typeof preferences !== 'object') {
+      return res.status(400).json({ success: false, message: 'Preferences invalides' });
+    }
+
+    const allowedKeys = [
+      'messages', 'matches', 'newPrograms', 'newRecipes', 'promoCodes',
+      'challengeUpdates', 'leaderboardUpdates', 'badgeUnlocked', 'xpUpdates',
+      'streakReminders', 'weeklyRecapPush', 'contentCreationTips',
+      'supportReplies', 'newsletter', 'weeklyRecap', 'dailyReminder',
+    ];
+
+    const update = {};
+    for (const [key, val] of Object.entries(preferences)) {
+      if (allowedKeys.includes(key) && typeof val === 'boolean') {
+        update[`notificationPreferences.${key}`] = val;
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(req.user._id, { $set: update }, { new: true })
+      .select('notificationPreferences')
+      .lean();
+
+    res.json({ success: true, preferences: user.notificationPreferences });
+  } catch (error) {
+    logger.error('Erreur updatePreferences:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
 
 // Récupérer les notifications d'un utilisateur
 exports.getNotifications = async (req, res) => {
