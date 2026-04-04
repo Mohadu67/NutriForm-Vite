@@ -8,6 +8,7 @@ import {
   useColorScheme,
   RefreshControl,
   ActivityIndicator,
+  ScrollView,
   Animated,
   Dimensions,
 } from 'react-native';
@@ -327,7 +328,8 @@ export default function ProfileScreen() {
 
         {/* Quick Actions */}
         <Text style={[styles.sectionTitle, isDark && styles.textLight]}>Actions rapides</Text>
-        <View style={styles.quickActionsGrid}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}
+          style={styles.quickActionsScroll} contentContainerStyle={styles.quickActionsContent}>
           {quickActions.map((action) => (
             <TouchableOpacity
               key={action.screen}
@@ -342,12 +344,16 @@ export default function ProfileScreen() {
               activeOpacity={0.8}
             >
               <View style={[styles.quickActionIcon, { backgroundColor: `${action.color}1A` }]}>
-                <Ionicons name={action.icon} size={24} color={action.color} />
+                <Ionicons name={action.icon} size={22} color={action.color} />
               </View>
-              <Text style={[styles.quickActionLabel, isDark && styles.textSecondary]}>{action.label}</Text>
+              <View style={styles.quickActionText}>
+                <Text style={[styles.quickActionLabel, isDark && styles.textLight]}>{action.label}</Text>
+                <Text style={[styles.quickActionDesc, isDark && styles.textMuted]}>{action.desc}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={isDark ? '#444' : '#d6d3d1'} />
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
 
         {/* Matching Profile Card */}
         {profile && (
@@ -583,18 +589,23 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: '600', color: '#1c1917', marginBottom: 14 },
 
   // Quick actions
-  quickActionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
+  quickActionsScroll: { marginHorizontal: -20, marginBottom: 24, flexGrow: 0 },
+  quickActionsContent: { paddingHorizontal: 20, gap: 10 },
   quickActionCard: {
-    width: (SCREEN_WIDTH - 52) / 4,
+    width: 200,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
     backgroundColor: '#fff',
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#efedea',
     padding: 14,
-    alignItems: 'center',
   },
-  quickActionIcon: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  quickActionLabel: { fontSize: 11, fontWeight: '600', color: '#78716c', textAlign: 'center' },
+  quickActionIcon: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  quickActionText: { flex: 1 },
+  quickActionLabel: { fontSize: 14, fontWeight: '700', color: '#1c1917', marginBottom: 2 },
+  quickActionDesc: { fontSize: 11, color: '#a8a29e', lineHeight: 15 },
 
   // Matching card
   matchingCard: {
