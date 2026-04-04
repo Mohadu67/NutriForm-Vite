@@ -1,6 +1,6 @@
 :global(body.dark) .container,
 :global(html.dark) .container {
-  background: #1a1d24;
+  background: #151525;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -88,7 +88,7 @@
 .emptyButton {
   display: inline-block;
   padding: 10px 20px;
-  background: var(--couleur-bouton-action, #f7b186);
+  background: var(--couleur-bouton-action, #f0a47a);
   color: var(--couleur-text-bouton, #111111);
   border-radius: 8px;
   text-decoration: none;
@@ -124,7 +124,7 @@
   background: #fafafa;
   padding: 16px;
   border-radius: 10px;
-  border-left: 3px solid #f7b186;
+  border-left: 3px solid #f0a47a;
 }
 
 :global(body.dark) .statCard,
@@ -266,7 +266,7 @@
   background: #fafafa;
   border-radius: 8px;
   padding: 12px;
-  border-left: 3px solid #f7b186;
+  border-left: 3px solid #f0a47a;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -326,14 +326,14 @@
 .rmValue {
   font-size: 1.8rem;
   font-weight: 900;
-  color: #f7b186;
+  color: #f0a47a;
   line-height: 1;
 }
 
 .rmUnit {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #f7b186;
+  color: #f0a47a;
 }
 
 .testDetails {
@@ -375,7 +375,7 @@
 .firstTest {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #f7b186;
+  color: #f0a47a;
   background: rgba(255, 179, 133, 0.1);
   padding: 3px 8px;
   border-radius: 6px;
@@ -407,7 +407,7 @@
 
 :global(body.dark) .showMoreBtn:hover,
 :global(html.dark) .showMoreBtn:hover {
-  background: #1a1d24;
+  background: #151525;
 }
 
 @media (min-width: 640px) {

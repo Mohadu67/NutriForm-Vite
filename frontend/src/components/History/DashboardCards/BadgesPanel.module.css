@@ -11,8 +11,8 @@
 /* Badges Toggle Button */
 .badgesToggle {
   width: 100%;
-  background: linear-gradient(135deg, rgba(247, 177, 134, 0.08) 0%, rgba(247, 177, 134, 0.02) 100%);
-  border: 1px solid rgba(247, 177, 134, 0.3);
+  background: linear-gradient(135deg, rgba(240, 164, 122, 0.08) 0%, rgba(240, 164, 122, 0.02) 100%);
+  border: 1px solid rgba(240, 164, 122, 0.3);
   border-radius: 12px;
   padding: 16px 20px;
   display: flex;
@@ -24,10 +24,10 @@
 }
 
 .badgesToggle:hover {
-  background: linear-gradient(135deg, rgba(247, 177, 134, 0.12) 0%, rgba(247, 177, 134, 0.04) 100%);
-  border-color: rgba(247, 177, 134, 0.5);
+  background: linear-gradient(135deg, rgba(240, 164, 122, 0.12) 0%, rgba(240, 164, 122, 0.04) 100%);
+  border-color: rgba(240, 164, 122, 0.5);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.15);
+  box-shadow: 0 4px 12px rgba(240, 164, 122, 0.15);
 }
 
 .badgesToggle:active {
@@ -36,14 +36,14 @@
 
 :global(body.dark) .badgesToggle,
 :global(html.dark) .badgesToggle {
-  background: linear-gradient(135deg, rgba(247, 177, 134, 0.05) 0%, rgba(247, 177, 134, 0.01) 100%);
-  border-color: rgba(247, 177, 134, 0.2);
+  background: linear-gradient(135deg, rgba(240, 164, 122, 0.05) 0%, rgba(240, 164, 122, 0.01) 100%);
+  border-color: rgba(240, 164, 122, 0.2);
 }
 
 :global(body.dark) .badgesToggle:hover,
 :global(html.dark) .badgesToggle:hover {
-  background: linear-gradient(135deg, rgba(247, 177, 134, 0.08) 0%, rgba(247, 177, 134, 0.02) 100%);
-  border-color: rgba(247, 177, 134, 0.35);
+  background: linear-gradient(135deg, rgba(240, 164, 122, 0.08) 0%, rgba(240, 164, 122, 0.02) 100%);
+  border-color: rgba(240, 164, 122, 0.35);
 }
 
 .badgesToggleContent {
@@ -91,7 +91,7 @@
   overscroll-behavior-inline: contain;
   touch-action: pan-x pan-y;
   scrollbar-width: thin;
-  scrollbar-color: var(--couleur-bouton-action, #f7b186) transparent;
+  scrollbar-color: var(--couleur-bouton-action, #f0a47a) transparent;
   animation: slideDown 0.3s ease-out;
   margin-top: var(--space-3);
 }
@@ -119,12 +119,12 @@
 }
 
 .grid::-webkit-scrollbar-thumb {
-  background: #f7b186;
+  background: #f0a47a;
   border-radius: 4px;
 }
 
 .grid::-webkit-scrollbar-thumb:hover {
-  background: var(--couleur-bouton-action, #f7b186);
+  background: var(--couleur-bouton-action, #f0a47a);
 }
 
 .badgeCard {
@@ -153,8 +153,8 @@
 
 :global(body.dark) .badgeCard,
 :global(html.dark) .badgeCard {
-  background: #1a1d24;
-  border-color: #2d3139;
+  background: #151525;
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .badgeIcon {

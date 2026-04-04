@@ -107,7 +107,7 @@
 }
 
 .metricValueAccent {
-  color: var(--nf-accent, #f7b186);
+  color: var(--nf-accent, #f0a47a);
 }
 
 
@@ -128,7 +128,7 @@
 :global(html.dark) .stateMessage,
 :global(body.dark) .emptyState,
 :global(html.dark) .emptyState {
-  background: #1a1d24;
+  background: #151525;
   border-color: rgba(255, 255, 255, 0.08);
   color: #f5f7fa;
 }

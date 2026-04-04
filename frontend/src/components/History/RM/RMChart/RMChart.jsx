@@ -147,11 +147,11 @@ export default function RMChart({ rmTests = [] }) {
               <defs>
                 <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#B8DDD1" />
-                  <stop offset="100%" stopColor="#f7b186" />
+                  <stop offset="100%" stopColor="#f0a47a" />
                 </linearGradient>
                 <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#B8DDD1" stopOpacity="0.2" />
-                  <stop offset="100%" stopColor="#f7b186" stopOpacity="0.05" />
+                  <stop offset="100%" stopColor="#f0a47a" stopOpacity="0.05" />
                 </linearGradient>
               </defs>
 
@@ -269,7 +269,7 @@ export default function RMChart({ rmTests = [] }) {
                       cy={cy}
                       r={isHovered ? "7" : isFirst || isLast ? "6" : "5"}
                       fill="#fff"
-                      stroke={isFirst ? "#B8DDD1" : isLast ? "#f7b186" : "#B8DDD1"}
+                      stroke={isFirst ? "#B8DDD1" : isLast ? "#f0a47a" : "#B8DDD1"}
                       strokeWidth="3"
                       style={{ cursor: "pointer", transition: "all 0.2s ease" }}
                       onMouseEnter={() => setHoveredPoint(index)}
