@@ -30,7 +30,7 @@ import { dashboardLogger } from "../../shared/utils/logger.js";
 
 // Composants extraits
 import { StatsOverview } from "./components/StatsOverview.jsx";
-import { NutritionWidget } from "./components/NutritionWidget.jsx";
+import { DashboardCarousel } from "./components/DashboardCarousel.jsx";
 import { WeeklyGoalSection } from "./components/WeeklyGoalSection.jsx";
 import { QuickActions } from "./components/QuickActions.jsx";
 import { RecentActivity } from "./components/RecentActivity.jsx";
@@ -282,7 +282,14 @@ export default function Dashboard() {
           {/* ── Actions rapides ── */}
           <QuickActions navigate={navigate} subscriptionTier={subscriptionTier} />
 
-          {/* ── Bloc 2 : Activité récente ── */}
+          {/* ── Carousel "Aujourd'hui" (Nutrition + Body + Cardio) ── */}
+          <DashboardCarousel
+            nutrition={overview?.nutrition}
+            body={overview?.body}
+            cardio={overview?.cardio || sportStats}
+          />
+
+          {/* ── Activité récente ── */}
           <RecentActivity
             recentSessions={limitedRecentSessions}
             editingSessionId={editingSessionId}
@@ -299,27 +306,13 @@ export default function Dashboard() {
             totalSessions={recentSessions.length}
           />
 
-          {/* ── Bloc 3 : Nutrition + Analyse ── */}
-
-          {/* Nutrition du jour (backend data) */}
-          <NutritionWidget nutrition={overview?.nutrition} />
-
-          {/* Heatmap musculaire */}
+          {/* ── Heatmap musculaire ── */}
           {stats.totalSessions > 0 && (
             <section className={style.heatmapSection}>
-              <h2 className={style.sectionTitle}>Répartition musculaire</h2>
+              <h2 className={style.sectionTitle}>Repartition musculaire</h2>
               <MuscleHeatmap sessions={userSessions} />
             </section>
           )}
-
-          {/* Body Metrics + Cardio */}
-          <BodyMetrics
-            weightData={weightData}
-            calorieTargets={calorieTargets}
-            weightChange={weightChange}
-          />
-
-          <CardioStats sportStats={sportStats} />
 
           {/* 1RM History */}
           {rmTests.length > 0 && (
