@@ -39,6 +39,15 @@ describe('Chat Prompt — Context', () => {
     expect(SYSTEM_PROMPT).toContain('PARTNER_NEED');
   });
 
+  it('should not trigger food flow spontaneously', () => {
+    expect(SYSTEM_PROMPT).toContain('DEMANDE EXPLICITEMENT');
+    expect(SYSTEM_PROMPT).toContain('Ne JAMAIS déclencher ce flow de toi-même');
+  });
+
+  it('should not propose partners outside food flow', () => {
+    expect(SYSTEM_PROMPT).toContain('Ne JAMAIS proposer un partenaire spontanément');
+  });
+
   it('should include action buttons', () => {
     expect(SYSTEM_PROMPT).toContain('[ACTION:');
   });
