@@ -156,6 +156,7 @@ export const endpoints = {
     propose: (id) => `/recipes/user/${id}/propose`,
     unpublish: (id) => `/recipes/user/${id}/unpublish`,
     byId: (id) => `/recipes/${id}`,
+    similar: (id) => `/recipes/${id}/similar`,
   },
   upload: {
     profilePhoto: "/upload/profile-photo",

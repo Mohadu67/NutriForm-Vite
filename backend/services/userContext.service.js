@@ -10,6 +10,7 @@ const Challenge = require('../models/Challenge');
 const Partner = require('../models/Partner');
 const Recipe = require('../models/Recipe');
 const User = require('../models/User');
+const { ScannedPlat, ScannedIngredient } = require('../models/ScanHistory');
 const logger = require('../utils/logger');
 const { computeRecoveryStatus } = require('./recovery.service');
 
@@ -140,6 +141,8 @@ async function buildUserContext(userId, { platform = 'web' } = {}) {
       activePartners,
       availableRecipes,
       recoveryData,
+      recentScannedPlats,
+      recentScannedIngredients,
     ] = await Promise.all([
       User.findById(userId).select('prenom pseudo subscriptionTier role').lean(),
       UserProfile.findOne({ userId }).lean(),
@@ -165,6 +168,8 @@ async function buildUserContext(userId, { platform = 'web' } = {}) {
       Partner.find({ isActive: true }).select('name category offerTitle offerDescription offerType offerValue description').lean(),
       Recipe.find({ isPublished: true }).select('title slug category mealType goal tags nutrition.calories nutrition.proteins dietType description').sort({ views: -1 }).limit(30).lean(),
       computeRecoveryStatus(userId).catch(() => null),
+      ScannedPlat.find({ userId }).sort({ createdAt: -1 }).limit(10).lean().catch(() => []),
+      ScannedIngredient.find({ userId }).sort({ createdAt: -1 }).limit(10).lean().catch(() => []),
     ]);
 
     const sections = [];
@@ -209,6 +214,7 @@ async function buildUserContext(userId, { platform = 'web' } = {}) {
     // --- Objectifs nutrition ---
     if (nutritionGoal) {
       const macros = nutritionGoal.macros || {};
+      const micros = nutritionGoal.micros || {};
       sections.push(
         `Objectifs nutrition quotidiens : ${nutritionGoal.dailyCalories} kcal` +
         (macros.proteins ? ` | P: ${macros.proteins}g` : '') +
@@ -216,6 +222,11 @@ async function buildUserContext(userId, { platform = 'web' } = {}) {
         (macros.fats ? ` | L: ${macros.fats}g` : '') +
         (nutritionGoal.goal ? ` (${GOAL_LABELS[nutritionGoal.goal] || nutritionGoal.goal})` : '')
       );
+      if (micros.fiber || micros.sugar || micros.sodium) {
+        sections.push(
+          `Objectifs micros : Fibres ${micros.fiber || 30}g | Sucres max ${micros.sugar || 50}g | Sodium max ${micros.sodium || 2300}mg`
+        );
+      }
     }
 
     // --- Poids actuel ---
@@ -232,17 +243,30 @@ async function buildUserContext(userId, { platform = 'web' } = {}) {
         acc.proteins += log.nutrition?.proteins || 0;
         acc.carbs += log.nutrition?.carbs || 0;
         acc.fats += log.nutrition?.fats || 0;
+        acc.fiber += log.nutrition?.fiber || 0;
+        acc.sugar += log.nutrition?.sugar || 0;
+        acc.sodium += log.nutrition?.sodium || 0;
         return acc;
-      }, { calories: 0, proteins: 0, carbs: 0, fats: 0 });
+      }, { calories: 0, proteins: 0, carbs: 0, fats: 0, fiber: 0, sugar: 0, sodium: 0 });
 
       sections.push(
         `Alimentation aujourd'hui : ${todayTotals.calories} kcal consommées` +
-        ` (P: ${todayTotals.proteins}g, G: ${todayTotals.carbs}g, L: ${todayTotals.fats}g)` +
+        ` (P: ${todayTotals.proteins}g, G: ${todayTotals.carbs}g, L: ${todayTotals.fats}g` +
+        `, Fibres: ${todayTotals.fiber}g, Sucres: ${todayTotals.sugar}g, Sodium: ${todayTotals.sodium}mg)` +
         ` — ${todayFoodLogs.length} repas/snacks enregistrés`
       );
 
-      const mealNames = todayFoodLogs.map(l => l.name).slice(0, 6);
-      sections.push(`Repas du jour : ${mealNames.join(', ')}`);
+      // Detail par repas
+      const byMeal = {};
+      for (const log of todayFoodLogs) {
+        const mt = log.mealType || 'snack';
+        if (!byMeal[mt]) byMeal[mt] = [];
+        byMeal[mt].push(`${log.name} (${log.nutrition?.calories || 0}kcal)`);
+      }
+      const MEAL_FR = { breakfast: 'Petit-dej', lunch: 'Dejeuner', dinner: 'Diner', snack: 'Collation' };
+      for (const [mt, items] of Object.entries(byMeal)) {
+        sections.push(`  ${MEAL_FR[mt] || mt} : ${items.join(', ')}`);
+      }
     } else {
       sections.push(`Alimentation aujourd'hui : Aucun repas enregistré`);
     }
@@ -379,6 +403,18 @@ async function buildUserContext(userId, { platform = 'web' } = {}) {
           `  - ${p.name} [${CATEGORY_LABELS[p.category] || p.category}] : ${p.offerTitle} (${offerLabel})` +
           (p.offerDescription ? ` — ${p.offerDescription}` : '') +
           (p.description ? ` | ${p.description}` : '')
+        );
+      }
+    }
+
+    // --- Historique scans (produits scannes par l'utilisateur) ---
+    const allScans = [...(recentScannedPlats || []), ...(recentScannedIngredients || [])];
+    if (allScans.length > 0) {
+      sections.push(`Produits scannes recemment (${allScans.length}) :`);
+      for (const s of allScans.slice(0, 8)) {
+        const n = s.nutrition || s.nutritionPer100g || {};
+        sections.push(
+          `  - ${s.name}${s.brand ? ` (${s.brand})` : ''} : ${n.calories || 0}kcal, ${n.proteins || 0}g P, ${n.carbs || 0}g G, ${n.fats || 0}g L /100g`
         );
       }
     }

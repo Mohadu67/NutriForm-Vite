@@ -112,6 +112,8 @@ export const endpoints = {
     summaryWeekly: "/nutrition/summary/weekly",
     summaryMonthly: "/nutrition/summary/monthly",
     goals: "/nutrition/goals",
+    carousel: (date) => `/nutrition/carousel/${date}`,
+    weekBar: "/nutrition/week-bar",
   },
   health: {
     sync: "/health/sync",

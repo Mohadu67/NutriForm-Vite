@@ -197,13 +197,18 @@ async function sendMessage(req, res) {
         const result = await openaiService.generateResponse(message || '📷 Analyse cette photo', history, userContext, imageUrls);
         let reply = await extractPartnerNeed(result.content, userId, convId, message);
 
-        // Parse [LOG_FOOD:name:cal:prot:carbs:fats:fiber:grams:mealType:date] and auto-log
-        const logMatch = reply.match(/\[LOG_FOOD:([^:]+):(\d+):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+)(?::(\w+))?(?::(\d{4}-\d{2}-\d{2}))?\]/);
+        // Parse [LOG_FOOD:name:cal:prot:carbs:fats:fiber:sugar:sodium:grams:mealType:date] (new)
+        // Also supports legacy format without sugar/sodium
+        const newFmt = reply.match(/\[LOG_FOOD:([^:]+):(\d+):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+)(?::(\w+))?(?::(\d{4}-\d{2}-\d{2}))?\]/);
+        const oldFmt = !newFmt && reply.match(/\[LOG_FOOD:([^:]+):(\d+):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+(?:\.\d+)?):(\d+)(?::(\w+))?(?::(\d{4}-\d{2}-\d{2}))?\]/);
+        const logMatch = newFmt || oldFmt;
+        const isNewFormat = !!newFmt;
         if (logMatch) {
           try {
             const FoodLog = require('../models/FoodLog');
-            const mealType = logMatch[8] || 'lunch';
-            const dateStr = logMatch[9];
+            const mealType = isNewFormat ? (logMatch[10] || 'lunch') : (logMatch[8] || 'lunch');
+            const dateStr = isNewFormat ? logMatch[11] : logMatch[9];
+            const grams = isNewFormat ? logMatch[9] : logMatch[7];
             const logDate = dateStr ? new Date(dateStr + 'T12:00:00Z') : new Date();
 
             await FoodLog.create({
@@ -218,8 +223,10 @@ async function sendMessage(req, res) {
                 carbs: Number(logMatch[4]),
                 fats: Number(logMatch[5]),
                 fiber: Number(logMatch[6]),
+                sugar: isNewFormat ? Number(logMatch[7]) : 0,
+                sodium: isNewFormat ? Number(logMatch[8]) : 0,
               },
-              notes: `Ajouté via le coach IA (${logMatch[7]}g)`,
+              notes: `Ajouté via le coach IA (${grams}g)`,
             });
 
             const dateLabel = dateStr && dateStr !== new Date().toISOString().slice(0, 10)

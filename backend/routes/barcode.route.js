@@ -1,6 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const authMiddleware = require('../middlewares/auth.middleware');
 const logger = require('../utils/logger');
+const { ScannedIngredient } = require('../models/ScanHistory');
+
+// All barcode routes require authentication (needed to save scan history)
+router.use(authMiddleware);
 
 // GET /api/barcode/:barcode
 // Lookup produit via Open Food Facts (gratuit, sans clé API)
@@ -52,6 +57,23 @@ router.get('/:barcode', async (req, res) => {
         fiber:    Math.round((n['fiber_100g'] || 0) * 10) / 10,
       },
     };
+
+    // Sauvegarder dans l'historique des scans
+    if (req.user?._id) {
+      ScannedIngredient.findOneAndUpdate(
+        { userId: req.user._id, barcode },
+        {
+          userId: req.user._id,
+          barcode,
+          name: result.name,
+          brand: result.brand,
+          imageUrl: result.imageUrl,
+          quantity: result.quantity,
+          nutritionPer100g: result.nutrition,
+        },
+        { upsert: true, new: true }
+      ).catch(err => logger.error('Failed to save ingredient scan:', err.message));
+    }
 
     return res.json({ success: true, product: result });
   } catch (err) {

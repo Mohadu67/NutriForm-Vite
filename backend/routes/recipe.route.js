@@ -133,6 +133,13 @@ router.post('/admin/:id/reject', auth, adminMiddleware, recipeController.rejectR
 // =====================================================
 
 /**
+ * @route   GET /api/recipes/:id/similar
+ * @desc    Obtenir les recettes similaires
+ * @access  Public
+ */
+router.get('/:id/similar', recipeController.getSimilarRecipes);
+
+/**
  * @route   GET /api/recipes/:id
  * @desc    Obtenir le détail d'une recette
  * @access  Public (authentification optionnelle pour recettes privées)

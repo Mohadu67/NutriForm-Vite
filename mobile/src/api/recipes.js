@@ -310,6 +310,22 @@ export async function rateRecipe(id, rating) {
   }
 }
 
+/**
+ * Récupérer les recettes similaires
+ */
+export async function getSimilarRecipes(id, limit = 8) {
+  try {
+    const response = await apiClient.get(`${endpoints.recipes.similar(id)}?limit=${limit}`);
+    return {
+      success: true,
+      data: response.data?.recipes || [],
+    };
+  } catch (error) {
+    logger.app.debug('[RECIPES API] Get similar error:', error.message);
+    return { success: false, data: [], error: error.message };
+  }
+}
+
 export default {
   getRecipes,
   getRecipe,
@@ -328,4 +344,5 @@ export default {
   rateRecipe,
   proposeRecipe,
   unpublishRecipe,
+  getSimilarRecipes,
 };
