@@ -27,7 +27,7 @@
 
 .backButton:hover {
   background: var(--hover-bg, #f3f4f6);
-  border-color: var(--primary-color, #f7b186);
+  border-color: #72baa1;
 }
 
 .headerContent {
@@ -56,7 +56,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: var(--primary-color, #f7b186);
+  background: #72baa1;
   border: none;
   border-radius: 8px;
   color: white;
@@ -84,7 +84,7 @@
   width: 40px;
   height: 40px;
   border: 3px solid var(--color-border, #e5e7eb);
-  border-top-color: var(--primary-color, #f7b186);
+  border-top-color: #72baa1;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 1rem;
@@ -140,7 +140,7 @@
 .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  border-color: var(--primary-color, #f7b186);
+  border-color: #72baa1;
 }
 
 .coverImage {
@@ -261,7 +261,7 @@
 
 .nutritionLabel {
   font-weight: 700;
-  color: var(--primary-color, #f7b186);
+  color: #72baa1;
 }
 
 /* Actions */
@@ -286,7 +286,7 @@
 
 .actions button:hover {
   background: var(--hover-bg, #f3f4f6);
-  border-color: var(--primary-color, #f7b186);
+  border-color: #72baa1;
   color: var(--color-text, #1f2937);
 }
 
@@ -303,7 +303,7 @@
 }
 
 .editBtn:hover {
-  background: rgba(247, 177, 134, 0.1) !important;
+  background: rgba(114, 186, 161, 0.08) !important;
   color: #F7B186 !important;
   border-color: #F7B186 !important;
 }

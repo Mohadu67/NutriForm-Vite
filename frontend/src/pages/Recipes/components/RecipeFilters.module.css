@@ -32,7 +32,7 @@
 .title {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-black);
-  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%);
+  background: linear-gradient(135deg, #72baa1 0%, #f0a47a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -96,22 +96,22 @@
 }
 
 .chip:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: rgba(247, 177, 134, 0.06);
+  border-color: #72baa1;
+  color: #72baa1;
+  background: rgba(114, 186, 161, 0.06);
 }
 
 .chipActive {
-  background: var(--color-primary);
-  color: var(--color-text-on-primary, #111);
-  border-color: var(--color-primary);
-  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
+  background: #72baa1;
+  color: #fff;
+  border-color: #72baa1;
+  box-shadow: 0 2px 8px rgba(114, 186, 161, 0.25);
 }
 
 .chipActive:hover {
-  background: var(--color-primary);
-  color: var(--color-text-on-primary, #111);
-  opacity: 0.9;
+  background: #5a9e87;
+  color: #fff;
+  border-color: #5a9e87;
 }
 
 /* ===== MOBILE TOGGLE BUTTON ===== */

@@ -1,30 +1,38 @@
 /* ========================================
-   HARMONITH RECIPE CARD - Ultra Modern & Magical ✨
-   Glassmorphism avancé avec hover effects incroyables
+   HARMONITH RECIPE CARD — Premium (peach/teal/stone)
    ======================================== */
 
 @import '../../../components/Navbar/design-tokens.css';
 
-/* ===== CARD CONTAINER CLEAN ===== */
+/* ===== CARD ===== */
 .card {
   display: block;
   position: relative;
-  background: var(--color-surface);
-  backdrop-filter: blur(20px) saturate(120%);
-  -webkit-backdrop-filter: blur(20px) saturate(120%);
-  border-radius: var(--radius-2xl);
+  background: var(--n-surface, #fff);
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
+  box-shadow: var(--n-card-shadow, 0 2px 8px rgba(0, 0, 0, 0.04));
+  border: 1px solid var(--n-border, #efedea);
+  transition: all 0.25s ease;
   text-decoration: none;
   color: inherit;
   cursor: pointer;
 }
 
 .card:hover {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  border-color: rgba(247, 177, 134, 0.3);
+  border-color: var(--n-border-hover, #e2dfdb);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+:global(body.dark) .card {
+  background: var(--n-surface, #151525);
+  border-color: var(--n-border, rgba(255, 255, 255, 0.06));
+  box-shadow: none;
+}
+
+:global(body.dark) .card:hover {
+  border-color: var(--n-border-hover, rgba(255, 255, 255, 0.10));
 }
 
 /* ===== IMAGE AVEC OVERLAY DYNAMIQUE ===== */
@@ -180,13 +188,16 @@
   align-items: center;
   gap: 4px;
   padding: var(--space-md);
-  background: linear-gradient(135deg, rgba(184, 221, 209, 0.15), rgba(247, 177, 134, 0.15));
-  border-radius: var(--radius-lg);
+  background: var(--n-surface-hover, #f7f6f3);
+  border-radius: var(--radius-lg, 12px);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--n-border, #efedea);
+}
+
+:global(body.dark) .nutritionItem {
+  background: var(--n-surface-hover, #1c1c30);
+  border-color: var(--n-border, rgba(255, 255, 255, 0.06));
 }
 
 

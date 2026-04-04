@@ -28,17 +28,17 @@
 }
 
 .selectButton:hover {
-  border-color: var(--color-primary);
-  box-shadow: 0 1px 3px rgba(247, 177, 134, 0.1);
+  border-color: #72baa1;
+  box-shadow: 0 1px 3px rgba(114, 186, 161, 0.1);
 }
 
 .selectButton.open {
-  border-color: var(--color-primary);
-  box-shadow: 0 1px 3px rgba(247, 177, 134, 0.12);
+  border-color: #72baa1;
+  box-shadow: 0 1px 3px rgba(114, 186, 161, 0.12);
 }
 
 .chevron {
-  color: var(--color-primary);
+  color: #72baa1;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
@@ -55,9 +55,9 @@
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border: 2px solid var(--color-primary);
+  border: 2px solid #72baa1;
   border-radius: var(--radius-2xl);
-  box-shadow: 0 1px 3px rgba(247, 177, 134, 0.12);
+  box-shadow: 0 1px 3px rgba(114, 186, 161, 0.12);
   z-index: 10000;
   overflow: hidden;
   animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -97,19 +97,19 @@
 }
 
 .option:hover {
-  background: rgba(247, 177, 134, 0.1);
-  color: var(--color-primary);
+  background: rgba(114, 186, 161, 0.1);
+  color: #72baa1;
   padding-left: calc(var(--space-xl) + 4px);
 }
 
 .option.selected {
-  background: rgba(247, 177, 134, 0.15);
-  color: var(--color-primary);
+  background: rgba(114, 186, 161, 0.15);
+  color: #72baa1;
   font-weight: var(--font-weight-semibold);
 }
 
 .option.selected svg {
-  color: var(--color-primary);
+  color: #72baa1;
   flex-shrink: 0;
 }
 
