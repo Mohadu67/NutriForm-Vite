@@ -6,6 +6,12 @@ const authMiddleware = require('../middlewares/auth.middleware');
 // Toutes les routes nécessitent une authentification
 router.use(authMiddleware);
 
+// GET /api/notifications/preferences - Preferences utilisateur
+router.get('/preferences', notificationController.getPreferences);
+
+// PUT /api/notifications/preferences - Modifier les preferences
+router.put('/preferences', notificationController.updatePreferences);
+
 // GET /api/notifications - Récupérer les notifications de l'utilisateur
 router.get('/', notificationController.getNotifications);
 
