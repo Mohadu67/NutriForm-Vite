@@ -10,7 +10,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { theme } from '../../theme';
 import social from '../../api/social';
 import { useChat } from '../../contexts/ChatContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -20,11 +19,11 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // ─── Type mappings ──────────────────────────────────────────────────────────
 
 const TYPE_COLORS = {
-  workout:        theme.colors.primary,    // #F7B186
-  meal:           theme.colors.success,    // #4CAF50
-  recipe:         theme.colors.info,       // #2196F3
-  challenge:      theme.colors.warning,    // #FFC107
-  shared_session: theme.colors.secondary,  // #72baa1
+  workout:        '#f0a47a',
+  meal:           '#72baa1',
+  recipe:         '#8b7fc7',
+  challenge:      '#d4a96a',
+  shared_session: '#72baa1',
 };
 
 const TYPE_ICONS = {
@@ -79,9 +78,9 @@ const formatDateRelative = (date) => {
 const getInitials = (prenom, pseudo) => (prenom || pseudo || '?').charAt(0).toUpperCase();
 
 const MUSCLE_COLORS = {
-  'Pectoraux': '#E8895A', 'Dos': '#7B9CFF', 'Biceps': '#FF6B8A',
-  'Triceps': '#A78BFA', 'Épaules': '#34D399', 'Jambes': '#FBBF24',
-  'Abdos': '#60A5FA', 'Mollets': '#F87171', 'Cardio': '#22D3EE',
+  'Pectoraux': '#72baa1', 'Dos': '#f0a47a', 'Biceps': '#e8829b',
+  'Triceps': '#8b7fc7', 'Épaules': '#72baa1', 'Jambes': '#d4a96a',
+  'Abdos': '#f0a47a', 'Mollets': '#c9a88c', 'Cardio': '#72baa1',
 };
 
 const CHALLENGE_LABELS = {
@@ -101,7 +100,7 @@ function Avatar({ user, size = 44 }) {
   }
   return (
     <LinearGradient
-      colors={[theme.colors.primary, '#F9C4A3']}
+      colors={['#72baa1', '#a8d8c8']}
       start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
       style={{ width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center' }}
     >
@@ -113,7 +112,7 @@ function Avatar({ user, size = 44 }) {
 }
 
 function MuscleTag({ muscle, isDark }) {
-  const color = MUSCLE_COLORS[muscle] || theme.colors.primary;
+  const color = MUSCLE_COLORS[muscle] || '#72baa1';
   return (
     <View style={[styles.muscleTag, { backgroundColor: `${color}18`, borderColor: `${color}40`, borderWidth: 1 }]}>
       <Text style={[styles.muscleTagText, { color }]}>{muscle}</Text>
@@ -122,7 +121,7 @@ function MuscleTag({ muscle, isDark }) {
 }
 
 function CardHeader({ user, date, type, isDark, onUserPress }) {
-  const color = TYPE_COLORS[type] || theme.colors.primary;
+  const color = TYPE_COLORS[type] || '#72baa1';
   return (
     <View style={styles.cardHeader}>
       <TouchableOpacity style={styles.userRow} onPress={() => onUserPress(user?._id)} activeOpacity={0.7}>
@@ -191,14 +190,14 @@ function CommentSection({ postId, postType, isDark, onCountChange, myId }) {
 
   return (
     <View style={[styles.commentSection, isDark && styles.commentSectionDark]}>
-      {!loaded && <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginVertical: 8 }} />}
+      {!loaded && <ActivityIndicator size="small" color="#72baa1" style={{ marginVertical: 8 }} />}
 
       {comments.map(c => (
         <View key={c._id} style={styles.commentRow}>
           <View style={[styles.commentAvatar, isDark && styles.commentAvatarDark]}>
             {c.userAvatar
               ? <Image source={{ uri: c.userAvatar }} style={styles.commentAvatarImg} />
-              : <Text style={[styles.commentAvatarLetter, { color: theme.colors.primary }]}>
+              : <Text style={[styles.commentAvatarLetter, { color: '#72baa1' }]}>
                   {(c.userName || '?').charAt(0).toUpperCase()}
                 </Text>
             }
@@ -210,7 +209,7 @@ function CommentSection({ postId, postType, isDark, onCountChange, myId }) {
             </View>
             {myId && c.userId?.toString() === myId?.toString() && (
               <TouchableOpacity onPress={() => handleDelete(c._id)} style={styles.commentDeleteBtn} activeOpacity={0.7}>
-                <Ionicons name="trash-outline" size={13} color={isDark ? '#555' : '#CCC'} />
+                <Ionicons name="trash-outline" size={13} color={isDark ? '#7a7a88' : '#a8a29e'} />
               </TouchableOpacity>
             )}
           </View>
@@ -222,7 +221,7 @@ function CommentSection({ postId, postType, isDark, onCountChange, myId }) {
           <TextInput
             style={[styles.commentInput, isDark && styles.commentInputDark]}
             placeholder="Ajouter un commentaire…"
-            placeholderTextColor={isDark ? '#555' : '#BBB'}
+            placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
             value={input}
             onChangeText={setInput}
             maxLength={300}
@@ -236,8 +235,8 @@ function CommentSection({ postId, postType, isDark, onCountChange, myId }) {
             activeOpacity={0.7}
           >
             {sending
-              ? <ActivityIndicator size="small" color={theme.colors.primary} />
-              : <Ionicons name="send" size={18} color={theme.colors.primary} />
+              ? <ActivityIndicator size="small" color="#72baa1" />
+              : <Ionicons name="send" size={18} color="#72baa1" />
             }
           </TouchableOpacity>
         </View>
@@ -276,7 +275,7 @@ function ReactionBar({ targetId, targetType, initialLiked, initialCount, initial
             <Ionicons
               name={liked ? 'heart' : 'heart-outline'}
               size={22}
-              color={liked ? '#E89A6F' : (isDark ? '#555' : '#AAA')}
+              color={liked ? '#ef4444' : (isDark ? '#7a7a88' : '#a8a29e')}
             />
             {count > 0 && (
               <Text style={[styles.reactionCount, isDark && styles.textMuted]}>{count}</Text>
@@ -286,7 +285,7 @@ function ReactionBar({ targetId, targetType, initialLiked, initialCount, initial
             <Ionicons
               name={showComments ? 'chatbubble' : 'chatbubble-outline'}
               size={20}
-              color={showComments ? theme.colors.primary : (isDark ? '#555' : '#AAA')}
+              color={showComments ? '#72baa1' : (isDark ? '#7a7a88' : '#a8a29e')}
             />
             {commentsCount > 0 && (
               <Text style={[styles.reactionCount, isDark && styles.textMuted]}>{commentsCount}</Text>
@@ -318,11 +317,7 @@ function WorkoutCard({ item, isDark, onUserPress }) {
 
   return (
     <View style={[styles.card, isDark && styles.cardDark]}>
-      <LinearGradient
-        colors={['transparent', `${theme.colors.primary}50`, 'transparent']}
-        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-        style={styles.cardTopLine}
-      />
+      <View style={{ height: 3, backgroundColor: TYPE_COLORS.workout, borderTopLeftRadius: 20, borderTopRightRadius: 20 }} />
       <View style={styles.cardInner}>
         <CardHeader user={item.user} date={item.date} type="workout" isDark={isDark} onUserPress={onUserPress} />
 
@@ -353,7 +348,7 @@ function WorkoutCard({ item, isDark, onUserPress }) {
           <View style={styles.highlightsSection}>
             {d.highlights.map((h, i) => (
               <View key={i} style={[styles.prRow, isDark && styles.prRowDark]}>
-                <Ionicons name="trophy" size={14} color="#C9A84C" />
+                <Ionicons name="trophy" size={14} color="#72baa1" />
                 <Text style={styles.prLabel}>PR</Text>
                 <Text style={[styles.prExercise, isDark && styles.textLight]} numberOfLines={1}>{h.exerciseName}</Text>
                 <Text style={styles.prValue}>
@@ -388,18 +383,14 @@ function MealCard({ item, isDark, onUserPress }) {
   const d = item.data;
   return (
     <View style={[styles.card, isDark && styles.cardDark]}>
-      <LinearGradient
-        colors={['transparent', `${theme.colors.success}50`, 'transparent']}
-        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-        style={styles.cardTopLine}
-      />
+      <View style={{ height: 3, backgroundColor: TYPE_COLORS.meal, borderTopLeftRadius: 20, borderTopRightRadius: 20 }} />
       <View style={styles.cardInner}>
         <CardHeader user={item.user} date={item.date} type="meal" isDark={isDark} onUserPress={onUserPress} />
 
-        <View style={[styles.activityBanner, { backgroundColor: isDark ? '#0D2B1E' : '#EDFBF4' }]}>
+        <View style={[styles.activityBanner, { backgroundColor: isDark ? '#1f1f26' : '#f5f5f4' }]}>
           <Text style={styles.activityEmoji}>{MEAL_ICONS[d.mealType] || '🍽️'}</Text>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.activityLabel, { color: theme.colors.success }]}>{d.mealLabel || d.mealType}</Text>
+            <Text style={[styles.activityLabel, { color: '#72baa1' }]}>{d.mealLabel || d.mealType}</Text>
             <Text style={[styles.activityTitle, isDark && styles.textLight]} numberOfLines={2}>{d.name}</Text>
             {d.recipeTitle && d.recipeTitle !== d.name && (
               <Text style={[styles.activitySub, isDark && styles.textMuted]}>via {d.recipeTitle}</Text>
@@ -448,18 +439,14 @@ function RecipeCard({ item, isDark, onUserPress }) {
   const d = item.data;
   return (
     <View style={[styles.card, isDark && styles.cardDark]}>
-      <LinearGradient
-        colors={['transparent', `${theme.colors.info}50`, 'transparent']}
-        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-        style={styles.cardTopLine}
-      />
+      <View style={{ height: 3, backgroundColor: TYPE_COLORS.recipe, borderTopLeftRadius: 20, borderTopRightRadius: 20 }} />
       <View style={styles.cardInner}>
         <CardHeader user={item.user} date={item.date} type="recipe" isDark={isDark} onUserPress={onUserPress} />
 
-        <View style={[styles.activityBanner, { backgroundColor: isDark ? '#0D1126' : '#F0F0FF' }]}>
+        <View style={[styles.activityBanner, { backgroundColor: isDark ? '#1f1f26' : '#f5f5f4' }]}>
           <Text style={styles.activityEmoji}>👨‍🍳</Text>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.activityLabel, { color: theme.colors.info }]}>A créé une recette</Text>
+            <Text style={[styles.activityLabel, { color: '#8b7fc7' }]}>A créé une recette</Text>
             <Text style={[styles.activityTitle, isDark && styles.textLight]} numberOfLines={2}>{d.title}</Text>
             {d.totalTime > 0 && (
               <Text style={[styles.activitySub, isDark && styles.textMuted]}>
@@ -492,8 +479,8 @@ function RecipeCard({ item, isDark, onUserPress }) {
         {d.tags?.length > 0 && (
           <View style={styles.musclesRow}>
             {d.tags.slice(0, 3).map((t, i) => (
-              <View key={i} style={[styles.muscleTag, { backgroundColor: `${theme.colors.info}18`, borderColor: `${theme.colors.info}40`, borderWidth: 1 }]}>
-                <Text style={[styles.muscleTagText, { color: theme.colors.info }]}>{RECIPE_TAGS[t] || t}</Text>
+              <View key={i} style={[styles.muscleTag, { backgroundColor: 'rgba(139,127,199,0.1)', borderColor: 'rgba(139,127,199,0.25)', borderWidth: 1 }]}>
+                <Text style={[styles.muscleTagText, { color: '#8b7fc7' }]}>{RECIPE_TAGS[t] || t}</Text>
               </View>
             ))}
           </View>
@@ -523,11 +510,7 @@ function ChallengeCard({ item, isDark, onUserPress }) {
 
   return (
     <View style={[styles.card, isDark && styles.cardDark]}>
-      <LinearGradient
-        colors={['transparent', `${theme.colors.warning}50`, 'transparent']}
-        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-        style={styles.cardTopLine}
-      />
+      <View style={{ height: 3, backgroundColor: TYPE_COLORS.challenge, borderTopLeftRadius: 20, borderTopRightRadius: 20 }} />
       <View style={styles.cardInner}>
         <View style={styles.challengeHeader}>
           <View style={styles.challengeBadge}>
@@ -599,9 +582,9 @@ function SharedSessionCard({ item, isDark, onUserPress }) {
   const d = item.data;
   const initiator = d.initiator || {};
   const partner = d.partner || {};
-  const bg = isDark ? '#1E1E26' : '#FFF';
-  const textColor = isDark ? '#F0F0F0' : '#1A1A1A';
-  const mutedColor = isDark ? '#888' : '#999';
+  const bg = isDark ? '#18181d' : '#fff';
+  const textColor = isDark ? '#f3f3f6' : '#1c1917';
+  const mutedColor = isDark ? '#7a7a88' : '#a8a29e';
 
   return (
     <View style={[styles.card, isDark && styles.cardDark, { padding: 16 }]}>
@@ -611,16 +594,16 @@ function SharedSessionCard({ item, isDark, onUserPress }) {
           <TouchableOpacity onPress={() => onUserPress(initiator._id)}>
             {initiator.photo
               ? <Image source={{ uri: initiator.photo }} style={{ width: 36, height: 36, borderRadius: 18 }} />
-              : <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.secondary + '20', justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={{ color: theme.colors.secondary, fontWeight: '700' }}>{(initiator.prenom || initiator.pseudo || '?')[0]}</Text>
+              : <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(114,186,161,0.12)', justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={{ color: '#72baa1', fontWeight: '700' }}>{(initiator.prenom || initiator.pseudo || '?')[0]}</Text>
                 </View>
             }
           </TouchableOpacity>
           <TouchableOpacity onPress={() => onUserPress(partner._id)} style={{ marginLeft: -10 }}>
             {partner.photo
               ? <Image source={{ uri: partner.photo }} style={{ width: 36, height: 36, borderRadius: 18, borderWidth: 2, borderColor: bg }} />
-              : <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.primary + '20', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: bg }}>
-                  <Text style={{ color: theme.colors.primary, fontWeight: '700' }}>{(partner.prenom || partner.pseudo || '?')[0]}</Text>
+              : <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(240,164,122,0.12)', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: bg }}>
+                  <Text style={{ color: '#f0a47a', fontWeight: '700' }}>{(partner.prenom || partner.pseudo || '?')[0]}</Text>
                 </View>
             }
           </TouchableOpacity>
@@ -629,7 +612,7 @@ function SharedSessionCard({ item, isDark, onUserPress }) {
               {initiator.prenom || initiator.pseudo || '?'} & {partner.prenom || partner.pseudo || '?'}
             </Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Ionicons name="flash-outline" size={12} color={theme.colors.secondary} />
+              <Ionicons name="flash-outline" size={12} color="#72baa1" />
               <Text style={{ fontSize: 12, color: mutedColor }}>Séance duo</Text>
             </View>
           </View>
@@ -658,8 +641,8 @@ function SharedSessionCard({ item, isDark, onUserPress }) {
       {d.exercises?.length > 0 && (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingBottom: 4, gap: 4 }}>
           {d.exercises.map((name, i) => (
-            <View key={i} style={{ backgroundColor: theme.colors.secondary + '12', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
-              <Text style={{ fontSize: 11, fontWeight: '600', color: theme.colors.secondary }}>{name}</Text>
+            <View key={i} style={{ backgroundColor: 'rgba(114,186,161,0.1)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+              <Text style={{ fontSize: 11, fontWeight: '600', color: '#72baa1' }}>{name}</Text>
             </View>
           ))}
         </View>
@@ -732,29 +715,29 @@ function SearchModal({ visible, onClose, isDark }) {
         <View style={styles.modalHeader}>
           <Text style={[styles.modalTitle, isDark && styles.textLight]}>Trouver des sportifs</Text>
           <TouchableOpacity onPress={onClose} style={[styles.modalCloseBtn, isDark && styles.modalCloseBtnDark]}>
-            <Ionicons name="close" size={20} color={isDark ? '#CCC' : '#555'} />
+            <Ionicons name="close" size={20} color={isDark ? '#c1c1cb' : '#78716c'} />
           </TouchableOpacity>
         </View>
 
         <View style={[styles.searchInputWrapper, isDark && styles.searchInputWrapperDark]}>
-          <Ionicons name="search-outline" size={18} color={isDark ? '#666' : '#AAA'} />
+          <Ionicons name="search-outline" size={18} color={isDark ? '#7a7a88' : '#a8a29e'} />
           <TextInput
             style={[styles.searchInput, isDark && styles.textLight]}
             placeholder="Pseudo, prénom..."
-            placeholderTextColor={isDark ? '#555' : '#BBB'}
+            placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
             value={query}
             onChangeText={handleSearch}
             autoFocus autoCapitalize="none" returnKeyType="search"
           />
           {query.length > 0 && (
             <TouchableOpacity onPress={() => { setQuery(''); setResults([]); }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name="close-circle" size={18} color={isDark ? '#555' : '#CCC'} />
+              <Ionicons name="close-circle" size={18} color={isDark ? '#7a7a88' : '#a8a29e'} />
             </TouchableOpacity>
           )}
         </View>
 
         {loading ? (
-          <ActivityIndicator style={{ marginTop: 48 }} color={theme.colors.primary} />
+          <ActivityIndicator style={{ marginTop: 48 }} color="#72baa1" />
         ) : (
           <FlatList
             data={results}
@@ -783,12 +766,12 @@ function SearchModal({ visible, onClose, isDark }) {
             ListEmptyComponent={
               query.length >= 2 ? (
                 <View style={styles.emptySearch}>
-                  <Ionicons name="search-outline" size={40} color={isDark ? '#333' : '#DDD'} />
+                  <Ionicons name="search-outline" size={40} color={isDark ? '#7a7a88' : '#a8a29e'} />
                   <Text style={[styles.emptySearchText, isDark && styles.textMuted]}>Aucun résultat</Text>
                 </View>
               ) : (
                 <View style={styles.emptySearch}>
-                  <Ionicons name="people-outline" size={48} color={isDark ? '#333' : '#DDD'} />
+                  <Ionicons name="people-outline" size={48} color={isDark ? '#7a7a88' : '#a8a29e'} />
                   <Text style={[styles.emptySearchText, isDark && styles.textMuted]}>
                     Recherchez des amis par pseudo ou prénom
                   </Text>
@@ -807,26 +790,23 @@ function SearchModal({ visible, onClose, isDark }) {
 function EmptyFeed({ isDark, onSearch }) {
   return (
     <View style={styles.emptyContainer}>
-      <LinearGradient
-        colors={isDark ? ['#1E2228', '#1A1D24'] : ['#FFF5EE', '#FFFFFF']}
-        style={styles.emptyCard}
-      >
+      <View style={[styles.emptyCard, isDark && styles.emptyCardDark]}>
         <View style={styles.emptyIconWrap}>
-          <LinearGradient colors={[theme.colors.primary, '#F9C4A3']} style={styles.emptyIconGradient}>
-            <Ionicons name="people" size={32} color="#FFF" />
-          </LinearGradient>
+          <View style={styles.emptyIconCircle}>
+            <Ionicons name="people" size={32} color="#a8a29e" />
+          </View>
         </View>
         <Text style={[styles.emptyTitle, isDark && styles.textLight]}>Votre flux est vide</Text>
         <Text style={[styles.emptySubtitle, isDark && styles.textMuted]}>
           Suivez des amis pour voir leurs séances, repas, recettes et défis ici
         </Text>
         <TouchableOpacity style={styles.emptyBtn} onPress={onSearch} activeOpacity={0.85}>
-          <LinearGradient colors={[theme.colors.primary, '#F9C4A3']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.emptyBtnGradient}>
+          <View style={styles.emptyBtnInner}>
             <Ionicons name="person-add-outline" size={18} color="#FFF" />
             <Text style={styles.emptyBtnText}>Trouver des sportifs</Text>
-          </LinearGradient>
+          </View>
         </TouchableOpacity>
-      </LinearGradient>
+      </View>
     </View>
   );
 }
@@ -894,7 +874,7 @@ export default function FluxScreen() {
   if (loading) {
     return (
       <View style={[styles.container, isDark && styles.containerDark, styles.centered]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <ActivityIndicator size="large" color="#72baa1" />
       </View>
     );
   }
@@ -908,21 +888,18 @@ export default function FluxScreen() {
           <Text style={[styles.title, isDark && styles.textLight]}>Flux</Text>
           <View style={styles.headerBtns}>
             <TouchableOpacity style={[styles.iconBtn, isDark && styles.iconBtnDark]} onPress={() => setSearchVisible(true)} activeOpacity={0.75}>
-              <Ionicons name="person-add-outline" size={20} color={isDark ? '#E0E0E0' : '#333'} />
+              <Ionicons name="person-add-outline" size={20} color={isDark ? '#f3f3f6' : '#1c1917'} />
             </TouchableOpacity>
             <TouchableOpacity style={[styles.iconBtn, isDark && styles.iconBtnDark]} onPress={() => navigation.navigate('HomeTab', { screen: 'Notifications' })} activeOpacity={0.75}>
-              <Ionicons name="notifications-outline" size={20} color={isDark ? '#E0E0E0' : '#333'} />
+              <Ionicons name="notifications-outline" size={20} color={isDark ? '#f3f3f6' : '#1c1917'} />
             </TouchableOpacity>
           </View>
         </View>
 
         <TouchableOpacity style={[styles.quickCard, isDark && styles.quickCardDark]} onPress={() => navigation.navigate('Matching')} activeOpacity={0.8}>
-          <LinearGradient
-            colors={isDark ? ['rgba(232,137,90,0.15)', 'rgba(232,137,90,0.05)'] : ['rgba(232,137,90,0.1)', 'rgba(249,196,163,0.05)']}
-            style={styles.quickCardInner}
-          >
-            <View style={[styles.quickIcon, { backgroundColor: `${theme.colors.primary}20` }]}>
-              <Ionicons name="chatbubbles" size={16} color={theme.colors.primary} />
+          <View style={styles.quickCardInner}>
+            <View style={[styles.quickIcon, { backgroundColor: 'rgba(114,186,161,0.12)' }]}>
+              <Ionicons name="chatbubbles" size={16} color="#72baa1" />
             </View>
             <View style={styles.quickText}>
               <Text style={[styles.quickTitle, isDark && styles.textLight]}>Chat & Matching</Text>
@@ -935,9 +912,9 @@ export default function FluxScreen() {
             {unreadCount > 0 ? (
               <View style={styles.unreadPill}><Text style={styles.unreadPillText}>{unreadCount > 9 ? '9+' : unreadCount}</Text></View>
             ) : (
-              <Ionicons name="chevron-forward" size={16} color={isDark ? '#444' : '#CCC'} />
+              <Ionicons name="chevron-forward" size={16} color={isDark ? '#7a7a88' : '#a8a29e'} />
             )}
-          </LinearGradient>
+          </View>
         </TouchableOpacity>
 
         <View style={[styles.separator, isDark && styles.separatorDark]} />
@@ -951,7 +928,7 @@ export default function FluxScreen() {
           <FeedCard item={item} isDark={isDark} onUserPress={handleUserPress} />
         )}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} colors={[theme.colors.primary]} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#72baa1" colors={['#72baa1']} />
         }
         onEndReached={onEndReached}
         onEndReachedThreshold={0.4}
@@ -959,7 +936,7 @@ export default function FluxScreen() {
         scrollEventThrottle={16}
         ListFooterComponent={
           loadingMore ? (
-            <View style={styles.loadMore}><ActivityIndicator color={theme.colors.primary} /></View>
+            <View style={styles.loadMore}><ActivityIndicator color="#72baa1" /></View>
           ) : !hasMore && items.length > 0 ? (
             <View style={styles.endFooter}>
               <View style={[styles.endLine, isDark && styles.endLineDark]} />
@@ -981,149 +958,148 @@ export default function FluxScreen() {
 
 const styles = StyleSheet.create({
   // ── Layout
-  container: { flex: 1, backgroundColor: '#F2F3F7' },
-  containerDark: { backgroundColor: '#111318' },
+  container: { flex: 1, backgroundColor: '#fcfbf9' },
+  containerDark: { backgroundColor: '#0e0e11' },
   centered: { alignItems: 'center', justifyContent: 'center' },
-  textLight: { color: '#FFFFFF' },
-  textMuted: { color: '#7A7D85' },
+  textLight: { color: '#f3f3f6' },
+  textMuted: { color: '#7a7a88' },
 
   // ── Header
   headerWrapper: { backgroundColor: 'transparent', zIndex: 10 },
-  headerBlurBg: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(242,243,247,0.95)' },
-  headerBlurBgDark: { backgroundColor: 'rgba(17,19,24,0.95)' },
+  headerBlurBg: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(252,251,249,0.95)' },
+  headerBlurBgDark: { backgroundColor: 'rgba(14,14,17,0.95)' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingTop: 6, paddingBottom: 14,
   },
-  title: { fontSize: 30, fontWeight: '800', color: '#111', letterSpacing: -0.8 },
+  title: { fontSize: 22, fontWeight: '800', color: '#1c1917', letterSpacing: -0.5 },
   headerBtns: { flexDirection: 'row', gap: 8 },
   iconBtn: {
-    width: 38, height: 38, borderRadius: 11, backgroundColor: '#FFF',
+    width: 38, height: 38, borderRadius: 11, backgroundColor: '#fff',
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 6, elevation: 3,
+    borderWidth: 1, borderColor: '#efedea',
   },
-  iconBtnDark: { backgroundColor: '#1E2228' },
+  iconBtnDark: { backgroundColor: '#18181d', borderColor: 'rgba(255,255,255,0.06)' },
 
   // ── Quick Card
   quickCard: {
-    marginHorizontal: 16, borderRadius: 14, backgroundColor: '#FFF',
+    marginHorizontal: 16, borderRadius: 14, backgroundColor: '#fff',
     overflow: 'hidden', marginBottom: 14,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+    borderWidth: 1, borderColor: '#efedea',
   },
-  quickCardDark: { backgroundColor: '#1A1D24' },
+  quickCardDark: { backgroundColor: '#18181d', borderColor: 'rgba(255,255,255,0.06)' },
   quickCardInner: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 10 },
   quickIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   quickText: { flex: 1 },
-  quickTitle: { fontSize: 13, fontWeight: '700', color: '#111' },
-  quickSub: { fontSize: 11, color: '#999', marginTop: 1 },
-  unreadPill: { backgroundColor: '#FF3B30', borderRadius: 10, minWidth: 20, height: 20, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 5 },
+  quickTitle: { fontSize: 13, fontWeight: '700', color: '#1c1917' },
+  quickSub: { fontSize: 11, color: '#a8a29e', marginTop: 1 },
+  unreadPill: { backgroundColor: '#72baa1', borderRadius: 10, minWidth: 20, height: 20, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 5 },
   unreadPillText: { fontSize: 11, fontWeight: '800', color: '#FFF' },
 
   // ── Separator
-  separator: { height: 1, backgroundColor: '#E8E9EE', marginHorizontal: 16, marginBottom: 8 },
-  separatorDark: { backgroundColor: '#22262E' },
+  separator: { height: 1, backgroundColor: '#efedea', marginHorizontal: 16, marginBottom: 8 },
+  separatorDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
 
   // ── List
   listContent: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 180 },
   loadMore: { paddingVertical: 24, alignItems: 'center' },
   endFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, paddingVertical: 20 },
-  endLine: { height: 1, width: 40, backgroundColor: '#E0E0E0' },
-  endLineDark: { backgroundColor: '#2A2E36' },
-  endText: { fontSize: 12, fontWeight: '600', color: '#AAA', letterSpacing: 0.5 },
+  endLine: { height: 1, width: 40, backgroundColor: '#efedea' },
+  endLineDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
+  endText: { fontSize: 12, fontWeight: '600', color: '#a8a29e', letterSpacing: 0.5 },
 
   // ── Card base
   card: {
-    backgroundColor: '#FFF', borderRadius: 20, marginBottom: 14, overflow: 'hidden',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.07, shadowRadius: 12, elevation: 4,
+    backgroundColor: '#fff', borderRadius: 20, marginBottom: 14, overflow: 'hidden',
+    borderWidth: 1, borderColor: '#efedea',
   },
-  cardDark: { backgroundColor: '#1A1D24' },
-  cardTopLine: { height: 2 },
+  cardDark: { backgroundColor: '#18181d', borderColor: 'rgba(255,255,255,0.06)' },
   cardInner: { padding: 16 },
 
   // ── Card Header
   cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
   userRow: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 10 },
   userMeta: { flex: 1 },
-  userName: { fontSize: 14, fontWeight: '700', color: '#111' },
-  dateText: { fontSize: 12, color: '#AAA', marginTop: 2 },
+  userName: { fontSize: 14, fontWeight: '700', color: '#1c1917' },
+  dateText: { fontSize: 12, color: '#a8a29e', marginTop: 2 },
 
   // ── Type Badge
   typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
   typeBadgeText: { fontSize: 11, fontWeight: '600' },
 
   // ── Workout
-  workoutName: { fontSize: 17, fontWeight: '800', color: '#111', marginBottom: 10, letterSpacing: -0.3 },
+  workoutName: { fontSize: 17, fontWeight: '800', color: '#1c1917', marginBottom: 10, letterSpacing: -0.3 },
 
   // ── Stats row
   statsRow: {
     flexDirection: 'row', alignItems: 'center',
-    borderWidth: 1.5, borderColor: '#EDEEF2', borderRadius: 12,
+    borderWidth: 1, borderColor: '#efedea', borderRadius: 12,
     padding: 10, marginBottom: 10,
   },
-  statsRowDark: { borderColor: '#2A2E36' },
+  statsRowDark: { borderColor: 'rgba(255,255,255,0.06)' },
   statCell: { flex: 1, alignItems: 'center' },
-  statLabel: { fontSize: 10, fontWeight: '600', color: '#AAA', letterSpacing: 0.5, marginBottom: 3 },
-  statValue: { fontSize: 14, fontWeight: '800', color: '#111' },
-  statDivider: { width: 1.5, height: 32, backgroundColor: '#EDEEF2' },
-  statDividerDark: { backgroundColor: '#2A2E36' },
+  statLabel: { fontSize: 10, fontWeight: '600', color: '#a8a29e', letterSpacing: 0.5, marginBottom: 3 },
+  statValue: { fontSize: 14, fontWeight: '800', color: '#1c1917' },
+  statDivider: { width: 1, height: 32, backgroundColor: '#efedea' },
+  statDividerDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
 
   // ── PRs
   highlightsSection: { gap: 5, marginBottom: 10 },
   prRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFFBF2', borderRadius: 10,
+    backgroundColor: 'rgba(114,186,161,0.08)', borderRadius: 10,
     paddingHorizontal: 10, paddingVertical: 7, gap: 6,
-    borderWidth: 1, borderColor: '#F0E4C0',
+    borderWidth: 1, borderColor: 'rgba(114,186,161,0.15)',
   },
-  prRowDark: { backgroundColor: '#22200A', borderColor: '#3A3010' },
-  prLabel: { fontSize: 10, fontWeight: '700', color: '#C9A84C', letterSpacing: 0.5 },
-  prExercise: { flex: 1, fontSize: 12, fontWeight: '600', color: '#555' },
-  prValue: { fontSize: 12, fontWeight: '700', color: '#C9A84C' },
+  prRowDark: { backgroundColor: 'rgba(114,186,161,0.08)', borderColor: 'rgba(114,186,161,0.12)' },
+  prLabel: { fontSize: 10, fontWeight: '700', color: '#72baa1', letterSpacing: 0.5 },
+  prExercise: { flex: 1, fontSize: 12, fontWeight: '600', color: '#78716c' },
+  prValue: { fontSize: 12, fontWeight: '700', color: '#72baa1' },
 
   // ── Muscles
   musclesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
-  muscleTag: { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
+  muscleTag: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
   muscleTagText: { fontSize: 11, fontWeight: '600' },
-  muscleTagMore: { backgroundColor: '#F4F5F8', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
-  muscleTagMoreDark: { backgroundColor: '#22262E' },
-  muscleTagMoreText: { fontSize: 11, fontWeight: '600', color: '#888' },
+  muscleTagMore: { backgroundColor: '#f5f5f4', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
+  muscleTagMoreDark: { backgroundColor: '#1f1f26' },
+  muscleTagMoreText: { fontSize: 11, fontWeight: '600', color: '#78716c' },
 
   // ── Reaction bar
   reactionBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingTop: 10, marginTop: 4, borderTopWidth: 1.5, borderTopColor: '#F0F1F5',
+    paddingTop: 10, marginTop: 4, borderTopWidth: 1, borderTopColor: '#efedea',
   },
-  reactionBarDark: { borderTopColor: '#22262E' },
+  reactionBarDark: { borderTopColor: 'rgba(255,255,255,0.06)' },
   reactionLeft: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   reactionBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 8, paddingVertical: 8, borderRadius: 19 },
-  reactionCount: { fontSize: 12, fontWeight: '700', color: '#666' },
+  reactionCount: { fontSize: 12, fontWeight: '700', color: '#78716c' },
 
   // ── Comments
-  commentSection: { borderTopWidth: 1, borderTopColor: '#F0F1F5', paddingTop: 10, paddingHorizontal: 4, marginTop: 4 },
-  commentSectionDark: { borderTopColor: '#22262E' },
+  commentSection: { borderTopWidth: 1, borderTopColor: '#efedea', paddingTop: 10, paddingHorizontal: 4, marginTop: 4 },
+  commentSectionDark: { borderTopColor: 'rgba(255,255,255,0.06)' },
   commentRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 10 },
   commentAvatar: {
     width: 30, height: 30, borderRadius: 15,
-    backgroundColor: `${theme.colors.primary}20`,
+    backgroundColor: 'rgba(114,186,161,0.12)',
     alignItems: 'center', justifyContent: 'center',
     overflow: 'hidden', flexShrink: 0,
   },
-  commentAvatarDark: { backgroundColor: `${theme.colors.primary}30` },
+  commentAvatarDark: { backgroundColor: 'rgba(114,186,161,0.18)' },
   commentAvatarImg: { width: 30, height: 30, borderRadius: 15 },
   commentAvatarLetter: { fontSize: 13, fontWeight: '800' },
   commentBubble: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: 6 },
-  commentBubbleInner: { flex: 1, backgroundColor: '#F5F6FA', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 7 },
-  commentBubbleInnerDark: { backgroundColor: '#252830' },
-  commentAuthor: { fontSize: 12, fontWeight: '700', color: '#111', marginBottom: 2 },
-  commentContent: { fontSize: 13, color: '#444', lineHeight: 18 },
+  commentBubbleInner: { flex: 1, backgroundColor: '#f5f5f4', borderRadius: 14, paddingHorizontal: 10, paddingVertical: 7 },
+  commentBubbleInnerDark: { backgroundColor: '#1f1f26' },
+  commentAuthor: { fontSize: 12, fontWeight: '700', color: '#1c1917', marginBottom: 2 },
+  commentContent: { fontSize: 13, color: '#78716c', lineHeight: 18 },
   commentDeleteBtn: { padding: 6, marginTop: 2 },
   commentInputRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6,
-    backgroundColor: '#F5F6FA', borderRadius: 22, paddingHorizontal: 12, paddingVertical: 6,
+    backgroundColor: '#f5f5f4', borderRadius: 22, paddingHorizontal: 12, paddingVertical: 6,
   },
-  commentInputRowDark: { backgroundColor: '#252830' },
-  commentInput: { flex: 1, fontSize: 14, color: '#111', paddingVertical: 0 },
-  commentInputDark: { color: '#FFF' },
+  commentInputRowDark: { backgroundColor: '#1f1f26' },
+  commentInput: { flex: 1, fontSize: 14, color: '#1c1917', paddingVertical: 0 },
+  commentInputDark: { color: '#f3f3f6' },
   commentSendBtn: { padding: 4 },
 
   // ── Activity banner (meal / recipe)
@@ -1133,10 +1109,10 @@ const styles = StyleSheet.create({
   },
   activityEmoji: { fontSize: 28, lineHeight: 32 },
   activityLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.3, marginBottom: 2 },
-  activityTitle: { fontSize: 15, fontWeight: '800', color: '#111' },
-  activitySub: { fontSize: 11, color: '#AAA', marginTop: 2 },
-  cardNotes: { fontSize: 13, color: '#666', fontStyle: 'italic', padding: 10, backgroundColor: '#FAFAFA', borderRadius: 10, marginBottom: 8 },
-  cardNotesDark: { backgroundColor: '#22262E', color: '#999' },
+  activityTitle: { fontSize: 15, fontWeight: '800', color: '#1c1917' },
+  activitySub: { fontSize: 11, color: '#a8a29e', marginTop: 2 },
+  cardNotes: { fontSize: 13, color: '#78716c', fontStyle: 'italic', padding: 10, backgroundColor: '#f5f5f4', borderRadius: 10, marginBottom: 8 },
+  cardNotesDark: { backgroundColor: '#1f1f26', color: '#c1c1cb' },
 
   // ── Recipe image
   recipeImage: { width: '100%', height: 160, borderRadius: 12, marginBottom: 10 },
@@ -1145,71 +1121,75 @@ const styles = StyleSheet.create({
   challengeHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
   challengeBadge: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: theme.colors.warning, borderRadius: 8,
+    backgroundColor: '#d4a96a', borderRadius: 8,
     paddingHorizontal: 8, paddingVertical: 3,
   },
   challengeBadgeText: { fontSize: 11, fontWeight: '800', color: '#FFF' },
-  challengeLabel: { fontSize: 13, fontWeight: '700', color: '#333', flex: 1 },
+  challengeLabel: { fontSize: 13, fontWeight: '700', color: '#78716c', flex: 1 },
 
   challengeVS: { flexDirection: 'row', alignItems: 'stretch', gap: 0, marginBottom: 8 },
   vsPlayer: {
     flex: 1, alignItems: 'center', padding: 12, borderRadius: 12,
-    backgroundColor: '#F7F8FB',
+    backgroundColor: '#f5f5f4',
   },
-  vsPlayerDark: { backgroundColor: '#22262E' },
+  vsPlayerDark: { backgroundColor: '#1f1f26' },
   vsWinner: { backgroundColor: '#FFFBEB', borderWidth: 1.5, borderColor: '#F59E0B' },
-  vsName: { fontSize: 12, fontWeight: '700', color: '#333', marginTop: 6, marginBottom: 4, textAlign: 'center' },
-  vsScore: { fontSize: 20, fontWeight: '800', color: '#111' },
+  vsName: { fontSize: 12, fontWeight: '700', color: '#1c1917', marginTop: 6, marginBottom: 4, textAlign: 'center' },
+  vsScore: { fontSize: 20, fontWeight: '800', color: '#1c1917' },
   vsCenter: { alignItems: 'center', justifyContent: 'center', width: 36 },
-  vsLine: { height: 18, width: 1, backgroundColor: '#E0E0E0' },
-  vsLineDark: { backgroundColor: '#2A2E36' },
-  vsLabel: { fontSize: 13, fontWeight: '900', color: '#CCC', paddingVertical: 6 },
+  vsLine: { height: 18, width: 1, backgroundColor: '#efedea' },
+  vsLineDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
+  vsLabel: { fontSize: 13, fontWeight: '900', color: '#a8a29e', paddingVertical: 6 },
   winnerBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   winnerBadgeText: { fontSize: 11, fontWeight: '700', color: '#B45309' },
-  drawText: { textAlign: 'center', fontSize: 13, fontWeight: '700', color: '#6B7280', paddingTop: 8 },
-  rewardText: { textAlign: 'center', fontSize: 12, fontWeight: '600', color: theme.colors.primary, paddingTop: 6 },
+  drawText: { textAlign: 'center', fontSize: 13, fontWeight: '700', color: '#78716c', paddingTop: 8 },
+  rewardText: { textAlign: 'center', fontSize: 12, fontWeight: '600', color: '#72baa1', paddingTop: 6 },
 
   // ── Empty state
   emptyContainer: { paddingHorizontal: 16, paddingTop: 20 },
-  emptyCard: { borderRadius: 24, padding: 32, alignItems: 'center' },
+  emptyCard: {
+    borderRadius: 20, padding: 32, alignItems: 'center',
+    backgroundColor: '#fff', borderWidth: 1, borderColor: '#efedea',
+  },
+  emptyCardDark: { backgroundColor: '#18181d', borderColor: 'rgba(255,255,255,0.06)' },
   emptyIconWrap: { marginBottom: 20 },
-  emptyIconGradient: { width: 72, height: 72, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  emptyTitle: { fontSize: 20, fontWeight: '800', color: '#111', marginBottom: 10, letterSpacing: -0.3 },
-  emptySubtitle: { fontSize: 14, color: '#999', textAlign: 'center', lineHeight: 21, marginBottom: 24, paddingHorizontal: 10 },
+  emptyIconCircle: { width: 72, height: 72, borderRadius: 24, backgroundColor: '#f5f5f4', alignItems: 'center', justifyContent: 'center' },
+  emptyTitle: { fontSize: 20, fontWeight: '800', color: '#1c1917', marginBottom: 10, letterSpacing: -0.3 },
+  emptySubtitle: { fontSize: 14, color: '#a8a29e', textAlign: 'center', lineHeight: 21, marginBottom: 24, paddingHorizontal: 10 },
   emptyBtn: { borderRadius: 16, overflow: 'hidden', width: '100%' },
-  emptyBtnGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 16 },
+  emptyBtnInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 16, backgroundColor: '#72baa1' },
   emptyBtnText: { fontSize: 15, fontWeight: '700', color: '#FFF' },
 
   // ── Search Modal
-  modalSafe: { flex: 1, backgroundColor: '#F2F3F7' },
-  modalHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: '#DDD', alignSelf: 'center', marginTop: 8, marginBottom: 8 },
+  modalSafe: { flex: 1, backgroundColor: '#fcfbf9' },
+  modalHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: '#efedea', alignSelf: 'center', marginTop: 8, marginBottom: 8 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14 },
-  modalTitle: { fontSize: 20, fontWeight: '800', color: '#111', letterSpacing: -0.4 },
-  modalCloseBtn: { width: 34, height: 34, borderRadius: 10, backgroundColor: '#ECECEC', alignItems: 'center', justifyContent: 'center' },
-  modalCloseBtnDark: { backgroundColor: '#2A2E36' },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: '#1c1917', letterSpacing: -0.4 },
+  modalCloseBtn: { width: 34, height: 34, borderRadius: 10, backgroundColor: '#f5f5f4', alignItems: 'center', justifyContent: 'center' },
+  modalCloseBtnDark: { backgroundColor: '#1f1f26' },
   searchInputWrapper: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFF', borderRadius: 14, marginHorizontal: 16, marginBottom: 12,
+    backgroundColor: '#fff', borderRadius: 14, marginHorizontal: 16, marginBottom: 12,
     paddingHorizontal: 14, paddingVertical: 13, gap: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+    borderWidth: 1, borderColor: '#efedea',
   },
-  searchInputWrapperDark: { backgroundColor: '#1E2228' },
-  searchInput: { flex: 1, fontSize: 15, color: '#111', padding: 0 },
+  searchInputWrapperDark: { backgroundColor: '#18181d', borderColor: 'rgba(255,255,255,0.06)' },
+  searchInput: { flex: 1, fontSize: 15, color: '#1c1917', padding: 0 },
   searchResults: { paddingHorizontal: 16, paddingBottom: 180 },
   resultRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFF', borderRadius: 14, padding: 12, marginBottom: 8, gap: 12,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 2,
+    backgroundColor: '#fff', borderRadius: 14, padding: 12, marginBottom: 8, gap: 12,
+    borderWidth: 1, borderColor: '#efedea',
   },
-  resultRowDark: { backgroundColor: '#1A1D24' },
+  resultRowDark: { backgroundColor: '#18181d', borderColor: 'rgba(255,255,255,0.06)' },
   resultMeta: { flex: 1 },
-  resultName: { fontSize: 15, fontWeight: '700', color: '#111' },
-  resultPseudo: { fontSize: 13, color: '#AAA', marginTop: 2 },
-  followChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: theme.colors.primary },
-  followingChip: { backgroundColor: '#F0F0F0' },
-  followingChipDark: { backgroundColor: '#2A2E36' },
+  resultName: { fontSize: 15, fontWeight: '700', color: '#1c1917' },
+  resultPseudo: { fontSize: 13, color: '#a8a29e', marginTop: 2 },
+  followChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, backgroundColor: '#72baa1' },
+  followingChip: { backgroundColor: '#f5f5f4' },
+  followingChipDark: { backgroundColor: '#1f1f26' },
   followChipText: { fontSize: 13, fontWeight: '700', color: '#FFF' },
-  followingChipText: { color: '#666' },
+  followingChipText: { color: '#78716c' },
   emptySearch: { alignItems: 'center', paddingVertical: 48, gap: 14 },
-  emptySearchText: { fontSize: 14, color: '#AAA', textAlign: 'center', paddingHorizontal: 40, lineHeight: 21 },
+  emptySearchText: { fontSize: 14, color: '#a8a29e', textAlign: 'center', paddingHorizontal: 40, lineHeight: 21 },
 });

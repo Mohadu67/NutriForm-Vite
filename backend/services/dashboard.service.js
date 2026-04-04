@@ -5,6 +5,7 @@ const NutritionGoal = require('../models/NutritionGoal');
 const WeightLog = require('../models/WeightLog');
 const DailyHealthData = require('../models/DailyHealthData');
 const UserProfile = require('../models/UserProfile');
+const { computeBodyComposition } = require('./bodyComposition.service');
 const logger = require('../utils/logger');
 
 /**
@@ -222,6 +223,33 @@ async function getDashboardOverview(userId) {
     };
   });
 
+  // ─── Body Composition (weekly recap for slide 1) ───
+  let bodyCompRecap = null;
+  try {
+    const bc = await computeBodyComposition(userId, 7);
+    if (bc) {
+      const n = bc.nutrition || {};
+      bodyCompRecap = {
+        avgCalories: n.avgDaily?.calories || 0,
+        avgProteins: n.avgDaily?.proteins || 0,
+        proteinPerKg: n.proteinPerKg || 0,
+        proteinStatus: n.proteinStatus || null,
+        dailyBalance: n.dailyBalance || 0,
+        daysLogged: n.daysLogged || 0,
+        muscleGainG: bc.muscleGain?.totalG || 0,
+        fatChangeG: bc.fatChange?.g || 0,
+        projectedWeight: bc.projectedWeight || null,
+        goalType: bc.userMetrics?.goalType || 'maintenance',
+        userWeight: bc.userMetrics?.weight || weight,
+      };
+    }
+  } catch (err) {
+    logger.error('Dashboard bodyComp error:', err.message);
+  }
+
+  // ─── Tips (personalized coaching, computed server-side) ───
+  const tips = generateTips(bodyCompRecap, sessionsThisWeek);
+
   return {
     stats: {
       totalSessions,
@@ -253,9 +281,59 @@ async function getDashboardOverview(userId) {
       },
     },
     body: { weight, bmi, bmiLabel },
+    bodyCompRecap,
+    tips,
     cardio,
     recentSessions,
   };
+}
+
+/**
+ * Generate personalized coaching tips (same logic as mobile).
+ */
+function generateTips(bc, weeklySessions) {
+  const tips = [];
+  if (!bc) {
+    if (weeklySessions === 0) tips.push({ title: 'Lance-toi', text: 'Aucune seance cette semaine. Un seul entrainement peut relancer ta dynamique.', tint: 'blue' });
+    else if (weeklySessions < 3) tips.push({ title: 'Augmente la cadence', text: `${weeklySessions} seance${weeklySessions > 1 ? 's' : ''} cette semaine. Vise 3 a 5.`, tint: 'amber' });
+    else tips.push({ title: 'Frequence ideale', text: `${weeklySessions} seances — c'est le sweet spot.`, tint: 'green' });
+    return tips;
+  }
+
+  // Frequence
+  if (weeklySessions === 0) tips.push({ title: 'Lance-toi', text: 'Aucune seance cette semaine. Un seul entrainement peut relancer ta dynamique.', tint: 'blue' });
+  else if (weeklySessions < 3) tips.push({ title: 'Augmente la cadence', text: `${weeklySessions} seance${weeklySessions > 1 ? 's' : ''} cette semaine. Vise 3 a 5 pour des resultats visibles.`, tint: 'amber' });
+  else if (weeklySessions <= 5) tips.push({ title: 'Frequence ideale', text: `${weeklySessions} seances — c'est le sweet spot pour progresser sans se cramer.`, tint: 'green' });
+  else tips.push({ title: 'Pense au repos', text: `${weeklySessions} seances, c'est intense. Les muscles se construisent au repos.`, tint: 'amber' });
+
+  // Proteines
+  if (bc.daysLogged >= 1) {
+    if (bc.proteinStatus === 'insufficient' && bc.avgProteins > 0) {
+      const target = bc.userWeight ? Math.round(bc.userWeight * 1.6) : null;
+      tips.push({ title: 'Plus de proteines', text: `${bc.proteinPerKg}g/kg.${target ? ` Vise ${target}g/jour` : ''} pour maximiser tes gains.`, tint: 'red' });
+    } else if (bc.proteinStatus === 'optimal') {
+      tips.push({ title: 'Proteines au top', text: `${bc.proteinPerKg}g/kg — synthese musculaire maximisee.`, tint: 'green' });
+    }
+  }
+
+  // Balance calorique
+  if (bc.dailyBalance !== undefined && bc.daysLogged >= 1) {
+    const bal = bc.dailyBalance;
+    if (bc.goalType === 'muscle_gain' && bal < 0) tips.push({ title: 'Mange plus', text: `Deficit de ${Math.abs(Math.round(bal))} kcal en prise de masse.`, tint: 'red' });
+    else if (bc.goalType === 'weight_loss' && bal < 0 && bal > -800) tips.push({ title: 'Bon deficit', text: `${Math.abs(Math.round(bal))} kcal de deficit.`, tint: 'green' });
+  }
+
+  // Nutrition non renseignee
+  if (!bc.daysLogged || bc.daysLogged === 0) {
+    tips.push({ title: 'Log ta nutrition', text: 'Aucun repas enregistre. Renseigne tes repas pour des conseils precis.', tint: 'blue' });
+  }
+
+  // Surentrainement
+  if (weeklySessions > 5 && bc.proteinStatus !== 'optimal') {
+    tips.push({ title: 'Recuperation', text: 'Beaucoup de seances + proteines insuffisantes. Risque de surentrainement.', tint: 'red' });
+  }
+
+  return tips;
 }
 
 module.exports = { getDashboardOverview };

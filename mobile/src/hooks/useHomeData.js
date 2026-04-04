@@ -207,7 +207,7 @@ export function useHomeData() {
     return days.size;
   }, [sessions]);
 
-  const recentSessions = useMemo(() => sessions.slice(0, 5), [sessions]);
+  const recentSessions = useMemo(() => sessions.slice(0, 7), [sessions]);
 
   const sessionsForHeatmap = useMemo(() => sessions.slice(0, 30), [sessions]);
 

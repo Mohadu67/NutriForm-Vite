@@ -20,7 +20,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import SafeImage from '../../components/ui/SafeImage';
 import { useSharedSession } from '../../contexts/SharedSessionContext';
-import { theme } from '../../theme';
 import { BodyPicker, ZONE_LABELS } from '../../components/BodyPicker';
 import { useWorkout } from '../../contexts/WorkoutContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -657,7 +656,7 @@ export default function ExercicesScreen() {
             <Ionicons
               name={isFavorite ? 'heart' : 'heart-outline'}
               size={22}
-              color={isFavorite ? '#EF4444' : (isDark ? '#555' : '#CCC')}
+              color={isFavorite ? '#ef4444' : (isDark ? '#7a7a88' : '#a8a29e')}
             />
           </TouchableOpacity>
         </View>
@@ -688,7 +687,7 @@ export default function ExercicesScreen() {
             <Ionicons
               name={showFavoritesOnly ? 'heart' : 'heart-outline'}
               size={20}
-              color={showFavoritesOnly ? '#FFF' : (isDark ? '#888' : '#666')}
+              color={showFavoritesOnly ? '#FFF' : (isDark ? '#7a7a88' : '#78716c')}
             />
             {favorites.length > 0 && (
               <Text style={[
@@ -705,17 +704,17 @@ export default function ExercicesScreen() {
 
       {/* Search bar */}
       <View style={[styles.searchBar, isDark && styles.cardDark]}>
-        <Ionicons name="search" size={20} color={isDark ? '#888' : theme.colors.text.tertiary} />
+        <Ionicons name="search" size={20} color={isDark ? '#7a7a88' : '#a8a29e'} />
         <TextInput
           style={[styles.searchInput, isDark && styles.textDark]}
           placeholder="Rechercher un exercice..."
-          placeholderTextColor={isDark ? '#888' : theme.colors.text.tertiary}
+          placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
           value={searchText}
           onChangeText={setSearchText}
         />
         {searchText.length > 0 && (
           <TouchableOpacity onPress={() => setSearchText('')}>
-            <Ionicons name="close-circle" size={20} color={isDark ? '#888' : theme.colors.text.tertiary} />
+            <Ionicons name="close-circle" size={20} color={isDark ? '#7a7a88' : '#a8a29e'} />
           </TouchableOpacity>
         )}
       </View>
@@ -735,7 +734,7 @@ export default function ExercicesScreen() {
             <Ionicons
               name={totalSessions >= MAX_SESSIONS_FREE ? 'warning' : 'flash'}
               size={20}
-              color={totalSessions >= MAX_SESSIONS_FREE ? '#EF4444' : '#F7B186'}
+              color={totalSessions >= MAX_SESSIONS_FREE ? '#ef4444' : '#72baa1'}
             />
             <View style={styles.sessionsCounterText}>
               <Text style={[styles.sessionsCounterLabel, isDark && styles.textDark]}>
@@ -804,12 +803,12 @@ export default function ExercicesScreen() {
                   onPress={() => toggleType(key)}
                 >
                   {isSelected && (
-                    <Ionicons name="checkmark-circle" size={16} color={isDark ? '#F7B186' : theme.colors.primary} />
+                    <Ionicons name="checkmark-circle" size={16} color="#72baa1" />
                   )}
                   <Ionicons
                     name={config.icon}
                     size={18}
-                    color={isSelected ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#9CA3AF' : '#6B7280')}
+                    color={isSelected ? '#72baa1' : (isDark ? '#c1c1cb' : '#78716c')}
                   />
                   <Text style={[
                     styles.typeTabText,
@@ -853,7 +852,7 @@ export default function ExercicesScreen() {
                   onPress={() => toggleEquipment(equip)}
                 >
                   {isSelected && (
-                    <Ionicons name="checkmark" size={14} color={isDark ? '#F7B186' : theme.colors.primary} style={{ marginRight: 4 }} />
+                    <Ionicons name="checkmark" size={14} color="#72baa1" style={{ marginRight: 4 }} />
                   )}
                   <Text style={[
                     styles.equipmentChipText,
@@ -876,7 +875,7 @@ export default function ExercicesScreen() {
           >
             <View style={styles.filterButtonContent}>
               <View style={[styles.filterIconContainer, selectedMuscles.length > 0 && styles.filterIconContainerActive]}>
-                <Ionicons name="body" size={22} color={selectedMuscles.length > 0 ? '#FFF' : theme.colors.primary} />
+                <Ionicons name="body" size={22} color={selectedMuscles.length > 0 ? '#FFF' : '#72baa1'} />
               </View>
               <View style={styles.filterTextContainer}>
                 <Text style={[styles.filterTitle, isDark && styles.textDark]}>
@@ -894,7 +893,7 @@ export default function ExercicesScreen() {
                 <Text style={styles.filterBadgeText}>{selectedMuscles.length}</Text>
               </View>
             ) : (
-              <Ionicons name="chevron-forward" size={20} color={isDark ? '#666' : theme.colors.text.tertiary} />
+              <Ionicons name="chevron-forward" size={20} color={isDark ? '#7a7a88' : '#a8a29e'} />
             )}
           </TouchableOpacity>
         </>
@@ -925,7 +924,7 @@ export default function ExercicesScreen() {
         <Ionicons
           name={showFavoritesOnly ? 'heart-outline' : 'search-outline'}
           size={48}
-          color={isDark ? '#555' : '#CCC'}
+          color={isDark ? '#7a7a88' : '#a8a29e'}
         />
       </View>
       <Text style={[styles.emptyTitle, isDark && styles.emptyTitleDark]}>
@@ -949,7 +948,7 @@ export default function ExercicesScreen() {
     return (
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <ActivityIndicator size="large" color="#72baa1" />
           <Text style={[styles.loadingText, isDark && styles.loadingTextDark]}>
             Chargement des exercices...
           </Text>
@@ -988,7 +987,7 @@ export default function ExercicesScreen() {
           {/* Modal Header */}
           <View style={[styles.modalHeader, isDark && styles.modalHeaderDark]}>
             <TouchableOpacity onPress={() => setShowBodyPicker(false)}>
-              <Ionicons name="close" size={28} color={isDark ? '#FFF' : theme.colors.text.primary} />
+              <Ionicons name="close" size={28} color={isDark ? '#f3f3f6' : '#1c1917'} />
             </TouchableOpacity>
             <Text style={[styles.modalTitle, isDark && styles.textDark]}>
               Selectionner les muscles
@@ -1040,10 +1039,10 @@ export default function ExercicesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background.light,
+    backgroundColor: '#fcfbf9',
   },
   containerDark: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#0e0e11',
   },
   loadingContainer: {
     flex: 1,
@@ -1053,18 +1052,18 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: theme.colors.text.secondary,
+    color: '#78716c',
     marginTop: 8,
   },
   loadingTextDark: {
-    color: '#888',
+    color: '#c1c1cb',
   },
   listContent: {
-    padding: theme.spacing.lg,
+    padding: 16,
     paddingBottom: 180,
   },
   header: {
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
   },
   headerTop: {
     flexDirection: 'row',
@@ -1072,71 +1071,70 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   title: {
-    fontSize: theme.fontSize['2xl'],
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1c1917',
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
     marginTop: 4,
   },
   subtitleDark: {
-    color: '#888888',
+    color: '#c1c1cb',
   },
   textDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   favoritesToggle: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#f5f5f4',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 20,
+    borderRadius: 12,
     gap: 6,
     minHeight: 36,
   },
   favoritesToggleActive: {
-    backgroundColor: '#EF4444',
+    backgroundColor: '#ef4444',
   },
   favoritesToggleDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#1f1f26',
     borderWidth: 1,
-    borderColor: '#3A3A3A',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   favoritesCount: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: '#78716c',
   },
   favoritesCountActive: {
     color: '#FFF',
   },
   favoritesCountDark: {
-    color: '#CCC',
+    color: '#c1c1cb',
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   cardDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   searchInput: {
     flex: 1,
-    marginLeft: theme.spacing.sm,
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.primary,
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#1c1917',
     padding: 0,
   },
   filterSectionHeader: {
@@ -1149,24 +1147,24 @@ const styles = StyleSheet.create({
   },
   filterSectionTitle: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#6B7280',
+    fontWeight: '700',
+    color: '#78716c',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   clearSectionText: {
     fontSize: 13,
-    color: theme.colors.primary,
+    color: '#72baa1',
     fontWeight: '600',
   },
   clearSectionTextDark: {
-    color: '#F7B186',
+    color: '#72baa1',
   },
   textMutedDark: {
-    color: '#9CA3AF',
+    color: '#7a7a88',
   },
   typeScroll: {
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
   },
   typeScrollContent: {
     gap: 8,
@@ -1176,43 +1174,43 @@ const styles = StyleSheet.create({
   typeTab: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#f5f5f4',
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 10,
     gap: 6,
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   typeTabDark: {
-    backgroundColor: '#1F1F1F',
-    borderColor: '#333',
+    backgroundColor: '#1f1f26',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   typeTabActive: {
-    backgroundColor: `${theme.colors.primary}15`,
-    borderColor: theme.colors.primary,
+    backgroundColor: 'rgba(114,186,161,0.12)',
+    borderColor: 'rgba(114,186,161,0.3)',
   },
   typeTabActiveDark: {
-    backgroundColor: 'rgba(247, 177, 134, 0.15)',
-    borderColor: '#F7B186',
+    backgroundColor: 'rgba(114,186,161,0.15)',
+    borderColor: 'rgba(114,186,161,0.3)',
   },
   typeTabText: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#6B7280',
+    color: '#78716c',
   },
   typeTabTextActive: {
-    color: theme.colors.primary,
+    color: '#72baa1',
     fontWeight: '600',
   },
   typeTabTextDark: {
-    color: '#9CA3AF',
+    color: '#c1c1cb',
   },
   typeTabTextActiveDark: {
-    color: '#F7B186',
+    color: '#72baa1',
   },
   equipmentScroll: {
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
   },
   equipmentScrollContent: {
     gap: 8,
@@ -1225,50 +1223,47 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#efedea',
+    backgroundColor: '#f5f5f4',
   },
   equipmentChipActive: {
-    backgroundColor: `${theme.colors.primary}15`,
-    borderColor: theme.colors.primary,
+    backgroundColor: 'rgba(114,186,161,0.12)',
+    borderColor: 'rgba(114,186,161,0.3)',
   },
   equipmentChipDark: {
-    backgroundColor: '#1F1F1F',
-    borderColor: '#333',
+    backgroundColor: '#1f1f26',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   equipmentChipActiveDark: {
-    backgroundColor: 'rgba(247, 177, 134, 0.15)',
-    borderColor: '#F7B186',
+    backgroundColor: 'rgba(114,186,161,0.15)',
+    borderColor: 'rgba(114,186,161,0.3)',
   },
   equipmentChipText: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#6B7280',
+    color: '#78716c',
   },
   equipmentChipTextActive: {
-    color: theme.colors.primary,
+    color: '#72baa1',
     fontWeight: '600',
   },
   equipmentChipTextDark: {
-    color: '#9CA3AF',
+    color: '#c1c1cb',
   },
   equipmentChipTextActiveDark: {
-    color: '#F7B186',
+    color: '#72baa1',
   },
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   filterButtonContent: {
     flexDirection: 'row',
@@ -1279,29 +1274,29 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: `${theme.colors.primary}15`,
+    backgroundColor: 'rgba(114,186,161,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   filterIconContainerActive: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
   },
   filterTextContainer: {
-    marginLeft: theme.spacing.md,
+    marginLeft: 12,
     flex: 1,
   },
   filterTitle: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1c1917',
   },
   filterSubtitle: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
     marginTop: 2,
   },
   filterBadge: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
     width: 24,
     height: 24,
     borderRadius: 12,
@@ -1317,45 +1312,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
     paddingHorizontal: 4,
   },
   activeFiltersText: {
     fontSize: 13,
-    color: '#666',
+    color: '#78716c',
   },
   activeFiltersTextDark: {
-    color: '#888',
+    color: '#c1c1cb',
   },
   clearFiltersText: {
     fontSize: 13,
-    color: theme.colors.primary,
+    color: '#72baa1',
     fontWeight: '500',
   },
   resultsHeader: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.md,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1c1917',
+    marginBottom: 12,
   },
   resultsHeaderDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   exerciceCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   exerciceCardDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   exerciceImage: {
     width: 56,
@@ -1363,48 +1356,48 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: theme.spacing.md,
+    marginRight: 12,
   },
   exerciceInfo: {
     flex: 1,
   },
   exerciceName: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1c1917',
   },
   exerciceNameDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   exerciceMuscle: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
+    fontSize: 12,
+    color: '#a8a29e',
     marginTop: 2,
   },
   exerciceMuscleDark: {
-    color: theme.colors.primary,
+    color: '#7a7a88',
   },
   exerciceTags: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginTop: theme.spacing.xs,
+    gap: 8,
+    marginTop: 4,
   },
   difficultyTag: {
     paddingVertical: 2,
-    paddingHorizontal: theme.spacing.sm,
-    borderRadius: theme.borderRadius.sm,
+    paddingHorizontal: 8,
+    borderRadius: 6,
   },
   difficultyText: {
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 11,
+    fontWeight: '500',
   },
   equipmentText: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.text.tertiary,
+    fontSize: 11,
+    color: '#a8a29e',
   },
   equipmentTextDark: {
-    color: '#666',
+    color: '#7a7a88',
   },
   exerciceActions: {
     flexDirection: 'column',
@@ -1414,197 +1407,181 @@ const styles = StyleSheet.create({
   quickAddButton: {
     width: 32,
     height: 32,
-    borderRadius: 16,
-    backgroundColor: '#22C55E',
+    borderRadius: 10,
+    backgroundColor: '#72baa1',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#22C55E',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
   },
   quickAddButtonActive: {
-    backgroundColor: '#16A34A',
+    backgroundColor: '#22c55e',
   },
   favoriteButton: {
     padding: 8,
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: theme.spacing.xl * 2,
+    paddingVertical: 48,
   },
   emptyIconContainer: {
     width: 100,
     height: 100,
-    borderRadius: 50,
-    backgroundColor: '#F5F5F5',
+    borderRadius: 20,
+    backgroundColor: 'rgba(168,162,158,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: 16,
   },
   emptyIconContainerDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   emptyTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1c1917',
   },
   emptyTitleDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   emptyText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
-    marginTop: theme.spacing.xs,
+    fontSize: 13,
+    color: '#78716c',
+    marginTop: 4,
     textAlign: 'center',
-    paddingHorizontal: theme.spacing.xl,
+    paddingHorizontal: 24,
   },
   emptyTextDark: {
-    color: '#888',
+    color: '#c1c1cb',
   },
   emptyButton: {
-    marginTop: theme.spacing.lg,
-    backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.md,
+    marginTop: 16,
+    backgroundColor: '#72baa1',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
   },
   emptyButtonText: {
     color: '#FFFFFF',
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 13,
+    fontWeight: '500',
   },
 
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: theme.colors.background.light,
+    backgroundColor: '#fcfbf9',
   },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: theme.spacing.lg,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border.light,
+    borderBottomColor: '#efedea',
   },
   modalHeaderDark: {
-    borderBottomColor: '#333',
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   modalTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1c1917',
   },
   modalReset: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 14,
+    color: '#72baa1',
+    fontWeight: '500',
   },
   bodyPickerContainer: {
-    padding: theme.spacing.lg,
+    padding: 16,
     alignItems: 'center',
   },
   modalFooter: {
-    padding: theme.spacing.lg,
+    padding: 16,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border.light,
+    borderTopColor: '#efedea',
   },
   modalFooterDark: {
-    borderTopColor: '#333',
+    borderTopColor: 'rgba(255,255,255,0.06)',
   },
   applyButton: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
+    backgroundColor: '#72baa1',
+    borderRadius: 14,
+    padding: 14,
     alignItems: 'center',
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
   applyButtonText: {
     color: '#FFFFFF',
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semibold,
+    fontSize: 14,
+    fontWeight: '600',
   },
 
   // Compteur de séances
   sessionsCounterCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    marginHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    borderLeftWidth: 4,
-    borderLeftColor: '#F7B186',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   sessionsCounterCardDark: {
-    backgroundColor: '#1F2937',
-    borderLeftColor: '#A78BFA',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   sessionsCounterContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
+    gap: 8,
+    marginBottom: 8,
   },
   sessionsCounterText: {
     flex: 1,
   },
   sessionsCounterLabel: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
     fontWeight: '500',
   },
   sessionsCounterValue: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
-    color: '#F7B186',
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#72baa1',
     marginTop: 2,
   },
   sessionsCounterProgress: {
     height: 4,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#efedea',
     borderRadius: 2,
-    marginBottom: theme.spacing.sm,
+    marginBottom: 8,
     overflow: 'hidden',
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#F7B186',
+    backgroundColor: '#72baa1',
     borderRadius: 2,
   },
   sessionsCounterCTA: {
-    fontSize: theme.fontSize.sm,
-    color: '#F7B186',
-    fontWeight: theme.fontWeight.semiBold,
+    fontSize: 13,
+    color: '#72baa1',
+    fontWeight: '600',
     textAlign: 'right',
   },
   sessionsCounterCardLimitReached: {
-    borderLeftColor: '#EF4444',
+    borderColor: 'rgba(239,68,68,0.2)',
   },
   sessionsCounterValueWarning: {
-    color: '#EF4444',
+    color: '#ef4444',
   },
   progressBarFull: {
-    backgroundColor: '#EF4444',
+    backgroundColor: '#ef4444',
   },
   sessionsCounterCTAWarning: {
-    color: '#EF4444',
+    color: '#ef4444',
   },
   sessionsCounterWarningText: {
-    fontSize: theme.fontSize.xs,
-    color: '#EF4444',
-    marginTop: theme.spacing.xs,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 11,
+    color: '#ef4444',
+    marginTop: 4,
+    fontWeight: '500',
   },
 });
