@@ -162,7 +162,7 @@ export const useDashboardData = (sessions, records) => {
         const dateB = parseDate(b?.endedAt || b?.date || b?.createdAt);
         return (dateB || 0) - (dateA || 0);
       })
-      .slice(0, 5);
+      .slice(0, 7);
   }, [userSessions, parseDate]);
 
   // Tests RM

@@ -2,12 +2,12 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
-import { theme } from '../../theme';
 
-/**
- * WeeklyGoalSection - Objectif hebdomadaire avec anneau de progression
- * Affiche la progression vers l'objectif de séances de la semaine
- */
+const SIZE = 44;
+const SW = 4;
+const R = (SIZE - SW) / 2;
+const CIRC = 2 * Math.PI * R;
+
 export const WeeklyGoalSection = ({
   stats,
   weeklyGoal = 4,
@@ -15,179 +15,72 @@ export const WeeklyGoalSection = ({
   weeklyCalories = 0,
   onEditGoal,
 }) => {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const primaryColor = theme.colors.primary;
-
-  const remaining = Math.max(0, weeklyGoal - stats.last7Days);
+  const isDark = useColorScheme() === 'dark';
+  const done = stats.last7Days;
   const isCompleted = weeklyProgress >= 100;
-
-  // Calcul pour l'anneau de progression
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (weeklyProgress / 100) * circumference;
+  const remaining = Math.max(0, weeklyGoal - done);
+  const offset = CIRC - (Math.min(weeklyProgress, 100) / 100) * CIRC;
+  const ringColor = isCompleted ? '#22c55e' : '#72baa1';
 
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
-          Objectif semaine
+    <View style={[s.container, isDark && s.containerDark]}>
+      {/* Mini ring */}
+      <View style={s.ringWrap}>
+        <Svg width={SIZE} height={SIZE}>
+          <Circle cx={SIZE / 2} cy={SIZE / 2} r={R}
+            fill="none" stroke={isDark ? 'rgba(255,255,255,0.08)' : '#e8e8e8'} strokeWidth={SW} />
+          <Circle cx={SIZE / 2} cy={SIZE / 2} r={R}
+            fill="none" stroke={ringColor} strokeWidth={SW} strokeLinecap="round"
+            strokeDasharray={`${CIRC}`} strokeDashoffset={offset}
+            rotation={-90} origin={`${SIZE / 2},${SIZE / 2}`} />
+        </Svg>
+        <Text style={[s.ringText, isDark && s.tw]}>
+          {done}<Text style={s.ringGoal}>/{weeklyGoal}</Text>
         </Text>
-        {onEditGoal && (
-          <TouchableOpacity
-            onPress={onEditGoal}
-            style={styles.editButton}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name="pencil"
-              size={16}
-              color={isDark ? '#888' : theme.colors.text.tertiary}
-            />
-          </TouchableOpacity>
+      </View>
+
+      {/* Info */}
+      <View style={s.info}>
+        <Text style={[s.title, isDark && s.tw]}>
+          {isCompleted ? 'Objectif atteint !' : `${remaining} séance${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}`}
+        </Text>
+        {weeklyCalories > 0 && (
+          <Text style={s.sub}>{weeklyCalories.toLocaleString()} kcal cette semaine</Text>
         )}
       </View>
 
-      {/* Content */}
-      <View style={styles.content}>
-        {/* Progress Ring */}
-        <View style={styles.progressRingContainer}>
-          <Svg width={120} height={120} viewBox="0 0 100 100">
-            {/* Background circle */}
-            <Circle
-              cx="50"
-              cy="50"
-              r={radius}
-              stroke={isDark ? '#3A3A3A' : '#E5E7EB'}
-              strokeWidth="8"
-              fill="none"
-            />
-            {/* Progress circle */}
-            <Circle
-              cx="50"
-              cy="50"
-              r={radius}
-              stroke={isCompleted ? '#22C55E' : primaryColor}
-              strokeWidth="8"
-              fill="none"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              transform="rotate(-90 50 50)"
-            />
-          </Svg>
-          {/* Center text */}
-          <View style={styles.progressTextContainer}>
-            <Text style={[styles.progressValue, isDark && styles.progressValueDark]}>
-              {stats.last7Days}
-            </Text>
-            <Text style={[styles.progressGoal, isDark && styles.progressGoalDark]}>
-              /{weeklyGoal}
-            </Text>
-          </View>
-        </View>
-
-        {/* Info */}
-        <View style={styles.progressInfo}>
-          <Text style={[styles.progressStatus, isDark && styles.progressStatusDark]}>
-            {isCompleted
-              ? 'Objectif atteint !'
-              : `${remaining} séance${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}`}
-          </Text>
-          {weeklyCalories > 0 && (
-            <Text style={[styles.progressCalories, isDark && styles.progressCaloriesDark]}>
-              {weeklyCalories.toLocaleString()} kcal brûlées cette semaine
-            </Text>
-          )}
-        </View>
-      </View>
+      {/* Edit */}
+      {onEditGoal && (
+        <TouchableOpacity onPress={onEditGoal} style={s.editBtn} activeOpacity={0.7}>
+          <Ionicons name="pencil" size={14} color="#a8a29e" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#efedea',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 14,
   },
   containerDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: theme.spacing.md,
-  },
-  sectionTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
-  },
-  sectionTitleDark: {
-    color: '#FFFFFF',
-  },
-  editButton: {
-    padding: theme.spacing.xs,
-  },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.lg,
-  },
-  progressRingContainer: {
-    width: 120,
-    height: 120,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  progressTextContainer: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  progressValue: {
-    fontSize: theme.fontSize['2xl'],
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
-  },
-  progressValueDark: {
-    color: '#FFFFFF',
-  },
-  progressGoal: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.text.tertiary,
-  },
-  progressGoalDark: {
-    color: '#777777',
-  },
-  progressInfo: {
-    flex: 1,
-    gap: theme.spacing.xs,
-  },
-  progressStatus: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.text.primary,
-  },
-  progressStatusDark: {
-    color: '#FFFFFF',
-  },
-  progressCalories: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
-  },
-  progressCaloriesDark: {
-    color: '#999999',
-  },
+  ringWrap: { width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' },
+  ringText: { position: 'absolute', fontSize: 13, fontWeight: '800', color: '#1c1917' },
+  ringGoal: { fontSize: 10, fontWeight: '500', color: '#a8a29e' },
+  tw: { color: '#f3f3f6' },
+  info: { flex: 1, gap: 2 },
+  title: { fontSize: 14, fontWeight: '700', color: '#1c1917' },
+  sub: { fontSize: 11, color: '#a8a29e' },
+  editBtn: { padding: 6 },
 });

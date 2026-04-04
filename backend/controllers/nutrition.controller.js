@@ -230,6 +230,39 @@ exports.getMonthlyTrend = async (req, res) => {
 };
 
 /**
+ * GET /api/nutrition/carousel/:date — Carousel data (3 slides)
+ * All computations done server-side; frontend only renders.
+ */
+exports.getCarouselData = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const date = req.params.date || new Date().toISOString().split('T')[0];
+    const data = await nutritionService.getCarouselData(userId, date);
+    res.json({ success: true, ...data });
+  } catch (error) {
+    logger.error('Erreur getCarouselData:', error);
+    res.status(500).json({ message: 'Erreur lors du chargement du carousel.' });
+  }
+};
+
+/**
+ * GET /api/nutrition/week-bar — Week bar data (progress per day, N weeks)
+ * Query params: ?date=YYYY-MM-DD&weeks=5
+ */
+exports.getWeekBarData = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const date = req.query.date || new Date().toISOString().split('T')[0];
+    const weeks = Math.min(parseInt(req.query.weeks) || 5, 12);
+    const data = await nutritionService.getWeekBarData(userId, date, weeks);
+    res.json({ success: true, ...data });
+  } catch (error) {
+    logger.error('Erreur getWeekBarData:', error);
+    res.status(500).json({ message: 'Erreur lors du chargement de la barre semaine.' });
+  }
+};
+
+/**
  * GET /api/nutrition/goals — Get user nutrition goals
  */
 exports.getGoals = async (req, res) => {

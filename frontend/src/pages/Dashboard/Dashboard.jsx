@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import usePageTitle from "../../hooks/usePageTitle.js";
@@ -29,20 +29,18 @@ import { storage } from "../../shared/utils/storage.js";
 import { dashboardLogger } from "../../shared/utils/logger.js";
 
 // Composants extraits
-import { NutritionWidget } from "./components/NutritionWidget.jsx";
+import { DashboardCarousel } from "./components/DashboardCarousel.jsx";
 import { WeeklyGoalSection } from "./components/WeeklyGoalSection.jsx";
 import { QuickActions } from "./components/QuickActions.jsx";
 import { RecentActivity } from "./components/RecentActivity.jsx";
-import { CardioStats } from "./components/CardioStats.jsx";
-import { BodyMetrics } from "./components/BodyMetrics.jsx";
 import { MuscleHeatmap } from "./components/MuscleHeatmap.jsx";
-import { WeeklySummary } from "./components/WeeklySummary.jsx";
 
 // Hooks personnalisés pour la logique métier
 import { useDashboardData } from "./hooks/useDashboardData.js";
 import { useSessionManagement } from "./hooks/useSessionManagement.js";
 import { useBadges } from "./hooks/useBadges.js";
 import { useWeeklyGoal } from "./hooks/useWeeklyGoal.js";
+import { useDashboardOverview } from "./hooks/useDashboardOverview.js";
 
 export default function Dashboard() {
   usePageTitle("Dashboard");
@@ -51,6 +49,13 @@ export default function Dashboard() {
   const [subscriptionTier, setSubscriptionTier] = useState(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [expandedRmId, setExpandedRmId] = useState(null);
+  const [activitySlide, setActivitySlide] = useState(0);
+  const activityScrollRef = useRef(null);
+  const handleActivityScroll = useCallback(() => {
+    if (!activityScrollRef.current) return;
+    const { scrollLeft, clientWidth } = activityScrollRef.current;
+    setActivitySlide(Math.round(scrollLeft / clientWidth));
+  }, []);
 
   // Vérification auth et subscription
   useEffect(() => {
@@ -124,6 +129,9 @@ export default function Dashboard() {
     setShowBadgesPopup
   } = useBadges(stats, records);
 
+  // Backend-computed overview (for StatsOverview, NutritionWidget, WeeklyGoal)
+  const { overview } = useDashboardOverview();
+
   // Callbacks pour mettre à jour le state après suppression/renommage de session
   const handleSessionDeleted = useCallback((sessionId) => {
     setUserSessions(prev => prev.filter(s => (s.id || s._id) !== sessionId));
@@ -173,7 +181,7 @@ export default function Dashboard() {
   const isFreeUser = subscriptionTier === 'free';
 
   // Pour les gratuits : limiter à 5 dernières séances
-  const limitedRecentSessions = isFreeUser ? recentSessions.slice(0, 5) : recentSessions;
+  const limitedRecentSessions = isFreeUser ? recentSessions.slice(0, 7) : recentSessions.slice(0, 7);
 
   // Pour les gratuits : limiter à 3 badges starter (IDs réels de useBadges.js)
   const STARTER_BADGE_IDS = ['first', 'five', 'streak3'];
@@ -245,67 +253,65 @@ export default function Dashboard() {
           {status === "loading" && <p className={style.loading}>Chargement...</p>}
           {status === "error" && <p className={style.error}>{error}</p>}
 
-          {/* ── Bloc 1 : Motivation + Objectif ── */}
+          {/* ── Haut compact : Actions + Objectif ── */}
+          <QuickActions navigate={navigate} subscriptionTier={subscriptionTier} />
 
-          {/* Recap motivant de la semaine */}
-          {stats.totalSessions > 0 && (
-            <WeeklySummary
-              weeklySessions={stats.last7Days}
-              weeklyCalories={weeklyCalories}
-              userName={capitalizedName}
-            />
-          )}
-
-          {/* Objectif semaine */}
           <WeeklyGoalSection
-            stats={stats}
+            sessionsThisWeek={overview?.stats?.sessionsThisWeek ?? stats.last7Days}
             weeklyGoal={weeklyGoal}
-            weeklyProgress={weeklyProgress}
-            weeklyCalories={weeklyCalories}
+            weeklyCalories={overview?.stats?.weeklyCalories ?? weeklyCalories}
             onEditGoal={handleOpenGoalModal}
           />
 
-          {/* ── Actions rapides ── */}
-          <QuickActions navigate={navigate} subscriptionTier={subscriptionTier} />
-
-          {/* ── Bloc 2 : Activité récente ── */}
-          <RecentActivity
-            recentSessions={limitedRecentSessions}
-            editingSessionId={editingSessionId}
-            editingSessionName={editingSessionName}
-            formatDate={formatDate}
-            extractSessionCalories={extractSessionCalories}
-            editInputRef={editInputRef}
-            onStartEdit={handleStartEditSessionName}
-            onSaveSessionName={handleSaveSessionName}
-            onCancelEdit={handleCancelEdit}
-            onDeleteSession={handleDeleteSession}
-            onEditSessionNameChange={setEditingSessionName}
-            isFreeUser={isFreeUser}
-            totalSessions={recentSessions.length}
+          {/* ── Carousel "Mon resume" (2 slides) ── */}
+          <DashboardCarousel
+            stats={overview?.stats}
+            weeklyCalories={weeklyCalories}
+            nutrition={overview?.nutrition}
+            bodyCompRecap={overview?.bodyCompRecap}
+            tips={overview?.tips}
           />
 
-          {/* ── Bloc 3 : Nutrition + Analyse ── */}
-
-          {/* Nutrition du jour */}
-          <NutritionWidget isPremium={!isFreeUser} />
-
-          {/* Heatmap musculaire */}
-          {stats.totalSessions > 0 && (
-            <section className={style.heatmapSection}>
-              <h2 className={style.sectionTitle}>Répartition musculaire</h2>
-              <MuscleHeatmap sessions={userSessions} />
-            </section>
-          )}
-
-          {/* Body Metrics + Cardio */}
-          <BodyMetrics
-            weightData={weightData}
-            calorieTargets={calorieTargets}
-            weightChange={weightChange}
-          />
-
-          <CardioStats sportStats={sportStats} />
+          {/* ── Carousel Activite + Heatmap ── */}
+          <div className={style.dcWrap}>
+            <div className={style.dcScroll} ref={activityScrollRef} onScroll={handleActivityScroll}>
+              <div className={style.dcSlide}>
+                <div className={style.dcCard} style={{ overflow: 'auto' }}>
+                  <h3 className={style.dcCardTitle}>Activite recente</h3>
+                  <RecentActivity
+                    recentSessions={limitedRecentSessions}
+                    editingSessionId={editingSessionId}
+                    editingSessionName={editingSessionName}
+                    formatDate={formatDate}
+                    extractSessionCalories={extractSessionCalories}
+                    editInputRef={editInputRef}
+                    onStartEdit={handleStartEditSessionName}
+                    onSaveSessionName={handleSaveSessionName}
+                    onCancelEdit={handleCancelEdit}
+                    onDeleteSession={handleDeleteSession}
+                    onEditSessionNameChange={setEditingSessionName}
+                    isFreeUser={isFreeUser}
+                    totalSessions={recentSessions.length}
+                  />
+                </div>
+              </div>
+              {stats.totalSessions > 0 && (
+                <div className={style.dcSlide}>
+                  <div className={style.dcCard}>
+                    <h3 className={style.dcCardTitle}>Repartition musculaire</h3>
+                    <MuscleHeatmap sessions={userSessions} />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className={style.dcDots}>
+              {[0, 1].map((i) => (
+                <button key={i} className={`${style.dcDot} ${i === activitySlide ? style.dcDotActive : ''}`}
+                  onClick={() => activityScrollRef.current?.scrollTo({ left: i * activityScrollRef.current.clientWidth, behavior: 'smooth' })}
+                  aria-label={`Slide ${i + 1}`} />
+              ))}
+            </div>
+          </div>
 
           {/* 1RM History */}
           {rmTests.length > 0 && (

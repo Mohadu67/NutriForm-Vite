@@ -262,6 +262,7 @@ app.use('/api/biorhythm', biorhythmRoutes);
 app.use('/api/body-composition', bodyCompositionRoutes);
 app.use('/api/social', followRoutes);
 app.use('/api/barcode', barcodeRoutes);
+app.use('/api/dashboard', require('./routes/dashboard.route'));
 app.use('/api/recovery', recoveryRoutes);
 app.use('/api/shared-sessions', require('./routes/sharedSession.route'));
 app.use('/api/admin/users', require('./routes/adminUser.route'));

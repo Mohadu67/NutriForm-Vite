@@ -1399,3 +1399,105 @@ exports.rateRecipe = async (req, res) => {
     return res.status(500).json({ error: "server_error" });
   }
 };
+
+/**
+ * Obtenir les recettes similaires à une recette donnée
+ * GET /api/recipes/:id/similar
+ */
+exports.getSimilarRecipes = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const limit = Math.min(parseInt(req.query.limit) || 8, 20);
+
+    const recipe = await Recipe.findById(id)
+      .select('tags goal mealType category dietType difficulty nutrition')
+      .lean();
+
+    if (!recipe) {
+      return res.status(404).json({ success: false, message: 'Recette introuvable' });
+    }
+
+    // Construire les critères de similarité avec scoring
+    const orConditions = [];
+    if (recipe.tags?.length) orConditions.push({ tags: { $in: recipe.tags } });
+    if (recipe.goal?.length) orConditions.push({ goal: { $in: recipe.goal } });
+    if (recipe.mealType?.length) orConditions.push({ mealType: { $in: recipe.mealType } });
+    if (recipe.category) orConditions.push({ category: recipe.category });
+    if (recipe.dietType?.length) orConditions.push({ dietType: { $in: recipe.dietType } });
+    if (recipe.difficulty) orConditions.push({ difficulty: recipe.difficulty });
+
+    // Plage de calories +/- 30%
+    const cal = recipe.nutrition?.calories;
+    if (cal) {
+      orConditions.push({
+        'nutrition.calories': { $gte: cal * 0.7, $lte: cal * 1.3 },
+      });
+    }
+
+    if (!orConditions.length) {
+      return res.json({ success: true, recipes: [] });
+    }
+
+    // Aggregation avec score de similarité
+    const pipeline = [
+      {
+        $match: {
+          _id: { $ne: recipe._id },
+          isPublished: true,
+          status: 'public',
+          $or: orConditions,
+        },
+      },
+      {
+        $addFields: {
+          similarityScore: {
+            $sum: [
+              // Tags en commun
+              recipe.tags?.length ? {
+                $size: { $ifNull: [{ $setIntersection: ['$tags', recipe.tags] }, []] },
+              } : 0,
+              // Goals en commun
+              recipe.goal?.length ? {
+                $size: { $ifNull: [{ $setIntersection: ['$goal', recipe.goal] }, []] },
+              } : 0,
+              // MealType en commun
+              recipe.mealType?.length ? {
+                $size: { $ifNull: [{ $setIntersection: ['$mealType', recipe.mealType] }, []] },
+              } : 0,
+              // Même catégorie
+              recipe.category ? { $cond: [{ $eq: ['$category', recipe.category] }, 2, 0] } : 0,
+              // Même difficulté
+              recipe.difficulty ? { $cond: [{ $eq: ['$difficulty', recipe.difficulty] }, 1, 0] } : 0,
+              // Bonus popularité
+              { $cond: [{ $gte: ['$avgRating', 3.5] }, 1, 0] },
+            ],
+          },
+        },
+      },
+      { $sort: { similarityScore: -1, avgRating: -1, views: -1 } },
+      { $limit: limit },
+      {
+        $project: {
+          title: 1,
+          slug: 1,
+          image: 1,
+          nutrition: { calories: 1, proteins: 1 },
+          prepTime: 1,
+          cookTime: 1,
+          totalTime: 1,
+          difficulty: 1,
+          avgRating: 1,
+          tags: 1,
+          servings: 1,
+        },
+      },
+    ];
+
+    const similar = await Recipe.aggregate(pipeline);
+
+    res.json({ success: true, recipes: similar });
+  } catch (error) {
+    logger.error('Erreur getSimilarRecipes:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};

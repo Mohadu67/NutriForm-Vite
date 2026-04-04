@@ -18,6 +18,11 @@ const nutritionGoalSchema = new mongoose.Schema({
     carbs: { type: Number, default: 0 },
     fats: { type: Number, default: 0 },
   },
+  micros: {
+    fiber: { type: Number, default: 30 },
+    sugar: { type: Number, default: 50 },
+    sodium: { type: Number, default: 2300 },
+  },
   goal: {
     type: String,
     enum: ['weight_loss', 'maintenance', 'muscle_gain'],

@@ -156,6 +156,7 @@ export const endpoints = {
     propose: (id) => `/recipes/user/${id}/propose`,
     unpublish: (id) => `/recipes/user/${id}/unpublish`,
     byId: (id) => `/recipes/${id}`,
+    similar: (id) => `/recipes/${id}/similar`,
   },
   upload: {
     profilePhoto: "/upload/profile-photo",
@@ -213,6 +214,11 @@ export const endpoints = {
     summaryWeekly: "/nutrition/summary/weekly",
     summaryMonthly: "/nutrition/summary/monthly",
     goals: "/nutrition/goals",
+    carousel: (date) => `/nutrition/carousel/${date}`,
+    weekBar: "/nutrition/week-bar",
+    scansPlats: "/nutrition/scans/plats",
+    scansIngredients: "/nutrition/scans/ingredients",
+    deleteScan: (type, id) => `/nutrition/scans/${type}/${id}`,
   },
   health: {
     sync: "/health/sync",

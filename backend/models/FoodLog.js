@@ -52,6 +52,8 @@ const foodLogSchema = new mongoose.Schema({
     carbs: { type: Number, default: 0 },
     fats: { type: Number, default: 0 },
     fiber: { type: Number, default: 0 },
+    sugar: { type: Number, default: 0 },
+    sodium: { type: Number, default: 0 },
   },
   notes: {
     type: String,

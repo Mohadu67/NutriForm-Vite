@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BarChartIcon } from './NutritionIcons';
 import style from '../NutritionPage.module.css';
 
 const DAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -10,11 +11,11 @@ export default function WeeklyNutritionChart({ data, isPremium }) {
   if (!isPremium) {
     return (
       <div className={style.premiumTeaser}>
-        <span className={style.premiumTeaserIcon}>📊</span>
+        <span className={style.premiumTeaserIcon}><BarChartIcon size={32} /></span>
         <h3>Graphique hebdomadaire</h3>
-        <p>Visualisez votre consommation sur 7 jours avec des graphiques détaillés</p>
+        <p>Visualisez votre consommation sur 7 jours avec des graphiques detailles</p>
         <button onClick={() => navigate('/pricing')} className={style.btnPrimary}>
-          Débloquer avec Premium
+          Debloquer avec Premium
         </button>
       </div>
     );
@@ -27,7 +28,7 @@ export default function WeeklyNutritionChart({ data, isPremium }) {
 
   return (
     <div className={style.weeklyCard}>
-      <h3 className={style.cardTitle}>Résumé hebdomadaire</h3>
+      <h3 className={style.cardTitle}>Resume hebdomadaire</h3>
       <div className={style.weeklyChart}>
         <svg width="100%" height={chartHeight + 30} viewBox={`0 0 ${data.days.length * 50} ${chartHeight + 30}`}>
           {data.days.map((day, i) => {
@@ -38,22 +39,22 @@ export default function WeeklyNutritionChart({ data, isPremium }) {
 
             return (
               <g key={i}>
-                <rect x={x} y={chartHeight - consumedH} width="14" height={consumedH} rx="3" fill="#3B82F6" opacity={0.8} />
-                <rect x={x + 16} y={chartHeight - burnedH} width="14" height={burnedH} rx="3" fill="#EF4444" opacity={0.8} />
-                <text x={x + 15} y={chartHeight + 18} textAnchor="middle" fontSize="11" fill="#888">{dayLabel}</text>
+                <rect x={x} y={chartHeight - consumedH} width="14" height={consumedH} rx="4" fill="#72baa1" opacity={0.85} />
+                <rect x={x + 16} y={chartHeight - burnedH} width="14" height={burnedH} rx="4" fill="#f0a47a" opacity={0.85} />
+                <text x={x + 15} y={chartHeight + 18} textAnchor="middle" fontSize="11" fill="currentColor" opacity={0.4}>{dayLabel}</text>
               </g>
             );
           })}
         </svg>
       </div>
       <div className={style.weeklyLegend}>
-        <span><span className={style.legendDot} style={{ backgroundColor: '#3B82F6' }} /> Consommé</span>
-        <span><span className={style.legendDot} style={{ backgroundColor: '#EF4444' }} /> Brûlé</span>
+        <span><span className={style.legendDot} style={{ backgroundColor: '#72baa1' }} /> Consomme</span>
+        <span><span className={style.legendDot} style={{ backgroundColor: '#f0a47a' }} /> Brule</span>
       </div>
       {data.averages && (
         <div className={style.weeklyAverages}>
           <span>Moy. calories: <strong>{data.averages.calories}</strong></span>
-          <span>Moy. protéines: <strong>{data.averages.proteins}g</strong></span>
+          <span>Moy. proteines: <strong>{data.averages.proteins}g</strong></span>
         </div>
       )}
     </div>

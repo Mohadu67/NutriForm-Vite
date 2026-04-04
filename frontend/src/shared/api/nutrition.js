@@ -82,6 +82,24 @@ export async function updateNutritionGoals(data) {
 }
 
 /**
+ * Carousel data (3 slides — macros, micros, meal breakdown)
+ */
+export async function getCarouselData(date) {
+  const response = await client.get(endpoints.nutrition.carousel(date));
+  return response.data;
+}
+
+/**
+ * Week bar data (progress per day, N weeks)
+ */
+export async function getWeekBarData(date) {
+  const response = await client.get(endpoints.nutrition.weekBar, {
+    params: { date },
+  });
+  return response.data;
+}
+
+/**
  * Enregistrer les calories brûlées (saisie manuelle)
  */
 export async function syncBurnedCalories(date, caloriesBurned) {

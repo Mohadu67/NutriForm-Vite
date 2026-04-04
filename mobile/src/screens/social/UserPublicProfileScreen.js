@@ -19,9 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 
-import { theme } from '../../theme';
 import social from '../../api/social';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
@@ -47,20 +45,31 @@ const formatDate = (date) => {
 
 const getInitials = (prenom, pseudo) => (prenom || pseudo || '?').charAt(0).toUpperCase();
 
-// ─── Types de défis ───────────────────────────────────────────────────────────
+// ─── Types de defis ───────────────────────────────────────────────────────────
+
+const CHALLENGE_ICONS = {
+  max_pushups: 'fitness',
+  max_pullups: 'arrow-up-circle',
+  max_bench: 'barbell',
+  max_squat: 'body',
+  max_deadlift: 'flash',
+  max_burpees: 'flame',
+  sessions: 'calendar',
+  calories: 'thermometer',
+};
 
 const CHALLENGE_TYPES = [
-  { type: 'max_pushups',  label: 'Max Pompes',          icon: '💪', unit: 'reps', category: 'max',     desc: 'Qui fait le plus de pompes ?' },
-  { type: 'max_pullups',  label: 'Max Tractions',        icon: '🔝', unit: 'reps', category: 'max',     desc: 'Qui fait le plus de tractions ?' },
-  { type: 'max_bench',    label: 'Développé Couché',     icon: '🏋️', unit: 'kg',   category: 'max',     desc: 'Qui soulève le plus lourd ?' },
-  { type: 'max_squat',    label: 'Squat Max',            icon: '🦵', unit: 'kg',   category: 'max',     desc: 'Squat 1RM — épreuve de force' },
-  { type: 'max_deadlift', label: 'Soulevé de Terre',     icon: '⚡', unit: 'kg',   category: 'max',     desc: 'Deadlift 1RM — force pure' },
-  { type: 'max_burpees',  label: 'Max Burpees (60s)',    icon: '🔥', unit: 'reps', category: 'max',     desc: 'Le plus de burpees en 1min' },
-  { type: 'sessions',     label: 'Plus de séances',      icon: '📅', unit: null,   category: 'ongoing', desc: 'Qui s\'entraîne le plus souvent ?' },
-  { type: 'calories',     label: 'Plus de calories',     icon: '🌡️', unit: null,   category: 'ongoing', desc: 'Qui brûle le plus de calories ?' },
+  { type: 'max_pushups',  label: 'Max Pompes',          unit: 'reps', category: 'max',     desc: 'Qui fait le plus de pompes ?' },
+  { type: 'max_pullups',  label: 'Max Tractions',        unit: 'reps', category: 'max',     desc: 'Qui fait le plus de tractions ?' },
+  { type: 'max_bench',    label: 'Developpe Couche',     unit: 'kg',   category: 'max',     desc: 'Qui souleve le plus lourd ?' },
+  { type: 'max_squat',    label: 'Squat Max',            unit: 'kg',   category: 'max',     desc: 'Squat 1RM — epreuve de force' },
+  { type: 'max_deadlift', label: 'Souleve de Terre',     unit: 'kg',   category: 'max',     desc: 'Deadlift 1RM — force pure' },
+  { type: 'max_burpees',  label: 'Max Burpees (60s)',    unit: 'reps', category: 'max',     desc: 'Le plus de burpees en 1min' },
+  { type: 'sessions',     label: 'Plus de seances',      unit: null,   category: 'ongoing', desc: 'Qui s\'entraine le plus souvent ?' },
+  { type: 'calories',     label: 'Plus de calories',     unit: null,   category: 'ongoing', desc: 'Qui brule le plus de calories ?' },
 ];
 
-// ─── Modal de défi ────────────────────────────────────────────────────────────
+// ─── Modal de defi ────────────────────────────────────────────────────────────
 
 function ChallengeModal({ visible, targetUser, onClose, isDark }) {
   const [selected, setSelected] = useState(null);
@@ -90,7 +99,7 @@ function ChallengeModal({ visible, targetUser, onClose, isDark }) {
       });
       setSent(true);
     } catch (err) {
-      setError(err?.response?.data?.message || 'Erreur lors de l\'envoi du défi');
+      setError(err?.response?.data?.message || 'Erreur lors de l\'envoi du defi');
     } finally {
       setSending(false);
     }
@@ -109,16 +118,16 @@ function ChallengeModal({ visible, targetUser, onClose, isDark }) {
                 {/* Glow ring */}
                 <View style={[ms.successGlow, isDark && ms.successGlowDark]}>
                   <View style={[ms.successIconRing, isDark && ms.successIconRingDark]}>
-                    <Text style={ms.successIconText}>⚔️</Text>
+                    <Ionicons name="flash" size={28} color="#72baa1" />
                   </View>
                 </View>
 
-                <Text style={[ms.successTitle, isDark && ms.successTitleDark]}>Défi lancé !</Text>
+                <Text style={[ms.successTitle, isDark && ms.successTitleDark]}>Defi lance !</Text>
 
                 {/* Recap card */}
                 <View style={[ms.successRecap, isDark && ms.successRecapDark]}>
                   <View style={ms.successRecapRow}>
-                    <Text style={ms.successRecapIcon}>{selected?.icon || '⚡'}</Text>
+                    <Ionicons name={CHALLENGE_ICONS[selected?.type] || 'flash'} size={26} color="#72baa1" />
                     <View style={{ flex: 1 }}>
                       <Text style={[ms.successRecapLabel, isDark && ms.successRecapLabelDark]}>{selected?.label}</Text>
                       <Text style={[ms.successRecapDesc, isDark && ms.successRecapDescDark]}>
@@ -130,7 +139,7 @@ function ChallengeModal({ visible, targetUser, onClose, isDark }) {
                 </View>
 
                 <Text style={[ms.successSub, isDark && ms.successSubDark]}>
-                  Une notification a été envoyée.{'\n'}Prépare-toi pour le combat !
+                  Une notification a ete envoyee.{'\n'}Prepare-toi pour le combat !
                 </Text>
 
                 <TouchableOpacity style={ms.successCloseBtn} onPress={handleClose} activeOpacity={0.8}>
@@ -139,9 +148,12 @@ function ChallengeModal({ visible, targetUser, onClose, isDark }) {
               </View>
             ) : (
               <>
-                <Text style={[ms.sheetTitle, isDark && ms.sheetTitleDark]}>⚡ Lancer un défi</Text>
+                <View style={ms.sheetTitleRow}>
+                  <Ionicons name="flash" size={20} color="#72baa1" />
+                  <Text style={[ms.sheetTitle, isDark && ms.sheetTitleDark]}>Lancer un defi</Text>
+                </View>
                 <Text style={[ms.sheetSub, isDark && ms.sheetSubDark]}>
-                  à {targetUser?.prenom || targetUser?.pseudo}
+                  a {targetUser?.prenom || targetUser?.pseudo}
                 </Text>
 
                 {error ? (
@@ -165,7 +177,7 @@ function ChallengeModal({ visible, targetUser, onClose, isDark }) {
                         onPress={() => setSelected(item)}
                         activeOpacity={0.8}
                       >
-                        <Text style={ms.challengeIcon}>{item.icon}</Text>
+                        <Ionicons name={CHALLENGE_ICONS[item.type] || 'flash'} size={22} color={isActive ? '#72baa1' : (isDark ? '#c1c1cb' : '#78716c')} style={{ marginBottom: 6 }} />
                         <Text style={[ms.challengeLabel, isDark && ms.challengeLabelDark]} numberOfLines={2}>{item.label}</Text>
                         <Text style={[ms.challengeDesc, isDark && ms.challengeDescDark]} numberOfLines={2}>{item.desc}</Text>
                         {item.category === 'max' && (
@@ -180,7 +192,7 @@ function ChallengeModal({ visible, targetUser, onClose, isDark }) {
 
                 {selected?.category === 'ongoing' && (
                   <View style={ms.durationPicker}>
-                    <Text style={[ms.durationLabel, isDark && ms.durationLabelDark]}>Durée du défi</Text>
+                    <Text style={[ms.durationLabel, isDark && ms.durationLabelDark]}>Duree du defi</Text>
                     <View style={ms.durationRow}>
                       {[3, 7, 14, 30].map(d => (
                         <TouchableOpacity
@@ -208,7 +220,7 @@ function ChallengeModal({ visible, targetUser, onClose, isDark }) {
                     <ActivityIndicator size="small" color="#FFF" />
                   ) : (
                     <Text style={ms.primaryBtnText}>
-                      {selected ? `Envoyer le défi — ${selected.label}` : 'Sélectionne un type de défi'}
+                      {selected ? `Envoyer le defi — ${selected.label}` : 'Selectionne un type de defi'}
                     </Text>
                   )}
                 </TouchableOpacity>
@@ -264,8 +276,8 @@ function MessageModal({ visible, targetUser, onClose, isDark }) {
 
             {sent ? (
               <View style={ms.successWrap}>
-                <Text style={ms.successEmoji}>💬</Text>
-                <Text style={[ms.successTitle, isDark && ms.successTitleDark]}>Message envoyé !</Text>
+                <Ionicons name="chatbubble" size={56} color="#72baa1" style={{ marginBottom: 16 }} />
+                <Text style={[ms.successTitle, isDark && ms.successTitleDark]}>Message envoye !</Text>
                 <Text style={[ms.successSub, isDark && ms.successSubDark]}>
                   {targetUser?.prenom || targetUser?.pseudo} recevra une notification.
                 </Text>
@@ -275,9 +287,12 @@ function MessageModal({ visible, targetUser, onClose, isDark }) {
               </View>
             ) : (
               <>
-                <Text style={[ms.sheetTitle, isDark && ms.sheetTitleDark]}>
-                  💬 Message à {targetUser?.prenom || targetUser?.pseudo}
-                </Text>
+                <View style={ms.sheetTitleRow}>
+                  <Ionicons name="chatbubble-outline" size={20} color="#72baa1" />
+                  <Text style={[ms.sheetTitle, isDark && ms.sheetTitleDark]}>
+                    Message a {targetUser?.prenom || targetUser?.pseudo}
+                  </Text>
+                </View>
                 <Text style={[ms.sheetSub, isDark && ms.sheetSubDark]}>
                   Vous vous suivez mutuellement — message direct
                 </Text>
@@ -291,13 +306,13 @@ function MessageModal({ visible, targetUser, onClose, isDark }) {
                 <TextInput
                   style={[ms.textarea, isDark && ms.textareaDark]}
                   placeholder="Ton message..."
-                  placeholderTextColor={isDark ? '#555' : '#BBB'}
+                  placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                   value={content}
                   onChangeText={setContent}
                   multiline
                   maxLength={500}
                   textAlignVertical="top"
-                  color={isDark ? '#FFF' : '#111'}
+                  color={isDark ? '#f3f3f6' : '#1c1917'}
                 />
                 <Text style={[ms.charCount, isDark && ms.charCountDark]}>{content.length}/500</Text>
 
@@ -338,18 +353,18 @@ function MiniWorkoutCard({ session, isDark }) {
   return (
     <View style={[styles.miniCard, isDark && styles.miniCardDark]}>
       <Text style={[styles.miniCardName, isDark && styles.miniCardNameDark]} numberOfLines={1}>
-        {session.name || 'Séance'}
+        {session.name || 'Seance'}
       </Text>
       <View style={styles.miniCardStats}>
         <View style={styles.miniStat}>
-          <Ionicons name="time-outline" size={12} color={theme.colors.primary} />
+          <Ionicons name="time-outline" size={12} color="#72baa1" />
           <Text style={[styles.miniStatText, isDark && styles.miniStatTextDark]}>
             {formatDuration(session.durationSec)}
           </Text>
         </View>
         {session.calories > 0 && (
           <View style={styles.miniStat}>
-            <Ionicons name="flame-outline" size={12} color={theme.colors.error} />
+            <Ionicons name="flame-outline" size={12} color="#f0a47a" />
             <Text style={[styles.miniStatText, isDark && styles.miniStatTextDark]}>{session.calories} kcal</Text>
           </View>
         )}
@@ -401,7 +416,7 @@ export default function UserPublicProfileScreen() {
     setInviteLoading(true);
     try {
       await shared.invite(matchIdForUser);
-      Alert.alert('Invitation envoyée !', `${data?.user?.pseudo || 'Ton partenaire'} a été invité.`);
+      Alert.alert('Invitation envoyee !', `${data?.user?.pseudo || 'Ton partenaire'} a ete invite.`);
     } catch (err) {
       Alert.alert('Erreur', err?.response?.data?.message || err?.response?.data?.error || "Impossible d'envoyer l'invitation");
     } finally {
@@ -451,7 +466,7 @@ export default function UserPublicProfileScreen() {
     try {
       if (was) await social.unfollow(userId);
       else await social.follow(userId);
-      // Recharger pour récupérer isMutual à jour
+      // Recharger pour recuperer isMutual a jour
       const res = await social.getUserProfile(userId);
       setData(res.data);
     } catch {
@@ -468,7 +483,7 @@ export default function UserPublicProfileScreen() {
   if (loading) {
     return (
       <View style={[styles.container, isDark && styles.containerDark, styles.centered]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <ActivityIndicator size="large" color="#72baa1" />
       </View>
     );
   }
@@ -486,7 +501,7 @@ export default function UserPublicProfileScreen() {
             style={[styles.backBtn, isDark && styles.backBtnDark]}
             activeOpacity={0.7}
           >
-            <Ionicons name="chevron-back" size={20} color={isDark ? '#FFF' : '#111'} />
+            <Ionicons name="chevron-back" size={20} color={isDark ? '#f3f3f6' : '#1c1917'} />
           </TouchableOpacity>
           <Text style={[styles.topBarTitle, isDark && styles.topBarTitleDark]} numberOfLines={1}>
             {user.pseudo ? `@${user.pseudo}` : user.prenom || 'Profil'}
@@ -499,24 +514,16 @@ export default function UserPublicProfileScreen() {
         {/* Profile card */}
         <View style={[styles.profileCard, isDark && styles.profileCardDark]}>
           {/* Banner */}
-          <LinearGradient
-            colors={[theme.colors.primary, '#F9C4A3']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.profileBanner}
-          />
+          <View style={styles.profileBanner} />
 
           {/* Avatar */}
           <View style={[styles.avatarWrap, isDark && styles.avatarWrapDark]}>
             {user.photo ? (
               <Image source={{ uri: user.photo }} style={styles.avatar} />
             ) : (
-              <LinearGradient
-                colors={[theme.colors.primary, '#F9C4A3']}
-                style={styles.avatarPlaceholder}
-              >
+              <View style={styles.avatarPlaceholder}>
                 <Text style={styles.avatarPlaceholderText}>{getInitials(user.prenom, user.pseudo)}</Text>
-              </LinearGradient>
+              </View>
             )}
           </View>
 
@@ -532,12 +539,12 @@ export default function UserPublicProfileScreen() {
           <View style={[styles.statsRow, isDark && styles.statsRowDark]}>
             <View style={styles.statItem}>
               <Text style={[styles.statValue, isDark && styles.statValueDark]}>{sessionsCount}</Text>
-              <Text style={[styles.statLabel, isDark && styles.statLabelDark]}>Séances</Text>
+              <Text style={[styles.statLabel, isDark && styles.statLabelDark]}>Seances</Text>
             </View>
             <View style={[styles.statDivider, isDark && styles.statDividerDark]} />
             <View style={styles.statItem}>
               <Text style={[styles.statValue, isDark && styles.statValueDark]}>{followersCount}</Text>
-              <Text style={[styles.statLabel, isDark && styles.statLabelDark]}>Abonnés</Text>
+              <Text style={[styles.statLabel, isDark && styles.statLabelDark]}>Abonnes</Text>
             </View>
             <View style={[styles.statDivider, isDark && styles.statDividerDark]} />
             <View style={styles.statItem}>
@@ -556,7 +563,7 @@ export default function UserPublicProfileScreen() {
                 activeOpacity={0.8}
               >
                 {followLoading ? (
-                  <ActivityIndicator size="small" color={isFollowing ? (isDark ? '#7A7D85' : '#666') : '#FFF'} />
+                  <ActivityIndicator size="small" color={isFollowing ? (isDark ? '#7a7a88' : '#78716c') : '#FFF'} />
                 ) : (
                   <Text style={[styles.followButtonText, isFollowing && (isDark ? styles.followingButtonTextDark : styles.followingButtonText)]}>
                     {isFollowing ? '✓ Suivi' : '+ Suivre'}
@@ -569,7 +576,7 @@ export default function UserPublicProfileScreen() {
                 onPress={() => setShowChallenge(true)}
                 activeOpacity={0.8}
               >
-                <Text style={styles.iconBtnEmoji}>⚡</Text>
+                <Ionicons name="flash" size={20} color="#72baa1" />
               </TouchableOpacity>
 
               {isMutual && (
@@ -580,14 +587,14 @@ export default function UserPublicProfileScreen() {
                   activeOpacity={0.8}
                 >
                   {msgLoading
-                    ? <ActivityIndicator size="small" color={theme.colors.primary} />
-                    : <Ionicons name="chatbubble-outline" size={20} color={theme.colors.primary} />
+                    ? <ActivityIndicator size="small" color="#72baa1" />
+                    : <Ionicons name="chatbubble-outline" size={20} color="#72baa1" />
                   }
                 </TouchableOpacity>
               )}
               {matchIdForUser && (
                 <TouchableOpacity
-                  style={[styles.iconBtn, isDark && styles.iconBtnDark, { borderColor: '#72baa1' }]}
+                  style={[styles.iconBtn, isDark && styles.iconBtnDark]}
                   onPress={handleInviteSession}
                   disabled={inviteLoading}
                   activeOpacity={0.8}
@@ -610,7 +617,7 @@ export default function UserPublicProfileScreen() {
               <View style={styles.profileLocationRow}>
                 {profile.location?.city && (
                   <View style={styles.profileLocationItem}>
-                    <Ionicons name="location" size={16} color={theme.colors.primary} />
+                    <Ionicons name="location" size={16} color="#72baa1" />
                     <Text style={[styles.profileLocationText, isDark && styles.profileLocationTextDark]}>
                       {profile.location.city}
                     </Text>
@@ -618,7 +625,7 @@ export default function UserPublicProfileScreen() {
                 )}
                 {profile.age && (
                   <View style={styles.profileLocationItem}>
-                    <Ionicons name="calendar-outline" size={16} color={theme.colors.primary} />
+                    <Ionicons name="calendar-outline" size={16} color="#72baa1" />
                     <Text style={[styles.profileLocationText, isDark && styles.profileLocationTextDark]}>
                       {profile.age} ans
                     </Text>
@@ -630,24 +637,16 @@ export default function UserPublicProfileScreen() {
             {/* Fitness level */}
             {profile.fitnessLevel && (
               <View style={styles.profileLevelRow}>
-                <LinearGradient
-                  colors={
-                    profile.fitnessLevel === 'beginner' ? ['#4CAF50', '#3D9140'] :
-                    profile.fitnessLevel === 'advanced' ? ['#FF6B6B', '#E55A5A'] :
-                    profile.fitnessLevel === 'expert' ? ['#9C27B0', '#7B1FA2'] :
-                    ['#FFC107', '#E0A800']
-                  }
-                  style={styles.profileLevelBadge}
-                >
-                  <Ionicons name="fitness" size={14} color="#FFF" />
-                  <Text style={styles.profileLevelText}>
+                <View style={[styles.profileLevelBadge, isDark && styles.profileLevelBadgeDark]}>
+                  <Ionicons name="fitness" size={14} color="#72baa1" />
+                  <Text style={[styles.profileLevelText, isDark && styles.profileLevelTextDark]}>
                     {profile.fitnessLevel === 'beginner' ? 'Debutant' :
                      profile.fitnessLevel === 'intermediate' ? 'Intermediaire' :
                      profile.fitnessLevel === 'advanced' ? 'Avance' :
                      profile.fitnessLevel === 'expert' ? 'Expert' :
                      profile.fitnessLevel}
                   </Text>
-                </LinearGradient>
+                </View>
               </View>
             )}
 
@@ -682,7 +681,7 @@ export default function UserPublicProfileScreen() {
                           'fitness'
                         }
                         size={14}
-                        color={theme.colors.primary}
+                        color="#72baa1"
                       />
                       <Text style={[styles.profileWorkoutChipText, isDark && styles.profileWorkoutChipTextDark]}>
                         {type}
@@ -698,7 +697,7 @@ export default function UserPublicProfileScreen() {
         {/* Recent sessions */}
         {recentSessions?.length > 0 && (
           <>
-            <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>Séances récentes</Text>
+            <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>Seances recentes</Text>
             {recentSessions.map(session => (
               <MiniWorkoutCard key={session._id} session={session} isDark={isDark} />
             ))}
@@ -707,14 +706,14 @@ export default function UserPublicProfileScreen() {
 
         {recentSessions?.length === 0 && (
           <View style={styles.noSessionsContainer}>
-            <Ionicons name="barbell-outline" size={40} color={isDark ? '#555' : '#DDD'} />
+            <Ionicons name="barbell-outline" size={40} color={isDark ? '#7a7a88' : '#a8a29e'} />
             <Text style={[styles.noSessionsText, isDark && styles.noSessionsTextDark]}>
-              Aucune séance publique
+              Aucune seance publique
             </Text>
           </View>
         )}
 
-        {/* Défis */}
+        {/* Defis */}
         <TouchableOpacity
           style={[styles.challengesNav, isDark && styles.challengesNavDark]}
           onPress={() => {
@@ -724,14 +723,14 @@ export default function UserPublicProfileScreen() {
         >
           <View style={styles.challengesNavLeft}>
             <View style={[styles.challengesNavIcon, isDark && styles.challengesNavIconDark]}>
-              <Text style={{ fontSize: 20 }}>⚡</Text>
+              <Ionicons name="flash" size={20} color="#72baa1" />
             </View>
             <View>
-              <Text style={[styles.challengesNavTitle, isDark && styles.challengesNavTitleDark]}>Défis</Text>
-              <Text style={[styles.challengesNavSub, isDark && styles.challengesNavSubDark]}>Voir tous mes défis</Text>
+              <Text style={[styles.challengesNavTitle, isDark && styles.challengesNavTitleDark]}>Defis</Text>
+              <Text style={[styles.challengesNavSub, isDark && styles.challengesNavSubDark]}>Voir tous mes defis</Text>
             </View>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={isDark ? '#555' : '#CCC'} />
+          <Ionicons name="chevron-forward" size={20} color={isDark ? '#7a7a88' : '#a8a29e'} />
         </TouchableOpacity>
       </ScrollView>
 
@@ -749,8 +748,8 @@ export default function UserPublicProfileScreen() {
 // ─── Styles principaux ────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F2F3F7' },
-  containerDark: { backgroundColor: '#111318' },
+  container: { flex: 1, backgroundColor: '#fcfbf9' },
+  containerDark: { backgroundColor: '#0e0e11' },
   centered: { alignItems: 'center', justifyContent: 'center' },
 
   topBar: {
@@ -764,94 +763,92 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 11,
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#efedea',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
   },
   backBtnDark: {
-    backgroundColor: '#1E2228',
-    shadowOpacity: 0,
-    elevation: 0,
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
-  topBarTitle: { fontSize: 20, fontWeight: '800', color: '#111' },
-  topBarTitleDark: { color: '#FFFFFF' },
+  topBarTitle: { fontSize: 22, fontWeight: '800', color: '#1c1917', letterSpacing: -0.5 },
+  topBarTitleDark: { color: '#f3f3f6' },
 
   scrollContent: { paddingBottom: 180 },
 
   profileCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
     borderRadius: 20,
     marginHorizontal: 16,
     marginBottom: 24,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
-  profileCardDark: { backgroundColor: '#1A1D24' },
+  profileCardDark: {
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
 
-  profileBanner: { height: 100 },
+  profileBanner: {
+    height: 100,
+    backgroundColor: '#72baa1',
+  },
 
   avatarWrap: {
     alignSelf: 'center',
     marginTop: -44,
     marginBottom: 12,
     borderRadius: 46,
-    borderWidth: 4,
-    borderColor: '#FFF',
+    borderWidth: 2,
+    borderColor: '#efedea',
   },
   avatarWrapDark: {
-    borderColor: '#1A1D24',
+    borderColor: '#18181d',
   },
-  avatar: { width: 88, height: 88, borderRadius: 44 },
+  avatar: { width: 88, height: 88, borderRadius: 40 },
   avatarPlaceholder: {
     width: 88,
     height: 88,
-    borderRadius: 44,
+    borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#72baa1',
   },
   avatarPlaceholderText: { fontSize: 34, fontWeight: '800', color: '#FFF' },
 
-  displayName: { fontSize: 22, fontWeight: '800', color: '#111', textAlign: 'center', marginBottom: 4 },
-  displayNameDark: { color: '#FFFFFF' },
-  pseudo: { fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 20 },
-  pseudoDark: { color: '#7A7D85' },
+  displayName: { fontSize: 22, fontWeight: '800', color: '#1c1917', textAlign: 'center', marginBottom: 4, letterSpacing: -0.5 },
+  displayNameDark: { color: '#f3f3f6' },
+  pseudo: { fontSize: 14, color: '#78716c', textAlign: 'center', marginBottom: 20 },
+  pseudoDark: { color: '#c1c1cb' },
 
   statsRow: {
     flexDirection: 'row',
-    borderWidth: 1.5,
-    borderColor: '#EDEEF2',
-    borderRadius: 12,
+    backgroundColor: '#f5f5f4',
+    borderRadius: 16,
     marginHorizontal: 20,
     padding: 10,
     marginBottom: 20,
   },
   statsRowDark: {
-    borderColor: '#2A2E36',
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255,255,255,0.04)',
   },
   statItem: { flex: 1, alignItems: 'center' },
-  statValue: { fontSize: 20, fontWeight: '800', color: '#111' },
-  statValueDark: { color: '#FFFFFF' },
+  statValue: { fontSize: 20, fontWeight: '800', color: '#1c1917' },
+  statValueDark: { color: '#f3f3f6' },
   statLabel: {
     fontSize: 10,
-    color: '#666',
+    color: '#78716c',
     marginTop: 2,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  statLabelDark: { color: '#7A7D85' },
-  statDivider: { width: 1, backgroundColor: '#EDEEF2', marginVertical: 4 },
-  statDividerDark: { backgroundColor: '#2A2E36' },
+  statLabelDark: { color: '#c1c1cb' },
+  statDivider: { width: 1, backgroundColor: '#efedea', marginVertical: 4 },
+  statDividerDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
 
   actionRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, marginBottom: 24 },
   followButton: {
@@ -860,117 +857,128 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 13,
     borderRadius: 14,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
   },
-  followingButton: { backgroundColor: '#F0F0F0' },
-  followingButtonDark: { backgroundColor: '#2A2E36' },
+  followingButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#efedea',
+  },
+  followingButtonDark: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
   followButtonText: { fontSize: 15, fontWeight: '700', color: '#FFF' },
-  followingButtonText: { color: '#666' },
-  followingButtonTextDark: { color: '#7A7D85' },
+  followingButtonText: { color: '#1c1917' },
+  followingButtonTextDark: { color: '#c1c1cb' },
 
   iconBtn: {
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: `${theme.colors.primary}15`,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#efedea',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconBtnDark: { backgroundColor: `${theme.colors.primary}25` },
-  iconBtnEmoji: { fontSize: 20 },
+  iconBtnDark: {
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
 
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: -0.2,
-    color: '#111',
+    color: '#1c1917',
     marginHorizontal: 16,
     marginBottom: 12,
   },
-  sectionTitleDark: { color: '#FFFFFF' },
+  sectionTitleDark: { color: '#f3f3f6' },
 
   miniCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
+    backgroundColor: '#fff',
+    borderRadius: 20,
     padding: 14,
     marginHorizontal: 16,
     marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
-  miniCardDark: { backgroundColor: '#1A1D24' },
-  miniCardName: { fontSize: 15, fontWeight: '700', color: '#111', marginBottom: 8 },
-  miniCardNameDark: { color: '#FFFFFF' },
+  miniCardDark: {
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  miniCardName: { fontSize: 15, fontWeight: '700', color: '#1c1917', marginBottom: 8 },
+  miniCardNameDark: { color: '#f3f3f6' },
   miniCardStats: { flexDirection: 'row', gap: 14, marginBottom: 8 },
   miniStat: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  miniStatText: { fontSize: 13, color: '#666' },
-  miniStatTextDark: { color: '#7A7D85' },
+  miniStatText: { fontSize: 13, color: '#78716c' },
+  miniStatTextDark: { color: '#c1c1cb' },
   miniMuscles: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
   miniMuscleTag: {
-    backgroundColor: '#F5F6FA',
-    borderRadius: 20,
+    backgroundColor: '#f5f5f4',
+    borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  miniMuscleTagDark: { backgroundColor: '#22262E' },
-  miniMuscleText: { fontSize: 12, color: '#666' },
-  miniMuscleTextDark: { color: '#7A7D85' },
-  miniCardDate: { fontSize: 12, color: '#AAA' },
-  miniCardDateDark: { color: '#555' },
+  miniMuscleTagDark: { backgroundColor: 'rgba(255,255,255,0.04)' },
+  miniMuscleText: { fontSize: 12, color: '#78716c' },
+  miniMuscleTextDark: { color: '#c1c1cb' },
+  miniCardDate: { fontSize: 12, color: '#a8a29e' },
+  miniCardDateDark: { color: '#7a7a88' },
 
   noSessionsContainer: { alignItems: 'center', paddingVertical: 40, gap: 10 },
-  noSessionsText: { fontSize: 14, color: '#AAA' },
-  noSessionsTextDark: { color: '#555' },
+  noSessionsText: { fontSize: 14, color: '#a8a29e' },
+  noSessionsTextDark: { color: '#7a7a88' },
 
   challengesNav: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
     borderRadius: 20,
     marginHorizontal: 16,
     marginTop: 8,
     marginBottom: 16,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
-  challengesNavDark: { backgroundColor: '#1A1D24' },
+  challengesNavDark: {
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
   challengesNavLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   challengesNavIcon: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: `${theme.colors.primary}15`,
+    backgroundColor: '#f5f5f4',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  challengesNavIconDark: { backgroundColor: `${theme.colors.primary}25` },
-  challengesNavTitle: { fontSize: 16, fontWeight: '700', letterSpacing: -0.2, color: '#111', marginBottom: 2 },
-  challengesNavTitleDark: { color: '#FFFFFF' },
-  challengesNavSub: { fontSize: 12, color: '#666' },
-  challengesNavSubDark: { color: '#7A7D85' },
+  challengesNavIconDark: { backgroundColor: 'rgba(255,255,255,0.04)' },
+  challengesNavTitle: { fontSize: 16, fontWeight: '700', letterSpacing: -0.2, color: '#1c1917', marginBottom: 2 },
+  challengesNavTitleDark: { color: '#f3f3f6' },
+  challengesNavSub: { fontSize: 12, color: '#78716c' },
+  challengesNavSubDark: { color: '#c1c1cb' },
 
   // Profile info card (bio, location, level, workout types)
   profileInfoCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
     borderRadius: 20,
     marginHorizontal: 16,
     marginBottom: 24,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
-  profileInfoCardDark: { backgroundColor: '#1A1D24' },
+  profileInfoCardDark: {
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
 
   profileLocationRow: {
     flexDirection: 'row',
@@ -983,8 +991,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  profileLocationText: { fontSize: 14, color: '#666' },
-  profileLocationTextDark: { color: '#7A7D85' },
+  profileLocationText: { fontSize: 14, color: '#78716c' },
+  profileLocationTextDark: { color: '#c1c1cb' },
 
   profileLevelRow: { marginBottom: 16 },
   profileLevelBadge: {
@@ -993,23 +1001,28 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 20,
+    borderRadius: 8,
     gap: 6,
+    backgroundColor: '#f5f5f4',
   },
-  profileLevelText: { fontSize: 13, fontWeight: '700', color: '#FFF' },
+  profileLevelBadgeDark: {
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+  profileLevelText: { fontSize: 13, fontWeight: '700', color: '#1c1917' },
+  profileLevelTextDark: { color: '#f3f3f6' },
 
   profileBioSection: { marginBottom: 16 },
   profileInfoSectionTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111',
+    color: '#1c1917',
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  profileInfoSectionTitleDark: { color: '#FFFFFF' },
-  profileBioText: { fontSize: 14, color: '#666', lineHeight: 21 },
-  profileBioTextDark: { color: '#7A7D85' },
+  profileInfoSectionTitleDark: { color: '#f3f3f6' },
+  profileBioText: { fontSize: 14, color: '#78716c', lineHeight: 21 },
+  profileBioTextDark: { color: '#c1c1cb' },
 
   profileWorkoutSection: {},
   profileWorkoutTypes: {
@@ -1020,20 +1033,20 @@ const styles = StyleSheet.create({
   profileWorkoutChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: `${theme.colors.primary}12`,
+    backgroundColor: '#f5f5f4',
     paddingHorizontal: 12,
     paddingVertical: 7,
-    borderRadius: 14,
+    borderRadius: 8,
     gap: 6,
   },
-  profileWorkoutChipDark: { backgroundColor: `${theme.colors.primary}25` },
+  profileWorkoutChipDark: { backgroundColor: 'rgba(255,255,255,0.04)' },
   profileWorkoutChipText: {
     fontSize: 13,
-    color: '#111',
+    color: '#1c1917',
     textTransform: 'capitalize',
     fontWeight: '500',
   },
-  profileWorkoutChipTextDark: { color: '#FFFFFF' },
+  profileWorkoutChipTextDark: { color: '#f3f3f6' },
 });
 
 // ─── Styles modaux ────────────────────────────────────────────────────────────
@@ -1042,7 +1055,7 @@ const ms = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   kavWrapper: { width: '100%' },
   sheet: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     paddingHorizontal: 20,
@@ -1050,91 +1063,106 @@ const ms = StyleSheet.create({
     paddingTop: 12,
     maxHeight: '90%',
   },
-  sheetDark: { backgroundColor: '#1A1D24' },
+  sheetDark: {
+    backgroundColor: '#18181d',
+  },
 
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: '#DDD',
+    backgroundColor: '#efedea',
     borderRadius: 2,
     alignSelf: 'center',
     marginBottom: 20,
   },
-  handleDark: { backgroundColor: '#444' },
+  handleDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
 
-  sheetTitle: { fontSize: 20, fontWeight: '800', color: '#111', marginBottom: 4 },
-  sheetTitleDark: { color: '#FFFFFF' },
-  sheetSub: { fontSize: 14, color: '#AAA', marginBottom: 20 },
-  sheetSubDark: { color: '#555' },
+  sheetTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  sheetTitle: { fontSize: 20, fontWeight: '800', color: '#1c1917' },
+  sheetTitleDark: { color: '#f3f3f6' },
+  sheetSub: { fontSize: 14, color: '#a8a29e', marginBottom: 20 },
+  sheetSubDark: { color: '#7a7a88' },
 
   successWrap: { alignItems: 'center', paddingVertical: 28 },
   successGlow: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: `${theme.colors.primary}15`,
+    backgroundColor: 'rgba(114,186,161,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
   },
   successGlowDark: {
-    backgroundColor: `${theme.colors.primary}20`,
+    backgroundColor: 'rgba(114,186,161,0.15)',
   },
   successIconRing: {
     width: 68,
     height: 68,
     borderRadius: 34,
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: theme.colors.primary,
+    borderWidth: 2,
+    borderColor: '#72baa1',
   },
   successIconRingDark: {
-    backgroundColor: '#1A1D24',
-    borderColor: theme.colors.primary,
+    backgroundColor: '#18181d',
+    borderColor: '#72baa1',
   },
-  successIconText: { fontSize: 28 },
-  successTitle: { fontSize: 24, fontWeight: '900', color: '#111', marginBottom: 6, letterSpacing: -0.3 },
-  successTitleDark: { color: '#FFFFFF' },
+  successTitle: { fontSize: 24, fontWeight: '900', color: '#1c1917', marginBottom: 6, letterSpacing: -0.3 },
+  successTitleDark: { color: '#f3f3f6' },
   successRecap: {
     width: '100%',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#f5f5f4',
     borderRadius: 14,
     padding: 14,
     marginTop: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#EDEEF2',
+    borderColor: '#efedea',
   },
   successRecapDark: {
-    backgroundColor: '#22262E',
-    borderColor: '#2A2E36',
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   successRecapRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  successRecapIcon: { fontSize: 26 },
-  successRecapLabel: { fontSize: 15, fontWeight: '700', color: '#111', marginBottom: 2 },
-  successRecapLabelDark: { color: '#FFFFFF' },
-  successRecapDesc: { fontSize: 12, color: '#888' },
-  successRecapDescDark: { color: '#7A7D85' },
-  successSub: { fontSize: 13, color: '#999', textAlign: 'center', lineHeight: 20, marginBottom: 20 },
-  successSubDark: { color: '#7A7D85' },
+  successRecapLabel: { fontSize: 15, fontWeight: '700', color: '#1c1917', marginBottom: 2 },
+  successRecapLabelDark: { color: '#f3f3f6' },
+  successRecapDesc: { fontSize: 12, color: '#a8a29e' },
+  successRecapDescDark: { color: '#7a7a88' },
+  successSub: { fontSize: 13, color: '#a8a29e', textAlign: 'center', lineHeight: 20, marginBottom: 20 },
+  successSubDark: { color: '#7a7a88' },
   successCloseBtn: {
     width: '100%',
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
   },
   successCloseBtnText: { fontSize: 16, fontWeight: '800', color: '#FFF' },
-  successEmoji: { fontSize: 56, marginBottom: 16 },
 
-  errorBox: { backgroundColor: '#FFF0F0', borderRadius: 14, padding: 12, marginBottom: 12 },
-  errorBoxDark: { backgroundColor: 'rgba(244, 67, 54, 0.1)' },
+  errorBox: {
+    backgroundColor: '#FFF0F0',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#efedea',
+  },
+  errorBoxDark: {
+    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
   errorText: { fontSize: 13, color: '#DC2626' },
 
   // Challenge options
@@ -1142,24 +1170,29 @@ const ms = StyleSheet.create({
     flex: 1,
     padding: 12,
     borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: '#EDEEF2',
-    backgroundColor: '#F5F6FA',
+    borderWidth: 1,
+    borderColor: '#efedea',
+    backgroundColor: '#f5f5f4',
     position: 'relative',
     minHeight: 100,
   },
-  challengeOptionDark: { backgroundColor: '#22262E', borderColor: '#2A2E36' },
-  challengeOptionActive: { borderColor: theme.colors.primary, backgroundColor: `${theme.colors.primary}10` },
-  challengeIcon: { fontSize: 22, marginBottom: 6 },
-  challengeLabel: { fontSize: 13, fontWeight: '700', color: '#111', marginBottom: 4 },
-  challengeLabelDark: { color: '#FFFFFF' },
-  challengeDesc: { fontSize: 11, color: '#666', lineHeight: 15 },
-  challengeDescDark: { color: '#7A7D85' },
+  challengeOptionDark: {
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  challengeOptionActive: {
+    borderColor: '#72baa1',
+    backgroundColor: 'rgba(114,186,161,0.08)',
+  },
+  challengeLabel: { fontSize: 13, fontWeight: '700', color: '#1c1917', marginBottom: 4 },
+  challengeLabelDark: { color: '#f3f3f6' },
+  challengeDesc: { fontSize: 11, color: '#78716c', lineHeight: 15 },
+  challengeDescDark: { color: '#c1c1cb' },
   maxBadge: {
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
     borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -1168,44 +1201,54 @@ const ms = StyleSheet.create({
 
   // Duration
   durationPicker: { marginBottom: 16 },
-  durationLabel: { fontSize: 13, fontWeight: '600', color: '#666', marginBottom: 8 },
-  durationLabelDark: { color: '#7A7D85' },
+  durationLabel: { fontSize: 13, fontWeight: '600', color: '#78716c', marginBottom: 8 },
+  durationLabelDark: { color: '#c1c1cb' },
   durationRow: { flexDirection: 'row', gap: 8 },
   durationBtn: {
     flex: 1,
     paddingVertical: 8,
     borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: '#EDEEF2',
-    backgroundColor: '#F5F6FA',
+    borderWidth: 1,
+    borderColor: '#efedea',
+    backgroundColor: '#f5f5f4',
     alignItems: 'center',
   },
-  durationBtnDark: { backgroundColor: '#22262E', borderColor: '#2A2E36' },
-  durationBtnActive: { borderColor: theme.colors.primary, backgroundColor: `${theme.colors.primary}10` },
-  durationBtnText: { fontSize: 14, fontWeight: '700', color: '#666' },
-  durationBtnTextDark: { color: '#7A7D85' },
-  durationBtnTextActive: { color: theme.colors.primary },
+  durationBtnDark: {
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  durationBtnActive: {
+    borderColor: '#72baa1',
+    backgroundColor: 'rgba(114,186,161,0.08)',
+  },
+  durationBtnText: { fontSize: 14, fontWeight: '700', color: '#78716c' },
+  durationBtnTextDark: { color: '#c1c1cb' },
+  durationBtnTextActive: { color: '#72baa1' },
 
   // Message
   textarea: {
-    borderWidth: 1.5,
-    borderColor: '#EDEEF2',
+    borderWidth: 1,
+    borderColor: '#efedea',
     borderRadius: 14,
     padding: 14,
     fontSize: 15,
     minHeight: 120,
     marginBottom: 6,
-    backgroundColor: '#FFF',
-    color: '#111',
+    backgroundColor: '#fff',
+    color: '#1c1917',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
-  textareaDark: { backgroundColor: '#22262E', borderColor: '#2A2E36', color: '#FFF' },
-  charCount: { fontSize: 11, color: '#AAA', textAlign: 'right', marginBottom: 16 },
-  charCountDark: { color: '#555' },
+  textareaDark: {
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderColor: 'rgba(255,255,255,0.06)',
+    color: '#f3f3f6',
+  },
+  charCount: { fontSize: 11, color: '#a8a29e', textAlign: 'right', marginBottom: 16 },
+  charCountDark: { color: '#7a7a88' },
 
   // Buttons
   primaryBtn: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
@@ -1214,6 +1257,6 @@ const ms = StyleSheet.create({
   primaryBtnDisabled: { opacity: 0.4 },
   primaryBtnText: { fontSize: 15, fontWeight: '700', color: '#FFF' },
   cancelBtn: { alignItems: 'center', paddingVertical: 8 },
-  cancelText: { fontSize: 15, color: '#666' },
-  cancelTextDark: { color: '#7A7D85' },
+  cancelText: { fontSize: 15, color: '#78716c' },
+  cancelTextDark: { color: '#c1c1cb' },
 });

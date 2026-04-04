@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  FlatList,
   Image,
   TouchableOpacity,
   ActivityIndicator,
@@ -23,6 +24,7 @@ import {
 } from '../../components/recipes';
 import RatingDisplay from '../../components/common/RatingDisplay';
 import { logRecipe } from '../../api/nutrition';
+import { getSimilarRecipes } from '../../api/recipes';
 import logger from '../../services/logger';
 
 const { width } = Dimensions.get('window');
@@ -52,9 +54,12 @@ const RecipeDetailScreen = ({ route, navigation }) => {
   const [recipe, setRecipe] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(true);
   const [userRating, setUserRating] = useState(null);
+  const [similarRecipes, setSimilarRecipes] = useState([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
 
   useEffect(() => {
     loadRecipeDetail();
+    loadSimilarRecipes();
   }, [recipeId]);
 
   const loadRecipeDetail = async () => {
@@ -88,6 +93,20 @@ const RecipeDetailScreen = ({ route, navigation }) => {
       navigation.goBack();
     } finally {
       setLoadingDetail(false);
+    }
+  };
+
+  const loadSimilarRecipes = async () => {
+    setLoadingSimilar(true);
+    try {
+      const result = await getSimilarRecipes(recipeId);
+      if (result.success) {
+        setSimilarRecipes(result.data);
+      }
+    } catch (error) {
+      logger.app.debug('[RecipeDetail] Error loading similar:', error);
+    } finally {
+      setLoadingSimilar(false);
     }
   };
 
@@ -665,6 +684,62 @@ const RecipeDetailScreen = ({ route, navigation }) => {
               </Text>
             </View>
           )}
+
+          {/* Similar Recipes */}
+          {(similarRecipes.length > 0 || loadingSimilar) && (
+            <View style={styles.similarSection}>
+              <Text style={[styles.similarTitle, isDark && styles.similarTitleDark]}>
+                Vous allez aimer aussi
+              </Text>
+              {loadingSimilar ? (
+                <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginTop: 16 }} />
+              ) : (
+                <FlatList
+                  data={similarRecipes}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item) => item._id}
+                  contentContainerStyle={styles.similarList}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={[styles.similarCard, isDark && styles.similarCardDark]}
+                      activeOpacity={0.8}
+                      onPress={() => navigation.push('RecipeDetail', { recipeId: item._id })}
+                    >
+                      <Image
+                        source={{ uri: item.image || 'https://via.placeholder.com/160x100' }}
+                        style={styles.similarImage}
+                        resizeMode="cover"
+                      />
+                      <View style={styles.similarInfo}>
+                        <Text style={[styles.similarName, isDark && styles.similarNameDark]} numberOfLines={2}>
+                          {item.title}
+                        </Text>
+                        <View style={styles.similarMeta}>
+                          {item.nutrition?.calories > 0 && (
+                            <Text style={[styles.similarMetaText, isDark && styles.similarMetaTextDark]}>
+                              {Math.round(item.nutrition.calories)} kcal
+                            </Text>
+                          )}
+                          {item.totalTime > 0 && (
+                            <Text style={[styles.similarMetaText, isDark && styles.similarMetaTextDark]}>
+                              {item.totalTime} min
+                            </Text>
+                          )}
+                        </View>
+                        {item.avgRating > 0 && (
+                          <View style={styles.similarRating}>
+                            <Ionicons name="star" size={12} color="#F59E0B" />
+                            <Text style={styles.similarRatingText}>{item.avgRating.toFixed(1)}</Text>
+                          </View>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                />
+              )}
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -1001,6 +1076,77 @@ const styles = StyleSheet.create({
   },
   starButton: {
     padding: 8,
+  },
+  similarSection: {
+    marginTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
+  },
+  similarTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 12,
+    marginHorizontal: theme.spacing.md,
+  },
+  similarTitleDark: {
+    color: '#FFFFFF',
+  },
+  similarList: {
+    paddingHorizontal: theme.spacing.md,
+    gap: 12,
+  },
+  similarCard: {
+    width: 160,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  similarCardDark: {
+    backgroundColor: '#2A2A2A',
+  },
+  similarImage: {
+    width: '100%',
+    height: 100,
+  },
+  similarInfo: {
+    padding: 10,
+  },
+  similarName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    lineHeight: 17,
+    marginBottom: 6,
+  },
+  similarNameDark: {
+    color: '#FFFFFF',
+  },
+  similarMeta: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  similarMetaText: {
+    fontSize: 11,
+    color: '#888',
+  },
+  similarMetaTextDark: {
+    color: '#666',
+  },
+  similarRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 4,
+  },
+  similarRatingText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#F59E0B',
   },
   logRecipeBtn: {
     flexDirection: 'row',

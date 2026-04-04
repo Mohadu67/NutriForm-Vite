@@ -1,5 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const logger = require('../utils/logger');
+const { ScannedPlat } = require('../models/ScanHistory');
 
 let visionModel = null;
 
@@ -93,19 +94,33 @@ exports.recognizeFood = async (req, res) => {
       return res.status(404).json({ success: false, error: parsed.error });
     }
 
-    res.json({
-      success: true,
-      product: {
+    const product = {
+      name: parsed.name,
+      brand: null,
+      quantity: parsed.portionDescription || `${parsed.defaultPortionG || 100}g`,
+      imageUrl: null,
+      nutrition: parsed.nutrition,
+      defaultPortionG: parsed.defaultPortionG || 100,
+      confidence: parsed.confidence || 0.5,
+      source: 'gemini-vision',
+    };
+
+    // Sauvegarder dans l'historique des scans
+    try {
+      await ScannedPlat.create({
+        userId: req.user._id,
         name: parsed.name,
-        brand: null,
-        quantity: parsed.portionDescription || `${parsed.defaultPortionG || 100}g`,
-        imageUrl: null,
-        nutrition: parsed.nutrition,
-        defaultPortionG: parsed.defaultPortionG || 100,
+        source: 'ai_vision',
         confidence: parsed.confidence || 0.5,
-        source: 'gemini-vision',
-      },
-    });
+        portionG: parsed.defaultPortionG || 100,
+        portionDescription: parsed.portionDescription || null,
+        nutrition: parsed.nutrition,
+      });
+    } catch (saveErr) {
+      logger.error('Failed to save scan history:', saveErr.message);
+    }
+
+    res.json({ success: true, product });
   } catch (err) {
     logger.error('Food recognition error:', err.message);
     if (err instanceof SyntaxError) {

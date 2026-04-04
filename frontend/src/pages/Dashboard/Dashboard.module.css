@@ -1,15 +1,46 @@
-/* Dashboard - Redesign épuré et mobile-first */
+/* Dashboard - Redesign premium (Cal AI style) */
+/* Brand: peach #f0a47a · teal #72baa1 · stone #c9a88c */
 
-/* ========== BASE ========== */
+/* ═══ Design tokens ═══ */
 .dashboard {
+  --n-bg: #fcfbf9;
+  --n-surface: #ffffff;
+  --n-surface-hover: #f7f6f3;
+  --n-border: #efedea;
+  --n-border-hover: #e2dfdb;
+  --n-text: #1c1917;
+  --n-text-secondary: #78716c;
+  --n-text-muted: #a8a29e;
+  --n-peach: #f0a47a;
+  --n-peach-dim: rgba(240, 164, 122, 0.10);
+  --n-teal: #72baa1;
+  --n-teal-dim: rgba(114, 186, 161, 0.10);
+  --n-stone: #c9a88c;
+  --n-ring-track: #efedea;
+  --n-danger: #ef4444;
+  --n-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
   min-height: 100vh;
-  background: var(--couleur-principale, #f7f6f2);
+  background: var(--n-bg);
+  color: var(--n-text);
   padding: 100px 16px 32px;
 }
 
 :global(body.dark) .dashboard,
 :global(html.dark) .dashboard {
-  background: var(--couleur-principale);
+  --n-bg: #0b0b16;
+  --n-surface: #151525;
+  --n-surface-hover: #1c1c30;
+  --n-border: rgba(255, 255, 255, 0.06);
+  --n-border-hover: rgba(255, 255, 255, 0.10);
+  --n-text: #f5f5f7;
+  --n-text-secondary: #8e8e93;
+  --n-text-muted: #4a4a5e;
+  --n-ring-track: rgba(255, 255, 255, 0.08);
+  --n-danger: #ff6b6b;
+  --n-card-shadow: none;
+  background: var(--n-bg);
+  color: var(--n-text);
 }
 
 .container {
@@ -170,98 +201,73 @@
 }
 
 .statCard {
-  background: var(--paper, #ffffff);
+  background: var(--n-surface);
   border-radius: 16px;
-  padding: 16px 12px;
+  padding: 14px 8px 12px;
   text-align: center;
-  border: 1px solid var(--line, rgba(0, 0, 0, 0.06));
+  border: 1px solid var(--n-border);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-:global(body.dark) .statCard,
-:global(html.dark) .statCard {
-  background: var(--paper);
-  border-color: var(--line);
+  transition: all 0.25s ease;
+  box-shadow: var(--n-card-shadow);
 }
 
 .statCardClickable {
   cursor: pointer;
+  border: none;
+  font-family: inherit;
 }
 
 .statCardClickable:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md, 0 8px 20px rgba(0, 0, 0, 0.08));
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
-:global(body.dark) .statCardClickable:hover:not(:disabled),
-:global(html.dark) .statCardClickable:hover:not(:disabled) {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-}
+.statCardClickable:disabled { cursor: default; opacity: 0.5; }
 
-.statCardClickable:disabled {
-  cursor: default;
-  opacity: 0.6;
-}
-
-/* Icon */
-.statIcon {
+/* Ring inside stat card */
+.statRingWrap {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--couleur-bouton-action, #f7b186);
 }
 
-:global(body.dark) .statIcon,
-:global(html.dark) .statIcon {
-  color: var(--couleur-bouton-action, #f7b186);
-}
+.statRingTrack { stroke: var(--n-ring-track); }
 
-/* Content wrapper */
-.statContent {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  width: 100%;
-}
-
-.statValue {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--ink, #222325);
-  line-height: 1.2;
-}
-
-:global(body.dark) .statValue,
-:global(html.dark) .statValue {
-  color: var(--ink);
+.statRingValue {
+  position: absolute;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--n-text);
+  font-family: var(--font-display, 'Montserrat', sans-serif);
+  line-height: 1;
 }
 
 .statLabel {
   display: block;
-  font-size: 0.65rem;
-  color: var(--muted, #6b7280);
+  font-size: 0.62rem;
+  color: var(--n-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   font-weight: 600;
 }
 
-/* Trend indicator */
-.statTrend {
+.statSub {
   display: block;
-  font-size: 0.6rem;
-  color: var(--muted, #6b7280);
-  margin-top: 4px;
-  padding: 3px 8px;
-  background: var(--couleur-principale, #f7f6f2);
-  border-radius: 8px;
+  font-size: 0.55rem;
+  color: var(--n-text-muted);
+  padding: 2px 6px;
+  background: var(--n-surface-hover);
+  border-radius: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
   font-weight: 500;
   max-width: 100%;
   overflow: hidden;
@@ -276,17 +282,187 @@
 
 /* ========== SECTION TITLE ========== */
 .sectionTitle {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--ink, #222325);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--n-text);
   margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-family: var(--font-display, 'Montserrat', sans-serif);
 }
 
-:global(body.dark) .sectionTitle,
-:global(html.dark) .sectionTitle {
-  color: var(--ink);
+/* ═══ Weekly Goal — compact single row (mobile-style) ═══ */
+.wgRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--n-surface);
+  border: 1px solid var(--n-border);
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 14px;
+  box-shadow: var(--n-card-shadow);
+}
+
+.wgRingWrap {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wgRingText {
+  position: absolute;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--n-text);
+  font-family: var(--font-display, 'Montserrat', sans-serif);
+  line-height: 1;
+}
+
+.wgRingGoal {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--n-text-muted);
+}
+
+.wgInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wgTitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--n-text);
+}
+
+.wgSub {
+  font-size: 0.7rem;
+  color: var(--n-text-muted);
+}
+
+.wgEditBtn {
+  background: none;
+  border: none;
+  color: var(--n-text-muted);
+  cursor: pointer;
+  padding: 6px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.wgEditBtn:hover { color: var(--n-peach); }
+
+/* ═══ Quick Actions — horizontal scroll chips (mobile-style) ═══ */
+.qaScroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+  margin-bottom: 14px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
+
+.qaScroll::-webkit-scrollbar { display: none; }
+
+.qaChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--n-surface);
+  border: 1px solid var(--n-border);
+  border-radius: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.qaChip:hover {
+  border-color: var(--n-border-hover);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.qaIconDot {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.qaLabel {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--n-text);
+}
+
+/* ═══ Nutrition Widget (new) ═══ */
+.nwRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0.5rem 0;
+}
+
+.nwStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.nwStatValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--n-text);
+}
+
+.nwStatLabel {
+  font-size: 0.6rem;
+  color: var(--n-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+}
+
+.nwRingWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nwRingText {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nwRingValue {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--n-text);
+  font-family: var(--font-display, 'Montserrat', sans-serif);
+  line-height: 1;
+}
+
+.nwRingLabel {
+  font-size: 0.55rem;
+  color: var(--n-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 /* ========== PROGRESS SECTION ========== */
@@ -543,24 +719,411 @@
   transform: translateY(-1px);
 }
 
-/* ========== NUTRITION WIDGET (calorie gauge + macros) ========== */
-.nutritionWidget {
-  background: var(--card-bg, #ffffff);
-  border-radius: 16px;
-  padding: 1.25rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  margin-bottom: 1.5rem;
-  transition: box-shadow 0.2s;
-}
-.nutritionWidget:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+/* ═══ Dashboard Carousel "Aujourd'hui" ═══ */
+.dcWrap {
+  margin: 0 -16px 16px;
 }
 
-:global(body.dark) .nutritionWidget,
-:global(html.dark) .nutritionWidget {
-  --nw-track: #3a3a3a;
-  --nw-accent: #6db39b;
-  background: var(--card-bg-dark, #2a2a2e);
+.dcScroll {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.dcScroll::-webkit-scrollbar { display: none; }
+
+.dcSlide {
+  min-width: 100%;
+  width: 100%;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  flex-shrink: 0;
+  padding: 0 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.dcCard {
+  background: var(--n-surface);
+  border-radius: 20px;
+  border: 1px solid var(--n-border);
+  padding: 1.25rem;
+  box-shadow: var(--n-card-shadow);
+  flex: 1;
+}
+
+.dcCardTitle {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--n-text);
+  margin: 0 0 1rem;
+  font-family: var(--font-display, 'Montserrat', sans-serif);
+}
+
+.dcDots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.dcDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: var(--n-border-hover);
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.dcDotActive {
+  background: var(--n-text);
+  transform: scale(1.2);
+}
+
+/* Slide Nutrition — mobile-style gauge */
+.nwGaugeCenter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.5rem auto 1rem;
+}
+
+.nwGaugeCenterText {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nwGaugeVal {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--n-text);
+  font-family: var(--font-display, 'Montserrat', sans-serif);
+  line-height: 1;
+}
+
+.nwGaugeLbl {
+  font-size: 0.65rem;
+  color: var(--n-text-muted);
+  margin-top: 2px;
+}
+
+/* Meta row: Objectif | Consomme | Brule */
+.nwMetaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--n-border);
+  margin-bottom: 0.75rem;
+}
+
+.nwMetaItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.nwMetaVal {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--n-text);
+}
+
+.nwMetaLbl {
+  font-size: 0.6rem;
+  color: var(--n-text-muted);
+}
+
+.nwMetaSep {
+  width: 1px;
+  height: 28px;
+  background: var(--n-border);
+  flex-shrink: 0;
+}
+
+/* Macros column with dots */
+.nwMacrosCol {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  gap: 8px;
+  border-top: 1px solid var(--n-border);
+  padding-top: 0.75rem;
+}
+
+/* Slide 2 — Body */
+.dcBodyGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.dcBodyItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 1rem 0.5rem;
+  background: var(--n-surface-hover);
+  border-radius: 14px;
+}
+
+.dcBodyVal {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--n-text);
+  font-family: var(--font-display, 'Montserrat', sans-serif);
+}
+
+.dcBodyLbl {
+  font-size: 0.68rem;
+  color: var(--n-text-muted);
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Slide 3 — Cardio */
+.dcCardioGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.dcCardioItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0.85rem 0.5rem;
+  background: var(--n-surface-hover);
+  border-radius: 14px;
+}
+
+.dcCardioIcon { display: flex; }
+
+.dcCardioVal {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--n-text);
+  font-family: var(--font-display, 'Montserrat', sans-serif);
+}
+
+.dcCardioLbl {
+  font-size: 0.62rem;
+  color: var(--n-text-muted);
+  font-weight: 500;
+}
+
+.dcEmptyText {
+  font-size: 0.82rem;
+  color: var(--n-text-muted);
+  text-align: center;
+  padding: 1.5rem 0;
+  margin: 0;
+}
+
+/* Slide 1 — Resume semaine (mobile-style) */
+.dcMotiRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dcMotiIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--n-teal-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dcMotiText { flex: 1; min-width: 0; }
+
+.dcMotiTitle {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--n-text);
+  font-family: var(--font-display, 'Montserrat', sans-serif);
+}
+
+.dcMotiMsg {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--n-text-secondary);
+  margin-top: 2px;
+}
+
+.dcStatsRow {
+  display: flex;
+  justify-content: space-around;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--n-border);
+}
+
+.dcStatItem { text-align: center; }
+
+.dcStatVal {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--n-text);
+  font-family: var(--font-display, 'Montserrat', sans-serif);
+}
+
+.dcStatLbl {
+  display: block;
+  font-size: 0.6rem;
+  color: var(--n-text-muted);
+}
+
+/* Nutrition recap inside slide 1 */
+.dcNutrRecap {
+  padding-top: 10px;
+  border-top: 1px solid var(--n-border);
+  margin-top: 4px;
+}
+
+.dcNutrRecapTitle {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--n-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.dcNutrRecapGrid {
+  display: flex;
+  justify-content: space-around;
+  gap: 12px;
+}
+
+.dcNutrRecapItem { text-align: center; }
+
+.dcNutrRecapVal {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--n-text);
+}
+
+.dcNutrRecapLbl {
+  display: block;
+  font-size: 0.58rem;
+  color: var(--n-text-muted);
+  margin-top: 1px;
+}
+
+/* Tags (muscle, gras, proj.) */
+.dcTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.dcTag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--n-surface-hover);
+  color: var(--n-text-secondary);
+}
+
+/* CTA conseils */
+.dcCtaBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(114, 186, 161, 0.25);
+  background: rgba(114, 186, 161, 0.04);
+  color: #72baa1;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.dcCtaBtn:hover {
+  background: rgba(114, 186, 161, 0.08);
+}
+
+/* Tips carousel */
+.dcTipsScroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  margin-top: 14px;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dcTipsScroll::-webkit-scrollbar { display: none; }
+
+.dcTipCard {
+  min-width: 200px;
+  max-width: 220px;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.dcTipTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--n-text);
+}
+
+.dcTipText {
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--n-text-secondary);
+}
+
+/* ========== NUTRITION WIDGET (calorie gauge + macros) ========== */
+.nutritionWidget {
+  background: var(--n-surface);
+  border-radius: 20px;
+  border: 1px solid var(--n-border);
+  padding: 1.25rem;
+  box-shadow: var(--n-card-shadow);
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+.nutritionWidget:hover {
+  border-color: var(--n-border-hover);
 }
 
 /* — Calories row (Mangées | Gauge | Brûlées) — */
@@ -631,26 +1194,36 @@
 }
 
 .nwMacro {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 4px;
+}
+
+.nwMacroHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nwMacroDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .nwMacroLabel {
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--text-primary, #333);
+  color: var(--n-text-secondary);
 }
 
 .nwMacroTrack {
-  position: relative;
   width: 100%;
   height: 6px;
-  background: var(--nw-track, #e5e7eb);
+  background: var(--n-ring-track);
   border-radius: 3px;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .nwMacroFill {
@@ -659,19 +1232,9 @@
   transition: width 0.4s ease;
 }
 
-.nwMacroDot {
-  position: absolute;
-  top: 50%;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--nw-accent, #6db39b);
-  transform: translate(-50%, -50%);
-}
-
 .nwMacroValue {
   font-size: 0.72rem;
-  color: var(--text-secondary, #888);
+  color: var(--n-text-muted);
 }
 
 /* — Dark mode overrides — */
@@ -718,32 +1281,18 @@
   margin-top: 14px;
   padding: 10px 0;
   border: none;
-  border-radius: 10px;
-  background: #f0a47a;
+  border-radius: 12px;
+  background: var(--n-peach);
   color: #fff;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: opacity 0.2s, transform 0.15s;
+  font-family: inherit;
 }
 
-.nwAddMealBtn:hover {
-  background: #e8956a;
-}
-
-.nwAddMealBtn:active {
-  transform: scale(0.98);
-}
-
-:global(body.dark) .nwAddMealBtn,
-:global(html.dark) .nwAddMealBtn {
-  background: #c67548;
-}
-
-:global(body.dark) .nwAddMealBtn:hover,
-:global(html.dark) .nwAddMealBtn:hover {
-  background: #b5673e;
-}
+.nwAddMealBtn:hover { opacity: 0.88; }
+.nwAddMealBtn:active { transform: scale(0.97); }
 
 .nwAddMealIcon {
   font-size: 1.1rem;

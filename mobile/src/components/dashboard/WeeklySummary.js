@@ -112,6 +112,7 @@ export const WeeklySummary = ({
   weeklyCalories = 0,
   weeklyDuration = 0,
   weeklyTrainingDays = 0,
+  style,
 }) => {
   const isDark = useColorScheme() === 'dark';
   const [showTips, setShowTips] = useState(false);
@@ -156,57 +157,57 @@ export const WeeklySummary = ({
   const displayCalories = burnedFromBodyComp || weeklyCalories;
 
   return (
-    <View style={[s.container, { backgroundColor: isDark ? '#2A2A2A' : motivation.colors.bg }]}>
+    <View style={[s.container, isDark && s.containerDark, style]}>
       {/* Header motivation */}
-      <View style={[s.iconContainer, { backgroundColor: isDark ? '#333333' : 'rgba(255,255,255,0.5)' }]}>
-        <Ionicons name={motivation.icon} size={32} color={isDark ? theme.colors.primary : motivation.colors.icon} />
+      <View style={s.iconContainer}>
+        <Ionicons name={motivation.icon} size={28} color="#72baa1" />
       </View>
 
       <View style={s.content}>
-        <Text style={[s.title, { color: isDark ? '#FFFFFF' : motivation.colors.text }]}>
+        <Text style={[s.title, isDark && s.titleDark]}>
           {motivation.title}
         </Text>
-        <Text style={[s.message, { color: isDark ? '#CCCCCC' : motivation.colors.text }]}>
+        <Text style={[s.message, isDark && s.messageDark]}>
           {motivation.message}
         </Text>
       </View>
 
       {/* Stats */}
-      <View style={s.stats}>
+      <View style={[s.stats, isDark && s.statsBorderDark]}>
         <View style={s.stat}>
-          <Text style={[s.statValue, { color: isDark ? '#FFFFFF' : motivation.colors.text }]}>
+          <Text style={[s.statValue, isDark && s.statValueDark]}>
             {weeklySessions}
           </Text>
-          <Text style={[s.statLabel, { color: isDark ? '#AAAAAA' : motivation.colors.text }]}>
+          <Text style={[s.statLabel, isDark && s.statLabelDark]}>
             séance{weeklySessions !== 1 ? 's' : ''}
           </Text>
         </View>
         {displayCalories > 0 && (
           <View style={s.stat}>
-            <Text style={[s.statValue, { color: isDark ? '#FFFFFF' : motivation.colors.text }]}>
+            <Text style={[s.statValue, isDark && s.statValueDark]}>
               {displayCalories}
             </Text>
-            <Text style={[s.statLabel, { color: isDark ? '#AAAAAA' : motivation.colors.text }]}>
+            <Text style={[s.statLabel, isDark && s.statLabelDark]}>
               kcal
             </Text>
           </View>
         )}
         {weeklyDuration > 0 && (
           <View style={s.stat}>
-            <Text style={[s.statValue, { color: isDark ? '#FFFFFF' : motivation.colors.text }]}>
+            <Text style={[s.statValue, isDark && s.statValueDark]}>
               {weeklyDuration}
             </Text>
-            <Text style={[s.statLabel, { color: isDark ? '#AAAAAA' : motivation.colors.text }]}>
+            <Text style={[s.statLabel, isDark && s.statLabelDark]}>
               min
             </Text>
           </View>
         )}
         {weeklyTrainingDays > 0 && (
           <View style={s.stat}>
-            <Text style={[s.statValue, { color: isDark ? '#FFFFFF' : motivation.colors.text }]}>
+            <Text style={[s.statValue, isDark && s.statValueDark]}>
               {weeklyTrainingDays}
             </Text>
-            <Text style={[s.statLabel, { color: isDark ? '#AAAAAA' : motivation.colors.text }]}>
+            <Text style={[s.statLabel, isDark && s.statLabelDark]}>
               jour{weeklyTrainingDays !== 1 ? 's' : ''}
             </Text>
           </View>
@@ -216,23 +217,23 @@ export const WeeklySummary = ({
       {/* Bilan nutrition */}
       {nutritionRecap && (
         <View style={[s.nutritionRecap, isDark && s.nutritionRecapDark]}>
-          <Text style={[s.nutritionRecapTitle, isDark && { color: '#AAA' }]}>
+          <Text style={[s.nutritionRecapTitle, isDark && s.nutritionRecapTitleDark]}>
             Bilan nutrition
           </Text>
           <View style={s.nutritionRecapGrid}>
             <View style={s.nutritionRecapItem}>
-              <Text style={[s.nutritionRecapValue, isDark && { color: '#FFF' }]}>
+              <Text style={[s.nutritionRecapValue, isDark && s.nutritionRecapValueDark]}>
                 {nutritionRecap.avgCalories}
               </Text>
-              <Text style={[s.nutritionRecapLabel, isDark && { color: '#AAA' }]}>
+              <Text style={[s.nutritionRecapLabel, isDark && s.nutritionRecapLabelDark]}>
                 kcal/jour
               </Text>
             </View>
             <View style={s.nutritionRecapItem}>
-              <Text style={[s.nutritionRecapValue, isDark && { color: '#FFF' }]}>
+              <Text style={[s.nutritionRecapValue, isDark && s.nutritionRecapValueDark]}>
                 {nutritionRecap.avgProteins}g
               </Text>
-              <Text style={[s.nutritionRecapLabel, isDark && { color: '#AAA' }]}>
+              <Text style={[s.nutritionRecapLabel, isDark && s.nutritionRecapLabelDark]}>
                 prot ({nutritionRecap.proteinPerKg}g/kg)
               </Text>
             </View>
@@ -240,7 +241,7 @@ export const WeeklySummary = ({
               <Text style={[s.nutritionRecapValue, { color: nutritionRecap.dailyBalance >= 0 ? '#F59E0B' : '#3B82F6' }]}>
                 {nutritionRecap.dailyBalance >= 0 ? '+' : ''}{nutritionRecap.dailyBalance}
               </Text>
-              <Text style={[s.nutritionRecapLabel, isDark && { color: '#AAA' }]}>
+              <Text style={[s.nutritionRecapLabel, isDark && s.nutritionRecapLabelDark]}>
                 {nutritionRecap.dailyBalance >= 0 ? 'surplus' : 'deficit'}
               </Text>
             </View>
@@ -277,7 +278,7 @@ export const WeeklySummary = ({
           activeOpacity={0.7}
         >
           <Text style={[s.ctaText, isDark && s.ctaTextDark]}>Mes conseils personnalisés</Text>
-          <Ionicons name="chevron-forward" size={14} color={isDark ? '#86c1ad' : '#6db39b'} />
+          <Ionicons name="chevron-forward" size={14} color="#72baa1" />
         </TouchableOpacity>
       )}
 
@@ -295,7 +296,6 @@ export const WeeklySummary = ({
               key={i}
               style={[s.tipCard, { backgroundColor: isDark ? TINT_BG[tip.tint].dark : TINT_BG[tip.tint].light }]}
             >
-              <Text style={s.tipEmoji}>{tip.emoji}</Text>
               <Text style={[s.tipTitle, isDark && s.tipTitleDark]}>{tip.title}</Text>
               <Text style={[s.tipText, isDark && s.tipTextDark]}>{tip.text}</Text>
             </View>
@@ -309,18 +309,25 @@ export const WeeklySummary = ({
 // ─── Styles ──────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   container: {
-    borderRadius: theme.borderRadius.xl,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#efedea',
+    borderRadius: 20,
     padding: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.md,
     flexWrap: 'wrap',
   },
+  containerDark: {
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
   iconContainer: {
     width: 56,
     height: 56,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: 14,
+    backgroundColor: 'rgba(114,186,161,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -329,13 +336,20 @@ const s = StyleSheet.create({
     minWidth: 150,
   },
   title: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1c1917',
+  },
+  titleDark: {
+    color: '#FFFFFF',
   },
   message: {
-    fontSize: theme.fontSize.sm,
+    fontSize: 13,
+    color: '#78716c',
     marginTop: 4,
-    opacity: 0.9,
+  },
+  messageDark: {
+    color: '#a8a29e',
   },
 
   // Stats
@@ -347,18 +361,28 @@ const s = StyleSheet.create({
     marginTop: theme.spacing.sm,
     paddingTop: theme.spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
+    borderTopColor: '#efedea',
+  },
+  statsBorderDark: {
+    borderTopColor: 'rgba(255,255,255,0.06)',
   },
   stat: {
     alignItems: 'center',
   },
   statValue: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.bold,
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1c1917',
+  },
+  statValueDark: {
+    color: '#FFFFFF',
   },
   statLabel: {
-    fontSize: theme.fontSize.xs,
-    opacity: 0.8,
+    fontSize: 10,
+    color: '#a8a29e',
+  },
+  statLabelDark: {
+    color: '#78716c',
   },
 
   // Nutrition recap
@@ -367,18 +391,21 @@ const s = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.08)',
+    borderTopColor: '#efedea',
   },
   nutritionRecapDark: {
-    borderTopColor: 'rgba(255,255,255,0.1)',
+    borderTopColor: 'rgba(255,255,255,0.06)',
   },
   nutritionRecapTitle: {
     fontSize: 11,
     fontWeight: '600',
     marginBottom: 8,
-    opacity: 0.7,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    color: '#a8a29e',
+  },
+  nutritionRecapTitleDark: {
+    color: '#78716c',
   },
   nutritionRecapGrid: {
     flexDirection: 'row',
@@ -391,11 +418,18 @@ const s = StyleSheet.create({
   nutritionRecapValue: {
     fontSize: 16,
     fontWeight: '700',
+    color: '#1c1917',
+  },
+  nutritionRecapValueDark: {
+    color: '#FFFFFF',
   },
   nutritionRecapLabel: {
     fontSize: 10,
-    opacity: 0.7,
+    color: '#a8a29e',
     marginTop: 2,
+  },
+  nutritionRecapLabelDark: {
+    color: '#78716c',
   },
   nutritionRecapTags: {
     flexDirection: 'row',
@@ -407,7 +441,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 999,
-    backgroundColor: 'rgba(0,0,0,0.06)',
+    backgroundColor: '#f5f5f4',
   },
   tagDark: {
     backgroundColor: 'rgba(255,255,255,0.1)',
@@ -428,20 +462,20 @@ const s = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(109, 179, 155, 0.25)',
-    backgroundColor: 'rgba(109, 179, 155, 0.04)',
+    borderColor: 'rgba(114,186,161,0.3)',
+    backgroundColor: 'rgba(114,186,161,0.04)',
   },
   ctaDark: {
-    borderColor: 'rgba(134, 193, 173, 0.2)',
-    backgroundColor: 'rgba(134, 193, 173, 0.06)',
+    borderColor: 'rgba(114,186,161,0.2)',
+    backgroundColor: 'rgba(114,186,161,0.06)',
   },
   ctaText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#6db39b',
+    color: '#72baa1',
   },
   ctaTextDark: {
-    color: '#86c1ad',
+    color: '#72baa1',
   },
 
   // Tips carousel
@@ -451,25 +485,22 @@ const s = StyleSheet.create({
   },
   tipCard: {
     width: CARD_WIDTH,
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 16,
     gap: 6,
-  },
-  tipEmoji: {
-    fontSize: 22,
   },
   tipTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#222',
+    color: '#1c1917',
   },
   tipTitleDark: {
     color: '#eee',
   },
   tipText: {
     fontSize: 12,
-    lineHeight: 17,
-    color: '#666',
+    lineHeight: 18,
+    color: '#78716c',
     fontWeight: '400',
   },
   tipTextDark: {

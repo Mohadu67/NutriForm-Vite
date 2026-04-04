@@ -9,11 +9,10 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../theme';
 
 /**
- * RecentActivity - Liste des séances récentes
- * Affiche les 5 dernières séances avec détails expandables
+ * RecentActivity - Liste des seances recentes
+ * Affiche les 5 dernieres seances avec details expandables
  */
 export const RecentActivity = ({
   recentSessions = [],
@@ -28,7 +27,6 @@ export const RecentActivity = ({
 }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const primaryColor = theme.colors.primary;
 
   const [expandedSessionId, setExpandedSessionId] = useState(null);
   const [editingSessionId, setEditingSessionId] = useState(null);
@@ -43,7 +41,7 @@ export const RecentActivity = ({
   const handleStartEdit = useCallback((session) => {
     const sessionId = session.id || session._id;
     setEditingSessionId(sessionId);
-    setEditingName(session.name || 'Séance');
+    setEditingName(session.name || 'Seance');
   }, []);
 
   const handleSaveEdit = useCallback(
@@ -64,7 +62,7 @@ export const RecentActivity = ({
 
   const handleDelete = useCallback(
     (sessionId) => {
-      Alert.alert('Supprimer', 'Supprimer cette séance ?', [
+      Alert.alert('Supprimer', 'Supprimer cette seance ?', [
         { text: 'Annuler', style: 'cancel' },
         {
           text: 'Supprimer',
@@ -90,7 +88,7 @@ export const RecentActivity = ({
     if (set.distanceKm || set.km) {
       parts.push(`${set.distanceKm || set.km} km`);
     }
-    return parts.length > 0 ? parts.join(' • ') : 'Complété';
+    return parts.length > 0 ? parts.join(' - ') : 'Complete';
   }, []);
 
   const getEntryType = useCallback((entry) => {
@@ -128,9 +126,9 @@ export const RecentActivity = ({
   }
 
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
+    <View style={styles.container}>
       <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
-        Activité récente
+        Activite recente
       </Text>
 
       <View style={styles.sessionsList}>
@@ -148,6 +146,7 @@ export const RecentActivity = ({
                 styles.sessionItem,
                 isDark && styles.sessionItemDark,
                 isExpanded && styles.sessionItemExpanded,
+                isExpanded && isDark && styles.sessionItemExpandedDark,
               ]}
             >
               {/* Header */}
@@ -158,7 +157,7 @@ export const RecentActivity = ({
               >
                 {/* Date */}
                 <View style={styles.sessionDate}>
-                  <Text style={[styles.sessionDateText, isDark && styles.sessionDateTextDark]}>
+                  <Text style={styles.sessionDateText}>
                     {dateFormatter(session?.endedAt || session?.date || session?.createdAt)}
                   </Text>
                 </View>
@@ -176,23 +175,23 @@ export const RecentActivity = ({
                         returnKeyType="done"
                       />
                       <TouchableOpacity onPress={() => handleSaveEdit(sessionId)}>
-                        <Ionicons name="checkmark" size={20} color="#22C55E" />
+                        <Ionicons name="checkmark" size={20} color="#72baa1" />
                       </TouchableOpacity>
                       <TouchableOpacity onPress={handleCancelEdit}>
-                        <Ionicons name="close" size={20} color="#EF4444" />
+                        <Ionicons name="close" size={20} color="#a8a29e" />
                       </TouchableOpacity>
                     </View>
                   ) : (
                     <TouchableOpacity onPress={() => handleStartEdit(session)}>
                       <Text style={[styles.sessionName, isDark && styles.sessionNameDark]}>
-                        {session?.name || 'Séance'}
+                        {session?.name || 'Seance'}
                       </Text>
                     </TouchableOpacity>
                   )}
                   <Text style={[styles.sessionMeta, isDark && styles.sessionMetaDark]}>
                     {session?.durationMinutes ? `${session.durationMinutes} min` : ''}
-                    {entries.length ? ` • ${entries.length} exo` : ''}
-                    {calories > 0 ? ` • ${calories} kcal` : ''}
+                    {entries.length ? ` · ${entries.length} exo` : ''}
+                    {calories > 0 ? ` · ${calories} kcal` : ''}
                   </Text>
                 </View>
 
@@ -201,22 +200,22 @@ export const RecentActivity = ({
                   {entries.length > 0 && (
                     <Ionicons
                       name={isExpanded ? 'chevron-up' : 'chevron-down'}
-                      size={18}
-                      color={isDark ? '#666' : theme.colors.text.tertiary}
+                      size={16}
+                      color="#d6d3d1"
                     />
                   )}
                   <TouchableOpacity
                     onPress={() => handleDelete(sessionId)}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
-                    <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                    <Ionicons name="trash-outline" size={16} color="#a8a29e" />
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
 
               {/* Expanded details */}
               {isExpanded && entries.length > 0 && (
-                <View style={styles.sessionExpanded}>
+                <View style={[styles.sessionExpanded, isDark && styles.sessionExpandedDark]}>
                   {entries.map((entry, entryIndex) => {
                     const sets = getEntrySets(entry);
                     const entryType = getEntryType(entry);
@@ -243,9 +242,6 @@ export const RecentActivity = ({
                             numberOfLines={1}
                           >
                             {entryName}
-                          </Text>
-                          <Text style={styles.exerciseType}>
-                            {entryType === 'cardio' ? '🏃' : entryType === 'poids_du_corps' ? '🤸' : '🏋️'}
                           </Text>
                         </View>
                         <View style={styles.exerciseSummary}>
@@ -274,96 +270,91 @@ export const RecentActivity = ({
           );
         })}
       </View>
-
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: 24,
   },
-  containerDark: {},
   sectionTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.md,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1c1917',
+    marginBottom: 14,
   },
   sectionTitleDark: {
     color: '#FFFFFF',
   },
   sessionsList: {
-    gap: theme.spacing.sm,
+    gap: 10,
   },
   sessionItem: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.lg,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#efedea',
+    borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
   sessionItemDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   sessionItemExpanded: {
-    borderWidth: 1,
-    borderColor: `${theme.colors.primary}4D`,
+    borderColor: 'rgba(114,186,161,0.3)',
+  },
+  sessionItemExpandedDark: {
+    borderColor: 'rgba(114,186,161,0.3)',
   },
   sessionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: theme.spacing.md,
-    gap: theme.spacing.md,
+    padding: 14,
+    gap: 12,
   },
   sessionDate: {
-    backgroundColor: `${theme.colors.primary}1A`,
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.sm,
-    borderRadius: theme.borderRadius.md,
+    backgroundColor: 'rgba(114,186,161,0.1)',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
   },
   sessionDateText: {
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.primary,
-  },
-  sessionDateTextDark: {
-    color: theme.colors.primary,
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#72baa1',
   },
   sessionDetails: {
     flex: 1,
   },
   sessionName: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.text.primary,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1c1917',
   },
   sessionNameDark: {
     color: '#FFFFFF',
   },
   sessionMeta: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.text.tertiary,
+    fontSize: 11,
+    color: '#a8a29e',
     marginTop: 2,
   },
   sessionMetaDark: {
-    color: '#777777',
+    color: '#a8a29e',
   },
   editContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
+    gap: 8,
   },
   sessionNameInput: {
     flex: 1,
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.text.primary,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1c1917',
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.primary,
+    borderBottomColor: '#72baa1',
     paddingVertical: 2,
   },
   sessionNameInputDark: {
@@ -372,72 +363,49 @@ const styles = StyleSheet.create({
   sessionActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
+    gap: 10,
   },
   sessionExpanded: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0, 0, 0, 0.05)',
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+    borderTopColor: '#efedea',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: '#fafaf9',
+  },
+  sessionExpandedDark: {
+    borderTopColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
   },
   exerciseDetail: {
-    paddingVertical: theme.spacing.xs,
+    paddingVertical: 6,
   },
   exerciseHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.xs,
   },
   exerciseName: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.text.primary,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1c1917',
     flex: 1,
   },
   exerciseNameDark: {
     color: '#FFFFFF',
   },
-  exerciseType: {
-    fontSize: theme.fontSize.sm,
-  },
   exerciseSummary: {
     flexDirection: 'row',
-    gap: theme.spacing.xs,
-    marginTop: 4,
+    gap: 6,
+    marginTop: 5,
   },
   summaryBadge: {
-    backgroundColor: `${theme.colors.primary}1A`,
-    paddingVertical: 2,
-    paddingHorizontal: theme.spacing.xs,
-    borderRadius: theme.borderRadius.sm,
+    backgroundColor: 'rgba(114,186,161,0.08)',
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 6,
   },
   summaryBadgeText: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.medium,
-  },
-  upsellContainer: {
-    marginTop: theme.spacing.md,
-    padding: theme.spacing.md,
-    backgroundColor: `${theme.colors.primary}14`,
-    borderRadius: theme.borderRadius.lg,
-    alignItems: 'center',
-  },
-  upsellContainerDark: {
-    backgroundColor: `${theme.colors.primary}26`,
-  },
-  upsellText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
-  },
-  upsellTextDark: {
-    color: '#AAAAAA',
-  },
-  upsellLink: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.primary,
-    marginTop: 4,
+    fontSize: 11,
+    color: '#72baa1',
+    fontWeight: '600',
   },
 });

@@ -69,6 +69,9 @@ export const endpoints = {
     trackClick: (notificationId) => `/notifications/${notificationId}/click`,
     clickStats: "/notifications/stats/clicks",
   },
+  dashboard: {
+    overview: "/dashboard/overview",
+  },
   analytics: {
     weekly: "/analytics/weekly",
     adminNotifications: "/analytics/admin/notifications",
@@ -112,6 +115,8 @@ export const endpoints = {
     summaryWeekly: "/nutrition/summary/weekly",
     summaryMonthly: "/nutrition/summary/monthly",
     goals: "/nutrition/goals",
+    carousel: (date) => `/nutrition/carousel/${date}`,
+    weekBar: "/nutrition/week-bar",
   },
   health: {
     sync: "/health/sync",
