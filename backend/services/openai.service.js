@@ -56,13 +56,27 @@ async function generateResponse(userMessage, conversationHistory = [], userConte
     const history = [];
     const recentHistory = conversationHistory.slice(-10);
     for (const msg of recentHistory) {
-      const parts = [{ text: msg.content }];
-      // Include images from history if present
+      const parts = [{ text: msg.content || '' }];
+      // Include images from history (base64 data URLs OR remote Cloudinary URLs)
       if (msg.media?.length) {
         for (const m of msg.media) {
-          if (m.url?.startsWith('data:')) {
+          if (!m.url || m.type !== 'image') continue;
+          if (m.url.startsWith('data:')) {
             const match = m.url.match(/^data:(image\/\w+);base64,(.+)$/);
             if (match) parts.unshift({ inlineData: { mimeType: match[1], data: match[2] } });
+          } else if (m.url.startsWith('http')) {
+            // Remote URL (Cloudinary) — fetch and convert to base64 for Gemini
+            try {
+              const fetch = (await import('node-fetch')).default;
+              const resp = await fetch(m.url, { timeout: 5000 });
+              if (resp.ok) {
+                const buffer = await resp.buffer();
+                const mimeType = resp.headers.get('content-type') || 'image/jpeg';
+                parts.unshift({ inlineData: { mimeType, data: buffer.toString('base64') } });
+              }
+            } catch (e) {
+              logger.warn('Failed to fetch history image for context:', e.message);
+            }
           }
         }
       }
