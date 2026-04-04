@@ -17,7 +17,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-import { theme } from '../../theme';
 import { useRecipe } from '../../contexts/RecipeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import useRecipeFilters from '../../hooks/useRecipeFilters';
@@ -25,12 +24,12 @@ import RecipeCard from '../../components/recipes/RecipeCard';
 import logger from '../../services/logger';
 
 const CUISINE_OPTIONS = [
-  { value: 'francaise', label: 'Française', icon: '🇫🇷' },
-  { value: 'italienne', label: 'Italienne', icon: '🇮🇹' },
-  { value: 'asiatique', label: 'Asiatique', icon: '🥢' },
-  { value: 'mexicaine', label: 'Mexicaine', icon: '🌮' },
-  { value: 'americaine', label: 'Américaine', icon: '🍔' },
-  { value: 'mediterraneenne', label: 'Méditerranéenne', icon: '🫒' },
+  { value: 'francaise', label: 'Francaise', icon: 'flag-outline' },
+  { value: 'italienne', label: 'Italienne', icon: 'pizza-outline' },
+  { value: 'asiatique', label: 'Asiatique', icon: 'restaurant-outline' },
+  { value: 'mexicaine', label: 'Mexicaine', icon: 'flame-outline' },
+  { value: 'americaine', label: 'Americaine', icon: 'fast-food-outline' },
+  { value: 'mediterraneenne', label: 'Mediterraneenne', icon: 'leaf-outline' },
 ];
 
 const DIFFICULTY_OPTIONS = [
@@ -47,12 +46,12 @@ const COOKING_TIME_OPTIONS = [
 ];
 
 const DIETARY_OPTIONS = [
-  { value: 'vegetarien', label: 'Végétarien', icon: '🥗' },
-  { value: 'vegan', label: 'Vegan', icon: '🌱' },
-  { value: 'sans-gluten', label: 'Sans gluten', icon: '🌾' },
-  { value: 'sans-lactose', label: 'Sans lactose', icon: '🥛' },
-  { value: 'paleo', label: 'Paléo', icon: '🥩' },
-  { value: 'keto', label: 'Keto', icon: '🥑' },
+  { value: 'vegetarien', label: 'Vegetarien', icon: 'nutrition-outline' },
+  { value: 'vegan', label: 'Vegan', icon: 'leaf-outline' },
+  { value: 'sans-gluten', label: 'Sans gluten', icon: 'warning-outline' },
+  { value: 'sans-lactose', label: 'Sans lactose', icon: 'water-outline' },
+  { value: 'paleo', label: 'Paleo', icon: 'fitness-outline' },
+  { value: 'keto', label: 'Keto', icon: 'flash-outline' },
 ];
 
 export default function RecipesScreen() {
@@ -142,7 +141,7 @@ export default function RecipesScreen() {
     if (!isPremium) {
       Alert.alert(
         'Premium Requis',
-        'La création de recettes est une fonctionnalité Premium. Passez à Premium pour créer vos propres recettes et les partager avec la communauté.',
+        'La creation de recettes est une fonctionnalite Premium. Passez a Premium pour creer vos propres recettes et les partager avec la communaute.',
         [
           { text: 'Annuler', style: 'cancel' },
           {
@@ -187,7 +186,7 @@ export default function RecipesScreen() {
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <View>
-            <Text style={[styles.title, isDark && styles.textDark]}>Recettes</Text>
+            <Text style={[styles.title, isDark && styles.titleDark]}>Recettes</Text>
             <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
               {filteredRecipes.length} recette{filteredRecipes.length !== 1 ? 's' : ''}
             </Text>
@@ -209,7 +208,6 @@ export default function RecipesScreen() {
           style={[
             styles.tab,
             activeTab === 'all' && styles.tabActive,
-            isDark && styles.tabDark,
             isDark && activeTab === 'all' && styles.tabActiveDark,
           ]}
           onPress={() => setActiveTab('all')}
@@ -217,7 +215,7 @@ export default function RecipesScreen() {
           <Text style={[
             styles.tabText,
             activeTab === 'all' && styles.tabTextActive,
-            isDark && styles.tabTextDark,
+            isDark && activeTab !== 'all' && styles.tabTextDark,
           ]}>
             Toutes
           </Text>
@@ -227,7 +225,6 @@ export default function RecipesScreen() {
           style={[
             styles.tab,
             activeTab === 'my' && styles.tabActive,
-            isDark && styles.tabDark,
             isDark && activeTab === 'my' && styles.tabActiveDark,
           ]}
           onPress={() => setActiveTab('my')}
@@ -235,7 +232,7 @@ export default function RecipesScreen() {
           <Text style={[
             styles.tabText,
             activeTab === 'my' && styles.tabTextActive,
-            isDark && styles.tabTextDark,
+            isDark && activeTab !== 'my' && styles.tabTextDark,
           ]}>
             Mes recettes
           </Text>
@@ -243,18 +240,18 @@ export default function RecipesScreen() {
       </View>
 
       {/* Search bar */}
-      <View style={[styles.searchBar, isDark && styles.cardDark]}>
-        <Ionicons name="search" size={20} color={isDark ? '#888' : theme.colors.text.tertiary} />
+      <View style={[styles.searchBar, isDark && styles.searchBarDark]}>
+        <Ionicons name="search" size={20} color={isDark ? '#7a7a88' : '#a8a29e'} />
         <TextInput
-          style={[styles.searchInput, isDark && styles.textDark]}
+          style={[styles.searchInput, isDark && styles.searchInputDark]}
           placeholder="Rechercher une recette..."
-          placeholderTextColor={isDark ? '#888' : theme.colors.text.tertiary}
+          placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
           value={searchText}
           onChangeText={setSearchText}
         />
         {searchText.length > 0 && (
           <TouchableOpacity onPress={() => setSearchText('')}>
-            <Ionicons name="close-circle" size={20} color={isDark ? '#888' : theme.colors.text.tertiary} />
+            <Ionicons name="close-circle" size={20} color={isDark ? '#7a7a88' : '#a8a29e'} />
           </TouchableOpacity>
         )}
       </View>
@@ -286,7 +283,12 @@ export default function RecipesScreen() {
               ]}
               onPress={() => toggleCuisine(cuisine.value)}
             >
-              <Text style={styles.cuisineIcon}>{cuisine.icon}</Text>
+              <Ionicons
+                name={cuisine.icon}
+                size={16}
+                color={isSelected ? '#72baa1' : (isDark ? '#c1c1cb' : '#78716c')}
+                style={styles.cuisineIcon}
+              />
               <Text style={[
                 styles.cuisineText,
                 isSelected && styles.cuisineTextSelected,
@@ -304,7 +306,7 @@ export default function RecipesScreen() {
         style={[styles.moreFiltersButton, isDark && styles.moreFiltersButtonDark]}
         onPress={() => setShowFiltersModal(true)}
       >
-        <Ionicons name="options" size={18} color={theme.colors.primary} />
+        <Ionicons name="options" size={18} color="#72baa1" />
         <Text style={styles.moreFiltersText}>
           Plus de filtres
         </Text>
@@ -331,8 +333,8 @@ export default function RecipesScreen() {
     return (
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={[styles.loadingText, isDark && styles.textDark]}>
+          <ActivityIndicator size="large" color="#72baa1" />
+          <Text style={[styles.loadingText, isDark && styles.loadingTextDark]}>
             Chargement des recettes...
           </Text>
         </View>
@@ -347,7 +349,6 @@ export default function RecipesScreen() {
         renderItem={renderRecipe}
         keyExtractor={item => item._id}
         ListHeaderComponent={ListHeader}
-        style={[isDark && styles.flatListDark]}
         contentContainerStyle={[styles.listContent, isDark && styles.listContentDark]}
         numColumns={2}
         columnWrapperStyle={styles.row}
@@ -356,22 +357,22 @@ export default function RecipesScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={theme.colors.primary}
-            colors={[theme.colors.primary]}
+            tintColor="#72baa1"
+            colors={['#72baa1']}
           />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="restaurant-outline" size={64} color={isDark ? '#555' : '#CCC'} />
-            <Text style={[styles.emptyText, isDark && styles.textDark]}>
-              Aucune recette trouvée
+            <Ionicons name="restaurant-outline" size={64} color="#a8a29e" />
+            <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>
+              Aucune recette trouvee
             </Text>
             {activeFiltersCount > 0 && (
               <TouchableOpacity
                 style={styles.clearFiltersButton}
                 onPress={clearFilters}
               >
-                <Text style={styles.clearFiltersText}>Réinitialiser les filtres</Text>
+                <Text style={styles.clearFiltersText}>Reinitialiser les filtres</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -388,16 +389,16 @@ export default function RecipesScreen() {
         <SafeAreaView style={[styles.modalContainer, isDark && styles.containerDark]}>
           {/* Modal Header */}
           <View style={[styles.modalHeader, isDark && styles.modalHeaderDark]}>
-            <Text style={[styles.modalTitle, isDark && styles.textDark]}>Filtres</Text>
+            <Text style={[styles.modalTitle, isDark && styles.modalTitleDark]}>Filtres</Text>
             <TouchableOpacity onPress={() => setShowFiltersModal(false)}>
-              <Ionicons name="close" size={28} color={isDark ? '#FFF' : '#000'} />
+              <Ionicons name="close" size={28} color={isDark ? '#f3f3f6' : '#1c1917'} />
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.modalContent}>
             {/* Difficulty */}
             <View style={styles.filterSection}>
-              <Text style={[styles.filterLabel, isDark && styles.textDark]}>Difficulté</Text>
+              <Text style={[styles.filterLabel, isDark && styles.filterLabelDark]}>Difficulte</Text>
               <View style={styles.filterOptions}>
                 {DIFFICULTY_OPTIONS.map(diff => {
                   const isSelected = selectedDifficulty === diff.value;
@@ -426,7 +427,7 @@ export default function RecipesScreen() {
 
             {/* Cooking Time */}
             <View style={styles.filterSection}>
-              <Text style={[styles.filterLabel, isDark && styles.textDark]}>Temps de cuisson</Text>
+              <Text style={[styles.filterLabel, isDark && styles.filterLabelDark]}>Temps de cuisson</Text>
               <View style={styles.filterOptions}>
                 {COOKING_TIME_OPTIONS.map(time => {
                   const isSelected = selectedCookingTime === time.value;
@@ -455,7 +456,7 @@ export default function RecipesScreen() {
 
             {/* Dietary */}
             <View style={styles.filterSection}>
-              <Text style={[styles.filterLabel, isDark && styles.textDark]}>Régime alimentaire</Text>
+              <Text style={[styles.filterLabel, isDark && styles.filterLabelDark]}>Regime alimentaire</Text>
               <View style={styles.filterOptionsWrap}>
                 {DIETARY_OPTIONS.map(diet => {
                   const isSelected = selectedDietary.includes(diet.value);
@@ -469,7 +470,12 @@ export default function RecipesScreen() {
                       ]}
                       onPress={() => toggleDietary(diet.value)}
                     >
-                      <Text style={styles.dietIcon}>{diet.icon}</Text>
+                      <Ionicons
+                        name={diet.icon}
+                        size={16}
+                        color={isSelected ? '#72baa1' : (isDark ? '#c1c1cb' : '#78716c')}
+                        style={styles.dietIcon}
+                      />
                       <Text style={[
                         styles.filterOptionText,
                         isSelected && styles.filterOptionTextSelected,
@@ -496,7 +502,7 @@ export default function RecipesScreen() {
                 <Ionicons
                   name={showFavoritesOnly ? 'heart' : 'heart-outline'}
                   size={24}
-                  color={showFavoritesOnly ? '#EF4444' : (isDark ? '#888' : '#666')}
+                  color={showFavoritesOnly ? '#EF4444' : (isDark ? '#7a7a88' : '#78716c')}
                 />
                 <Text style={[
                   styles.favoritesToggleText,
@@ -509,12 +515,12 @@ export default function RecipesScreen() {
           </ScrollView>
 
           {/* Modal Footer */}
-          <View style={[styles.modalFooter, isDark && styles.modalHeaderDark]}>
+          <View style={[styles.modalFooter, isDark && styles.modalFooterDark]}>
             <TouchableOpacity
               style={[styles.clearButton, isDark && styles.clearButtonDark]}
               onPress={clearFilters}
             >
-              <Text style={[styles.clearButtonText, isDark && styles.textDark]}>
+              <Text style={[styles.clearButtonText, isDark && styles.clearButtonTextDark]}>
                 Effacer tout
               </Text>
             </TouchableOpacity>
@@ -536,10 +542,10 @@ export default function RecipesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#fcfbf9',
   },
   containerDark: {
-    backgroundColor: '#121212',
+    backgroundColor: '#0e0e11',
   },
   loadingContainer: {
     flex: 1,
@@ -547,17 +553,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: theme.spacing.md,
-    fontSize: theme.fontSize.md,
-    color: '#666',
+    marginTop: 16,
+    fontSize: 15,
+    color: '#78716c',
   },
-  flatListDark: {
-    backgroundColor: '#121212',
+  loadingTextDark: {
+    color: '#c1c1cb',
   },
   header: {
-    paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.md,
-    paddingBottom: theme.spacing.sm,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
   headerTop: {
     flexDirection: 'row',
@@ -565,358 +571,376 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   title: {
-    fontSize: theme.fontSize.xxl,
-    fontWeight: theme.fontWeight.bold,
-    color: '#1a1a1a',
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1c1917',
+    letterSpacing: -0.5,
     marginBottom: 4,
   },
+  titleDark: {
+    color: '#f3f3f6',
+  },
   subtitle: {
-    fontSize: theme.fontSize.sm,
-    color: '#666',
+    fontSize: 13,
+    color: '#78716c',
   },
   subtitleDark: {
-    color: '#888',
-  },
-  textDark: {
-    color: '#FFFFFF',
+    color: '#7a7a88',
   },
   textMutedDark: {
-    color: '#888',
+    color: '#7a7a88',
   },
   createButton: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
     alignItems: 'center',
     justifyContent: 'center',
-    ...theme.shadows.md,
   },
   createButtonDisabled: {
     opacity: 0.6,
   },
   tabsContainer: {
     flexDirection: 'row',
-    marginHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    backgroundColor: '#F0F0F0',
-    borderRadius: theme.borderRadius.lg,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    backgroundColor: '#f5f5f4',
+    borderRadius: 14,
     padding: 4,
   },
   tabsContainerDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#1f1f26',
   },
   tab: {
     flex: 1,
     paddingVertical: 12,
     alignItems: 'center',
-    borderRadius: theme.borderRadius.md,
-  },
-  tabDark: {
-    backgroundColor: 'transparent',
+    borderRadius: 10,
   },
   tabActive: {
-    backgroundColor: '#FFFFFF',
-    ...theme.shadows.sm,
+    backgroundColor: '#fff',
   },
   tabActiveDark: {
-    backgroundColor: '#374151',
+    backgroundColor: '#18181d',
   },
   tabText: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.medium,
-    color: '#666',
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#78716c',
   },
   tabTextDark: {
-    color: '#999',
+    color: '#7a7a88',
   },
   tabTextActive: {
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.bold,
+    color: '#72baa1',
+    fontWeight: '700',
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.lg,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    marginHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    ...theme.shadows.sm,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  searchBarDark: {
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   searchInput: {
     flex: 1,
-    marginLeft: theme.spacing.sm,
-    fontSize: theme.fontSize.md,
-    color: '#1a1a1a',
+    marginLeft: 10,
+    fontSize: 15,
+    color: '#1c1917',
   },
-  cardDark: {
-    backgroundColor: '#2A2A2A',
+  searchInputDark: {
+    color: '#f3f3f6',
   },
   filterSectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
+    paddingHorizontal: 16,
+    marginBottom: 10,
   },
   filterSectionTitle: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semiBold,
-    color: '#666',
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#78716c',
   },
   clearSectionText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 13,
+    color: '#72baa1',
+    fontWeight: '500',
   },
   cuisineScroll: {
-    marginBottom: theme.spacing.md,
+    marginBottom: 16,
   },
   cuisineScrollContent: {
-    paddingHorizontal: theme.spacing.md,
-    gap: theme.spacing.sm,
+    paddingHorizontal: 16,
+    gap: 10,
   },
   cuisineChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
-    marginRight: theme.spacing.sm,
-    ...theme.shadows.sm,
+    backgroundColor: '#f5f5f4',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginRight: 10,
   },
   cuisineChipSelected: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: 'rgba(114,186,161,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(114,186,161,0.3)',
   },
   chipDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#1f1f26',
   },
   cuisineIcon: {
-    fontSize: 18,
     marginRight: 6,
   },
   cuisineText: {
-    fontSize: theme.fontSize.sm,
-    color: '#1a1a1a',
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 13,
+    color: '#78716c',
+    fontWeight: '500',
   },
   cuisineTextSelected: {
-    color: '#FFFFFF',
+    color: '#72baa1',
   },
   chipTextDark: {
-    color: '#FFFFFF',
+    color: '#c1c1cb',
   },
   moreFiltersButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.lg,
-    marginHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    ...theme.shadows.sm,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#efedea',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 14,
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
   moreFiltersButtonDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   moreFiltersText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.medium,
-    marginLeft: theme.spacing.xs,
+    fontSize: 13,
+    color: '#72baa1',
+    fontWeight: '500',
+    marginLeft: 6,
   },
   filterBadge: {
-    backgroundColor: '#EF4444',
+    backgroundColor: '#f0a47a',
     width: 20,
     height: 20,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: theme.spacing.xs,
+    marginLeft: 6,
   },
   filterBadgeText: {
     color: '#FFFFFF',
     fontSize: 11,
-    fontWeight: theme.fontWeight.bold,
+    fontWeight: '700',
   },
   listContent: {
-    paddingHorizontal: theme.spacing.sm,
-    backgroundColor: '#F8F9FA',
+    paddingHorizontal: 8,
+    backgroundColor: '#fcfbf9',
   },
   listContentDark: {
-    backgroundColor: '#121212',
+    backgroundColor: '#0e0e11',
   },
   row: {
-    gap: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.sm,
+    gap: 10,
+    paddingHorizontal: 8,
   },
   emptyContainer: {
     alignItems: 'center',
-    paddingVertical: theme.spacing.xxl,
+    paddingVertical: 48,
   },
   emptyText: {
-    fontSize: theme.fontSize.md,
-    color: '#666',
-    marginTop: theme.spacing.md,
+    fontSize: 15,
+    color: '#78716c',
+    marginTop: 16,
+  },
+  emptyTextDark: {
+    color: '#c1c1cb',
   },
   clearFiltersButton: {
-    marginTop: theme.spacing.md,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.lg,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#72baa1',
+    borderRadius: 12,
   },
   clearFiltersText: {
     color: '#FFFFFF',
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 13,
+    fontWeight: '500',
   },
   // Modal styles
   modalContainer: {
     flex: 1,
+    backgroundColor: '#fcfbf9',
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: theme.spacing.md,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    borderBottomColor: '#efedea',
   },
   modalHeaderDark: {
-    borderBottomColor: '#333',
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   modalTitle: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.bold,
-    color: '#1a1a1a',
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1c1917',
+  },
+  modalTitleDark: {
+    color: '#f3f3f6',
   },
   modalContent: {
     flex: 1,
-    padding: theme.spacing.md,
+    padding: 16,
   },
   filterSection: {
-    marginBottom: theme.spacing.xl,
+    marginBottom: 24,
   },
   filterLabel: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semiBold,
-    color: '#1a1a1a',
-    marginBottom: theme.spacing.sm,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1c1917',
+    marginBottom: 10,
+  },
+  filterLabelDark: {
+    color: '#f3f3f6',
   },
   filterOptions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.sm,
+    gap: 10,
   },
   filterOptionsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.sm,
+    gap: 10,
   },
   filterOption: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 2,
-    borderColor: '#E5E5E5',
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    backgroundColor: '#fff',
   },
   filterOptionDark: {
-    borderColor: '#333',
-    backgroundColor: '#2A2A2A',
+    borderColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#18181d',
   },
   filterOptionSelected: {
-    borderColor: theme.colors.primary,
-    backgroundColor: `${theme.colors.primary}10`,
+    borderColor: 'rgba(114,186,161,0.3)',
+    backgroundColor: 'rgba(114,186,161,0.12)',
   },
   filterOptionText: {
-    fontSize: theme.fontSize.sm,
-    color: '#666',
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 13,
+    color: '#78716c',
+    fontWeight: '500',
   },
   filterOptionTextDark: {
-    color: '#FFFFFF',
+    color: '#c1c1cb',
   },
   filterOptionTextSelected: {
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.semiBold,
+    color: '#72baa1',
+    fontWeight: '600',
   },
   filterOptionChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
-    borderWidth: 2,
-    borderColor: '#E5E5E5',
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    backgroundColor: '#fff',
   },
   filterOptionChipSelected: {
-    borderColor: theme.colors.primary,
-    backgroundColor: `${theme.colors.primary}10`,
+    borderColor: 'rgba(114,186,161,0.3)',
+    backgroundColor: 'rgba(114,186,161,0.12)',
   },
   dietIcon: {
-    fontSize: 16,
     marginRight: 6,
   },
   favoritesToggle: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 2,
-    borderColor: '#E5E5E5',
-    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    backgroundColor: '#fff',
   },
   favoritesToggleActive: {
     borderColor: '#EF4444',
     backgroundColor: '#FEF2F2',
   },
   favoritesToggleText: {
-    fontSize: theme.fontSize.md,
-    color: '#1a1a1a',
-    fontWeight: theme.fontWeight.medium,
-    marginLeft: theme.spacing.sm,
+    fontSize: 15,
+    color: '#1c1917',
+    fontWeight: '500',
+    marginLeft: 10,
   },
   modalFooter: {
     flexDirection: 'row',
-    padding: theme.spacing.md,
-    gap: theme.spacing.sm,
+    padding: 16,
+    gap: 10,
     borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
+    borderTopColor: '#efedea',
+  },
+  modalFooterDark: {
+    borderTopColor: 'rgba(255,255,255,0.06)',
   },
   clearButton: {
     flex: 1,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
+    paddingVertical: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: '#efedea',
     alignItems: 'center',
   },
   clearButtonDark: {
-    borderColor: '#333',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   clearButtonText: {
-    fontSize: theme.fontSize.md,
-    color: '#666',
-    fontWeight: theme.fontWeight.semiBold,
+    fontSize: 15,
+    color: '#78716c',
+    fontWeight: '600',
+  },
+  clearButtonTextDark: {
+    color: '#c1c1cb',
   },
   applyButton: {
     flex: 1,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    backgroundColor: theme.colors.primary,
+    paddingVertical: 16,
+    borderRadius: 14,
+    backgroundColor: '#72baa1',
     alignItems: 'center',
   },
   applyButtonText: {
-    fontSize: theme.fontSize.md,
+    fontSize: 15,
     color: '#FFFFFF',
-    fontWeight: theme.fontWeight.semiBold,
+    fontWeight: '600',
   },
 });

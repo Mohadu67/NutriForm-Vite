@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../theme';
 
 const RecipeCard = ({ recipe, isFavorite, onPress, onToggleFavorite }) => {
   const colorScheme = useColorScheme();
@@ -35,7 +34,7 @@ const RecipeCard = ({ recipe, isFavorite, onPress, onToggleFavorite }) => {
           <Ionicons
             name={isFavorite ? 'heart' : 'heart-outline'}
             size={20}
-            color={isFavorite ? '#EF4444' : '#FFF'}
+            color={isFavorite ? '#ef4444' : '#d6d3d1'}
           />
         </TouchableOpacity>
 
@@ -58,8 +57,8 @@ const RecipeCard = ({ recipe, isFavorite, onPress, onToggleFavorite }) => {
             {recipe.title}
           </Text>
           {recipe.avgRating > 0 && (
-            <View style={styles.ratingBadge}>
-              <Ionicons name="star" size={12} color="#F59E0B" />
+            <View style={[styles.ratingBadge, isDark && styles.ratingBadgeDark]}>
+              <Ionicons name="star" size={12} color="#d4a96a" />
               <Text style={styles.ratingText}>
                 {recipe.avgRating.toFixed(1)}
               </Text>
@@ -67,17 +66,28 @@ const RecipeCard = ({ recipe, isFavorite, onPress, onToggleFavorite }) => {
           )}
         </View>
 
+        {/* Tags */}
+        {recipe.tags && recipe.tags.length > 0 && (
+          <View style={styles.tagsRow}>
+            {recipe.tags.slice(0, 3).map((tag, index) => (
+              <View key={index} style={[styles.tag, isDark && styles.tagDark]}>
+                <Text style={[styles.tagText, isDark && styles.tagTextDark]}>{tag}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
         {/* Meta Row */}
         <View style={styles.meta}>
           <View style={styles.metaItem}>
-            <Ionicons name="time-outline" size={14} color={isDark ? '#888' : '#666'} />
+            <Ionicons name="time-outline" size={14} color={isDark ? '#7a7a88' : '#a8a29e'} />
             <Text style={[styles.metaText, isDark && styles.metaTextDark]}>
               {totalTime} min
             </Text>
           </View>
 
           <View style={styles.metaItem}>
-            <Ionicons name="flame-outline" size={14} color={isDark ? '#888' : '#666'} />
+            <Ionicons name="flame-outline" size={14} color={isDark ? '#7a7a88' : '#a8a29e'} />
             <Text style={[styles.metaText, isDark && styles.metaTextDark]}>
               {recipe.nutrition?.calories || 0} kcal
             </Text>
@@ -104,14 +114,16 @@ function getDifficultyColor(difficulty) {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.lg,
-    marginBottom: theme.spacing.md,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    marginBottom: 12,
     overflow: 'hidden',
-    ...theme.shadows.md,
   },
   cardDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   imageContainer: {
     position: 'relative',
@@ -121,6 +133,8 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
   },
   favoriteButton: {
     position: 'absolute',
@@ -129,7 +143,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.35)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -149,7 +163,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   info: {
-    padding: theme.spacing.sm,
+    padding: 10,
   },
   titleRow: {
     flexDirection: 'row',
@@ -160,30 +174,55 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semiBold,
-    color: '#1a1a1a',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1c1917',
   },
   titleDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   ratingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEF3C7',
+    backgroundColor: '#f5f5f4',
     paddingHorizontal: 6,
     paddingVertical: 3,
     borderRadius: 6,
     gap: 3,
   },
+  ratingBadgeDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
   ratingText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#D97706',
+    color: '#78716c',
+  },
+  tagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+    marginBottom: 6,
+  },
+  tag: {
+    backgroundColor: '#f5f5f4',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  tagDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  tagText: {
+    fontSize: 10,
+    color: '#78716c',
+  },
+  tagTextDark: {
+    color: '#7a7a88',
   },
   meta: {
     flexDirection: 'row',
-    gap: theme.spacing.sm,
+    gap: 12,
   },
   metaItem: {
     flexDirection: 'row',
@@ -191,11 +230,11 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metaText: {
-    fontSize: theme.fontSize.xs,
-    color: '#666',
+    fontSize: 11,
+    color: '#a8a29e',
   },
   metaTextDark: {
-    color: '#888',
+    color: '#7a7a88',
   },
 });
 

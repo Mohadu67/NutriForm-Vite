@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../theme';
 
 const IngredientList = ({ ingredients, servings }) => {
   const colorScheme = useColorScheme();
@@ -20,11 +19,15 @@ const IngredientList = ({ ingredients, servings }) => {
     <View style={[styles.container, isDark && styles.containerDark]}>
       <View style={styles.header}>
         <Text style={[styles.title, isDark && styles.titleDark]}>
-          Ingrédients
+          Ingredients
         </Text>
-        <Text style={[styles.servings, isDark && styles.servingsDark]}>
-          Pour {servings} personne{servings > 1 ? 's' : ''}
-        </Text>
+        <View style={[styles.servingsBadge, isDark && styles.servingsBadgeDark]}>
+          <Ionicons name="remove" size={16} color="#72baa1" />
+          <Text style={[styles.servingsText, isDark && styles.servingsTextDark]}>
+            {servings} personne{servings > 1 ? 's' : ''}
+          </Text>
+          <Ionicons name="add" size={16} color="#72baa1" />
+        </View>
       </View>
 
       {ingredients.map((ingredient, index) => {
@@ -32,7 +35,7 @@ const IngredientList = ({ ingredients, servings }) => {
         return (
           <TouchableOpacity
             key={index}
-            style={styles.item}
+            style={[styles.item, index < ingredients.length - 1 && styles.itemBorder, isDark && index < ingredients.length - 1 && styles.itemBorderDark]}
             onPress={() => toggleCheck(index)}
             activeOpacity={0.7}
           >
@@ -42,7 +45,7 @@ const IngredientList = ({ ingredients, servings }) => {
               isDark && !isChecked && styles.checkboxDark,
             ]}>
               {isChecked && (
-                <Ionicons name="checkmark" size={16} color="#FFF" />
+                <Ionicons name="checkmark" size={14} color="#FFF" />
               )}
             </View>
             <Text style={[
@@ -63,69 +66,92 @@ const IngredientList = ({ ingredients, servings }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    marginVertical: theme.spacing.md,
-    ...theme.shadows.sm,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 16,
+    marginVertical: 12,
   },
   containerDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: 16,
   },
   title: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semiBold,
-    color: '#1a1a1a',
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1c1917',
   },
   titleDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
-  servings: {
-    fontSize: theme.fontSize.sm,
-    color: '#666',
+  servingsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#efedea',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    gap: 8,
   },
-  servingsDark: {
-    color: '#888',
+  servingsBadgeDark: {
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  servingsText: {
+    fontSize: 12,
+    color: '#78716c',
+    fontWeight: '600',
+  },
+  servingsTextDark: {
+    color: '#c1c1cb',
   },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: theme.spacing.sm,
+    paddingVertical: 10,
+  },
+  itemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#efedea',
+  },
+  itemBorderDark: {
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   checkbox: {
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#CCC',
+    borderColor: '#efedea',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: theme.spacing.sm,
+    marginRight: 12,
   },
   checkboxDark: {
-    borderColor: '#555',
+    borderColor: 'rgba(255,255,255,0.12)',
   },
   checkboxChecked: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
+    borderColor: '#72baa1',
   },
   ingredientText: {
     flex: 1,
-    fontSize: theme.fontSize.sm,
-    color: '#1a1a1a',
+    fontSize: 14,
+    color: '#1c1917',
   },
   ingredientTextDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   ingredientTextChecked: {
     textDecorationLine: 'line-through',
-    opacity: 0.5,
+    color: '#a8a29e',
   },
 });
 

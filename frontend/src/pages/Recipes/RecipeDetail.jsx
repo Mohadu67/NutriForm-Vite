@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import Alert from '../../components/MessageAlerte/Alert/Alert';
@@ -28,7 +29,7 @@ import style from './RecipeDetail.module.css';
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { recipe, loading, error, isLiked, likesCount, toggleLike, likeError, clearLikeError, userRating, avgRating, ratingsCount, submitRating } = useRecipeDetail(id);
+  const { recipe, loading, error, isLiked, likesCount, toggleLike, likeError, clearLikeError, userRating, avgRating, ratingsCount, submitRating, similarRecipes } = useRecipeDetail(id);
   const [servings, setServings] = useState(2);
   const [showLogModal, setShowLogModal] = useState(false);
   const [logMealType, setLogMealType] = useState('lunch');
@@ -392,6 +393,33 @@ export default function RecipeDetail() {
           </button>
         )}
       </Alert>
+
+      {/* Section recettes similaires */}
+      {similarRecipes.length > 0 && (
+        <section className={style.similarSection}>
+          <div className={style.container}>
+            <h2 className={style.similarTitle}>Vous allez aussi aimer</h2>
+            <div className={style.similarScroll}>
+              {similarRecipes.map((r) => (
+                <Link key={r._id} to={`/recettes/${r.slug || r._id}`} className={style.similarCard}>
+                  <div className={style.similarImgWrap}>
+                    <img src={getProxiedImageUrl(r.image)} alt={r.title} className={style.similarImg} loading="lazy" />
+                  </div>
+                  <div className={style.similarInfo}>
+                    <span className={style.similarName}>{r.title}</span>
+                    <span className={style.similarMacros}>
+                      {r.nutrition?.calories || 0} kcal · {r.nutrition?.proteins || 0}g P
+                    </span>
+                    {r.totalTime > 0 && (
+                      <span className={style.similarTime}>{r.totalTime} min</span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <Footer />
     </>

@@ -16,7 +16,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { theme } from '../../theme';
 import { saveIMCCalc, saveCalorieCalc, saveRMCalc, saveFCMaxCalc } from '../../api/history';
 import { updateNutritionGoals } from '../../api/nutrition';
 import logger from '../../services/logger';
@@ -541,14 +540,14 @@ export default function CalculatorsScreen() {
 
     // Table des pourcentages avec objectifs
     const percentages = [
-      { percent: 100, reps: 1, zone: 'Force max', color: '#DC2626' },
-      { percent: 95, reps: 2, zone: 'Force', color: '#EF4444' },
-      { percent: 90, reps: 4, zone: 'Force', color: '#F59E0B' },
-      { percent: 85, reps: 6, zone: 'Hypertrophie', color: '#F59E0B' },
-      { percent: 80, reps: 8, zone: 'Hypertrophie', color: '#22C55E' },
-      { percent: 75, reps: 10, zone: 'Hypertrophie', color: '#22C55E' },
-      { percent: 70, reps: 12, zone: 'Endurance', color: '#3B82F6' },
-      { percent: 65, reps: 15, zone: 'Endurance', color: '#3B82F6' },
+      { percent: 100, reps: 1, zone: 'Force max', color: '#c9726b' },
+      { percent: 95, reps: 2, zone: 'Force', color: '#d4887a' },
+      { percent: 90, reps: 4, zone: 'Force', color: '#d4a96a' },
+      { percent: 85, reps: 6, zone: 'Hypertrophie', color: '#f0a47a' },
+      { percent: 80, reps: 8, zone: 'Hypertrophie', color: '#72baa1' },
+      { percent: 75, reps: 10, zone: 'Hypertrophie', color: '#72baa1' },
+      { percent: 70, reps: 12, zone: 'Endurance', color: '#c9a88c' },
+      { percent: 65, reps: 15, zone: 'Endurance', color: '#c9a88c' },
     ].map(p => ({
       ...p,
       weight: Math.round(rmRounded * p.percent / 100),
@@ -582,7 +581,7 @@ export default function CalculatorsScreen() {
         percent: '50-60%',
         min: Math.round(fcMaxClassique * 0.5),
         max: Math.round(fcMaxClassique * 0.6),
-        color: '#22C55E',
+        color: '#72baa1',
         description: 'Zone de recuperation active et echauffement',
       },
       {
@@ -590,7 +589,7 @@ export default function CalculatorsScreen() {
         percent: '60-70%',
         min: Math.round(fcMaxClassique * 0.6),
         max: Math.round(fcMaxClassique * 0.7),
-        color: '#84CC16',
+        color: '#8ecdb5',
         description: 'Zone optimale pour bruler les graisses',
       },
       {
@@ -598,7 +597,7 @@ export default function CalculatorsScreen() {
         percent: '70-80%',
         min: Math.round(fcMaxClassique * 0.7),
         max: Math.round(fcMaxClassique * 0.8),
-        color: '#F59E0B',
+        color: '#d4a96a',
         description: 'Ameliore l\'endurance cardiovasculaire',
       },
       {
@@ -606,7 +605,7 @@ export default function CalculatorsScreen() {
         percent: '80-90%',
         min: Math.round(fcMaxClassique * 0.8),
         max: Math.round(fcMaxClassique * 0.9),
-        color: '#EF4444',
+        color: '#d4887a',
         description: 'Ameliore la performance et la VO2max',
       },
       {
@@ -614,7 +613,7 @@ export default function CalculatorsScreen() {
         percent: '90-100%',
         min: Math.round(fcMaxClassique * 0.9),
         max: fcMaxClassique,
-        color: '#DC2626',
+        color: '#c9726b',
         description: 'Effort maximal, reserve aux athletes',
       },
     ];
@@ -661,10 +660,10 @@ export default function CalculatorsScreen() {
         {/* Barre de progression */}
         <View style={styles.imcTrackContainer}>
           <View style={styles.imcTrack}>
-            <View style={[styles.imcTrackSection, { backgroundColor: '#4aa8ff', flex: 1 }]} />
-            <View style={[styles.imcTrackSection, { backgroundColor: '#2ecc71', flex: 1 }]} />
-            <View style={[styles.imcTrackSection, { backgroundColor: '#ffae42', flex: 1 }]} />
-            <View style={[styles.imcTrackSection, { backgroundColor: '#ff5252', flex: 1 }]} />
+            <View style={[styles.imcTrackSection, { backgroundColor: '#7eb8d4', flex: 1 }]} />
+            <View style={[styles.imcTrackSection, { backgroundColor: '#72baa1', flex: 1 }]} />
+            <View style={[styles.imcTrackSection, { backgroundColor: '#d4a96a', flex: 1 }]} />
+            <View style={[styles.imcTrackSection, { backgroundColor: '#c9726b', flex: 1 }]} />
           </View>
           <View style={[styles.imcIndicator, { left: `${pos}%` }]}>
             <View style={[styles.imcIndicatorDot, { backgroundColor: imcResult.color }]} />
@@ -683,7 +682,7 @@ export default function CalculatorsScreen() {
         {/* Categories */}
         <View style={styles.imcCategories}>
           {['Maigreur', 'Normal', 'Surpoids', 'Obesite'].map((cat, i) => {
-            const colors = ['#4aa8ff', '#2ecc71', '#ffae42', '#ff5252'];
+            const colors = ['#7eb8d4', '#72baa1', '#d4a96a', '#c9726b'];
             const isActive = (
               (cat === 'Maigreur' && imcResult.imc < 18.5) ||
               (cat === 'Normal' && imcResult.imc >= 18.5 && imcResult.imc < 25) ||
@@ -696,13 +695,13 @@ export default function CalculatorsScreen() {
                 style={[
                   styles.imcCategoryBadge,
                   isActive && { backgroundColor: colors[i] },
-                  !isActive && isDark && { backgroundColor: '#333' },
+                  !isActive && isDark && { backgroundColor: '#1f1f26' },
                 ]}
               >
                 <Text style={[
                   styles.imcCategoryText,
                   isActive && { color: '#FFF' },
-                  !isActive && isDark && { color: '#888' },
+                  !isActive && isDark && { color: '#7a7a88' },
                 ]}>
                   {cat}
                 </Text>
@@ -718,8 +717,8 @@ export default function CalculatorsScreen() {
   const renderIMC = () => (
     <View style={[styles.calculatorContent, isDark && styles.calculatorContentDark]}>
       <View style={styles.calcHeader}>
-        <View style={[styles.calcIconBg, { backgroundColor: `${theme.colors.primary}20` }]}>
-          <Ionicons name="body" size={28} color={theme.colors.primary} />
+        <View style={[styles.calcIconBg, { backgroundColor: 'rgba(114,186,161,0.12)' }]}>
+          <Ionicons name="body" size={28} color="#72baa1" />
         </View>
         <View style={styles.calcHeaderText}>
           <Text style={[styles.calcTitle, isDark && styles.textWhite]}>
@@ -736,7 +735,7 @@ export default function CalculatorsScreen() {
         <TextInput
           style={[styles.input, isDark && styles.inputDark]}
           placeholder="ex: 75"
-          placeholderTextColor={isDark ? '#666' : '#999'}
+          placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
           keyboardType="decimal-pad"
           value={imcData.poids}
           onChangeText={(text) => setImcData(prev => ({ ...prev, poids: text }))}
@@ -748,7 +747,7 @@ export default function CalculatorsScreen() {
         <TextInput
           style={[styles.input, isDark && styles.inputDark]}
           placeholder="ex: 180"
-          placeholderTextColor={isDark ? '#666' : '#999'}
+          placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
           keyboardType="decimal-pad"
           value={imcData.taille}
           onChangeText={(text) => setImcData(prev => ({ ...prev, taille: text }))}
@@ -774,7 +773,7 @@ export default function CalculatorsScreen() {
             </Text>
 
             <View style={styles.idealWeight}>
-              <Ionicons name="fitness" size={20} color={theme.colors.primary} />
+              <Ionicons name="fitness" size={20} color="#72baa1" />
               <Text style={[styles.idealWeightText, isDark && styles.textWhite]}>
                 Poids ideal: {imcResult.poidsIdealMin} - {imcResult.poidsIdealMax} kg
               </Text>
@@ -786,7 +785,7 @@ export default function CalculatorsScreen() {
               </Text>
               {imcResult.details.conseils.map((conseil, i) => (
                 <View key={i} style={styles.conseilItem}>
-                  <Ionicons name="checkmark-circle" size={18} color="#22C55E" />
+                  <Ionicons name="checkmark-circle" size={18} color="#72baa1" />
                   <Text style={[styles.conseilText, isDark && styles.textMuted]}>
                     {conseil}
                   </Text>
@@ -832,8 +831,8 @@ export default function CalculatorsScreen() {
   const renderCalories = () => (
     <View style={[styles.calculatorContent, isDark && styles.calculatorContentDark]}>
       <View style={styles.calcHeader}>
-        <View style={[styles.calcIconBg, { backgroundColor: `${theme.colors.primary}20` }]}>
-          <Ionicons name="flame" size={28} color={theme.colors.primary} />
+        <View style={[styles.calcIconBg, { backgroundColor: 'rgba(114,186,161,0.12)' }]}>
+          <Ionicons name="flame" size={28} color="#72baa1" />
         </View>
         <View style={styles.calcHeaderText}>
           <Text style={[styles.calcTitle, isDark && styles.textWhite]}>
@@ -866,14 +865,14 @@ export default function CalculatorsScreen() {
               <Text style={[
                 styles.activityChipText,
                 caloriesData.formule === opt.value && styles.activityChipTextActive,
-                isDark && caloriesData.formule !== opt.value && { color: '#888' },
+                isDark && caloriesData.formule !== opt.value && { color: '#7a7a88' },
               ]}>
                 {opt.label}
               </Text>
               <Text style={[
                 styles.activityChipDesc,
                 caloriesData.formule === opt.value && { color: 'rgba(255,255,255,0.8)' },
-                isDark && caloriesData.formule !== opt.value && { color: '#666' },
+                isDark && caloriesData.formule !== opt.value && { color: '#7a7a88' },
               ]}>
                 {opt.tag}
               </Text>
@@ -896,12 +895,12 @@ export default function CalculatorsScreen() {
             <Ionicons
               name={sexe === 'homme' ? 'male' : 'female'}
               size={20}
-              color={caloriesData.sexe === sexe ? '#FFF' : isDark ? '#888' : '#666'}
+              color={caloriesData.sexe === sexe ? '#FFF' : isDark ? '#7a7a88' : '#78716c'}
             />
             <Text style={[
               styles.sexeButtonText,
               caloriesData.sexe === sexe && styles.sexeButtonTextActive,
-              isDark && caloriesData.sexe !== sexe && { color: '#888' },
+              isDark && caloriesData.sexe !== sexe && { color: '#7a7a88' },
             ]}>
               {sexe.charAt(0).toUpperCase() + sexe.slice(1)}
             </Text>
@@ -915,18 +914,18 @@ export default function CalculatorsScreen() {
           <TextInput
             style={[styles.input, isDark && styles.inputDark]}
             placeholder="25"
-            placeholderTextColor={isDark ? '#666' : '#999'}
+            placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
             keyboardType="number-pad"
             value={caloriesData.age}
             onChangeText={(text) => setCaloriesData(prev => ({ ...prev, age: text }))}
           />
         </View>
-        <View style={[styles.inputGroup, { flex: 1, marginLeft: theme.spacing.md }]}>
+        <View style={[styles.inputGroup, { flex: 1, marginLeft: 16 }]}>
           <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Poids (kg)</Text>
           <TextInput
             style={[styles.input, isDark && styles.inputDark]}
             placeholder="75"
-            placeholderTextColor={isDark ? '#666' : '#999'}
+            placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
             keyboardType="decimal-pad"
             value={caloriesData.poids}
             onChangeText={(text) => setCaloriesData(prev => ({ ...prev, poids: text }))}
@@ -939,7 +938,7 @@ export default function CalculatorsScreen() {
         <TextInput
           style={[styles.input, isDark && styles.inputDark]}
           placeholder="180"
-          placeholderTextColor={isDark ? '#666' : '#999'}
+          placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
           keyboardType="decimal-pad"
           value={caloriesData.taille}
           onChangeText={(text) => setCaloriesData(prev => ({ ...prev, taille: text }))}
@@ -953,12 +952,12 @@ export default function CalculatorsScreen() {
           <TextInput
             style={[styles.input, isDark && styles.inputDark]}
             placeholder="ex: 18"
-            placeholderTextColor={isDark ? '#666' : '#999'}
+            placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
             keyboardType="decimal-pad"
             value={caloriesData.masseGrasse}
             onChangeText={(text) => setCaloriesData(prev => ({ ...prev, masseGrasse: text }))}
           />
-          <Text style={[styles.formulaInfoText, isDark && { color: '#888' }]}>
+          <Text style={[styles.formulaInfoText, isDark && { color: '#7a7a88' }]}>
             La formule Katch-McArdle est la plus precise mais necessite de connaitre votre % de masse grasse.
           </Text>
         </View>
@@ -980,14 +979,14 @@ export default function CalculatorsScreen() {
               <Text style={[
                 styles.activityChipText,
                 caloriesData.activite === level.value && styles.activityChipTextActive,
-                isDark && caloriesData.activite !== level.value && { color: '#888' },
+                isDark && caloriesData.activite !== level.value && { color: '#7a7a88' },
               ]}>
                 {level.label}
               </Text>
               <Text style={[
                 styles.activityChipDesc,
                 caloriesData.activite === level.value && { color: 'rgba(255,255,255,0.8)' },
-                isDark && caloriesData.activite !== level.value && { color: '#666' },
+                isDark && caloriesData.activite !== level.value && { color: '#7a7a88' },
               ]}>
                 {level.description}
               </Text>
@@ -1006,7 +1005,7 @@ export default function CalculatorsScreen() {
           {/* TMB info */}
           <View style={[styles.tmbCard, isDark && styles.cardDark]}>
             <View style={styles.tmbHeader}>
-              <Ionicons name="pulse" size={24} color="#6B7280" />
+              <Ionicons name="pulse" size={24} color="#78716c" />
               <View style={styles.tmbInfo}>
                 <Text style={[styles.tmbValue, isDark && styles.textWhite]}>
                   {caloriesResult.tmb} kcal
@@ -1026,7 +1025,7 @@ export default function CalculatorsScreen() {
           {['perte', 'stabiliser', 'prise'].map((type) => {
             const data = caloriesResult[type];
             const icons = { perte: 'trending-down', stabiliser: 'analytics', prise: 'trending-up' };
-            const colors = { perte: '#3B82F6', stabiliser: '#22C55E', prise: '#F59E0B' };
+            const goalColors = { perte: '#7eb8d4', stabiliser: '#72baa1', prise: '#d4a96a' };
             const titles = { perte: 'Perdre du poids', stabiliser: 'Stabiliser', prise: 'Prendre du poids' };
 
             return (
@@ -1035,26 +1034,26 @@ export default function CalculatorsScreen() {
                 style={[
                   styles.objectifCard,
                   isDark && styles.cardDark,
-                  selectedCalorieType === type && { borderColor: colors[type], borderWidth: 2 },
+                  selectedCalorieType === type && { borderColor: 'rgba(114,186,161,0.3)', borderWidth: 2 },
                 ]}
                 onPress={() => setSelectedCalorieType(selectedCalorieType === type ? null : type)}
               >
                 <View style={styles.objectifHeader}>
-                  <View style={[styles.objectifIconBg, { backgroundColor: `${colors[type]}20` }]}>
-                    <Ionicons name={icons[type]} size={24} color={colors[type]} />
+                  <View style={[styles.objectifIconBg, { backgroundColor: `${goalColors[type]}20` }]}>
+                    <Ionicons name={icons[type]} size={24} color={goalColors[type]} />
                   </View>
                   <View style={styles.objectifInfo}>
                     <Text style={[styles.objectifTitle, isDark && styles.textWhite]}>
                       {titles[type]}
                     </Text>
-                    <Text style={[styles.objectifCalories, { color: colors[type] }]}>
+                    <Text style={[styles.objectifCalories, { color: goalColors[type] }]}>
                       {data.calories} kcal/jour
                     </Text>
                   </View>
                   <Ionicons
                     name={selectedCalorieType === type ? 'chevron-up' : 'chevron-down'}
                     size={24}
-                    color={isDark ? '#888' : '#666'}
+                    color={isDark ? '#7a7a88' : '#78716c'}
                   />
                 </View>
 
@@ -1070,11 +1069,11 @@ export default function CalculatorsScreen() {
                     </Text>
                     <View style={styles.macrosGrid}>
                       {[
-                        { key: 'proteines', label: 'Proteines', icon: 'nutrition', color: '#EF4444' },
-                        { key: 'glucides', label: 'Glucides', icon: 'leaf', color: '#22C55E' },
-                        { key: 'lipides', label: 'Lipides', icon: 'water', color: '#F59E0B' },
+                        { key: 'proteines', label: 'Proteines', icon: 'nutrition', color: '#72baa1' },
+                        { key: 'glucides', label: 'Glucides', icon: 'leaf', color: '#f0a47a' },
+                        { key: 'lipides', label: 'Lipides', icon: 'water', color: '#c9a88c' },
                       ].map((macro) => (
-                        <View key={macro.key} style={[styles.macroCard, isDark && { backgroundColor: '#1A1A1A' }]}>
+                        <View key={macro.key} style={[styles.macroCard, isDark && { backgroundColor: '#1f1f26' }]}>
                           <Ionicons name={macro.icon} size={20} color={macro.color} />
                           <Text style={[styles.macroValue, { color: macro.color }]}>
                             {data.macros[macro.key]}g
@@ -1092,7 +1091,7 @@ export default function CalculatorsScreen() {
                     </Text>
                     {CALORIE_CONSEILS[type].map((conseil, i) => (
                       <View key={i} style={styles.conseilItem}>
-                        <Ionicons name="checkmark-circle" size={18} color={colors[type]} />
+                        <Ionicons name="checkmark-circle" size={18} color={goalColors[type]} />
                         <Text style={[styles.conseilText, isDark && styles.textMuted]}>
                           {conseil}
                         </Text>
@@ -1101,7 +1100,7 @@ export default function CalculatorsScreen() {
 
                     {/* Bouton recettes */}
                     <TouchableOpacity
-                      style={[styles.actionButton, { backgroundColor: colors[type] }]}
+                      style={[styles.actionButton, { backgroundColor: goalColors[type] }]}
                       onPress={navigateToRecipes}
                     >
                       <Ionicons name="restaurant" size={20} color="#FFF" />
@@ -1113,7 +1112,7 @@ export default function CalculatorsScreen() {
 
                     {/* Bouton définir comme objectif */}
                     <TouchableOpacity
-                      style={[styles.actionButton, styles.goalButton, { marginTop: theme.spacing.sm }]}
+                      style={[styles.actionButton, styles.goalButton, { marginTop: 12 }]}
                       onPress={() => setAsNutritionGoal(type)}
                       disabled={settingGoal}
                       activeOpacity={0.8}
@@ -1131,7 +1130,7 @@ export default function CalculatorsScreen() {
 
           {/* Bouton Enregistrer */}
           <TouchableOpacity
-            style={[styles.actionButton, styles.saveButton, { marginTop: theme.spacing.md }]}
+            style={[styles.actionButton, styles.saveButton, { marginTop: 16 }]}
             onPress={saveCaloriesData}
           >
             <Ionicons name="save" size={18} color="#FFF" />
@@ -1140,7 +1139,7 @@ export default function CalculatorsScreen() {
 
           {/* Note info */}
           <View style={[styles.infoNote, isDark && styles.cardDark]}>
-            <Ionicons name="information-circle" size={20} color="#6B7280" />
+            <Ionicons name="information-circle" size={20} color="#78716c" />
             <Text style={[styles.infoNoteText, isDark && styles.textMuted]}>
               Ces valeurs sont des estimations. Ajustez selon vos resultats et votre ressenti.
             </Text>
@@ -1154,8 +1153,8 @@ export default function CalculatorsScreen() {
   const renderRM = () => (
     <View style={[styles.calculatorContent, isDark && styles.calculatorContentDark]}>
       <View style={styles.calcHeader}>
-        <View style={[styles.calcIconBg, { backgroundColor: `${theme.colors.primary}20` }]}>
-          <Ionicons name="barbell" size={28} color={theme.colors.primary} />
+        <View style={[styles.calcIconBg, { backgroundColor: 'rgba(114,186,161,0.12)' }]}>
+          <Ionicons name="barbell" size={28} color="#72baa1" />
         </View>
         <View style={styles.calcHeaderText}>
           <Text style={[styles.calcTitle, isDark && styles.textWhite]}>
@@ -1172,7 +1171,7 @@ export default function CalculatorsScreen() {
         <TextInput
           style={[styles.input, isDark && styles.inputDark]}
           placeholder="Ex: Développé couché, Squat..."
-          placeholderTextColor={isDark ? '#666' : '#999'}
+          placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
           value={rmData.exercice}
           onChangeText={(text) => setRmData(prev => ({ ...prev, exercice: text }))}
         />
@@ -1184,18 +1183,18 @@ export default function CalculatorsScreen() {
           <TextInput
             style={[styles.input, isDark && styles.inputDark]}
             placeholder="100"
-            placeholderTextColor={isDark ? '#666' : '#999'}
+            placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
             keyboardType="decimal-pad"
             value={rmData.poids}
             onChangeText={(text) => setRmData(prev => ({ ...prev, poids: text }))}
           />
         </View>
-        <View style={[styles.inputGroup, { flex: 1, marginLeft: theme.spacing.md }]}>
+        <View style={[styles.inputGroup, { flex: 1, marginLeft: 16 }]}>
           <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Repetitions</Text>
           <TextInput
             style={[styles.input, isDark && styles.inputDark]}
             placeholder="8"
-            placeholderTextColor={isDark ? '#666' : '#999'}
+            placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
             keyboardType="number-pad"
             value={rmData.reps}
             onChangeText={(text) => setRmData(prev => ({ ...prev, reps: text }))}
@@ -1211,7 +1210,7 @@ export default function CalculatorsScreen() {
       {rmResult && (
         <View style={[styles.resultCard, isDark && styles.cardDark]}>
           <View style={styles.rmResultHeader}>
-            <Text style={[styles.rmResultValue, { color: theme.colors.primary }]}>
+            <Text style={[styles.rmResultValue, { color: '#72baa1' }]}>
               {rmResult.rm} kg
             </Text>
             <Text style={[styles.rmResultLabel, isDark && styles.textMuted]}>
@@ -1224,22 +1223,27 @@ export default function CalculatorsScreen() {
           </Text>
 
           <View style={styles.rmTable}>
-            <View style={[styles.rmTableHeader, isDark && { borderBottomColor: '#333' }]}>
+            <View style={[styles.rmTableHeader, isDark && { borderBottomColor: 'rgba(255,255,255,0.06)' }]}>
               <Text style={[styles.rmTableHeaderText, isDark && styles.textMuted]}>%</Text>
               <Text style={[styles.rmTableHeaderText, isDark && styles.textMuted]}>Charge</Text>
               <Text style={[styles.rmTableHeaderText, isDark && styles.textMuted]}>Reps</Text>
               <Text style={[styles.rmTableHeaderText, isDark && styles.textMuted]}>Zone</Text>
             </View>
 
-            {rmResult.percentages.map((p) => (
+            {rmResult.percentages.map((p, index) => (
               <View
                 key={p.percent}
-                style={[styles.rmRow, isDark && { borderBottomColor: '#333' }]}
+                style={[
+                  styles.rmRow,
+                  isDark && { borderBottomColor: 'rgba(255,255,255,0.06)' },
+                  index % 2 === 0 && styles.rmRowEven,
+                  index % 2 === 0 && isDark && styles.rmRowEvenDark,
+                ]}
               >
                 <Text style={[styles.rmPercent, isDark && styles.textWhite]}>{p.percent}%</Text>
                 <Text style={[styles.rmWeight, { color: p.color }]}>{p.weight} kg</Text>
                 <Text style={[styles.rmReps, isDark && styles.textMuted]}>~{p.reps}</Text>
-                <View style={[styles.rmZoneBadge, { backgroundColor: `${p.color}20` }]}>
+                <View style={[styles.rmZoneBadge, { backgroundColor: `${p.color}18` }]}>
                   <Text style={[styles.rmZoneText, { color: p.color }]}>{p.zone}</Text>
                 </View>
               </View>
@@ -1272,8 +1276,8 @@ export default function CalculatorsScreen() {
   const renderCardio = () => (
     <View style={[styles.calculatorContent, isDark && styles.calculatorContentDark]}>
       <View style={styles.calcHeader}>
-        <View style={[styles.calcIconBg, { backgroundColor: `${theme.colors.primary}20` }]}>
-          <Ionicons name="heart" size={28} color={theme.colors.primary} />
+        <View style={[styles.calcIconBg, { backgroundColor: 'rgba(114,186,161,0.12)' }]}>
+          <Ionicons name="heart" size={28} color="#72baa1" />
         </View>
         <View style={styles.calcHeaderText}>
           <Text style={[styles.calcTitle, isDark && styles.textWhite]}>
@@ -1290,7 +1294,7 @@ export default function CalculatorsScreen() {
         <TextInput
           style={[styles.input, isDark && styles.inputDark]}
           placeholder="25"
-          placeholderTextColor={isDark ? '#666' : '#999'}
+          placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
           keyboardType="number-pad"
           value={cardioData.age}
           onChangeText={(text) => setCardioData(prev => ({ ...prev, age: text }))}
@@ -1312,7 +1316,7 @@ export default function CalculatorsScreen() {
             <Text style={[styles.fcMaxFormula, isDark && styles.textMuted]}>
               Formule: 220 - age
             </Text>
-            <View style={styles.fcMaxAlternative}>
+            <View style={[styles.fcMaxAlternative, isDark && { backgroundColor: '#1f1f26' }]}>
               <Text style={[styles.fcMaxAltLabel, isDark && styles.textMuted]}>
                 Tanaka (plus precis):
               </Text>
@@ -1334,7 +1338,7 @@ export default function CalculatorsScreen() {
                   <Text style={[styles.zoneName, isDark && styles.textWhite]}>{zone.name}</Text>
                   <Text style={[styles.zonePercent, isDark && styles.textMuted]}>{zone.percent}</Text>
                 </View>
-                <View style={styles.zoneInfo}>
+                <View style={[styles.zoneInfo, isDark && { borderLeftColor: 'rgba(255,255,255,0.06)' }]}>
                   <Text style={[styles.zoneBpm, { color: zone.color }]}>
                     {zone.min} - {zone.max} bpm
                   </Text>
@@ -1377,7 +1381,7 @@ export default function CalculatorsScreen() {
         {/* Header */}
         <View style={[styles.header, isDark && styles.headerDark]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={isDark ? '#FFF' : '#333'} />
+            <Ionicons name="chevron-back" size={24} color={isDark ? '#f3f3f6' : '#1c1917'} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDark && styles.headerTitleDark]}>
             Calculateurs
@@ -1401,20 +1405,18 @@ export default function CalculatorsScreen() {
                     styles.tab,
                     isDark && styles.tabDark,
                     isActive && styles.tabActive,
-                    isActive && isDark && styles.tabActiveDark,
                   ]}
                   onPress={() => setActiveTab(tab.id)}
                 >
                   <Ionicons
                     name={isActive ? tab.icon : `${tab.icon}-outline`}
                     size={16}
-                    color={isActive ? (isDark ? '#F7B186' : theme.colors.primary) : (isDark ? '#9CA3AF' : '#6B7280')}
+                    color={isActive ? '#FFF' : (isDark ? '#7a7a88' : '#78716c')}
                   />
                   <Text style={[
                     styles.tabText,
                     isDark && styles.tabTextDark,
                     isActive && styles.tabTextActive,
-                    isActive && isDark && styles.tabTextActiveDark,
                   ]}>
                     {tab.label}
                   </Text>
@@ -1445,22 +1447,22 @@ export default function CalculatorsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background.light,
+    backgroundColor: '#fcfbf9',
   },
   containerDark: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#0e0e11',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#efedea',
   },
   headerDark: {
-    borderBottomColor: '#333',
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   backButton: {
     width: 40,
@@ -1469,18 +1471,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: '700',
-    color: theme.colors.text.primary,
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1c1917',
+    letterSpacing: -0.5,
   },
   headerTitleDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   tabsWrapper: {
     paddingVertical: 8,
   },
   tabsContent: {
-    paddingHorizontal: theme.spacing.md,
+    paddingHorizontal: 16,
     alignItems: 'center',
   },
   tab: {
@@ -1488,64 +1491,51 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 10,
-    backgroundColor: '#F3F4F6',
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    backgroundColor: '#f5f5f4',
     marginRight: 8,
     gap: 6,
   },
   tabDark: {
-    backgroundColor: '#1F1F1F',
-    borderColor: '#333',
+    backgroundColor: '#1f1f26',
   },
   tabActive: {
-    backgroundColor: `${theme.colors.primary}15`,
-    borderColor: theme.colors.primary,
-  },
-  tabActiveDark: {
-    backgroundColor: 'rgba(247, 177, 134, 0.15)',
-    borderColor: '#F7B186',
+    backgroundColor: '#72baa1',
   },
   tabText: {
     fontSize: 13,
-    fontWeight: '500',
-    color: '#6B7280',
+    fontWeight: '600',
+    color: '#78716c',
   },
   tabTextActive: {
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-  tabTextActiveDark: {
-    color: '#F7B186',
+    color: '#FFF',
+    fontWeight: '700',
   },
   tabTextDark: {
-    color: '#9CA3AF',
+    color: '#7a7a88',
   },
   content: {
     flex: 1,
   },
   contentContainer: {
-    padding: theme.spacing.md,
+    padding: 16,
     paddingBottom: 180,
   },
   calculatorContent: {
-    backgroundColor: '#FFF',
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   calculatorContentDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   calcHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: 20,
   },
   calcIconBg: {
     width: 56,
@@ -1553,103 +1543,107 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: theme.spacing.md,
+    marginRight: 16,
   },
   calcHeaderText: {
     flex: 1,
   },
   calcTitle: {
-    fontSize: theme.fontSize.lg,
+    fontSize: 18,
     fontWeight: '700',
-    color: theme.colors.text.primary,
+    color: '#1c1917',
     marginBottom: 4,
   },
   calcSubtitle: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
+    color: '#78716c',
   },
   textWhite: {
-    color: '#FFF',
+    color: '#f3f3f6',
   },
   textMuted: {
-    color: '#888',
+    color: '#7a7a88',
   },
   inputGroup: {
-    marginBottom: theme.spacing.md,
+    marginBottom: 16,
   },
   inputLabel: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.xs,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#78716c',
+    marginBottom: 8,
   },
   inputLabelDark: {
-    color: '#CCC',
+    color: '#c1c1cb',
   },
   input: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.primary,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 16,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1c1917',
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   inputDark: {
-    backgroundColor: '#1A1A1A',
-    color: '#FFF',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
+    color: '#f3f3f6',
   },
   inputRow: {
     flexDirection: 'row',
   },
   sexeRow: {
     flexDirection: 'row',
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    gap: 16,
+    marginBottom: 16,
   },
   sexeButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing.sm,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: '#F5F5F5',
+    gap: 12,
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: '#f5f5f4',
   },
   sexeButtonDark: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#1f1f26',
   },
   sexeButtonActive: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
   },
   sexeButtonText: {
-    fontSize: theme.fontSize.md,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#666',
+    color: '#78716c',
   },
   sexeButtonTextActive: {
     color: '#FFF',
   },
   activityScroll: {
-    marginTop: theme.spacing.xs,
+    marginTop: 8,
   },
   activityChip: {
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    backgroundColor: '#F5F5F5',
-    marginRight: theme.spacing.sm,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: '#f5f5f4',
+    marginRight: 12,
     minWidth: 100,
   },
   activityChipActive: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
   },
   activityChipDark: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#1f1f26',
   },
   activityChipText: {
-    fontSize: theme.fontSize.sm,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: '#78716c',
     marginBottom: 2,
   },
   activityChipTextActive: {
@@ -1657,11 +1651,11 @@ const styles = StyleSheet.create({
   },
   activityChipDesc: {
     fontSize: 10,
-    color: '#999',
+    color: '#a8a29e',
   },
   formulaInfoText: {
     fontSize: 12,
-    color: '#888',
+    color: '#a8a29e',
     marginTop: 6,
     lineHeight: 17,
   },
@@ -1669,40 +1663,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
-    borderRadius: 12,
+    backgroundColor: '#72baa1',
+    borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 24,
-    marginTop: theme.spacing.md,
+    marginTop: 16,
     gap: 8,
   },
   calcButtonText: {
     color: '#FFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     marginRight: 8,
   },
   cardDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
 
   // IMC Graph
   imcGraphContainer: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    marginTop: theme.spacing.lg,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   imcGraphHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: 16,
   },
   imcGraphTitle: {
-    fontSize: theme.fontSize.md,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1c1917',
   },
   imcGraphValue: {
     fontSize: 32,
@@ -1710,7 +1707,7 @@ const styles = StyleSheet.create({
   },
   imcTrackContainer: {
     position: 'relative',
-    marginVertical: theme.spacing.md,
+    marginVertical: 16,
   },
   imcTrack: {
     flexDirection: 'row',
@@ -1732,91 +1729,88 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 3,
     borderColor: '#FFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
   },
   imcLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: theme.spacing.md,
+    marginBottom: 16,
   },
   imcLabel: {
     fontSize: 10,
-    color: '#999',
+    color: '#a8a29e',
   },
   imcCategories: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: theme.spacing.xs,
+    gap: 8,
   },
   imcCategoryBadge: {
     flex: 1,
     paddingVertical: 6,
     paddingHorizontal: 4,
     borderRadius: 8,
-    backgroundColor: '#E5E5E5',
+    backgroundColor: '#f5f5f4',
     alignItems: 'center',
   },
   imcCategoryText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#666',
+    color: '#78716c',
   },
 
   // Result Details Card
   resultDetailsCard: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    marginTop: theme.spacing.md,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   resultCategory: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: '700',
-    marginBottom: theme.spacing.sm,
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: 12,
   },
   resultDescription: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
+    color: '#78716c',
     lineHeight: 20,
-    marginBottom: theme.spacing.md,
+    marginBottom: 16,
   },
   idealWeight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    backgroundColor: `${theme.colors.primary}15`,
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    marginBottom: theme.spacing.lg,
+    gap: 12,
+    backgroundColor: 'rgba(114,186,161,0.12)',
+    padding: 16,
+    borderRadius: 14,
+    marginBottom: 20,
   },
   idealWeightText: {
-    fontSize: theme.fontSize.sm,
+    fontSize: 14,
     fontWeight: '600',
-    color: theme.colors.text.primary,
+    color: '#1c1917',
   },
   conseilsSection: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: 20,
   },
   conseilsTitle: {
-    fontSize: theme.fontSize.md,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.md,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1c1917',
+    marginBottom: 16,
   },
   conseilItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
+    gap: 12,
+    marginBottom: 12,
   },
   conseilText: {
     flex: 1,
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
+    color: '#78716c',
     lineHeight: 20,
   },
   actionButton: {
@@ -1824,8 +1818,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
-    borderRadius: 12,
+    backgroundColor: '#72baa1',
+    borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 12,
     minHeight: 50,
@@ -1834,59 +1828,63 @@ const styles = StyleSheet.create({
   actionButtonText: {
     color: '#FFF',
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
     flexShrink: 1,
     textAlign: 'center',
   },
   actionButtonsRow: {
     flexDirection: 'row',
-    gap: theme.spacing.sm,
+    gap: 12,
   },
   saveButton: {
-    backgroundColor: '#22C55E',
+    backgroundColor: '#72baa1',
   },
   goalButton: {
-    backgroundColor: '#0F172A',
+    backgroundColor: '#72baa1',
   },
 
   // TMB Card
   tmbCard: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    marginTop: theme.spacing.lg,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   tmbHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.md,
+    gap: 16,
   },
   tmbInfo: {
     flex: 1,
   },
   tmbValue: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: '700',
-    color: theme.colors.text.primary,
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#1c1917',
   },
   tmbLabel: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
+    color: '#78716c',
   },
 
   // Objectifs
   objectifsTitle: {
-    fontSize: theme.fontSize.md,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginTop: theme.spacing.lg,
-    marginBottom: theme.spacing.md,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1c1917',
+    marginTop: 20,
+    marginBottom: 16,
   },
   objectifCard: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   objectifHeader: {
     flexDirection: 'row',
@@ -1898,138 +1896,150 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: theme.spacing.md,
+    marginRight: 16,
   },
   objectifInfo: {
     flex: 1,
   },
   objectifTitle: {
-    fontSize: theme.fontSize.md,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1c1917',
     marginBottom: 2,
   },
   objectifCalories: {
-    fontSize: theme.fontSize.lg,
+    fontSize: 18,
     fontWeight: '800',
   },
   objectifDetails: {
-    marginTop: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
+    marginTop: 20,
+    paddingTop: 20,
     borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
+    borderTopColor: '#efedea',
   },
   objectifDesc: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
-    marginBottom: theme.spacing.lg,
+    fontSize: 14,
+    color: '#78716c',
+    marginBottom: 20,
   },
   macrosTitle: {
-    fontSize: theme.fontSize.md,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.md,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1c1917',
+    marginBottom: 16,
   },
   macrosGrid: {
     flexDirection: 'row',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.lg,
+    gap: 12,
+    marginBottom: 20,
   },
   macroCard: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: '#F0F0F0',
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
+    backgroundColor: '#f5f5f4',
+    borderRadius: 14,
+    padding: 16,
   },
   macroValue: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: '700',
-    marginTop: theme.spacing.xs,
+    fontSize: 18,
+    fontWeight: '800',
+    marginTop: 8,
   },
   macroLabel: {
     fontSize: 11,
-    color: theme.colors.text.secondary,
+    color: '#a8a29e',
     marginTop: 2,
   },
   infoNote: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: theme.spacing.sm,
-    backgroundColor: '#F9FAFB',
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    marginTop: theme.spacing.md,
+    gap: 12,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   infoNoteText: {
     flex: 1,
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.text.secondary,
+    fontSize: 12,
+    color: '#a8a29e',
     lineHeight: 18,
   },
 
   // 1RM
   resultCard: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    marginTop: theme.spacing.lg,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   rmResultHeader: {
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
+    marginBottom: 20,
+    paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    borderBottomColor: '#efedea',
   },
   rmResultValue: {
     fontSize: 48,
     fontWeight: '800',
   },
   rmResultLabel: {
-    fontSize: theme.fontSize.sm,
+    fontSize: 14,
     fontWeight: '600',
-    color: theme.colors.text.secondary,
-    marginTop: theme.spacing.xs,
+    color: '#a8a29e',
+    marginTop: 8,
   },
   rmTableTitle: {
-    fontSize: theme.fontSize.md,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.md,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1c1917',
+    marginBottom: 16,
   },
   rmTable: {
-    marginBottom: theme.spacing.lg,
-    backgroundColor: '#F0F0F0',
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   rmTableHeader: {
     flexDirection: 'row',
-    paddingBottom: theme.spacing.sm,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#DDD',
-    marginBottom: theme.spacing.sm,
+    borderBottomColor: '#efedea',
+    marginBottom: 12,
   },
   rmTableHeaderText: {
     flex: 1,
     fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.text.secondary,
+    fontWeight: '700',
+    color: '#78716c',
     textTransform: 'uppercase',
   },
   rmRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: theme.spacing.sm,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    borderBottomColor: '#efedea',
+  },
+  rmRowEven: {
+    backgroundColor: 'rgba(245,245,244,0.5)',
+  },
+  rmRowEvenDark: {
+    backgroundColor: 'rgba(255,255,255,0.02)',
   },
   rmPercent: {
     flex: 1,
     fontSize: 14,
     fontWeight: '700',
-    color: theme.colors.text.primary,
+    color: '#1c1917',
   },
   rmWeight: {
     flex: 1,
@@ -2039,7 +2049,7 @@ const styles = StyleSheet.create({
   rmReps: {
     flex: 1,
     fontSize: 13,
-    color: theme.colors.text.secondary,
+    color: '#a8a29e',
   },
   rmZoneBadge: {
     paddingVertical: 5,
@@ -2055,62 +2065,62 @@ const styles = StyleSheet.create({
   // FC Max
   fcMaxResult: {
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
+    marginBottom: 20,
+    paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    borderBottomColor: '#efedea',
   },
   fcMaxPrimary: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    gap: theme.spacing.sm,
+    gap: 12,
   },
   fcMaxValue: {
     fontSize: 48,
     fontWeight: '800',
-    color: theme.colors.primary,
+    color: '#72baa1',
   },
   fcMaxUnit: {
     fontSize: 18,
     fontWeight: '600',
-    color: theme.colors.text.secondary,
+    color: '#a8a29e',
   },
   fcMaxFormula: {
     fontSize: 13,
     fontWeight: '600',
-    color: theme.colors.text.secondary,
-    marginTop: theme.spacing.xs,
+    color: '#a8a29e',
+    marginTop: 8,
   },
   fcMaxAlternative: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginTop: theme.spacing.md,
-    backgroundColor: '#F0F0F0',
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
+    gap: 12,
+    marginTop: 16,
+    backgroundColor: '#f5f5f4',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
   },
   fcMaxAltLabel: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
+    color: '#78716c',
   },
   fcMaxAltValue: {
-    fontSize: theme.fontSize.md,
+    fontSize: 16,
     fontWeight: '700',
-    color: theme.colors.text.primary,
+    color: '#1c1917',
   },
   zonesTitle: {
-    fontSize: theme.fontSize.md,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.md,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1c1917',
+    marginBottom: 16,
   },
   zonesContainer: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: 20,
   },
   zoneCard: {
-    marginBottom: theme.spacing.sm,
+    marginBottom: 12,
   },
   zoneHeader: {
     flexDirection: 'row',
@@ -2121,31 +2131,31 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: theme.spacing.sm,
+    marginRight: 12,
   },
   zoneName: {
     flex: 1,
-    fontSize: theme.fontSize.sm,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1c1917',
   },
   zonePercent: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
+    color: '#a8a29e',
   },
   zoneInfo: {
     marginLeft: 20,
-    paddingLeft: theme.spacing.sm,
+    paddingLeft: 12,
     borderLeftWidth: 2,
-    borderLeftColor: '#E5E5E5',
+    borderLeftColor: '#efedea',
   },
   zoneBpm: {
-    fontSize: theme.fontSize.md,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '800',
   },
   zoneDesc: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.text.secondary,
+    fontSize: 12,
+    color: '#a8a29e',
     marginTop: 2,
   },
 });

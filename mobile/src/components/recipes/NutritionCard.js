@@ -1,16 +1,15 @@
 import React from 'react';
 import { View, Text, StyleSheet, useColorScheme } from 'react-native';
-import { theme } from '../../theme';
 
 const NutritionCard = ({ nutrition }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
   const items = [
-    { label: 'Calories', value: nutrition.calories, unit: 'kcal', color: '#EF4444' },
-    { label: 'Protéines', value: nutrition.proteins, unit: 'g', color: '#8B5CF6' },
-    { label: 'Glucides', value: nutrition.carbs, unit: 'g', color: '#F59E0B' },
-    { label: 'Lipides', value: nutrition.fats, unit: 'g', color: '#06B6D4' },
+    { label: 'Calories', value: nutrition.calories, unit: 'kcal', color: '#1c1917' },
+    { label: 'Proteines', value: nutrition.proteins, unit: 'g', color: '#72baa1' },
+    { label: 'Glucides', value: nutrition.carbs, unit: 'g', color: '#f0a47a' },
+    { label: 'Lipides', value: nutrition.fats, unit: 'g', color: '#c9a88c' },
   ];
 
   return (
@@ -20,12 +19,10 @@ const NutritionCard = ({ nutrition }) => {
       </Text>
       <View style={styles.grid}>
         {items.map((item, index) => (
-          <View key={index} style={styles.item}>
-            <View style={[styles.icon, { backgroundColor: `${item.color}20` }]}>
-              <View style={[styles.iconInner, { backgroundColor: item.color }]} />
-            </View>
-            <Text style={[styles.value, isDark && styles.valueDark]}>
-              {item.value}{item.unit}
+          <View key={index} style={[styles.cell, isDark && styles.cellDark]}>
+            <Text style={[styles.value, { color: isDark ? '#f3f3f6' : item.color }]}>
+              {item.value}
+              <Text style={styles.unit}>{item.unit}</Text>
             </Text>
             <Text style={[styles.label, isDark && styles.labelDark]}>
               {item.label}
@@ -39,59 +36,58 @@ const NutritionCard = ({ nutrition }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    marginVertical: theme.spacing.md,
-    ...theme.shadows.sm,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 16,
+    marginVertical: 12,
   },
   containerDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   title: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semiBold,
-    color: '#1a1a1a',
-    marginBottom: theme.spacing.md,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1c1917',
+    marginBottom: 14,
   },
   titleDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   grid: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    gap: 8,
   },
-  item: {
+  cell: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: '#f5f5f4',
+    borderRadius: 12,
     alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 8,
   },
-  icon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  iconInner: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+  cellDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   value: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.bold,
-    color: '#1a1a1a',
+    fontSize: 16,
+    fontWeight: '800',
   },
-  valueDark: {
-    color: '#FFFFFF',
+  unit: {
+    fontSize: 11,
+    fontWeight: '500',
   },
   label: {
-    fontSize: theme.fontSize.xs,
-    color: '#666',
-    marginTop: 2,
+    fontSize: 10,
+    color: '#a8a29e',
+    marginTop: 4,
   },
   labelDark: {
-    color: '#888',
+    color: '#7a7a88',
   },
 });
 

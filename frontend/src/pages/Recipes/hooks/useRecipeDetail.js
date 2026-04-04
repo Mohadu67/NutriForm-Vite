@@ -15,6 +15,7 @@ export const useRecipeDetail = (recipeId) => {
   const [userRating, setUserRating] = useState(null);
   const [avgRating, setAvgRating] = useState(0);
   const [ratingsCount, setRatingsCount] = useState(0);
+  const [similarRecipes, setSimilarRecipes] = useState([]);
 
   useEffect(() => {
     if (!recipeId) {
@@ -113,6 +114,13 @@ export const useRecipeDetail = (recipeId) => {
 
     fetchRecipeDetail();
 
+    // Fetch similar recipes
+    axios.get(`${API_URL}/recipes/${recipeId}/similar?limit=8`)
+      .then((res) => {
+        if (mounted && res.data?.success) setSimilarRecipes(res.data.recipes || []);
+      })
+      .catch(() => {});
+
     // Cleanup pour éviter les state updates après unmount
     return () => {
       mounted = false;
@@ -193,5 +201,6 @@ export const useRecipeDetail = (recipeId) => {
     avgRating,
     ratingsCount,
     submitRating,
+    similarRecipes,
   };
 };
