@@ -20,24 +20,27 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // ─── Type mappings ──────────────────────────────────────────────────────────
 
 const TYPE_COLORS = {
-  workout:   theme.colors.primary,   // #F7B186
-  meal:      theme.colors.success,   // #4CAF50
-  recipe:    theme.colors.info,      // #2196F3
-  challenge: theme.colors.warning,   // #FFC107
+  workout:        theme.colors.primary,    // #F7B186
+  meal:           theme.colors.success,    // #4CAF50
+  recipe:         theme.colors.info,       // #2196F3
+  challenge:      theme.colors.warning,    // #FFC107
+  shared_session: theme.colors.secondary,  // #72baa1
 };
 
 const TYPE_ICONS = {
-  workout:   'barbell-outline',
-  meal:      'nutrition-outline',
-  recipe:    'book-outline',
-  challenge: 'trophy-outline',
+  workout:        'barbell-outline',
+  meal:           'nutrition-outline',
+  recipe:         'book-outline',
+  challenge:      'trophy-outline',
+  shared_session: 'flash-outline',
 };
 
 const TYPE_LABELS = {
-  workout:   'Séance',
-  meal:      'Repas',
-  recipe:    'Recette',
-  challenge: 'Défi',
+  workout:        'Séance',
+  meal:           'Repas',
+  recipe:         'Recette',
+  challenge:      'Défi',
+  shared_session: 'Séance Duo',
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -592,13 +595,89 @@ function ChallengeCard({ item, isDark, onUserPress }) {
 
 // ─── Dispatcher ─────────────────────────────────────────────────────────────
 
+function SharedSessionCard({ item, isDark, onUserPress }) {
+  const d = item.data;
+  const initiator = d.initiator || {};
+  const partner = d.partner || {};
+  const bg = isDark ? '#1E1E26' : '#FFF';
+  const textColor = isDark ? '#F0F0F0' : '#1A1A1A';
+  const mutedColor = isDark ? '#888' : '#999';
+
+  return (
+    <View style={[styles.card, isDark && styles.cardDark, { padding: 16 }]}>
+      {/* Header — dual avatars */}
+      <View style={[styles.cardHeader, { paddingHorizontal: 0 }]}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => onUserPress(initiator._id)}>
+            {initiator.photo
+              ? <Image source={{ uri: initiator.photo }} style={{ width: 36, height: 36, borderRadius: 18 }} />
+              : <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.secondary + '20', justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={{ color: theme.colors.secondary, fontWeight: '700' }}>{(initiator.prenom || initiator.pseudo || '?')[0]}</Text>
+                </View>
+            }
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => onUserPress(partner._id)} style={{ marginLeft: -10 }}>
+            {partner.photo
+              ? <Image source={{ uri: partner.photo }} style={{ width: 36, height: 36, borderRadius: 18, borderWidth: 2, borderColor: bg }} />
+              : <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.primary + '20', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: bg }}>
+                  <Text style={{ color: theme.colors.primary, fontWeight: '700' }}>{(partner.prenom || partner.pseudo || '?')[0]}</Text>
+                </View>
+            }
+          </TouchableOpacity>
+          <View style={{ marginLeft: 10, flex: 1 }}>
+            <Text style={[styles.userName, isDark && styles.textLight]} numberOfLines={1}>
+              {initiator.prenom || initiator.pseudo || '?'} & {partner.prenom || partner.pseudo || '?'}
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Ionicons name="flash-outline" size={12} color={theme.colors.secondary} />
+              <Text style={{ fontSize: 12, color: mutedColor }}>Séance duo</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Stats */}
+      <View style={{ flexDirection: 'row', paddingBottom: 12, gap: 16 }}>
+        <View style={{ alignItems: 'center' }}>
+          <Text style={[{ fontSize: 16, fontWeight: '800', color: textColor }]}>{d.exerciseCount || 0}</Text>
+          <Text style={{ fontSize: 11, color: mutedColor }}>exos</Text>
+        </View>
+        <View style={{ alignItems: 'center' }}>
+          <Text style={[{ fontSize: 16, fontWeight: '800', color: textColor }]}>{formatDuration(d.durationSec)}</Text>
+          <Text style={{ fontSize: 11, color: mutedColor }}>durée</Text>
+        </View>
+        {d.totalVolume > 0 && (
+          <View style={{ alignItems: 'center' }}>
+            <Text style={[{ fontSize: 16, fontWeight: '800', color: textColor }]}>{formatVolume(d.totalVolume)}</Text>
+            <Text style={{ fontSize: 11, color: mutedColor }}>volume</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Exercise chips */}
+      {d.exercises?.length > 0 && (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingBottom: 4, gap: 4 }}>
+          {d.exercises.map((name, i) => (
+            <View key={i} style={{ backgroundColor: theme.colors.secondary + '12', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+              <Text style={{ fontSize: 11, fontWeight: '600', color: theme.colors.secondary }}>{name}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      <ReactionBar targetId={item._id} targetType="shared_session" initialLiked={d.isLiked} initialCount={d.likesCount || 0} initialCommentsCount={d.commentsCount || 0} isDark={isDark} />
+    </View>
+  );
+}
+
 function FeedCard({ item, isDark, onUserPress }) {
   switch (item.type) {
-    case 'workout':   return <WorkoutCard item={item} isDark={isDark} onUserPress={onUserPress} />;
-    case 'meal':      return <MealCard item={item} isDark={isDark} onUserPress={onUserPress} />;
-    case 'recipe':    return <RecipeCard item={item} isDark={isDark} onUserPress={onUserPress} />;
-    case 'challenge': return <ChallengeCard item={item} isDark={isDark} onUserPress={onUserPress} />;
-    default:          return null;
+    case 'workout':        return <WorkoutCard item={item} isDark={isDark} onUserPress={onUserPress} />;
+    case 'meal':           return <MealCard item={item} isDark={isDark} onUserPress={onUserPress} />;
+    case 'recipe':         return <RecipeCard item={item} isDark={isDark} onUserPress={onUserPress} />;
+    case 'challenge':      return <ChallengeCard item={item} isDark={isDark} onUserPress={onUserPress} />;
+    case 'shared_session': return <SharedSessionCard item={item} isDark={isDark} onUserPress={onUserPress} />;
+    default:               return null;
   }
 }
 

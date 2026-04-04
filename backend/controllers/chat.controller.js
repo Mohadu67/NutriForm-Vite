@@ -81,8 +81,15 @@ async function sendMessage(req, res) {
     // Générer un conversationId si c'est un nouveau chat
     const convId = conversationId || uuidv4();
 
-    // Sanitize media array
-    const cleanMedia = Array.isArray(media) ? media.filter(m => m?.url && m?.type).slice(0, 3) : [];
+    // Sanitize media array — prefer persistUrl (Cloudinary) over base64 for storage
+    const cleanMedia = Array.isArray(media) ? media.filter(m => m?.url && m?.type).slice(0, 3).map(m => ({
+      url: m.persistUrl || m.url, // Store Cloudinary URL if available, else base64
+      type: m.type,
+      mimeType: m.mimeType,
+    })) : [];
+
+    // Keep base64 versions for Gemini Vision (not stored in DB)
+    const visionMedia = Array.isArray(media) ? media.filter(m => m?.url && m?.type === 'image').map(m => m.url) : [];
 
     // Sauvegarder le message user (with media if present)
     const userMessage = await ChatMessage.create({
@@ -184,8 +191,8 @@ async function sendMessage(req, res) {
           buildUserContext(userId, { platform: platform || 'web' }),
         ]);
 
-        // Extract image URLs for vision
-        const imageUrls = cleanMedia.filter(m => m.type === 'image').map(m => m.url);
+        // Use base64 images for vision (not the persisted Cloudinary URLs)
+        const imageUrls = visionMedia.length > 0 ? visionMedia : cleanMedia.filter(m => m.type === 'image').map(m => m.url);
 
         const result = await openaiService.generateResponse(message || '📷 Analyse cette photo', history, userContext, imageUrls);
         let reply = await extractPartnerNeed(result.content, userId, convId, message);

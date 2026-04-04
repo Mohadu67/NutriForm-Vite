@@ -43,14 +43,38 @@ export default function ManualFoodEntryScreen() {
   const [notes, setNotes] = useState(editEntry?.notes || '');
   const [submitting, setSubmitting] = useState(false);
   const [scannerVisible, setScannerVisible] = useState(false);
+  const [scannedProduct, setScannedProduct] = useState(null);
+  const [quantity, setQuantity] = useState('100');
+
+  const applyQuantity = (per100, grams, productName) => {
+    const ratio = grams / 100;
+    setName(`${productName} (${grams}g)`);
+    setCalories(String(Math.round(per100.calories * ratio)));
+    setProteins(String(Math.round(per100.proteins * ratio * 10) / 10));
+    setCarbs(String(Math.round(per100.carbs * ratio * 10) / 10));
+    setFats(String(Math.round(per100.fats * ratio * 10) / 10));
+    setFiber(String(Math.round((per100.fiber || 0) * ratio * 10) / 10));
+  };
+
+  const handleQuantityChange = (val) => {
+    setQuantity(val);
+    const grams = Number(val) || 0;
+    if (scannedProduct?.per100 && grams > 0) {
+      applyQuantity(scannedProduct.per100, grams, scannedProduct.name);
+    }
+  };
 
   const handleProductFound = (product) => {
-    setName(product.name + (product.brand ? ` – ${product.brand}` : '') + ' (100g)');
-    setCalories(String(product.nutrition.calories));
-    setProteins(String(product.nutrition.proteins));
-    setCarbs(String(product.nutrition.carbs));
-    setFats(String(product.nutrition.fats));
-    setFiber(String(product.nutrition.fiber));
+    const productName = product.name + (product.brand ? ` – ${product.brand}` : '');
+    const defaultQty = product.defaultPortionG || 100;
+    setScannedProduct({
+      name: productName,
+      imageUrl: product.imageUrl,
+      productQuantity: product.quantity,
+      per100: { ...product.nutrition },
+    });
+    setQuantity(String(defaultQty));
+    applyQuantity(product.nutrition, defaultQty, productName);
   };
 
   const handleSubmit = async () => {
@@ -119,6 +143,41 @@ export default function ManualFoodEntryScreen() {
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.form} showsVerticalScrollIndicator={false}>
+          {/* Scanned product card + quantity */}
+          {scannedProduct && (
+            <View style={[styles.scannedCard, isDark && styles.scannedCardDark]}>
+              <Text style={[styles.scannedName, isDark && { color: '#FFF' }]}>{scannedProduct.name}</Text>
+              {scannedProduct.productQuantity && (
+                <Text style={styles.scannedHint}>Conditionnement : {scannedProduct.productQuantity}</Text>
+              )}
+              <Text style={styles.scannedPer100}>
+                Pour 100g : {scannedProduct.per100.calories}kcal · {scannedProduct.per100.proteins}g prot · {scannedProduct.per100.carbs}g gluc · {scannedProduct.per100.fats}g lip
+              </Text>
+              <View style={styles.field}>
+                <Text style={[styles.label, isDark && styles.labelDark]}>Quantité consommée (g)</Text>
+                <TextInput
+                  style={[styles.input, isDark && styles.inputDark, { fontSize: 18, fontWeight: '700' }]}
+                  value={quantity}
+                  onChangeText={handleQuantityChange}
+                  keyboardType="numeric"
+                  placeholder="100"
+                  placeholderTextColor="#999"
+                />
+              </View>
+              <View style={styles.presetsRow}>
+                {[50, 100, 150, 200, 250, 300].map(g => (
+                  <TouchableOpacity
+                    key={g}
+                    style={[styles.presetBtn, String(g) === quantity && styles.presetBtnActive]}
+                    onPress={() => handleQuantityChange(String(g))}
+                  >
+                    <Text style={[styles.presetText, String(g) === quantity && styles.presetTextActive]}>{g}g</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
           {/* Name */}
           <View style={styles.field}>
             <Text style={[styles.label, isDark && styles.labelDark]}>Nom de l'aliment *</Text>
@@ -316,4 +375,31 @@ const styles = StyleSheet.create({
   },
   submitBtnDisabled: { opacity: 0.6 },
   submitBtnText: { color: '#FFF', fontSize: theme.fontSize.md, fontWeight: theme.fontWeight.semiBold },
+  // Scanned product card
+  scannedCard: {
+    backgroundColor: '#f3f9f7',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+    gap: 8,
+  },
+  scannedCardDark: { backgroundColor: 'rgba(114, 186, 161, 0.08)' },
+  scannedName: { fontWeight: '700', fontSize: 15, color: '#1c1917' },
+  scannedHint: { fontSize: 12, color: '#a8a29e' },
+  scannedPer100: { fontSize: 12, color: '#5aa48a', fontWeight: '600' },
+  presetsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
+  presetBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2dfdb',
+    backgroundColor: 'transparent',
+  },
+  presetBtnActive: {
+    backgroundColor: '#72baa1',
+    borderColor: '#72baa1',
+  },
+  presetText: { fontSize: 13, fontWeight: '600', color: '#57534e' },
+  presetTextActive: { color: '#fff' },
 });

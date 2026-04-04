@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../theme';
 import useThemedStyles from '../../hooks/useThemedStyles';
 
-const MessageInput = ({ onSend, onMediaPress, disabled = false, placeholder = 'Message...' }) => {
+const MessageInput = ({ onSend, onMediaPress, disabled = false, placeholder = 'Message...', hasPendingMedia = false }) => {
   const [text, setText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -23,7 +23,7 @@ const MessageInput = ({ onSend, onMediaPress, disabled = false, placeholder = 'M
 
   const handleSend = () => {
     const trimmedText = text.trim();
-    if (!trimmedText || disabled || isSending) return;
+    if ((!trimmedText && !hasPendingMedia) || disabled || isSending) return;
 
     setText('');
     onSend(trimmedText);
@@ -46,7 +46,7 @@ const MessageInput = ({ onSend, onMediaPress, disabled = false, placeholder = 'M
     handleSend();
   };
 
-  const canSend = text.trim().length > 0 && !disabled && !isSending;
+  const canSend = (text.trim().length > 0 || hasPendingMedia) && !disabled && !isSending;
 
   return (
     <View style={[styles.container, { backgroundColor: themedStyles.containerBg }]}>

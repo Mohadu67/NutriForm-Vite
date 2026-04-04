@@ -20,6 +20,7 @@ import { useRecipe } from '../../contexts/RecipeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { theme } from '../../theme';
 import logger from '../../services/logger';
+import BarcodeScannerModal from '../../components/BarcodeScannerModal';
 
 const DIFFICULTY_OPTIONS = [
   { value: '', label: 'Sélectionner la difficulté' },
@@ -56,6 +57,8 @@ const RecipeFormScreen = ({ route, navigation }) => {
 
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState(recipe?.image || null);
+  const [scannerVisible, setScannerVisible] = useState(false);
+  const [scanningIndex, setScanningIndex] = useState(null);
 
   // Basic Info
   const [title, setTitle] = useState(recipe?.title || '');
@@ -141,6 +144,46 @@ const RecipeFormScreen = ({ route, navigation }) => {
     const newIngredients = [...ingredients];
     newIngredients[index][field] = value;
     setIngredients(newIngredients);
+  };
+
+  const openScannerForIngredient = (index) => {
+    setScanningIndex(index);
+    setScannerVisible(true);
+  };
+
+  const handleIngredientProductFound = (product) => {
+    if (scanningIndex === null) return;
+    const newIngredients = [...ingredients];
+    const parsedQty = parseInt(product.quantity) || 100;
+    newIngredients[scanningIndex] = {
+      ...newIngredients[scanningIndex],
+      name: product.name + (product.brand ? ` (${product.brand})` : ''),
+      quantity: String(parsedQty),
+      unit: 'g',
+      nutritionPer100g: product.nutrition,
+    };
+    setIngredients(newIngredients);
+
+    // Auto-fill nutrition from scanned ingredients
+    let totalCal = 0, totalProt = 0, totalCarbs = 0, totalFat = 0;
+    for (const ing of newIngredients) {
+      if (ing.nutritionPer100g && ing.quantity && ing.unit === 'g') {
+        const ratio = Number(ing.quantity) / 100;
+        totalCal += (ing.nutritionPer100g.calories || 0) * ratio;
+        totalProt += (ing.nutritionPer100g.proteins || 0) * ratio;
+        totalCarbs += (ing.nutritionPer100g.carbs || 0) * ratio;
+        totalFat += (ing.nutritionPer100g.fats || 0) * ratio;
+      }
+    }
+    if (totalCal > 0) {
+      setCalories(String(Math.round(totalCal)));
+      setProtein(String(Math.round(totalProt * 10) / 10));
+      setCarbs(String(Math.round(totalCarbs * 10) / 10));
+      setFat(String(Math.round(totalFat * 10) / 10));
+    }
+
+    setScanningIndex(null);
+    Alert.alert('Produit scanné', `${product.name} ajouté aux ingrédients`);
   };
 
   const addInstruction = () => {
@@ -320,6 +363,12 @@ const RecipeFormScreen = ({ route, navigation }) => {
   }
 
   return (
+    <>
+    <BarcodeScannerModal
+      visible={scannerVisible}
+      onClose={() => { setScannerVisible(false); setScanningIndex(null); }}
+      onProductFound={handleIngredientProductFound}
+    />
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -595,21 +644,27 @@ const RecipeFormScreen = ({ route, navigation }) => {
           </View>
 
           {ingredients.map((ingredient, index) => (
-            <View key={index} style={styles.ingredientRow}>
+            <View key={index} style={[styles.ingredientRow, ingredient.nutritionPer100g && styles.ingredientScanned]}>
               <View style={styles.ingredientInputs}>
-                <TextInput
-                  style={[styles.input, styles.ingredientName, isDark && styles.inputDark]}
-                  value={ingredient.name}
-                  onChangeText={value => updateIngredient(index, 'name', value)}
-                  placeholder="Nom de l'ingrédient"
-                  placeholderTextColor={isDark ? '#666' : '#999'}
-                />
+                <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
+                  <TextInput
+                    style={[styles.input, { flex: 1 }, isDark && styles.inputDark]}
+                    value={ingredient.name}
+                    onChangeText={value => updateIngredient(index, 'name', value)}
+                    placeholder="Ingrédient"
+                    placeholderTextColor={isDark ? '#666' : '#999'}
+                  />
+                  <TouchableOpacity
+                    style={styles.scanIngredientBtn}
+                    onPress={() => openScannerForIngredient(index)}
+                  >
+                    <Ionicons name="barcode-outline" size={18} color={theme.colors.secondary} />
+                  </TouchableOpacity>
+                </View>
                 <TextInput
                   style={[styles.input, styles.ingredientQuantity, isDark && styles.inputDark]}
                   value={ingredient.quantity}
-                  onChangeText={value =>
-                    updateIngredient(index, 'quantity', value)
-                  }
+                  onChangeText={value => updateIngredient(index, 'quantity', value)}
                   placeholder="Qté"
                   placeholderTextColor={isDark ? '#666' : '#999'}
                   keyboardType="numeric"
@@ -622,6 +677,11 @@ const RecipeFormScreen = ({ route, navigation }) => {
                   placeholderTextColor={isDark ? '#666' : '#999'}
                 />
               </View>
+              {ingredient.nutritionPer100g && (
+                <Text style={styles.ingredientMacroHint}>
+                  Pour 100g : {ingredient.nutritionPer100g.calories}kcal · {ingredient.nutritionPer100g.proteins}g prot
+                </Text>
+              )}
               {ingredients.length > 1 && (
                 <TouchableOpacity
                   style={styles.removeButton}
@@ -696,6 +756,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
+    </>
   );
 };
 
@@ -952,6 +1013,29 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     gap: 8,
+  },
+  ingredientScanned: {
+    backgroundColor: 'rgba(114, 186, 161, 0.06)',
+    borderRadius: 10,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(114, 186, 161, 0.15)',
+  },
+  scanIngredientBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(114, 186, 161, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 6,
+  },
+  ingredientMacroHint: {
+    fontSize: 11,
+    color: '#5aa48a',
+    fontWeight: '600',
+    marginTop: 4,
+    marginLeft: 4,
   },
   ingredientName: {
     flex: 2,

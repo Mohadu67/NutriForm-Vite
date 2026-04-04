@@ -28,23 +28,22 @@ exports.follow = async (req, res) => {
     await Follow.create({ followerId, followingId });
 
     const follower = await User.findById(followerId).select('prenom pseudo photo');
-    await Notification.create({
+    const followNotifTitle = `${follower.prenom || follower.pseudo} vous suit maintenant`;
+    const followNotifMessage = `@${follower.pseudo || follower.prenom} a commencé à vous suivre`;
+    const savedNotif = await Notification.create({
       userId: followingId,
-      type: 'activity',
-      title: `${follower.prenom || follower.pseudo} vous suit maintenant`,
-      message: `@${follower.pseudo || follower.prenom} a commencé à vous suivre`,
+      type: 'follow',
+      title: followNotifTitle,
+      message: followNotifMessage,
       avatar: follower.photo,
       metadata: { followerId: followerId.toString(), type: 'new_follower' },
     });
 
-    const savedNotif = await Notification.findOne({ userId: followingId, 'metadata.type': 'new_follower' })
-      .sort({ createdAt: -1 }).lean();
-
     const notifPayload = {
-      id: savedNotif?._id?.toString() || Date.now().toString(),
+      id: savedNotif._id.toString(),
       type: 'follow',
-      title: `${follower.prenom || follower.pseudo} vous suit maintenant`,
-      message: `@${follower.pseudo || follower.prenom} a commencé à vous suivre`,
+      title: followNotifTitle,
+      message: followNotifMessage,
       avatar: follower.photo || null,
       metadata: { followerId: followerId.toString(), type: 'new_follower' },
       timestamp: new Date().toISOString(),
@@ -538,13 +537,13 @@ exports.likePost = async (req, res) => {
     const result = await FeedLike.findOneAndUpdate(
       { userId, targetId },
       { $setOnInsert: { userId, targetId, targetType } },
-      { upsert: true, rawResult: true }
+      { upsert: true, includeResultMetadata: true }
     );
 
     const count = await FeedLike.countDocuments({ targetId });
 
     // Notifier uniquement si c'est un nouveau like (pas un re-like)
-    const isNewLike = result?.lastErrorObject?.upserted != null;
+    const isNewLike = !result?.lastErrorObject?.updatedExisting;
     if (isNewLike) {
       try {
         const ownerId = await getPostOwner(targetId, targetType);
