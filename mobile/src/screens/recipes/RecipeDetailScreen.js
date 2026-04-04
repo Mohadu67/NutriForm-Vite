@@ -13,10 +13,8 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRecipe } from '../../contexts/RecipeContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { theme } from '../../theme';
 import {
   NutritionCard,
   IngredientList,
@@ -310,7 +308,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
   if (loadingDetail || !recipe) {
     return (
       <View style={[styles.loadingContainer, isDark && styles.loadingContainerDark]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <ActivityIndicator size="large" color="#72baa1" />
         <Text style={[styles.loadingText, isDark && styles.loadingTextDark]}>
           Chargement...
         </Text>
@@ -387,57 +385,53 @@ const RecipeDetailScreen = ({ route, navigation }) => {
             style={styles.heroImage}
             resizeMode="cover"
           />
-          <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.7)']}
-            style={styles.heroGradient}
-          />
 
           {/* Back Button */}
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="arrow-back" size={24} color="#FFF" />
+            <Ionicons name="chevron-back" size={24} color={isDark ? '#f3f3f6' : '#1c1917'} />
           </TouchableOpacity>
 
           {/* Action Buttons */}
           <View style={styles.heroActions}>
             <TouchableOpacity
-              style={[styles.actionButton, isFavorite && styles.actionButtonActive]}
+              style={[styles.actionButton, isDark && styles.actionButtonDark]}
               onPress={handleToggleFavorite}
             >
               <Ionicons
                 name={isFavorite ? 'heart' : 'heart-outline'}
                 size={24}
-                color={isFavorite ? '#EF4444' : '#FFF'}
+                color={isFavorite ? '#ef4444' : '#a8a29e'}
               />
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.actionButton, isSaved && styles.actionButtonActive]}
+              style={[styles.actionButton, isDark && styles.actionButtonDark]}
               onPress={handleToggleSaved}
             >
               <Ionicons
                 name={isSaved ? 'bookmark' : 'bookmark-outline'}
                 size={24}
-                color={isSaved ? theme.colors.primary : '#FFF'}
+                color={isSaved ? '#72baa1' : '#a8a29e'}
               />
             </TouchableOpacity>
-          </View>
-
-          {/* Title Overlay */}
-          <View style={styles.heroTitleContainer}>
-            <Text style={styles.heroTitle}>{recipe.title}</Text>
-            {recipe.createdBy && (
-              <Text style={styles.heroAuthor}>
-                Par {recipe.createdBy.firstName} {recipe.createdBy.lastName}
-              </Text>
-            )}
           </View>
         </View>
 
         {/* Content Section */}
         <View style={[styles.content, isDark && styles.contentDark]}>
+          {/* Title */}
+          <View style={styles.titleContainer}>
+            <Text style={[styles.heroTitle, isDark && styles.heroTitleDark]}>{recipe.title}</Text>
+            {recipe.createdBy && (
+              <Text style={[styles.heroAuthor, isDark && styles.heroAuthorDark]}>
+                Par {recipe.createdBy.firstName} {recipe.createdBy.lastName}
+              </Text>
+            )}
+          </View>
+
           {/* Description */}
           {recipe.description && (
             <View style={[styles.section, isDark && styles.sectionDark]}>
@@ -450,7 +444,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
           {/* Stats Row */}
           <View style={[styles.statsContainer, isDark && styles.statsContainerDark]}>
             <View style={styles.statItem}>
-              <Ionicons name="time-outline" size={20} color={theme.colors.primary} />
+              <Ionicons name="time-outline" size={20} color="#72baa1" />
               <Text style={[styles.statLabel, isDark && styles.statLabelDark]}>
                 Préparation
               </Text>
@@ -459,10 +453,10 @@ const RecipeDetailScreen = ({ route, navigation }) => {
               </Text>
             </View>
 
-            <View style={styles.statDivider} />
+            <View style={[styles.statDivider, isDark && styles.statDividerDark]} />
 
             <View style={styles.statItem}>
-              <Ionicons name="flame-outline" size={20} color={theme.colors.primary} />
+              <Ionicons name="flame-outline" size={20} color="#72baa1" />
               <Text style={[styles.statLabel, isDark && styles.statLabelDark]}>
                 Cuisson
               </Text>
@@ -471,10 +465,10 @@ const RecipeDetailScreen = ({ route, navigation }) => {
               </Text>
             </View>
 
-            <View style={styles.statDivider} />
+            <View style={[styles.statDivider, isDark && styles.statDividerDark]} />
 
             <View style={styles.statItem}>
-              <Ionicons name="people-outline" size={20} color={theme.colors.primary} />
+              <Ionicons name="people-outline" size={20} color="#72baa1" />
               <Text style={[styles.statLabel, isDark && styles.statLabelDark]}>
                 Portions
               </Text>
@@ -483,7 +477,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
               </Text>
             </View>
 
-            <View style={styles.statDivider} />
+            <View style={[styles.statDivider, isDark && styles.statDividerDark]} />
 
             <View style={styles.statItem}>
               <View
@@ -602,7 +596,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
                     <Ionicons
                       name={star <= (userRating || 0) ? 'star' : 'star-outline'}
                       size={36}
-                      color="#F59E0B"
+                      color="#d4a96a"
                     />
                   </TouchableOpacity>
                 ))}
@@ -678,7 +672,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
           {/* Like Count */}
           {recipe.likesCount > 0 && (
             <View style={styles.likesContainer}>
-              <Ionicons name="heart" size={16} color="#EF4444" />
+              <Ionicons name="heart" size={16} color="#ef4444" />
               <Text style={[styles.likesText, isDark && styles.likesTextDark]}>
                 {recipe.likesCount} {recipe.likesCount === 1 ? 'personne aime' : 'personnes aiment'} cette recette
               </Text>
@@ -692,7 +686,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
                 Vous allez aimer aussi
               </Text>
               {loadingSimilar ? (
-                <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginTop: 16 }} />
+                <ActivityIndicator size="small" color="#72baa1" style={{ marginTop: 16 }} />
               ) : (
                 <FlatList
                   data={similarRecipes}
@@ -729,7 +723,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
                         </View>
                         {item.avgRating > 0 && (
                           <View style={styles.similarRating}>
-                            <Ionicons name="star" size={12} color="#F59E0B" />
+                            <Ionicons name="star" size={12} color="#d4a96a" />
                             <Text style={styles.similarRatingText}>{item.avgRating.toFixed(1)}</Text>
                           </View>
                         )}
@@ -749,30 +743,30 @@ const RecipeDetailScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#fcfbf9',
   },
   containerDark: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#0e0e11',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#fcfbf9',
   },
   loadingContainerDark: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#0e0e11',
   },
   loadingText: {
-    marginTop: theme.spacing.md,
-    fontSize: theme.fontSize.md,
-    color: '#666',
+    marginTop: 16,
+    fontSize: 15,
+    color: '#a8a29e',
   },
   loadingTextDark: {
-    color: '#999',
+    color: '#7a7a88',
   },
   scrollContent: {
-    paddingBottom: theme.spacing.xl,
+    paddingBottom: 120,
   },
   heroSection: {
     position: 'relative',
@@ -782,21 +776,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  heroGradient: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 150,
-  },
   backButton: {
     position: 'absolute',
     top: 50,
     left: 16,
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.85)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -811,128 +798,136 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(255,255,255,0.9)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  actionButtonActive: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
+  actionButtonDark: {
+    backgroundColor: 'rgba(24,24,29,0.9)',
   },
-  heroTitleContainer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 16,
-    right: 16,
+  titleContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 4,
   },
   heroTitle: {
-    fontSize: 28,
-    fontWeight: theme.fontWeight.bold,
-    color: '#FFF',
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1c1917',
+    letterSpacing: -0.5,
     marginBottom: 4,
-    textShadowColor: 'rgba(0,0,0,0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+  },
+  heroTitleDark: {
+    color: '#f3f3f6',
   },
   heroAuthor: {
-    fontSize: theme.fontSize.sm,
-    color: '#FFF',
-    opacity: 0.9,
-    textShadowColor: 'rgba(0,0,0,0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    fontSize: 13,
+    color: '#a8a29e',
+  },
+  heroAuthorDark: {
+    color: '#7a7a88',
   },
   content: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#fcfbf9',
   },
   contentDark: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#0e0e11',
   },
   section: {
-    backgroundColor: '#FFFFFF',
-    padding: theme.spacing.md,
-    marginHorizontal: theme.spacing.md,
-    marginTop: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    ...theme.shadows.sm,
+    backgroundColor: '#fff',
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   sectionDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   description: {
-    fontSize: theme.fontSize.md,
-    color: '#1a1a1a',
+    fontSize: 15,
+    color: '#1c1917',
     lineHeight: 22,
   },
   descriptionDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   statsContainer: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: theme.spacing.md,
-    marginTop: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    ...theme.shadows.sm,
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   statsContainerDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   statItem: {
     flex: 1,
     alignItems: 'center',
   },
   statLabel: {
-    fontSize: theme.fontSize.xs,
-    color: '#666',
+    fontSize: 11,
+    color: '#a8a29e',
     marginTop: 4,
   },
   statLabelDark: {
-    color: '#888',
+    color: '#7a7a88',
   },
   statValue: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semiBold,
-    color: '#1a1a1a',
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1c1917',
     marginTop: 2,
   },
   statValueDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   statDivider: {
     width: 1,
-    backgroundColor: '#E5E5E5',
+    backgroundColor: '#efedea',
     marginHorizontal: 8,
+  },
+  statDividerDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   difficultyBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: 8,
   },
   difficultyText: {
     color: '#FFF',
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.semiBold,
+    fontSize: 11,
+    fontWeight: '700',
   },
   tagsSection: {
-    backgroundColor: '#FFFFFF',
-    padding: theme.spacing.md,
-    marginHorizontal: theme.spacing.md,
-    marginTop: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    ...theme.shadows.sm,
+    backgroundColor: '#fff',
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   tagsSectionDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   tagsTitle: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semiBold,
-    color: '#1a1a1a',
-    marginBottom: theme.spacing.sm,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1c1917',
+    marginBottom: 10,
   },
   tagsTitleDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -940,36 +935,36 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tag: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#f5f5f4',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: 8,
   },
   tagDark: {
-    backgroundColor: '#3A3A3A',
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   tagText: {
-    fontSize: theme.fontSize.sm,
-    color: '#1a1a1a',
+    fontSize: 13,
+    color: '#78716c',
   },
   tagTextDark: {
-    color: '#FFFFFF',
+    color: '#c1c1cb',
   },
   ownerActions: {
-    marginHorizontal: theme.spacing.md,
-    marginTop: theme.spacing.lg,
+    marginHorizontal: 16,
+    marginTop: 20,
     gap: 12,
   },
   ownerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
+    padding: 16,
+    borderRadius: 14,
     gap: 8,
   },
   editButton: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
   },
   deleteButton: {
     backgroundColor: '#EF4444',
@@ -982,17 +977,17 @@ const styles = StyleSheet.create({
   },
   ownerButtonText: {
     color: '#FFF',
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semiBold,
+    fontSize: 15,
+    fontWeight: '700',
   },
   statusBadgeContainer: {
     alignItems: 'center',
-    marginTop: theme.spacing.md,
+    marginTop: 16,
   },
   statusBadge: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 8,
   },
   statusPublished: {
     backgroundColor: '#22C55E',
@@ -1001,113 +996,88 @@ const styles = StyleSheet.create({
     backgroundColor: '#F59E0B',
   },
   statusPrivate: {
-    backgroundColor: '#666',
+    backgroundColor: '#a8a29e',
   },
   statusBadgeText: {
     color: '#FFF',
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semiBold,
+    fontSize: 13,
+    fontWeight: '700',
   },
   likesContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: theme.spacing.md,
+    marginTop: 16,
     gap: 6,
   },
   likesText: {
-    fontSize: theme.fontSize.sm,
-    color: '#666',
+    fontSize: 13,
+    color: '#78716c',
   },
   likesTextDark: {
-    color: '#888',
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing.md,
-    gap: theme.spacing.sm,
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: theme.spacing.md,
-    marginTop: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    paddingHorizontal: theme.spacing.md,
-    ...theme.shadows.sm,
-  },
-  ratingContainerDark: {
-    backgroundColor: '#2A2A2A',
-  },
-  ratingStars: {
-    flexDirection: 'row',
-  },
-  ratingText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
-  },
-  ratingTextDark: {
-    color: '#888',
+    color: '#c1c1cb',
   },
   ratingSection: {
-    backgroundColor: '#FFFFFF',
-    padding: theme.spacing.md,
-    marginHorizontal: theme.spacing.md,
-    marginTop: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    ...theme.shadows.sm,
+    backgroundColor: '#fff',
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   ratingSectionDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   ratingTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.md,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1c1917',
+    marginBottom: 16,
     textAlign: 'center',
   },
   ratingTitleDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   rateStars: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: theme.spacing.sm,
+    gap: 10,
   },
   starButton: {
     padding: 8,
   },
   similarSection: {
-    marginTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
+    marginTop: 24,
+    paddingBottom: 16,
   },
   similarTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#1a1a1a',
+    fontWeight: '800',
+    color: '#1c1917',
+    letterSpacing: -0.5,
     marginBottom: 12,
-    marginHorizontal: theme.spacing.md,
+    marginHorizontal: 16,
   },
   similarTitleDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   similarList: {
-    paddingHorizontal: theme.spacing.md,
+    paddingHorizontal: 16,
     gap: 12,
   },
   similarCard: {
     width: 160,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    backgroundColor: '#fff',
+    borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   similarCardDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   similarImage: {
     width: '100%',
@@ -1118,13 +1088,13 @@ const styles = StyleSheet.create({
   },
   similarName: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#1a1a1a',
+    fontWeight: '700',
+    color: '#1c1917',
     lineHeight: 17,
     marginBottom: 6,
   },
   similarNameDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   similarMeta: {
     flexDirection: 'row',
@@ -1132,10 +1102,10 @@ const styles = StyleSheet.create({
   },
   similarMetaText: {
     fontSize: 11,
-    color: '#888',
+    color: '#a8a29e',
   },
   similarMetaTextDark: {
-    color: '#666',
+    color: '#7a7a88',
   },
   similarRating: {
     flexDirection: 'row',
@@ -1145,24 +1115,24 @@ const styles = StyleSheet.create({
   },
   similarRatingText: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#F59E0B',
+    fontWeight: '700',
+    color: '#d4a96a',
   },
   logRecipeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#22C55E',
-    borderRadius: theme.borderRadius.lg,
-    paddingVertical: theme.spacing.md,
-    marginHorizontal: theme.spacing.lg,
-    marginBottom: theme.spacing.md,
+    backgroundColor: '#72baa1',
+    borderRadius: 14,
+    paddingVertical: 16,
+    marginHorizontal: 20,
+    marginBottom: 12,
   },
   logRecipeBtnText: {
     color: '#FFF',
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semiBold,
+    fontSize: 15,
+    fontWeight: '700',
   },
 });
 

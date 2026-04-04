@@ -11,7 +11,7 @@
 
 :global(body.dark) .card,
 :global(html.dark) .card {
-  background: #1a1d24;
+  background: #151525;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
@@ -41,11 +41,11 @@
 .progressValue {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #f7b186;
+  color: #f0a47a;
 }
 
 .editButton {
-  background: var(--couleur-bouton-action, #f7b186);
+  background: var(--couleur-bouton-action, #f0a47a);
   border: none;
   border-radius: 8px;
   width: 36px;
@@ -56,12 +56,12 @@
   cursor: pointer;
   font-size: 1rem;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.3);
+  box-shadow: 0 2px 8px rgba(240, 164, 122, 0.3);
 }
 
 .editButton:hover {
   transform: scale(1.1) rotate(10deg);
-  box-shadow: 0 4px 12px rgba(247, 177, 134, 0.5);
+  box-shadow: 0 4px 12px rgba(240, 164, 122, 0.5);
 }
 
 .editButton:active {
@@ -77,15 +77,15 @@
 
 :global(body.dark) .progressBarContainer,
 :global(html.dark) .progressBarContainer {
-  background: #2d3139;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .progressBar {
   height: 100%;
-  background: var(--couleur-bouton-action, #f7b186);
+  background: var(--couleur-bouton-action, #f0a47a);
   border-radius: 12px;
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(247, 177, 134, 0.4);
+  box-shadow: 0 2px 8px rgba(240, 164, 122, 0.4);
 }
 
 .message {

@@ -31,6 +31,21 @@ const TABS = [
   { id: 'cardio', label: 'FC Max', icon: 'heart' },
 ];
 
+const RM_EXERCISES = [
+  { value: 'Développé couché', icon: 'fitness' },
+  { value: 'Squat', icon: 'body' },
+  { value: 'Soulevé de terre', icon: 'barbell' },
+  { value: 'Développé militaire', icon: 'fitness' },
+  { value: 'Rowing barre', icon: 'barbell' },
+  { value: 'Curl biceps', icon: 'fitness' },
+  { value: 'Presse à cuisses', icon: 'body' },
+  { value: 'Dips', icon: 'fitness' },
+  { value: 'Tractions', icon: 'body' },
+  { value: 'Hip thrust', icon: 'body' },
+  { value: 'Développé incliné', icon: 'fitness' },
+  { value: 'Fentes', icon: 'body' },
+];
+
 const ACTIVITY_LEVELS = [
   { value: 'sedentaire', label: 'Sedentaire', factor: 1.2, description: 'Peu ou pas d\'exercice' },
   { value: 'leger', label: 'Leger', factor: 1.375, description: '1-3 jours/semaine' },
@@ -282,13 +297,13 @@ export default function CalculatorsScreen() {
   // Sauvegarder 1RM
   const saveRMData = useCallback(() => {
     if (!rmResult) return;
-    if (!rmData.exercice.trim()) {
-      Alert.alert('Info', 'Veuillez entrer le nom de l\'exercice');
+    if (!rmData.exercice) {
+      Alert.alert('Info', 'Veuillez selectionner un exercice');
       return;
     }
     saveCalculatorData('rm', {
       rm: rmResult.rm,
-      exercice: rmData.exercice.trim(),
+      exercice: rmData.exercice,
       poidsSouleve: parseFloat(rmData.poids),
       reps: parseInt(rmData.reps, 10),
       percentages: rmResult.percentages,
@@ -1167,14 +1182,28 @@ export default function CalculatorsScreen() {
       </View>
 
       <View style={styles.inputGroup}>
-        <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Nom de l'exercice</Text>
-        <TextInput
-          style={[styles.input, isDark && styles.inputDark]}
-          placeholder="Ex: Développé couché, Squat..."
-          placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
-          value={rmData.exercice}
-          onChangeText={(text) => setRmData(prev => ({ ...prev, exercice: text }))}
-        />
+        <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Exercice</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.activityScroll}>
+          {RM_EXERCISES.map((ex) => (
+            <TouchableOpacity
+              key={ex.value}
+              style={[
+                styles.activityChip,
+                rmData.exercice === ex.value && styles.activityChipActive,
+                isDark && rmData.exercice !== ex.value && styles.activityChipDark,
+              ]}
+              onPress={() => setRmData(prev => ({ ...prev, exercice: ex.value }))}
+            >
+              <Text style={[
+                styles.activityChipText,
+                rmData.exercice === ex.value && styles.activityChipTextActive,
+                isDark && rmData.exercice !== ex.value && { color: '#7a7a88' },
+              ]}>
+                {ex.value}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       <View style={styles.inputRow}>

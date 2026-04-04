@@ -118,7 +118,16 @@ export default function HomeStack() {
 
       {/* Recettes - accessibles depuis le dashboard */}
       <Stack.Screen name="Recipes" component={RecipesScreen} />
-      <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} />
+      <Stack.Screen
+        name="RecipeDetail"
+        component={RecipeDetailScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+          gestureEnabled: true,
+          gestureDirection: 'vertical',
+        }}
+      />
       <Stack.Screen
         name="RecipeForm"
         component={RecipeFormScreen}

@@ -5,7 +5,7 @@ const HistorySchema = new mongoose.Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     action: {
       type: String,
-      enum: ['IMC_CALC', 'CALORIES_CALC', 'CUSTOM'],
+      enum: ['IMC_CALC', 'CALORIES_CALC', 'RM_CALC', 'FC_MAX_CALC', 'CUSTOM'],
       required: true,
       default: 'CUSTOM'
     },

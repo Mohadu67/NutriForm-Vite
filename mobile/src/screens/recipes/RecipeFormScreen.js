@@ -18,7 +18,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { useRecipe } from '../../contexts/RecipeContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { theme } from '../../theme';
 import logger from '../../services/logger';
 import BarcodeScannerModal from '../../components/BarcodeScannerModal';
 
@@ -330,7 +329,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
   if (!isPremium) {
     return (
       <View style={[styles.premiumGate, isDark && styles.premiumGateDark]}>
-        <Ionicons name="lock-closed" size={64} color={theme.colors.primary} />
+        <Ionicons name="lock-closed" size={64} color="#72baa1" />
         <Text style={[styles.premiumTitle, isDark && styles.premiumTitleDark]}>
           Fonctionnalité Premium
         </Text>
@@ -351,10 +350,10 @@ const RecipeFormScreen = ({ route, navigation }) => {
           <Text style={styles.premiumButtonText}>Découvrir Premium</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.backButton}
+          style={styles.backBtn}
           onPress={() => navigation.goBack()}
         >
-          <Text style={[styles.backButtonText, isDark && styles.backButtonTextDark]}>
+          <Text style={[styles.backBtnText, isDark && styles.backBtnTextDark]}>
             Retour
           </Text>
         </TouchableOpacity>
@@ -370,26 +369,37 @@ const RecipeFormScreen = ({ route, navigation }) => {
       onProductFound={handleIngredientProductFound}
     />
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, isDark && styles.containerDark]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <ScrollView
-        style={[styles.scrollView, isDark && styles.scrollViewDark]}
+        style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Header */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color={isDark ? '#f3f3f6' : '#1c1917'} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, isDark && styles.headerTitleDark]}>
+            {mode === 'edit' ? 'Modifier la recette' : 'Nouvelle recette'}
+          </Text>
+          <View style={{ width: 24 }} />
+        </View>
+
         {/* Image Picker */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
             Image
           </Text>
-          <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+          <TouchableOpacity style={[styles.imagePicker, isDark && styles.imagePickerDark]} onPress={pickImage}>
             {imageUri ? (
               <Image source={{ uri: imageUri }} style={styles.previewImage} />
             ) : (
-              <View style={styles.imagePlaceholder}>
-                <Ionicons name="camera" size={48} color="#999" />
+              <View style={[styles.imagePlaceholder, isDark && styles.imagePlaceholderDark]}>
+                <Ionicons name="camera" size={48} color="#a8a29e" />
                 <Text style={styles.imagePlaceholderText}>
                   Ajouter une photo
                 </Text>
@@ -412,7 +422,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
             value={title}
             onChangeText={setTitle}
             placeholder="Ex: Tarte aux pommes maison"
-            placeholderTextColor={isDark ? '#666' : '#999'}
+            placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
           />
 
           <Text style={[styles.label, isDark && styles.labelDark]}>
@@ -423,7 +433,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
             value={description}
             onChangeText={setDescription}
             placeholder="Décrivez votre recette..."
-            placeholderTextColor={isDark ? '#666' : '#999'}
+            placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
             multiline
             numberOfLines={4}
           />
@@ -438,7 +448,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
                 value={prepTime}
                 onChangeText={setPrepTime}
                 placeholder="15"
-                placeholderTextColor={isDark ? '#666' : '#999'}
+                placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                 keyboardType="numeric"
               />
             </View>
@@ -452,7 +462,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
                 value={cookTime}
                 onChangeText={setCookTime}
                 placeholder="30"
-                placeholderTextColor={isDark ? '#666' : '#999'}
+                placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                 keyboardType="numeric"
               />
             </View>
@@ -466,7 +476,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
             value={servings}
             onChangeText={setServings}
             placeholder="4"
-            placeholderTextColor={isDark ? '#666' : '#999'}
+            placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
             keyboardType="numeric"
           />
         </View>
@@ -578,7 +588,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
                 value={calories}
                 onChangeText={setCalories}
                 placeholder="250"
-                placeholderTextColor={isDark ? '#666' : '#999'}
+                placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                 keyboardType="numeric"
               />
             </View>
@@ -592,7 +602,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
                 value={protein}
                 onChangeText={setProtein}
                 placeholder="12"
-                placeholderTextColor={isDark ? '#666' : '#999'}
+                placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                 keyboardType="numeric"
               />
             </View>
@@ -608,7 +618,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
                 value={carbs}
                 onChangeText={setCarbs}
                 placeholder="30"
-                placeholderTextColor={isDark ? '#666' : '#999'}
+                placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                 keyboardType="numeric"
               />
             </View>
@@ -622,7 +632,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
                 value={fat}
                 onChangeText={setFat}
                 placeholder="8"
-                placeholderTextColor={isDark ? '#666' : '#999'}
+                placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                 keyboardType="numeric"
               />
             </View>
@@ -639,7 +649,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
               style={styles.addButton}
               onPress={addIngredient}
             >
-              <Ionicons name="add-circle" size={28} color={theme.colors.primary} />
+              <Ionicons name="add-circle" size={28} color="#72baa1" />
             </TouchableOpacity>
           </View>
 
@@ -652,13 +662,13 @@ const RecipeFormScreen = ({ route, navigation }) => {
                     value={ingredient.name}
                     onChangeText={value => updateIngredient(index, 'name', value)}
                     placeholder="Ingrédient"
-                    placeholderTextColor={isDark ? '#666' : '#999'}
+                    placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                   />
                   <TouchableOpacity
-                    style={styles.scanIngredientBtn}
+                    style={[styles.scanIngredientBtn, isDark && styles.scanIngredientBtnDark]}
                     onPress={() => openScannerForIngredient(index)}
                   >
-                    <Ionicons name="barcode-outline" size={18} color={theme.colors.secondary} />
+                    <Ionicons name="barcode-outline" size={18} color="#72baa1" />
                   </TouchableOpacity>
                 </View>
                 <TextInput
@@ -666,7 +676,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
                   value={ingredient.quantity}
                   onChangeText={value => updateIngredient(index, 'quantity', value)}
                   placeholder="Qté"
-                  placeholderTextColor={isDark ? '#666' : '#999'}
+                  placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                   keyboardType="numeric"
                 />
                 <TextInput
@@ -674,7 +684,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
                   value={ingredient.unit}
                   onChangeText={value => updateIngredient(index, 'unit', value)}
                   placeholder="Unité"
-                  placeholderTextColor={isDark ? '#666' : '#999'}
+                  placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                 />
               </View>
               {ingredient.nutritionPer100g && (
@@ -704,7 +714,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
               style={styles.addButton}
               onPress={addInstruction}
             >
-              <Ionicons name="add-circle" size={28} color={theme.colors.primary} />
+              <Ionicons name="add-circle" size={28} color="#72baa1" />
             </TouchableOpacity>
           </View>
 
@@ -722,7 +732,7 @@ const RecipeFormScreen = ({ route, navigation }) => {
                 value={instruction}
                 onChangeText={value => updateInstruction(index, value)}
                 placeholder="Décrivez cette étape..."
-                placeholderTextColor={isDark ? '#666' : '#999'}
+                placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                 multiline
               />
               {instructions.length > 1 && (
@@ -763,66 +773,79 @@ const RecipeFormScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#fcfbf9',
+  },
+  containerDark: {
+    backgroundColor: '#0e0e11',
   },
   scrollView: {
     flex: 1,
   },
-  scrollViewDark: {
-    backgroundColor: '#1A1A1A',
-  },
   scrollContent: {
-    padding: theme.spacing.md,
+    padding: 16,
     paddingBottom: 180,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1c1917',
+    letterSpacing: -0.5,
+  },
+  headerTitleDark: {
+    color: '#f3f3f6',
+  },
   section: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: 20,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
-    color: '#1a1a1a',
-    marginBottom: theme.spacing.md,
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1c1917',
+    letterSpacing: -0.3,
+    marginBottom: 12,
   },
   sectionTitleDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   label: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.medium,
-    color: '#1a1a1a',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#78716c',
     marginBottom: 6,
-    marginTop: theme.spacing.sm,
+    marginTop: 10,
   },
   labelDark: {
-    color: '#FFFFFF',
-  },
-  selectedValue: {
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.semiBold,
+    color: '#c1c1cb',
   },
   required: {
     color: '#EF4444',
   },
   input: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.sm,
-    fontSize: theme.fontSize.md,
-    color: '#1a1a1a',
+    borderColor: '#efedea',
+    borderRadius: 14,
+    padding: 12,
+    fontSize: 15,
+    color: '#1c1917',
   },
   inputDark: {
-    backgroundColor: '#2A2A2A',
-    borderColor: '#3A3A3A',
-    color: '#FFFFFF',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
+    color: '#f3f3f6',
   },
   textArea: {
     height: 100,
@@ -830,107 +853,91 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    gap: theme.spacing.md,
+    gap: 12,
   },
   halfInput: {
     flex: 1,
   },
   pickerContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: theme.borderRadius.md,
+    borderColor: '#efedea',
+    borderRadius: 14,
     overflow: 'hidden',
   },
   pickerContainerDark: {
-    backgroundColor: '#2A2A2A',
-    borderColor: '#3A3A3A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   picker: {
-    color: '#000000',
-    fontSize: theme.fontSize.md,
+    color: '#1c1917',
+    fontSize: 15,
   },
   pickerDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   buttonGroup: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
   },
   optionButton: {
     flex: 1,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     borderRadius: 12,
-    borderWidth: 3,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#efedea',
+    backgroundColor: '#f5f5f4',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 56,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    minHeight: 52,
   },
   optionButtonDark: {
-    backgroundColor: '#374151',
-    borderColor: '#4B5563',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   optionButtonSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-    shadowColor: theme.colors.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
+    backgroundColor: 'rgba(114,186,161,0.12)',
+    borderColor: '#72baa1',
   },
   optionButtonSelectedDark: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-    shadowColor: theme.colors.primary,
-    shadowOpacity: 0.3,
+    backgroundColor: 'rgba(114,186,161,0.12)',
+    borderColor: '#72baa1',
   },
   optionButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#78716c',
   },
   optionButtonTextDark: {
-    color: '#F3F4F6',
+    color: '#c1c1cb',
   },
   optionButtonTextSelected: {
-    color: '#FFFFFF',
+    color: '#72baa1',
     fontWeight: '700',
   },
   optionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
   },
   gridOption: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    borderWidth: 3,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#FFFFFF',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    backgroundColor: '#f5f5f4',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 52,
-    minWidth: 120,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    minHeight: 48,
+    minWidth: 110,
   },
   gridOptionDark: {
-    backgroundColor: '#374151',
-    borderColor: '#4B5563',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   dietaryContainer: {
     flexDirection: 'row',
@@ -939,52 +946,47 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   dietaryChip: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 24,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 3,
-    borderColor: '#D1D5DB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f4',
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   dietaryChipDark: {
-    backgroundColor: '#374151',
-    borderColor: '#4B5563',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   dietaryChipSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-    shadowColor: theme.colors.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
+    backgroundColor: 'rgba(114,186,161,0.12)',
+    borderColor: '#72baa1',
   },
   dietaryChipSelectedDark: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
+    backgroundColor: 'rgba(114,186,161,0.12)',
+    borderColor: '#72baa1',
   },
   dietaryChipText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#78716c',
   },
   dietaryChipTextDark: {
-    color: '#F3F4F6',
+    color: '#c1c1cb',
   },
   dietaryChipTextSelected: {
-    color: '#FFFFFF',
+    color: '#72baa1',
     fontWeight: '700',
   },
   imagePicker: {
     width: '100%',
     height: 200,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: '#F0F0F0',
+    borderWidth: 1,
+    borderColor: '#efedea',
+  },
+  imagePickerDark: {
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   previewImage: {
     width: '100%',
@@ -994,11 +996,15 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#f5f5f4',
+  },
+  imagePlaceholderDark: {
+    backgroundColor: '#18181d',
   },
   imagePlaceholderText: {
     marginTop: 8,
-    fontSize: theme.fontSize.md,
-    color: '#999',
+    fontSize: 15,
+    color: '#a8a29e',
   },
   addButton: {
     padding: 4,
@@ -1006,7 +1012,7 @@ const styles = StyleSheet.create({
   ingredientRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: theme.spacing.sm,
+    marginBottom: 10,
     gap: 8,
   },
   ingredientInputs: {
@@ -1016,7 +1022,7 @@ const styles = StyleSheet.create({
   },
   ingredientScanned: {
     backgroundColor: 'rgba(114, 186, 161, 0.06)',
-    borderRadius: 10,
+    borderRadius: 14,
     padding: 8,
     borderWidth: 1,
     borderColor: 'rgba(114, 186, 161, 0.15)',
@@ -1030,9 +1036,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 6,
   },
+  scanIngredientBtnDark: {
+    backgroundColor: 'rgba(114, 186, 161, 0.15)',
+  },
   ingredientMacroHint: {
     fontSize: 11,
-    color: '#5aa48a',
+    color: '#72baa1',
     fontWeight: '600',
     marginTop: 4,
     marginLeft: 4,
@@ -1049,22 +1058,22 @@ const styles = StyleSheet.create({
   instructionRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
     gap: 8,
   },
   stepNumber: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
   },
   stepNumberText: {
     color: '#FFF',
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.bold,
+    fontSize: 13,
+    fontWeight: '700',
   },
   instructionInput: {
     flex: 1,
@@ -1076,13 +1085,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   saveButton: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    marginTop: theme.spacing.md,
+    padding: 16,
+    borderRadius: 14,
+    marginTop: 12,
     gap: 8,
   },
   saveButtonDisabled: {
@@ -1090,61 +1099,62 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#FFF',
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
+    fontSize: 17,
+    fontWeight: '700',
   },
   premiumGate: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#fcfbf9',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: theme.spacing.xl,
+    padding: 32,
   },
   premiumGateDark: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#0e0e11',
   },
   premiumTitle: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.bold,
-    color: '#1a1a1a',
-    marginTop: theme.spacing.lg,
-    marginBottom: theme.spacing.sm,
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1c1917',
+    letterSpacing: -0.5,
+    marginTop: 20,
+    marginBottom: 10,
     textAlign: 'center',
   },
   premiumTitleDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   premiumMessage: {
-    fontSize: theme.fontSize.md,
-    color: '#666',
+    fontSize: 15,
+    color: '#78716c',
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: theme.spacing.xl,
+    marginBottom: 32,
   },
   premiumMessageDark: {
-    color: '#999',
+    color: '#c1c1cb',
   },
   premiumButton: {
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    marginBottom: theme.spacing.md,
+    backgroundColor: '#72baa1',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 14,
+    marginBottom: 12,
   },
   premiumButtonText: {
     color: '#FFF',
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
+    fontSize: 17,
+    fontWeight: '700',
   },
-  backButton: {
-    padding: theme.spacing.sm,
+  backBtn: {
+    padding: 10,
   },
-  backButtonText: {
-    color: theme.colors.primary,
-    fontSize: theme.fontSize.md,
+  backBtnText: {
+    color: '#72baa1',
+    fontSize: 15,
   },
-  backButtonTextDark: {
-    color: theme.colors.primary,
+  backBtnTextDark: {
+    color: '#72baa1',
   },
 });
 

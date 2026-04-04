@@ -12,8 +12,8 @@
 
 :global(body.dark) .card,
 :global(html.dark) .card {
-  background: #1a1d24;
-  border-color: #2d3139;
+  background: #151525;
+  border-color: rgba(255, 255, 255, 0.06);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -80,7 +80,7 @@
 .percentValue {
   font-size: 1.3rem;
   font-weight: 800;
-  color: #f7b186;
+  color: #f0a47a;
   line-height: 1;
 }
 
@@ -118,7 +118,7 @@
 
 :global(body.dark) .metricCard,
 :global(html.dark) .metricCard {
-  background: linear-gradient(135deg, #1a1d24 0%, #151820 100%);
+  background: linear-gradient(135deg, #151525 0%, #151820 100%);
   border-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -173,7 +173,7 @@
 
 :global(body.dark) .splitCard,
 :global(html.dark) .splitCard {
-  background: linear-gradient(135deg, #1a1d24 0%, #151820 100%);
+  background: linear-gradient(135deg, #151525 0%, #151820 100%);
   border-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -222,7 +222,7 @@
 }
 
 .splitFillMuscu {
-  background: var(--couleur-bouton-action, #f7b186);
+  background: var(--couleur-bouton-action, #f0a47a);
   box-shadow: 0 0 8px rgba(255, 179, 133, 0.4);
 }
 
@@ -308,7 +308,7 @@
   overscroll-behavior-inline: contain;
   touch-action: pan-x pan-y;
   scrollbar-width: thin;
-  scrollbar-color: var(--nf-accent, #f7b186) transparent;
+  scrollbar-color: var(--nf-accent, #f0a47a) transparent;
 }
 
 .carouselList::after {
@@ -326,7 +326,7 @@
 }
 
 .carouselList::-webkit-scrollbar-thumb {
-  background: var(--couleur-bouton-action, #f7b186);
+  background: var(--couleur-bouton-action, #f0a47a);
   border-radius: 999px;
 }
 

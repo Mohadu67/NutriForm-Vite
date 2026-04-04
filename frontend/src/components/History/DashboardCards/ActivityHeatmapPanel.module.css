@@ -12,7 +12,7 @@
 
 :global(body.dark) .card,
 :global(html.dark) .card {
-  background: #1a1d24;
+  background: #151525;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
 }
 
@@ -67,7 +67,7 @@
 }
 
 .legendDotHigh {
-  background: #f7b186;
+  background: #f0a47a;
 }
 
 .grid {
@@ -89,12 +89,12 @@
 }
 
 .grid::-webkit-scrollbar-thumb {
-  background: #f7b186;
+  background: #f0a47a;
   border-radius: 4px;
 }
 
 .grid::-webkit-scrollbar-thumb:hover {
-  background: var(--couleur-bouton-action, #f7b186);
+  background: var(--couleur-bouton-action, #f0a47a);
 }
 
 .weekCard {
@@ -110,7 +110,7 @@
 
 :global(body.dark) .weekCard,
 :global(html.dark) .weekCard {
-  background: #1a1d24;
+  background: #151525;
   border-color: rgba(255, 255, 255, 0.05);
 }
 
@@ -130,7 +130,7 @@
 }
 
 .currentBadge {
-  background: var(--couleur-bouton-action, #f7b186);
+  background: var(--couleur-bouton-action, #f0a47a);
   color: var(--couleur-text-bouton, #111111);
   font-size: 0.65rem;
   padding: 2px 6px;
@@ -190,7 +190,7 @@
 }
 
 .intensity3 {
-  background: #f7b186;
+  background: #f0a47a;
   box-shadow: 0 2px 8px rgba(255, 179, 133, 0.3);
 }
 

@@ -46,7 +46,7 @@
 
 :global(body.dark) .content,
 :global(html.dark) .content {
-  background: #1a1d24;
+  background: #151525;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
 }
 
@@ -74,7 +74,7 @@
 }
 
 .goalButton {
-  background: var(--couleur-bouton-action, #f7b186);
+  background: var(--couleur-bouton-action, #f0a47a);
   border: none;
   border-radius: 12px;
   width: 48px;
@@ -114,14 +114,14 @@
 }
 
 .goalInputField:focus {
-  border-color: #f7b186;
+  border-color: #f0a47a;
   box-shadow: 0 0 0 4px rgba(255, 179, 133, 0.2);
 }
 
 :global(body.dark) .goalInputField,
 :global(html.dark) .goalInputField {
   background: #0c0e12;
-  border-color: #2d3139;
+  border-color: rgba(255, 255, 255, 0.06);
   color: #f5f7fa;
 }
 
@@ -154,7 +154,7 @@
 
 :global(body.dark) .cancelButton,
 :global(html.dark) .cancelButton {
-  background: #2d3139;
+  background: rgba(255, 255, 255, 0.06);
   color: #9ca3af;
 }
 
@@ -164,7 +164,7 @@
 }
 
 .saveButton {
-  background: var(--couleur-bouton-action, #f7b186);
+  background: var(--couleur-bouton-action, #f0a47a);
   color: var(--couleur-text-bouton, #111111);
   box-shadow: 0 2px 8px rgba(255, 179, 133, 0.3);
 }
