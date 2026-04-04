@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import { Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
@@ -7,6 +7,8 @@ import { theme, useTheme, colors } from '../../theme';
 
 export default function MediaPicker({ visible, onClose, onMediaSelected }) {
   const { isDark } = useTheme();
+  // Store the action to run AFTER the modal is fully dismissed
+  const pendingActionRef = useRef(null);
 
   const themedStyles = {
     containerBg: isDark ? colors.dark.surface : colors.light.surface,
@@ -30,115 +32,125 @@ export default function MediaPicker({ visible, onClose, onMediaSelected }) {
     return true;
   };
 
+  // Called when Modal is FULLY dismissed (animation complete)
+  const handleDismiss = useCallback(() => {
+    if (pendingActionRef.current) {
+      const action = pendingActionRef.current;
+      pendingActionRef.current = null;
+      // Small extra delay for safety
+      setTimeout(action, 100);
+    }
+  }, []);
+
+  // Close modal first, then run action after dismiss
+  const closeAndRun = useCallback((action) => {
+    pendingActionRef.current = action;
+    onClose();
+  }, [onClose]);
+
   const pickFromCamera = async () => {
     const hasPermission = await requestPermissions('camera');
     if (!hasPermission) {
-      alert('Permission refusée', 'L\'accès à la caméra est requis');
+      alert('Permission refusee', 'L\'acces a la camera est requis');
       return;
     }
 
-    // Fermer le bottom sheet AVANT d'ouvrir la camera
-    // pour eviter le conflit de modals iOS qui crop les boutons
-    onClose();
-
-    // Petit delai pour laisser le modal se fermer
-    await new Promise(r => setTimeout(r, 300));
-
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      allowsEditing: false,
-      quality: 0.8,
-      presentationStyle: ImagePicker.UIImagePickerPresentationStyle.FULL_SCREEN,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      const asset = result.assets[0];
-      onMediaSelected({
-        uri: asset.uri,
-        type: 'image/jpeg',
-        filename: `photo-${Date.now()}.jpg`,
-        mimeType: 'image/jpeg',
+    closeAndRun(async () => {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        allowsEditing: false,
+        quality: 0.8,
+        presentationStyle: ImagePicker.UIImagePickerPresentationStyle.OVER_FULL_SCREEN,
       });
-    }
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        onMediaSelected({
+          uri: asset.uri,
+          type: 'image/jpeg',
+          filename: `photo-${Date.now()}.jpg`,
+          mimeType: 'image/jpeg',
+        });
+      }
+    });
   };
 
   const pickPhotos = async () => {
     const hasPermission = await requestPermissions('media');
     if (!hasPermission) {
-      alert('Permission refusée', 'L\'accès à la galerie est requis');
+      alert('Permission refusee', 'L\'acces a la galerie est requis');
       return;
     }
 
-    onClose();
-    await new Promise(r => setTimeout(r, 300));
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: false,
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      const asset = result.assets[0];
-      const fileExtension = asset.uri.split('.').pop().toLowerCase();
-      onMediaSelected({
-        uri: asset.uri,
-        filename: `image-${Date.now()}.${fileExtension}`,
-        mimeType: `image/${fileExtension === 'jpg' ? 'jpeg' : fileExtension}`,
+    closeAndRun(async () => {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: false,
+        quality: 0.8,
       });
-    }
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        const fileExtension = asset.uri.split('.').pop().toLowerCase();
+        onMediaSelected({
+          uri: asset.uri,
+          filename: `image-${Date.now()}.${fileExtension}`,
+          mimeType: `image/${fileExtension === 'jpg' ? 'jpeg' : fileExtension}`,
+        });
+      }
+    });
   };
 
   const pickVideo = async () => {
     const hasPermission = await requestPermissions('media');
     if (!hasPermission) {
-      alert('Permission refusée', 'L\'accès à la galerie est requis');
+      alert('Permission refusee', 'L\'acces a la galerie est requis');
       return;
     }
 
-    onClose();
-    await new Promise(r => setTimeout(r, 300));
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['videos'],
-      allowsEditing: false,
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      const asset = result.assets[0];
-      onMediaSelected({
-        uri: asset.uri,
-        filename: `video-${Date.now()}.mp4`,
-        mimeType: 'video/mp4',
+    closeAndRun(async () => {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['videos'],
+        allowsEditing: false,
+        quality: 0.8,
       });
-    }
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        onMediaSelected({
+          uri: asset.uri,
+          filename: `video-${Date.now()}.mp4`,
+          mimeType: 'video/mp4',
+        });
+      }
+    });
   };
 
   const pickDocument = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
-        copyToCacheDirectory: true,
-      });
-
-      if (result.type === 'success') {
-        onMediaSelected({
-          uri: result.uri,
-          filename: result.name,
-          mimeType: result.mimeType || 'application/pdf',
+    closeAndRun(async () => {
+      try {
+        const result = await DocumentPicker.getDocumentAsync({
+          type: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
+          copyToCacheDirectory: true,
         });
-        onClose();
+
+        if (result.type === 'success') {
+          onMediaSelected({
+            uri: result.uri,
+            filename: result.name,
+            mimeType: result.mimeType || 'application/pdf',
+          });
+        }
+      } catch (error) {
+        console.error('Error picking document:', error);
       }
-    } catch (error) {
-      console.error('Error picking document:', error);
-    }
+    });
   };
 
   const subtitles = {
     camera: 'Appareil photo',
     images: 'Galerie',
-    videocam: 'Galerie vidéo',
+    videocam: 'Galerie video',
     document: 'PDF, Word, texte',
   };
 
@@ -178,38 +190,38 @@ export default function MediaPicker({ visible, onClose, onMediaSelected }) {
   );
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+      onDismiss={handleDismiss}
+    >
       <View style={styles.modalContainer}>
-        {/* Overlay cliquable */}
         <TouchableWithoutFeedback onPress={onClose}>
           <View style={styles.overlay} />
         </TouchableWithoutFeedback>
 
-        {/* Bottom Sheet */}
         <View style={[styles.bottomSheet, { backgroundColor: themedStyles.containerBg }]}>
-          {/* Handle */}
           <View style={styles.handleContainer}>
             <View style={[styles.handle, { backgroundColor: themedStyles.handleColor }]} />
           </View>
 
-          {/* Header */}
           <View style={[styles.header, { borderBottomColor: themedStyles.headerBorder }]}>
             <Text style={[styles.title, { color: themedStyles.textPrimary }]}>
-              Envoyer un média
+              Envoyer un media
             </Text>
           </View>
 
-          {/* Options */}
           <View style={styles.optionsContainer}>
             <Option icon="camera" text="Prendre une photo" subtitle={subtitles.camera} onPress={pickFromCamera} />
             <Option icon="images" text="Choisir une photo" subtitle={subtitles.images} onPress={pickPhotos} />
-            <Option icon="videocam" text="Choisir une vidéo" subtitle={subtitles.videocam} onPress={pickVideo} />
+            <Option icon="videocam" text="Choisir une video" subtitle={subtitles.videocam} onPress={pickVideo} />
             <Option icon="document" text="Choisir un fichier" subtitle={subtitles.document} onPress={pickDocument} />
           </View>
 
           <View style={[styles.separator, { backgroundColor: themedStyles.separatorBg }]} />
 
-          {/* Cancel */}
           <TouchableOpacity
             style={[styles.cancelButton, { backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.08)' }]}
             onPress={onClose}
@@ -218,7 +230,6 @@ export default function MediaPicker({ visible, onClose, onMediaSelected }) {
             <Text style={styles.cancelButtonText}>Annuler</Text>
           </TouchableOpacity>
 
-          {/* Safe area bottom */}
           <View style={styles.safeBottom} />
         </View>
       </View>
