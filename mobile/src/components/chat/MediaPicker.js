@@ -39,8 +39,9 @@ export default function MediaPicker({ visible, onClose, onMediaSelected }) {
 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ['images'],
-      allowsEditing: true,
+      allowsEditing: false,
       quality: 0.8,
+      presentationStyle: ImagePicker.UIImagePickerPresentationStyle.FULL_SCREEN,
     });
 
     if (!result.canceled && result.assets[0]) {
@@ -311,6 +312,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   safeBottom: {
-    height: Platform.OS === 'ios' ? 34 : 16,
+    height: Platform.OS === 'ios' ? 44 : 20,
   },
 });
