@@ -3,11 +3,11 @@ import Avatar from '../../../components/Shared/Avatar';
 import { GlobeIcon, CheckCircleIcon } from '../../../components/Icons/GlobalIcons';
 import styles from './SwipeCard.module.css';
 
-const WORKOUT_ICONS = {
-  musculation: '🏋️', cardio: '🏃', crossfit: '⛓️', yoga: '🧘',
-  pilates: '🤸', running: '🏃', cycling: '🚴', swimming: '🏊',
-  boxing: '🥊', dance: '💃', functional: '⚡', hiit: '🔥',
-  stretching: '🧘', other: '🎯'
+const WORKOUT_COLORS = {
+  musculation: '#72baa1', cardio: '#f0a47a', crossfit: '#c9a88c', yoga: '#5a9e87',
+  pilates: '#d4895a', running: '#f0a47a', cycling: '#72baa1', swimming: '#5a9e87',
+  boxing: '#c9a88c', dance: '#d4895a', functional: '#72baa1', hiit: '#f0a47a',
+  stretching: '#5a9e87', other: '#c9a88c'
 };
 
 const FITNESS_LEVEL_LABELS = {
@@ -87,8 +87,9 @@ export default function SwipeCard({
           {user.workoutTypes?.length > 0 && (
             <div className={styles.workouts}>
               {user.workoutTypes.slice(0, 4).map((type) => (
-                <span key={type} className={styles.workoutChip}>
-                  {WORKOUT_ICONS[type] || '🎯'} {type}
+                <span key={type} className={styles.workoutChip}
+                  style={{ borderColor: WORKOUT_COLORS[type] || '#c9a88c', color: WORKOUT_COLORS[type] || '#c9a88c' }}>
+                  {type}
                 </span>
               ))}
               {user.workoutTypes.length > 4 && (

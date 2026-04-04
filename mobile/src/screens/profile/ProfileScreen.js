@@ -14,10 +14,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle } from 'react-native-svg';
 
-import { theme } from '../../theme';
 import { useProfileData } from '../../hooks/useProfileData';
 import useHealthSync from '../../hooks/useHealthSync';
 import logger from '../../services/logger';
@@ -26,7 +24,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const AVATAR_SIZE = 110;
 const RING_SIZE = AVATAR_SIZE + 12;
 
-const ProgressRing = ({ progress, size = 50, strokeWidth = 4, color = theme.colors.primary }) => {
+const ProgressRing = ({ progress, size = 50, strokeWidth = 4, color = '#72baa1' }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - Math.min(progress, 1));
@@ -37,7 +35,7 @@ const ProgressRing = ({ progress, size = 50, strokeWidth = 4, color = theme.colo
         cx={size / 2}
         cy={size / 2}
         r={radius}
-        stroke="rgba(255,255,255,0.2)"
+        stroke="#e8e8e8"
         strokeWidth={strokeWidth}
         fill="none"
       />
@@ -116,19 +114,19 @@ export default function ProfileScreen() {
   }, []);
 
   const quickActions = [
-    { icon: 'trophy-outline', label: 'Badges', screen: 'Badges', gradient: ['#F7B186', '#E89A6F'] },
-    { icon: 'flash-outline', label: 'Défis', screen: 'Challenges', gradient: ['#FBBF24', '#F59E0B'] },
-    { icon: 'gift-outline', label: 'Recompenses', screen: 'Rewards', gradient: ['#F9C4A3', '#F7B186'] },
-    { icon: 'calculator-outline', label: 'Calculs', screen: 'Calculators', isExternal: true, gradient: ['#B8DDD1', '#A0C9BD'] },
+    { icon: 'trophy-outline', label: 'Badges', desc: 'Débloque des badges et partage-les avec tes amis', screen: 'Badges', color: '#f0a47a' },
+    { icon: 'flash-outline', label: 'Défis', desc: 'Lance des défis et gagne des XP', screen: 'Challenges', color: '#d4a96a' },
+    { icon: 'gift-outline', label: 'Récompenses', desc: 'Échange tes XP contre des récompenses exclusives', screen: 'Rewards', color: '#c9a88c' },
+    { icon: 'calculator-outline', label: 'Calculateurs', desc: 'IMC, calories, 1RM et plus', screen: 'Calculators', isExternal: true, color: '#72baa1' },
   ];
 
   const menuSections = [
     {
       title: 'Compte',
       items: [
-        { icon: 'person', label: 'Modifier le profil', screen: 'EditProfile', color: theme.colors.primary },
-        { icon: 'star', label: isPremium ? 'Gerer Premium' : 'Passer Premium', screen: 'Subscription', color: '#F59E0B', badge: !isPremium ? 'PRO' : null },
-        { icon: 'settings', label: 'Parametres', screen: 'Settings', color: '#6B7280' },
+        { icon: 'person', label: 'Modifier le profil', screen: 'EditProfile', color: '#72baa1' },
+        { icon: 'star', label: isPremium ? 'Gerer Premium' : 'Passer Premium', screen: 'Subscription', color: '#d4a96a', badge: !isPremium ? 'PRO' : null },
+        { icon: 'settings', label: 'Parametres', screen: 'Settings', color: '#78716c' },
         { icon: 'help-circle', label: 'Aide & Support', screen: 'Support', color: '#10B981' },
       ],
     },
@@ -149,33 +147,26 @@ export default function ProfileScreen() {
   if (loading) {
     return (
       <View style={[styles.loadingContainer, isDark && styles.containerDark]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <ActivityIndicator size="large" color="#72baa1" />
       </View>
     );
   }
 
   return (
     <View style={[styles.container, isDark && styles.containerDark]}>
-      {/* Gradient Header */}
-      <Animated.View style={[styles.headerGradient, { height: headerHeight }]}>
-        <LinearGradient
-          colors={isDark ? ['#2A1810', '#1A1A1A'] : ['#F9C4A3', '#F7B186', '#E89A6F']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-      </Animated.View>
+      {/* Flat Header */}
+      <Animated.View style={[styles.headerFlat, isDark && styles.headerFlatDark, { height: headerHeight }]} />
 
       {/* Settings button */}
       <SafeAreaView edges={['top']} style={styles.headerActions} pointerEvents="box-none">
         <View style={styles.headerSpacer} />
         <TouchableOpacity
-          style={[styles.headerBtn, isDark && styles.headerBtnDark]}
+          style={styles.headerBtn}
           onPress={() => navigation.navigate('Settings')}
           activeOpacity={0.7}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="settings-outline" size={24} color={isDark ? '#FFF' : theme.colors.primary} />
+          <Ionicons name="settings-outline" size={22} color="#78716c" />
         </TouchableOpacity>
       </SafeAreaView>
 
@@ -188,26 +179,20 @@ export default function ProfileScreen() {
         )}
         scrollEventThrottle={16}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#72baa1" />
         }
       >
         {/* Avatar Section */}
         <Animated.View style={[styles.avatarSection, { transform: [{ scale: avatarScale }] }]}>
           <TouchableOpacity onPress={handleAvatarPress} activeOpacity={0.9} disabled={uploadingPhoto}>
-            <View style={styles.avatarRing}>
-              <LinearGradient
-                colors={['#F7B186', '#E89A6F', '#F7B186']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.avatarRingGradient}
-              />
+            <View style={[styles.avatarRing, isDark && styles.avatarRingDark]}>
               <View style={[styles.avatarInner, isDark && styles.avatarInnerDark]}>
                 {avatarUrl ? (
                   <Image source={{ uri: avatarUrl }} style={styles.avatar} />
                 ) : (
-                  <LinearGradient colors={['#F7B186', '#E89A6F']} style={styles.avatarPlaceholder}>
+                  <View style={styles.avatarPlaceholder}>
                     <Text style={styles.avatarText}>{displayName.charAt(0).toUpperCase()}</Text>
-                  </LinearGradient>
+                  </View>
                 )}
               </View>
               {uploadingPhoto && (
@@ -223,10 +208,8 @@ export default function ProfileScreen() {
 
           {isPremium && (
             <View style={styles.premiumBadge}>
-              <LinearGradient colors={['#F59E0B', '#D97706']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.premiumGradient}>
-                <Ionicons name="star" size={12} color="#FFF" />
-                <Text style={styles.premiumText}>PREMIUM</Text>
-              </LinearGradient>
+              <Ionicons name="star" size={12} color="#FFF" />
+              <Text style={styles.premiumText}>PREMIUM</Text>
             </View>
           )}
         </Animated.View>
@@ -234,7 +217,7 @@ export default function ProfileScreen() {
         {/* User Info */}
         <Animated.View style={[styles.userInfo, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
           <Text style={[styles.displayName, isDark && styles.textLight]}>{displayName}</Text>
-          {pseudo ? <Text style={styles.pseudo}>@{pseudo}</Text> : null}
+          {pseudo ? <Text style={[styles.pseudo, isDark && styles.textSecondary]}>@{pseudo}</Text> : null}
         </Animated.View>
 
         {/* Social stats card */}
@@ -244,7 +227,7 @@ export default function ProfileScreen() {
               <Text style={[styles.socialStatValue, isDark && styles.textLight]}>{totalSessions}</Text>
               <Text style={[styles.socialStatLabel, isDark && styles.textMuted]}>Entraînements</Text>
             </View>
-            <View style={[styles.socialStatDivider, isDark && { backgroundColor: '#2A2E36' }]} />
+            <View style={[styles.socialStatDivider, isDark && styles.dividerDark]} />
             <TouchableOpacity
               style={styles.socialStat}
               onPress={() => navigation.navigate('FluxTab')}
@@ -255,7 +238,7 @@ export default function ProfileScreen() {
               </Text>
               <Text style={[styles.socialStatLabel, isDark && styles.textMuted]}>Abonnés</Text>
             </TouchableOpacity>
-            <View style={[styles.socialStatDivider, isDark && { backgroundColor: '#2A2E36' }]} />
+            <View style={[styles.socialStatDivider, isDark && styles.dividerDark]} />
             <TouchableOpacity
               style={styles.socialStat}
               onPress={() => navigation.navigate('FluxTab')}
@@ -267,9 +250,9 @@ export default function ProfileScreen() {
               <Text style={[styles.socialStatLabel, isDark && styles.textMuted]}>Abonnements</Text>
             </TouchableOpacity>
           </View>
-          <View style={[styles.socialActions, isDark && { borderTopColor: '#2A2E36' }]}>
+          <View style={[styles.socialActions, isDark && styles.socialActionsDark]}>
             <TouchableOpacity
-              style={[styles.socialActionBtn, styles.socialActionBtnPrimary]}
+              style={styles.socialActionBtnPrimary}
               onPress={() => navigation.navigate('FluxTab')}
               activeOpacity={0.8}
             >
@@ -280,14 +263,14 @@ export default function ProfileScreen() {
               onPress={() => navigation.navigate('EditProfile')}
               activeOpacity={0.8}
             >
-              <Ionicons name="pencil" size={18} color={isDark ? '#CCC' : '#555'} />
+              <Ionicons name="pencil" size={18} color={isDark ? '#c1c1cb' : '#78716c'} />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.socialActionBtnIcon, { backgroundColor: `${theme.colors.primary}18` }]}
+              style={[styles.socialActionBtnIcon, isDark && styles.socialActionBtnIconDark]}
               onPress={() => {}}
               activeOpacity={0.8}
             >
-              <Ionicons name="share-outline" size={18} color={theme.colors.primary} />
+              <Ionicons name="share-outline" size={18} color={isDark ? '#c1c1cb' : '#78716c'} />
             </TouchableOpacity>
           </View>
         </View>
@@ -312,33 +295,33 @@ export default function ProfileScreen() {
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={[styles.statCard, isDark && styles.cardDark]}>
-            <LinearGradient colors={['rgba(247,177,134,0.15)', 'rgba(247,177,134,0.05)']} style={styles.statGradient}>
-              <View style={[styles.statIconBox, { backgroundColor: 'rgba(247,177,134,0.2)' }]}>
-                <Ionicons name="barbell" size={22} color={theme.colors.primary} />
+            <View style={styles.statContent}>
+              <View style={[styles.statIconBox, { backgroundColor: 'rgba(114,186,161,0.1)' }]}>
+                <Ionicons name="barbell" size={22} color="#72baa1" />
               </View>
               <Text style={[styles.statValue, isDark && styles.textLight]}>{totalSessions}</Text>
               <Text style={[styles.statLabel, isDark && styles.textMuted]}>Seances</Text>
-            </LinearGradient>
+            </View>
           </View>
           <View style={[styles.statCard, isDark && styles.cardDark]}>
-            <LinearGradient colors={['rgba(239,68,68,0.15)', 'rgba(239,68,68,0.05)']} style={styles.statGradient}>
-              <View style={[styles.statIconBox, { backgroundColor: 'rgba(239,68,68,0.2)' }]}>
-                <Ionicons name="flame" size={22} color="#EF4444" />
+            <View style={styles.statContent}>
+              <View style={[styles.statIconBox, { backgroundColor: 'rgba(239,68,68,0.1)' }]}>
+                <Ionicons name="flame" size={22} color="#ef4444" />
               </View>
               <Text style={[styles.statValue, isDark && styles.textLight]}>{streak}</Text>
               <Text style={[styles.statLabel, isDark && styles.textMuted]}>Jours</Text>
-            </LinearGradient>
+            </View>
           </View>
           <View style={[styles.statCard, isDark && styles.cardDark]}>
-            <LinearGradient colors={['rgba(16,185,129,0.15)', 'rgba(16,185,129,0.05)']} style={styles.statGradient}>
-              <View style={[styles.statIconBox, { backgroundColor: 'rgba(16,185,129,0.2)' }]}>
-                <Ionicons name="flash" size={22} color="#10B981" />
+            <View style={styles.statContent}>
+              <View style={[styles.statIconBox, { backgroundColor: 'rgba(16,185,129,0.1)' }]}>
+                <Ionicons name="flash" size={22} color="#10b981" />
               </View>
               <Text style={[styles.statValue, isDark && styles.textLight]}>
                 {totalCalories > 1000 ? `${(totalCalories / 1000).toFixed(1)}k` : totalCalories}
               </Text>
               <Text style={[styles.statLabel, isDark && styles.textMuted]}>Calories</Text>
-            </LinearGradient>
+            </View>
           </View>
         </View>
 
@@ -358,10 +341,10 @@ export default function ProfileScreen() {
               }}
               activeOpacity={0.8}
             >
-              <LinearGradient colors={action.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.quickActionIcon}>
-                <Ionicons name={action.icon} size={24} color="#FFF" />
-              </LinearGradient>
-              <Text style={[styles.quickActionLabel, isDark && styles.textLight]}>{action.label}</Text>
+              <View style={[styles.quickActionIcon, { backgroundColor: `${action.color}1A` }]}>
+                <Ionicons name={action.icon} size={24} color={action.color} />
+              </View>
+              <Text style={[styles.quickActionLabel, isDark && styles.textSecondary]}>{action.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -373,13 +356,10 @@ export default function ProfileScreen() {
             onPress={() => navigation.navigate('ProfileSetup')}
             activeOpacity={0.8}
           >
-            <LinearGradient
-              colors={profile.isVisible ? ['#10B98115', '#10B98105'] : ['#F5970015', '#F5970005']}
-              style={styles.matchingGradient}
-            >
+            <View style={styles.matchingContent}>
               <View style={styles.matchingLeft}>
-                <View style={[styles.matchingIconBox, { backgroundColor: profile.isVisible ? '#10B98120' : '#F5970020' }]}>
-                  <Ionicons name="people" size={24} color={profile.isVisible ? '#10B981' : '#F59700'} />
+                <View style={[styles.matchingIconBox, { backgroundColor: profile.isVisible ? 'rgba(114,186,161,0.1)' : 'rgba(240,164,122,0.1)' }]}>
+                  <Ionicons name="people" size={24} color={profile.isVisible ? '#72baa1' : '#f0a47a'} />
                 </View>
                 <View style={styles.matchingInfo}>
                   <Text style={[styles.matchingTitle, isDark && styles.textLight]}>Matching Sportif</Text>
@@ -389,12 +369,12 @@ export default function ProfileScreen() {
                 </View>
               </View>
               <View style={styles.matchingRight}>
-                <View style={[styles.matchingStatus, { backgroundColor: profile.isVisible ? '#10B981' : '#F59700' }]}>
-                  <Text style={styles.matchingStatusText}>{profile.isVisible ? 'ON' : 'OFF'}</Text>
+                <View style={[styles.matchingStatus, { backgroundColor: profile.isVisible ? 'rgba(114,186,161,0.12)' : 'rgba(240,164,122,0.12)' }]}>
+                  <Text style={[styles.matchingStatusText, { color: profile.isVisible ? '#72baa1' : '#f0a47a' }]}>{profile.isVisible ? 'ON' : 'OFF'}</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={isDark ? '#555' : '#CCC'} />
+                <Ionicons name="chevron-forward" size={20} color={isDark ? '#444' : '#d6d3d1'} />
               </View>
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         )}
 
@@ -414,7 +394,7 @@ export default function ProfileScreen() {
                   onPress={() => navigation.navigate(item.screen)}
                   activeOpacity={0.7}
                 >
-                  <View style={[styles.menuIcon, { backgroundColor: `${item.color}20` }]}>
+                  <View style={[styles.menuIcon, { backgroundColor: `${item.color}1A` }]}>
                     <Ionicons name={item.icon} size={20} color={item.color} />
                   </View>
                   <Text style={[styles.menuLabel, isDark && styles.textLight]}>{item.label}</Text>
@@ -423,7 +403,7 @@ export default function ProfileScreen() {
                       <Text style={styles.menuBadgeText}>{item.badge}</Text>
                     </View>
                   )}
-                  <Ionicons name="chevron-forward" size={20} color={isDark ? '#555' : '#CCC'} />
+                  <Ionicons name="chevron-forward" size={20} color={isDark ? '#444' : '#d6d3d1'} />
                 </TouchableOpacity>
               ))}
             </View>
@@ -432,7 +412,7 @@ export default function ProfileScreen() {
 
         {/* Logout */}
         <TouchableOpacity style={[styles.logoutBtn, isDark && styles.logoutBtnDark]} onPress={handleLogout} activeOpacity={0.8}>
-          <Ionicons name="log-out-outline" size={22} color="#EF4444" />
+          <Ionicons name="log-out-outline" size={22} color="#ef4444" />
           <Text style={styles.logoutText}>Se deconnecter</Text>
         </TouchableOpacity>
       </Animated.ScrollView>
@@ -441,41 +421,86 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
-  containerDark: { backgroundColor: '#12151A' },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8F9FA' },
-  headerGradient: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 0, borderBottomLeftRadius: 32, borderBottomRightRadius: 32, overflow: 'hidden' },
+  container: { flex: 1, backgroundColor: '#fcfbf9' },
+  containerDark: { backgroundColor: '#0e0e11' },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fcfbf9' },
+
+  // Header
+  headerFlat: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 0,
+    backgroundColor: '#fcfbf9',
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    overflow: 'hidden',
+  },
+  headerFlatDark: {
+    backgroundColor: '#0e0e11',
+  },
   headerActions: { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 8, zIndex: 10 },
   headerSpacer: { width: 40 },
-  headerBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-  headerBtnDark: { backgroundColor: '#2A2A2A' },
+  headerBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+
   scrollContent: { paddingTop: 100, paddingHorizontal: 20, paddingBottom: 180 },
+
+  // Avatar
   avatarSection: { alignItems: 'center', marginBottom: 16 },
-  avatarRing: { width: RING_SIZE, height: RING_SIZE, borderRadius: RING_SIZE / 2, padding: 4, alignItems: 'center', justifyContent: 'center' },
-  avatarRingGradient: { ...StyleSheet.absoluteFillObject, borderRadius: RING_SIZE / 2 },
-  avatarInner: { width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2, backgroundColor: '#FFF', padding: 3, overflow: 'hidden' },
-  avatarInnerDark: { backgroundColor: '#1A1D24' },
+  avatarRing: {
+    width: RING_SIZE,
+    height: RING_SIZE,
+    borderRadius: RING_SIZE / 2,
+    borderWidth: 3,
+    borderColor: '#efedea',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarRingDark: {
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  avatarInner: { width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2, backgroundColor: '#fff', overflow: 'hidden' },
+  avatarInnerDark: { backgroundColor: '#18181d' },
   avatar: { width: '100%', height: '100%', borderRadius: AVATAR_SIZE / 2 },
-  avatarPlaceholder: { width: '100%', height: '100%', borderRadius: AVATAR_SIZE / 2, alignItems: 'center', justifyContent: 'center' },
+  avatarPlaceholder: { width: '100%', height: '100%', borderRadius: AVATAR_SIZE / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: '#72baa1' },
   avatarText: { fontSize: 44, fontWeight: '700', color: '#FFF' },
   avatarLoading: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: RING_SIZE / 2, alignItems: 'center', justifyContent: 'center' },
-  cameraBtn: { position: 'absolute', bottom: 4, right: 4, width: 34, height: 34, borderRadius: 17, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#FFF' },
-  premiumBadge: { marginTop: 12, borderRadius: 20, overflow: 'hidden' },
-  premiumGradient: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6, paddingHorizontal: 14 },
+  cameraBtn: { position: 'absolute', bottom: 4, right: 4, width: 34, height: 34, borderRadius: 17, backgroundColor: '#72baa1', alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#FFF' },
+
+  // Premium badge
+  premiumBadge: {
+    marginTop: 12,
+    backgroundColor: '#72baa1',
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+  },
   premiumText: { fontSize: 11, fontWeight: '700', color: '#FFF', letterSpacing: 1 },
+
+  // User info
   userInfo: { alignItems: 'center', marginBottom: 24 },
-  displayName: { fontSize: 26, fontWeight: '700', color: '#1A1A1A' },
-  textLight: { color: '#FFFFFF' },
-  pseudo: { fontSize: 15, marginTop: 4, fontWeight: '500', color: 'black' },
+  displayName: { fontSize: 22, fontWeight: '800', color: '#1c1917', letterSpacing: -0.5 },
+  pseudo: { fontSize: 14, marginTop: 4, fontWeight: '500', color: '#78716c' },
+
+  // Text helpers
+  textLight: { color: '#f3f3f6' },
+  textSecondary: { color: '#c1c1cb' },
+  textMuted: { color: '#7a7a88' },
+
+  // Card base (dark)
+  cardDark: { backgroundColor: '#18181d', borderColor: 'rgba(255,255,255,0.06)' },
+
+  // Social card
   socialCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
     overflow: 'hidden',
   },
   socialStats: {
@@ -484,77 +509,142 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   socialStat: { flex: 1, alignItems: 'center' },
-  socialStatValue: { fontSize: 22, fontWeight: '800', color: '#1A1A1A' },
-  socialStatLabel: { fontSize: 12, color: '#888', marginTop: 2 },
-  socialStatDivider: { width: 1, backgroundColor: '#F0F0F0', marginVertical: 4 },
+  socialStatValue: { fontSize: 18, fontWeight: '800', color: '#1c1917' },
+  socialStatLabel: { fontSize: 11, color: '#a8a29e', marginTop: 2 },
+  socialStatDivider: { width: 1, backgroundColor: '#efedea', marginVertical: 4 },
+  dividerDark: { backgroundColor: 'rgba(255,255,255,0.06)' },
   socialActions: {
     flexDirection: 'row',
     gap: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    borderTopColor: '#efedea',
   },
-  socialActionBtn: {
+  socialActionsDark: { borderTopColor: 'rgba(255,255,255,0.06)' },
+  socialActionBtnPrimary: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 11,
-    borderRadius: 22,
+    borderRadius: 12,
+    backgroundColor: '#72baa1',
   },
-  socialActionBtnPrimary: { backgroundColor: `${theme.colors.primary}18` },
-  socialActionBtnPrimaryText: { fontSize: 14, fontWeight: '700', color: theme.colors.primary },
+  socialActionBtnPrimaryText: { fontSize: 14, fontWeight: '700', color: '#FFF' },
   socialActionBtnIcon: {
     width: 44,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: '#F0F0F0',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  socialActionBtnIconDark: { backgroundColor: '#2A2E36' },
-  levelCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFF', borderRadius: 20, padding: 16, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 },
-  cardDark: { backgroundColor: '#1A1D24' },
+  socialActionBtnIconDark: { backgroundColor: '#18181d', borderColor: 'rgba(255,255,255,0.06)' },
+
+  // Level card
+  levelCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 16,
+    marginBottom: 20,
+  },
   levelLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  levelBadge: { width: 50, height: 50, borderRadius: 25, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' },
+  levelBadge: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#72baa1', alignItems: 'center', justifyContent: 'center' },
   levelNumber: { fontSize: 22, fontWeight: '800', color: '#FFF' },
   levelInfo: { gap: 2 },
-  levelTitle: { fontSize: 16, fontWeight: '600', color: '#1A1A1A' },
-  xpText: { fontSize: 13, color: '#666' },
-  textMuted: { color: '#8A8E96' },
+  levelTitle: { fontSize: 16, fontWeight: '600', color: '#1c1917' },
+  xpText: { fontSize: 13, color: '#72baa1' },
   levelRight: { alignItems: 'center', justifyContent: 'center' },
-  progressText: { position: 'absolute', fontSize: 12, fontWeight: '700', color: theme.colors.primary },
+  progressText: { position: 'absolute', fontSize: 12, fontWeight: '700', color: '#72baa1' },
+
+  // Stats grid
   statsGrid: { flexDirection: 'row', gap: 12, marginBottom: 24 },
-  statCard: { flex: 1, borderRadius: 16, overflow: 'hidden', backgroundColor: '#FFF', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 },
-  statGradient: { alignItems: 'center', padding: 16 },
+  statCard: {
+    flex: 1,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#efedea',
+  },
+  statContent: { alignItems: 'center', padding: 16 },
   statIconBox: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  statValue: { fontSize: 22, fontWeight: '700', color: '#1A1A1A' },
-  statLabel: { fontSize: 12, color: '#666', marginTop: 2 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#1A1A1A', marginBottom: 14 },
+  statValue: { fontSize: 20, fontWeight: '800', color: '#1c1917' },
+  statLabel: { fontSize: 11, color: '#a8a29e', marginTop: 2 },
+
+  // Section title
+  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#1c1917', marginBottom: 14 },
+
+  // Quick actions
   quickActionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
-  quickActionCard: { width: (SCREEN_WIDTH - 52) / 4, backgroundColor: '#FFF', borderRadius: 16, padding: 14, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 },
+  quickActionCard: {
+    width: (SCREEN_WIDTH - 52) / 4,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 14,
+    alignItems: 'center',
+  },
   quickActionIcon: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  quickActionLabel: { fontSize: 11, fontWeight: '600', color: '#1A1A1A', textAlign: 'center' },
-  matchingCard: { borderRadius: 16, marginBottom: 24, overflow: 'hidden', backgroundColor: '#FFF', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 },
-  matchingGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
+  quickActionLabel: { fontSize: 11, fontWeight: '600', color: '#78716c', textAlign: 'center' },
+
+  // Matching card
+  matchingCard: {
+    borderRadius: 20,
+    marginBottom: 24,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#efedea',
+  },
+  matchingContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
   matchingLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 },
   matchingIconBox: { width: 48, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   matchingInfo: { flex: 1 },
-  matchingTitle: { fontSize: 15, fontWeight: '600', color: '#1A1A1A', marginBottom: 2 },
-  matchingDesc: { fontSize: 12, color: '#666' },
+  matchingTitle: { fontSize: 15, fontWeight: '600', color: '#1c1917', marginBottom: 2 },
+  matchingDesc: { fontSize: 12, color: '#a8a29e' },
   matchingRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   matchingStatus: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
-  matchingStatusText: { fontSize: 11, fontWeight: '700', color: '#FFF' },
+  matchingStatusText: { fontSize: 11, fontWeight: '700' },
+
+  // Menu
   menuSection: { marginBottom: 20 },
-  menuCard: { backgroundColor: '#FFF', borderRadius: 16, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3 },
+  menuCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    overflow: 'hidden',
+  },
   menuItem: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
-  menuItemBorder: { borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  menuItemBorderDark: { borderBottomColor: '#2A2E36' },
+  menuItemBorder: { borderBottomWidth: 1, borderBottomColor: '#efedea' },
+  menuItemBorderDark: { borderBottomColor: 'rgba(255,255,255,0.06)' },
   menuIcon: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  menuLabel: { flex: 1, fontSize: 15, fontWeight: '500', color: '#1A1A1A' },
-  menuBadge: { backgroundColor: theme.colors.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  menuBadgeText: { fontSize: 10, fontWeight: '700', color: '#FFF' },
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: '#FEF2F2', borderRadius: 14, padding: 16, marginBottom: 20 },
-  logoutBtnDark: { backgroundColor: 'rgba(239,68,68,0.15)' },
-  logoutText: { fontSize: 15, fontWeight: '600', color: '#EF4444' },
+  menuLabel: { flex: 1, fontSize: 15, fontWeight: '500', color: '#1c1917' },
+  menuBadge: { backgroundColor: 'rgba(212,169,106,0.12)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  menuBadgeText: { fontSize: 10, fontWeight: '700', color: '#d4a96a' },
+
+  // Logout
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: 'rgba(239,68,68,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.15)',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+  },
+  logoutBtnDark: { backgroundColor: 'rgba(239,68,68,0.06)', borderColor: 'rgba(239,68,68,0.15)' },
+  logoutText: { fontSize: 15, fontWeight: '600', color: '#ef4444' },
 });

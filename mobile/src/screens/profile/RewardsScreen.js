@@ -17,7 +17,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
 
-import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
@@ -213,7 +212,7 @@ export default function RewardsScreen() {
     return (
       <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <ActivityIndicator size="large" color="#72baa1" />
         </View>
       </SafeAreaView>
     );
@@ -224,7 +223,7 @@ export default function RewardsScreen() {
       {/* Header */}
       <View style={[styles.header, isDark && styles.headerDark]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={isDark ? '#FFF' : '#000'} />
+          <Ionicons name="arrow-back" size={24} color={isDark ? '#f3f3f6' : '#1c1917'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDark && styles.textDark]}>Recompenses</Text>
         <View style={styles.spacer} />
@@ -237,7 +236,7 @@ export default function RewardsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={theme.colors.primary}
+            tintColor="#72baa1"
           />
         }
       >
@@ -250,61 +249,61 @@ export default function RewardsScreen() {
             </Text>
           </View>
           <View style={styles.xpIcon}>
-            <Ionicons name="star" size={32} color="#F59E0B" />
+            <Ionicons name="star" size={32} color="#f0a47a" />
           </View>
         </View>
 
         {/* Tabs */}
-        <View style={styles.tabs}>
+        <View style={[styles.tabs, isDark && styles.tabsDark]}>
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'premium' && styles.tabActive]}
+            style={[styles.tab, activeTab === 'premium' && styles.tabActive, activeTab === 'premium' && isDark && styles.tabActiveDark]}
             onPress={() => setActiveTab('premium')}
           >
             <Ionicons
               name="diamond"
               size={18}
-              color={activeTab === 'premium' ? theme.colors.primary : (isDark ? '#888' : '#666')}
+              color={activeTab === 'premium' ? '#fff' : (isDark ? '#7a7a88' : '#78716c')}
             />
             <Text style={[
               styles.tabText,
               activeTab === 'premium' && styles.tabTextActive,
-              isDark && styles.textMutedDark,
+              isDark && activeTab !== 'premium' && styles.textMutedDark,
             ]}>
               Premium
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'partners' && styles.tabActive]}
+            style={[styles.tab, activeTab === 'partners' && styles.tabActive, activeTab === 'partners' && isDark && styles.tabActiveDark]}
             onPress={() => setActiveTab('partners')}
           >
             <Ionicons
               name="gift"
               size={18}
-              color={activeTab === 'partners' ? theme.colors.primary : (isDark ? '#888' : '#666')}
+              color={activeTab === 'partners' ? '#fff' : (isDark ? '#7a7a88' : '#78716c')}
             />
             <Text style={[
               styles.tabText,
               activeTab === 'partners' && styles.tabTextActive,
-              isDark && styles.textMutedDark,
+              isDark && activeTab !== 'partners' && styles.textMutedDark,
             ]}>
               Partenaires
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'codes' && styles.tabActive]}
+            style={[styles.tab, activeTab === 'codes' && styles.tabActive, activeTab === 'codes' && isDark && styles.tabActiveDark]}
             onPress={() => setActiveTab('codes')}
           >
             <Ionicons
               name="checkmark-circle"
               size={18}
-              color={activeTab === 'codes' ? theme.colors.primary : (isDark ? '#888' : '#666')}
+              color={activeTab === 'codes' ? '#fff' : (isDark ? '#7a7a88' : '#78716c')}
             />
             <Text style={[
               styles.tabText,
               activeTab === 'codes' && styles.tabTextActive,
-              isDark && styles.textMutedDark,
+              isDark && activeTab !== 'codes' && styles.textMutedDark,
             ]}>
               Mes codes
             </Text>
@@ -333,7 +332,7 @@ export default function RewardsScreen() {
             </View>
 
             {/* Progress bar */}
-            <View style={styles.progressContainer}>
+            <View style={[styles.progressContainer, isDark && styles.progressContainerDark]}>
               <View
                 style={[
                   styles.progressBar,
@@ -361,9 +360,9 @@ export default function RewardsScreen() {
                 )}
               </TouchableOpacity>
             ) : (
-              <View style={styles.lockedButton}>
-                <Ionicons name="lock-closed" size={18} color="#6B7280" />
-                <Text style={styles.lockedButtonText}>
+              <View style={[styles.lockedButton, isDark && styles.lockedButtonDark]}>
+                <Ionicons name="lock-closed" size={18} color={isDark ? '#7a7a88' : '#a8a29e'} />
+                <Text style={[styles.lockedButtonText, isDark && styles.textMutedDark]}>
                   Il te manque {(XP_COST_PER_MONTH - userXp).toLocaleString()} XP
                 </Text>
               </View>
@@ -376,7 +375,7 @@ export default function RewardsScreen() {
           <View style={styles.partnersSection}>
             {partners.length === 0 ? (
               <View style={[styles.emptyState, isDark && styles.cardDark]}>
-                <Ionicons name="gift-outline" size={48} color={isDark ? '#555' : '#CCC'} />
+                <Ionicons name="gift-outline" size={48} color={isDark ? '#7a7a88' : '#a8a29e'} />
                 <Text style={[styles.emptyText, isDark && styles.textMutedDark]}>
                   Aucune offre partenaire disponible
                 </Text>
@@ -403,7 +402,7 @@ export default function RewardsScreen() {
                       {partner.logo ? (
                         <Image source={{ uri: partner.logo }} style={styles.partnerLogo} />
                       ) : (
-                        <View style={[styles.partnerLogoPlaceholder, isDark && { backgroundColor: '#333' }]}>
+                        <View style={[styles.partnerLogoPlaceholder, isDark && { backgroundColor: 'rgba(255,255,255,0.06)' }]}>
                           <Text style={styles.partnerLogoText}>{partner.name[0]}</Text>
                         </View>
                       )}
@@ -422,7 +421,7 @@ export default function RewardsScreen() {
                       )}
                     </View>
 
-                    <View style={styles.partnerOffer}>
+                    <View style={[styles.partnerOffer, isDark && styles.partnerOfferDark]}>
                       <Text style={styles.partnerOfferValue}>{getOfferDisplay(partner)}</Text>
                       <Text style={[styles.partnerOfferTitle, isDark && styles.textMutedDark]}>
                         {partner.offerTitle}
@@ -439,13 +438,13 @@ export default function RewardsScreen() {
                           <Ionicons
                             name={copiedCode === reward.id ? 'checkmark' : 'copy-outline'}
                             size={18}
-                            color={theme.colors.primary}
+                            color="#72baa1"
                           />
                         </TouchableOpacity>
                       </View>
                     ) : (
                       <View style={styles.partnerFooter}>
-                        <Text style={[styles.partnerCost, isDark && styles.textMutedDark]}>
+                        <Text style={[styles.partnerCost, isDark && styles.textSecondaryDark]}>
                           {partner.xpCost.toLocaleString()} XP
                         </Text>
                         {canAfford ? (
@@ -457,7 +456,7 @@ export default function RewardsScreen() {
                             <Text style={styles.partnerButtonText}>Debloquer</Text>
                           </TouchableOpacity>
                         ) : (
-                          <Ionicons name="lock-closed" size={20} color="#9CA3AF" />
+                          <Ionicons name="lock-closed" size={20} color="#a8a29e" />
                         )}
                       </View>
                     )}
@@ -473,7 +472,7 @@ export default function RewardsScreen() {
           <View style={styles.codesSection}>
             {myRewards.length === 0 ? (
               <View style={[styles.emptyState, isDark && styles.cardDark]}>
-                <Ionicons name="ticket-outline" size={48} color={isDark ? '#555' : '#CCC'} />
+                <Ionicons name="ticket-outline" size={48} color={isDark ? '#7a7a88' : '#a8a29e'} />
                 <Text style={[styles.emptyText, isDark && styles.textMutedDark]}>
                   Aucun code debloque
                 </Text>
@@ -491,7 +490,7 @@ export default function RewardsScreen() {
                     {reward.partner?.logo ? (
                       <Image source={{ uri: reward.partner.logo }} style={styles.codeLogo} />
                     ) : (
-                      <View style={[styles.codeLogoPlaceholder, isDark && { backgroundColor: '#333' }]}>
+                      <View style={[styles.codeLogoPlaceholder, isDark && { backgroundColor: 'rgba(255,255,255,0.06)' }]}>
                         <Text style={styles.codeLogoText}>{reward.partner?.name?.[0]}</Text>
                       </View>
                     )}
@@ -505,8 +504,8 @@ export default function RewardsScreen() {
                     </View>
                   </View>
 
-                  <View style={styles.codeBox}>
-                    <Text style={styles.codeText}>{reward.promoCode}</Text>
+                  <View style={[styles.codeBox, isDark && styles.codeBoxDark]}>
+                    <Text style={[styles.codeText, isDark && styles.textDark]}>{reward.promoCode}</Text>
                     <TouchableOpacity
                       style={styles.codeCopyBtn}
                       onPress={() => copyToClipboard(reward.promoCode, reward.id)}
@@ -514,7 +513,7 @@ export default function RewardsScreen() {
                       <Ionicons
                         name={copiedCode === reward.id ? 'checkmark' : 'copy-outline'}
                         size={20}
-                        color={copiedCode === reward.id ? '#22C55E' : theme.colors.primary}
+                        color={copiedCode === reward.id ? '#72baa1' : '#72baa1'}
                       />
                     </TouchableOpacity>
                   </View>
@@ -525,7 +524,7 @@ export default function RewardsScreen() {
                         style={styles.codeActionBtn}
                         onPress={() => openInMaps(reward.partner.address)}
                       >
-                        <Ionicons name="location-outline" size={16} color={theme.colors.primary} />
+                        <Ionicons name="location-outline" size={16} color="#72baa1" />
                         <Text style={styles.codeActionText}>Voir l'adresse</Text>
                       </TouchableOpacity>
                     )}
@@ -534,7 +533,7 @@ export default function RewardsScreen() {
                         style={styles.codeActionBtn}
                         onPress={() => Linking.openURL(reward.partner.website)}
                       >
-                        <Ionicons name="globe-outline" size={16} color={theme.colors.primary} />
+                        <Ionicons name="globe-outline" size={16} color="#72baa1" />
                         <Text style={styles.codeActionText}>Site web</Text>
                       </TouchableOpacity>
                     )}
@@ -552,10 +551,10 @@ export default function RewardsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background.light,
+    backgroundColor: '#fcfbf9',
   },
   containerDark: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#0e0e11',
   },
   loadingContainer: {
     flex: 1,
@@ -566,77 +565,82 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: theme.spacing.md,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#efedea',
   },
   headerDark: {
-    borderBottomColor: '#333',
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   backBtn: {
     padding: 4,
   },
   headerTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semiBold,
-    color: theme.colors.text.primary,
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1c1917',
+    letterSpacing: -0.5,
   },
   spacer: {
     width: 32,
   },
   textDark: {
-    color: '#FFFFFF',
+    color: '#f3f3f6',
   },
   textMutedDark: {
-    color: '#888888',
+    color: '#7a7a88',
+  },
+  textSecondaryDark: {
+    color: '#c1c1cb',
   },
   content: {
-    padding: theme.spacing.lg,
+    padding: 20,
     paddingBottom: 180,
   },
   xpCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 16,
+    marginBottom: 16,
   },
   cardDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   xpInfo: {
     flex: 1,
   },
   xpLabel: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
   },
   xpAmount: {
     fontSize: 28,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
+    fontWeight: '800',
+    color: '#72baa1',
   },
   xpIcon: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(240,164,122,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#F3F4F6',
-    borderRadius: theme.borderRadius.lg,
+    backgroundColor: '#f5f5f4',
+    borderRadius: 12,
     padding: 4,
-    marginBottom: theme.spacing.lg,
+    marginBottom: 16,
+  },
+  tabsDark: {
+    backgroundColor: '#18181d',
   },
   tab: {
     flex: 1,
@@ -644,27 +648,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.md,
+    paddingVertical: 10,
+    borderRadius: 12,
   },
   tabActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    backgroundColor: '#72baa1',
+  },
+  tabActiveDark: {
+    backgroundColor: '#72baa1',
   },
   tabText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-    color: '#6B7280',
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#78716c',
   },
   tabTextActive: {
-    color: theme.colors.primary,
+    color: '#fff',
   },
   tabBadge: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#f0a47a',
     borderRadius: 10,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -672,57 +674,58 @@ const styles = StyleSheet.create({
   },
   tabBadgeText: {
     fontSize: 10,
-    fontWeight: theme.fontWeight.bold,
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   premiumCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.xl,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 24,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
   },
   premiumBadge: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#EDE9FE',
+    backgroundColor: 'rgba(114,186,161,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
   },
   premiumTitle: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.sm,
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#1c1917',
+    marginBottom: 8,
+    letterSpacing: -0.5,
   },
   premiumDesc: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
     textAlign: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: 16,
     lineHeight: 20,
   },
   premiumCost: {
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
   },
   premiumXp: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
+    fontSize: 17,
+    fontWeight: '800',
     color: '#72baa1',
   },
   progressContainer: {
     width: '100%',
     height: 8,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#efedea',
     borderRadius: 4,
-    marginBottom: theme.spacing.sm,
+    marginBottom: 8,
     overflow: 'hidden',
+  },
+  progressContainerDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   progressBar: {
     height: '100%',
@@ -730,158 +733,163 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   progressText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
-    marginBottom: theme.spacing.lg,
+    fontSize: 13,
+    color: '#78716c',
+    marginBottom: 16,
   },
   redeemButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing.sm,
+    gap: 8,
     width: '100%',
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.lg,
-    paddingVertical: theme.spacing.md,
+    backgroundColor: '#72baa1',
+    borderRadius: 14,
+    paddingVertical: 14,
   },
   redeemButtonText: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semiBold,
+    fontSize: 15,
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   lockedButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing.sm,
+    gap: 8,
     width: '100%',
-    backgroundColor: '#F3F4F6',
-    borderRadius: theme.borderRadius.lg,
-    paddingVertical: theme.spacing.md,
+    backgroundColor: '#f5f5f4',
+    borderRadius: 14,
+    paddingVertical: 14,
+  },
+  lockedButtonDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   lockedButtonText: {
-    fontSize: theme.fontSize.sm,
-    color: '#6B7280',
+    fontSize: 13,
+    color: '#a8a29e',
   },
   partnersSection: {
-    gap: theme.spacing.md,
+    gap: 12,
   },
   emptyState: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.xl * 2,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 48,
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.secondary,
-    marginTop: theme.spacing.md,
+    fontSize: 15,
+    color: '#78716c',
+    marginTop: 12,
   },
   emptySubtext: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
-    marginTop: theme.spacing.xs,
+    fontSize: 13,
+    color: '#a8a29e',
+    marginTop: 4,
   },
   emptyButton: {
-    marginTop: theme.spacing.lg,
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.md,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
+    marginTop: 16,
+    backgroundColor: '#72baa1',
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
   emptyButtonText: {
     color: '#FFFFFF',
-    fontWeight: theme.fontWeight.medium,
+    fontWeight: '700',
   },
   partnerCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 16,
   },
   partnerCardRedeemed: {
-    borderWidth: 2,
-    borderColor: '#22C55E',
+    borderWidth: 1,
+    borderColor: '#72baa1',
   },
   partnerHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
   },
   partnerLogo: {
     width: 48,
     height: 48,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: 12,
   },
   partnerLogoPlaceholder: {
     width: 48,
     height: 48,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    backgroundColor: '#f5f5f4',
     alignItems: 'center',
     justifyContent: 'center',
   },
   partnerLogoText: {
     fontSize: 20,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.primary,
+    fontWeight: '800',
+    color: '#72baa1',
   },
   partnerInfo: {
     flex: 1,
-    marginLeft: theme.spacing.md,
+    marginLeft: 12,
   },
   partnerName: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semiBold,
-    color: theme.colors.text.primary,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1c1917',
   },
   partnerCategory: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
   },
   unlockedBadge: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#22C55E',
+    backgroundColor: '#72baa1',
     alignItems: 'center',
     justifyContent: 'center',
   },
   partnerOffer: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    backgroundColor: '#f5f5f4',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  partnerOfferDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   partnerOfferValue: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.primary,
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#72baa1',
   },
   partnerOfferTitle: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
     marginTop: 2,
   },
   partnerCodeBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ECFDF5',
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
+    backgroundColor: 'rgba(114,186,161,0.08)',
+    borderRadius: 12,
+    padding: 12,
     borderWidth: 1,
-    borderColor: '#22C55E',
+    borderColor: 'rgba(114,186,161,0.2)',
     borderStyle: 'dashed',
   },
   partnerCode: {
     flex: 1,
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
-    color: '#047857',
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#72baa1',
     letterSpacing: 2,
   },
   copyButton: {
@@ -893,82 +901,82 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   partnerCost: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semiBold,
-    color: theme.colors.text.secondary,
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#72baa1',
   },
   partnerButton: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.md,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
+    backgroundColor: '#72baa1',
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
   partnerButtonText: {
     color: '#FFFFFF',
-    fontWeight: theme.fontWeight.medium,
+    fontWeight: '700',
   },
   codesSection: {
-    gap: theme.spacing.md,
+    gap: 12,
   },
   codeCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#efedea',
+    padding: 16,
   },
   codeHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: 12,
   },
   codeLogo: {
     width: 40,
     height: 40,
-    borderRadius: theme.borderRadius.sm,
+    borderRadius: 10,
   },
   codeLogoPlaceholder: {
     width: 40,
     height: 40,
-    borderRadius: theme.borderRadius.sm,
-    backgroundColor: '#F3F4F6',
+    borderRadius: 10,
+    backgroundColor: '#f5f5f4',
     alignItems: 'center',
     justifyContent: 'center',
   },
   codeLogoText: {
     fontSize: 16,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.primary,
+    fontWeight: '800',
+    color: '#72baa1',
   },
   codeInfo: {
     flex: 1,
-    marginLeft: theme.spacing.md,
+    marginLeft: 12,
   },
   codeName: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semiBold,
-    color: theme.colors.text.primary,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1c1917',
   },
   codeOffer: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 13,
+    color: '#78716c',
   },
   codeBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    backgroundColor: '#f5f5f4',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  codeBoxDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   codeText: {
     flex: 1,
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1c1917',
     letterSpacing: 2,
   },
   codeCopyBtn: {
@@ -976,7 +984,7 @@ const styles = StyleSheet.create({
   },
   codeActions: {
     flexDirection: 'row',
-    gap: theme.spacing.md,
+    gap: 12,
   },
   codeActionBtn: {
     flexDirection: 'row',
@@ -984,8 +992,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   codeActionText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 13,
+    color: '#72baa1',
+    fontWeight: '600',
   },
 });

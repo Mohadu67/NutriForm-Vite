@@ -10,19 +10,18 @@
   position: relative;
   width: 100%;
   max-width: 380px;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: var(--n-surface, #fff);
+  border: 1px solid var(--n-border, #efedea);
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--n-card-shadow, 0 2px 8px rgba(0, 0, 0, 0.04));
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
 }
 
 :global(body.dark) .card {
-  background: rgba(26, 29, 36, 0.6);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  background: var(--n-surface, #151525);
+  border-color: var(--n-border, rgba(255, 255, 255, 0.06));
+  box-shadow: none;
 }
 
 .enter {
@@ -67,29 +66,29 @@
   display: flex;
   align-items: baseline;
   gap: 4px;
-  background: var(--color-primary-100);
+  background: var(--n-teal-dim, rgba(114, 186, 161, 0.10));
   padding: 6px 12px;
   border-radius: 20px;
 }
 
 :global(body.dark) .scoreBadge {
-  background: rgba(247, 177, 134, 0.15);
+  background: rgba(114, 186, 161, 0.12);
 }
 
 .scoreValue {
   font-size: 1.125rem;
   font-weight: 800;
-  color: var(--color-primary-600);
+  color: #5a9e87;
 }
 
 :global(body.dark) .scoreValue {
-  color: var(--color-primary-400);
+  color: #72baa1;
 }
 
 .scoreLabel {
   font-size: 0.7rem;
   font-weight: 500;
-  color: var(--color-primary-500);
+  color: #72baa1;
   text-transform: uppercase;
 }
 
@@ -197,28 +196,28 @@
   align-items: center;
   gap: 3px;
   padding: 5px 10px;
-  background: var(--color-neutral-50);
-  border: 1px solid var(--color-neutral-200);
+  background: transparent;
+  border: 1.5px solid var(--n-border, #efedea);
   border-radius: 16px;
-  font-size: 0.75rem;
-  color: var(--color-neutral-600);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
 :global(body.dark) .workoutChip {
-  background: rgba(15, 17, 23, 0.4);
-  border-color: var(--color-neutral-700);
-  color: var(--color-neutral-400);
+  background: transparent;
+  border-color: var(--n-border, rgba(255, 255, 255, 0.06));
 }
 
 .workoutMore {
   display: inline-flex;
   align-items: center;
   padding: 5px 10px;
-  background: var(--color-primary-50);
+  background: var(--n-teal-dim, rgba(114, 186, 161, 0.10));
   border-radius: 16px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: var(--color-primary-600);
+  color: #72baa1;
 }
 
 /* ===== VIEW HINT ===== */
@@ -287,32 +286,32 @@
 }
 
 .rejectBtn {
-  background: rgba(255, 255, 255, 0.7);
-  border: 2px solid var(--color-neutral-200);
-  color: var(--color-danger);
+  background: var(--n-surface, #fff);
+  border: 2px solid var(--n-border, #efedea);
+  color: #ef4444;
 }
 
 :global(body.dark) .rejectBtn {
-  background: rgba(26, 29, 36, 0.6);
-  border-color: var(--color-neutral-700);
+  background: var(--n-surface, #151525);
+  border-color: var(--n-border, rgba(255, 255, 255, 0.06));
 }
 
 .rejectBtn:hover {
-  background: var(--color-danger-light);
-  border-color: var(--color-danger);
+  background: rgba(239, 68, 68, 0.06);
+  border-color: #ef4444;
   transform: scale(1.1);
 }
 
 .likeBtn {
-  background: var(--color-primary-500);
-  color: var(--color-neutral-0);
-  box-shadow: 0 4px 16px rgba(247, 177, 134, 0.35);
+  background: #72baa1;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(114, 186, 161, 0.35);
 }
 
 .likeBtn:hover {
-  background: var(--color-primary-600);
+  background: #5a9e87;
   transform: scale(1.1);
-  box-shadow: 0 6px 24px rgba(247, 177, 134, 0.45);
+  box-shadow: 0 6px 24px rgba(114, 186, 161, 0.45);
 }
 
 .rejectBtn:disabled,

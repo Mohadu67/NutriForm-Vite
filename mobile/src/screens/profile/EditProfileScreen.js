@@ -17,10 +17,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 
-import { theme } from '../../theme';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/client';
 import { endpoints } from '../../api/endpoints';
@@ -225,7 +223,7 @@ export default function EditProfileScreen() {
   if (loading) {
     return (
       <View style={[styles.loadingContainer, isDark && styles.containerDark]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <ActivityIndicator size="large" color="#72baa1" />
       </View>
     );
   }
@@ -239,16 +237,16 @@ export default function EditProfileScreen() {
         {/* Header */}
         <View style={[styles.header, isDark && styles.headerDark]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtn}>
-            <Ionicons name="close" size={24} color={isDark ? '#FFF' : '#000'} />
+            <Ionicons name="chevron-back" size={24} color={isDark ? '#f3f3f6' : '#1c1917'} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, isDark && styles.textLight]}>Modifier le profil</Text>
+          <Text style={[styles.headerTitle, isDark && styles.headerTitleDark]}>Modifier le profil</Text>
           <TouchableOpacity
             onPress={handleSave}
             disabled={saving}
             style={styles.headerBtn}
           >
             {saving ? (
-              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <ActivityIndicator size="small" color="#72baa1" />
             ) : (
               <Text style={styles.saveBtn}>Enregistrer</Text>
             )}
@@ -271,14 +269,9 @@ export default function EditProfileScreen() {
                 {avatarUrl ? (
                   <Image source={{ uri: avatarUrl }} style={styles.avatar} />
                 ) : (
-                  <LinearGradient
-                    colors={['#F7B186', '#E89A6F']}
-                    style={styles.avatarPlaceholder}
-                  >
-                    <Text style={styles.avatarText}>
-                      {(prenom || 'U').charAt(0).toUpperCase()}
-                    </Text>
-                  </LinearGradient>
+                  <View style={[styles.avatarPlaceholder, isDark && styles.avatarPlaceholderDark]}>
+                    <Ionicons name="person" size={44} color="#72baa1" />
+                  </View>
                 )}
                 {uploadingPhoto && (
                   <View style={styles.avatarLoading}>
@@ -290,41 +283,41 @@ export default function EditProfileScreen() {
                 </View>
               </View>
             </TouchableOpacity>
-            <Text style={[styles.changePhotoText, isDark && styles.textMuted]}>
+            <Text style={[styles.changePhotoText, isDark && styles.changePhotoTextDark]}>
               Changer la photo
             </Text>
           </View>
 
           {/* Form Fields */}
           <View style={[styles.formCard, isDark && styles.cardDark]}>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+            <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
               Informations personnelles
             </Text>
 
             {/* Prenom */}
             <View style={styles.inputGroup}>
-              <Text style={[styles.inputLabel, isDark && styles.textMuted]}>Prenom *</Text>
+              <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Prenom *</Text>
               <TextInput
                 style={[styles.input, isDark && styles.inputDark]}
                 value={prenom}
                 onChangeText={setPrenom}
                 placeholder="Votre prenom"
-                placeholderTextColor={isDark ? '#666' : '#999'}
+                placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                 autoCapitalize="words"
               />
             </View>
 
             {/* Pseudo */}
             <View style={styles.inputGroup}>
-              <Text style={[styles.inputLabel, isDark && styles.textMuted]}>Pseudo *</Text>
-              <View style={styles.inputWithIcon}>
-                <Text style={[styles.inputPrefix, isDark && styles.textMuted]}>@</Text>
+              <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Pseudo *</Text>
+              <View style={[styles.inputWithIcon, isDark && styles.inputWithIconDark]}>
+                <Text style={[styles.inputPrefix, isDark && styles.inputPrefixDark]}>@</Text>
                 <TextInput
                   style={[styles.input, styles.inputWithPrefix, isDark && styles.inputDark]}
                   value={pseudo}
                   onChangeText={(text) => setPseudo(text.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                   placeholder="votre_pseudo"
-                  placeholderTextColor={isDark ? '#666' : '#999'}
+                  placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
@@ -333,44 +326,44 @@ export default function EditProfileScreen() {
 
             {/* Age */}
             <View style={styles.inputGroup}>
-              <Text style={[styles.inputLabel, isDark && styles.textMuted]}>Age</Text>
+              <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Age</Text>
               <TextInput
                 style={[styles.input, isDark && styles.inputDark]}
                 value={age}
                 onChangeText={(text) => setAge(text.replace(/[^0-9]/g, ''))}
                 placeholder="Votre age"
-                placeholderTextColor={isDark ? '#666' : '#999'}
+                placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                 keyboardType="number-pad"
                 maxLength={2}
               />
             </View>
 
             {/* Mensurations */}
-            <Text style={[styles.sectionTitle, isDark && styles.textLight, { marginTop: 8 }]}>
+            <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark, { marginTop: 8 }]}>
               Mensurations
             </Text>
 
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={[styles.inputLabel, isDark && styles.textMuted]}>Poids (kg)</Text>
+                <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Poids (kg)</Text>
                 <TextInput
                   style={[styles.input, isDark && styles.inputDark]}
                   value={weight}
                   onChangeText={(text) => setWeight(text.replace(/[^0-9.]/g, ''))}
                   placeholder="75"
-                  placeholderTextColor={isDark ? '#666' : '#999'}
+                  placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                   keyboardType="decimal-pad"
                   maxLength={5}
                 />
               </View>
               <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={[styles.inputLabel, isDark && styles.textMuted]}>Taille (cm)</Text>
+                <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Taille (cm)</Text>
                 <TextInput
                   style={[styles.input, isDark && styles.inputDark]}
                   value={height}
                   onChangeText={(text) => setHeight(text.replace(/[^0-9]/g, ''))}
                   placeholder="175"
-                  placeholderTextColor={isDark ? '#666' : '#999'}
+                  placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                   keyboardType="number-pad"
                   maxLength={3}
                 />
@@ -378,13 +371,13 @@ export default function EditProfileScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={[styles.inputLabel, isDark && styles.textMuted]}>% masse grasse (optionnel)</Text>
+              <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>% masse grasse (optionnel)</Text>
               <TextInput
                 style={[styles.input, isDark && styles.inputDark]}
                 value={bodyFatPercent}
                 onChangeText={(text) => setBodyFatPercent(text.replace(/[^0-9.]/g, ''))}
                 placeholder="15"
-                placeholderTextColor={isDark ? '#666' : '#999'}
+                placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                 keyboardType="decimal-pad"
                 maxLength={4}
               />
@@ -392,19 +385,19 @@ export default function EditProfileScreen() {
 
             {/* Bio */}
             <View style={styles.inputGroup}>
-              <Text style={[styles.inputLabel, isDark && styles.textMuted]}>Bio</Text>
+              <Text style={[styles.inputLabel, isDark && styles.inputLabelDark]}>Bio</Text>
               <TextInput
                 style={[styles.input, styles.textArea, isDark && styles.inputDark]}
                 value={bio}
                 onChangeText={setBio}
                 placeholder="Parlez-nous de vous..."
-                placeholderTextColor={isDark ? '#666' : '#999'}
+                placeholderTextColor={isDark ? '#7a7a88' : '#a8a29e'}
                 multiline
                 numberOfLines={4}
                 textAlignVertical="top"
                 maxLength={200}
               />
-              <Text style={[styles.charCount, isDark && styles.textMuted]}>
+              <Text style={[styles.charCount, isDark && styles.charCountDark]}>
                 {bio.length}/200
               </Text>
             </View>
@@ -412,28 +405,28 @@ export default function EditProfileScreen() {
 
           {/* Account Section */}
           <View style={[styles.formCard, isDark && styles.cardDark]}>
-            <Text style={[styles.sectionTitle, isDark && styles.textLight]}>
+            <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
               Compte
             </Text>
 
             {/* Email */}
             <TouchableOpacity
-              style={styles.accountRow}
+              style={[styles.accountRow, isDark && styles.accountRowDark]}
               onPress={() => navigation.navigate('ChangeEmail')}
               activeOpacity={0.7}
             >
               <View style={styles.accountLeft}>
-                <View style={[styles.accountIcon, { backgroundColor: '#3B82F620' }]}>
+                <View style={[styles.accountIcon, { backgroundColor: '#3B82F610' }]}>
                   <Ionicons name="mail" size={20} color="#3B82F6" />
                 </View>
                 <View>
-                  <Text style={[styles.accountLabel, isDark && styles.textLight]}>Email</Text>
-                  <Text style={[styles.accountValue, isDark && styles.textMuted]}>
+                  <Text style={[styles.accountLabel, isDark && styles.accountLabelDark]}>Email</Text>
+                  <Text style={[styles.accountValue, isDark && styles.accountValueDark]}>
                     {user?.email || 'Non defini'}
                   </Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={isDark ? '#555' : '#CCC'} />
+              <Ionicons name="chevron-forward" size={20} color={isDark ? '#7a7a88' : '#a8a29e'} />
             </TouchableOpacity>
 
             {/* Password */}
@@ -443,24 +436,24 @@ export default function EditProfileScreen() {
               activeOpacity={0.7}
             >
               <View style={styles.accountLeft}>
-                <View style={[styles.accountIcon, { backgroundColor: '#72baa120' }]}>
+                <View style={[styles.accountIcon, { backgroundColor: '#72baa110' }]}>
                   <Ionicons name="lock-closed" size={20} color="#72baa1" />
                 </View>
                 <View>
-                  <Text style={[styles.accountLabel, isDark && styles.textLight]}>Mot de passe</Text>
-                  <Text style={[styles.accountValue, isDark && styles.textMuted]}>
+                  <Text style={[styles.accountLabel, isDark && styles.accountLabelDark]}>Mot de passe</Text>
+                  <Text style={[styles.accountValue, isDark && styles.accountValueDark]}>
                     ********
                   </Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={isDark ? '#555' : '#CCC'} />
+              <Ionicons name="chevron-forward" size={20} color={isDark ? '#7a7a88' : '#a8a29e'} />
             </TouchableOpacity>
           </View>
 
           {/* Info */}
           <View style={styles.infoBox}>
-            <Ionicons name="information-circle" size={20} color={isDark ? '#666' : '#999'} />
-            <Text style={[styles.infoText, isDark && styles.textMuted]}>
+            <Ionicons name="information-circle" size={20} color={isDark ? '#7a7a88' : '#a8a29e'} />
+            <Text style={[styles.infoText, isDark && styles.infoTextDark]}>
               Les champs marques * sont obligatoires
             </Text>
           </View>
@@ -476,16 +469,16 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#fcfbf9',
   },
   containerDark: {
-    backgroundColor: '#12151A',
+    backgroundColor: '#0e0e11',
   },
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#fcfbf9',
   },
 
   // Header
@@ -496,30 +489,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#efedea',
   },
   headerDark: {
-    borderBottomColor: '#2A2E36',
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   headerBtn: {
     padding: 4,
     minWidth: 80,
   },
   headerTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1c1917',
+    letterSpacing: -0.5,
   },
-  textLight: {
-    color: '#FFFFFF',
-  },
-  textMuted: {
-    color: '#8A8E96',
+  headerTitleDark: {
+    color: '#f3f3f6',
   },
   saveBtn: {
     fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.primary,
+    fontWeight: '700',
+    color: '#72baa1',
     textAlign: 'right',
   },
 
@@ -548,11 +539,13 @@ const styles = StyleSheet.create({
     borderRadius: AVATAR_SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
-  avatarText: {
-    fontSize: 40,
-    fontWeight: '700',
-    color: '#FFF',
+  avatarPlaceholderDark: {
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   avatarLoading: {
     ...StyleSheet.absoluteFillObject,
@@ -568,75 +561,95 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#72baa1',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
-    borderColor: '#FFF',
+    borderColor: '#fcfbf9',
   },
   changePhotoText: {
     marginTop: 8,
     fontSize: 14,
-    color: theme.colors.primary,
-    fontWeight: '500',
+    color: '#72baa1',
+    fontWeight: '600',
+  },
+  changePhotoTextDark: {
+    color: '#72baa1',
   },
 
   // Form
   formCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
+    backgroundColor: '#fff',
+    borderRadius: 20,
     padding: 20,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#efedea',
   },
   cardDark: {
-    backgroundColor: '#1A1D24',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontWeight: '800',
+    color: '#1c1917',
     marginBottom: 16,
+  },
+  sectionTitleDark: {
+    color: '#f3f3f6',
   },
   inputGroup: {
     marginBottom: 16,
   },
   inputLabel: {
     fontSize: 13,
-    fontWeight: '500',
-    color: '#666',
+    fontWeight: '700',
+    color: '#78716c',
     marginBottom: 6,
   },
+  inputLabelDark: {
+    color: '#c1c1cb',
+  },
   input: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 10,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#efedea',
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#1A1A1A',
+    color: '#1c1917',
   },
   inputDark: {
-    backgroundColor: '#22262E',
-    color: '#FFFFFF',
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
+    color: '#f3f3f6',
   },
   inputWithIcon: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 10,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#efedea',
+  },
+  inputWithIconDark: {
+    backgroundColor: '#18181d',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   inputPrefix: {
     paddingLeft: 14,
     fontSize: 15,
-    color: '#666',
+    color: '#78716c',
+  },
+  inputPrefixDark: {
+    color: '#c1c1cb',
   },
   inputWithPrefix: {
     flex: 1,
     backgroundColor: 'transparent',
+    borderWidth: 0,
     paddingLeft: 4,
   },
   textArea: {
@@ -645,9 +658,12 @@ const styles = StyleSheet.create({
   },
   charCount: {
     fontSize: 12,
-    color: '#999',
+    color: '#a8a29e',
     textAlign: 'right',
     marginTop: 4,
+  },
+  charCountDark: {
+    color: '#7a7a88',
   },
 
   // Account rows
@@ -657,7 +673,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: '#efedea',
+  },
+  accountRowDark: {
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   accountRowLast: {
     borderBottomWidth: 0,
@@ -676,13 +695,19 @@ const styles = StyleSheet.create({
   },
   accountLabel: {
     fontSize: 15,
-    fontWeight: '500',
-    color: '#1A1A1A',
+    fontWeight: '600',
+    color: '#1c1917',
+  },
+  accountLabelDark: {
+    color: '#f3f3f6',
   },
   accountValue: {
     fontSize: 13,
-    color: '#666',
+    color: '#78716c',
     marginTop: 2,
+  },
+  accountValueDark: {
+    color: '#c1c1cb',
   },
 
   // Info
@@ -694,6 +719,9 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 13,
-    color: '#999',
+    color: '#a8a29e',
+  },
+  infoTextDark: {
+    color: '#7a7a88',
   },
 });
