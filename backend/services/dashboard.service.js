@@ -250,6 +250,9 @@ async function getDashboardOverview(userId) {
   // ─── Tips (personalized coaching, computed server-side) ───
   const tips = generateTips(bodyCompRecap, sessionsThisWeek);
 
+  // ─── Weekly Score (0-100) for header color ───
+  const weeklyScore = computeWeeklyScore(sessionsThisWeek, streaks.current, consumed, goalCal, bodyCompRecap);
+
   return {
     stats: {
       totalSessions,
@@ -283,9 +286,45 @@ async function getDashboardOverview(userId) {
     body: { weight, bmi, bmiLabel },
     bodyCompRecap,
     tips,
+    weeklyScore,
     cardio,
     recentSessions,
   };
+}
+
+/**
+ * Weekly wellness score (0-100).
+ * Drives the header gradient color on the dashboard.
+ *
+ * 30 pts — Training frequency (sessions this week / 4 capped)
+ * 25 pts — Streak bonus (current streak / 7 capped)
+ * 25 pts — Nutrition adherence (consumed vs goal today)
+ * 20 pts — Body composition (protein status + balance)
+ */
+function computeWeeklyScore(sessionsThisWeek, currentStreak, consumed, goalCal, bodyComp) {
+  // Training (0-30)
+  const trainingScore = Math.min(sessionsThisWeek / 4, 1) * 30;
+
+  // Streak (0-25)
+  const streakScore = Math.min(currentStreak / 7, 1) * 25;
+
+  // Nutrition adherence (0-25) — how close to calorie goal
+  let nutritionScore = 0;
+  if (consumed.calories > 0 && goalCal > 0) {
+    const ratio = consumed.calories / goalCal;
+    nutritionScore = Math.max(0, 25 - Math.abs(1 - ratio) * 50);
+  }
+
+  // Body composition (0-20)
+  let bodyScore = 10; // base
+  if (bodyComp) {
+    if (bodyComp.proteinStatus === 'optimal') bodyScore = 20;
+    else if (bodyComp.proteinStatus === 'adequate') bodyScore = 15;
+    else if (bodyComp.proteinStatus === 'insufficient') bodyScore = 5;
+    if (bodyComp.daysLogged >= 3) bodyScore += 0; // already counted above
+  }
+
+  return Math.round(Math.min(trainingScore + streakScore + nutritionScore + bodyScore, 100));
 }
 
 /**

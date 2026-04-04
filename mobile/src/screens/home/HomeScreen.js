@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   Dimensions,
+  Animated,
 } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -17,10 +18,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Svg, { Circle } from 'react-native-svg';
+import SubtleHeader from '../../components/ui/SubtleHeader';
 
 import { theme } from '../../theme';
 import { useHomeData } from '../../hooks/useHomeData';
 import { getDailySummary, getNutritionGoals } from '../../api/nutrition';
+import client from '../../api/client';
 
 import {
   WeeklyGoalSection,
@@ -220,10 +223,17 @@ export default function HomeScreen() {
 
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [nutritionData, setNutritionData] = useState(null);
+  const [weeklyScore, setWeeklyScore] = useState(50);
+  const scrollY = useRef(new Animated.Value(0)).current;
 
-  // Fetch nutrition data for today — reload each time the screen gains focus
+  // Fetch nutrition + weekly score on focus
   useFocusEffect(
     useCallback(() => {
+      // Weekly score for header color
+      client.get('/dashboard/overview')
+        .then((res) => { if (res.data?.weeklyScore != null) setWeeklyScore(res.data.weeklyScore); })
+        .catch(() => {});
+
       const today = new Date().toISOString().split('T')[0];
       Promise.all([getDailySummary(today), getNutritionGoals()])
         .then(([summaryRes, goalsRes]) => {
@@ -265,9 +275,12 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={[styles.container, isDark && styles.containerDark]} edges={['top']}>
-      <ScrollView
+      <SubtleHeader scrollY={scrollY} score={weeklyScore} />
+      <Animated.ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -477,7 +490,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* Goal Modal */}
       <GoalModal
