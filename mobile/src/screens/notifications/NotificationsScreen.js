@@ -18,15 +18,24 @@ import websocketService from '../../services/websocket';
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 const ICON_MAP = {
-  workout:     { name: 'barbell',       color: theme.colors.primary },
-  session:     { name: 'barbell',       color: theme.colors.primary },
-  achievement: { name: 'trophy',        color: theme.colors.warning },
-  badge:       { name: 'trophy',        color: theme.colors.warning },
-  challenge:   { name: 'flag',          color: theme.colors.error },
-  match:       { name: 'people',        color: theme.colors.secondary },
-  social:      { name: 'people',        color: theme.colors.secondary },
-  reminder:    { name: 'alarm',         color: theme.colors.info },
-  streak:      { name: 'flame',         color: theme.colors.accent },
+  workout:        { name: 'barbell',          color: theme.colors.primary },
+  session:        { name: 'barbell',          color: theme.colors.primary },
+  achievement:    { name: 'trophy',           color: theme.colors.warning },
+  badge:          { name: 'trophy',           color: theme.colors.warning },
+  challenge:      { name: 'flag',             color: theme.colors.error },
+  match:          { name: 'people',           color: theme.colors.secondary },
+  social:         { name: 'people',           color: theme.colors.secondary },
+  reminder:       { name: 'alarm',            color: theme.colors.info },
+  streak:         { name: 'flame',            color: theme.colors.accent },
+  like:           { name: 'heart',            color: '#E89A6F' },
+  comment:        { name: 'chatbubble',       color: theme.colors.info },
+  follow:         { name: 'person-add',       color: theme.colors.secondary },
+  message:        { name: 'mail',             color: theme.colors.primary },
+  activity:       { name: 'pulse',            color: theme.colors.success },
+  system:         { name: 'information-circle', color: '#888' },
+  admin:          { name: 'shield',           color: theme.colors.error },
+  support:        { name: 'help-circle',      color: theme.colors.info },
+  shared_session: { name: 'people-circle',    color: theme.colors.accent },
 };
 
 const getIcon = (type) => ICON_MAP[type] || { name: 'notifications', color: '#888' };

@@ -13,7 +13,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import { getProductByBarcode } from '../api/barcode';
+import client from '../api/client';
 import { theme } from '../theme';
 
 export default function BarcodeScannerModal({ visible, onClose, onProductFound }) {
@@ -78,6 +81,50 @@ export default function BarcodeScannerModal({ visible, onClose, onProductFound }
     }
   };
 
+  // ── Photo recognition via Gemini Vision ──
+  const handleTakePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission requise', "L'accès à la caméra est nécessaire");
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 });
+    if (!result.canceled && result.assets[0]) {
+      await recognizeFromImage(result.assets[0].uri);
+    }
+  };
+
+  const handlePickPhoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission requise', "L'accès à la galerie est nécessaire");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
+    if (!result.canceled && result.assets[0]) {
+      await recognizeFromImage(result.assets[0].uri);
+    }
+  };
+
+  const recognizeFromImage = async (uri) => {
+    setStep('loading');
+    try {
+      const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
+      const dataUrl = `data:image/jpeg;base64,${base64}`;
+      const res = await client.post('/nutrition/recognize', { image: dataUrl });
+      if (res.data.success) {
+        setProduct({ ...res.data.product, imageUrl: uri, source: 'gemini-vision' });
+        setStep('result');
+      } else {
+        setErrorMsg(res.data.error || 'Aliment non reconnu');
+        setStep('error');
+      }
+    } catch {
+      setErrorMsg('Erreur lors de la reconnaissance');
+      setStep('error');
+    }
+  };
+
   const requestAndScan = async () => {
     const { granted } = await requestPermission();
     if (!granted) {
@@ -132,9 +179,15 @@ export default function BarcodeScannerModal({ visible, onClose, onProductFound }
               <Text style={styles.scanHint}>Pointez vers le code-barres</Text>
             </View>
           </CameraView>
-          <TouchableOpacity style={styles.manualLink} onPress={() => setStep('manual')}>
-            <Text style={[styles.linkBtnText, { color: theme.colors.primary }]}>Entrer le code manuellement</Text>
-          </TouchableOpacity>
+          <View style={styles.scanBottomActions}>
+            <TouchableOpacity style={[styles.photoActionBtn, { backgroundColor: theme.colors.secondary }]} onPress={handleTakePhoto}>
+              <Ionicons name="camera" size={18} color="#fff" />
+              <Text style={styles.photoActionText}>Photo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.manualLink} onPress={() => setStep('manual')}>
+              <Text style={[styles.linkBtnText, { color: theme.colors.primary }]}>Code manuel</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       );
     }
@@ -374,4 +427,24 @@ const styles = StyleSheet.create({
   secondaryBtnText: { fontWeight: '500', fontSize: 14 },
   linkBtn: { alignItems: 'center', paddingVertical: 6 },
   linkBtnText: { fontSize: 14, textDecorationLine: 'underline' },
+  scanBottomActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+    paddingVertical: 10,
+  },
+  photoActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+  },
+  photoActionText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 14,
+  },
 });

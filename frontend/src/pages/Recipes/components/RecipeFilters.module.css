@@ -206,6 +206,7 @@
     border-radius: 0 var(--radius-2xl) var(--radius-2xl) 0;
     box-shadow: var(--shadow-xl);
     padding: var(--space-2xl) var(--space-xl);
+    padding-bottom: 120px;
   }
 
   .filters.open {

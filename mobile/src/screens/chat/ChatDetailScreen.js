@@ -424,13 +424,6 @@ export default function ChatDetailScreen({ route, navigation }) {
                 <View style={styles.headerActions}>
                   <TouchableOpacity
                     style={styles.actionButton}
-                    onPress={() => navigation.navigate('UserProfile', { userId: otherUser._id })}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name="person-circle-outline" size={22} color={theme.colors.primary} />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.actionButton}
                     onPress={() => setShowUserSettings(true)}
                     activeOpacity={0.7}
                   >

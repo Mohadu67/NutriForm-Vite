@@ -14,6 +14,7 @@ import {
   Modal,
   TouchableWithoutFeedback,
   ActionSheetIOS,
+  Image,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,9 +27,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import { theme } from '../../theme';
 import { MessageInput } from '../../components/chat';
 import TypingIndicator from '../../components/chat/TypingIndicator';
+import MediaPicker from '../../components/chat/MediaPicker';
+import * as FileSystem from 'expo-file-system/legacy';
 import useThemedStyles from '../../hooks/useThemedStyles';
 import { blurIntensity } from '../../theme/glassmorphism';
 import * as chatbotApi from '../../api/chatbot';
+import client from '../../api/client';
 import websocketService from '../../services/websocket';
 import logger from '../../services/logger';
 
@@ -59,6 +63,9 @@ export default function AIChatScreen({ route, navigation }) {
   const [isEscalated, setIsEscalated] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [pendingImage, setPendingImage] = useState(null); // { uri, base64 }
 
   const flatListRef = useRef(null);
   const headerOpacity = useRef(new Animated.Value(0)).current;
@@ -137,7 +144,7 @@ export default function AIChatScreen({ route, navigation }) {
           const { conversations: aiConversations } = await chatbotApi.getAIConversations();
           if (aiConversations && aiConversations.length > 0) {
             // Prendre la conversation la plus récente
-            convId = aiConversations[0]._id;
+            convId = aiConversations[0].conversationId || aiConversations[0]._id;
             // Sauvegarder pour les prochaines fois
             await AsyncStorage.setItem(STORAGE_KEYS.CONVERSATION_ID, convId);
           }
@@ -148,7 +155,15 @@ export default function AIChatScreen({ route, navigation }) {
 
       if (convId) {
         setConversationId(convId);
-        await loadHistory(convId, currentBotName);
+        try {
+          await loadHistory(convId, currentBotName);
+        } catch (loadErr) {
+          // If 403/404, the conversationId is invalid — reset and start fresh
+          logger.app.error('Invalid conversation, starting fresh:', loadErr);
+          await AsyncStorage.removeItem(STORAGE_KEYS.CONVERSATION_ID);
+          setConversationId(null);
+          setMessages([createWelcomeMessage(currentBotName)]);
+        }
       } else {
         // Nouvelle conversation
         setMessages([createWelcomeMessage(currentBotName)]);
@@ -275,21 +290,75 @@ export default function AIChatScreen({ route, navigation }) {
   }, [isLoadingMore, conversationId, messages, hasMoreMessages]);
 
   // Envoyer un message
+  // Handle media selection from MediaPicker — upload to Cloudinary first
+  const handleMediaSelected = async (media) => {
+    try {
+      // Read as base64 for Gemini Vision
+      const base64 = await FileSystem.readAsStringAsync(media.uri, {
+        encoding: 'base64',
+      });
+      const dataUrl = `data:${media.mimeType || 'image/jpeg'};base64,${base64}`;
+
+      // Upload to Cloudinary for persistent URL
+      const formData = new FormData();
+      formData.append('media', {
+        uri: media.uri,
+        name: media.filename || `photo-${Date.now()}.jpg`,
+        type: media.mimeType || 'image/jpeg',
+      });
+
+      let cloudinaryUrl = null;
+      try {
+        const uploadRes = await client.post('/chat-upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        cloudinaryUrl = uploadRes.data?.media?.url || null;
+      } catch (uploadErr) {
+        logger.app.error('Cloudinary upload failed, using base64 fallback:', uploadErr);
+      }
+
+      setPendingImage({
+        uri: media.uri,
+        dataUrl, // base64 for Gemini Vision
+        cloudinaryUrl, // persistent URL for DB storage
+      });
+    } catch (err) {
+      logger.app.error('Failed to read image:', err);
+    }
+  };
+
   const handleSendMessage = async (text) => {
-    if (!text.trim() || isSending) return;
+    const hasText = text && text.trim();
+    const hasImage = !!pendingImage;
+    if ((!hasText && !hasImage) || isSending) return;
+
+    const imageToSend = pendingImage;
+    // Send base64 for Gemini Vision analysis
+    const mediaPayload = imageToSend ? [{
+      url: imageToSend.dataUrl,
+      type: 'image',
+      // Also send cloudinary URL so backend stores it instead of base64
+      persistUrl: imageToSend.cloudinaryUrl || null,
+    }] : undefined;
 
     const userMessage = {
       _id: `user-${Date.now()}`,
       role: 'user',
-      content: text.trim(),
+      content: hasText ? text.trim() : '📷 Photo envoyée',
+      media: imageToSend ? [{ url: imageToSend.cloudinaryUrl || imageToSend.uri, type: 'image' }] : undefined,
       createdAt: new Date().toISOString(),
     };
 
     setMessages(prev => [userMessage, ...prev]);
+    setPendingImage(null);
     setIsSending(true);
 
     try {
-      const response = await chatbotApi.sendChatMessage(text.trim(), conversationId);
+      const response = await chatbotApi.sendChatMessage(
+        hasText ? text.trim() : '📷 Analyse cette photo',
+        conversationId,
+        mediaPayload
+      );
 
       // Sauvegarder l'ID de conversation si nouvelle
       if (!conversationId && response.conversationId) {
@@ -466,6 +535,9 @@ export default function AIChatScreen({ route, navigation }) {
               end={{ x: 1, y: 1 }}
               style={styles.userBubbleGradient}
             >
+              {item.media?.length > 0 && item.media.filter(m => m.type === 'image').map((m, i) => (
+                <Image key={i} source={{ uri: m.url }} style={styles.messageImage} resizeMode="cover" />
+              ))}
               <Text style={styles.messageTextUser}>{item.content}</Text>
               <Text style={styles.messageTimeUser}>{formatTime(item.createdAt)}</Text>
             </LinearGradient>
@@ -693,12 +765,24 @@ export default function AIChatScreen({ route, navigation }) {
               />
             )}
 
+            {/* Pending image preview */}
+            {pendingImage && (
+              <View style={styles.pendingImageContainer}>
+                <Image source={{ uri: pendingImage.uri }} style={styles.pendingImage} />
+                <TouchableOpacity style={styles.pendingImageRemove} onPress={() => setPendingImage(null)}>
+                  <Ionicons name="close" size={14} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            )}
+
             {/* Input */}
             <View style={styles.inputContainer}>
               <MessageInput
                 onSend={handleSendMessage}
+                onMediaPress={() => setShowMediaPicker(true)}
                 disabled={isSending}
-                placeholder={isEscalated ? "Message au support..." : "Pose ta question..."}
+                hasPendingMedia={!!pendingImage}
+                placeholder={pendingImage ? "Ajoute un commentaire..." : (isEscalated ? "Message au support..." : "Pose ta question...")}
               />
             </View>
           </KeyboardAvoidingView>
@@ -707,6 +791,13 @@ export default function AIChatScreen({ route, navigation }) {
 
       {/* Modal de renommage */}
       {renderRenameModal()}
+
+      {/* Media Picker */}
+      <MediaPicker
+        visible={showMediaPicker}
+        onClose={() => setShowMediaPicker(false)}
+        onMediaSelected={handleMediaSelected}
+      />
     </View>
   );
 }
@@ -1015,5 +1106,36 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Image in messages
+  messageImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  // Pending image preview
+  pendingImageContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    flexDirection: 'row',
+  },
+  pendingImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+  },
+  pendingImageRemove: {
+    position: 'absolute',
+    top: 4,
+    left: 80,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

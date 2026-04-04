@@ -7,11 +7,12 @@ import { endpoints } from './endpoints';
  * @param {string} conversationId - ID de la conversation (optionnel pour nouveau chat)
  * @returns {Promise<{conversationId, message, botResponse, escalated}>}
  */
-export async function sendChatMessage(message, conversationId = null) {
+export async function sendChatMessage(message, conversationId = null, media = null) {
   const response = await client.post(endpoints.chat.send, {
     message,
     conversationId,
     platform: 'mobile',
+    ...(media ? { media } : {}),
   });
   return response.data;
 }
